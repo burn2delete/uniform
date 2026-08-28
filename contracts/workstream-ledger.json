@@ -6069,7 +6069,7 @@
     "invariant_family": "self-hosting/sh07-c10-source-contract-assertion-sync",
     "owner": "uniform-coordinator",
     "author": "sh07-implementation-coordinator",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh11-overflow-cast-safety-attempt-2"
     ],
@@ -6125,7 +6125,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary source-contract reader, test runner, and diagnostic-observation boundary",
       "the C10 source identity was established by the integrated SH-11 attempt; this candidate only synchronizes one stale test assertion",
@@ -6156,9 +6162,94 @@
         "at": "2026-08-28T21:55:22Z",
         "actor": "uniform-coordinator",
         "reason": "request independent exact-tuple review of the assertion-only change, WG009 evidence, residual boundaries, and no-overclaim authority"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-28T21:57:20Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "reject the exact ledger tuple because its WG009 positive evidence selector names a nonexistent test var; the one-path content patch and all other evidence were acceptable"
       }
     ],
-    "disposition": "Pending independent review; no integration or fresh C10 authority is claimed."
+    "disposition": "Rejected exact governance tuple for one invalid positive evidence selector. The one-path content candidate remains unchanged and acceptable but receives no integration or fresh C10 authority from this record."
+  },
+  {
+    "id": "sh07-c10-source-contract-assertion-sync-attempt-2",
+    "title": "SH-07 C10 source-contract assertion synchronization attempt 2",
+    "invariant_family": "self-hosting/sh07-c10-source-contract-assertion-sync",
+    "owner": "uniform-coordinator",
+    "author": "sh07-implementation-coordinator",
+    "state": "review-pending",
+    "dependencies": ["sh11-overflow-cast-safety-attempt-2"],
+    "architecture_decision": "Correct only the rejected attempt-1 WG009 selector while retaining the exact accepted one-path content candidate and the already governed C10 source identity; this grants no fresh C10 proof authority.",
+    "base_commit": "16a6b95311048a037047f69f9c4daa2c275aca73",
+    "candidate_commit": "e5c6bd0b188ed91e483c8382d85391e8c5dd4d72",
+    "clean_worktree": true,
+    "owned_paths": ["bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"],
+    "governing_contracts": [
+      "AGENTS.md", "D9", "C10", "BOOT7", "BOOT8", "TEST13",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+      "docs/development-verification.md", "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#proof-contract-binds-current-source-bound-modules"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#source-contract-mismatch-stops-before-authoritative-proof"
+      ],
+      "stable_diagnostics": ["SH07-AUTHORITATIVE-SOURCE-MISMATCH", "SH07-COVERAGE-CENSUS-MODULE-MISSING"],
+      "validation_commands": [
+        {
+          "command": "clojure -J-Xmx2g -M:test --namespace gravity.self-hosting.sh07-authoritative-coverage-census-test # 5 tests, 44 assertions",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --source-contracts # c10-safety 199815 bytes sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 16a6b95311048a037047f69f9c4daa2c275aca73..e5c6bd0b188ed91e483c8382d85391e8c5dd4d72",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary source-contract reader, test runner, and diagnostic-observation boundary",
+      "the C10 source identity was established by the integrated SH-11 attempt; this candidate only synchronizes one stale test assertion",
+      "--source-contracts reports the retained proof contract and is not a fresh C10 authoritative proof run",
+      "no fresh C10 proof, aggregate census, full suite, or heavyweight authoritative run was performed"
+    ],
+    "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T21:57:21Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "start a corrected governance tuple for the unchanged one-path candidate after the invalid attempt-1 selector"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T21:57:22Z",
+        "actor": "uniform-coordinator",
+        "reason": "freeze the unchanged exact content candidate and replace only the positive WG009 selector with the existing proof-contract-binds-current-source-bound-modules test var"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T21:57:23Z",
+        "actor": "uniform-coordinator",
+        "reason": "request independent review of the corrected exact ledger tuple before any integration eligibility"
+      }
+    ],
+    "disposition": "Corrected exact ledger tuple is review-pending; no integration or fresh C10 authority is claimed."
   }
 ]
 }
