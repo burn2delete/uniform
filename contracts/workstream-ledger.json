@@ -7649,7 +7649,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
@@ -7745,6 +7745,11 @@
         "reviewer": "attempt4_internal_schema_audit",
         "kind": "self-audit",
         "result": "accepted"
+      },
+      {
+        "reviewer": "b51_v18_attempt4_independent_review",
+        "kind": "independent",
+        "result": "rejected"
       }
     ],
     "residual_host_boundaries": [
@@ -7777,9 +7782,15 @@
         "at": "2026-08-29T07:07:05Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent review of the exact attempt-4 tuple, 19-batch digest schedule, canonical owning-definition authority, truthful bound ownership, inherited compatibility, external-binding authorization, diagnostics, atomic G-to-A-to-C-to-H implementation protocol, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-29T07:18:59Z",
+        "actor": "b51_v18_attempt4_independent_review",
+        "reason": "REJECT - exact candidate c7fe6e0cbbba81df5a0cfdd5da286fc4047a99eb, tree f0c6cf249e72b1f7050dbaa718a86a438d4d5384, report SHA-256 8da37e14e0c9aeafd379b207113a31d2dc2cda902d72a216f7fda8eab3d7bdcb. Blockers: the pinned 849-edge predecessor carrier is described as a sorted vector but its 5f7a87 digest is the canonical hash of the sorted set; the catalog defines eight resource-bound checks with six predecessor-owned and two V18-owned but an acceptance clause says seven; the G and atomic-stack governance text names nonexistent dependency sh07-b51-v18-architecture-attempt-4 instead of the exact ledger id. Reviewer made no file, ledger, or main changes; this is external independent review evidence only."
       }
     ],
-    "disposition": "REVIEW PENDING for exact report-only candidate c7fe6e0cbbba81df5a0cfdd5da286fc4047a99eb, tree f0c6cf249e72b1f7050dbaa718a86a438d4d5384. Internal audits confer no acceptance or implementation authority; only a fresh independent accepted review may advance this architecture."
+    "disposition": "REJECTED by independent review: exact candidate c7fe6e0cbbba81df5a0cfdd5da286fc4047a99eb, tree f0c6cf249e72b1f7050dbaa718a86a438d4d5384. The three blockers are recorded in the terminal history event. Attempt 4 grants no implementation, integration, or SH-07 completion authority."
   }
 ]
 }
