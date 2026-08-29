@@ -6372,9 +6372,106 @@
     "invariant_family": "self-hosting/sh07-authoritative-c6-core-admission-v1",
     "owner": "sh-core",
     "author": "sh07-implementation-coordinator",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": ["sh07-exception-core-lowering-attempt-4"],
     "architecture_decision": "Correct the attempt-1 governance and scope failures by admitting only the exact C6 source contract and its direct projection and fail-before-proof assertions, using existing positive and negative test selectors and literal replayable commands; the separately governed integrated C10 assertion remains unchanged.",
+    "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
+    "candidate_commit": "1b0ab7632ccba10395c267d0129696e76057f404",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj"
+    ],
+    "governing_contracts": [
+      "AGENTS.md", "D1", "D2", "D3", "D8", "D9", "C6", "BOOT7", "BOOT8", "TEST13",
+      "docs/self-hosting-slice-backlog.md", "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "docs/artifacts/phase-15/reports/sh07-exception-core-lowering-architecture-decision-v4.md"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#proof-contract-binds-current-source-bound-modules"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_coverage_census_test.clj#source-contract-mismatch-stops-before-authoritative-proof"
+      ],
+      "stable_diagnostics": ["SH07-AUTHORITATIVE-SOURCE-MISMATCH", "SH07-COVERAGE-CENSUS-MODULE-MISSING"],
+      "validation_commands": [
+        {
+          "command": "clojure -J-Xmx2g -M:test --namespace gravity.self-hosting.sh07-authoritative-coverage-census-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --source-contracts",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -J-Xmx1g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '(require (quote gravity.self-hosting.sh01-host-resource-broker)) (let [lease (gravity.self-hosting.sh01-host-resource-broker/acquire! {:coordination-root \"/private/tmp/gravity-sh01-resource-broker-v1\" :timeout-ms 14400000} :memory-heavy) exit-code (try (println (pr-str {:phase :authoritative-c6-core-fresh :broker-receipt (:receipt lease) :broker-telemetry (:telemetry lease)})) (flush) (let [command [\"clojure\" \"-J-Xmx8g\" \"-Sdeps\" \"{:paths [\\\"bootstrap/clojure/src\\\" \\\"bootstrap/clojure/test\\\"]}\" \"-M\" \"-m\" \"gravity.self-hosting.sh07-authoritative-runner\" \"--fresh\" \"c6-core\"] process (.start (.inheritIO (ProcessBuilder. ^java.util.List command)))] (.waitFor process)) (finally (println (pr-str {:phase :authoritative-c6-core-fresh :broker-release (gravity.self-hosting.sh01-host-resource-broker/release! lease)})) (flush)))] (println (pr-str {:phase :authoritative-c6-core-fresh :child-exit-code exit-code})) (flush) (when-not (zero? exit-code) (System/exit exit-code)))'",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 84185a767f6c93ebd540d57607282f5751d54804..1b0ab7632ccba10395c267d0129696e76057f404",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {"reviewer": "b8_maintenance_final_review", "kind": "independent", "result": "rejected"}
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary source-contract reader, authoritative runner, proof observer, and governance tooling boundary",
+      "the SH-01 broker remains a cooperative same-user scheduling boundary; the exact-candidate run released its memory-heavy lease and returned child exit code 0",
+      "the fresh exact-candidate proof reproduced individual artifact sha256:915b302d0daeff8b7292b1934ea050ac90e6b39f682b3a8655228a9a1ab888e6 and census sha256:f5dcb4d241ffef1fb8be6309bf13ffa7a38247becc85f67cc945c1da2ea05192 over proof-contract sha256:49cc2b6300d709edd4b31d37378a8da1cda94b0f6f4aadaea6e65d941448a6f and C6 source sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2",
+      "the passed proof remains individual-source-bound-derived with counts-precommitted false, independent-count-oracle false, aggregate-authoritative false, and unsupported claims exact-authentic-coverage, aggregate, and release",
+      "this source admission and individual C6 proof do not establish aggregate SH-07 completion, release, self-hosting, seed retirement, performance, or removal of bootstrap host boundaries"
+    ],
+    "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T22:13:01Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "start corrected attempt 2 from current authoritative main after preserving attempt 1's independent rejection and separately integrating the C10 assertion synchronization"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T22:13:02Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "freeze exact base 84185a767f6c93ebd540d57607282f5751d54804, clean C6-only content candidate 1b0ab7632ccba10395c267d0129696e76057f404, tree b9798c8f4a6dc47c387921e2c28309e33edc28e3, two owned paths, exact selectors, and passing lightweight evidence"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T22:13:03Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "request independent exact-tuple review of the C6-only source binding, fail-before-proof behavior, evidence, prior-receipt nonclaim, residual boundaries, and authority limits before any fresh rerun or eligibility transition"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-29T00:00:20Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "reject the exact attempt-2 ledger tuple because the recorded proof-contract SHA was truncated; the unchanged C6-only content candidate, fresh proof result, selectors, commands, residual boundaries, and nonclaims were otherwise acceptable"
+      }
+    ],
+    "disposition": "Rejected the attempt-2 governance tuple for an inexact proof-contract SHA transcription. The unchanged content candidate and fresh individual C6 proof remain evidence inputs for a corrected lifecycle record, but this rejected record grants no integration or completion authority."
+  },
+  {
+    "id": "sh07-c6-authoritative-source-admission-attempt-3",
+    "title": "SH-07 authoritative C6 source admission attempt 3",
+    "invariant_family": "self-hosting/sh07-authoritative-c6-core-admission-v1",
+    "owner": "sh-core",
+    "author": "sh07-implementation-coordinator",
+    "state": "review-pending",
+    "dependencies": ["sh07-exception-core-lowering-attempt-4"],
+    "architecture_decision": "After two rejected governance attempts, retain the unchanged C6-only content and exact fresh proof while correcting the evidence tuple itself: use existing positive and negative selectors, literal replayable commands, and the complete proof-contract SHA-256 identity without changing source, contract semantics, or authority claims.",
     "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
     "candidate_commit": "1b0ab7632ccba10395c267d0129696e76057f404",
     "clean_worktree": true,
@@ -6427,8 +6524,8 @@
     "reviews": [],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary source-contract reader, authoritative runner, proof observer, and governance tooling boundary",
-      "the SH-01 broker remains a cooperative same-user scheduling boundary; the exact-candidate run released its memory-heavy lease and returned child exit code 0",
-      "the fresh exact-candidate proof reproduced individual artifact sha256:915b302d0daeff8b7292b1934ea050ac90e6b39f682b3a8655228a9a1ab888e6 and census sha256:f5dcb4d241ffef1fb8be6309bf13ffa7a38247becc85f67cc945c1da2ea05192 over proof-contract sha256:49cc2b6300d709edd4b31d37378a8da1cda94b0f6f4aadaea6e65d941448a6f and C6 source sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2",
+      "the SH-01 broker remains a cooperative same-user scheduling boundary; the exact-input fresh run released its memory-heavy lease and returned child exit code 0",
+      "the fresh exact-input proof passed in 6536679 milliseconds with individual artifact sha256:915b302d0daeff8b7292b1934ea050ac90e6b39f682b3a8655228a9a1ab888e6 and census sha256:f5dcb4d241ffef1fb8be6309bf13ffa7a38247becc85f67cc945c1da2ea05192 over exact proof-contract sha256:49cc2b6300d709edd4b31d37378a8da1cda94b0f6f4aadaea6e65d941448a6f3 and C6 source sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2",
       "the passed proof remains individual-source-bound-derived with counts-precommitted false, independent-count-oracle false, aggregate-authoritative false, and unsupported claims exact-authentic-coverage, aggregate, and release",
       "this source admission and individual C6 proof do not establish aggregate SH-07 completion, release, self-hosting, seed retirement, performance, or removal of bootstrap host boundaries"
     ],
@@ -6436,24 +6533,24 @@
     "history": [
       {
         "state": "draft",
-        "at": "2026-08-28T22:13:01Z",
+        "at": "2026-08-29T00:00:21Z",
         "actor": "sh07-implementation-coordinator",
-        "reason": "start corrected attempt 2 from current authoritative main after preserving attempt 1's independent rejection and separately integrating the C10 assertion synchronization"
+        "reason": "start attempt 3 after preserving both prior independent rejections and deciding to correct only the attempt-2 proof-contract identity transcription for the unchanged content and fresh proof"
       },
       {
         "state": "frozen",
-        "at": "2026-08-28T22:13:02Z",
+        "at": "2026-08-29T00:00:22Z",
         "actor": "sh07-implementation-coordinator",
-        "reason": "freeze exact base 84185a767f6c93ebd540d57607282f5751d54804, clean C6-only content candidate 1b0ab7632ccba10395c267d0129696e76057f404, tree b9798c8f4a6dc47c387921e2c28309e33edc28e3, two owned paths, exact selectors, and passing lightweight evidence"
+        "reason": "freeze exact base 84185a767f6c93ebd540d57607282f5751d54804, unchanged content candidate 1b0ab7632ccba10395c267d0129696e76057f404, tree b9798c8f4a6dc47c387921e2c28309e33edc28e3, complete proof-contract SHA, exact fresh receipt facts, selectors, commands, residual boundaries, and nonclaims"
       },
       {
         "state": "review-pending",
-        "at": "2026-08-28T22:13:03Z",
+        "at": "2026-08-29T00:00:23Z",
         "actor": "sh07-implementation-coordinator",
-        "reason": "request independent exact-tuple review of the C6-only source binding, fail-before-proof behavior, evidence, prior-receipt nonclaim, residual boundaries, and authority limits before any fresh rerun or eligibility transition"
+        "reason": "request independent exact-tuple review of the corrected complete proof-contract identity and otherwise unchanged C6-only candidate and evidence before any acceptance or integration eligibility"
       }
     ],
-    "disposition": "Review pending after the fresh exact-candidate individual C6 proof passed all contract checks, released the broker, and exited 0. Independent acceptance remains required before integration eligibility; no aggregate SH-07, release, self-hosting, or seed-retirement authority is claimed."
+    "disposition": "Review pending for the unchanged exact C6-only content candidate and its passed, released, exit-zero fresh individual proof. No aggregate SH-07 completion, release, self-hosting, or seed-retirement authority is claimed."
   }
 ]
 }
