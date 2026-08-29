@@ -7091,7 +7091,7 @@
     "invariant_family": "architecture/reconciliation/self-hosting-sh07-b51-vector-destructuring-v17",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-architecture-author",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": ["sh07-c6-authoritative-source-admission-attempt-3"],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
     "base_commit": "6036307fb0f9cb4f791711728a51a051069381c3",
@@ -7207,9 +7207,15 @@
         "at": "2026-08-29T00:10:07Z",
         "actor": "sh07-b51-architecture-author",
         "reason": "verify exact base and report candidate, clean branch, passing validators, independent current-base acceptance, unchanged clean authoritative main 6036307fb0f9cb4f791711728a51a051069381c3, and architecture-only authority boundary"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-29T00:10:52Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "fast-forward the exact independently accepted B51 v17 architecture reports and complete lifecycle histories onto authoritative main"
       }
     ],
-    "disposition": "Independently accepted and integration-eligible for the two B51 v17 architecture reports only. No B51 implementation or SH-07 completion authority is granted."
+    "disposition": "Integrated the exact independently accepted B51 v17 architecture reports onto authoritative main. This authorizes the governed atomic core-plus-coordinator implementation stack but grants no implementation acceptance or SH-07 completion authority."
   }
 ]
 }
