@@ -6575,6 +6575,515 @@
       }
     ],
     "disposition": "Integrated exact C6 source admission plus its fresh individual source-bound proof onto authoritative main. This grants no aggregate SH-07 completion, release, self-hosting, or seed-retirement authority."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v17-attempt-1",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v17",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v17",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-architecture-author",
+    "state": "rejected",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17.md",
+    "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
+    "candidate_commit": "833b889f78056ff9ce3f856fa583f1e42a1281b2",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17.md"
+      ],
+      "rejected_fixtures": [
+        "ungoverned-wip-checkpoint:b7e685bc952eb1c84670e1898b481ae4ee1fa8c9",
+        "flattened destructuring leaves without binding-slot authority",
+        "leaf-count loop/recur arity instead of top-level binding-slot arity",
+        "pattern traversal that omits empty nested vector nodes",
+        "host destructuring or compile-only acceptance without exact-width runtime checks",
+        "producer-helper reuse by the independent verifier",
+        "circular semantic identity containing its own or descendant digest requests",
+        "recur slot-id references without a closed slot-id domain and preimage",
+        "serial integration protocol that permits the core commit to land before its coordinator evidence"
+      ],
+      "stable_diagnostics": [
+        "C6-CORE-SHAPE",
+        "C6-LOWERING-GAP",
+        "L7-DUP-BINDING",
+        "L7-PATTERN-TYPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "L2-RECUR-TARGET",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 84185a767f6c93ebd540d57607282f5751d54804..833b889f78056ff9ce3f856fa583f1e42a1281b2",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the temporary source loader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, runtime-check host, and final test observer",
+      "the independent Gravity verifier is bounded executable evidence and not a proof of its own correctness",
+      "authenticated B47 v16 remains the upstream input while B51 emits a distinct v17 successor product",
+      "the rejected b7e685bc952eb1c84670e1898b481ae4ee1fa8c9 implementation checkpoint is superseded evidence only and grants no architecture or implementation authority",
+      "the attempt-1 digest request graph is circular because semantic identity does not exclude its own and descendant requests",
+      "attempt 1 refers to slot identities without defining a closed ancestor-only slot-id domain and preimage",
+      "attempt 1 permits a core-only integration before coordinator pins and authentic runtime evidence exist",
+      "implementation remains paused; this rejected exact decision grants no successor authority",
+      "SH-07 completion, downstream checker completion, public routing, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T22:40:00Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "author a separately governed v17 decision while B51 semantic implementation remains stopped"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T22:41:00Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "freeze exact base 84185a767f6c93ebd540d57607282f5751d54804, candidate 833b889f78056ff9ce3f856fa583f1e42a1281b2, tree 2d63a5cc8c3ed1c23342233f3fcd5c5bbea7ace3, and the sole owned decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T22:41:39Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "request fresh independent exact review of closed slot/extraction schemas, runtime width safety, recur slot mapping, v17 identity closure, verifier independence, ownership split, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-28T22:47:00Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "reject exact attempt 1 because its semantic identity and digest-request transcript are circular, slot-id is referenced without a closed ancestor-only construction, the b7e685b WIP lacks a separate superseded lifecycle, and the serial protocol could integrate core before its coordinator-dependent authenticated evidence"
+      }
+    ],
+    "disposition": "Rejected exact architecture attempt 1. Its frozen report and commit remain terminal evidence and receive no implementation, integration, SH-07 completion, downstream checker, public routing, self-hosting, release, or seed-retirement authority."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-v1",
+    "title": "SH-07 B51 bounded fixed-width vector destructuring WIP checkpoint",
+    "invariant_family": "self-hosting/sh07-b51-vector-destructuring",
+    "owner": "sh07-implementation-coordinator",
+    "author": "b51-destructuring-implementation",
+    "state": "superseded",
+    "dependencies": [],
+    "architecture_decision": "The checkpoint predates an accepted B51 architecture. Preserve it only as WIP evidence and supersede it without semantic rejection, acceptance, replay, or implementation authority.",
+    "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
+    "candidate_commit": "b7e685bc952eb1c84670e1898b481ae4ee1fa8c9",
+    "clean_worktree": true,
+    "owned_paths": [
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/src/gravity/bootstrap.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_checked_core_source_coverage_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_vector_destructuring_test.clj",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/let-vector-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/let-vector-destructuring.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/loop-vector-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/loop-vector-destructuring.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/list-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/list-destructuring.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/map-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/map-destructuring.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/set-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/set-destructuring.qst",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/vector-rest-destructuring.gravity",
+      "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/vector-rest-destructuring.qst",
+      "contracts/workstream-ledger.json"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "contracts/workstream-governance.json"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/let-vector-destructuring.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/accepted/loop-vector-destructuring.gravity"
+      ],
+      "rejected_fixtures": [
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/map-destructuring.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/list-destructuring.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/set-destructuring.gravity",
+        "bootstrap/clojure/fixtures/self-hosting/sh-07-b51/rejected/vector-rest-destructuring.gravity"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "C6-CORE-SHAPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "C6-LOWERING-GAP",
+        "L2-RECUR-TARGET"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure reader parse checked_core.gravity",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "the checkpoint mixed sh-core semantic changes with master-coordinator bootstrap routing and pin changes",
+      "the checkpoint did not define closed slot/extraction schemas, an acyclic digest DAG, independent reconstruction, or atomic stacked admission",
+      "its narrow parse and diff checks are WIP observations, not authoritative semantic or runtime evidence",
+      "no independent review, freeze, acceptance, integration eligibility, or integration occurred",
+      "SH-07 completion, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T22:00:00Z",
+        "actor": "b51-destructuring-implementation",
+        "reason": "create a WIP implementation checkpoint from authoritative main before B51 architecture acceptance"
+      },
+      {
+        "state": "superseded",
+        "at": "2026-08-28T22:47:30Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "supersede exact commit b7e685bc952eb1c84670e1898b481ae4ee1fa8c9, tree 59b3deca60f8fca8213e3aaedf6bec84741ae4f0, because corrected architecture and fresh implementation are required; make no semantic rejection or acceptance claim"
+      }
+    ],
+    "disposition": "Superseded WIP checkpoint only. Preserve exact Git history for audit, but do not replay, cherry-pick, relabel, accept, integrate, or grant roadmap credit from this record."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v17-attempt-2",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v17 attempt 2",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v17",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-architecture-author",
+    "state": "rejected",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
+    "base_commit": "3168a7ca31779efe8607dfb7fe701a2f1b4f8b62",
+    "candidate_commit": "080e139d8f16fb1388103779d456fc69a13ab57c",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md"
+      ],
+      "rejected_fixtures": [
+        "sh07-b51-vector-destructuring-architecture-v17-attempt-1:833b889f78056ff9ce3f856fa583f1e42a1281b2",
+        "sh07-b51-vector-destructuring-v1:b7e685bc952eb1c84670e1898b481ae4ee1fa8c9",
+        "digest preimage containing its own or descendant request or result",
+        "slot reference without a resolved ancestor-only slot-id",
+        "leaf-count loop/recur arity",
+        "pattern transcript that omits empty nested vectors",
+        "producer semantic-helper reuse by the independent verifier",
+        "core-only integration before coordinator-dependent authenticated evidence"
+      ],
+      "stable_diagnostics": [
+        "C6-CORE-SHAPE",
+        "C6-LOWERING-GAP",
+        "L7-DUP-BINDING",
+        "L7-PATTERN-TYPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "L2-RECUR-TARGET",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 3168a7ca31779efe8607dfb7fe701a2f1b4f8b62..080e139d8f16fb1388103779d456fc69a13ab57c",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source loader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, runtime-check host, and final observer",
+      "the independent Gravity verifier is bounded executable evidence and not a proof of its own correctness",
+      "authenticated B47 v16 remains the immutable upstream input while B51 emits a distinct v17 successor",
+      "attempt 1 is terminal rejected and the b7e685b WIP is terminal superseded; neither grants successor authority",
+      "core may be independently accepted but can never become integration-eligible or land without the exact coordinator child and whole-stack review",
+      "implementation remains paused until this exact architecture is independently accepted and integrated",
+      "SH-07 completion, downstream checker completion, public routing, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T22:47:40Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "author corrected attempt 2 after independent rejection while preserving attempt 1 and the WIP checkpoint as separate terminal records"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T22:48:00Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "freeze exact base 3168a7ca31779efe8607dfb7fe701a2f1b4f8b62, candidate 080e139d8f16fb1388103779d456fc69a13ab57c, tree 7ca4dad2ecdf7178202b65ee38093ebc0fe34153, and sole corrected decision path"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T22:48:18Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "request fresh independent exact review of the ancestor-only digest DAG, closed slot ids, consistent recur mapping, separate WIP disposition, atomic stacked admission, evidence commands, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-28T22:52:30Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "reject the exact governance tuple because base_commit incorrectly names corrective-history ancestor 3168a7ca31779efe8607dfb7fe701a2f1b4f8b62 instead of authoritative main 84185a767f6c93ebd540d57607282f5751d54804; the frozen semantic content itself is unchanged and no semantic defect is asserted"
+      }
+    ],
+    "disposition": "Rejected attempt-2 governance tuple for wrong base_commit only. The immutable semantic content candidate is unchanged, but this exact record grants no architecture acceptance, implementation, integration, SH-07 completion, downstream checker, public routing, self-hosting, release, or seed-retirement authority."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v17-attempt-3",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v17 attempt 3",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v17",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-architecture-author",
+    "state": "accepted",
+    "dependencies": [],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
+    "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
+    "candidate_commit": "080e139d8f16fb1388103779d456fc69a13ab57c",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md"
+      ],
+      "rejected_fixtures": [
+        "sh07-b51-vector-destructuring-architecture-v17-attempt-1:833b889f78056ff9ce3f856fa583f1e42a1281b2",
+        "sh07-b51-vector-destructuring-architecture-v17-attempt-2:wrong-base-3168a7ca31779efe8607dfb7fe701a2f1b4f8b62",
+        "sh07-b51-vector-destructuring-v1:b7e685bc952eb1c84670e1898b481ae4ee1fa8c9",
+        "digest preimage containing its own or descendant request or result",
+        "slot reference without a resolved ancestor-only slot-id",
+        "leaf-count loop/recur arity",
+        "pattern transcript that omits empty nested vectors",
+        "producer semantic-helper reuse by the independent verifier",
+        "core-only integration before coordinator-dependent authenticated evidence"
+      ],
+      "stable_diagnostics": [
+        "C6-CORE-SHAPE",
+        "C6-LOWERING-GAP",
+        "L7-DUP-BINDING",
+        "L7-PATTERN-TYPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "L2-RECUR-TARGET",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 84185a767f6c93ebd540d57607282f5751d54804..080e139d8f16fb1388103779d456fc69a13ab57c",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source loader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, runtime-check host, and final observer",
+      "the independent Gravity verifier is bounded executable evidence and not a proof of its own correctness",
+      "authenticated B47 v16 remains the immutable upstream input while B51 emits a distinct v17 successor",
+      "commit 3168a7ca31779efe8607dfb7fe701a2f1b4f8b62 is retained only as corrective-history ancestry between the authoritative base and unchanged semantic content candidate; it is not the attempt-3 base or semantic authority",
+      "attempts 1 and 2 are terminal rejected and the b7e685b WIP is terminal superseded; none grants successor authority",
+      "core may be independently accepted but can never become integration-eligible or land without the exact coordinator child and whole-stack review",
+      "implementation remains paused until this exact architecture tuple is independently accepted and integrated",
+      "SH-07 completion, downstream checker completion, public routing, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-28T22:52:40Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "start a governance-only correction for the unchanged semantic content candidate after attempt 2 named a corrective-history ancestor as its base"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-28T22:52:50Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "freeze authoritative base 84185a767f6c93ebd540d57607282f5751d54804, unchanged candidate 080e139d8f16fb1388103779d456fc69a13ab57c, tree 7ca4dad2ecdf7178202b65ee38093ebc0fe34153, and the exact corrected architecture path; retain 3168a7ca31779efe8607dfb7fe701a2f1b4f8b62 as history only"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-28T22:53:03Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "request fresh independent exact review of the unchanged semantics and corrected authoritative-main base, ancestry evidence, literal diff command, lifecycle history, and nonclaims"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-28T22:55:22Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "accept the exact attempt-3 architecture tuple after confirming the corrected authoritative base, terminal prior histories, closed slot and extraction schemas, acyclic digest DAG, independent verifier, runtime policy, recur semantics, compatibility, ownership, atomic stack protocol, evidence, and nonclaims"
+      }
+    ],
+    "disposition": "Independently accepted exact B51 v17 architecture attempt 3. Integration eligibility is intentionally withheld until the accepted decision is reconciled and re-reviewed against authoritative main after the active C6 admission completes; no implementation or SH-07 completion authority is granted yet."
   }
 ]
 }
