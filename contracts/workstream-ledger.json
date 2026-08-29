@@ -7798,7 +7798,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
@@ -7944,9 +7944,15 @@
         "at": "2026-08-29T07:45:33Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "exact accepted architecture HEAD 4652b2c3144e78a77c04c9a4a9e518b1809b073c, tree 70c657987a38fe05d60900d953106cf13106f815 passed integration preflight against authoritative main 3d7d4b532176841a45db71fa3ca37f7300d2d2c8, full-language roadmap validation, SH-01 language-boundary regression, governance validation, documentation validation, and diff hygiene; authority remains architecture-only"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-29T07:46:44Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "fast-forwarded exact integration-eligible architecture commit cfa4c95313b2d459fc76e477b432f5d437cfaacb, tree e26eba824eaac5475e7361a9b234fc8da54b528c onto clean authoritative main after exact admission; this integrated architecture establishes implementation baseline G and grants no implementation or aggregate SH-07 completion authority"
       }
     ],
-    "disposition": "INTEGRATION-ELIGIBLE architecture-only authority for exact report candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. Independent acceptance and exact admission checks are satisfied. Implementation remains stopped until this architecture is integrated on authoritative main as baseline G; no implementation or SH-07 completion authority is granted."
+    "disposition": "INTEGRATED architecture-only authority for exact report candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. The integrated lifecycle commit establishes baseline G for the single governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance or aggregate SH-07 completion authority is granted."
   }
 ]
 }
