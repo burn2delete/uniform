@@ -2940,7 +2940,7 @@
     "invariant_family": "architecture/self-hosting-sh13-typed-direct-call-mir-v1",
     "owner": "sh-mir-architecture",
     "author": "sh-mir-architecture",
-    "state": "integration-eligible",
+    "state": "accepted",
     "dependencies": [],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md",
     "base_commit": "2139750d4b8d933ac1be30ee49307cc44a4c6473",
@@ -7798,7 +7798,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
