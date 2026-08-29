@@ -6469,7 +6469,7 @@
     "invariant_family": "self-hosting/sh07-authoritative-c6-core-admission-v1",
     "owner": "sh-core",
     "author": "sh07-implementation-coordinator",
-    "state": "review-pending",
+    "state": "integration-eligible",
     "dependencies": ["sh07-exception-core-lowering-attempt-4"],
     "architecture_decision": "After two rejected governance attempts, retain the unchanged C6-only content and exact fresh proof while correcting the evidence tuple itself: use existing positive and negative selectors, literal replayable commands, and the complete proof-contract SHA-256 identity without changing source, contract semantics, or authority claims.",
     "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
@@ -6521,7 +6521,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the temporary source-contract reader, authoritative runner, proof observer, and governance tooling boundary",
       "the SH-01 broker remains a cooperative same-user scheduling boundary; the exact-input fresh run released its memory-heavy lease and returned child exit code 0",
@@ -6548,9 +6554,21 @@
         "at": "2026-08-29T00:00:23Z",
         "actor": "sh07-implementation-coordinator",
         "reason": "request independent exact-tuple review of the corrected complete proof-contract identity and otherwise unchanged C6-only candidate and evidence before any acceptance or integration eligibility"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-29T00:03:33Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "accept exact attempt 3 after confirming the unchanged C6-only content, complete proof-contract digest, fresh individual proof receipt, released broker, exit-zero child, exact selectors and commands, terminal prior rejections, and no-overclaim boundaries"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-29T00:03:34Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "verify exact base and candidate identities, clean branch, passing fresh individual proof, independent acceptance, unchanged clean authoritative main 84185a767f6c93ebd540d57607282f5751d54804, and explicit aggregate nonclaims"
       }
     ],
-    "disposition": "Review pending for the unchanged exact C6-only content candidate and its passed, released, exit-zero fresh individual proof. No aggregate SH-07 completion, release, self-hosting, or seed-retirement authority is claimed."
+    "disposition": "Independently accepted and integration-eligible for exact C6 source admission plus its fresh individual proof only. No aggregate SH-07 completion, release, self-hosting, or seed-retirement authority is claimed."
   }
 ]
 }
