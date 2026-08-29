@@ -6469,7 +6469,7 @@
     "invariant_family": "self-hosting/sh07-authoritative-c6-core-admission-v1",
     "owner": "sh-core",
     "author": "sh07-implementation-coordinator",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": ["sh07-exception-core-lowering-attempt-4"],
     "architecture_decision": "After two rejected governance attempts, retain the unchanged C6-only content and exact fresh proof while correcting the evidence tuple itself: use existing positive and negative selectors, literal replayable commands, and the complete proof-contract SHA-256 identity without changing source, contract semantics, or authority claims.",
     "base_commit": "84185a767f6c93ebd540d57607282f5751d54804",
@@ -6566,9 +6566,15 @@
         "at": "2026-08-29T00:03:34Z",
         "actor": "sh07-implementation-coordinator",
         "reason": "verify exact base and candidate identities, clean branch, passing fresh individual proof, independent acceptance, unchanged clean authoritative main 84185a767f6c93ebd540d57607282f5751d54804, and explicit aggregate nonclaims"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-29T00:04:34Z",
+        "actor": "sh07-implementation-coordinator",
+        "reason": "fast-forward the exact independently accepted C6 source admission, fresh individual proof evidence, and terminal governance histories onto authoritative main"
       }
     ],
-    "disposition": "Independently accepted and integration-eligible for exact C6 source admission plus its fresh individual proof only. No aggregate SH-07 completion, release, self-hosting, or seed-retirement authority is claimed."
+    "disposition": "Integrated exact C6 source admission plus its fresh individual source-bound proof onto authoritative main. This grants no aggregate SH-07 completion, release, self-hosting, or seed-retirement authority."
   }
 ]
 }
