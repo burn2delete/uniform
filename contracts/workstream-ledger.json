@@ -7365,7 +7365,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
@@ -7448,7 +7448,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b51_v18_independent_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source-byte reader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, and final observer",
       "the coordinator may mechanically authenticate the immutable closure and contract records, invoke the genuine B47 v16 roots on the exact request, and transport the actual outcome, but cannot fabricate, classify, sanitize, or relabel it",
@@ -7480,9 +7486,15 @@
         "at": "2026-08-29T01:13:00Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request independent exact review of measured immutable B47 closure and contract carrier, closed path-neutral outcomes, acyclic Tier 0 subtiers, closed v18 schemas and output kinds, exact v16 equivalence, external-binding authorization, independent reconstruction, atomic M-to-C-to-H protocol, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-29T03:25:51Z",
+        "actor": "b51_v18_independent_review",
+        "reason": "REJECT - exact candidate 26d50d95824a7a478fa58573b366575cd8bc141c, tree 1aaf70a7940226c90dc3ef40e2e75ba8b8a427fc. Blockers: the f473 predecessor closure preimage/filter remained ambiguous; the raw carrier and digest handshake were circular because the carrier required derived ids; the v16 verification semantic-id preimage was undefined and the observation schema omitted its observation id; template/resolved/output schemas omitted closed module, lineage, projection, and nested product schemas; authentic owning top-level root/defn/fragment selection was undefined; authenticated external-binding authorization and unauthorized cross-fragment rejection were undefined; empty-vector width-zero semantics contradicted positive terminal-count requirements. Reviewer made no file, ledger, or main changes; this is external independent review evidence only."
       }
     ],
-    "disposition": "Proposed corrected B51 v18 attempt 2 is frozen and review-pending at exact candidate 26d50d95824a7a478fa58573b366575cd8bc141c, tree 1aaf70a7940226c90dc3ef40e2e75ba8b8a427fc. Attempt 1 remains terminally rejected with its exact candidate/tree and six blockers. No implementation or SH-07 completion authority is granted until independent acceptance and later reconciliation to main."
+    "disposition": "REJECTED by independent review: exact candidate 26d50d95824a7a478fa58573b366575cd8bc141c, tree 1aaf70a7940226c90dc3ef40e2e75ba8b8a427fc. The seven blockers are recorded in the terminal history event. Attempts 1 and 2 grant no implementation, integration, or SH-07 completion authority."
   }
 ]
 }
