@@ -7495,6 +7495,142 @@
       }
     ],
     "disposition": "REJECTED by independent review: exact candidate 26d50d95824a7a478fa58573b366575cd8bc141c, tree 1aaf70a7940226c90dc3ef40e2e75ba8b8a427fc. The seven blockers are recorded in the terminal history event. Attempts 1 and 2 grant no implementation, integration, or SH-07 completion authority."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-3",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 3",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "review-pending",
+    "dependencies": [
+      "sh07-c6-authoritative-source-admission-attempt-3",
+      "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-3.md",
+    "base_commit": "ce2a9b8d5ee8e6a703894e5120dada36dd8ea182",
+    "candidate_commit": "f50a0d9aa9407abf108e419d2176ac5f85312652",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-3.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C5",
+      "C6",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-3.md",
+        "report-sha256:0f63e986092706e6d0297b0b840f3cfcc81108a0142a16c3b1eb962cb8b17d85",
+        "internal semantic and governance audit PASS on exact candidate f50a0d9aa9407abf108e419d2176ac5f85312652 tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe",
+        "internal closed-schema and identity audit PASS on exact candidate f50a0d9aa9407abf108e419d2176ac5f85312652 tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe"
+      ],
+      "rejected_fixtures": [
+        "attempt-1 external REJECT candidate 5e9b14aa9a1bbf6a5e6d6503d38506e728bc78a2 tree afb0a9da7139f121598a202fec1f4aa82871dd43",
+        "attempt-2 external REJECT candidate 26d50d95824a7a478fa58573b366575cd8bc141c tree 1aaf70a7940226c90dc3ef40e2e75ba8b8a427fc",
+        "attempt-3 internal rejected draft snapshots 2f979a42c37da41d6ddd40b716b721635cbf2c9f36513a768b9c1b6e2347e8ac, 5a51c1117a7bef105203c981e3b9d35024dbc021ae550ac571e8ec2faf03faad, b46cc9aaf558181bf6e90ef55088a42d64e21b9370f71d078eede6dcb19be97a, 5c9f84c87edbfedb4c757ce0bc87bda9d413233658b5ad992a7ae3396ae8a612, 6f9bc990e820ce81db2bf0f24d875aca7c443c87d3f7b49c5ca726a24911f7c5, 6c35652aab5b374e8f3e181e7f13cddd0214c62f91b2f76becae4c6f7ea2b602, and dcf2dd5a1239b996707f5e6e3a0fb88cc52248557b39d98e30e594e6e8ca6c16",
+        "fabricated, relabeled, or different-request B47 outcome",
+        "unowned top-level root or defn selection",
+        "unauthenticated external binding or unauthorized cross-fragment lexical edge",
+        "unsupported pattern, duplicate binding, malformed vector, wrong recur arity, or nondeterministic diagnostic coordinate",
+        "core-only or checkpoint-only integration before the exact atomic implementation candidate"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-CORE-SHAPE",
+        "C6-LOWERING-GAP",
+        "C6-EFFECT-DROP",
+        "C6-UNSAFE-DROP",
+        "L7-DUP-BINDING",
+        "L7-PATTERN-TYPE",
+        "C6-EVAL-ORDER",
+        "C6-ORIGIN",
+        "L2-RECUR-TARGET",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check ce2a9b8d5ee8e6a703894e5120dada36dd8ea182..f50a0d9aa9407abf108e419d2176ac5f85312652",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [
+      {
+        "reviewer": "attempt3_audit_round4_semantics",
+        "kind": "self-audit",
+        "result": "accepted"
+      },
+      {
+        "reviewer": "attempt3_audit_round4_schema",
+        "kind": "self-audit",
+        "result": "accepted"
+      }
+    ],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Gravity plan executor, canonical digest resolver, runtime-check host, and observer",
+      "the architecture requires independent exact review and integration onto main as governance baseline G before implementation may start",
+      "A and C are exact independently reviewed checkpoint commits inside one governed G-to-H implementation workstream; neither is a ledger candidate or may land alone",
+      "the report grants no implementation acceptance, aggregate SH-07 completion, public routing, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-29T06:10:30Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "record attempt 3 only after eight internal correction rounds resolved the attempt-1 and attempt-2 invariant failures plus direct authoritative-source audit findings"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-29T06:10:40Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "freeze governance parent ce2a9b8d5ee8e6a703894e5120dada36dd8ea182, exact report candidate f50a0d9aa9407abf108e419d2176ac5f85312652, tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe, and report SHA-256 0f63e986092706e6d0297b0b840f3cfcc81108a0142a16c3b1eb962cb8b17d85"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-29T06:10:50Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "request fresh independent review of the exact attempt-3 tuple, closed carrier and digest protocol, authentic owner and external-binding authority, vector and recur semantics, compatibility, diagnostic closure, atomic G-to-A-to-C-to-H implementation protocol, and nonclaims"
+      }
+    ],
+    "disposition": "REVIEW PENDING for exact report-only candidate f50a0d9aa9407abf108e419d2176ac5f85312652, tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe. Internal audits confer no acceptance or implementation authority; only a fresh independent accepted review may advance this architecture."
   }
 ]
 }
