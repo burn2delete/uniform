@@ -7502,7 +7502,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
@@ -7596,6 +7596,11 @@
         "reviewer": "attempt3_audit_round4_schema",
         "kind": "self-audit",
         "result": "accepted"
+      },
+      {
+        "reviewer": "b51_v18_attempt3_independent_review",
+        "kind": "independent",
+        "result": "rejected"
       }
     ],
     "residual_host_boundaries": [
@@ -7628,9 +7633,15 @@
         "at": "2026-08-29T06:10:50Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent review of the exact attempt-3 tuple, closed carrier and digest protocol, authentic owner and external-binding authority, vector and recur semantics, compatibility, diagnostic closure, atomic G-to-A-to-C-to-H implementation protocol, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-29T06:25:27Z",
+        "actor": "b51_v18_attempt3_independent_review",
+        "reason": "REJECT - exact candidate f50a0d9aa9407abf108e419d2176ac5f85312652, tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe, report SHA-256 0f63e986092706e6d0297b0b840f3cfcc81108a0142a16c3b1eb962cb8b17d85. Blockers: the digest tier/subtier contract contradicts product-node Tier 0d and cannot represent declared same-tier dependencies; owning-definition form and syntax ids in slot, extraction, and product-node schemas have no canonical authenticated branch derivation or cross-record equality rule; seven mandatory compile-time resource bounds have no exhaustive legal diagnostic reason, coordinate policy, finalizer behavior, or fixtures. Reviewer made no file, ledger, or main changes; this is external independent review evidence only."
       }
     ],
-    "disposition": "REVIEW PENDING for exact report-only candidate f50a0d9aa9407abf108e419d2176ac5f85312652, tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe. Internal audits confer no acceptance or implementation authority; only a fresh independent accepted review may advance this architecture."
+    "disposition": "REJECTED by independent review: exact candidate f50a0d9aa9407abf108e419d2176ac5f85312652, tree e34d57e603ca62f4a97c0ca0dc395f4f45d192fe. The three blockers are recorded in the terminal history event. Attempt 3 grants no implementation, integration, or SH-07 completion authority."
   }
 ]
 }
