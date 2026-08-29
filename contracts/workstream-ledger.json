@@ -7091,7 +7091,7 @@
     "invariant_family": "architecture/reconciliation/self-hosting-sh07-b51-vector-destructuring-v17",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-architecture-author",
-    "state": "review-pending",
+    "state": "integration-eligible",
     "dependencies": ["sh07-c6-authoritative-source-admission-attempt-3"],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
     "base_commit": "6036307fb0f9cb4f791711728a51a051069381c3",
@@ -7154,7 +7154,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "b8_maintenance_final_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source loader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, runtime-check host, and final observer",
       "the independent Gravity verifier is bounded executable evidence and not a proof of its own correctness",
@@ -7189,9 +7195,21 @@
         "at": "2026-08-29T00:07:04Z",
         "actor": "sh07-b51-architecture-author",
         "reason": "request fresh independent exact review of byte-identical semantic content, new authoritative base, integrated C6 dependency, complete prior lifecycle, reconciliation identity, and no-overclaim boundary"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-29T00:10:06Z",
+        "actor": "b8_maintenance_final_review",
+        "reason": "accept the exact report-only reconciliation after verifying byte-identical accepted semantics, current main base, integrated C6 dependency, complete histories, literal evidence, atomic implementation constraints, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-29T00:10:07Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "verify exact base and report candidate, clean branch, passing validators, independent current-base acceptance, unchanged clean authoritative main 6036307fb0f9cb4f791711728a51a051069381c3, and architecture-only authority boundary"
       }
     ],
-    "disposition": "Frozen report-only reconciliation attempt 4 for independent exact review. Historical attempt-3 acceptance is evidence but grants no current-base integration authority; no B51 implementation or integration is authorized."
+    "disposition": "Independently accepted and integration-eligible for the two B51 v17 architecture reports only. No B51 implementation or SH-07 completion authority is granted."
   }
 ]
 }
