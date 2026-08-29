@@ -2940,7 +2940,7 @@
     "invariant_family": "architecture/self-hosting-sh13-typed-direct-call-mir-v1",
     "owner": "sh-mir-architecture",
     "author": "sh-mir-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh13-typed-direct-call-mir-architecture-decision.md",
     "base_commit": "2139750d4b8d933ac1be30ee49307cc44a4c6473",
@@ -7938,9 +7938,15 @@
         "at": "2026-08-29T07:43:03Z",
         "actor": "b51_v18_attempt5_independent_review",
         "reason": "ACCEPT exact candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6, report SHA-256 725deaea624b5bf87898b8512cd30be9e9323f66521683c0aea764560d23f689 after independently reproducing the predecessor closure and edge-set hash, eight-bound ownership, exact governance identity, digest catalogs, carrier, owner and external authority, schemas, diagnostics, runtime and recur semantics, compatibility, atomic implementation protocol, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-29T07:45:33Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "exact accepted architecture HEAD 4652b2c3144e78a77c04c9a4a9e518b1809b073c, tree 70c657987a38fe05d60900d953106cf13106f815 passed integration preflight against authoritative main 3d7d4b532176841a45db71fa3ca37f7300d2d2c8, full-language roadmap validation, SH-01 language-boundary regression, governance validation, documentation validation, and diff hygiene; authority remains architecture-only"
       }
     ],
-    "disposition": "ACCEPTED architecture-only authority for exact report candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. Implementation remains stopped until this architecture reaches integration-eligible and integrated on authoritative main as baseline G; no implementation or SH-07 completion authority is granted."
+    "disposition": "INTEGRATION-ELIGIBLE architecture-only authority for exact report candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. Independent acceptance and exact admission checks are satisfied. Implementation remains stopped until this architecture is integrated on authoritative main as baseline G; no implementation or SH-07 completion authority is granted."
   }
 ]
 }
