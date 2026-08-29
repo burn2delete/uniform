@@ -7084,6 +7084,114 @@
       }
     ],
     "disposition": "Independently accepted exact B51 v17 architecture attempt 3. Integration eligibility is intentionally withheld until the accepted decision is reconciled and re-reviewed against authoritative main after the active C6 admission completes; no implementation or SH-07 completion authority is granted yet."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v17-attempt-4",
+    "title": "SH-07 B51 v17 architecture reconciliation attempt 4",
+    "invariant_family": "architecture/reconciliation/self-hosting-sh07-b51-vector-destructuring-v17",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-architecture-author",
+    "state": "review-pending",
+    "dependencies": ["sh07-c6-authoritative-source-admission-attempt-3"],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
+    "base_commit": "6036307fb0f9cb4f791711728a51a051069381c3",
+    "candidate_commit": "efea14c8c1c3766c13c297b8438118932281742a",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17.md",
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md", "D1", "D2", "D3", "D8", "D9", "L2", "L7", "C6",
+      "BOOT7", "BOOT8", "TEST13", "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn", "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v17-attempt-2.md",
+        "historical-independent-acceptance:sh07-b51-vector-destructuring-architecture-v17-attempt-3:080e139d8f16fb1388103779d456fc69a13ab57c"
+      ],
+      "rejected_fixtures": [
+        "sh07-b51-vector-destructuring-architecture-v17-attempt-1:833b889f78056ff9ce3f856fa583f1e42a1281b2",
+        "sh07-b51-vector-destructuring-architecture-v17-attempt-2:wrong-base-3168a7ca31779efe8607dfb7fe701a2f1b4f8b62",
+        "sh07-b51-vector-destructuring-v1:b7e685bc952eb1c84670e1898b481ae4ee1fa8c9",
+        "historical acceptance presented as current-base integration authority",
+        "digest preimage containing its own or descendant request or result",
+        "slot reference without a resolved ancestor-only slot-id",
+        "leaf-count loop/recur arity",
+        "pattern transcript that omits empty nested vectors",
+        "producer semantic-helper reuse by the independent verifier",
+        "core-only integration before coordinator-dependent authenticated evidence"
+      ],
+      "stable_diagnostics": [
+        "C6-CORE-SHAPE", "C6-LOWERING-GAP", "L7-DUP-BINDING",
+        "L7-PATTERN-TYPE", "C6-EVAL-ORDER", "C6-ORIGIN",
+        "L2-RECUR-TARGET", "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 6036307fb0f9cb4f791711728a51a051069381c3..efea14c8c1c3766c13c297b8438118932281742a",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source loader, strict decoder, SH-06/B47 producer and verifier host, Gravity plan executor, opaque digest resolver, runtime-check host, and final observer",
+      "the independent Gravity verifier is bounded executable evidence and not a proof of its own correctness",
+      "the two reconciled reports are byte-identical to the historical attempt-3 report artifacts, but their new base and content commit require fresh exact review",
+      "attempt-3 independent acceptance is retained as historical semantic evidence only and is not integration eligibility or current-base integration authority",
+      "integrated sh07-c6-authoritative-source-admission-attempt-3 is the current authoritative C6 source dependency; its individual proof grants no aggregate SH-07 authority",
+      "core may be independently accepted but can never become integration-eligible or land without the exact coordinator child and whole-stack review required by the decision",
+      "B51 implementation remains paused until this exact reconciliation is independently accepted and integrated",
+      "SH-07 completion, downstream checker completion, public routing, self-hosting, release, and seed retirement remain unclaimed"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-29T00:06:40Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "start architecture-only reconciliation after authoritative main advanced through integrated C6 source admission; preserve prior acceptance as historical evidence without claiming current-base authority"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-29T00:06:55Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "freeze exact authoritative base 6036307fb0f9cb4f791711728a51a051069381c3, reconciled report-only content candidate efea14c8c1c3766c13c297b8438118932281742a, tree 940281c89626d15c72c476d1a331e25a623be957, and two owned architecture paths"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-29T00:07:04Z",
+        "actor": "sh07-b51-architecture-author",
+        "reason": "request fresh independent exact review of byte-identical semantic content, new authoritative base, integrated C6 dependency, complete prior lifecycle, reconciliation identity, and no-overclaim boundary"
+      }
+    ],
+    "disposition": "Frozen report-only reconciliation attempt 4 for independent exact review. Historical attempt-3 acceptance is evidence but grants no current-base integration authority; no B51 implementation or integration is authorized."
   }
 ]
 }
