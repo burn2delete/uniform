@@ -7798,7 +7798,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "accepted",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4"
@@ -7895,6 +7895,11 @@
         "reviewer": "attempt5_internal_schema_audit",
         "kind": "self-audit",
         "result": "accepted"
+      },
+      {
+        "reviewer": "b51_v18_attempt5_independent_review",
+        "kind": "independent",
+        "result": "accepted"
       }
     ],
     "residual_host_boundaries": [
@@ -7927,9 +7932,15 @@
         "at": "2026-08-29T07:28:55Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent review of the exact attempt-5 tuple, canonical predecessor edge set, eight resource-bound checks, exact governance identity, carrier and digest protocol, owner and external authority, diagnostics, atomic G-to-A-to-C-to-H implementation protocol, and nonclaims"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-29T07:43:03Z",
+        "actor": "b51_v18_attempt5_independent_review",
+        "reason": "ACCEPT exact candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6, report SHA-256 725deaea624b5bf87898b8512cd30be9e9323f66521683c0aea764560d23f689 after independently reproducing the predecessor closure and edge-set hash, eight-bound ownership, exact governance identity, digest catalogs, carrier, owner and external authority, schemas, diagnostics, runtime and recur semantics, compatibility, atomic implementation protocol, and nonclaims"
       }
     ],
-    "disposition": "REVIEW PENDING for exact report-only candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. Internal audits confer no acceptance or implementation authority; only a fresh independent accepted review may advance this architecture."
+    "disposition": "ACCEPTED architecture-only authority for exact report candidate 39281cdb48a05efc42eae8d22ea44934e9d32f60, tree 1cc228b13dc5f65ffb8d5a64cd3f7b93a4d870c6. Implementation remains stopped until this architecture reaches integration-eligible and integrated on authoritative main as baseline G; no implementation or SH-07 completion authority is granted."
   }
 ]
 }
