@@ -6326,6 +6326,16 @@
           "command": "git diff --check",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -8256,6 +8266,113 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/attempt7_exact_review for the exact immutable attempt-7 report tuple. A successor must provide Root 8 an independent authenticated semantic anchor, explicitly govern the declared algorithm correction, and carry only reproduced validation receipts. No implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-8",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 8",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md",
+    "base_commit": "9dc682fba5753b52815fc856f980b09f5b27a543",
+    "candidate_commit": "bca0fd081bad00a2890cb6b50c1d849f0563a9b4",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-6",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-7",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md",
+        "report-sha256:ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5",
+        "candidate-tree:f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29",
+        "author algorithm audit:B51 explicitly changes from C11-print hashing to reader-canonical-hash and preserves unrelated inherited C11 identities",
+        "author Root-8 audit:unary raw-carrier replay derives the canonical first Root1/2/4/5/6/7 semantic failure and computes its diagnostic digest without caller failure authority",
+        "author compatibility audit:8 roots, Root8 arity 1, schema 18, 19 success purposes, 58 dependencies, and 94/174 path descriptors"
+      ],
+      "rejected_fixtures": [
+        "attempt-7 coordinated pending-envelope and diagnostic-digest substitution without an independent anchor",
+        "attempt-7 silent equality claim between C11-print hashing and reader-canonical-hash",
+        "forgeable failure replay map, host receipt, or opaque caller-provided seal treated as semantic authority",
+        "Root8 accepts a pending envelope, digest, detector identity, or invocation facts from its caller",
+        "Root8 selects Root3 or itself, recurses, or finalizes a boundary failure",
+        "well-shaped arbitrary, reversed, cross-request, or coordinated digest substitution at Roots4 through 7",
+        "Root6 calls producer roots or request, preimage, digest, path-materialization, or candidate helpers",
+        "old two-argument Root8 ABI or external invocation mutation classified as a finalizable semantic failure",
+        "C11 identities outside B51 declared-digest domains recomputed with the new builtin",
+        "twentieth success purpose, dependency-edge drift, path-census drift, implementation edit, test edit, or pin edit"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, and observer",
+      "the host may compute reader-canonical-hash for transport and parity but no host digest, receipt, pending envelope, or replay map is B51 semantic authority",
+      "attempt 8 requires a fresh independent exact review and integration before corrected architecture baseline G8 exists",
+      "the existing atomic implementation worktree is outside this architecture candidate and receives no source, test, fixture, pin, acceptance, or integration authority",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-30T09:01:14Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only report candidate bca0fd081bad00a2890cb6b50c1d849f0563a9b4, tree f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29, and report SHA-256 ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5 after correcting attempt 7 with an explicit B51 reader-canonical-hash algorithm migration and unary raw-carrier Root8 replay; no freeze or review is requested by this event"
+      }
+    ],
+    "disposition": "DRAFT architecture-only successor to terminally rejected attempt 7. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
