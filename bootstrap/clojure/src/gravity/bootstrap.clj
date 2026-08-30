@@ -48,7 +48,7 @@
             [gravity.compiler-pass-manifest :as compiler-pass-manifest]
             [gravity.compiler-verification-shared :as compiler-verification-shared]
             [gravity.optimization-lowering :as optimization-lowering]
-            [gravity.p18.t00.parity :as p18-t00-parity]
+            [gravity.p18.t00.orchestration :as p18-t00-orchestration]
             [gravity.p18.t00.semantics :as p18-t00-semantics]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
@@ -164389,102 +164389,29 @@
 (defn p18-t00-accepted-extension-record
   [{:keys [gravity qst expected-stdout bootstrap-module release-module
            bootstrap-output-prefix release-output-prefix]}]
-  (let [bootstrap-gravity-output (str bootstrap-output-prefix "-gravity")
-        bootstrap-qst-output (str bootstrap-output-prefix "-qst")
-        release-gravity-output (str release-output-prefix "-gravity")
-        release-qst-output (str release-output-prefix "-qst")
-        gravity-summary (p18-t00-semantic-summary gravity)
-        qst-summary (p18-t00-semantic-summary qst)
-        gravity-check (p18-t00-shell "clojure" "-M:gravity" "check" gravity)
-        qst-check (p18-t00-shell "clojure" "-M:gravity" "check" qst)
-        gravity-run (p18-t00-shell "clojure" "-M:gravity" "run" gravity)
-        qst-run (p18-t00-shell "clojure" "-M:gravity" "run" qst)
-        gravity-run-compiled (p18-t00-shell "clojure" "-M:gravity"
-                                            "run-compiled" gravity)
-        qst-run-compiled (p18-t00-shell "clojure" "-M:gravity"
-                                        "run-compiled" qst)
-        gravity-compile (p18-t00-shell "clojure" "-M:gravity" "compile"
-                                       gravity "-o" bootstrap-gravity-output)
-        qst-compile (p18-t00-shell "clojure" "-M:gravity" "compile"
-                                   qst "-o" bootstrap-qst-output)
-        gravity-compile-artifact (p18-t04-read-edn-stdout gravity-compile)
-        qst-compile-artifact (p18-t04-read-edn-stdout qst-compile)
-        gravity-exec (p18-t00-shell bootstrap-gravity-output)
-        qst-exec (p18-t00-shell bootstrap-qst-output)
-        release-gravity-check (p18-t06-shell "bin/gravity" "check" gravity)
-        release-qst-check (p18-t06-shell "bin/gravity" "check" qst)
-        release-gravity-run (p18-t06-shell "bin/gravity" "run" gravity)
-        release-qst-run (p18-t06-shell "bin/gravity" "run" qst)
-        release-gravity-compile (p18-t06-shell "bin/gravity" "compile"
-                                               gravity "-o"
-                                               release-gravity-output)
-        release-qst-compile (p18-t06-shell "bin/gravity" "compile"
-                                           qst "-o" release-qst-output)
-        release-gravity-artifact (p18-t04-read-edn-stdout
-                                  release-gravity-compile)
-        release-qst-artifact (p18-t04-read-edn-stdout release-qst-compile)
-        release-gravity-source-path
-        (p18-t00-compile-artifact-source-path release-gravity-artifact)
-        release-qst-source-path
-        (p18-t00-compile-artifact-source-path release-qst-artifact)
-        release-gravity-exec (p18-t06-shell release-gravity-output)
-        release-qst-exec (p18-t06-shell release-qst-output)
-        results [gravity-check qst-check gravity-run qst-run
-                 gravity-run-compiled qst-run-compiled gravity-compile
-                 qst-compile gravity-exec qst-exec release-gravity-check
-                 release-qst-check release-gravity-run release-qst-run
-                 release-gravity-compile release-qst-compile
-                 release-gravity-exec release-qst-exec]]
-    (p18-t00-parity/accepted-extension-record
-     {:gravity gravity
-      :qst qst
-      :expected-stdout expected-stdout
-      :bootstrap-module bootstrap-module
-      :release-module release-module}
-     {:gravity-summary gravity-summary
-      :qst-summary qst-summary
-      :gravity-check gravity-check
-      :qst-check qst-check
-      :gravity-run gravity-run
-      :qst-run qst-run
-      :gravity-run-compiled gravity-run-compiled
-      :qst-run-compiled qst-run-compiled
-      :gravity-compile gravity-compile
-      :qst-compile qst-compile
-      :gravity-compile-artifact gravity-compile-artifact
-      :qst-compile-artifact qst-compile-artifact
-      :gravity-exec gravity-exec
-      :qst-exec qst-exec
-      :release-gravity-check release-gravity-check
-      :release-qst-check release-qst-check
-      :release-gravity-run release-gravity-run
-      :release-qst-run release-qst-run
-      :release-gravity-compile release-gravity-compile
-      :release-qst-compile release-qst-compile
-      :release-gravity-source-path release-gravity-source-path
-      :release-qst-source-path release-qst-source-path
-      :release-gravity-exec release-gravity-exec
-      :release-qst-exec release-qst-exec
-      :results results})))
+  (p18-t00-orchestration/accepted-extension-record
+   {:semantic-summary p18-t00-semantic-summary
+    :bootstrap-shell p18-t00-shell
+    :release-shell p18-t06-shell
+    :read-edn-stdout p18-t04-read-edn-stdout
+    :compile-artifact-source-path p18-t00-compile-artifact-source-path}
+   {:gravity gravity
+    :qst qst
+    :expected-stdout expected-stdout
+    :bootstrap-module bootstrap-module
+    :release-module release-module
+    :bootstrap-output-prefix bootstrap-output-prefix
+    :release-output-prefix release-output-prefix}))
 
 (defn p18-t00-rejected-extension-record
   [{:keys [gravity qst expected-diagnostic output-prefix]}]
-  (let [bootstrap-gravity (p18-t00-shell "clojure" "-M:gravity"
-                                         "run-compiled" gravity)
-        bootstrap-qst (p18-t00-shell "clojure" "-M:gravity"
-                                     "run-compiled" qst)
-        release-gravity (p18-t06-shell "bin/gravity" "compile" gravity
-                                       "-o" (str output-prefix "-gravity"))
-        release-qst (p18-t06-shell "bin/gravity" "compile" qst
-                                   "-o" (str output-prefix "-qst"))]
-    (p18-t00-parity/rejected-extension-record
-     {:gravity gravity
-      :qst qst
-      :expected-diagnostic expected-diagnostic}
-     {:bootstrap-gravity bootstrap-gravity
-      :bootstrap-qst bootstrap-qst
-      :release-gravity release-gravity
-      :release-qst release-qst})))
+  (p18-t00-orchestration/rejected-extension-record
+   {:bootstrap-shell p18-t00-shell
+    :release-shell p18-t06-shell}
+   {:gravity gravity
+    :qst qst
+    :expected-diagnostic expected-diagnostic
+    :output-prefix output-prefix}))
 
 (defn p18-t00-capability-proof
   [artifact]
@@ -164502,56 +164429,26 @@
 
 (defn p18-t00-co-canonical-source-extensions-artifact!
   []
-  (p18-t06-write-final-release-artifacts!)
-  (let [accepted (mapv p18-t00-accepted-extension-record
-                       p18-t00-accepted-extension-fixtures)
-        rejected (mapv p18-t00-rejected-extension-record
-                       p18-t00-rejected-extension-fixtures)
-        artifact-base
-        {:kind :gravity/p18-t00-co-canonical-source-extensions-proof
-         :task "P18-T00"
-         :status :complete
-         :phase :binary-distribution-and-seedless-release
-         :source-extension-contract
-         {:co-canonical-extensions [".qst" ".gravity"]
-          :qst-source-kind :qst-theory-source
-          :gravity-source-kind :gravity-branded-source
-          :both-valid-indefinitely? true
-          :deprecation-warnings? false
-          :compatibility-warnings? false}
-         :accepted-extension-parity accepted
-         :rejected-extension-parity rejected
-         :governing-documents ["C2" "C15" "PKG3" "PKG10" "PKG12"
-                               "T1" "BOOT7" "BOOT8" "D9"]
-         :diagnostics []}
-        proof (p18-t00-capability-proof artifact-base)
-        artifact (assoc artifact-base
-                        :capability-based-proof proof
-                        :artifact-id
-                        (c4-artifact-id
-                         (assoc artifact-base
-                                :capability-based-proof proof)))]
-    artifact))
+  (p18-t00-orchestration/co-canonical-source-extensions-artifact!
+   {:write-final-release-artifacts! p18-t06-write-final-release-artifacts!
+    :accepted-fixtures p18-t00-accepted-extension-fixtures
+    :rejected-fixtures p18-t00-rejected-extension-fixtures
+    :accepted-extension-record p18-t00-accepted-extension-record
+    :rejected-extension-record p18-t00-rejected-extension-record
+    :capability-proof p18-t00-capability-proof
+    :artifact-id c4-artifact-id}))
 
 (defn p18-t00-write-co-canonical-source-extension-artifacts!
   []
-  (let [artifact (p18-t00-co-canonical-source-extensions-artifact!)]
-    (p18-ensure-dir! p18-t00-artifact-dir)
-    (p18-ensure-dir! (.getParent (java.io.File. p18-t00-report-path)))
-    (p18-t02-write-edn!
-     (str p18-t00-artifact-dir
-          "/p18-t00-co-canonical-source-extensions-proof.edn")
-     artifact)
-    (p18-t02-write-edn!
-     (str p18-t00-artifact-dir
-          "/p18-t00-accepted-extension-parity.edn")
-     (:accepted-extension-parity artifact))
-    (p18-t02-write-edn!
-     (str p18-t00-artifact-dir
-          "/p18-t00-rejected-extension-parity.edn")
-     (:rejected-extension-parity artifact))
-    (spit p18-t00-report-path (p18-t00-report-markdown artifact))
-    artifact))
+  (p18-t00-orchestration/write-co-canonical-source-extension-artifacts!
+   {:artifact! p18-t00-co-canonical-source-extensions-artifact!
+    :artifact-dir p18-t00-artifact-dir
+    :report-path p18-t00-report-path
+    :report-parent (.getParent (java.io.File. p18-t00-report-path))
+    :ensure-dir! p18-ensure-dir!
+    :write-edn! p18-t02-write-edn!
+    :write-report! spit
+    :report-markdown p18-t00-report-markdown}))
 
 (defn print-diagnostic!
   [exception]
