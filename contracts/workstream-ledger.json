@@ -7960,7 +7960,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4",
@@ -8005,7 +8005,8 @@
         "report-sha256:da260deb7f3803e581b1c532bac13d732e20ed91c5e7fdfd1633fd36c5161a64",
         "candidate-tree:8a49682b8f87b56f0732c275a5aab08c164aaf73",
         "author arithmetic audit:19 success purposes, 58 typed purpose dependencies, legacy controlled-path census 94, non-v16 controlled-path census 174",
-        "independent review ACCEPT by /root/architecture_attempt6_review for exact immutable candidate ecb1b7ce59b6a47d45a66ca4fd0a1a7571820517, tree 8a49682b8f87b56f0732c275a5aab08c164aaf73, report SHA-256 da260deb7f3803e581b1c532bac13d732e20ed91c5e7fdfd1633fd36c5161a64; no blockers"
+        "independent review ACCEPT by /root/architecture_attempt6_review for exact immutable candidate ecb1b7ce59b6a47d45a66ca4fd0a1a7571820517, tree 8a49682b8f87b56f0732c275a5aab08c164aaf73, report SHA-256 da260deb7f3803e581b1c532bac13d732e20ed91c5e7fdfd1633fd36c5161a64; no blockers",
+        "integration preflight PASS for accepted lifecycle HEAD 3d3e5785b9a657287c9ddc8f5dc791c491d7f2ca, tree 2243119554974a4fbbe4e1f3f5bb733564c5528b, over authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431; recommendation integrate_candidate"
       ],
       "rejected_fixtures": [
         "attempt-5 56-edge dependency catalog retained as current authority",
@@ -8038,6 +8039,21 @@
         },
         {
           "command": "git diff --check a14f10aa1d85b58bf481272a9008acf9c8f43431..ecb1b7ce59b6a47d45a66ca4fd0a1a7571820517",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check a14f10aa1d85b58bf481272a9008acf9c8f43431..3d3e5785b9a657287c9ddc8f5dc791c491d7f2ca",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base a14f10aa1d85b58bf481272a9008acf9c8f43431 --candidate-commit 3d3e5785b9a657287c9ddc8f5dc791c491d7f2ca --candidate-tree 2243119554974a4fbbe4e1f3f5bb733564c5528b",
           "exit_code": 0,
           "result": "passed"
         }
@@ -8086,9 +8102,15 @@
         "at": "2026-08-30T00:27:05Z",
         "actor": "/root/architecture_attempt6_review",
         "reason": "ACCEPT exact immutable candidate ecb1b7ce59b6a47d45a66ca4fd0a1a7571820517, tree 8a49682b8f87b56f0732c275a5aab08c164aaf73, report SHA-256 da260deb7f3803e581b1c532bac13d732e20ed91c5e7fdfd1633fd36c5161a64 with no blockers after independent review of the contradiction, exact two-edge correction to 58, unchanged purpose/path/schema contracts, mutations, governance, preserved attempt-5 obligations, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-30T00:28:26Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "exact accepted lifecycle HEAD 3d3e5785b9a657287c9ddc8f5dc791c491d7f2ca, tree 2243119554974a4fbbe4e1f3f5bb733564c5528b passed documentation, full-language roadmap, governance, SH-01 language-boundary, diff-hygiene, and exact integration preflight against authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431; integration-only architecture authority remains bounded to this lineage"
       }
     ],
-    "disposition": "ACCEPTED by independent reviewer /root/architecture_attempt6_review for the exact immutable attempt-6 report tuple with no blockers. Acceptance is architecture-only and does not itself confer integration eligibility, establish G6, or grant implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
+    "disposition": "INTEGRATION ELIGIBLE for the exact independently accepted attempt-6 architecture lineage over authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431. This grants authority only to request integration of the architecture lifecycle; main is not modified, G6 is not yet established, and no implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
