@@ -8568,6 +8568,128 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/attempt7_exact_review for the exact immutable Attempt-9 report tuple after correction and explicit withdrawal of an initial acceptance. A successor must remove catalog-only unreachable reasons from source-semantic pending authority or add genuine authenticated producer predicates and feasible fixtures. No implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-10",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 10",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-10.md",
+    "base_commit": "16d0fb7aa3220ad8b572b0df832dfe4817047b62",
+    "candidate_commit": "3d780692e8023274c415a351b393ea8e1f9a796e",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-10.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-6",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-7",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-8",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-9",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-10.md",
+        "report-sha256:9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9",
+        "candidate-tree:144cafd0f8833e35de52e29ea2f596376045ad72",
+        "author reachable-reason audit:exactly eight Root1 pending reasons across four families with exactly two V18 resource reasons",
+        "author unreachable-mapping audit:malformed-authenticated-pattern-shape and ambiguous-recur-target retain catalog mappings but have zero producer emission and boundary-only injection handling",
+        "author preserved architecture audit:reader-canonical-hash migration, Roots4-7 byte replay, Root6 disjointness, Root4/5 authority split, later-root pending unreachability, unary one-Root1 Root8, exact six-key ABI, and protocol counts",
+        "author no-form evidence rule:require an authentic supported no-form negative composition when reachable, otherwise record exact governing infeasibility without fabrication"
+      ],
+      "rejected_fixtures": [
+        "Attempt-9 catalog-only malformed-authenticated-pattern-shape granted pending authority or required a positive fixture",
+        "Attempt-9 catalog-only ambiguous-recur-target granted pending authority despite unique nearest-target ancestry or required a positive fixture",
+        "producer predicate added solely to manufacture either unreachable catalog mapping",
+        "injected or transported catalog-only mapping accepted as pending instead of Root1 source-integrity-mismatch boundary",
+        "Root8 finalizes either catalog-only mapping",
+        "Root1 pending whitelist count differs from eight reasons, four families, or two V18 resources",
+        "non-whitelisted Root1 integrity, producer, template-authentication, or success-plan failure returned as pending",
+        "Root2, Root4, Root5, Root6, or Root7 constructs pending, pending envelope, failure request, or old pending tag",
+        "Root4 claims raw-carrier provenance for a separately valid self-consistent tuple",
+        "Root8 calls any root other than Root1, calls Root1 twice, runs success digest replay, selects a detector, or recurses",
+        "C11 hashing retained for B51, generic hash authority added, Root6 disjointness weakened, or a supplied digest accepted without exact replay",
+        "purpose, edge, path, ABI, implementation, test, fixture, proof-contract, or pin drift outside this architecture draft"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
+      "the host may compute reader-canonical-hash for transport and parity but no host digest, receipt, pending envelope, or replay map is B51 semantic authority",
+      "Attempt 10 requires fresh independent exact review and integration before corrected architecture baseline G10 exists",
+      "the existing atomic implementation worktree is outside this candidate and receives no source, test, fixture, pin, acceptance, or integration authority",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-30T09:33:40Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only report candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, and report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9 after narrowing Root1 pending authority to eight authentically producer-reachable reasons, classifying two catalog-only mappings as zero-emission boundary-only values, and preserving all other accepted Attempt-9 corrections; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only successor to terminally rejected Attempt 9. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
