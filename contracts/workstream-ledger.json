@@ -8124,7 +8124,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8178,7 +8178,10 @@
         "generic hash, SHA, reflection, Java interop, dynamic resolve, or host callback admitted",
         "Root 6 calls Roots 1 through 5 or producer request, preimage, digest, or materialization helpers",
         "Root 8 accepts a changed diagnostic digest or recursively invokes the diagnostic protocol",
-        "public ABI, schema, purpose, dependency-edge, or controlled-path count changed"
+        "public ABI, schema, purpose, dependency-edge, or controlled-path count changed",
+        "coordinated Root 8 pending-envelope and matching digest substitution accepted without an independent authenticated semantic anchor",
+        "authority-only precedence silently changes sha256-of-C11-pr-str-hash-input to the observably different reader-canonical-hash algorithm",
+        "validation receipt records git diff --check success for a tuple that reports a trailing blank line at EOF"
       ],
       "stable_diagnostics": [
         "WG008",
@@ -8207,7 +8210,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt7_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, and observer",
       "attempt 7 authorizes only one pinned pure declared-digest builtin equal to existing reader-canonical-hash and grants no generic host or cryptographic authority",
@@ -8238,9 +8247,15 @@
         "at": "2026-08-30T08:42:06Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent exact review of the immutable attempt-7 tuple, reproduced digest-authority contradiction, exact unary reader-canonical-hash builtin semantics, unchanged public ABIs and 19/58/94/174 protocol counts, Roots 4 through 8 byte replay, Root 6 disjointness, Root 8 nonrecursion, parity and mutation obligations, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-30T08:51:37Z",
+        "actor": "/root/attempt7_exact_review",
+        "reason": "REJECT exact immutable candidate 314d08ce9c1e5c4cfbe5dc7385568416359a89be, tree 3f41dc0673352ebb403108da8cdb8c450a1d09c5, report SHA-256 a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf: the fixed two-argument Root 8 ABI cannot distinguish an authentic pending/digest pair from a coordinated substituted pair without an independent semantic anchor; the narrow precedence silently equates observably different C11 and reader-canonical-hash algorithms; and the recorded exact diff-check receipt is false because the report has a trailing blank line at EOF"
       }
     ],
-    "disposition": "REVIEW PENDING for the exact immutable attempt-7 report tuple. Only an independent accepted review may advance it; no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt7_exact_review for the exact immutable attempt-7 report tuple. A successor must provide Root 8 an independent authenticated semantic anchor, explicitly govern the declared algorithm correction, and carry only reproduced validation receipts. No implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
