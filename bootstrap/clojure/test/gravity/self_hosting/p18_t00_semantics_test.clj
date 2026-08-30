@@ -2,7 +2,8 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.p18.t00.parity :as parity]
-            [gravity.p18.t00.semantics :as semantics]))
+            [gravity.p18.t00.semantics :as semantics]
+            [gravity.p18.t04.semantics :as t04-semantics]))
 
 (def fixture
   {:gravity "module.gravity"
@@ -180,3 +181,37 @@
                      'gravity.p18.t00.parity]]
     (is (not-any? #{'gravity.bootstrap}
                   (map ns-name (vals (ns-aliases namespace)))))))
+
+(deftest p18-t04-completeness-and-proof-wrappers-match-pure-leaf
+  (let [p15 {:status :complete
+             :artifact-id "sha256:p15"
+             :full-language-compiler-self-hosted? true
+             :clojure-seed-retired? true
+             :clojure-seed-boundary? false}
+        p18 {:status :complete
+             :artifact-id "sha256:p18"
+             :final-release? true
+             :seedless-release? true
+             :clojure-seed-boundary? false
+             :capability-based-proof {:clojure-seed-boundary? false}}
+        artifact {:status :complete
+                  :compiler-source {:path "compiler.gravity"
+                                    :extension ".gravity"
+                                    :deprecation-warning? false}
+                  :p15-final-seed-retirement-proof p15
+                  :p18-final-release-proof p18
+                  :diagnostics []}
+        context {:artifact artifact
+                 :complete? true
+                 :source-path "compiler.gravity"
+                 :source-extension (constantly ".gravity")
+                 :p15-final-proof p15
+                 :p18-final-proof p18
+                 :diagnostics []}]
+    (is (true? (t04-semantics/complete? p15 p18)))
+    (is (= (t04-semantics/complete? p15 p18)
+           (bootstrap/p18-t04-self-host-verify-complete? p15 p18)))
+    (with-redefs [bootstrap/p15-s23-compiler-source-path "compiler.gravity"
+                  bootstrap/gravity-source-extension (constantly ".gravity")]
+      (is (= (t04-semantics/proof context)
+             (bootstrap/p18-t04-public-self-host-verify-proof artifact))))))

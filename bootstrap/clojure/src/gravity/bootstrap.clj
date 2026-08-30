@@ -50,6 +50,7 @@
             [gravity.optimization-lowering :as optimization-lowering]
             [gravity.p18.t00.orchestration :as p18-t00-orchestration]
             [gravity.p18.t00.semantics :as p18-t00-semantics]
+            [gravity.p18.t04.semantics :as p18-t04-semantics]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -164186,64 +164187,27 @@
 
 (defn p18-t04-self-host-verify-compiler-source
   []
-  {:path p15-s23-compiler-source-path
-   :extension (gravity-source-extension p15-s23-compiler-source-path)
-   :source-kind (gravity-source-kind p15-s23-compiler-source-path)
-   :exists? (.isFile (java.io.File. p15-s23-compiler-source-path))
-   :co-canonical-source-extensions (vec (sort co-canonical-source-extensions))
-   :deprecation-warning? false
-   :legacy-alias? false})
+  (p18-t04-semantics/compiler-source
+   {:source-path p15-s23-compiler-source-path
+    :source-extension gravity-source-extension
+    :source-kind gravity-source-kind
+    :source-exists? #(.isFile (java.io.File. %))
+    :source-extensions co-canonical-source-extensions}))
 
 (defn p18-t04-self-host-verify-complete?
   [p15-final-proof p18-final-proof]
-  (and (= :complete (:status p15-final-proof))
-       (true? (:full-language-compiler-self-hosted? p15-final-proof))
-       (true? (:clojure-seed-retired? p15-final-proof))
-       (false? (:clojure-seed-boundary? p15-final-proof))
-       (= :complete (:status p18-final-proof))
-       (true? (:final-release? p18-final-proof))
-       (true? (:seedless-release? p18-final-proof))
-       (false? (:clojure-seed-boundary? p18-final-proof))
-       (false? (get-in p18-final-proof
-                       [:capability-based-proof
-                        :clojure-seed-boundary?]))))
+  (p18-t04-semantics/complete? p15-final-proof p18-final-proof))
 
 (defn p18-t04-public-self-host-verify-proof
   [artifact]
-  (let [diagnostics (set (map :diagnostic (:diagnostics artifact)))
-        p15 (:p15-final-seed-retirement-proof artifact)
-        p18 (:p18-final-release-proof artifact)
-        complete? (= :complete (:status artifact))]
-    {:task "P18-T04"
-     :status (:status artifact)
-     :public-self-host-verify-command-present? true
-     :final-self-host-verification? complete?
-     :p15-final-seed-retirement-proof-linked?
-     (boolean (:artifact-id p15))
-     :p18-final-release-proof-linked?
-     (boolean (:artifact-id p18))
-     :full-language-compiler-self-hosted?
-     (true? (:full-language-compiler-self-hosted? p15))
-     :clojure-seed-retired?
-     (true? (:clojure-seed-retired? p15))
-     :clojure-seed-boundary?
-     (or (true? (:clojure-seed-boundary? p15))
-         (true? (:clojure-seed-boundary? p18)))
-     :fails-closed-while-seed-boundary-active?
-     (if complete? false (contains? diagnostics "P18T04007"))
-     :source-path-preserved?
-     (= p15-s23-compiler-source-path
-        (get-in artifact [:compiler-source :path]))
-     :source-extension-preserved?
-     (= (gravity-source-extension p15-s23-compiler-source-path)
-        (get-in artifact [:compiler-source :extension]))
-     :no-extension-deprecation-warning?
-     (false? (get-in artifact [:compiler-source :deprecation-warning?]))
-     :bootstrap-hosted? true
-     :full-language-conformance? false
-     :self-hosted-conformance-runner? false
-     :next-required-capability
-     (if complete? :none :self_hosted_public_binary_final_verification)}))
+  (p18-t04-semantics/proof
+   {:artifact artifact
+    :complete? (= :complete (:status artifact))
+    :source-path p15-s23-compiler-source-path
+    :source-extension gravity-source-extension
+    :p15-final-proof (:p15-final-seed-retirement-proof artifact)
+    :p18-final-proof (:p18-final-release-proof artifact)
+    :diagnostics (:diagnostics artifact)}))
 
 (defn p18-t04-public-self-host-verify-command-artifact!
   []

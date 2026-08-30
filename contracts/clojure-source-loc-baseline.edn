@@ -3,7 +3,7 @@
  :source-roots ["bootstrap/clojure/src"]
  :extensions [".clj" ".cljc"]
  :oversized-files
- {"bootstrap/clojure/src/gravity/bootstrap.clj" 164481
+ {"bootstrap/clojure/src/gravity/bootstrap.clj" 164445
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" 864
   "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj" 377
   "bootstrap/clojure/src/gravity/c16_incremental.clj" 608
