@@ -8117,6 +8117,78 @@
       }
     ],
     "disposition": "INTEGRATED lifecycle record for the exact independently accepted attempt-6 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431 after exact admission and, upon that verified fast-forward, establishes corrected architecture-only baseline G6 for the governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-7",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 7",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-7.md",
+    "base_commit": "2062fe0cc4d2b0ebefed0bdc7109391ab011b05f",
+    "candidate_commit": null,
+    "clean_worktree": false,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-7.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [],
+      "rejected_fixtures": [],
+      "stable_diagnostics": [],
+      "validation_commands": []
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, and observer",
+      "attempt 7 authorizes only one pinned pure declared-digest builtin equal to existing reader-canonical-hash and grants no generic host or cryptographic authority",
+      "the existing atomic implementation worktree is outside this architecture candidate and receives no acceptance, integration, pin-update, or source-edit authority",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-30T08:36:03Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "author an architecture-only successor to integrated attempt 6 that narrowly resolves the host-only digest contradiction by authorizing one pinned Stage2 declared-digest builtin, preserving all eight public ABIs and every schema, purpose, edge, and path count"
+      }
+    ],
+    "disposition": "DRAFT architecture-only hash-authority correction. Independent review, lifecycle advancement, implementation edits, pin updates, integration, and all product or self-hosting claims remain unauthorized."
   }
 ]
 }
