@@ -8914,7 +8914,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -8974,6 +8974,7 @@
         "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
       ],
       "rejected_fixtures": [
+        "independent review REJECT: Attempt12 claims duplicate priority is preserved but changes the passed frozen Attempt11 row from [earlier, later] to [later, earlier], an unauthorized second normative change outside its recur-related-id scope",
         "missing-recur-target related semantic id is absent, nil, selected target id, recur form or syntax id, enclosing id, owner core id, another root id, scalar, empty vector, or multi-id vector",
         "recur-arity-mismatch related semantic id is absent, nil, owner root id, recur form id, enclosing id, owner core id, another or parent target id, scalar, empty vector, or multi-id vector",
         "recur-not-tail related semantic id is absent, nil, owner root id, recur form id, enclosing id, owner core id, another or parent target id, scalar, empty vector, or multi-id vector",
@@ -9026,7 +9027,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt11_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
       "the host may compute reader-canonical-hash for transport and parity but no host digest, success id, related semantic id, pending envelope, owner selector, target selector, or replay map is B51 semantic authority",
@@ -9058,9 +9065,15 @@
         "at": "2026-08-30T23:42:18Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review of immutable Attempt-12 candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84: closed missing/arity/non-tail related-id mapping, greatest-depth nearest selection, combined arity-before-tail priority, passed Attempt-11 duplicate/recur-owner corrections, preserved G10 topology, feasible evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-30T23:46:53Z",
+        "actor": "/root/attempt11_exact_review",
+        "reason": "REJECT exact immutable candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84: the report claims to supersede only recur related-id mapping and preserve duplicate priority, but changes the passed frozen Attempt11 duplicate row from [earlier, later] to [later, earlier]; later-first may be defensible only through an explicit separately governed correction, not a preservation claim"
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only Attempt-12 record for exact immutable report candidate b9f025965baf786af80701defde036e9bae1b4ca over terminal Attempt-11 main 0326fe6b6d234746a123366b442ffe3f8468f171. Fresh independent exact acceptance is required. No acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84. The recur mapping fully closed Attempt11's blocker, but the candidate made an unauthorized duplicate-priority change while claiming preservation. A successor must restore exact frozen [earlier, later] priority or explicitly govern a justified change. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
