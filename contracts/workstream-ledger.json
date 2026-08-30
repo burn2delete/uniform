@@ -8575,7 +8575,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8625,7 +8625,8 @@
         "author unreachable-mapping audit:malformed-authenticated-pattern-shape and ambiguous-recur-target retain catalog mappings but have zero producer emission and boundary-only injection handling",
         "author preserved architecture audit:reader-canonical-hash migration, Roots4-7 byte replay, Root6 disjointness, Root4/5 authority split, later-root pending unreachability, unary one-Root1 Root8, exact six-key ABI, and protocol counts",
         "author no-form evidence rule:require an authentic supported no-form negative composition when reachable, otherwise record exact governing infeasibility without fabrication",
-        "independent review ACCEPT by /root/attempt7_exact_review for exact immutable candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9; all 15 criteria pass with no blockers"
+        "independent review ACCEPT by /root/attempt7_exact_review for exact immutable candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9; all 15 criteria pass with no blockers",
+        "integration preflight PASS for accepted lifecycle HEAD 2e8455f57e63624023635b31791a02b4700de47a, tree 49f7a868c52b69e0208ca660b7ab5dea3861e8bf, over authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62; recommendation integrate_candidate"
       ],
       "rejected_fixtures": [
         "Attempt-9 catalog-only malformed-authenticated-pattern-shape granted pending authority or required a positive fixture",
@@ -8668,6 +8669,21 @@
         },
         {
           "command": "git diff --check 16d0fb7aa3220ad8b572b0df832dfe4817047b62..3d780692e8023274c415a351b393ea8e1f9a796e",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 16d0fb7aa3220ad8b572b0df832dfe4817047b62..2e8455f57e63624023635b31791a02b4700de47a",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 16d0fb7aa3220ad8b572b0df832dfe4817047b62 --candidate-commit 2e8455f57e63624023635b31791a02b4700de47a --candidate-tree 49f7a868c52b69e0208ca660b7ab5dea3861e8bf",
           "exit_code": 0,
           "result": "passed"
         }
@@ -8717,9 +8733,15 @@
         "at": "2026-08-30T22:28:53Z",
         "actor": "/root/attempt7_exact_review",
         "reason": "ACCEPT exact immutable candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9 with no blockers after independent verification of all eight producer emissions, both zero-emission catalog mappings, feasible resource/no-form evidence rules, later-root unreachability, Root4/5 authority, digest migration/replay, Root6 disjointness, unary Root8, exact ABI/counts, validation receipts, and EOF hygiene"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-30T22:29:55Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "exact accepted lifecycle HEAD 2e8455f57e63624023635b31791a02b4700de47a, tree 49f7a868c52b69e0208ca660b7ab5dea3861e8bf passed documentation, roadmap, governance, SH-01 language-boundary, diff-hygiene, and exact integration preflight against authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62; integration-only architecture authority remains bounded to this lineage"
       }
     ],
-    "disposition": "ACCEPTED by independent reviewer /root/attempt7_exact_review for the exact immutable Attempt-10 report tuple with no blockers. Acceptance is architecture-only and does not itself confer integration eligibility, establish G10, or grant implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
+    "disposition": "INTEGRATION ELIGIBLE for the exact independently accepted Attempt-10 architecture lineage over authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62. This grants authority only to integrate the architecture lifecycle; main is not yet modified, G10 is not established, and no implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
