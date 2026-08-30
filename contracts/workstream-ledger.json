@@ -8273,7 +8273,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8392,9 +8392,15 @@
         "at": "2026-08-30T09:07:46Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "freeze authoritative main base 9dc682fba5753b52815fc856f980b09f5b27a543 and immutable architecture-only report candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f after independently reproducing documentation, roadmap, governance, and exact range diff-hygiene passes"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-30T09:08:17Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "request fresh independent exact review of the immutable attempt-8 tuple, explicit B51 algorithm migration, unary authenticated-raw Root8 canonical replay, exact Roots1/2/4/5/6/7 boundary alternatives, Root6 disjointness, unchanged 19/58/94/174 success protocol, parity and mutation obligations, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only successor to terminally rejected attempt 7 for exact report candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f. It is not review-pending or accepted and confers no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
+    "disposition": "REVIEW PENDING for the exact immutable attempt-8 report tuple. Only a fresh independent accepted review may advance it; no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
