@@ -8914,7 +8914,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -9046,9 +9046,15 @@
         "at": "2026-08-30T23:39:51Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only report candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, and report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84 after preserving all passed Attempt-11 corrections; closing reachable recur related ids to missing->owner-root, arity->selected-target, and non-tail->selected-target; scoping nearest selection to greatest depth with shallower ancestors allowed; and making combined arity-before-tail evidence mandatory; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-30T23:41:40Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "freeze authoritative main base 0326fe6b6d234746a123366b442ffe3f8468f171 and immutable architecture-only report candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84 after pre-freeze semantic PASS and independent documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only Attempt-12 record for exact immutable report candidate b9f025965baf786af80701defde036e9bae1b4ca over terminal Attempt-11 main 0326fe6b6d234746a123366b442ffe3f8468f171. It closes the sole Attempt-11 blocker with mandatory reason-dispatched one-id recur evidence, exact greatest-depth selection, and combined arity-before-tail priority while preserving every passed correction and all G10 topology. No freeze, review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "FROZEN architecture-only Attempt-12 record for exact immutable report candidate b9f025965baf786af80701defde036e9bae1b4ca over terminal Attempt-11 main 0326fe6b6d234746a123366b442ffe3f8468f171. It closes the sole Attempt-11 blocker with mandatory reason-dispatched one-id recur evidence, exact greatest-depth selection, and combined arity-before-tail priority while preserving every passed correction and all G10 topology. No review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
