@@ -8273,7 +8273,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8348,6 +8348,21 @@
           "command": "git diff --check",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 9dc682fba5753b52815fc856f980b09f5b27a543..039b0ffd519aa9fe8b5c042769072649c95a933c",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -8371,9 +8386,15 @@
         "at": "2026-08-30T09:01:14Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register architecture-only attempt 8 as draft; the initial unfrozen report tuple was candidate bca0fd081bad00a2890cb6b50c1d849f0563a9b4, tree f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29, report SHA-256 ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5, and before freeze it was honestly replaced by exact candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f after enumerating every Roots1/2/4/5/6/7 and unary Root8 public boundary as an exact six-key ABI envelope; no freeze or review is requested by this sole draft lifecycle event"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-30T09:07:46Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "freeze authoritative main base 9dc682fba5753b52815fc856f980b09f5b27a543 and immutable architecture-only report candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f after independently reproducing documentation, roadmap, governance, and exact range diff-hygiene passes"
       }
     ],
-    "disposition": "DRAFT architecture-only successor to terminally rejected attempt 7. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "FROZEN architecture-only successor to terminally rejected attempt 7 for exact report candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f. It is not review-pending or accepted and confers no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
   }
 ]
 }
