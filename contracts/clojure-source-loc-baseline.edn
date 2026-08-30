@@ -5,7 +5,6 @@
  :oversized-files
  {"bootstrap/clojure/src/gravity/bootstrap.clj" 164445
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" 864
-  "bootstrap/clojure/src/gravity/c16_incremental.clj" 608
   "bootstrap/clojure/src/gravity/c17_c18_pass_cache.clj" 417
   "bootstrap/clojure/src/gravity/c17_plugin.clj" 719
   "bootstrap/clojure/src/gravity/c18_verification.clj" 769
