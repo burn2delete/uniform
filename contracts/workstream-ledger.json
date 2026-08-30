@@ -8124,7 +8124,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8232,9 +8232,15 @@
         "at": "2026-08-30T08:41:24Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "freeze authoritative main base 2062fe0cc4d2b0ebefed0bdc7109391ab011b05f and immutable architecture-only report candidate 314d08ce9c1e5c4cfbe5dc7385568416359a89be, tree 3f41dc0673352ebb403108da8cdb8c450a1d09c5, report SHA-256 a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-30T08:42:06Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "request fresh independent exact review of the immutable attempt-7 tuple, reproduced digest-authority contradiction, exact unary reader-canonical-hash builtin semantics, unchanged public ABIs and 19/58/94/174 protocol counts, Roots 4 through 8 byte replay, Root 6 disjointness, Root 8 nonrecursion, parity and mutation obligations, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only hash-authority correction for exact report candidate 314d08ce9c1e5c4cfbe5dc7385568416359a89be, tree 3f41dc0673352ebb403108da8cdb8c450a1d09c5, report SHA-256 a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf. It is not review-pending or accepted and confers no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
+    "disposition": "REVIEW PENDING for the exact immutable attempt-7 report tuple. Only an independent accepted review may advance it; no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
