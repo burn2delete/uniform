@@ -8575,7 +8575,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8739,9 +8739,15 @@
         "at": "2026-08-30T22:29:55Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "exact accepted lifecycle HEAD 2e8455f57e63624023635b31791a02b4700de47a, tree 49f7a868c52b69e0208ca660b7ab5dea3861e8bf passed documentation, roadmap, governance, SH-01 language-boundary, diff-hygiene, and exact integration preflight against authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62; integration-only architecture authority remains bounded to this lineage"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-30T22:31:02Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "admit exact integration-eligible architecture commit b63702f79e2e1b98fd8f1ecb782966028f6e0a8c, tree b250858c7ddc03abfede60c5310f42cc0a71b33c for verified fast-forward onto clean authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62, tree 9f2cf6417a2bd1fcaba9c66958dff61b85dd41a0; upon that fast-forward this architecture-only lifecycle establishes corrected implementation baseline G10 and grants no implementation acceptance or aggregate SH-07 completion authority"
       }
     ],
-    "disposition": "INTEGRATION ELIGIBLE for the exact independently accepted Attempt-10 architecture lineage over authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62. This grants authority only to integrate the architecture lifecycle; main is not yet modified, G10 is not established, and no implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is granted."
+    "disposition": "INTEGRATED lifecycle record for the exact independently accepted Attempt-10 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main 16d0fb7aa3220ad8b572b0df832dfe4817047b62 after exact admission and, upon that verified fast-forward, establishes corrected architecture-only baseline G10 for the governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
