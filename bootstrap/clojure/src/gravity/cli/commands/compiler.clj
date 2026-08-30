@@ -1,0 +1,57 @@
+(ns gravity.cli.commands.compiler
+  "Bootstrap compiler command names and their owning operations.")
+
+(def commands
+  {"read" 'compiler-c2-reader-file-artifact
+   "module" 'module-file-artifact
+   "macro" 'macro-file-artifact
+   "core" 'core-file-artifact
+   "typed" 'typed-file-artifact
+   "safety" 'safety-file-artifact
+   "memory-safety" 'memory-safety-file-artifact
+   "unsafe-audit" 'unsafe-audit-file-artifact
+   "boundary-safety" 'boundary-safety-file-artifact
+   "capability-supply-chain" 'capability-supply-chain-file-artifact
+   "safety-conformance" 'safety-conformance-file-artifact
+   "profile-manifest" 'profile-manifest-file-artifact
+   "profile-set" 'profile-set-file-artifact
+   "profile-validation" 'profile-validation-file-artifact
+   "profile-distributed-ai" 'profile-distributed-ai-file-artifact
+   "profile-compatibility" 'profile-compatibility-file-artifact
+   "profile-compliance" 'profile-compliance-file-artifact
+   "performance" 'performance-file-artifact
+   "zero-cost" 'zero-cost-file-artifact
+   "specialization" 'specialization-file-artifact
+   "layout" 'layout-file-artifact
+   "performance-governance" 'performance-governance-file-artifact
+   "realtime-governance" 'realtime-governance-file-artifact
+   "numeric-modes" 'numeric-mode-file-artifact
+   "efir" 'efir-file-artifact
+   "eml" 'eml-file-artifact
+   "approximation" 'approximation-file-artifact
+   "math-proof" 'math-proof-file-artifact
+   "math-conformance" 'math-conformance-file-artifact
+   "compiler-passes" 'compiler-pass-file-artifact
+   "checked-core" 'checked-core-file-artifact
+   "mir" 'mir-file-artifact
+   "domain-ir" 'domain-ir-file-artifact
+   "optimize-lower" 'optimization-lowering-file-artifact
+   "compiler-verify" 'compiler-verification-file-artifact
+   "compiler-c1-architecture" 'compiler-c1-architecture-file-artifact
+   "compiler-c2-reader" 'compiler-c2-reader-file-artifact
+   "compiler-c3-syntax" 'compiler-c3-syntax-file-artifact
+   "compiler-c4-macro" 'compiler-c4-macro-file-artifact
+   "compiler-c5-resolution" 'compiler-c5-resolution-file-artifact
+   "compiler-c6-lowering" 'compiler-c6-lowering-file-artifact
+   "compiler-c7-type-check" 'compiler-c7-type-file-artifact
+   "compiler-c8-effect-check" 'compiler-c8-effect-file-artifact
+   "compiler-c9-ownership-check" 'compiler-c9-ownership-file-artifact
+   "compiler-c10-safety-analysis" 'compiler-c10-safety-file-artifact
+   "compiler-c11-mir-spec" 'compiler-c11-mir-file-artifact
+   "compiler-c12-domain-ir" 'compiler-c12-domain-ir-file-artifact
+   "compiler-c13-optimization" 'compiler-c13-optimization-file-artifact
+   "compiler-c14-lowering" 'compiler-c14-lowering-file-artifact
+   "compiler-c15-diagnostics" 'compiler-c15-diagnostics-file-artifact
+   "compiler-c16-incremental" 'compiler-c16-incremental-file-artifact
+   "compiler-c17-plugin" 'compiler-c17-plugin-file-artifact
+   "compiler-c18-verification" 'compiler-c18-verification-file-artifact})

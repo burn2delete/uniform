@@ -3,7 +3,7 @@
  :source-roots ["bootstrap/clojure/src"]
  :extensions [".clj" ".cljc"]
  :oversized-files
- {"bootstrap/clojure/src/gravity/bootstrap.clj" 165159
+ {"bootstrap/clojure/src/gravity/bootstrap.clj" 164736
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" 940
   "bootstrap/clojure/src/gravity/c11_mir.clj" 693
   "bootstrap/clojure/src/gravity/c13_optimization.clj" 448

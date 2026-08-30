@@ -1,7 +1,10 @@
 (ns gravity.cli-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
+            [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.cli :as cli]))
+            [gravity.cli :as cli]
+            [gravity.cli.diagnostic-presentation :as diagnostic-presentation]))
 
 (defn- expected-version-record
   [packaged?]
@@ -124,3 +127,26 @@
     (is (false? (:full-t1-command-surface? contract)))
     (is (false? (:seedless-release? contract)))
     (is (false? (:self-hosted? contract)))))
+
+(deftest diagnostic-presentation-is-sanitized-and-bootstrap-free
+  (let [writer (java.io.StringWriter.)
+        exception (ex-info "hidden host detail"
+                           {:id "C15-TEST"
+                            :severity :error
+                            :cause-message "stable"
+                            :secret "must-not-render"})]
+    (binding [*err* writer]
+      (diagnostic-presentation/print-diagnostic!
+       (fn [_] {:facts {:authenticated true}})
+       exception))
+    (let [rendered (str writer)
+          projection (edn/read-string (str/trim rendered))]
+      (is (= "C15-TEST" (:id projection)))
+      (is (= :error (:severity projection)))
+      (is (= "stable" (:cause-message projection)))
+      (is (= {:authenticated true} (:facts projection)))
+      (is (not (str/includes? rendered "must-not-render")))))
+  (doseq [namespace ['gravity.cli.diagnostic-presentation
+                     'gravity.cli.dispatch]]
+    (is (not-any? #{'gravity.bootstrap}
+                  (map ns-name (vals (ns-aliases namespace)))))))
