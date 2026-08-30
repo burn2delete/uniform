@@ -8755,7 +8755,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -8879,9 +8879,15 @@
         "at": "2026-08-30T23:20:26Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only report candidate a29469c84e15ae3a55d2606421364c020c19571f, tree 20433cc260cc6baa466a5667bcc06445155eca49, and report SHA-256 11c95a69638c7212832e07b1de8fa0ff163a8da8cdec87e0e1069397e60111f6 after replacing the infeasible duplicate extraction coordinate with the authenticated earlier-occurrence pattern-preflight coordinate, forbidding partial or fabricated success ids, making recur source ownership exact and target-independent, and preserving every other G10 rule; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-30T23:22:30Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "freeze authoritative main base ab516b370fa49b9cbfe7b2dcda6e696c0f8f624d and immutable architecture-only report candidate a29469c84e15ae3a55d2606421364c020c19571f, tree 20433cc260cc6baa466a5667bcc06445155eca49, report SHA-256 11c95a69638c7212832e07b1de8fa0ff163a8da8cdec87e0e1069397e60111f6 after independently reproducing documentation, roadmap, governance, language-boundary, exact range diff, ASCII, JSON, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only Attempt-11 record for exact immutable report candidate a29469c84e15ae3a55d2606421364c020c19571f over integrated Attempt-10 main ab516b370fa49b9cbfe7b2dcda6e696c0f8f624d. It resolves the duplicate pre-resolution coordinate contradiction and exact recur source-owner selector only. No freeze, review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "FROZEN architecture-only Attempt-11 record for exact immutable report candidate a29469c84e15ae3a55d2606421364c020c19571f over integrated Attempt-10 main ab516b370fa49b9cbfe7b2dcda6e696c0f8f624d. It resolves the duplicate pre-resolution coordinate contradiction and exact recur source-owner selector only. No review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
