@@ -6,7 +6,6 @@
  {"bootstrap/clojure/src/gravity/bootstrap.clj" 165159
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" 940
   "bootstrap/clojure/src/gravity/c11_mir.clj" 693
-  "bootstrap/clojure/src/gravity/c12_domain_ir.clj" 341
   "bootstrap/clojure/src/gravity/c13_optimization.clj" 448
   "bootstrap/clojure/src/gravity/c14_lowering.clj" 495
   "bootstrap/clojure/src/gravity/c15_c16_pass_cache.clj" 403
