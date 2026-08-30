@@ -7960,7 +7960,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-c6-authoritative-source-admission-attempt-3",
       "sh07-b51-vector-destructuring-architecture-v17-attempt-4",
@@ -8108,9 +8108,15 @@
         "at": "2026-08-30T00:28:26Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "exact accepted lifecycle HEAD 3d3e5785b9a657287c9ddc8f5dc791c491d7f2ca, tree 2243119554974a4fbbe4e1f3f5bb733564c5528b passed documentation, full-language roadmap, governance, SH-01 language-boundary, diff-hygiene, and exact integration preflight against authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431; integration-only architecture authority remains bounded to this lineage"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-30T00:32:15Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "admit exact integration-eligible architecture commit c15c5d50987c0593eca636dcc400f72fee38cdca, tree 1dc980fe65ebe51e82b87afbe953d22862b423e8 for verified fast-forward onto clean authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431, tree c49ed37845ce06c3e2bdec0eaeea9d8165309fd4; upon that fast-forward this architecture-only lifecycle establishes corrected implementation baseline G6 and grants no implementation or aggregate SH-07 completion authority"
       }
     ],
-    "disposition": "INTEGRATION ELIGIBLE for the exact independently accepted attempt-6 architecture lineage over authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431. This grants authority only to request integration of the architecture lifecycle; main is not modified, G6 is not yet established, and no implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is granted."
+    "disposition": "INTEGRATED lifecycle record for the exact independently accepted attempt-6 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main a14f10aa1d85b58bf481272a9008acf9c8f43431 after exact admission and, upon that verified fast-forward, establishes corrected architecture-only baseline G6 for the governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
