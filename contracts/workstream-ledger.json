@@ -8124,14 +8124,14 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-7.md",
     "base_commit": "2062fe0cc4d2b0ebefed0bdc7109391ab011b05f",
-    "candidate_commit": null,
-    "clean_worktree": false,
+    "candidate_commit": "314d08ce9c1e5c4cfbe5dc7385568416359a89be",
+    "clean_worktree": true,
     "owned_paths": [
       "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-7.md"
     ],
@@ -8162,10 +8162,50 @@
       "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
     ],
     "evidence": {
-      "accepted_fixtures": [],
-      "rejected_fixtures": [],
-      "stable_diagnostics": [],
-      "validation_commands": []
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-6",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-7.md",
+        "report-sha256:a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf",
+        "candidate-tree:3f41dc0673352ebb403108da8cdb8c450a1d09c5",
+        "author compatibility audit:8 public roots and fixed schema 18 ABIs, 19 success purposes, 58 typed purpose dependencies, legacy controlled-path census 94, non-v16 controlled-path census 174",
+        "author authority audit:one unary pure capability-free sh07-declared-digest-hash builtin exactly equal to reader-canonical-hash, with Roots 4 through 8 required to reconstruct and byte-compare exact admitted hash inputs"
+      ],
+      "rejected_fixtures": [
+        "well-shaped arbitrary SHA digest accepted by Roots 4 through 8",
+        "reversed or same-shaped swapped resolved digest vector accepted",
+        "coordinated Tier-3 through Tier-6 identity and transported digest substitution accepted",
+        "plain forgeable receipt map treated as digest authority",
+        "generic hash, SHA, reflection, Java interop, dynamic resolve, or host callback admitted",
+        "Root 6 calls Roots 1 through 5 or producer request, preimage, digest, or materialization helpers",
+        "Root 8 accepts a changed diagnostic digest or recursively invokes the diagnostic protocol",
+        "public ABI, schema, purpose, dependency-edge, or controlled-path count changed"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 2062fe0cc4d2b0ebefed0bdc7109391ab011b05f..314d08ce9c1e5c4cfbe5dc7385568416359a89be",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
     },
     "reviews": [],
     "residual_host_boundaries": [
@@ -8186,9 +8226,15 @@
         "at": "2026-08-30T08:36:03Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "author an architecture-only successor to integrated attempt 6 that narrowly resolves the host-only digest contradiction by authorizing one pinned Stage2 declared-digest builtin, preserving all eight public ABIs and every schema, purpose, edge, and path count"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-30T08:41:24Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "freeze authoritative main base 2062fe0cc4d2b0ebefed0bdc7109391ab011b05f and immutable architecture-only report candidate 314d08ce9c1e5c4cfbe5dc7385568416359a89be, tree 3f41dc0673352ebb403108da8cdb8c450a1d09c5, report SHA-256 a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf"
       }
     ],
-    "disposition": "DRAFT architecture-only hash-authority correction. Independent review, lifecycle advancement, implementation edits, pin updates, integration, and all product or self-hosting claims remain unauthorized."
+    "disposition": "FROZEN architecture-only hash-authority correction for exact report candidate 314d08ce9c1e5c4cfbe5dc7385568416359a89be, tree 3f41dc0673352ebb403108da8cdb8c450a1d09c5, report SHA-256 a527362040f94031347becd52d77314c51779c823add2232df6597b7e5296fbf. It is not review-pending or accepted and confers no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
   }
 ]
 }
