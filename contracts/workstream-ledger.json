@@ -8416,6 +8416,126 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/attempt7_exact_review for the exact immutable attempt-8 report tuple. A successor must classify deterministic later-root equality/materialization failures as integrity boundaries or prove genuinely source-derived exclusive semantic detectors, require only feasible evidence, and scope Root4 authority to its actual three inputs. No implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-9",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 9",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-9.md",
+    "base_commit": "ba868e17fffaf43d364c05690778307ee5dfc73f",
+    "candidate_commit": "6e3d0c7ef365cb3034c430d654e7fab7adccbef9",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-9.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-6",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-7",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-8",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-9.md",
+        "report-sha256:3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0",
+        "candidate-tree:64c3cfb036ef549d35dfd8acebabb851fcb54cd5",
+        "author algorithm audit:B51 explicitly migrates from C11-print hashing to the unary pure reader-canonical-hash builtin while preserving unrelated inherited C11 identities",
+        "author detector audit:Root1 is the sole source-semantic pending authority under an exact kind/reason/remediation whitelist and unary Root8 invokes Root1 exactly once",
+        "author later-root audit:Roots2/4/5/6/7 are success-or-boundary gates with old pending tags statically and dynamically unreachable",
+        "author Root4 authority audit:Root4 authenticates only self-consistency and bytes of its three arguments while Root5 binds materialized output to raw carrier",
+        "author compatibility audit:8 roots, Root8 arity 1, six-key envelopes, schema 18, 19 purposes, 58 dependencies, and 94/174 path descriptors"
+      ],
+      "rejected_fixtures": [
+        "attempt-7 unanchored pending/digest pair, silent C11/reader algorithm equality, or false EOF receipt",
+        "attempt-8 fake positive semantic rejection first detected at deterministic Root2, Root4, Root5, Root6, or Root7",
+        "Root4 claims raw-carrier provenance for a self-consistent alternate tuple",
+        "non-whitelisted Root1 integrity, producer, template-authentication, or success-plan failure returned as pending",
+        "Root2, Root4, Root5, Root6, or Root7 constructs pending-rejection, pending envelope, failure request, or an old pending tag",
+        "Root8 calls any root other than Root1, calls Root1 twice, runs the success digest stream, selects a detector, or recurses",
+        "Root8 accepts pending, digest, receipt, replay map, selector, invocation facts, or later-root result from its caller",
+        "well-shaped arbitrary, reversed, cross-request, wrong-prefix, wrong-algorithm, or coordinated digest substitution within a root's authority",
+        "Root6 calls producer roots or request, preimage, digest, path-materialization, or candidate helpers",
+        "twentieth success purpose, dependency-edge drift, path-census drift, implementation edit, test edit, fixture edit, or pin edit"
+      ],
+      "stable_diagnostics": [
+        "WG008",
+        "C6-VERIFY"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
+      "the host may compute reader-canonical-hash for transport and parity but no host digest, receipt, pending envelope, or replay map is B51 semantic authority",
+      "attempt 9 requires a fresh independent exact review and integration before corrected architecture baseline G9 exists",
+      "the existing atomic implementation worktree is outside this candidate and receives no source, test, fixture, pin, acceptance, or integration authority",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-30T09:22:07Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only report candidate 6e3d0c7ef365cb3034c430d654e7fab7adccbef9, tree 64c3cfb036ef549d35dfd8acebabb851fcb54cd5, and report SHA-256 3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0 after preserving the accepted Attempt-8 digest/unary-root corrections and making Root1 the sole whitelisted source-semantic pending authority, later roots success-or-boundary only, Root4 authority truthful, and unary Root8 a single Root1 replay; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only successor to terminally rejected Attempt 8. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
