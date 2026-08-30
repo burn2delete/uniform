@@ -9081,7 +9081,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -9219,9 +9219,15 @@
         "at": "2026-08-30T23:55:39Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 3624255adf586fc9d368d76335170393aece49c0 and immutable architecture-only report candidate 9f17fea7a6a2296ea941eba08c7448fbdc71e542, tree 3c7e089f2f8bc8f06cb3f84eed657d3e7f8353ad, report SHA-256 388d86bb44c477b490003fec5eb2b66b31a18a06b0a656e3d0bdf3d6beb734cb after pre-freeze exact PASS and independent documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-30T23:56:18Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review of immutable Attempt-13 candidate 9f17fea7a6a2296ea941eba08c7448fbdc71e542, tree 3c7e089f2f8bc8f06cb3f84eed657d3e7f8353ad, report SHA-256 388d86bb44c477b490003fec5eb2b66b31a18a06b0a656e3d0bdf3d6beb734cb: exact frozen duplicate priority [earlier, later], separate governed first-event detection, closed recur mappings and nearest-depth/arity-before-tail evidence, passed G10 topology, feasibility, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-13 record for exact immutable report candidate 9f17fea7a6a2296ea941eba08c7448fbdc71e542 over terminal Attempt-12 main 3624255adf586fc9d368d76335170393aece49c0. It restores exact frozen duplicate coordinate selector priority [earlier, later] without changing governed first-event detection and preserves every passed Attempt-12 correction. No review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-13 record for exact immutable report candidate 9f17fea7a6a2296ea941eba08c7448fbdc71e542 over terminal Attempt-12 main 3624255adf586fc9d368d76335170393aece49c0. Fresh independent exact acceptance is required. No acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
