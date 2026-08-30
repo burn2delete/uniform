@@ -8423,7 +8423,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8510,6 +8510,11 @@
           "command": "clojure -M tools/validate_workstream_governance.clj",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "git diff --check ba868e17fffaf43d364c05690778307ee5dfc73f..6e3d0c7ef365cb3034c430d654e7fab7adccbef9",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -8533,9 +8538,15 @@
         "at": "2026-08-30T09:22:07Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only report candidate 6e3d0c7ef365cb3034c430d654e7fab7adccbef9, tree 64c3cfb036ef549d35dfd8acebabb851fcb54cd5, and report SHA-256 3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0 after preserving the accepted Attempt-8 digest/unary-root corrections and making Root1 the sole whitelisted source-semantic pending authority, later roots success-or-boundary only, Root4 authority truthful, and unary Root8 a single Root1 replay; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-30T09:24:17Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "freeze authoritative main base ba868e17fffaf43d364c05690778307ee5dfc73f and immutable architecture-only report candidate 6e3d0c7ef365cb3034c430d654e7fab7adccbef9, tree 64c3cfb036ef549d35dfd8acebabb851fcb54cd5, report SHA-256 3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0 after independently reproducing documentation, roadmap, governance, and exact range diff-hygiene passes"
       }
     ],
-    "disposition": "DRAFT architecture-only successor to terminally rejected Attempt 8. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "FROZEN architecture-only successor to terminally rejected Attempt 8 for exact report candidate 6e3d0c7ef365cb3034c430d654e7fab7adccbef9, tree 64c3cfb036ef549d35dfd8acebabb851fcb54cd5, report SHA-256 3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0. It is not review-pending or accepted and confers no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
   }
 ]
 }
