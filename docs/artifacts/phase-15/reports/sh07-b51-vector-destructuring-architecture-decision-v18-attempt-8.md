@@ -279,19 +279,27 @@ invocation fact from the caller. There is therefore no coordinated
 pending/digest pair to substitute. Holding the raw carrier fixed fixes the
 entire replay, selected failure, hash input, digest, and result.
 
-If replay reaches Root 7 success, Root 8 returns this exact boundary value:
+If replay reaches Root 7 success, Root 8 returns this exact six-key boundary
+envelope:
 
 ```text
-{:status :boundary-rejected
- :boundary :sh07-b51-finalize-rejection
- :reason :not-rejected
- :recursive-diagnostic-forbidden true}
+{:artifact :gravity/sh07-b51-entrypoint-result-v18
+ :domain :gravity/sh07-b51-entrypoint-abi-v18
+ :schema-version 18
+ :status :boundary-rejected
+ :tag :rejection-finalizer-boundary-rejected
+ :value
+ {:status :boundary-rejected
+  :boundary :sh07-b51-finalize-rejection
+  :reason :raw-carrier-shape | :canonical-replay-boundary | :not-rejected
+  :recursive-diagnostic-forbidden true}}
 ```
 
 If raw-carrier authentication fails, the reason is `:raw-carrier-shape`. If an
 internally generated Root-3 call or preceding canonical root returns a
 boundary result, the reason is `:canonical-replay-boundary`. These are the
-only Root-8 boundary reasons. Root 8 never converts its own boundary into a
+only Root-8 boundary reasons, in that exact priority order; `:not-rejected` is
+reached only after the first two are false and Root 7 succeeds. Root 8 never converts its own boundary into a
 diagnostic, never invokes itself, and never asks another root to finalize.
 
 ## Semantic failures versus invocation boundaries
@@ -302,23 +310,17 @@ returned by Roots 1, 2, 4, 5, 6, or 7 when their admitted canonical invocation
 detects such a failure. The envelope is useful observation, not Root-8
 authority.
 
-Externally malformed or substituted invocations are terminal boundaries:
-
-```text
-detector-boundary-rejection :=
-{:status :boundary-rejected
- :boundary one-of-the-public-Roots-1-7
- :reason :malformed-invocation | :invocation-mismatch | :digest-mismatch
- :recursive-diagnostic-forbidden true}
-```
-
-The first applicable reason is ordered as printed. Invalid raw carrier shape
-or arity is `:malformed-invocation`; a template, request plan, resolved value,
-observation, provenance, verifier binding, tag, or exact canonical argument
-mismatch is `:invocation-mismatch`; a resolved digest count, shape, order, or
-byte mismatch after plan admission is `:digest-mismatch`. Root 3 retains its
-attempt-5 boundary vocabulary and never creates a diagnostic. An invalid Root
-8 call uses Root 8's boundary vocabulary above.
+Externally malformed or substituted invocations are terminal boundaries. The
+exact outer envelopes and closed inner values are enumerated in the next
+section. Invalid raw carrier shape is `:malformed-invocation`; a template,
+request plan, resolved value, observation, provenance, verifier binding, tag,
+or exact canonical argument mismatch is `:invocation-mismatch`; a resolved
+digest count, shape, order, or byte mismatch after plan admission is
+`:digest-mismatch`. Root 3 retains its attempt-5 boundary vocabulary and never
+creates a diagnostic. An invalid unary Root-8 raw value uses Root 8's
+`:raw-carrier-shape` boundary above. A wrong public arity is rejected by the
+pinned Stage2 arity boundary before root evaluation and is not one of these
+six-key semantic ABI returns.
 
 Accordingly, a malformed Root-4 request plan, arbitrary digest vector, changed
 resolved core, malformed Root-6 binding input, and equivalent external
@@ -348,10 +350,106 @@ changes from arity 2 to arity 1 as specified above.
 
 Roots 1, 2, 4, 5, 6, and 7 now have two disjoint failure variants: their exact
 existing pending tag/value for reproducible semantic failure, or the exact
-root-specific boundary tag with `detector-boundary-rejection` for malformed
-external invocation. Root 3 remains boundary-only on failure. Root 8 remains
-accepted only when it finalizes a reproduced semantic rejection and otherwise
-returns its exact boundary.
+root-specific boundary envelope below for malformed external invocation. Thus
+each such row has three total result variants: its unchanged attempt-5 success,
+its unchanged attempt-5 pending semantic failure, and its new boundary failure.
+The boundary is never a bare inner map. Root 3 remains boundary-only on failure.
+Root 8 remains accepted only when it finalizes a reproduced semantic rejection
+and otherwise returns the exact six-key boundary printed above.
+
+```text
+public-detector-boundary-abi :=
+[{root sh07-b51-build-template
+  reason-priority [:malformed-invocation]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :template-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-build-template
+           :reason :malformed-invocation
+           :recursive-diagnostic-forbidden true}}}
+ {root sh07-b51-verify-template
+  reason-priority [:malformed-invocation :invocation-mismatch]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :template-verification-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-verify-template
+           :reason :malformed-invocation | :invocation-mismatch
+           :recursive-diagnostic-forbidden true}}}
+ {root sh07-b51-resolve-template
+  reason-priority [:malformed-invocation :invocation-mismatch
+                   :digest-mismatch]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :template-resolution-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-resolve-template
+           :reason :malformed-invocation | :invocation-mismatch
+                   | :digest-mismatch
+           :recursive-diagnostic-forbidden true}}}
+ {root sh07-b51-verify-resolved
+  reason-priority [:malformed-invocation :invocation-mismatch
+                   :digest-mismatch]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :resolved-verification-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-verify-resolved
+           :reason :malformed-invocation | :invocation-mismatch
+                   | :digest-mismatch
+           :recursive-diagnostic-forbidden true}}}
+ {root sh07-b51-build-independent-verifier-binding
+  reason-priority [:malformed-invocation :invocation-mismatch
+                   :digest-mismatch]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :independent-verifier-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-build-independent-verifier-binding
+           :reason :malformed-invocation | :invocation-mismatch
+                   | :digest-mismatch
+           :recursive-diagnostic-forbidden true}}}
+ {root sh07-b51-build-final-artifact
+  reason-priority [:malformed-invocation :invocation-mismatch
+                   :digest-mismatch]
+  envelope
+  {:artifact :gravity/sh07-b51-entrypoint-result-v18
+   :domain :gravity/sh07-b51-entrypoint-abi-v18
+   :schema-version 18
+   :status :boundary-rejected
+   :tag :final-artifact-boundary-rejected
+   :value {:status :boundary-rejected
+           :boundary :sh07-b51-build-final-artifact
+           :reason :malformed-invocation | :invocation-mismatch
+                   | :digest-mismatch
+           :recursive-diagnostic-forbidden true}}}]
+```
+
+The `:reason` union in each inner value is closed to that row's printed
+`reason-priority`; the first applicable member wins. Root 1 has no caller
+template or digest argument, so it admits only `:malformed-invocation` at this
+boundary. In particular, the same invalid raw value passed directly to Root 1
+returns the six-key `:template-boundary-rejected` envelope with inner reason
+`:malformed-invocation`, while passing it to unary Root 8 returns the six-key
+`:rejection-finalizer-boundary-rejected` envelope with inner reason
+`:raw-carrier-shape`. Both are terminal, nonfinalizable boundaries; their
+different root-specific tags and reasons are intentional and exact.
 
 This correction retains schema version 18 because no semantic artifact,
 success request, product, Tier-3 through Tier-6 record, diagnostic semantic
