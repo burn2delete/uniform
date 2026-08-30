@@ -8279,7 +8279,7 @@
     ],
     "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md",
     "base_commit": "9dc682fba5753b52815fc856f980b09f5b27a543",
-    "candidate_commit": "bca0fd081bad00a2890cb6b50c1d849f0563a9b4",
+    "candidate_commit": "039b0ffd519aa9fe8b5c042769072649c95a933c",
     "clean_worktree": true,
     "owned_paths": [
       "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md"
@@ -8315,11 +8315,12 @@
         "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-6",
         "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-7",
         "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-8.md",
-        "report-sha256:ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5",
-        "candidate-tree:f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29",
+        "report-sha256:8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f",
+        "candidate-tree:c1baf98b61743201d214185a4521886bd82ce77b",
         "author algorithm audit:B51 explicitly changes from C11-print hashing to reader-canonical-hash and preserves unrelated inherited C11 identities",
         "author Root-8 audit:unary raw-carrier replay derives the canonical first Root1/2/4/5/6/7 semantic failure and computes its diagnostic digest without caller failure authority",
-        "author compatibility audit:8 roots, Root8 arity 1, schema 18, 19 success purposes, 58 dependencies, and 94/174 path descriptors"
+        "author compatibility audit:8 roots, Root8 arity 1, schema 18, 19 success purposes, 58 dependencies, and 94/174 path descriptors",
+        "author public-boundary audit:literal six-key boundary alternatives, tags, root identifiers, and ordered reason sets for Roots1/2/4/5/6/7 plus exact unary Root8 boundary"
       ],
       "rejected_fixtures": [
         "attempt-7 coordinated pending-envelope and diagnostic-digest substitution without an independent anchor",
@@ -8369,7 +8370,7 @@
         "state": "draft",
         "at": "2026-08-30T09:01:14Z",
         "actor": "sh07-b51-v18-architecture",
-        "reason": "register exact architecture-only report candidate bca0fd081bad00a2890cb6b50c1d849f0563a9b4, tree f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29, and report SHA-256 ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5 after correcting attempt 7 with an explicit B51 reader-canonical-hash algorithm migration and unary raw-carrier Root8 replay; no freeze or review is requested by this event"
+        "reason": "register architecture-only attempt 8 as draft; the initial unfrozen report tuple was candidate bca0fd081bad00a2890cb6b50c1d849f0563a9b4, tree f6483f68dcda39c5870bb59ac0dbbf81e9c2fa29, report SHA-256 ab21cf795a5cec630e67a54d4980071566441151d36eef812800b8a9b488c2f5, and before freeze it was honestly replaced by exact candidate 039b0ffd519aa9fe8b5c042769072649c95a933c, tree c1baf98b61743201d214185a4521886bd82ce77b, report SHA-256 8db6b90ccaa40ac96c6c4738b9895d5a8bbe280fb7df78853b708ced18d4b59f after enumerating every Roots1/2/4/5/6/7 and unary Root8 public boundary as an exact six-key ABI envelope; no freeze or review is requested by this sole draft lifecycle event"
       }
     ],
     "disposition": "DRAFT architecture-only successor to terminally rejected attempt 7. The exact report tuple is recorded for later freezing and independent review. No implementation, acceptance, integration eligibility, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
