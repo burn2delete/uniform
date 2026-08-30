@@ -48,6 +48,8 @@
             [gravity.compiler-pass-manifest :as compiler-pass-manifest]
             [gravity.compiler-verification-shared :as compiler-verification-shared]
             [gravity.optimization-lowering :as optimization-lowering]
+            [gravity.p18.t00.parity :as p18-t00-parity]
+            [gravity.p18.t00.semantics :as p18-t00-semantics]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.digest :as digest]
             [gravity.diagnostics :as diagnostics]
@@ -164349,35 +164351,12 @@
           :remediation
           "Complete P15-S23 final seed retirement and P18-T06 final release before claiming public self-host verification."})))))
 
-(def p18-t00-artifact-dir "docs/artifacts/phase-18/source-extensions")
-(def p18-t00-report-path
-  "docs/artifacts/phase-18/reports/p18-t00-co-canonical-source-extensions-report.md")
-
+(def p18-t00-artifact-dir p18-t00-semantics/artifact-dir)
+(def p18-t00-report-path p18-t00-semantics/report-path)
 (def p18-t00-accepted-extension-fixtures
-  [{:gravity "examples/hello.gravity"
-    :qst "examples/hello.qst"
-    :expected-stdout "Hello Gravity\n"
-    :bootstrap-module 'hello.main
-    :release-module "hello"
-    :bootstrap-output-prefix "target/phase-18/source-extensions/hello-bootstrap"
-    :release-output-prefix "target/phase-18/source-extensions/hello-release"}
-   {:gravity "examples/core-app.gravity"
-    :qst "examples/core-app.qst"
-    :expected-stdout "core-app\ngravity:19:2\n(:ok 19)\n"
-    :bootstrap-module 'core.app
-    :release-module "core.app"
-    :bootstrap-output-prefix "target/phase-18/source-extensions/core-app-bootstrap"
-    :release-output-prefix "target/phase-18/source-extensions/core-app-release"}])
-
+  p18-t00-semantics/accepted-extension-fixtures)
 (def p18-t00-rejected-extension-fixtures
-  [{:gravity "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"
-    :qst "bootstrap/clojure/fixtures/rejected/core-app-function-arity.qst"
-    :expected-diagnostic "L2-FUNCTION-ARITY"
-    :output-prefix "target/phase-18/source-extensions/rejected-function-arity"}
-   {:gravity "bootstrap/clojure/fixtures/rejected/core-app-backend-release.gravity"
-    :qst "bootstrap/clojure/fixtures/rejected/core-app-backend-release.qst"
-    :expected-diagnostic "B13-RELEASE"
-    :output-prefix "target/phase-18/source-extensions/rejected-backend-release"}])
+  p18-t00-semantics/rejected-extension-fixtures)
 
 (defn p18-t00-shell
   [& args]
@@ -164385,9 +164364,7 @@
 
 (defn p18-t00-output-has-warning?
   [result]
-  (boolean
-   (re-find #"(?i)\b(deprecat|compatibility warning|alias-only|warning)\b"
-            (str (:out result) "\n" (:err result)))))
+  (p18-t00-semantics/output-has-warning? result))
 
 (defn p18-t00-semantic-summary
   [path]
@@ -164395,25 +164372,19 @@
         compile-artifact (compile-source path source-text)
         reader-artifact (read-source-artifact path source-text)
         source-unit (c2-source-unit-record
-                     path source-text standard-reader-options)
-        source-map (get-in reader-artifact
-                           [:syntax-object-stream 0 :span :source])]
-    {:source-path path
-     :source-extension (gravity-source-extension path)
-     :source-kind (gravity-source-kind path)
-     :recognized-source? (qst-or-gravity-source? path)
-     :source-unit-path (:path source-unit)
-     :source-unit-kind (:source-kind source-unit)
-     :reader-source-path (get-in reader-artifact [:source :path])
-     :reader-source-map-path source-map
-     :module (dissoc (:module compile-artifact) :source-path)
-     :syntax-count (count (:syntax-object-stream compile-artifact))
-     :compiled-kind (:kind compile-artifact)}))
+                     path source-text standard-reader-options)]
+    (p18-t00-semantics/semantic-summary
+     {:path path
+      :compile-artifact compile-artifact
+      :reader-artifact reader-artifact
+      :source-unit source-unit
+      :source-extension (gravity-source-extension path)
+      :source-kind (gravity-source-kind path)
+      :recognized-source? (qst-or-gravity-source? path)})))
 
 (defn p18-t00-compile-artifact-source-path
   [artifact]
-  (or (:source-path artifact)
-      (get-in artifact [:source :path])))
+  (p18-t00-semantics/compile-artifact-source-path artifact))
 
 (defn p18-t00-accepted-extension-record
   [{:keys [gravity qst expected-stdout bootstrap-module release-module
@@ -164463,82 +164434,38 @@
                  qst-compile gravity-exec qst-exec release-gravity-check
                  release-qst-check release-gravity-run release-qst-run
                  release-gravity-compile release-qst-compile
-                 release-gravity-exec release-qst-exec]
-        semantic-equivalent?
-        (= (dissoc gravity-summary :source-path :source-extension
-                   :source-kind :source-unit-path :source-unit-kind
-                   :reader-source-path :reader-source-map-path)
-           (dissoc qst-summary :source-path :source-extension
-                   :source-kind :source-unit-path :source-unit-kind
-                   :reader-source-path :reader-source-map-path))
-        provenance-preserved?
-        (and (= gravity (get-in gravity-compile-artifact [:source :path]))
-             (= qst (get-in qst-compile-artifact [:source :path]))
-             (= gravity release-gravity-source-path)
-             (= qst release-qst-source-path)
-             (= gravity (:source-unit-path gravity-summary))
-             (= qst (:source-unit-path qst-summary))
-             (= gravity (:reader-source-map-path gravity-summary))
-             (= qst (:reader-source-map-path qst-summary)))]
-    {:gravity-source gravity
-     :qst-source qst
-     :expected-stdout expected-stdout
-     :bootstrap-module bootstrap-module
-     :release-module release-module
-     :gravity-summary gravity-summary
-     :qst-summary qst-summary
-     :bootstrap-check-parity?
-     (and (zero? (:exit gravity-check))
-          (zero? (:exit qst-check))
-          (= (:out gravity-check)
-             (str "gravity stage0 check passed: " bootstrap-module "\n"))
-          (= (:out qst-check) (:out gravity-check)))
-     :bootstrap-run-parity?
-     (and (= expected-stdout (:out gravity-run) (:out qst-run))
-          (zero? (:exit gravity-run))
-          (zero? (:exit qst-run)))
-     :bootstrap-compile-parity?
-     (and (zero? (:exit gravity-compile))
-          (zero? (:exit qst-compile))
-          (= expected-stdout (:out gravity-exec) (:out qst-exec)))
-     :bootstrap-run-compiled-parity?
-     (and (= expected-stdout
-             (:out gravity-run-compiled)
-             (:out qst-run-compiled))
-          (zero? (:exit gravity-run-compiled))
-          (zero? (:exit qst-run-compiled)))
-     :release-check-parity?
-     (and (zero? (:exit release-gravity-check))
-          (zero? (:exit release-qst-check))
-          (str/includes? (:out release-gravity-check)
-                         " check passed: ")
-          (= (:out release-qst-check) (:out release-gravity-check)))
-     :release-run-parity?
-     (and (= expected-stdout (:out release-gravity-run)
-             (:out release-qst-run))
-          (zero? (:exit release-gravity-run))
-          (zero? (:exit release-qst-run)))
-     :release-compile-parity?
-     (and (zero? (:exit release-gravity-compile))
-          (zero? (:exit release-qst-compile))
-          (= expected-stdout
-             (:out release-gravity-exec)
-             (:out release-qst-exec)))
-     :semantic-equivalent? semantic-equivalent?
-     :provenance-preserves-actual-extension? provenance-preserved?
-     :no-deprecation-or-compatibility-warning?
-     (not-any? p18-t00-output-has-warning? results)
-     :bootstrap-compile-provenance
-     {:gravity (get-in gravity-compile-artifact [:source :path])
-      :qst (get-in qst-compile-artifact [:source :path])}
-     :release-compile-provenance
-     {:gravity release-gravity-source-path
-      :qst release-qst-source-path}
-     :matches-expected?
-     (and semantic-equivalent?
-          provenance-preserved?
-          (not-any? p18-t00-output-has-warning? results)
-          (every? zero? (map :exit results)))}))
+                 release-gravity-exec release-qst-exec]]
+    (p18-t00-parity/accepted-extension-record
+     {:gravity gravity
+      :qst qst
+      :expected-stdout expected-stdout
+      :bootstrap-module bootstrap-module
+      :release-module release-module}
+     {:gravity-summary gravity-summary
+      :qst-summary qst-summary
+      :gravity-check gravity-check
+      :qst-check qst-check
+      :gravity-run gravity-run
+      :qst-run qst-run
+      :gravity-run-compiled gravity-run-compiled
+      :qst-run-compiled qst-run-compiled
+      :gravity-compile gravity-compile
+      :qst-compile qst-compile
+      :gravity-compile-artifact gravity-compile-artifact
+      :qst-compile-artifact qst-compile-artifact
+      :gravity-exec gravity-exec
+      :qst-exec qst-exec
+      :release-gravity-check release-gravity-check
+      :release-qst-check release-qst-check
+      :release-gravity-run release-gravity-run
+      :release-qst-run release-qst-run
+      :release-gravity-compile release-gravity-compile
+      :release-qst-compile release-qst-compile
+      :release-gravity-source-path release-gravity-source-path
+      :release-qst-source-path release-qst-source-path
+      :release-gravity-exec release-gravity-exec
+      :release-qst-exec release-qst-exec
+      :results results})))
 
 (defn p18-t00-rejected-extension-record
   [{:keys [gravity qst expected-diagnostic output-prefix]}]
@@ -164549,108 +164476,29 @@
         release-gravity (p18-t06-shell "bin/gravity" "compile" gravity
                                        "-o" (str output-prefix "-gravity"))
         release-qst (p18-t06-shell "bin/gravity" "compile" qst
-                                   "-o" (str output-prefix "-qst"))
-        results [bootstrap-gravity bootstrap-qst release-gravity release-qst]]
-    {:gravity-source gravity
-     :qst-source qst
-     :expected-diagnostic expected-diagnostic
-     :bootstrap-diagnostic-parity?
-     (and (= 1 (:exit bootstrap-gravity) (:exit bootstrap-qst))
-          (str/includes? (:err bootstrap-gravity) expected-diagnostic)
-          (str/includes? (:err bootstrap-qst) expected-diagnostic))
-     :release-diagnostic-parity?
-     (and (= 1 (:exit release-gravity) (:exit release-qst))
-          (str/includes? (:err release-gravity) expected-diagnostic)
-          (str/includes? (:err release-qst) expected-diagnostic))
-     :no-deprecation-or-compatibility-warning?
-     (not-any? p18-t00-output-has-warning? results)
-     :matches-expected?
-     (and (= 1 (:exit bootstrap-gravity) (:exit bootstrap-qst)
-             (:exit release-gravity) (:exit release-qst))
-          (every? #(str/includes? (:err %) expected-diagnostic) results)
-          (not-any? p18-t00-output-has-warning? results))}))
+                                   "-o" (str output-prefix "-qst"))]
+    (p18-t00-parity/rejected-extension-record
+     {:gravity gravity
+      :qst qst
+      :expected-diagnostic expected-diagnostic}
+     {:bootstrap-gravity bootstrap-gravity
+      :bootstrap-qst bootstrap-qst
+      :release-gravity release-gravity
+      :release-qst release-qst})))
 
 (defn p18-t00-capability-proof
   [artifact]
-  (let [accepted (:accepted-extension-parity artifact)
-        rejected (:rejected-extension-parity artifact)
-        accepted-provenance (map :provenance-preserves-actual-extension?
-                                 accepted)]
-    {:task "P18-T00"
-     :status :complete
-     :co-canonical-source-extensions?
-     (= #{".qst" ".gravity"} co-canonical-source-extensions)
-     :qst-represents-qst-theory?
-     (= :qst-theory-source
-        (gravity-source-kind "examples/core-app.qst"))
-     :gravity-represents-branded-source?
-     (= :gravity-branded-source
-        (gravity-source-kind "examples/core-app.gravity"))
-     :accepted-fixtures-covered?
-     (= (set (map (juxt :gravity :qst)
-                  p18-t00-accepted-extension-fixtures))
-        (set (map (juxt :gravity-source :qst-source) accepted)))
-     :bootstrap-check-parity?
-     (every? :bootstrap-check-parity? accepted)
-     :bootstrap-run-parity?
-     (every? :bootstrap-run-parity? accepted)
-     :bootstrap-compile-parity?
-     (every? :bootstrap-compile-parity? accepted)
-     :bootstrap-run-compiled-parity?
-     (every? :bootstrap-run-compiled-parity? accepted)
-     :release-check-parity?
-     (every? :release-check-parity? accepted)
-     :release-run-parity?
-     (every? :release-run-parity? accepted)
-     :release-compile-parity?
-     (every? :release-compile-parity? accepted)
-     :accepted-semantic-parity?
-     (every? :semantic-equivalent? accepted)
-     :rejected-diagnostic-parity?
-     (every? :matches-expected? rejected)
-     :provenance-preserves-actual-extension?
-     (every? true? accepted-provenance)
-     :no-deprecation-or-compatibility-warnings?
-     (and (every? :no-deprecation-or-compatibility-warning? accepted)
-          (every? :no-deprecation-or-compatibility-warning? rejected))
-     :final-release-command-supports-both?
-     (and (every? :release-check-parity? accepted)
-          (every? :release-run-parity? accepted)
-          (every? :release-compile-parity? accepted))
-     :phase-18-prerequisite-satisfied? true}))
+  (p18-t00-semantics/capability-proof
+   artifact
+   {:co-canonical-source-extensions co-canonical-source-extensions
+    :accepted-extension-fixtures p18-t00-accepted-extension-fixtures
+    :qst-source-kind (gravity-source-kind "examples/core-app.qst")
+    :gravity-source-kind
+    (gravity-source-kind "examples/core-app.gravity")}))
 
 (defn p18-t00-report-markdown
   [artifact]
-  (let [proof (:capability-based-proof artifact)]
-    (str "# P18-T00 Co-canonical Source Extensions Report\n\n"
-         "Date: 2026-07-02\n\n"
-         "## Scope\n\n"
-         "P18-T00 proves that `.qst` and `.gravity` are co-canonical "
-         "Gravity source file extensions. `.qst` represents QST theory "
-         "source, `.gravity` represents Gravity-branded source, and both "
-         "extensions are first-class canonical source forms.\n\n"
-         "## Proof Summary\n\n"
-         "- Bootstrap check parity: `" (:bootstrap-check-parity? proof) "`\n"
-         "- Bootstrap run parity: `" (:bootstrap-run-parity? proof) "`\n"
-         "- Bootstrap compile parity: `" (:bootstrap-compile-parity? proof) "`\n"
-         "- Bootstrap run-compiled parity: `"
-         (:bootstrap-run-compiled-parity? proof) "`\n"
-         "- Final release check parity: `" (:release-check-parity? proof)
-         "`\n"
-         "- Final release run parity: `" (:release-run-parity? proof) "`\n"
-         "- Final release compile parity: `" (:release-compile-parity? proof)
-         "`\n"
-         "- Rejected diagnostic parity: `"
-         (:rejected-diagnostic-parity? proof) "`\n"
-         "- Provenance preserves actual extension: `"
-         (:provenance-preserves-actual-extension? proof) "`\n\n"
-         "## Artifacts\n\n"
-         "- `" p18-t00-artifact-dir
-         "/p18-t00-co-canonical-source-extensions-proof.edn`\n"
-         "- `" p18-t00-artifact-dir
-         "/p18-t00-accepted-extension-parity.edn`\n"
-         "- `" p18-t00-artifact-dir
-         "/p18-t00-rejected-extension-parity.edn`\n\n")))
+  (p18-t00-semantics/report-markdown artifact p18-t00-artifact-dir))
 
 (defn p18-t00-co-canonical-source-extensions-artifact!
   []
