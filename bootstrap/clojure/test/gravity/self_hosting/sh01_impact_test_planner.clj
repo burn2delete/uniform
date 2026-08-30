@@ -26,6 +26,7 @@
 (def ^:private reviewed-non-slice-namespaces
   #{'gravity.self-hosting.a1-canonical-schema-test
     'gravity.self-hosting.p15-public-native-admission-test
+    'gravity.self-hosting.p18-t00-semantics-test
     'gravity.self-hosting.stage3-fragment-size-preflight-test
     'gravity.self-hosting.stage3-verification-runner-test
     'gravity.self-hosting.w5-b13-artifact-emitter-test

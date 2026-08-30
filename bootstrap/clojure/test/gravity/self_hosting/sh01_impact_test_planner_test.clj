@@ -887,11 +887,13 @@
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
     (testing "the reviewed exclusions are explicit and discoverable"
-      (is (= 23 (count reviewed)))
+      (is (= 24 (count reviewed)))
       (is (contains? reviewed
                      'gravity.self-hosting.a1-canonical-schema-test))
       (is (contains? reviewed
                      'gravity.self-hosting.p15-public-native-admission-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.p18-t00-semantics-test))
       (is (contains? reviewed
                      'gravity.self-hosting.macro-operations-normalization-test))
       (is (contains? reviewed

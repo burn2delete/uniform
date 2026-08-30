@@ -4,7 +4,9 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.cli :as cli]
-            [gravity.cli.diagnostic-presentation :as diagnostic-presentation]))
+            [gravity.cli.diagnostic-presentation :as diagnostic-presentation]
+            [gravity.cli.dispatch :as dispatch]
+            [gravity.cli.entrypoint :as entrypoint]))
 
 (defn- expected-version-record
   [packaged?]
@@ -148,5 +150,70 @@
       (is (not (str/includes? rendered "must-not-render")))))
   (doseq [namespace ['gravity.cli.diagnostic-presentation
                      'gravity.cli.dispatch]]
+    (is (not-any? #{'gravity.bootstrap}
+                  (map ns-name (vals (ns-aliases namespace)))))))
+
+(defn- fake-resolver [operation]
+  (case operation
+    p18-cli-help-text (fn [] "injected help\n")
+    p18-cli-version-record (fn [] {:version "injected"})
+    compiler-c2-reader-file-artifact (fn [path] {:artifact :reader :path path})
+    check-file-artifact (fn [path] {:module path})
+    check-artifact-module-name :module
+    run-file (fn [path] (str "ran " path "\n"))
+    run-compiled-file (fn [path] (str "compiled " path "\n"))
+    (throw (ex-info "unexpected fake operation" {:operation operation}))))
+
+(deftest extracted-dispatch-uses-injected-operations
+  (let [result (atom nil)
+        help-output (with-out-str
+                      (reset! result (dispatch/dispatch! fake-resolver ["help"])))
+        read-output (with-out-str
+                      (reset! result (dispatch/dispatch! fake-resolver
+                                                         ["read" "module.gravity"])))]
+    (is (true? @result))
+    (is (= "injected help\n" help-output))
+    (is (= {:artifact :reader :path "module.gravity"}
+           (edn/read-string read-output))))
+  (let [result (atom nil)
+        output (with-out-str
+                 (reset! result (dispatch/dispatch! fake-resolver
+                                                    ["not-a-command"])))]
+    (is (false? @result))
+    (is (empty? output))))
+
+(deftest extracted-entrypoint-owns-error-exits
+  (let [statuses (atom [])
+        stderr (java.io.StringWriter.)]
+    (binding [*err* stderr]
+      (entrypoint/run!
+       ["not-a-command"]
+       {:resolve-operation fake-resolver
+        :print-diagnostic! (fn [_] (throw (AssertionError.)))
+        :exit! #(swap! statuses conj %)}))
+    (is (= [2] @statuses))
+    (is (str/starts-with? (str stderr) "usage: clojure -M:gravity ")))
+  (let [statuses (atom [])
+        diagnostics (atom [])
+        resolver (fn [operation]
+                   (case operation
+                     compiler-c2-reader-file-artifact
+                     (fn [_] (throw (ex-info "rejected" {:id "TEST"})))))]
+    (entrypoint/run!
+     ["read" "rejected.gravity"]
+     {:resolve-operation resolver
+      :print-diagnostic! #(swap! diagnostics conj (ex-data %))
+      :exit! #(swap! statuses conj %)})
+    (is (= [{:id "TEST"}] @diagnostics))
+    (is (= [1] @statuses))))
+
+(deftest extracted-command-boundary-is-bootstrap-free
+  (doseq [namespace ['gravity.cli.commands.bootstrap
+                     'gravity.cli.commands.compiler
+                     'gravity.cli.commands.platform
+                     'gravity.cli.compile-command
+                     'gravity.cli.dispatch
+                     'gravity.cli.entrypoint]]
+    (require namespace)
     (is (not-any? #{'gravity.bootstrap}
                   (map ns-name (vals (ns-aliases namespace)))))))
