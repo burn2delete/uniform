@@ -8755,7 +8755,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -8810,6 +8810,7 @@
         "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
       ],
       "rejected_fixtures": [
+        "independent review REJECT: reachable recur diagnostics preserve related-id-count 1 but do not print an exact related-semantic-id selector for missing-recur-target or recur-not-tail, so Root1, the independent raw oracle, and unary Root8 cannot reconstruct all three 29-key recur semantics byte-for-byte",
         "duplicate-vector-binding-name uses the inherited extraction coordinate or any nonnil generated core, slot, extraction, or recur id",
         "duplicate pending selection emits a partial success product, out-of-plan success request, ad hoc success hash, provisional id, copied id, host-authored id, or fabricated id",
         "duplicate coordinate selects the later occurrence or changes the exact source path, fragment, authentic owner, priority, remediation, or ordered [earlier later] source form ids",
@@ -8859,7 +8860,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt11_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
       "the host may compute reader-canonical-hash for transport and parity but no host digest, success id, pending envelope, owner selector, or replay map is B51 semantic authority",
@@ -8891,9 +8898,15 @@
         "at": "2026-08-30T23:23:18Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review of immutable Attempt-11 candidate a29469c84e15ae3a55d2606421364c020c19571f, tree 20433cc260cc6baa466a5667bcc06445155eca49, report SHA-256 11c95a69638c7212832e07b1de8fa0ff163a8da8cdec87e0e1069397e60111f6: truthful duplicate pre-resolution coordinate, exact earlier/later evidence, no partial or fabricated success ids, recur source ownership independent of target, preserved G10 topology, feasible evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-30T23:30:13Z",
+        "actor": "/root/attempt11_exact_review",
+        "reason": "REJECT exact immutable candidate a29469c84e15ae3a55d2606421364c020c19571f, tree 20433cc260cc6baa466a5667bcc06445155eca49, report SHA-256 11c95a69638c7212832e07b1de8fa0ff163a8da8cdec87e0e1069397e60111f6: Attempt 5 requires one SHA-256 related semantic id for every reachable recur-target reason, but Attempt 11 defines no exact alternate selector for missing-recur-target and no mandatory selector for recur-not-tail; implementation fallback among target, owner-root, and recur-form ids is unauthorized inference, making exact Root1/raw-oracle/Root8 reconstruction and positive evidence infeasible"
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only Attempt-11 record for exact immutable report candidate a29469c84e15ae3a55d2606421364c020c19571f over integrated Attempt-10 main ab516b370fa49b9cbfe7b2dcda6e696c0f8f624d. Fresh independent exact acceptance is required. No acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable candidate a29469c84e15ae3a55d2606421364c020c19571f, tree 20433cc260cc6baa466a5667bcc06445155eca49, report SHA-256 11c95a69638c7212832e07b1de8fa0ff163a8da8cdec87e0e1069397e60111f6. Duplicate pre-resolution correction and recur source ownership passed, but reachable recur related-semantic-id selection remained incomplete. A successor must print a closed reason-specific mapping for missing, arity, and non-tail cases. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
