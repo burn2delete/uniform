@@ -8,7 +8,8 @@
   establish compiler, diagnostic, proof, release, or self-hosting authority."
   (:require [clojure.edn :as edn]
             [gravity.pass-cache :as pass-cache]
-            [gravity.pass-execution :as pass-execution]))
+            [gravity.pass-execution :as pass-execution]
+            [gravity.c15-c16-pass-cache.request :as request-builder]))
 
 (def ^:private sha256-pattern #"sha256:[0-9a-f]{64}")
 
@@ -191,44 +192,14 @@
   ;; bounds.  It is intentionally exercised below before a request is exposed.
   context)
 
-(defn- request
-  [context stage-key contract input-id input-facts external-root?]
-  (validate-context! context)
-  (require-sha256! :input-artifact-id input-id)
-  (let [request
-        {:stage (:pass contract)
-         :contract contract
-         :producer-binding-id
-         (get-in context [:producer-binding-ids stage-key])
-         :input-artifact-ids [input-id]
-         :input-facts input-facts
-         :external-root-inputs
-         (if external-root?
-           {input-id {:kind (:input contract) :facts input-facts}}
-           {})
-         :semantic-bindings (:semantic-bindings context)
-         :dependency-graph-id (:dependency-graph-id context)
-         :build-effect-replay-id (:build-effect-replay-id context)
-         :profile-id (:profile-id context)
-         :target-id (:target-id context)
-         :policy-ids (:policy-ids context)
-         :provenance (:provenance context)
-         :diagnostic-stream-id
-         (get-in context [:diagnostic-stream-ids stage-key])
-         :execution-mode :executed
-         :authority {:input-authorities {input-id :none}
-                     :claimed-level :none
-                     :scope (:authority-scope context)}}]
-    ;; Compute once here so both public request constructors are exact C16 key
-    ;; boundaries even when a caller never proceeds to cache lookup.
-    (pass-cache/stage-cache-key request)
-    request))
-
 (defn c15-stage-request
   "Build and validate the exact C15 generic-pass request."
   [context]
-  (request context :c15 c15-pass-contract (:c14-artifact-id context)
-           c15-input-facts true))
+  (request-builder/build {:validate-context! validate-context!
+                          :require-sha256! require-sha256!
+                          :stage-cache-key pass-cache/stage-cache-key}
+                         context :c15 c15-pass-contract
+                         (:c14-artifact-id context) c15-input-facts true))
 
 (defn c16-stage-request
   "Build and validate the exact C16 request consuming one C15 artifact.
@@ -236,8 +207,11 @@
   The C15 input is deliberately not an external root: when both receipts are
   composed, it must resolve to the C15 producer and form a typed internal edge."
   [context c15-artifact-id]
-  (request context :c16 c16-pass-contract c15-artifact-id
-           c15-output-facts false))
+  (request-builder/build {:validate-context! validate-context!
+                          :require-sha256! require-sha256!
+                          :stage-cache-key pass-cache/stage-cache-key}
+                         context :c16 c16-pass-contract c15-artifact-id
+                         c15-output-facts false))
 
 (defn- validate-operations!
   [operations]
