@@ -8575,7 +8575,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "accepted",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8624,7 +8624,8 @@
         "author reachable-reason audit:exactly eight Root1 pending reasons across four families with exactly two V18 resource reasons",
         "author unreachable-mapping audit:malformed-authenticated-pattern-shape and ambiguous-recur-target retain catalog mappings but have zero producer emission and boundary-only injection handling",
         "author preserved architecture audit:reader-canonical-hash migration, Roots4-7 byte replay, Root6 disjointness, Root4/5 authority split, later-root pending unreachability, unary one-Root1 Root8, exact six-key ABI, and protocol counts",
-        "author no-form evidence rule:require an authentic supported no-form negative composition when reachable, otherwise record exact governing infeasibility without fabrication"
+        "author no-form evidence rule:require an authentic supported no-form negative composition when reachable, otherwise record exact governing infeasibility without fabrication",
+        "independent review ACCEPT by /root/attempt7_exact_review for exact immutable candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9; all 15 criteria pass with no blockers"
       ],
       "rejected_fixtures": [
         "Attempt-9 catalog-only malformed-authenticated-pattern-shape granted pending authority or required a positive fixture",
@@ -8672,7 +8673,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt7_exact_review",
+        "kind": "independent",
+        "result": "accepted"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
       "the host may compute reader-canonical-hash for transport and parity but no host digest, receipt, pending envelope, or replay map is B51 semantic authority",
@@ -8704,9 +8711,15 @@
         "at": "2026-08-30T22:25:45Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent exact review of the immutable Attempt-10 tuple, exact eight producer-reachable Root1 pending reasons, two catalog-only zero-emission mappings, later-root pending unreachability, truthful Root4/5 authority, declared digest migration and replay, Root6 disjointness, unary one-Root1 Root8, exact ABI/counts, feasible evidence, governance, and nonclaims"
+      },
+      {
+        "state": "accepted",
+        "at": "2026-08-30T22:28:53Z",
+        "actor": "/root/attempt7_exact_review",
+        "reason": "ACCEPT exact immutable candidate 3d780692e8023274c415a351b393ea8e1f9a796e, tree 144cafd0f8833e35de52e29ea2f596376045ad72, report SHA-256 9eeb69c974636d08d2a6b1673a1fc2b523567ac27f4d6a8d9a14996874a760b9 with no blockers after independent verification of all eight producer emissions, both zero-emission catalog mappings, feasible resource/no-form evidence rules, later-root unreachability, Root4/5 authority, digest migration/replay, Root6 disjointness, unary Root8, exact ABI/counts, validation receipts, and EOF hygiene"
       }
     ],
-    "disposition": "REVIEW PENDING for the exact immutable Attempt-10 report tuple. Only a fresh independent accepted review may advance it; no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "ACCEPTED by independent reviewer /root/attempt7_exact_review for the exact immutable Attempt-10 report tuple with no blockers. Acceptance is architecture-only and does not itself confer integration eligibility, establish G10, or grant implementation, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority."
   }
 ]
 }
