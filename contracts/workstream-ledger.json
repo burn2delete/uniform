@@ -8914,7 +8914,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -9052,9 +9052,15 @@
         "at": "2026-08-30T23:41:40Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 0326fe6b6d234746a123366b442ffe3f8468f171 and immutable architecture-only report candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84 after pre-freeze semantic PASS and independent documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-30T23:42:18Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review of immutable Attempt-12 candidate b9f025965baf786af80701defde036e9bae1b4ca, tree 9f0f4376da77b1206dd3eae3c25837fecb980fcf, report SHA-256 995cc70e06568f2863a5a4e071ecd6def162f9b23cc2e54ba196b7c1f6657e84: closed missing/arity/non-tail related-id mapping, greatest-depth nearest selection, combined arity-before-tail priority, passed Attempt-11 duplicate/recur-owner corrections, preserved G10 topology, feasible evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-12 record for exact immutable report candidate b9f025965baf786af80701defde036e9bae1b4ca over terminal Attempt-11 main 0326fe6b6d234746a123366b442ffe3f8468f171. It closes the sole Attempt-11 blocker with mandatory reason-dispatched one-id recur evidence, exact greatest-depth selection, and combined arity-before-tail priority while preserving every passed correction and all G10 topology. No review, acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-12 record for exact immutable report candidate b9f025965baf786af80701defde036e9bae1b4ca over terminal Attempt-11 main 0326fe6b6d234746a123366b442ffe3f8468f171. Fresh independent exact acceptance is required. No acceptance, integration eligibility, implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
