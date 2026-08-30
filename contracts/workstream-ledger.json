@@ -8423,7 +8423,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-6"
     ],
@@ -8484,7 +8484,10 @@
         "Root8 accepts pending, digest, receipt, replay map, selector, invocation facts, or later-root result from its caller",
         "well-shaped arbitrary, reversed, cross-request, wrong-prefix, wrong-algorithm, or coordinated digest substitution within a root's authority",
         "Root6 calls producer roots or request, preimage, digest, path-materialization, or candidate helpers",
-        "twentieth success purpose, dependency-edge drift, path-census drift, implementation edit, test edit, fixture edit, or pin edit"
+      "twentieth success purpose, dependency-edge drift, path-census drift, implementation edit, test edit, fixture edit, or pin edit",
+      "catalog-only malformed-authenticated-pattern-shape treated as an independently derivable Root1 source-semantic pending reason",
+      "catalog-only ambiguous-recur-target treated as derivable despite unique authenticated parent-form ancestry selecting one nearest target",
+      "positive Root1/finalization fixture required for a whitelist reason with no authentic producer emission"
       ],
       "stable_diagnostics": [
         "WG008",
@@ -8518,7 +8521,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt7_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 plan executor, runtime-check host, digest transport, and observer",
       "the host may compute reader-canonical-hash for transport and parity but no host digest, receipt, pending envelope, or replay map is B51 semantic authority",
@@ -8550,9 +8559,15 @@
         "at": "2026-08-30T09:24:54Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "request fresh independent exact review of the immutable Attempt-9 tuple, explicit B51 algorithm migration, exact Root1 source-semantic whitelist, later-root pending unreachability, truthful Root4/5 authority split, Roots4-7 digest replay, Root6 disjointness, unary one-Root1 Root8 finalization, exact public ABI/counts, feasible evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-30T09:30:13Z",
+        "actor": "/root/attempt7_exact_review",
+        "reason": "REJECT exact immutable candidate 6e3d0c7ef365cb3034c430d654e7fab7adccbef9, tree 64c3cfb036ef549d35dfd8acebabb851fcb54cd5, report SHA-256 3f1ea73571b4ab40e5126d16710956c2a34483c6dce2f19fe84d23f898e203d0 after withdrawing an initial acceptance: malformed-authenticated-pattern-shape and ambiguous-recur-target occur only in catalog/diagnostic mappings and have no authentic Root1 producer emission, so the required positive pending/finalization fixtures for every whitelist reason are infeasible"
       }
     ],
-    "disposition": "REVIEW PENDING for the exact immutable Attempt-9 report tuple. Only a fresh independent accepted review may advance it; no implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt7_exact_review for the exact immutable Attempt-9 report tuple after correction and explicit withdrawal of an initial acceptance. A successor must remove catalog-only unreachable reasons from source-semantic pending authority or add genuine authenticated producer predicates and feasible fixtures. No implementation, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
