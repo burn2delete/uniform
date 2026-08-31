@@ -375,11 +375,20 @@
                           (assoc-address product address
                                          (bound-slot-value product request address)))
                         neutral path-slot-addresses)
-        resolved (mapv (fn [digest-request]
-                         (resolve-digest (:purpose digest-request)
-                                         (:preimage digest-request)))
-                       (:digest-requests initial))
-        rebound (assoc initial :resolved-digests resolved)]
+        resolved (reduce (fn [values digest-request]
+                           (conj values
+                                 (resolve-digest (:purpose digest-request)
+                                                 (:preimage digest-request)
+                                                 values)))
+                         [] (:digest-requests initial))
+        provenance-index (:provenance-ordinal
+                          (purpose-indexes (:digest-requests initial)))
+        provenance-id (get resolved provenance-index)
+        rebound (-> initial
+                    (assoc :resolved-digests resolved)
+                    (assoc-in [:canonical-core-artifact
+                               :provenance-binding-id]
+                              provenance-id))]
     ;; The raw template has the same vector contract and receives the exact
     ;; same rebound digest requests and values, never a separately derived copy.
     (assoc-in rebound [:raw-template-result :digest-requests]

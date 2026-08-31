@@ -11,10 +11,12 @@
     (str "sha256:"
          (apply str (map #(format "%02x" (bit-and % 0xff)) (.digest digest))))))
 
-(defn- resolver [purpose preimage]
-  (bootstrap/reader-canonical-hash
-   {:domain :gravity/sh07-declared-digest-v1
-    :purpose purpose :preimage preimage}))
+(defn- resolver
+  ([purpose preimage] (resolver purpose preimage []))
+  ([purpose preimage _resolved]
+   (bootstrap/reader-canonical-hash
+    {:domain :gravity/sh07-declared-digest-v1
+     :purpose purpose :preimage preimage})))
 
 (defn- snapshot [path]
   (let [bytes (.getBytes "(ns demo.core)" StandardCharsets/UTF_8)]
