@@ -10,7 +10,10 @@ requirements.
 
 The executable policy is `contracts/workstream-governance.json`. Current
 candidate and terminal dispositions are recorded in
-`contracts/workstream-ledger.json`.
+`contracts/workstream-ledger.json`; the compact v2 manifest points to
+per-workstream shards under `contracts/workstream-records/` and active
+reservations under `contracts/workstream-active/`. See
+`docs/workstream-ledger-v2.md` for the storage and migration contract.
 
 ## Lifecycle
 
@@ -23,8 +26,9 @@ draft -> frozen -> review-pending -> accepted
 
 Work may instead be held, rejected, superseded, or abandoned through an allowed
 transition. Those dispositions preserve history but confer no roadmap or
-integration credit. Terminal entries are immutable in version 1 of the
-contract.
+integration credit. Terminal entries are immutable and content-addressed in
+version 2 of the contract; active candidates remain one-file reservations
+until a terminal publication closes them.
 
 The ledger does not fabricate lifecycle events for commits integrated before
 this policy existed. Those commits remain Git history and reconciliation facts;
@@ -46,6 +50,12 @@ dependencies, terminal history, and integration-only authority ceiling. A
 terminally rejected record may be cited as history, but it can never be an
 authority dependency. The pre-freeze gate checks these relations before review
 or freezing:
+
+The report block is an immutable pre-freeze tuple, so its `status` is always
+exactly `draft`. The ledger owns the evolving lifecycle state and may later be
+`frozen`, `review-pending`, or `accepted` without rewriting the candidate
+report. When a ledger record carries lifecycle history, that history must begin
+at `draft`.
 
 When the v2 sharded ledger is in use, the linter authenticates each referenced
 record path and SHA-256 before consulting base, report, or dependency fields;

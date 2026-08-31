@@ -5,6 +5,7 @@
   (:import (java.io PushbackReader StringReader)
            (java.nio.charset CharacterCodingException CodingErrorAction StandardCharsets)
            (java.nio.file Files LinkOption Path Paths)
+           (java.security MessageDigest)
            (java.time Instant DateTimeException)))
 
 (def ^:private maximum-json-bytes (* 2 1024 1024))
@@ -16,7 +17,8 @@
 (def ^:private ledger-schema-keys
   #{"contract_id" "top_level_keys" "workstream_keys" "evidence_keys"
     "validation_command_keys" "review_keys" "history_event_keys"
-    "authority_keys"})
+    "authority_keys" "manifest_keys" "manifest_entry_keys"
+    "migration_keys"})
 
 (def ^:private lifecycle-keys
   #{"states" "active_candidate_states" "failure_states" "terminal_states"
@@ -31,6 +33,18 @@
 
 (def ^:private ledger-keys
   #{"schema_version" "contract_id" "governance_contract" "workstreams"})
+
+(def ^:private sharded-ledger-keys
+  #{"schema_version" "contract_id" "governance_contract" "record_root"
+    "active_root" "record_count" "terminal_count" "active_count"
+    "aggregate_sha256" "migration" "records"})
+(def ^:private manifest-entry-keys
+  #{"id" "path" "sha256" "state" "invariant_family" "dependencies"
+    "terminal" "ordinal"})
+(def ^:private migration-keys
+  #{"source_path" "source_sha256" "source_schema_version"
+    "source_contract_id" "decoded_aggregate_sha256"
+    "decoded_record_count" "parity"})
 
 (def ^:private workstream-keys
   #{"architecture_decision" "author" "base_commit" "candidate_commit"
@@ -112,7 +126,8 @@
    "WG009" "integration evidence is incomplete or malformed"
    "WG010" "an independent accepted review is absent or is not independent"
    "WG011" "a self-audit attempted to confer integration eligibility"
-   "WG012" "an authority or product-completion overclaim was attempted"})
+   "WG012" "an authority or product-completion overclaim was attempted"
+   "WG013" "a sharded manifest, active reservation, or immutable terminal record was tampered with"})
 (def ^:private nonclaims
   ["Ledger acceptance does not establish implementation correctness."
    "Integration eligibility is authority only to request integration of the exact candidate commit over the exact base commit."
@@ -282,6 +297,54 @@
                   {:path (str resolved) :maximum maximum-json-bytes}))
     (read-strict-json (strict-utf8 bytes))))
 
+(defn- json-escape [value]
+  (let [output (StringBuilder.)]
+    (.append output \" )
+    (doseq [character (str value)]
+      (case character
+        \" (.append output "\\\"")
+        \\ (.append output "\\\\")
+        \backspace (.append output "\\b")
+        \formfeed (.append output "\\f")
+        \newline (.append output "\\n")
+        \return (.append output "\\r")
+        \tab (.append output "\\t")
+        (if (< (int character) 0x20)
+          (.append output (format "\\u%04x" (int character)))
+          (.append output character))))
+    (.append output \" )
+    (str output)))
+
+(declare canonical-json)
+
+(defn- canonical-json-map [value]
+  (str "{" (str/join "," (map (fn [[key item]]
+                                (str (json-escape key) ":"
+                                     (canonical-json item)))
+                              (sort-by (comp str key) value))) "}"))
+
+(defn canonical-json
+  "Returns deterministic JSON used for migration and aggregate digests."
+  [value]
+  (cond
+    (nil? value) "null"
+    (true? value) "true"
+    (false? value) "false"
+    (string? value) (json-escape value)
+    (map? value) (canonical-json-map value)
+    (or (vector? value) (list? value) (seq? value))
+    (str "[" (str/join "," (map canonical-json value)) "]")
+    (number? value) (str value)
+    :else (throw (ex-info "unsupported JSON value"
+                          {:value value :diagnostic "WG013"}))))
+
+(defn- sha256-bytes [bytes]
+  (let [digest (.digest (MessageDigest/getInstance "SHA-256") bytes)]
+    (apply str (map #(format "%02x" (bit-and (int %) 0xff)) digest))))
+
+(defn- sha256-text [value]
+  (sha256-bytes (.getBytes (str value) StandardCharsets/UTF_8)))
+
 (defn- issue [code location message]
   (str code " " location ": " message))
 
@@ -335,7 +398,12 @@
     [(issue "WG002" location (str "must remain exactly " (pr-str expected)))]))
 
 (defn validate-contract
-  "Validates that the governance contract exactly retains the v1 policy."
+  "Validates that the governance contract exactly retains the policy.
+
+  The lifecycle policy remains v1-compatible while its canonical ledger
+  representation is the sharded v2 manifest.  Keeping the workstream and
+  nested record shapes here lets old, synthetic v1 fixtures continue to be
+  checked by the same fail-closed rules during migration."
   [contract]
   (let [shape-errors (closed-errors contract contract-keys "contract" "WG002")]
     (if (seq shape-errors)
@@ -345,13 +413,16 @@
             admission (get contract "admission_policy")
             diagnostics (get contract "diagnostics")
             expected-schema
-            {"top_level_keys" (sort ledger-keys)
+            {"top_level_keys" (sort sharded-ledger-keys)
              "workstream_keys" (sort workstream-keys)
              "evidence_keys" (sort evidence-keys)
              "validation_command_keys" (sort command-keys)
              "review_keys" (sort review-keys)
              "history_event_keys" (sort history-keys)
-             "authority_keys" (sort authority-keys)}]
+             "authority_keys" (sort authority-keys)
+             "manifest_keys" (sort sharded-ledger-keys)
+             "manifest_entry_keys" (sort manifest-entry-keys)
+             "migration_keys" (sort migration-keys)}]
         (vec
          (concat
           (when-not (and (integer? (get contract "schema_version"))
@@ -366,7 +437,7 @@
                          "WG002")
           (when (map? schema)
             (concat
-             (when-not (= "gravity/workstream-ledger-v1"
+             (when-not (= "gravity/workstream-ledger-v2"
                           (get schema "contract_id"))
                [(issue "WG002" "contract.ledger_schema.contract_id"
                        "unsupported ledger contract")])
@@ -706,8 +777,11 @@
             errors))]
     (vec (concat basic cycle-errors))))
 
-(defn validate-ledger
-  "Validates an already-decoded workstream ledger and returns diagnostics."
+(defn- validate-v1-ledger
+  "Validates an already-decoded v1 workstream ledger.
+
+  Kept as the compatibility checker for synthetic fixtures and as the final
+  semantic check after a v2 manifest has been decoded into its aggregate."
   [ledger]
   (let [shape-errors (closed-errors ledger ledger-keys "ledger" "WG001")]
     (if (seq shape-errors)
@@ -776,13 +850,329 @@
                            "two rejected candidates require an architecture decision")]))
                indexed)))))))))
 
+(defn- manifest-issue [location message]
+  (issue "WG013" location message))
+
+(defn- safe-manifest-path? [value]
+  (and (string? value)
+       (not (str/blank? value))
+       (not (str/starts-with? value "/"))
+       (not (str/starts-with? value "~"))
+       (not (str/includes? value "\\"))
+       (let [parts (str/split value #"/")]
+         (and (every? #(and (not (str/blank? %))
+                            (not (contains? #{"." ".."} %)))
+                      parts)
+              (str/starts-with? value "contracts/")))))
+
+(defn- path-for [value]
+  (.normalize (.toAbsolutePath (Paths/get value (make-array String 0)))))
+
+(defn- exact-sha256? [value]
+  (and (string? value) (boolean (re-matches #"[0-9a-f]{64}" value))))
+
+(defn- regular-files-under [^Path root]
+  (if-not (Files/exists root (make-array LinkOption 0))
+    []
+    (let [stream (Files/walk root (into-array java.nio.file.FileVisitOption []))]
+      (try
+        (vec
+         (filter (fn [^Path path]
+                   (and (Files/isRegularFile path (make-array LinkOption 0))
+                        (str/ends-with? (str/lower-case (str (.getFileName path)))
+                                        ".json")))
+                 (iterator-seq (.iterator stream))))
+        (finally (.close stream))))))
+
+(defn- symlink-component? [^Path path]
+  (loop [current path]
+    (if current
+      (if (Files/isSymbolicLink current)
+        true
+        (recur (.getParent current)))
+      false)))
+
+(defn- read-shard [path location]
+  (try
+    (when (symlink-component? path)
+      (throw (ex-info "shard path contains a symbolic link" {})))
+    (when-not (Files/isRegularFile path (make-array LinkOption 0))
+      (throw (ex-info "shard path is not a regular file" {})))
+    (let [bytes (Files/readAllBytes path)]
+      (when (> (alength bytes) maximum-json-bytes)
+        (throw (ex-info "shard exceeds byte limit" {})))
+      {:bytes bytes :value (read-strict-json (strict-utf8 bytes))})
+    (catch Throwable exception
+      {:error (manifest-issue location (.getMessage exception))})))
+
+(defn- manifest-shape-errors [manifest]
+  (let [shape (closed-errors manifest sharded-ledger-keys "ledger" "WG001")]
+    (if (seq shape)
+      shape
+      (vec
+       (concat
+        (when-not (= 2 (get manifest "schema_version"))
+          [(manifest-issue "ledger.schema_version" "must be 2")])
+        (when-not (= "gravity/workstream-ledger-v2" (get manifest "contract_id"))
+          [(manifest-issue "ledger.contract_id" "unsupported sharded ledger contract")])
+        (when-not (= "contracts/workstream-governance.json"
+                     (get manifest "governance_contract"))
+          [(manifest-issue "ledger.governance_contract"
+                           "must name contracts/workstream-governance.json")])
+        (mapcat (fn [field]
+                  (when-not (safe-manifest-path? (get manifest field))
+                    [(manifest-issue (str "ledger." field)
+                                     "must be a safe repository-relative path")]))
+                ["record_root" "active_root"])
+        (when-not (= "contracts/workstream-records" (get manifest "record_root"))
+          [(manifest-issue "ledger.record_root"
+                           "must be contracts/workstream-records")])
+        (when-not (= "contracts/workstream-active" (get manifest "active_root"))
+          [(manifest-issue "ledger.active_root"
+                           "must be contracts/workstream-active")])
+        (mapcat (fn [field]
+                  (when-not (and (integer? (get manifest field))
+                                 (not (neg? (get manifest field))))
+                    [(manifest-issue (str "ledger." field)
+                                     "must be a non-negative integer")]))
+                ["record_count" "terminal_count" "active_count"])
+        (when-not (exact-sha256? (get manifest "aggregate_sha256"))
+          [(manifest-issue "ledger.aggregate_sha256"
+                           "must be lowercase SHA-256")])
+        (closed-errors (get manifest "migration") migration-keys
+                       "ledger.migration" "WG013")
+        (when (map? (get manifest "migration"))
+          (concat
+           (when-not (safe-manifest-path?
+                      (get-in manifest ["migration" "source_path"]))
+             [(manifest-issue "ledger.migration.source_path"
+                              "must be a safe repository-relative path")])
+           (when-not (= "contracts/workstream-ledger-v1.json"
+                        (get-in manifest ["migration" "source_path"]))
+             [(manifest-issue "ledger.migration.source_path"
+                              "must name the retained v1 migration source")])
+           (when-not (exact-sha256? (get-in manifest ["migration" "source_sha256"]))
+             [(manifest-issue "ledger.migration.source_sha256"
+                              "must be lowercase SHA-256")])
+           (when-not (= 1 (get-in manifest ["migration" "source_schema_version"]))
+             [(manifest-issue "ledger.migration.source_schema_version"
+                              "must be 1")])
+           (when-not (= "gravity/workstream-ledger-v1"
+                        (get-in manifest ["migration" "source_contract_id"]))
+             [(manifest-issue "ledger.migration.source_contract_id"
+                              "must name the v1 aggregate contract")])
+           (when-not (exact-sha256?
+                      (get-in manifest ["migration" "decoded_aggregate_sha256"]))
+             [(manifest-issue "ledger.migration.decoded_aggregate_sha256"
+                              "must be lowercase SHA-256")])
+           (when-not (and (= "exact" (get-in manifest ["migration" "parity"]))
+                          (= (get manifest "record_count")
+                             (get-in manifest ["migration" "decoded_record_count"])))
+             [(manifest-issue "ledger.migration.parity"
+                              "decoded aggregate parity must be exact")]))
+        (let [records (get manifest "records")]
+          (if-not (vector? records)
+            [(manifest-issue "ledger.records" "must be a list")]
+            (reduce
+             (fn [errors [index entry]]
+               (let [location (str "ledger.records[" index "]")
+                     entry-errors
+                     (vec
+                      (concat
+                       (closed-errors entry manifest-entry-keys location "WG013")
+                       (when (map? entry)
+                         (vec
+                          (concat
+                           (when-not (nonempty-text? (get entry "id"))
+                             [(manifest-issue (str location ".id")
+                                              "must be a nonempty stable identifier")])
+                           (when (and (nonempty-text? (get entry "id"))
+                                      (not (re-matches #"[a-z0-9][a-z0-9./-]*"
+                                                        (get entry "id"))))
+                             [(manifest-issue (str location ".id")
+                                              "must use stable identifier syntax")])
+                           (when-not (safe-manifest-path? (get entry "path"))
+                             [(manifest-issue (str location ".path")
+                                              "must be a safe repository-relative path")])
+                           (when-not (exact-sha256? (get entry "sha256"))
+                             [(manifest-issue (str location ".sha256")
+                                              "must be lowercase SHA-256")])
+                           (when-not (contains? state-set (get entry "state"))
+                             [(manifest-issue (str location ".state")
+                                              "unknown lifecycle state")])
+                           (when-not (nonempty-text? (get entry "invariant_family"))
+                             [(manifest-issue (str location ".invariant_family")
+                                              "must be a nonempty string")])
+                           (when-not (vector? (get entry "dependencies"))
+                             [(manifest-issue (str location ".dependencies")
+                                              "must be a list")])
+                           (when-not (instance? Boolean (get entry "terminal"))
+                             [(manifest-issue (str location ".terminal")
+                                              "must be a boolean")])
+                           (when-not (and (integer? (get entry "ordinal"))
+                                          (not (neg? (get entry "ordinal"))))
+                             [(manifest-issue (str location ".ordinal")
+                                              "must be a non-negative integer")]))))))]
+                 (into errors entry-errors)))
+             []
+             (map-indexed vector records))))))))))
+
+(defn- shard-entry-read [entry index]
+  (let [location (str "ledger.records[" index "]")
+        relative (get entry "path")
+        path (path-for relative)
+        id (get entry "id")
+        terminal? (true? (get entry "terminal"))
+        expected-path (if terminal?
+                       (str "contracts/workstream-records/terminal/"
+                            id "-" (get entry "sha256") ".json")
+                       (str "contracts/workstream-active/" id ".json"))
+        path-errors (if (= relative expected-path)
+                      []
+                      [(manifest-issue (str location ".path")
+                                       "does not match state, id, and content hash")])
+        result (read-shard path location)
+        bytes (:bytes result)
+        value (:value result)
+        read-errors (if-let [error (:error result)] [error] [])
+        hash-errors (if (and bytes (exact-sha256? (get entry "sha256"))
+                             (not= (get entry "sha256") (sha256-bytes bytes)))
+                      [(manifest-issue (str location ".sha256")
+                                       "content hash does not match shard bytes")]
+                      [])
+        consistency-errors (if (map? value)
+                             (vec
+                              (concat
+                               (when-not (= id (get value "id"))
+                                 [(manifest-issue (str location ".id")
+                                                  "does not match decoded record id")])
+                               (when-not (= (get entry "state") (get value "state"))
+                                 [(manifest-issue (str location ".state")
+                                                  "does not match decoded record state")])
+                               (when-not (= (get entry "invariant_family")
+                                            (get value "invariant_family"))
+                                 [(manifest-issue (str location ".invariant_family")
+                                                  "does not match decoded record family")])
+                               (when-not (= (get entry "dependencies")
+                                            (get value "dependencies"))
+                                 [(manifest-issue (str location ".dependencies")
+                                                  "does not match decoded record dependencies")])))
+                             [])]
+    {:entry entry
+     :value value
+     :errors (vec (concat path-errors read-errors hash-errors consistency-errors))}))
+
+(defn- validate-sharded-ledger-file [manifest _ledger-path]
+  (let [shape-errors (manifest-shape-errors manifest)]
+    (if (seq shape-errors)
+      {:errors shape-errors :ledger nil}
+      (let [entries (get manifest "records")
+            ids (mapv #(get % "id") entries)
+            paths (mapv #(get % "path") entries)
+            ordinals (mapv #(get % "ordinal") entries)
+            n (count entries)
+            record-root-path (path-for (get manifest "record_root"))
+            active-root-path (path-for (get manifest "active_root"))
+            root-files (concat
+                        (regular-files-under record-root-path)
+                        (regular-files-under active-root-path))
+            root-relative (set (map #(str (.relativize (path-for ".") %)) root-files))
+            listed-paths (set paths)
+            duplicate-ids (for [[id count] (frequencies ids) :when (> count 1)] id)
+            duplicate-paths (for [[path count] (frequencies paths) :when (> count 1)] path)
+            base-errors (vec
+                         (concat
+                          (when-not (= ids (vec (sort ids)))
+                            [(manifest-issue "ledger.records"
+                                             "entries must be sorted lexicographically by id")])
+                          (map #(manifest-issue "ledger.records"
+                                                (str "duplicate workstream id " %)) duplicate-ids)
+                          (map #(manifest-issue "ledger.records"
+                                                (str "duplicate shard path " %)) duplicate-paths)
+                          (when-not (= (set ordinals) (set (range n)))
+                            [(manifest-issue "ledger.records.ordinal"
+                                             "ordinals must be unique and contiguous")])
+                          (when-not (= n (get manifest "record_count"))
+                            [(manifest-issue "ledger.record_count" "does not match records")])
+                          (when-not (= (count (filter #(true? (get % "terminal")) entries))
+                                       (get manifest "terminal_count"))
+                            [(manifest-issue "ledger.terminal_count" "does not match records")])
+                          (when-not (= (count (remove #(true? (get % "terminal")) entries))
+                                       (get manifest "active_count"))
+                            [(manifest-issue "ledger.active_count" "does not match records")])
+                          (when (symlink-component? record-root-path)
+                            [(manifest-issue "ledger.record_root"
+                                             "record root contains a symbolic link")])
+                          (when (symlink-component? active-root-path)
+                            [(manifest-issue "ledger.active_root"
+                                             "active root contains a symbolic link")])
+                          (map #(manifest-issue "ledger.records"
+                                                (str "unreferenced JSON shard " %))
+                               (sort (remove listed-paths root-relative)))
+                          (map #(manifest-issue "ledger.records"
+                                                (str "missing JSON shard " %))
+                               (sort (remove root-relative listed-paths)))))
+            loaded (mapv #(shard-entry-read %1 %2) entries (range))
+            migration-source (read-shard
+                              (path-for (get-in manifest ["migration" "source_path"]))
+                              "ledger.migration.source_path")
+            source-bytes (:bytes migration-source)
+            source-value (:value migration-source)
+            source-errors (if-let [error (:error migration-source)] [error] [])
+            source-hash-errors
+            (if (and source-bytes
+                     (exact-sha256? (get-in manifest ["migration" "source_sha256"]))
+                     (not= (get-in manifest ["migration" "source_sha256"])
+                           (sha256-bytes source-bytes)))
+              [(manifest-issue "ledger.migration.source_sha256"
+                               "migration source hash does not match bytes")]
+              [])
+            errors (vec (concat base-errors (mapcat :errors loaded)
+                                source-errors source-hash-errors))
+            ordered (mapv :value (sort-by #(get-in % [:entry "ordinal"]) loaded))
+            aggregate {"schema_version" 1
+                       "contract_id" "gravity/workstream-ledger-v1"
+                       "governance_contract" "contracts/workstream-governance.json"
+                       "workstreams" ordered}
+            aggregate-digest (sha256-text (canonical-json (get aggregate "workstreams")))
+            semantic-errors (if (seq errors) [] (validate-v1-ledger aggregate))
+            source-parity-errors
+            (if (and (map? source-value)
+                     (or (not= (sha256-text
+                                (canonical-json (get source-value "workstreams")))
+                               (get-in manifest ["migration" "decoded_aggregate_sha256"]))
+                         (not= (count (get source-value "workstreams"))
+                               (get-in manifest ["migration" "decoded_record_count"]))))
+              [(manifest-issue "ledger.migration.source_path"
+                               "migration source decoded aggregate differs from migration proof")]
+              [])
+            digest-errors (if (= aggregate-digest (get manifest "aggregate_sha256"))
+                           []
+                           [(manifest-issue "ledger.aggregate_sha256"
+                                            "decoded aggregate digest does not match")])]
+        {:errors (vec (concat errors digest-errors source-parity-errors semantic-errors))
+         :ledger aggregate}))))
+
+(defn validate-ledger
+  "Validates an already-decoded v1 ledger or the structural shape of a v2 manifest.
+
+  Filesystem-backed v2 validation is performed by validate-documents so hashes,
+  path ownership, and decoded aggregate parity can be checked as well."
+  [ledger]
+  (if (= 2 (get ledger "schema_version"))
+    (manifest-shape-errors ledger)
+    (validate-v1-ledger ledger)))
+
 (defn validate-documents
-  "Loads and validates a governance contract and ledger."
+  "Loads and validates a governance contract and either ledger representation."
   [contract-path ledger-path]
   (try
     (let [contract (load-json contract-path)
           ledger (load-json ledger-path)]
-      (vec (concat (validate-contract contract) (validate-ledger ledger))))
+      (if (= 2 (get ledger "schema_version"))
+        (let [{:keys [errors]} (validate-sharded-ledger-file ledger ledger-path)]
+          (vec (concat (validate-contract contract) errors)))
+        (vec (concat (validate-contract contract) (validate-v1-ledger ledger)))))
     (catch Throwable exception
       [(issue "WG001" "json" (.getMessage exception))])))
 
@@ -820,10 +1210,13 @@
         (do (binding [*out* *err*] (doseq [error errors] (println error)))
             (System/exit 1))
         (let [document (load-json ledger)
-              counts (sort-by key (frequencies (map #(get % "state")
-                                                    (get document "workstreams"))))]
+              aggregate (if (= 2 (get document "schema_version"))
+                          (:ledger (validate-sharded-ledger-file document ledger))
+                          document)
+              records (get aggregate "workstreams")
+              counts (sort-by key (frequencies (map #(get % "state") records)))]
           (println (str "validation passed: "
-                        (count (get document "workstreams")) " workstreams; "
+                        (count records) " workstreams; "
                         (str/join ", " (map (fn [[state count]]
                                                (str state "=" count)) counts))))
           (System/exit 0))))
