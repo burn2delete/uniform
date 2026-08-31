@@ -38,5 +38,4 @@
   "bootstrap/clojure/src/gravity/pass_cache.clj" 2691
   "bootstrap/clojure/src/gravity/pass_execution.clj" 1186
   "bootstrap/clojure/src/gravity/profile_validation.clj" 569
-  "bootstrap/clojure/src/gravity/self_hosting/a1_canonical_schema.clj" 922
-  "bootstrap/clojure/src/gravity/tooling/full_language_roadmap.clj" 251}}
+  "bootstrap/clojure/src/gravity/self_hosting/a1_canonical_schema.clj" 922}}

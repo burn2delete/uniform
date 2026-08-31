@@ -238,8 +238,7 @@
       (let [errors (validate-text (slurp file) false)]
         (when (empty? errors)
           (throw (ex-info (str "rejected fixture unexpectedly passed " (.getPath file))
-                          {:diagnostic "FLR005"}))))
-      )
+                          {:diagnostic "FLR005"})))))
     (let [stale (seed-retirement-truth-errors
                  (str/join "\n" incomplete-markers)
                  {"p15-s23 final seed-retirement report" "Status: complete\n`:clojure-seed-retired? true`"
