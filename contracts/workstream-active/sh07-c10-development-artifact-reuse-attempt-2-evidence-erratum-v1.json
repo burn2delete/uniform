@@ -1,0 +1,141 @@
+{
+  "architecture_decision": "Preserve the immutable integrated attempt-2 lifecycle record and append a replayable erratum for two incorrect carrier paths, eight aggregate fixture aliases that do not exist, a nonexistent carrier namespace, and an unsupported --test-var runner command. Bind the correction to the actual source paths, exact test vars, the passing focused carrier namespace, and the documented direct clojure.test exact-var route.",
+  "author": "uniform-coordinator",
+  "base_commit": "ff53e58bf97db144038ceab8ca1ee24e356168e1",
+  "candidate_commit": "f243c71535ce4da70ae344ba4424afcca5dcc192",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-c10-development-artifact-reuse-attempt-2"
+  ],
+  "disposition": "Accepted for integration as an append-only evidence correction. Semantic-cache code is unchanged, the invalid original commands confer no evidence, and no additional implementation, performance, roadmap, release, self-hosting, or seed-retirement authority is granted.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum.md",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj#sh07-b8-semantic-carrier-authentic-acceptance-evidence"
+    ],
+    "rejected_fixtures": [
+      "contracts/workstream-records/terminal/sh07-c10-development-artifact-reuse-attempt-2-0f3648878a8cc926093861160e7d54e046fcbca3cf8b5ef201e8e82249c9a80a.json",
+      "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+    ],
+    "stable_diagnostics": [
+      "SH01-TEST-NAMESPACE",
+      "SH01-TEST-USAGE",
+      "Unsupported self-hosting test runner arguments"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh07-semantic-carrier-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh07-iteration-cache-runner-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1 clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e \"(require 'clojure.test 'gravity.self-hosting.sh07-try-catch-test) (binding [clojure.test/*report-counters* (ref clojure.test/*initial-report-counters*)] (clojure.test/test-vars [#'gravity.self-hosting.sh07-try-catch-test/sh07-b8-semantic-carrier-authentic-acceptance-evidence]) (let [r @clojure.test/*report-counters*] (prn r) (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1))))\"",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check ff53e58bf97db144038ceab8ca1ee24e356168e1..f243c71535ce4da70ae344ba4424afcca5dcc192",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref ff53e58bf97db144038ceab8ca1ee24e356168e1 --candidate-base ff53e58bf97db144038ceab8ca1ee24e356168e1 --candidate-commit f243c71535ce4da70ae344ba4424afcca5dcc192 --candidate-tree 1dfd80c4ebd67ae8b9559f7bc5f3b6680dfc80ba",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "contracts/workstream-governance.json",
+    "contracts/workstream-ledger.json",
+    "docs/workstream-governance.md",
+    "docs/development-verification.md",
+    "docs/artifacts/phase-15/sh07-semantic-run-product-carrier-v2.md"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:11:26Z",
+      "reason": "start an append-only correction after post-integration replay found inaccurate paths, fixture aliases, and commands",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:11:27Z",
+      "reason": "freeze exact base ff53e58bf97db144038ceab8ca1ee24e356168e1, candidate f243c71535ce4da70ae344ba4424afcca5dcc192, tree 1dfd80c4ebd67ae8b9559f7bc5f3b6680dfc80ba, and one-report scope",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:11:28Z",
+      "reason": "request independent exact review of the complete append-only correction set and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "review_sh07_lifecycle_erratum",
+      "at": "2026-08-31T20:11:29Z",
+      "reason": "accept both corrected paths, all exact fixture mappings, both corrected commands, the authorized-assumption boundary, and no-authority scope",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:11:30Z",
+      "reason": "exact identities, clean report-only candidate, focused replay, independent acceptance, residual invalid evidence, and nonclaims verified",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum-v1",
+  "invariant_family": "tooling/sh07-c10-development-artifact-reuse",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum.md"
+  ],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "the immutable original lifecycle record retains two nonexistent carrier paths, eight nonexistent aggregate fixture aliases, and two invalid validation commands",
+    "the erratum cannot retroactively establish that either invalid original command passed",
+    "the authentic direct exact-var lane was accepted under the user's explicit successful-run assumption and was not rerun during this bounded erratum",
+    "Clojure, the JVM, filesystem identity, dynamic redefinition, and the process-local cache remain temporary development boundaries"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "review_sh07_lifecycle_erratum"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 C10 development artifact reuse attempt 2 evidence erratum version 1"
+}
