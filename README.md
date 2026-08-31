@@ -34,6 +34,10 @@ clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
+Preflight is candidate-focused by default, so routine checks do not status all
+registered peer worktrees. Use `--worktree-scan all` (or `--full-inventory`)
+only when a bounded repository-wide inventory is needed.
+
 Use preflight `--mode integration` with the ledger's exact base, candidate, and
 tree identities immediately before integration. The command is read-only and
 fails on a dirty or detached candidate, an unresolved or divergent base, or an

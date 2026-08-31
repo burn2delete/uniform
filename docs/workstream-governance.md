@@ -78,6 +78,23 @@ clojure -M tools/check_worktree_preflight.clj \
   --candidate-tree CANDIDATE_TREE
 ```
 
+Preflight is candidate-focused by default. It checks the exact candidate
+worktree already being admitted and does not enumerate or status every
+registered peer worktree. The JSON report marks this as
+`"worktree-scan":"candidate"` and `"complete?":false`. When a repository-wide
+diagnostic inventory is actually needed, request it explicitly:
+
+```bash
+clojure -M tools/check_worktree_preflight.clj \
+  --mode inspect --base-ref main --worktree-scan all
+```
+
+The full inventory is bounded at 256 registered worktrees and reports
+`WORKTREE-INVENTORY-BOUND` instead of performing an unbounded scan. The
+inventory mode never changes integration authority: only the candidate's
+cleanliness, branch identity, exact identities, and reconciliation relation
+can satisfy the integration preconditions.
+
 The preflight is read-only. It does not fetch, prune, reset, check out, merge,
 or delete. It distinguishes ancestry from tree equivalence. An identical or
 tree-equivalent candidate produces a `no_remerge` recommendation; replaying

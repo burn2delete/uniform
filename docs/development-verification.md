@@ -449,6 +449,31 @@ Receipts are published only after a selected test run returns normally;
 namespace-load or fixture exceptions retain the runner's existing error path
 and do not publish a partial receipt.
 
+### Exact-tree warm development worker
+
+Repeated exact development selections can reuse one already-started JVM:
+
+```bash
+clojure -M:warm-dev-worker \
+  --expected-commit CANDIDATE_COMMIT \
+  --expected-tree CANDIDATE_TREE \
+  --max-requests 64
+```
+
+The worker accepts one closed EDN request per input line. Requests must repeat
+the exact startup commit and tree and may use only explicit `--namespace` and
+`--exact` development-test selections, with optional `--fail-fast`. It checks
+the live commit, tree, and clean worktree before and after every request. Any
+failure, dirty checkout, identity drift, malformed request, or request bound
+terminates reuse. Output is returned in bounded `WARM_DEV` receipts.
+The protocol does not impose an in-JVM test deadline; its supervisor must set
+a wall-clock timeout and terminate the worker if a selected var does not
+return. A timed-out worker must not be reused.
+
+This worker is non-authoritative development feedback. It never supplies fresh
+integration or SH-07 evidence, and it does not alter the cold exported-tree,
+authoritative SH-07, release, self-hosting, or seed-retirement lanes.
+
 Stage3 fixed batches run directly through the Clojure runner:
 
 ```bash
@@ -500,6 +525,10 @@ Workstream lifecycle and integration eligibility are governed by:
 clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
 ```
+
+Inspection is candidate-focused by default. It reports the current candidate
+worktree without enumerating registered peers; use `--worktree-scan all` only
+for an explicit, bounded repository-wide inventory.
 
 The preflight is read-only. Integration mode requires the exact recorded base,
 candidate commit, candidate tree, named branch, and clean worktree. A passing
