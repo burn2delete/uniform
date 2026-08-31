@@ -22,9 +22,6 @@
 (def ^:private history-keys #{"id" "terminal_state" "role"})
 (def ^:private authority-fact-keys
   #{"integration_only" "release" "self_hosting" "seed_retirement"})
-(def ^:private lifecycle-states
-  #{"draft" "frozen" "review-pending" "accepted" "integration-eligible"
-    "integrated" "held" "rejected" "superseded" "abandoned"})
 (def ^:private terminal-states #{"rejected" "superseded" "abandoned"})
 (def ^:private exact-authority
   {"integration_only" true
@@ -419,9 +416,9 @@
         (when-not (safe-relative-path? (get block "report_path"))
           [(issue "AA003" (str location ".report_path")
                   "must be a safe repository-relative path")])
-        (when-not (contains? lifecycle-states (get block "status"))
-          [(issue "AA002" (str location ".status")
-                  "unknown lifecycle state")])
+        (when-not (= "draft" (get block "status"))
+          [(issue "AA003" (str location ".status")
+                  "must be exactly draft for the immutable pre-freeze tuple")])
         (when-not (and (string? (get block "base_commit"))
                        (re-matches oid-pattern (get block "base_commit")))
           [(issue "AA003" (str location ".base_commit")
@@ -512,27 +509,33 @@
 
 (defn- own-record-errors [block ledger]
   (when-let [record (get (ledger-by-id ledger) (get block "workstream_id"))]
-    (vec
-     (concat
-      (when-not (= (get block "invariant_family") (get record "invariant_family"))
-        [(issue "AA003" "report.authority.invariant_family"
-                "does not match the ledger workstream")])
-      (when-not (and (string? (get record "base_commit"))
-                     (re-matches oid-pattern (get record "base_commit")))
-        [(issue "AA003" "report.authority.base_commit"
-                "ledger workstream must carry an exact base commit")])
-      (when (not= (get block "base_commit") (get record "base_commit"))
-        [(issue "AA003" "report.authority.base_commit"
-                "does not match the ledger workstream")])
-      (when-not (and (string? (get record "architecture_decision"))
-                     (not (str/blank? (get record "architecture_decision")))
-                     (= (normalized-report-path (get record "architecture_decision"))
-                        (get block "report_path")))
-        [(issue "AA003" "report.authority.report_path"
-                "does not match the ledger architecture report")])
-      (when-not (= (get block "status") (get record "state"))
-        [(issue "AA003" "report.authority.status"
-                "does not match the ledger lifecycle state")])))))
+    (let [history-present? (contains? record "history")
+          history (get record "history")]
+      (vec
+       (concat
+        (when-not (= (get block "invariant_family") (get record "invariant_family"))
+          [(issue "AA003" "report.authority.invariant_family"
+                  "does not match the ledger workstream")])
+        (when-not (and (string? (get record "base_commit"))
+                       (re-matches oid-pattern (get record "base_commit")))
+          [(issue "AA003" "report.authority.base_commit"
+                  "ledger workstream must carry an exact base commit")])
+        (when (not= (get block "base_commit") (get record "base_commit"))
+          [(issue "AA003" "report.authority.base_commit"
+                  "does not match the ledger workstream")])
+        (when-not (and (string? (get record "architecture_decision"))
+                       (not (str/blank? (get record "architecture_decision")))
+                       (= (normalized-report-path
+                           (get record "architecture_decision"))
+                          (get block "report_path")))
+          [(issue "AA003" "report.authority.report_path"
+                  "does not match the ledger architecture report")])
+        (when (and history-present?
+                   (not (and (vector? history)
+                             (seq history)
+                             (= "draft" (get (first history) "state")))))
+          [(issue "AA003" "ledger.workstream.history[0].state"
+                  "lifecycle history must begin at draft")]))))))
 
 (defn- rejected-authority-phrase? [content phrase]
   (let [matcher (re-matcher (re-pattern (str "(?is)\\bintegrated\\s+" phrase))

@@ -25,9 +25,12 @@ Architecture reports have a closed, strict JSON authority block fenced as
 `json gravity-architecture-authority-v1`. The pre-freeze command runs the
 governance contract and ledger checks, then verifies exact report identity,
 integrated dependency states, terminal-history references, and the
-integration-only authority ceiling. Use `--legacy` only to inspect retained
-reports written before the block was introduced; legacy prose grants no
-authority and is checked for false claims such as describing a rejected
+integration-only authority ceiling. The block is the immutable pre-freeze
+tuple and therefore keeps `status` exactly `draft`; the ledger may advance its
+current state without requiring a report rewrite. If ledger lifecycle history
+is present, its first state must be `draft`. Use `--legacy` only to inspect
+retained reports written before the block was introduced; legacy prose grants
+no authority and is checked for false claims such as describing a rejected
 Attempt 15 as integrated.
 
 With the v2 sharded ledger, the linter verifies every manifest path and digest

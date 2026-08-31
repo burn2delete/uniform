@@ -42,6 +42,50 @@
                accepted-fixture (authority/read-report accepted-fixture)
                fixture-ledger))))
 
+(deftest immutable-draft-tuple-survives-ledger-lifecycle-advancement
+  (let [content (authority/read-report accepted-fixture)
+        advance
+        (fn [state]
+          (update-in fixture-ledger ["workstreams" 0]
+                     assoc
+                     "state" state
+                     "history" [{"state" "draft"}
+                                {"state" state}]))]
+    (doseq [state ["frozen" "review-pending" "accepted"]]
+      (testing state
+        (is (empty? (authority/validate-report-content
+                     accepted-fixture content (advance state))))))))
+
+(deftest immutable-authority-status-must-remain-draft
+  (let [content (authority/read-report accepted-fixture)
+        mutated (str/replace content "\"status\": \"draft\""
+                             "\"status\": \"frozen\"")
+        errors (authority/validate-report-content accepted-fixture mutated
+                                                  fixture-ledger)]
+    (is (has-code? errors "AA003"))
+    (is (some #(str/includes? % "immutable pre-freeze tuple") errors))))
+
+(deftest lifecycle-history-begins-at-draft-when-present
+  (let [content (authority/read-report accepted-fixture)
+        ledger (update-in fixture-ledger ["workstreams" 0]
+                          assoc
+                          "state" "frozen"
+                          "history" [{"state" "frozen"}])
+        errors (authority/validate-report-content accepted-fixture content ledger)]
+    (is (has-code? errors "AA003"))
+    (is (some #(str/includes? % "history must begin at draft") errors))))
+
+(deftest unrelated-own-record-tuple-mismatches-still-fail
+  (let [content (authority/read-report accepted-fixture)]
+    (doseq [[field value]
+            [["invariant_family" "architecture/wrong-family"]
+             ["base_commit" "0000000000000000000000000000000000000000"]
+             ["architecture_decision" "docs/wrong-report.md"]]]
+      (testing field
+        (let [ledger (assoc-in fixture-ledger ["workstreams" 0 field] value)
+              errors (authority/validate-report-content accepted-fixture content ledger)]
+          (is (has-code? errors "AA003")))))))
+
 (deftest rejected-integrated-history-fails-closed
   (let [errors (authority/validate-report-content
                 rejected-fixture (authority/read-report rejected-fixture)

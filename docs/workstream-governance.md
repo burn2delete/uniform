@@ -47,6 +47,12 @@ terminally rejected record may be cited as history, but it can never be an
 authority dependency. The pre-freeze gate checks these relations before review
 or freezing:
 
+The report block is an immutable pre-freeze tuple, so its `status` is always
+exactly `draft`. The ledger owns the evolving lifecycle state and may later be
+`frozen`, `review-pending`, or `accepted` without rewriting the candidate
+report. When a ledger record carries lifecycle history, that history must begin
+at `draft`.
+
 When the v2 sharded ledger is in use, the linter authenticates each referenced
 record path and SHA-256 before consulting base, report, or dependency fields;
 missing, unreadable, or tampered shards fail closed.
