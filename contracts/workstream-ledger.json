@@ -9726,7 +9726,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9853,9 +9853,15 @@
         "at": "2026-08-31T05:15:01Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 50e8d14422effd26a6ded2f34f94765f050461ac and immutable architecture-only Attempt-17 candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T05:15:35Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/attempt11_exact_review of immutable Attempt-17 candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2: within-caller byte equality, forbidden cross-caller equality, preserved Attempt-16 probe/OR and Attempt-15 bounds/cycles, G13 authority, evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-17 candidate for exact independent review. No review result, acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-17 candidate for fresh independent exact review. No acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
   }
 ]
 }
