@@ -10600,7 +10600,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19",
@@ -10739,9 +10739,15 @@
         "at": "2026-08-31T15:33:27Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 53893d3371f35b84ddde5850dfcf3f9f13c53c68 and immutable architecture-only Attempt-20 candidate 1e387f10e60bd338f2d2f82306f7ae5eea6c4fec, tree 23c1019a29df3699997f816ea13fd18027c45b19, report SHA-256 2ae086ef5d46bf44e95895dbef8ec68347511f96a5043c0c205787f5ce9abf5b after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T15:34:28Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/implementation_writer of immutable Attempt-20 candidate 1e387f10e60bd338f2d2f82306f7ae5eea6c4fec, tree 23c1019a29df3699997f816ea13fd18027c45b19, report SHA-256 2ae086ef5d46bf44e95895dbef8ec68347511f96a5043c0c205787f5ce9abf: adapter-authored digest-bound decimal-occurrence projection and raw-to-adapted joins, authentic current-C2 canonical-byte replay, sole G20 byte-census authority, mandatory Root8 transitive public-Root1 execution versus forbidden Root8 direct authority, preserved rejection semantics, evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN immutable architecture-only Attempt-20 candidate awaiting fresh independent exact review. It governs the prerequisite adapted-C2 decimal-occurrence projection, authentic current-C2 replay, sole G20 byte census, and truthful Root8-to-public-Root1 transitive execution correction while preserving independent R1/O/R6 algorithms and exact Root8 rejection semantics. No acceptance, implementation, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "REVIEW-PENDING immutable architecture-only Attempt-20 candidate assigned to fresh independent reviewer /root/implementation_writer. It governs the prerequisite adapted-C2 decimal-occurrence projection, authentic current-C2 replay, sole G20 byte census, and truthful Root8-to-public-Root1 transitive execution correction while preserving independent R1/O/R6 algorithms and exact Root8 rejection semantics. No acceptance, implementation, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
