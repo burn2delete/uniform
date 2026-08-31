@@ -11,7 +11,6 @@
   "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" 393
   "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" 477
   "bootstrap/clojure/src/gravity/c2_source_identity.clj" 406
-  "bootstrap/clojure/src/gravity/c5_name_resolution.clj" 1168
   "bootstrap/clojure/src/gravity/c6_core_lowering.clj" 697
   "bootstrap/clojure/src/gravity/c7_type_checker.clj" 818
   "bootstrap/clojure/src/gravity/c8_effect_checker.clj" 724
