@@ -270,13 +270,22 @@
      :sh06-semantic-projection-id (get-in request [:lineage :sh06-semantic-projection-id])
      :authenticated-request-path-neutral neutral}))
 
+(defn cache-key
+  "Returns the complete path-free cache key, including the exact request
+  envelope and every live implementation pin."
+  [snapshot request]
+  [(semantic-key snapshot) (static-envelope request)])
+
 (defn- sh06-passed? [verification sh06]
   (and (= :passed (:status verification))
        (empty? (:failed-checks verification))
        (= (:artifact verification) :gravity/sh06-resolution-artifact-verification)))
 
-(defn- product-from [run-product]
-  (select-keys run-product run-product-keys))
+(defn- product-from [value]
+  (select-keys (if (contains? value :gravity-core-boundary)
+                 (:gravity-core-boundary value)
+                 value)
+               run-product-keys))
 
 (defn- carrier-preimage [carrier]
   (dissoc carrier :integrity-hash))
@@ -338,6 +347,14 @@
        (= (:integrity-hash carrier) (final-integrity carrier))
        (<= (:canonical-byte-count carrier) maximum-canonical-bytes)))
 
+(defn lookup-valid?
+  "Validates an immutable process-local entry before it is counted as a hit."
+  [carrier snapshot request]
+  (and (valid-carrier? carrier)
+       (= (:semantic-key carrier) (semantic-key snapshot))
+       (= (get-in carrier [:semantic-key :pins]) (live-pins))
+       (= (:static-envelope carrier) (static-envelope request))))
+
 (defn- bound-slot-value [product request address]
   (let [path (request-path request)
         sh06-id (request-sh06-id request)
@@ -376,30 +393,27 @@
                    (into #{} (map copy-value) value))
     :else value))
 
-(defn- bind-product [carrier request resolve-digest]
+(defn- bind-product [carrier request]
   (let [neutral (copy-value (:run-product carrier))
         initial (reduce (fn [product address]
-                          (assoc-address product address
-                                         (bound-slot-value product request address)))
-                        neutral path-slot-addresses)
-        resolved (reduce (fn [values digest-request]
-                           (conj values
-                                 (resolve-digest (:purpose digest-request)
-                                                 (:preimage digest-request)
-                                                 values)))
-                         [] (:digest-requests initial))
-        provenance-index (:provenance-ordinal
-                          (purpose-indexes (:digest-requests initial)))
-        provenance-id (get resolved provenance-index)
-        rebound (-> initial
-                    (assoc :resolved-digests resolved)
-                    (assoc-in [:canonical-core-artifact
-                               :provenance-binding-id]
-                              provenance-id))]
-    ;; The raw template has the same vector contract and receives the exact
-    ;; same rebound digest requests and values, never a separately derived copy.
-    (assoc-in rebound [:raw-template-result :digest-requests]
-              (:digest-requests rebound))))
+                          (if (or (= address [:resolved-digests :provenance-ordinal])
+                                  (= address [:canonical-core-artifact
+                                              :provenance-binding-id]))
+                            product
+                            (assoc-address product address
+                                           (bound-slot-value product request address))))
+                        neutral path-slot-addresses)]
+    (assoc-in initial [:raw-template-result :digest-requests]
+              (:digest-requests initial))))
+
+(defn- apply-resolved-digests [product resolved]
+  (let [provenance-index (:provenance-ordinal
+                          (purpose-indexes (:digest-requests product)))
+        provenance-id (get resolved provenance-index)]
+    (-> product
+        (assoc :resolved-digests resolved)
+        (assoc-in [:canonical-core-artifact :provenance-binding-id]
+                  provenance-id))))
 
 (def ^:private check-catalog
   [:carrier-integrity :closed-schema :live-pins :request-membership
@@ -438,11 +452,11 @@
                  :template-status (= :passed (get-in product [:template-verification :status]))
                  :resolved-status (= :passed (get-in product [:resolved-verification :status]))
                  :artifact-identity (if-let [predicate (:artifact-identity? seams)]
-                                      (boolean (predicate request product)) false)
+                                      (boolean (predicate request product candidate)) false)
                  :provenance-identity (if-let [predicate (:provenance-identity? seams)]
-                                        (boolean (predicate request product)) false)
+                                        (boolean (predicate request product candidate)) false)
                  :lineage (if-let [predicate (:lineage? seams)]
-                            (boolean (predicate request product)) false)
+                            (boolean (predicate request product candidate)) false)
                  :no-alias (if-let [predicate (:no-alias? seams)]
                              (boolean (predicate carrier candidate)) false)}
          checks (into (sorted-map) checks)
@@ -467,13 +481,19 @@
        (diagnostic! :request-membership-mismatch path))
      (when-not (= (:static-envelope carrier) (static-envelope request))
        (diagnostic! :request-membership-mismatch path))
-     (let [resolve-digest (:resolve-digest seams)
-           _ (when-not (fn? resolve-digest) (diagnostic! :digest-purpose-mismatch path))
-           product (bind-product carrier request resolve-digest)
-           supplied (verify-supplied-product carrier snapshot sh06 verification request product seams)]
+     (let [resolve-digests (:resolve-digests seams)
+           assemble-artifact (:assemble-artifact seams)
+           _ (when-not (and (fn? resolve-digests) (fn? assemble-artifact))
+               (diagnostic! :digest-purpose-mismatch path))
+           product (bind-product carrier request)
+           resolved (resolve-digests request (:digest-requests product))
+           product (apply-resolved-digests product resolved)
+           artifact (assemble-artifact sh06 request product)
+           supplied (verify-supplied-product
+                     carrier snapshot sh06 verification request artifact seams)]
        (when-not (= :passed (:status supplied))
          (diagnostic! :supplied-verification-failed path))
        {:artifact :gravity/sh07-semantic-carrier-bind-result-v2
         :schema-version 2 :status :accepted :authority :non-authoritative
-        :source-path path :bound-run-product product :supplied-verification supplied
+        :source-path path :sh07-artifact artifact :supplied-verification supplied
         :fresh-authoritative-run-required? true}))))

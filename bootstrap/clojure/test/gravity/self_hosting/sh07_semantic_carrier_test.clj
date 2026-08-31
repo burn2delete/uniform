@@ -61,7 +61,14 @@
    :status :passed :failed-checks []})
 
 (defn- seams []
-  {:resolve-digest resolver
+  {:resolve-digests (fn [_ requests]
+                      (mapv #(resolver (:purpose %) (:preimage %)) requests))
+   :assemble-artifact
+   (fn [sh06 request product]
+     {:artifact-id (get-in product [:canonical-core-artifact :artifact-id])
+      :sh06-resolution-artifact sh06
+      :gravity-core-boundary
+      (assoc product :authenticated-core-request request)})
    :digest-rebinding? (fn [_ product]
                          (= (:resolved-digests product)
                             (mapv #(resolver (:purpose %) (:preimage %))
@@ -86,6 +93,15 @@
     (is (= 15 (:request-schema-version pins)))
     (is (= #{:java-runtime-version :clojure-version}
            (set (keys (:runtime pins)))))))
+
+(deftest cache-key-includes-the-complete-static-module-envelope
+  (let [left (request "left.gravity")
+        right (request "right.gravity")]
+    (is (= (carrier/cache-key (snapshot "left.gravity") left)
+           (carrier/cache-key (snapshot "right.gravity") right)))
+    (is (not= (carrier/cache-key (snapshot "left.gravity") left)
+              (carrier/cache-key (snapshot "left.gravity")
+                                 (assoc-in left [:module :profile] :firmware))))))
 
 (deftest construct-carrier-neutralizes-exactly-eleven-slots-and-closes-shape
   (with-authenticated-fixture
@@ -140,7 +156,7 @@
                   _ (is (= :passed (:status preflight)) (:checks preflight))
                   bound (carrier/bind-carrier built (snapshot "right.gravity") (sh06)
                                               (verification) right-request (seams))
-                  product (:bound-run-product bound)]
+                  product (get-in bound [:sh07-artifact :gravity-core-boundary])]
               (is (= :accepted (:status bound)))
               (is (= "right.gravity"
                      (get-in product [:canonical-core-artifact :provenance

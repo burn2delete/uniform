@@ -85,6 +85,7 @@
         source "(ns demo.core)"
         core-builds (atom 0)
         verification-reports (atom 0)
+        resolver-leaves (atom [])
         plan-binding-var
         (ns-resolve 'gravity.self-hosting.sh07-iteration-cache-runner
                     'current-sh07-plan-binding)]
@@ -112,15 +113,19 @@
              (swap! core-builds inc)
              (synthetic-semantic-artifact resolution))
            bootstrap/sh07-core-resolve-digest-preimage!
-           (fn [_ _ preimage _] preimage)
+           (fn [_ purpose preimage _]
+             (swap! resolver-leaves conj purpose)
+             preimage)
            bootstrap/sh07-core-verification-checks
            (fn [_ _ _] {:synthetic-check true})
            bootstrap/sh07-core-proof-from-checks
            (fn [_] {:artifact :gravity/sh07-core-capability-proof
                     :status :complete :failed-checks []})
            bootstrap/sh07-core-artifact-verification
-           (fn [_]
+           (fn [artifact]
              (swap! verification-reports inc)
+             (bootstrap/sh07-core-from-resolution-artifact
+              (:sh06-resolution-artifact artifact))
              {:artifact :gravity/sh07-core-artifact-verification
               :status :passed :failed-checks []})]
           (let [result
@@ -143,7 +148,10 @@
                          :report-status (:status report)}))
                     [left right])))]
             (is (= 2 @core-builds))
-            (is (zero? @verification-reports))
+            (is (= 1 @verification-reports))
+            (is (= [:sh07-core-artifact-id
+                    :sh07-core-provenance-binding-id]
+                   @resolver-leaves))
             (is (= 1 (get-in result [:cache :semantic-misses])))
             (is (= 1 (get-in result [:cache :semantic-hits])))
             (is (= [(str left) (str right)]
@@ -153,6 +161,40 @@
       (finally
         (java.nio.file.Files/deleteIfExists left)
         (java.nio.file.Files/deleteIfExists right)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-rejects-missing-symlink-and-nul
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        target (.resolve directory "target.gravity")
+        link (.resolve directory "link.gravity")
+        missing (.resolve directory "missing.gravity")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       target (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/createSymbolicLink
+       link (.getFileName target)
+       (make-array java.nio.file.attribute.FileAttribute 0))
+      (is (= :source-missing (reason missing "")))
+      (is (= :source-symlink (reason link "ok")))
+      (java.nio.file.Files/write
+       target (byte-array [(byte 0)])
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :invalid-utf8 (reason target (str (char 0)))))
+      (finally
+        (java.nio.file.Files/deleteIfExists link)
+        (java.nio.file.Files/deleteIfExists target)
         (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest iteration-cache-reuses-equal-source-and-identical-artifacts

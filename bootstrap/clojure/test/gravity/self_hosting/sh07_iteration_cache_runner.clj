@@ -19,6 +19,7 @@
    :semantic-failed-producers 0 :semantic-rejected-hits 0})
 
 (def ^:dynamic ^:private *iteration-cache-counters* nil)
+(def ^:dynamic ^:private *semantic-fresh-verification* false)
 
 (def ^:private c10-semantic-test-vars
   #{'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-has-exact-authentic-coverage
@@ -154,14 +155,12 @@
   [maximum-entries maximum-bytes counters]
   (let [state (atom {:order [] :entries {} :bytes 0 :flights {}})
         monitor (Object.)]
-    (fn [key operation]
+    (fn [key valid-entry? operation]
       (let [thread (Thread/currentThread)
             decision
             (locking monitor
-              (if-let [entry (get-in @state [:entries key])]
-                (do (swap! counters update :semantic-hits inc)
-                    [:hit (:value entry)])
-                (if-let [flight (get-in @state [:flights key])]
+              (letfn [(miss-decision []
+                        (if-let [flight (get-in @state [:flights key])]
                   (if (identical? thread (:producer flight))
                     [:reentrant nil]
                     (do (swap! counters update :semantic-joined inc)
@@ -170,7 +169,22 @@
                     (swap! state assoc-in [:flights key]
                            {:producer thread :result result})
                     (swap! counters update :semantic-misses inc)
-                    [:produce result]))))]
+                    [:produce result])))]
+                (if-let [entry (get-in @state [:entries key])]
+                  (if (valid-entry? (:value entry))
+                    (do (swap! counters update :semantic-hits inc)
+                        [:hit (:value entry)])
+                    (do
+                      (swap! state
+                             (fn [current]
+                               (-> current
+                                   (update :entries dissoc key)
+                                   (update :order
+                                           #(vec (remove #{key} %)))
+                                   (update :bytes - (:bytes entry)))))
+                      (swap! counters update :semantic-rejected-hits inc)
+                      (miss-decision)))
+                  (miss-decision))))]
         (case (first decision)
           :hit (second decision)
           :reentrant (semantic-diagnostic! :reentrant-request nil)
@@ -180,7 +194,7 @@
               (if error (throw error) value))
             (catch InterruptedException interrupted
               (.interrupt thread)
-              (throw interrupted)))
+              (semantic-diagnostic! :producer-interrupted nil)))
           :produce
           (let [result (second decision)]
             (try
@@ -215,27 +229,69 @@
               (catch InterruptedException interrupted
                 (locking monitor (swap! state update :flights dissoc key))
                 (swap! counters update :semantic-failed-producers inc)
-                (deliver result {:error interrupted})
+                (let [error (ex-info "SH07 semantic producer interrupted"
+                                     {:artifact :gravity/sh07-semantic-cache-diagnostic
+                                      :rule "SH07-SEMANTIC-CACHE"
+                                      :severity :error :stage :development-cache
+                                      :reason :producer-interrupted
+                                      :source-path nil :fail-closed true
+                                      :fresh-authoritative-run-required? true}
+                                     interrupted)]
+                  (deliver result {:error error}))
                 (.interrupt thread)
-                (throw interrupted))
+                (semantic-diagnostic! :producer-interrupted nil))
               (catch Throwable error
                 (locking monitor (swap! state update :flights dissoc key))
                 (swap! counters update :semantic-failed-producers inc)
-                (deliver result {:error error})
-                (throw error)))))))))
+                (let [stable
+                      (if (= :gravity/sh07-semantic-cache-diagnostic
+                             (:artifact (ex-data error)))
+                        error
+                        (ex-info "SH07 semantic producer failed"
+                                 {:artifact :gravity/sh07-semantic-cache-diagnostic
+                                  :rule "SH07-SEMANTIC-CACHE"
+                                  :severity :error :stage :development-cache
+                                  :reason :producer-failed
+                                  :source-path nil :fail-closed true
+                                  :fresh-authoritative-run-required? true}
+                                 error))]
+                  (deliver result {:error stable})
+                  (throw stable))))))))))
 
 (defn- strict-source-snapshot
   [path source resolution]
   (let [resolved (java.nio.file.Paths/get path (make-array String 0))
         options (into-array java.nio.file.LinkOption
                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])]
+    (when-not (java.nio.file.Files/exists resolved options)
+      (semantic-diagnostic! :source-missing path))
     (when (java.nio.file.Files/isSymbolicLink resolved)
       (semantic-diagnostic! :source-symlink path))
     (when-not (java.nio.file.Files/isRegularFile resolved options)
       (semantic-diagnostic! :source-not-regular path))
     (let [before (java.nio.file.Files/readAttributes
                   resolved java.nio.file.attribute.BasicFileAttributes options)
-          bytes (java.nio.file.Files/readAllBytes resolved)
+          _ (when (> (.size before) (* 16 1024 1024))
+              (semantic-diagnostic! :source-too-large path))
+          bytes
+          (with-open [channel
+                      (java.nio.channels.FileChannel/open
+                       resolved
+                       (into-array java.nio.file.OpenOption
+                                   [java.nio.file.StandardOpenOption/READ
+                                    java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+                      output (java.io.ByteArrayOutputStream.)]
+            (let [buffer (java.nio.ByteBuffer/allocate 8192)]
+              (loop [total 0]
+                (.clear buffer)
+                (let [read (.read channel buffer)]
+                  (if (neg? read)
+                    (.toByteArray output)
+                    (let [next-total (+ total read)]
+                      (when (> next-total (* 16 1024 1024))
+                        (semantic-diagnostic! :source-too-large path))
+                      (.write output (.array buffer) 0 read)
+                      (recur next-total)))))))
           after (java.nio.file.Files/readAttributes
                  resolved java.nio.file.attribute.BasicFileAttributes options)
           supplied (.getBytes ^String source java.nio.charset.StandardCharsets/UTF_8)
@@ -243,8 +299,15 @@
                       (.endsWith path ".gravity") ".gravity"
                       (.endsWith path ".qst") ".qst"
                       :else nil)]
-      (when (> (alength bytes) (* 16 1024 1024))
-        (semantic-diagnostic! :source-too-large path))
+      (when (some zero? bytes) (semantic-diagnostic! :invalid-utf8 path))
+      (try
+        (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                        (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                        (.onUnmappableCharacter
+                         java.nio.charset.CodingErrorAction/REPORT))]
+          (.decode decoder (java.nio.ByteBuffer/wrap bytes)))
+        (catch java.nio.charset.CharacterCodingException _
+          (semantic-diagnostic! :invalid-utf8 path)))
       (when-not (and (= (.size before) (.size after))
                      (= (.lastModifiedTime before) (.lastModifiedTime after))
                      (= (.fileKey before) (.fileKey after))
@@ -254,9 +317,17 @@
       {:source-path path :source-bytes bytes :source-byte-count (alength bytes)
        :source-bytes-sha256 (str "sha256:" (sha256 source))
        :source-extension extension :source-kind :gravity/source
+       :file-key (str (.fileKey after))
+       :last-modified-millis (.toMillis (.lastModifiedTime after))
        :sh06-semantic-projection-id
        (get-in resolution [:gravity-resolution-boundary :resolved-analysis
                            :semantic-projection-id])})))
+
+(defn- same-source-snapshot?
+  [left right]
+  (and (= (dissoc left :source-bytes) (dissoc right :source-bytes))
+       (java.util.Arrays/equals ^bytes (:source-bytes left)
+                                ^bytes (:source-bytes right))))
 
 (defn- run-product-from-artifact
   [artifact]
@@ -265,14 +336,17 @@
                 :resolved-digests :template-verification
                 :resolved-verification]))
 
-(defn- exact-digest
+(defn- exact-digest-receipt
   [source-path purpose preimage resolved]
   (let [resolved-preimage
         (bootstrap/sh07-core-resolve-digest-preimage!
-         source-path purpose preimage resolved)]
-    (bootstrap/reader-canonical-hash
-     {:domain :gravity/sh07-declared-digest-v1
-      :purpose purpose :preimage resolved-preimage})))
+         source-path purpose preimage resolved)
+        digest
+        (bootstrap/reader-canonical-hash
+         {:domain :gravity/sh07-declared-digest-v1
+          :purpose purpose :preimage resolved-preimage})]
+    {:purpose purpose :preimage preimage
+     :resolved-preimage resolved-preimage :digest digest}))
 
 (defn- digest-index
   [product purpose]
@@ -301,36 +375,62 @@
       (record-left! left)
       (disjoint-right? right))))
 
+(declare artifact-from-bound-product)
+
 (defn- semantic-seams
   [source-path carrier]
-  (letfn [(resolved [product]
-            (reduce (fn [values request]
-                      (conj values
-                            (exact-digest source-path (:purpose request)
-                                          (:preimage request) values)))
-                    [] (:digest-requests product)))]
-    {:resolve-digest #(exact-digest source-path %1 %2 %3)
-     :digest-rebinding? (fn [_ product]
-                          (= (:resolved-digests product) (resolved product)))
-     :artifact-identity?
+  (let [resolution-receipt (atom nil)]
+    {:resolve-digests
+     (fn [_ requests]
+       (let [receipts
+             (reduce (fn [items request]
+                       (conj items
+                             (exact-digest-receipt
+                              source-path (:purpose request) (:preimage request)
+                              (mapv :digest items))))
+                     [] requests)]
+         (reset! resolution-receipt receipts)
+         (mapv :digest receipts)))
+     :assemble-artifact artifact-from-bound-product
+     :digest-rebinding?
      (fn [_ product]
+       (let [receipts @resolution-receipt]
+         (and (= (count receipts) (count (:digest-requests product)))
+              (= (:resolved-digests product) (mapv :digest receipts))
+              (every?
+               true?
+               (map (fn [request receipt]
+                      (and (= (:purpose request) (:purpose receipt))
+                           (= (:preimage request) (:preimage receipt))
+                           (= (:digest receipt)
+                              (bootstrap/reader-canonical-hash
+                               {:domain :gravity/sh07-declared-digest-v1
+                                :purpose (:purpose receipt)
+                                :preimage (:resolved-preimage receipt)}))))
+                    (:digest-requests product) receipts)))))
+     :artifact-identity?
+     (fn [_ product artifact]
        (let [index (digest-index product :sh07-core-artifact-id)
              core (:canonical-core-artifact product)]
          (and (some? index)
               (= (:identity-preimage core)
                  (get-in product [:digest-requests index :preimage]))
-              (= (:artifact-id core) (get-in product [:resolved-digests index])))))
+              (= (:artifact-id core) (get-in product [:resolved-digests index]))
+              (= (:artifact-id core) (:artifact-id artifact)))))
      :provenance-identity?
-     (fn [_ product]
+     (fn [_ product artifact]
        (let [index (digest-index product :sh07-core-provenance-binding-id)
              core (:canonical-core-artifact product)]
          (and (some? index)
               (= (:provenance-binding-preimage core)
                  (get-in product [:digest-requests index :preimage]))
               (= (:provenance-binding-id core)
-                 (get-in product [:resolved-digests index])))))
+                 (get-in product [:resolved-digests index]))
+              (= (:provenance core)
+                 (get-in artifact [:gravity-core-boundary
+                                   :canonical-core-artifact :provenance])))))
      :lineage?
-     (fn [request product]
+     (fn [request product artifact]
        (let [lineage (:lineage request)
              core (:canonical-core-artifact product)]
          (and (= (:source-revision-id lineage)
@@ -338,7 +438,10 @@
               (= (:sh06-semantic-projection-id lineage)
                  (get-in core [:lineage :sh06-semantic-projection-id]))
               (= (:authenticated-sh06-artifact-id lineage)
-                 (get-in core [:lineage :authenticated-sh06-artifact-id])))))
+                 (get-in core [:lineage :authenticated-sh06-artifact-id]))
+              (= request
+                 (get-in artifact [:gravity-core-boundary
+                                   :authenticated-core-request])))))
      :no-alias?
      (fn [stored bound]
        (aggregate-identities-disjoint? (:run-product stored) bound))}))
@@ -480,8 +583,6 @@
         counters (atom empty-cache-counters)
         resolution-inputs
         (java.util.Collections/synchronizedMap (java.util.IdentityHashMap.))
-        verification-results
-        (java.util.Collections/synchronizedMap (java.util.IdentityHashMap.))
         sh06-cache (bounded-cache maximum-entries counters
                                   :sh06-hits :sh06-misses)
         core-cache (bounded-cache maximum-entries counters
@@ -502,51 +603,62 @@
             resolution))
         cached-core
         (fn [resolution]
-          (if-not semantic?
+          (if *semantic-fresh-verification*
+            (original-core resolution)
+            (if-not semantic?
             (core-cache (resolution-key context resolution)
                         #(original-core resolution))
             (let [{:keys [path source]} (.get resolution-inputs resolution)
                   _ (when-not (and (string? path) (string? source))
                       (semantic-diagnostic! :source-missing nil))
                   snapshot (strict-source-snapshot path source resolution)
-                  key (semantic-carrier/semantic-key snapshot)
+                  request (bootstrap/sh07-core-authenticated-request resolution)
+                  key (semantic-carrier/cache-key snapshot request)
                   fresh (atom nil)
                   stored
                   (semantic-cache
                    key
+                   #(semantic-carrier/lookup-valid? % snapshot request)
                    (fn []
                      (let [artifact (original-core resolution)
-                           expected (original-core resolution)
-                           report (contained-verification-report artifact expected)]
+                           report
+                           (binding [*semantic-fresh-verification* true]
+                             (original-verification artifact))]
                        (when-not (= :passed (:status report))
                          (semantic-diagnostic! :producer-failed path))
-                       (let [request (bootstrap/sh07-core-authenticated-request resolution)
+                       (let [final-snapshot
+                             (strict-source-snapshot path source resolution)
+                             _ (when-not (same-source-snapshot?
+                                          snapshot final-snapshot)
+                                 (semantic-diagnostic! :source-mutated path))
                              carrier
                              (semantic-carrier/construct-carrier
-                              snapshot resolution request
+                              final-snapshot resolution request
                               (run-product-from-artifact artifact))]
-                         (reset! fresh {:artifact artifact :report report})
+                         (reset! fresh artifact)
                          carrier))))]
-              (if-let [{:keys [artifact report]} @fresh]
-                (do (.put verification-results artifact report) artifact)
+              (if-let [artifact @fresh]
+                artifact
                 (let [current-snapshot (strict-source-snapshot path source resolution)
-                      request (bootstrap/sh07-core-authenticated-request resolution)
                       upstream (bootstrap/sh06-resolution-artifact-verification resolution)
                       bound (semantic-carrier/bind-carrier
                              stored current-snapshot resolution upstream request
                              (semantic-seams path stored))
-                      artifact (artifact-from-bound-product
-                                resolution request (:bound-run-product bound))
+                      artifact (:sh07-artifact bound)
+                      final-snapshot (strict-source-snapshot path source resolution)
+                      _ (when-not (same-source-snapshot?
+                                   current-snapshot final-snapshot)
+                          (semantic-diagnostic! :source-mutated path))
                       report (contained-verification-report artifact)]
                   (when-not (= :passed (:status report))
                     (swap! counters update :semantic-rejected-hits inc)
                     (semantic-diagnostic! :supplied-verification-failed path))
-                  (.put verification-results artifact report)
-                  artifact)))))
+                  artifact))))))
         cached-verification
         (fn [artifact]
-          (if-let [report (when semantic? (.remove verification-results artifact))]
-            (do (swap! counters update :verification-hits inc) report)
+          (if semantic?
+            (do (swap! counters update :verification-hits inc)
+                (contained-verification-report artifact))
             (verification-cache
              [context (identity-key artifact) (:artifact-id artifact)]
              #(original-verification artifact))))
