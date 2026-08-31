@@ -10260,7 +10260,7 @@
     "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
     "owner": "sh-core-architecture",
     "author": "sh07-root6-utf8-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19"
@@ -10358,7 +10358,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/implementation_writer",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, exact primitive substrate, and observer",
       "a UTF16-backed host may expose indexed code units but host encoders, replacement policy, byte arrays, locale, normalization, printing, sorting, hashing, exceptions, and iteration are not semantic authority",
@@ -10390,9 +10396,15 @@
         "at": "2026-08-31T13:43:12Z",
         "actor": "sh07-root6-utf8-architecture-coordinator",
         "reason": "request fresh independent exact review by /root/implementation_writer of immutable Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9: arity3 closed observation contract, strict Unicode widths/surrogates, prospective exact counting through 1GiB without encoded allocation, caller closure and containment, compiler/runtime evidence, high-bound testing, and preservation of independent collection traversal plus Attempt15/17/19/G13"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-31T13:47:28Z",
+        "actor": "/root/implementation_writer",
+        "reason": "REJECT exact immutable Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9. Sole blocker: the report falsely names terminally rejected Attempt15 as integrated architecture/dependency; a successor must derive the incorporated scalar-sharing and bound authority through integrated Attempt17 and describe Attempt15 only as rejection history. The technical arity3 observation, Unicode, prospective counting, high-bound evidence, closure, containment, and separation rules are otherwise coherent."
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only SH-07 Root-6 UTF-8 byte-census candidate routed to fresh independent exact review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "REJECTED by independent reviewer /root/implementation_writer for exact immutable Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9. The report falsely labels terminal Attempt15 integrated instead of deriving incorporated authority through integrated Attempt17. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, pin, or seed-retirement authority is conferred."
   }
 ]
 }
