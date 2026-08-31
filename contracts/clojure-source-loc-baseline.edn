@@ -4,7 +4,6 @@
  :extensions [".clj" ".cljc"]
  :oversized-files
  {"bootstrap/clojure/src/gravity/bootstrap.clj" 164445
-  "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" 864
   "bootstrap/clojure/src/gravity/c17_plugin.clj" 719
   "bootstrap/clojure/src/gravity/c18_verification.clj" 769
   "bootstrap/clojure/src/gravity/c2_source_identity.clj" 406
