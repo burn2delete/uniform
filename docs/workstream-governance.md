@@ -39,6 +39,28 @@ After two rejected candidates in one invariant family, new active work is
 blocked until the ledger records a nonempty architecture decision. The decision
 must address the failed invariant rather than merely authorize another attempt.
 
+Architecture decisions also carry a machine-readable authority tuple in one
+fenced `json gravity-architecture-authority-v1` block. New or active reports
+must use this closed block; it names the exact workstream, base, integrated
+dependencies, terminal history, and integration-only authority ceiling. A
+terminally rejected record may be cited as history, but it can never be an
+authority dependency. The pre-freeze gate checks these relations before review
+or freezing:
+
+When the v2 sharded ledger is in use, the linter authenticates each referenced
+record path and SHA-256 before consulting base, report, or dependency fields;
+missing, unreadable, or tampered shards fail closed.
+
+```bash
+clojure -M tools/validate_architecture_authority.clj \
+  --report docs/artifacts/phase-15/reports/REPORT.md
+```
+
+Reports from before this block was introduced may be inspected with
+`--legacy`. That mode is explicitly non-authoritative and rejects prose that
+calls a terminally rejected workstream integrated. It is a compatibility
+escape hatch for immutable history, not an admission path for new work.
+
 ## Admission
 
 Integration eligibility requires all of the following to be recorded and
