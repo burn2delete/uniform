@@ -10071,7 +10071,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17"
     ],
@@ -10202,9 +10202,15 @@
         "at": "2026-08-31T06:18:34Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 2777086d92aa87e297ce77e19be7ebdb834b4260 and immutable architecture-only Attempt-19 candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T06:19:28Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/implementation_writer of immutable Attempt-19 candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5: corrected bounded semantic inverse, exact 256/257-to-261 current-C2 branch behavior, signed exponent reconstruction and representation threshold, 261-byte maximum, independent caller algorithms, preserved Attempt-18 spelling and Attempt-17/G13 authority, evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-19 candidate awaiting fresh independent exact review. It corrects only Attempt-18's false universal current-C2 reread claim without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-19 candidate routed to fresh independent exact review. It corrects only Attempt-18's false universal current-C2 reread claim without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
