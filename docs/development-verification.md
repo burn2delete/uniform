@@ -494,6 +494,26 @@ clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
   -M -m gravity.self-hosting.sh07-iteration-cache-runner --help
 ```
 
+Only the exact four-variable C10 source-coverage batch enables path-neutral
+SH-07 carrier reuse. The selection must contain all four variables exactly
+once; order is irrelevant. Namespace, subset, superset, duplicate, mixed, and
+unknown selections bypass semantic reuse and keep the ordinary path-bound
+lane. The runner reads each regular non-symlink source again, binds live
+C2/C3/SH-05/SH-06/SH-07 and module-policy pins, admits a carrier only after one
+ordinary successful build plus fresh verification, and reconstructs separate
+per-path artifacts. Same-key work is single-flight, different keys may build
+concurrently, and the process-local FIFO is bounded by four entries and 512
+MiB of canonical carrier bytes. Failed, interrupted, stale, mutated, malformed,
+or oversized values are not published and may be retried.
+
+Carrier hits still execute the two exact bounded Gravity digest-resolver leaves
+needed to rebind artifact and provenance identities. They do not construct a
+fresh SH-07 template or cache a final artifact, diagnostic, or verification
+report. Result fields `:semantic-cache-enabled?` and `:cache` are operational
+telemetry only. Every result remains non-authoritative and requires a fresh
+authoritative run; reuse grants no timing, benchmark, proof, roadmap, release,
+self-hosting, or seed-retirement authority.
+
 For a bounded exact SH-07 development selection, use the dedicated process
 runner:
 

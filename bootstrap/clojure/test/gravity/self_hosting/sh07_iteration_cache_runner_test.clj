@@ -9,6 +9,54 @@
     gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-is-deterministic-path-neutral-and-provenanced
     gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained])
 
+(defn- synthetic-semantic-request [resolution]
+  (let [path (get-in resolution [:provenance :source-path])]
+    {:artifact :gravity/sh07-authenticated-sh06-core-request
+     :schema-version 15
+     :lineage {:source-revision-id "revision"
+               :sh06-semantic-projection-id "projection"
+               :authenticated-sh06-artifact-id (:artifact-id resolution)}
+     :module {:namespace 'demo.core :profile :meta :target :jvm
+              :safety :safe :effects [] :capabilities [] :exports []}
+     :provenance {:actual-source-path path}
+     :scope :sh07-b15-keyword-map-lookup}))
+
+(defn- synthetic-semantic-artifact [resolution]
+  (let [request (synthetic-semantic-request resolution)
+        path (get-in request [:provenance :actual-source-path])
+        sh06-id (:artifact-id resolution)
+        identity-preimage {:lineage {:source-revision-id "revision"
+                                     :sh06-semantic-projection-id "projection"
+                                     :authenticated-sh06-artifact-id sh06-id}}
+        provenance-preimage {:actual-source-path path}
+        requests [{:ordinal 0 :purpose :sh07-core-artifact-id
+                   :preimage identity-preimage}
+                  {:ordinal 1 :purpose :sh07-core-provenance-binding-id
+                   :preimage provenance-preimage}]
+        digest (fn [purpose preimage]
+                 (bootstrap/reader-canonical-hash
+                  {:domain :gravity/sh07-declared-digest-v1
+                   :purpose purpose :preimage preimage}))
+        resolved (mapv #(digest (:purpose %) (:preimage %)) requests)
+        core {:artifact-id (first resolved)
+              :identity-preimage identity-preimage
+              :provenance {:source-path path}
+              :provenance-binding-preimage provenance-preimage
+              :provenance-binding-id (second resolved)
+              :lineage (:lineage request)}
+        run {:raw-template-result
+             {:core-template {:provenance {:source-path path}
+                              :provenance-binding-preimage provenance-preimage
+                              :lineage (:lineage request)}
+              :digest-requests requests}
+             :canonical-core-artifact core :digest-requests requests
+             :resolved-digests resolved
+             :template-verification {:status :passed}
+             :resolved-verification {:status :passed}}]
+    {:kind :gravity/sh07-core-artifact :status :accepted
+     :artifact-id (:artifact-id core) :sh06-resolution-artifact resolution
+     :gravity-core-boundary run :provenance {:source-path path}}))
+
 (deftest semantic-reuse-requires-the-exact-c10-selection
   (let [enabled?
         (fn [selection]
@@ -27,6 +75,85 @@
                                         (first exact-c10-semantic-test-vars))})))
     (is (false? (enabled? {:mode :namespaces
                            :units ['gravity.self-hosting.sh07-c10-safety-source-coverage-test]})))))
+
+(deftest exact-c10-route-rebinds-one-successful-carrier-across-paths
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-runner-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        left (.resolve directory "left.gravity")
+        right (.resolve directory "right.gravity")
+        source "(ns demo.core)"
+        core-builds (atom 0)
+        verification-reports (atom 0)
+        plan-binding-var
+        (ns-resolve 'gravity.self-hosting.sh07-iteration-cache-runner
+                    'current-sh07-plan-binding)]
+    (try
+      (doseq [path [left right]]
+        (java.nio.file.Files/write
+         path (.getBytes source java.nio.charset.StandardCharsets/UTF_8)
+         (make-array java.nio.file.OpenOption 0)))
+      (with-redefs-fn
+        {plan-binding-var (constantly {:synthetic true})}
+        #(with-redefs
+          [bootstrap/sh06-resolution-source-artifact
+           (fn [path _source]
+             {:kind :gravity/sh06-resolution-artifact :status :accepted
+              :artifact-id "sh06" :provenance {:source-path path}
+              :gravity-resolution-boundary
+              {:resolved-analysis {:semantic-projection-id "projection"}}})
+           bootstrap/sh06-resolution-artifact-verification
+           (fn [_]
+             {:artifact :gravity/sh06-resolution-artifact-verification
+              :status :passed :failed-checks []})
+           bootstrap/sh07-core-authenticated-request synthetic-semantic-request
+           bootstrap/sh07-core-from-resolution-artifact
+           (fn [resolution]
+             (swap! core-builds inc)
+             (synthetic-semantic-artifact resolution))
+           bootstrap/sh07-core-resolve-digest-preimage!
+           (fn [_ _ preimage _] preimage)
+           bootstrap/sh07-core-verification-checks
+           (fn [_ _ _] {:synthetic-check true})
+           bootstrap/sh07-core-proof-from-checks
+           (fn [_] {:artifact :gravity/sh07-core-capability-proof
+                    :status :complete :failed-checks []})
+           bootstrap/sh07-core-artifact-verification
+           (fn [_]
+             (swap! verification-reports inc)
+             {:artifact :gravity/sh07-core-artifact-verification
+              :status :passed :failed-checks []})]
+          (let [result
+                (runner/with-iteration-cache
+                 {:maximum-entries 2
+                  :selection {:mode :test-vars
+                              :units exact-c10-semantic-test-vars}}
+                 (fn []
+                   (mapv
+                    (fn [path]
+                      (let [resolution
+                            (bootstrap/sh06-resolution-source-artifact
+                             (str path) source)
+                            artifact
+                            (bootstrap/sh07-core-from-resolution-artifact resolution)
+                            report
+                            (bootstrap/sh07-core-artifact-verification artifact)]
+                        {:path (get-in artifact [:provenance :source-path])
+                         :artifact-id (:artifact-id artifact)
+                         :report-status (:status report)}))
+                    [left right])))]
+            (is (= 2 @core-builds))
+            (is (zero? @verification-reports))
+            (is (= 1 (get-in result [:cache :semantic-misses])))
+            (is (= 1 (get-in result [:cache :semantic-hits])))
+            (is (= [(str left) (str right)]
+                   (mapv :path (:value result))))
+            (is (apply = (map :artifact-id (:value result))))
+            (is (every? #{:passed} (map :report-status (:value result)))))))
+      (finally
+        (java.nio.file.Files/deleteIfExists left)
+        (java.nio.file.Files/deleteIfExists right)
+        (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest iteration-cache-reuses-equal-source-and-identical-artifacts
   (let [sh06-calls (atom 0)
@@ -64,7 +191,9 @@
         (is (= {:sh06-hits 1 :sh06-misses 1
                 :core-hits 1 :core-misses 1
                 :verification-hits 1 :verification-misses 1}
-               (:cache result)))
+               (select-keys (:cache result)
+                            [:sh06-hits :sh06-misses :core-hits :core-misses
+                             :verification-hits :verification-misses])))
         (is (= :non-authoritative (:authority result)))
         (is (false? (:authoritative? result)))
         (is (false? (:cache-authoritative? result)))
