@@ -16,6 +16,19 @@
 
 (def ^:dynamic ^:private *iteration-cache-counters* nil)
 
+(def ^:private c10-semantic-test-vars
+  #{'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-has-exact-authentic-coverage
+    'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-calls-lookups-and-quotes-are-exact
+    'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-is-deterministic-path-neutral-and-provenanced
+    'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained})
+
+(defn- exact-c10-semantic-selection?
+  [selection]
+  (let [units (:units selection)]
+    (and (= :test-vars (:mode selection))
+         (= (count c10-semantic-test-vars) (count units))
+         (= c10-semantic-test-vars (set units)))))
+
 (deftype ^:private IdentityKey [value]
   Object
   (equals [_ other]
@@ -127,7 +140,7 @@
 
   Cache keys bind source content, the checked-core plan, adapter contract, and
   runtime. Results are deliberately non-authoritative."
-  [{:keys [maximum-entries]
+  [{:keys [maximum-entries selection]
     :or {maximum-entries default-maximum-entries}}
    operation]
   (when-not (and (integer? maximum-entries) (pos? maximum-entries))
@@ -171,6 +184,7 @@
     {:value value
      :cache @counters
      :cache-context context
+     :semantic-cache-enabled? (exact-c10-semantic-selection? selection)
      :maximum-entries maximum-entries
      :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))
      :authority :non-authoritative
@@ -439,7 +453,8 @@
     (require namespace))
   (let [cached
         (with-iteration-cache
-          {:maximum-entries maximum-entries}
+          {:maximum-entries maximum-entries
+           :selection {:mode :namespaces :units (vec namespaces)}}
           #(run-tests-with-telemetry namespaces fail-fast?))
         {:keys [test-result namespace-results stopped-early?
                 skipped-namespaces skipped-test-vars]} (:value cached)]
@@ -479,7 +494,8 @@
         namespace-symbol (symbol (namespace test-var))
         cached
         (with-iteration-cache
-          {:maximum-entries maximum-entries}
+          {:maximum-entries maximum-entries
+           :selection {:mode :test-vars :units [test-var]}}
           (fn []
             (let [started (System/nanoTime)
                   before (cache-snapshot)
@@ -557,7 +573,8 @@
   (let [resolved-vars (mapv (juxt identity resolve-test-var) test-vars)
         cached
         (with-iteration-cache
-          {:maximum-entries maximum-entries}
+          {:maximum-entries maximum-entries
+           :selection {:mode :test-vars :units (vec test-vars)}}
           (fn []
             (loop [remaining resolved-vars
                    selection-index 0

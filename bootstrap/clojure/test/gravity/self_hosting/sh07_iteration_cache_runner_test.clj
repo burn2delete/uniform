@@ -3,6 +3,31 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh07-iteration-cache-runner :as runner]))
 
+(def ^:private exact-c10-semantic-test-vars
+  '[gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-has-exact-authentic-coverage
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-calls-lookups-and-quotes-are-exact
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-is-deterministic-path-neutral-and-provenanced
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained])
+
+(deftest semantic-reuse-requires-the-exact-c10-selection
+  (let [enabled?
+        (fn [selection]
+          (:semantic-cache-enabled?
+           (runner/with-iteration-cache
+            {:maximum-entries 1 :selection selection}
+            (constantly :ok))))]
+    (is (true? (enabled? {:mode :test-vars
+                          :units exact-c10-semantic-test-vars})))
+    (is (true? (enabled? {:mode :test-vars
+                          :units (vec (reverse exact-c10-semantic-test-vars))})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (subvec exact-c10-semantic-test-vars 0 3)})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (conj exact-c10-semantic-test-vars
+                                        (first exact-c10-semantic-test-vars))})))
+    (is (false? (enabled? {:mode :namespaces
+                           :units ['gravity.self-hosting.sh07-c10-safety-source-coverage-test]})))))
+
 (deftest iteration-cache-reuses-equal-source-and-identical-artifacts
   (let [sh06-calls (atom 0)
         core-calls (atom 0)
