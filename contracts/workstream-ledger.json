@@ -9569,7 +9569,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9691,9 +9691,15 @@
         "at": "2026-08-31T05:05:15Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only Attempt-16 report candidate 6f9e736710e2838026e08a5379f1029427ad8b31, tree 95a61137482291664c20f7fda0ca46669f6b6e78, and report SHA-256 e6ccc61c2bf2e7c205e4d7f620b2a506996d42b68b62753ff1a05d9e82560d3c: preserve all accepted Attempt-15 semantics and replace only circular unordered failure selection with independently bounded probes and commutative generic failure aggregation; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-31T05:08:49Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "freeze authoritative main base 7ce42876ba94e61a9a8f78ffd3b7ff4ab7b3ae17 and immutable architecture-only Attempt-16 candidate 6f9e736710e2838026e08a5379f1029427ad8b31, tree 95a61137482291664c20f7fda0ca46669f6b6e78, report SHA-256 e6ccc61c2bf2e7c205e4d7f620b2a506996d42b68b62753ff1a05d9e82560d3c after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only Attempt-16 candidate registered for later exact freeze and independent review. It preserves accepted Attempt-15 semantics and closes only unordered multi-failure selection without implementation or pin authority."
+    "disposition": "FROZEN architecture-only Attempt-16 candidate for exact independent review. No review result, acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
   }
 ]
 }
