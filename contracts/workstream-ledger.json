@@ -10064,6 +10064,141 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/implementation_writer for exact immutable Attempt-18 candidate 6d179d440386b9b4f6bd7078e167df2ddada2e94, tree 016da13629588fff46692108c6d7461bf84bc5b4, report SHA-256 0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386. The universal current-C2 reread claim contradicts the authentic 261-byte maximum under the preserved 256-scalar reader bound. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-19",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 19",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-17"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-19.md",
+    "base_commit": "2777086d92aa87e297ce77e19be7ebdb834b4260",
+    "candidate_commit": "409b2de200314680fd87c2d0c30241de39242c2d",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-19.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L1",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+      "bootstrap/clojure/src/gravity/bootstrap.clj",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-17",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-18",
+        "Attempt-18 terminal main:2777086d92aa87e297ce77e19be7ebdb834b4260",
+        "Attempt-18 candidate:6d179d440386b9b4f6bd7078e167df2ddada2e94",
+        "Attempt-18 candidate tree:016da13629588fff46692108c6d7461bf84bc5b4",
+        "Attempt-18 report-sha256:0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-19.md",
+        "report-sha256:bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5",
+        "candidate-tree:815183d0ba946f5a896a1bfe299eabda66c67a28",
+        "author preservation audit:every coherent Attempt18 semantic-key authority, scientific spelling, exact 261-byte maximum, equality/collision, failure, independent closure, Attempt17/G13, evidence, pin, and nonclaim rule remains exact",
+        "author correction audit:universal current-C2 reread is replaced only by a separately specified bounded semantic inverse over canonical scientific spelling",
+        "author threshold audit:current C2 exact normalization is required through 256 bytes; lengths 257 through 261 require lexical acceptance plus exact reader-semantic-work-boundary deferment and independent inverse equality",
+        "author inverse audit:each caller parses exact canonical grammar, computes P=E-(n-1) with signed digits, reconstructs the exact four-key C2 semantic key, respells byte-identically, and terminates in at most four 261-byte passes",
+        "author representation audit:zero and the exact 18-digit integer versus 19-plus-digit signed-power representation reproduce C2 semantic-key bytes without fixed-width host authority",
+        "author closure audit:producer, source oracle, and Root6 independently implement spelling, inverse, current-C2 branch checking, evidence joins, bounds, and caller mapping with no shared decimal helper or new builtin",
+        "author bound audit:C2 remains exactly 256 numeric semantic scalars and 65536 work units; the authentic 261-byte maximum and all Attempt15 bounds remain unchanged",
+        "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
+      ],
+      "rejected_fixtures": [
+        "current C2 is required or claimed to return an exact normalized key for canonical decimal spellings of length 257 through 261",
+        "C2's 256-scalar or 65536-work bound is widened, the canonical domain is shrunk to 256, or an authentic 257-to-261-byte key is rejected",
+        "the current-C2 deferred spelling key is treated as the exact normalized four-key semantic key or deferment status changes canonical bytes",
+        "semantic inversion invokes current C2, host parsing/formatting, raw spelling, scale, exponent spelling, fixed-width exponent conversion, power expansion, or host decimal authority",
+        "inverse grammar admits lowercase e, wrong signs, leading exponent zero, coefficient trailing zero, suffix, whitespace, Unicode digit, partial parse, or unconsumed bytes",
+        "inverse uses wrong exponent subtraction, wrong 18/19-digit representation, lacks exact respelling/original-key equality, or leaks a host exception",
+        "producer, source oracle, and Root6 share inverse/normalizer/printer helpers, normalize caller envelopes, or require cross-caller complete-result equality",
+        "Attempt17 comparator/probes/fold/bounds/cycles/caller mapping, G13 roots/digest/ABI/counts, Attempt18 spelling/261 maximum, pins, or nonclaims drift",
+        "implementation, test, fixture, proof-contract, source pin, whole-file pin, roadmap, prior report, terminal history, or unrelated canonical-document change occurs in the report candidate"
+      ],
+      "stable_diagnostics": [
+        "C2-NUMERIC",
+        "C6-VERIFY",
+        "L2-BUILTIN-ERROR"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 2777086d92aa87e297ce77e19be7ebdb834b4260..409b2de200314680fd87c2d0c30241de39242c2d",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded printer/comparator/probe substrate, and observer",
+      "host digit operations may execute the exact bounded algorithm, but current C2 above 256 scalars, host decimal objects, parsers, formatters, locale, scale, equality, ordering, exceptions, and iteration remain non-authoritative",
+      "Attempt 19 requires exact freeze, fresh independent acceptance, integration eligibility, and reconciliation to authoritative main before it can amend integrated architecture baseline G17",
+      "the existing implementation workstream receives no source, test, fixture, pin, acceptance, or integration authority from this draft",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-31T06:16:19Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only Attempt-19 report candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, and report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5: preserve coherent Attempt-18 rules and replace only its false universal operational C2 reread with an independent bounded semantic inverse plus exact 256 versus 257-to-261 current-C2 branch evidence; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only Attempt-19 candidate registered for later exact freeze and independent review. It corrects only Attempt-18's false universal current-C2 reread claim without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
