@@ -18,7 +18,6 @@
   "bootstrap/clojure/src/gravity/capability_validation.clj" 537
   "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj" 1016
   "bootstrap/clojure/src/gravity/core_ast_lowering.clj" 696
-  "bootstrap/clojure/src/gravity/darwin_publication.clj" 1692
   "bootstrap/clojure/src/gravity/macro_expansion.clj" 885
   "bootstrap/clojure/src/gravity/module_analysis.clj" 901
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" 752
