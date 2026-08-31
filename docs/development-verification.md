@@ -466,6 +466,9 @@ the exact startup commit and tree and may use only explicit `--namespace` and
 the live commit, tree, and clean worktree before and after every request. Any
 failure, dirty checkout, identity drift, malformed request, or request bound
 terminates reuse. Output is returned in bounded `WARM_DEV` receipts.
+The protocol does not impose an in-JVM test deadline; its supervisor must set
+a wall-clock timeout and terminate the worker if a selected var does not
+return. A timed-out worker must not be reused.
 
 This worker is non-authoritative development feedback. It never supplies fresh
 integration or SH-07 evidence, and it does not alter the cold exported-tree,
