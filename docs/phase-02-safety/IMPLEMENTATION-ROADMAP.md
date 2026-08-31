@@ -3,8 +3,6 @@
 Status: complete (stage0 safety capability); compiled app safety gate active
 Progress: 23/23 tasks complete
 
-Capability audit: Prior Python scaffold evidence rows are historical only. This phase is complete at the Clojure stage0 boundary: `P02-T01` through `P02-T06`, `P02-D030` through `P02-D045`, and `P02-S1` have runnable capability evidence through the SAFE1, SAFE2-SAFE5, SAFE6, SAFE7/SAFE8/SAFE9/SAFE11, SAFE10/SAFE14, SAFE12/SAFE13/SAFE15/SAFE16, and compiled hosted core app safety artifacts.
-
 ## Objective
 
 Implement the safe-code contract: every dangerous operation is proven safe, runtime checked, rejected, or isolated as an audited unsafe island.

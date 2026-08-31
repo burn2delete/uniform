@@ -1,0 +1,7 @@
+[[stack/alloc
+  {:return-type "Stack[Buffer]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :stack-allocation,
+   :allocation-kind :stack,
+   :runtime-assumption :bounded-stack}]]

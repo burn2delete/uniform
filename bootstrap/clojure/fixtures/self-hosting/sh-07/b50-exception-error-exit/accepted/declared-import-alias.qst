@@ -1,0 +1,19 @@
+(ns self-hosting.sh07-b50.declared-import-alias
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [handle-import-error])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07
+              :candidate :sh07-authenticated-exception-error-exit-v1
+              :evidence :declared-import-alias-admission
+              :non-claims [:imported-value-execution :runtime-linking]}))
+
+(defn handle-import-error []
+  (try
+    (throw shared/checksum)
+    (catch Exception error
+      error)))

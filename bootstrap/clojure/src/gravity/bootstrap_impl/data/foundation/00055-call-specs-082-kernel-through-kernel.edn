@@ -1,0 +1,1 @@
+[[gpu/kernel {:return-type "GpuKernel", :concurrency-family :gpu-kernel}]]

@@ -1,0 +1,5 @@
+[[memory/free
+  {:return-type "Nil",
+   :effects #{:memory/free},
+   :capabilities #{:memory/allocator},
+   :memory-regime :ownership-backed}]]

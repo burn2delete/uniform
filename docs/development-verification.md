@@ -1,1267 +1,507 @@
-# Development verification workflow
+# Development Verification
 
-This guide keeps the SH-07 proof contract exhaustive while making the usual
-edit loop cheap. The full authoritative SH-07 proof transaction has measured
-about 8.9 hours and about 8 GB of memory on the current host. Do not use that
-transaction as the per-edit test. Select the smallest lane that answers the
-question, then run an authoritative lane only for a stable candidate or when
-the affected contract requires it.
+## Purpose
 
-Run commands from the repository root:
+Repository verification uses the Clojure runners directly.
 
-```bash
-cd /Users/matt/code/burn2delete/uniform
-```
+Run commands from the repository root.
 
-The commands below use the test classpath explicitly. This avoids depending on
-the `:test` alias's coordinator main when invoking one namespace or lane:
+## Standard Gates
 
 ```bash
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m <namespace> <args>
-```
-
-## Authority rules
-
-- `authoritative` means a fresh process ran the declared verifier and emitted
-  the contract-bound proof artifact. Authority is scoped: a selected module is
-  evidence for that module, not for all of SH-07.
-- `non-authoritative` means selection, iteration, cached, focused, or
-  scheduler feedback. It may reject a change and guide the next edit, but it
-  cannot update a completion attestation, proof ledger, release claim, or
-  seed-retirement claim.
-- Missing or unrecognized authority metadata is `non-authoritative` by
-  default. A passing test does not manufacture authority.
-- Cached and iteration results never satisfy authoritative evidence. The
-  authoritative runner must reread the source in a fresh process and perform
-  the proof transaction's independent audit.
-- Coverage census policy is explicit. `:exact-precommitted` requires complete
-  request/core count maps in the contract and is the only mode with an
-  independent numerical oracle. `:source-bound-derived` permits one fresh
-  source-bound proof for a stable candidate, but records
-  `:counts-precommitted? false` and `:independent-count-oracle? false`.
-  Derived output is scoped to that individual proof and cannot claim exact
-  authentic coverage, aggregate authority, or release authority. A reviewed
-  attestation binds source bytes, proof-contract SHA, raw stdout SHA, artifact
-  id, census hash, reviewer, method, limitations, and decision without
-  upgrading those claims. Missing, unknown, or mixed policy fields fail before
-  an expensive proof transaction starts.
-
-The current C8 adapter revision is 82,797 bytes with source hash
-`sha256:de3fb80e14336cadacf710a0b2fef33b19efab0728d5ca08e7a25c72df7afe16`.
-It accepts the exact C7 schema-3 identity preimages for bounded pure primitive
-first-order and capture-free one-hop function-typed cores, while retaining
-empty declared call and latent effects and `[:pending-sh09]` thrown effects.
-Its focused first-order/identity discriminator passed two tests and 28
-assertions. The combined C9-to-C10 namespace lane, which consumes this C8
-output, passed five tests and 147 assertions in 69.470 seconds; its final
-authenticated `.gravity` boundary took 61.220 seconds with one cold carrier
-and did not build the byte-identical `.qst` twin. These are non-authoritative
-development receipts. Keep `.qst` to byte parity, do not rerun C7 authority
-for this C8-only change, and require a new `c8-effects` source-bound-derived
-proof candidate after source and contract freeze. The historical candidate at
-commit `871cd14` completed in 877.765 seconds
-(872.388 seconds in the proof), with stable context, empty stderr, artifact
-`sha256:ed0a4eb33beafb7c0585cab276ab97aac3d6542872b8bad3e89e9df1930d46a0`,
-and derived census
-`sha256:78ea0c864b4a59694e99470408e4aebbf5783c623827d29ea0f0d4ae9e49c902`.
-That receipt binds the preceding 73,997-byte revision at `f3729a5`. The current
-source adds an ordered digest-request and exact binding seam for type, effect,
-and no-capability facts; its focused lane passed two tests and 26 assertions.
-Digest computation remains an external coordinator boundary, so no C9 adapter
-may synthesize or substitute those identities. The historical receipt remains
-a proof candidate: counts were not precommitted, no trusted reviewed
-attestation was created, and it cannot claim exact-authentic coverage,
-aggregate, or release authority.
-
-The current C9 ownership source is 71,132 bytes with source hash
-`sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`.
-It preserves the bounded owned-mutable transition kernel and adds a narrow
-C8-to-C9 adapter for identity-bound pure primitive values. Four synthetic
-adapter tests passed 32 assertions, the unchanged owned-mutable kernel passed
-424 assertions, and the current sequential identity seam binds each exact
-ownership fact before binding the whole ownership core. Coordinator-provided
-digests remain shape-checked and non-authoritative; trusted digest resolution
-and independent canonical digest verification remain pending. The combined
-C9-to-C10 lane described above is the current authenticated boundary evidence.
-These are non-authoritative development receipts. The adapter admits only
-persistent immutable integer, boolean, and string reads. Persistent aggregates,
-owned-mutable, effectful, and nonprimitive adaptation, regions, arenas, linear
-resources, runtime checks, unsafe audits, trusted digest resolution, and MIR
-preservation remain pending. The earliest historical C9 proof binds the
-35,894-byte source. A later source-bound-derived candidate for the now-
-preceding 47,414-byte revision completed in 505.045 seconds of checkpoint time
-(499.953 seconds in the proof), with stable context, empty stderr, artifact
-`sha256:56aa7b6cded727e47b7528a7b027b711b7fb911e8dd288df259d15282412b2de`,
-and derived census
-`sha256:b28f186ab5586620913748d21224937344cbacea22a178c391640a8c2bd61a45`.
-It contains 44 fragments and roots, 3,274 forms, 426 bindings, 164 local
-bindings, 1,060 resolutions, 2,776 core nodes, 44 definitions, 423 calls and
-call edges, 855 references, 37 function records, five recursion components,
-and zero keyword lookups. Counts were not precommitted and a trusted reviewed
-attestation was not created, so this is historical proof-candidate evidence
-rather than exact,
-aggregate, release, or automatically promoted scoped authority. Do not rerun
-C8 authority for this C9-only change. The current 71,132-byte C9 source requires
-a new candidate after source, contract, tool, and shared-input freeze.
-
-The current C10 safety source is 112,712 bytes with source hash
-`sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
-Its authenticated adapter accepts exactly one identity-bound C9
-persistent-immutable primitive read and classifies the derived private load as
-`:proven-safe` only after sequential proof, result, and whole-core digest
-resolution. The generic C10 classifier continues to reject load requests;
-runtime-checked, unsafe, nonpersistent, aggregate, and effectful load families
-remain pending. The five-test, 147-assertion combined lane is its current
-cross-stage development evidence. None of the current C8, C9, or C10 proof
-candidates has a trusted reviewed attestation or claims exact-authentic,
-aggregate, release, or safety-certificate authority.
-
-Fresh proof candidates for the three frozen adapter sources completed at
-commit `e27757e`. C8 passed in 1,035.465 seconds with artifact
-`sha256:e36f64d3fab9f8419d9f0e8d1b4b2f59f137b2ca07b7756dd9c0a7c92be6c3a4`
-and census
-`sha256:ecd335f292da034f0e283f79969d75002d459f41cd4f43f3ce10cee887510570`.
-C9 passed in 748.278 seconds with artifact
-`sha256:ec15a730d9f264b7744e797d29e928adc9ca8953daf186a4f2e84634b6baa86d`
-and census
-`sha256:a6d95d6a7ddc63c3a446dafc946e102587b753f443cba7a004d3240dafe3d7c6`.
-C10 passed in 1,624.000 seconds with artifact
-`sha256:de279d0e495212d259fd3f78e5575aa57c3a7559984df9acfdb71fd5f0488cb2`
-and census
-`sha256:d327c313e26d09bfbab9417d06ce4987767e7547941ec9afdeefdf643026c469`.
-All three manifests report stable context, checked output contracts, exit zero,
-no timeout, and empty stderr. Their counts are source-bound-derived rather than
-precommitted, `:attestation-required?` remains true, and no trusted attestation
-or authority promotion was performed.
-
-## Stage2 authority-admission boundary
-
-An integration that changes a shared or module-local fingerprint input must
-use the Stage2 authority-admission wrapper. The wrapper resolves the base and
-candidate to immutable revisions, computes the prospective tree, classifies the
-changed paths, and acquires the canonical `/private/tmp/gravity-sh07-heavy.lock`
-before it rechecks the candidate and performs the integration mutation. The
-same lock descriptor remains held through the mutation and the resulting
-context check. A lock probe that releases the lock before merge or integration
-is only advisory and grants no permission, freshness, or authority; it cannot
-be used as a later admission decision.
-
-The unit contract for this boundary is intentionally cheap and fresh:
-
-```bash
-python3 -m unittest tools.tests.test_stage2_authority_admission -v
-```
-
-That unit command validates the admission classifier, prospective-tree and
-worktree checks, and lock-held transaction mechanics. It is a development
-check with `authority: none`; a passing unit result does not authorize a merge
-or promote a proof. The manifest check
-`stage2-authority-admission-unit` depends on the Stage1 SH-01 unit gate and
-declares only the admission implementation, the shared SH-07 fingerprint
-policy helper, and its tests as inputs.
-
-For an authority-affecting integration, invoke the wrapper with immutable full
-commit OIDs and the exact `git merge --ff-only <candidate-oid>` spelling. The
-wrapper validates that spelling but performs its own fixed fast-forward; it
-never executes an arbitrary coordinator callback. A `--probe-only`/advisory invocation may explain the prospective
-impact and report that the lock is busy, but it must not be treated as a
-reservation or as evidence for a subsequent merge. If the lock is busy, queue
-or retry the whole admission transaction after the current owner releases it.
-All shared-heavy lock users accept only direct children of canonical
-`/private/tmp` (or the verified Darwin `/tmp` system alias). They never write
-lock content. After exclusive acquisition only, an owned stable legacy 0644
-inode is migrated in place to 0600 and the receipt records that migration.
-The SH-07 `--list` route also launches catalog discovery, so it acquires this
-same lock before Clojure starts.
-Hard admission rejects tracked/untracked changes and Git operation state;
-ordinary contained `.cpcache`, validation/log, and Python cache outputs are
-ignored, while classpath shadows, symlinks, special files, and fingerprint
-inputs remain fail-closed.
-A successful receipt sets `integration_admission_granted: true` only for the
-lock-held fixed fast-forward. It always keeps `proof_authority_granted: false`;
-advisory and failure receipts grant neither.
-
-The safer long-running alternative is immutable detached authority: run the
-authoritative verifier from a clean detached worktree pinned to the exact
-candidate commit/tree, bind the proof and attestation to that revision and
-shared/module fingerprints, and require the later integration candidate to
-match those bindings. A descendant merge with a changed fingerprint requires a
-new proof; an older detached result is never carried forward merely because
-the merge is related.
-
-## Development verifier resource admission
-
-`tools/development_verification_manifest.json` declares a strict
-`resource_policy`. Its global RSS and process budgets and each class's
-concurrency, default RSS, and default process reservations are admission
-estimates. They are not runtime measurements, resource enforcement, benchmark
-evidence, or authority claims. Every planned, executed, reused, or blocked
-check receipt records the resolved non-authoritative reservation. A check may
-carry a strict reviewed process override; the canonical manifest permits only
-`stage0-orchestrator-unit: 6`, `stage1-sh01-unit: 4`, and
-`stage2-authority-admission-unit: 4`. All other checks use their class default,
-and each receipt binds the resolved value.
-
-Executed checks also record bounded best-effort process-tree observations at a
-0.25-second interval, including sampled peak RSS and process count. These
-measurements are non-authoritative sampled high-water observations, not OS
-enforcement or benchmark evidence. An observed reservation exceedance fails
-the check and prevents caching. If host telemetry is unavailable, the receipt
-records that error and leaves measurements and exceedance decisions unknown;
-it does not manufacture a zero measurement. Planned, reused, and blocked
-checks record an explicit `not-executed` observation. Receipt composition
-validates these shapes and reports a deterministic non-authoritative resource
-summary without promoting any development evidence. When multiple receipts
-provide fresh observations for the same semantic check, composition emits an
-explicit `composed-process-tree-maxima` observation: RSS and process peaks are
-merged independently by maximum, sample count is the maximum reported count
-rather than a sum that could double-count one execution, and any unavailable
-input telemetry remains disclosed. A reused `not-executed` observation never
-replaces a fresh measurement.
-
-The canonical classes are `python-cheap`, `leaf-jvm`, `bootstrap-hosted`, and
-`memory-heavy`. Ready unlocked checks are considered in stable check-id order
-and admitted only while the requested `--jobs` limit, their class limit, and
-both aggregate budgets remain satisfied. The default jobs value therefore
-cannot bypass the resource policy. A locked or heavy check remains a
-single-check wave.
-
-`leaf-jvm` and `bootstrap-hosted` share the canonical
-`/tmp/gravity-sh07-heavy.lock` capacity lock with memory-heavy work. The
-verifier acquires this lock once before submitting an admitted JVM batch, so
-the three permitted leaf JVMs can run together without racing an external
-Stage7 owner or recursively locking in each child. A busy capacity lock blocks
-the batch before any command starts. Memory-heavy checks retain their existing
-per-check canonical lock and do not acquire it a second time as a batch lock.
-When a direct `clojure` command's class declares `jvm_xmx_mb`, the command must
-contain that exact single `-J-Xmx...m` option. Wrapper and `bin/` commands may
-use a class whose JVM limit is null.
-
-## Lane order
-
-Use the first lane that answers the question. Re-run the routing/plan check
-after changing the set of paths or slices.
-
-### 1. Routing and plan check
-
-Use before any test run to see ownership, direct and affected slices,
-deferred paths, discovered namespaces, and resource classes. This is
-`non-authoritative` and should be effectively free.
-
-```bash
-# Changed paths, dependency-expanded plan (selection only).
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --changed --plan
-
-# One slice or one leaf owner.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --slice SH-07 --plan
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --owner sh-core --plan
-```
-
-Stop on `SH01-IMPACT-UNOWNED`, `SH01-IMPACT-SLICE`, or another planner
-diagnostic. A coordinator path normally selects all slices; do not narrow it
-by hand. Inspect `:classifications`, `:affected-slices`, `:namespaces`,
-`:shards`, and `:ignored-paths` before scheduling work.
-
-### 2. Explicitly non-authoritative iteration
-
-Use while developing one or more leaf slices. Iteration requires `--changed`
-and at least one `--iteration-slice`; repeat the option for more slices. With
-`--plan`, only the plan is printed. Without it, the selected catalog and any
-catalog-safe directly changed test run in the current process.
-
-```bash
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --changed --iteration-slice SH-07 --plan
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --changed --iteration-slice SH-07
-
-# Example of repeated explicit slices.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-impact-test-planner --changed --iteration-slice SH-06 --iteration-slice SH-07
-```
-
-The plan schema is `:gravity/sh01-impact-test-plan-v1` and must report
-`:authority :non-authoritative`, `:authoritative? false`, and
-`:full-gate-deferred? true`. Coordinator paths and non-selected leaf paths are
-reported under `:deferred-paths`; they are not silently omitted.
-
-### 3. Resource-aware parallel slice or changed execution
-
-Use when the iteration result is useful but several independent namespaces
-need to run. The runner owns scheduling only; the planner remains selection
-truth. Its output includes `:plan-authority`, per-job `:stdout`, `:stderr`,
-`:elapsed-ms`, and `:exit-code`. It is `non-authoritative` unless an explicit
-authoritative plan marker is present (the current impact planner does not add
-one).
-
-```bash
-# Inspect the schedule without starting workers.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --slice SH-07 --dry-run --normal-parallelism 2 --memory-parallelism 1
-
-# Keep a leaf edit to one discovered namespace rather than the full slice.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --dry-run --memory-parallelism 1
-
-# Run changed namespaces in fresh child processes.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --changed --normal-parallelism 2 --memory-parallelism 1 --timeout-ms 3600000
-```
-
-The implemented selection options are repeatable `--namespace NS`,
-`--slice SH-NN`, `--changed`, or repeatable `--iteration-slice SH-NN`
-combined with `--changed`,
-`--dry-run`/`--plan`, `--normal-parallelism` (aliases
-`--normal-jobs` and `--parallelism`), `--memory-parallelism` (aliases
-`--memory-heavy-parallelism` and `--memory-jobs`), `--timeout-ms` (alias
-`--process-timeout-ms`), `--working-directory`, and `--command`. The
-`--command` value is an executable path; the default child command is
-`clojure -M:test` followed by `--namespace <namespace>`.
-
-Memory-heavy parallelism is intentionally fixed at `1`; any other value is
-rejected. The option remains visible so scripts can state the safety limit
-explicitly rather than relying on an implicit default.
-
-Before acquiring the shared heavy-run lock, require every selected test
-namespace in a small JVM and inspect the dry-run schedule. This catches reader,
-compile, and runner-wiring failures in seconds instead of discovering them
-after a memory-heavy slot has been occupied:
-
-```bash
-clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.self-hosting.sh07-b48-call-arity-test)) (println :preflight-ok)'
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-parallel-test-runner --namespace gravity.self-hosting.sh07-b48-call-arity-test --dry-run --memory-parallelism 1
-```
-
-Replace the example namespace with the selected work. Exact namespace mode is
-non-authoritative and never expands to sibling namespaces or dependants; use a
-slice only when the whole integration slice is intentional. A failed
-preflight blocks the heavy run; it is never evidence and does not replace the
-focused or authoritative execution. Preflight means `require` only: do not
-call `clojure.test/run-tests`, force namespace delays, or invoke artifact
-builders from the preflight JVM. A targeted SH-07 namespace can still trigger
-the same multi-gigabyte replay as a broad run and therefore still belongs
-behind the shared heavy-run lock.
-
-### 4. Focused project-structure extraction gate
-
-Changes limited to the extracted Stage 0 source-structure leaves can use the
-manifest's `stage0-project-structure-extraction` check. It runs the three
-extracted leaf test namespaces followed by the exact four qualified bootstrap
-vars in one fresh JVM through the bounded `:project-structure-test` alias and
-`--fail-fast`, after `stage0-project-structure-runner-unit` has exercised the
-runner's own synthetic/failure/lifecycle tests:
-
-```bash
-clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
-```
-
-The check binds the source-unit, source-span, and digest leaves and their
-tests, the compatibility wrapper and exact legacy bootstrap test, the
-dedicated project-structure runner, `deps.edn`, and the governing architecture
-and verification contracts. The prerequisite binds and executes the runner's
-unit wrapper and test. Both checks are focused, fresh, and non-authoritative. The
-compatibility component alone was observed at 4 tests and 190 assertions in
-51.05 seconds, avoiding 467 of 471 bootstrap deftests; the full gate's measured
-test/assertion count, wall time, and memory were 19 tests and 397 assertions in
-51.97 seconds with a peak resident set of 789,315,584 bytes (about 753 MiB).
-The runner-unit prerequisite observed 9 tests and 28 assertions in 0.62 seconds
-with a peak resident set of 144,703,488 bytes (about 138 MiB), without loading
-the production leaf or bootstrap test namespaces. These are feedback rather
-than equivalence or general speedup claims. Leaf changes select this focused
-check and, because `bootstrap/clojure/src/**` is part of the Stage3 execution
-runtime, also select the automatic Stage3 chain through its public check. That
-additional heavy routing is the safety cost of complete runtime fingerprinting;
-the proof candidate remains manual-only. Leaf changes still do not select
-`stage0-clojure-suite` or `stage0-bootstrap-authority`.
-
-### 4a. Focused P15-S23 Darwin launcher prerequisite
-
-The bounded host-authored launcher has its own fresh manifest node,
-`stage0-p15-native-launcher-prerequisite`. Its exact command is:
-
-```bash
-clojure -J-Xmx1g -M:test --namespace gravity.p15-native-launcher-test
-```
-
-The node is a serialized `heavy-candidate` check with a 600-second timeout,
-`fresh: true`, `resume: false`, `no_resume: true`, and `authority: none`. It
-uses the canonical `/private/tmp/gravity-sh07-heavy.lock` with
-`exclusive: true`, `capacity: 1`, and `lock_owner: runner`: the verifier parent
-owns the lock while the direct Clojure command runs. Its declared resource
-receipt is `observed-peak-process-tree-rss-and-wall-time`, and its heap contract
-is `-J-Xmx1g` / 1,073,741,824 bytes.
-
-The focused input set is the launcher C source, the exact launcher test, all
-five `p15-native-launcher` C fixtures, and
-`docs/artifacts/phase-15/native-launcher/p15-s23-darwin-launcher-primitive.edn`.
-The command identity also binds `deps.edn` and
-`bootstrap/clojure/test/gravity/self_hosting_test_runner.clj`; no unrelated
-report or roadmap is over-bound. Each source, test, fixture, or artifact change
-selects this node and the cheap `stage0-orchestrator-unit` prerequisite. Legacy
-Stage0 broad owners explicitly impact-exclude those paths, so the changed-path
-plan does not widen into the full Stage0 suite, a documentation gate, or an
-earlier/later proof-candidate node. A dry run is non-authoritative and the
-receipt's `authoritative` field remains false.
-
-Coordinator evidence for the current launcher revision is exactly 8 tests/60
-assertions in 5.983s, with peak RSS 213,712,896B under Xmx1g and the canonical
-lock. The independent review is approved and the artifact is `partial`. This
-is bounded development evidence only: it makes no public native-run,
-self-hosting, release, or strict process-containment claim. The coordinator
-receipt was not rerun in this gate; Python unit/static/JSON/docs validation is
-the local verification boundary while C12 work remains active.
-
-### 4b. Focused P15-S23 native runtime provider prerequisite
-
-The bounded native runtime provider has two exact fixed-profile gates. The fast
-`stage0-p15-native-runtime-provider-contract-prerequisite` uses
-`gravity.self-hosting.sh07-iteration-cache-runner` with explicit
-`-Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}'`,
-`--fail-fast`, ten ordered `--test-var` selectors (artifact preflight first),
-and `--max-cache-entries 1`. It pins `-J-Xmx1g`, a strict 180-second timeout,
-and a 1,073,741,824-byte floor; its exact primary inputs are the four shared
-source/contract/test/artifact paths and all 22 legacy fixtures (26 total).
-Its expected profile receipt is 10 tests/235 assertions.
-
-The `stage0-p15-native-runtime-provider-packet-binding-prerequisite` uses the
-same fixed runner shape with its packet-binding artifact preflight first and
-four ordered authenticated selectors. It pins `-J-Xmx8g`, a strict 1,800-second
-timeout, and an 8,589,934,592-byte floor; its exact primary inputs are the four
-shared paths, `p15_native_packet_binding.clj`, and the four new fixtures (9
-total). Its expected profile receipt is 5 tests/70 assertions. Both nodes are
-fresh/no-resume, automatic, `authority: none`, and depend only on
-`stage0-orchestrator-unit`; deterministic IDs put the contract node before the
-packet-binding node for shared changes. Explicit `--check` closes only the
-requested profile plus the orchestrator, while `--all` includes both.
-
-Both profiles use `/private/tmp/gravity-sh07-heavy.lock` with
-`lock_owner: runner`, `exclusive: true`, `capacity: 1`, and the observed
-process-tree RSS/wall-time receipt. Their shared exact tool closure is
-`deps.edn`, the iteration-cache runner, the self-hosting runner,
-`bootstrap.clj`, the packet binder, and its six direct Gravity dependencies;
-there is no ownership glob. Shared C/Gravity/test/artifact and eager
-namespace-load helper edits select both; the binder also selects both because
-the namespace eagerly loads it. Old fixtures select only contract, while the
-four authenticated fixtures select only packet binding. Existing bootstrap and
-six-helper consumers keep their prior Stage0/Stage3/Stage4 routes in addition
-to both profiles. Exact exclusions remove provider-specific fixtures and the
-new binder from unrelated broad replay without replacing genuine helper
-ownership; neither provider profile adds M0, proof, or public authority.
-
-The manifest binds exactly `GRAVITY_P15_NATIVE_RUNTIME_REQUIRED=1`. Without the
-marker an ordinary namespace run retains its unsupported-platform/no-claim
-skip; the focused verifier supplies it and fails when the ARM64 macOS
-Clang/file toolchain is unavailable. Each profile independently performs a
-bounded no-follow, strict-UTF8, single-form EDN artifact read with identity and
-size checks and current C/Gravity/test hashes; packet binding additionally
-validates its adapter and four authenticated fixtures. The artifact's current
-source-only census is 15 tests/305 assertions (10/235 fast plus 5/70 packet).
-The prior ae9f 13-test/303-assertion receipt, timing, RSS, hashes, and attempt
-history are explicitly historical/non-authoritative, not a fabricated current
-measurement. This remains an internal bounded gate with no public native,
-self-hosting, release, seedless, or strict process-containment authority.
-
-### 5. Focused namespace or cached SH-07 feedback
-
-Use for a single changed test or a bounded shard. These runs are
-`non-authoritative`, even when a child process is fresh.
-
-```bash
-# One discovered namespace through the normal coordinator.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting-test-runner --namespace gravity.self-hosting.sh07-module-fragment-test
-
-# One or more focused namespaces with a bounded process-local cache.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --namespace gravity.self-hosting.sh07-b48-call-arity-test --max-cache-entries 2
-
-# One named test var for the shortest reproduce/fix loop.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-too-few-and-too-many-with-stable-diagnostics --max-cache-entries 2
-
-# Several related vars in one JVM, reusing the bounded cache and stopping on
-# the first failure.
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-iteration-cache-runner --fail-fast --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-too-few-and-too-many-with-stable-diagnostics --test-var gravity.self-hosting.sh07-b48-call-arity-test/sh07-b48-rejects-malformed-products-stale-identity-and-bounds --max-cache-entries 2
-
-# Process-local immutable-cache shards (acceleration only).
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --list
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner --check
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cached-shard-runner accepted
-```
-
-Cached output is marked `:cache-authoritative? false` and
-`:fresh-authoritative-run-required? true`. The fixed SH-07 shard router can
-also list/check/run its named shards with
-`gravity.self-hosting.sh07-parallel-shard-runner`; that output is test
-feedback, not proof evidence.
-
-The iteration cache runner accepts repeatable `--namespace` options and runs
-them sequentially in one JVM. It caches SH-06 resolution, SH-07 core, and
-artifact verification results using source, adapter, plan, and runtime-bound
-keys. `--max-cache-entries` bounds each cache independently (default `4`) to
-avoid retaining the entire fixture corpus. Use a small bound such as `2` for
-memory-heavy work. Cache misses for the same key are serialized so test
-futures cannot accidentally start duplicate core builds. Its report always
-states `:authority :non-authoritative`, `:cache-authoritative? false`, and
-`:fresh-authoritative-run-required? true`. After each namespace it also emits
-a `:gravity/sh07-iteration-namespace-result` record with elapsed milliseconds
-and that namespace's cache hit/miss deltas. Use these records to identify the
-slow namespace and confirm that a combined run is actually reusing work before
-changing cache bounds or widening the selection.
-
-Use `--fail-fast` during edit/fix loops. It stops after the first failing or
-erroring test var inside an ordinary namespace, records the remaining vars in
-`:skipped-test-vars`, and records later namespaces in `:skipped-namespaces`.
-Namespaces that define `test-ns-hook` retain the hook's indivisible execution
-semantics, but a failing hook still skips later namespaces. This prevents a
-known upstream failure from spending the rest of a heavy namespace or another
-heavy namespace's runtime on derivative diagnostics. Omit it when intentionally
-collecting the complete failure set. Either mode remains non-authoritative.
-
-Use one namespace-qualified `--test-var` when reproducing a known failure
-inside a heavy namespace. Repeat `--test-var` after a fix when several related
-checks reuse the same compiler plan or artifacts; they run in argument order
-inside one JVM and one bounded process-local cache. Add `--fail-fast` to a
-multi-var batch to record the remainder in `:skipped-test-vars` after the first
-failure. The runner validates that every selected
-namespace belongs to the discovered catalog, resolves only a var carrying
-Clojure test metadata, and applies that namespace's normal once/each fixtures.
-Each `:gravity/sh07-iteration-test-var-result` and the aggregate batch remain
-non-authoritative. After the vars are green, run their owning namespaces; do
-not promote exact-var results to slice, module, or release evidence.
-`--test-var` cannot be combined with `--namespace`; `--fail-fast` is rejected
-for a single var because it has no remaining selected work to skip.
-
-Order a multi-var batch by cache affinity rather than source order. Run cheap
-schema, plan, and fixture checks first. Then run the first var that constructs
-one heavy fixture, followed immediately by every var that consumes that same
-fixture. Introduce a different heavy fixture only after those hits have been
-observed. If the number of simultaneously useful heavy fixtures exceeds the
-small cache bound, split the work into separate fail-fast batches instead of
-raising the bound or retaining every carrier in one JVM.
-
-The per-var cache deltas are the acceptance evidence for this ordering. A
-follow-up var that is expected to reuse a fixture should report SH-06, core,
-and verification hits with no corresponding misses. In the measured SH-08
-HO1 batch, the first accepted pair took 113,418 ms and populated two entries;
-the related alteration and path-neutral checks then completed in 451 ms and
-879 ms. The aggregate counters were exactly 3 SH-06 hits / 6 misses, 9 core
-hits / 6 misses, and 3 verification hits / 6 misses. This is iteration
-evidence only, but it demonstrates why four related vars should not be launched
-as four cold JVMs.
-
-Remember that exact-var execution preserves Clojure's `run-test-var` fixture
-contract: a namespace `:once` fixture runs around each selected var. A
-namespace-local cache reset by that fixture therefore does not persist across
-the batch. Cross-var acceleration must be visible in the iteration runner's
-own cache deltas; do not infer reuse merely from a test-local atom or delay.
-
-### Stage2 SH-02 development measurements
-
-The SH-02 authenticated-envelope namespace was measured as a bounded
-development audit on the current host. These are non-authoritative observations
-for scheduling, not performance claims or proof evidence:
-
-- Requiring the namespace took 5.88 seconds and reached about 1.40 GiB peak
-  resident memory.
-- The first ten leaf vars, run warm in one JVM, all passed in 13.97 seconds
-  with about 1.46 GiB peak resident memory.
-- The coordinator integration var exceeded a 60-second bounded audit and was
-  stopped at 66.53 seconds after reaching about 2.47 GiB peak resident memory;
-  it did not produce a pass result. Its first integration row alone measured
-  roughly 14.31 seconds for checked-core, 11.47 seconds for C11, 12.71 seconds
-  for the packet, and another 11.34 seconds for the fresh C11 inside SH-02
-  reconstruction.
-
-For a focused edit loop, run the cheap contract and negative vars first, then
-run coordinator vars 11 through 13 together in one JVM behind the shared
-heavy-run lock, with `--fail-fast` so derivative vars are skipped after the
-first failure. Running those three vars in separate JVMs repeats the shared
-`coordinator-proof` build and its multi-gigabyte cost. This ordering is a
-bounded SH-02 test practice only: it makes no batching speedup claim. The
-current normal-only batching ceiling and SH-07 cache-affine strategy remain
-future work; same-JVM selected-namespace batching/chunking is still deferred.
-
-The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
-source bytes. A user-provided historical observation is 2416.213 seconds at
-142,136 source bytes. The source and shared contexts differ, so these are
-incomparable observations and do not establish a speedup or regression. The
-backlog currently contains 2411.35 seconds; the raw receipt must resolve that
-discrepancy before any canonical baseline is replaced.
-
-### 6. Selected fresh authoritative module
-
-Use after a focused change passes, when the changed contract is SH-07-owned,
-or before handing a module to integration review. This is the first lane that
-can produce authoritative SH-07 evidence.
-
-```bash
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --list
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --fresh diagnostics
-```
-
-The module name must be one returned by `--list`. The result must report
-outer `:schema-version 3`, `:fresh-process-required? true`,
-`:persistent-iteration-cache-used? false`, a passed capability proof, a passed
-independent verification report, and an empty `:failed-checks`. Each module
-result also carries a compact `:coverage-census` bound to the module,
-namespace, source revision, SH-07 artifact ID, and source bytes. Its
-request/core counts, core-form frequencies, ordered root/form coverage flags,
-source binding flags, and canonical hash are computed from the already-built
-verified request/core carrier; no second compiler artifact is built or stored.
-In exact-precommitted mode the census is checked against complete expected maps
-in the proof contract. In source-bound-derived mode the contract binds only the
-exact source path/bytes and module identity; counts remain derived observations
-and output carries the false independent-oracle flags plus unsupported
-exact/aggregate/release claims.
-The active source-bound-derived contract currently binds only `c7-types`; its
-preflight rejects a selected module without an expectation before any proof.
-Use `--fresh c7-types` for this policy. A `--fresh all` run is admissible
-only after every selected module has an explicit expectation (or under
-exact-precommitted policy).
-Each module expectation also binds the exact source byte count and SHA-256 that
-produced those observations. Before constructing any SH-07 artifact, the
-direct runner checks every selected module and, in source-bound-derived mode,
-requires an expectation for each one; `--fresh all` performs the complete
-preflight before starting its first module. The
-checkpoint wrapper performs the same check before acquiring the heavy lock or
-launching an authoritative module child. A mismatch writes a
-`source-contract-mismatch` manifest,
-returns exit 75, and launches no expensive process. The lightweight census
-test is the update seam for
-reviewing a deliberate expectation change without constructing the C7 artifact.
-
-The census has only the authority of its enclosing individual fresh module
-output. Under exact-precommitted policy, a valid `c7-types` census can satisfy
-the count and ordered-coverage evidence of
-`sh07-b28-c7-source-has-exact-authentic-coverage` without rerunning that costly
-exact var. Under source-bound-derived policy it is evidence for the exact
-source-bound proof only; it does not satisfy that exact-authentic-coverage
-claim, the neighboring call/quote structural test, path-neutral parity, another
-module, or any aggregate/release claim. After review, create a scoped
-attestation:
-
-```bash
-python3 tools/run_sh07_authoritative_modules.py \
-  --module c7-types \
-  --state-dir target/validation/sh07-authoritative-v2 \
-  --attest --reviewer "reviewer-id" \
-  --reviewed-at 2026-08-07T12:00:00Z \
-  --method "source, stdout, artifact, and census linkage review" \
-  --limitation "counts are derived, not independently predeclared"
-```
-
-The attestation is checked against current source bytes, raw stdout, the
-proof-contract hash, artifact id, and census hash. It retains
-`individual-source-bound-derived` scope and never creates aggregate authority.
-The first C7 source-bound run completed at exact proof commit `5fe2013` in
-3,351.068 seconds (55.85 minutes) for 176,551 source bytes. The older
-142,136-byte revision completed in
-2,416.213 seconds (40.27 minutes). This is a new observational planning
-baseline, not a controlled optimization benchmark: source semantics, schema,
-and proof work changed, raw wall time increased 38.7%, and bytes per second fell
-about 10.4%. Profile that exact `5fe2013` proof phase before proposing another
-performance change; do not infer a speedup from interpreter microbenchmarks.
-The current 210,220-byte C7 source is a different candidate from that receipt,
-with source SHA `sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`.
-Its source-bound-derived contract was refreshed for the exact bytes only;
-count maps remained absent and the 55.85-minute receipt was not relabeled as
-current evidence for it. After two preserved fail-closed attempts exposed an
-oversized top-level fragment and malformed `if` forms, fresh proof commit
-`206e89f` completed in 3,998.709 seconds of wrapper time (3,993.553 seconds in
-the proof). The result passed its output contract with stable context, empty
-stderr, artifact
-`sha256:9ee396cb1f8d6403ce14061a9e9d9977829da25c7fc42c13d9a0804025006587`,
-and derived census
-`sha256:6580b784bb46755231ad62ed3095ce5efe775f233d6f327098bb802fb6380393`.
-The census contains 192 fragments and roots, 18,554 forms, 7,687 resolutions,
-15,286 core nodes, 192 definitions, 3,082 calls, 6,185 references, 187
-function records, 3,082 call edges, and 14 recursion components. This is a
-successful source-bound proof candidate, not automatic authority: counts were
-not precommitted, `:attestation-required?` is true, and no reviewed attestation
-was created because trusted reviewed-attestation admission is not enabled.
-Exact-authentic-coverage, aggregate, release, and seed-retirement claims remain
-unsupported. The cheap primitive-family and separate bool/string `.gravity`
-boundary checks likewise remain non-authoritative development evidence.
-`--fresh all` is the exhaustive SH-07 transaction and is reserved for the
-stable-candidate/release lane because of its measured runtime and memory cost.
-
-### 7. Fixed Stage3 C7 candidate graph
-
-The manifest's Stage3 graph is a fixed, serial development route. A cheap
-runner-unit node executes the complete
-`gravity.self-hosting.stage3-verification-runner-test` namespace. The route
-then runs source-control-form-arity, coverage/source binding and fragment
-preflight, source-plan, all three pure SH08 semantic batches, all three
-authenticated boundaries (primitive bool, recursive integer+string, and
-higher-order parity+auth), public C7, and finally the proof candidate. The
-arity and fragment gates therefore precede every semantic/authentication node.
-Every production batch uses `python3 tools/run_stage3_verification.py`, the
-`:stage3-verification` alias, and a fixed `--batch` identity; generic
-`--namespace` and `--exact` selectors are not accepted by these nodes.
-
-The manifest fingerprints the centralized
-`run_stage3_verification.STAGE3_RUNTIME_DEPENDENCIES` set for every
-command-owned production node: `deps.edn`, the Stage3 wrapper and verifier,
-the SH-07 authoritative tool, Stage3 and iteration-cache runners,
-`bootstrap/clojure/src/gravity/bootstrap.clj`, all five shared Gravity files,
-and the `bootstrap/clojure/src/**` tree. The runner-unit remains a narrow unit
-preflight and intentionally does not inherit that production set.
-Authenticated SH08 selectors additionally bind the exact
-`sh08_function_call_type_test.clj` source and the `.gravity` fixtures they
-load; parity selectors bind their paired `.qst` bytes. The proof candidate
-also binds `sh07_authoritative_runner.clj` and `sh07_proof_contract.edn`.
-
-All C7 nodes are fresh, exclusive, capacity one, and command-owned on the
-canonical `/private/tmp/gravity-sh07-heavy.lock`. Structural/source/public
-commands declare `-J-Xmx2g`; semantic/authentication/proof commands declare
-`-J-Xmx8g`, with verifier validation requiring equality to the fixed wrapper
-batch heap. The public C7 node records a timeout of at least 900 seconds and
-observed wall/RSS evidence. The final authority-shaped node is instead a
-`proof-candidate`: it is `automatic: false`, fresh, no-resume, uses a new
-invocation state directory, reports `authority: none`, and carries
-`attestation_required: true`. A changed C7 input therefore stops at public;
-explicit `--check` and `--all` still include the proof candidate. The separate
-reviewed-attestation mode is intentionally not enabled in this manifest.
-
-The two same-namespace authentication sibling pairs are fixed into the
-recursive and higher-order authentication batches. This removes two old cold
-semantic/authentication JVM boundaries (eight to six in the graph), a
-scheduling observation rather than a measured speed claim.
-
-For source ownership, primitive/recursive/higher-order and fragment files are
-covered by the union of their fixed selectors. The source-plan and census
-files contain additional deftests that are not selected by this graph, so
-their paths are explicitly impact-excluded and an implicit change fails closed
-as deferred rather than claiming a false green. The large bootstrap test file
-is likewise not claimed by the single public selector. Explicit `--check` or
-`--all` runs retain the broad Stage0 graph; changed C7 implementation sources
-select the fixed Stage3 downstream chain and exclude legacy Stage0 heavy nodes.
-
-The successful `206e89f` proof candidate is retained as stale-after-tool-
-integration evidence, never as authority or a speedup claim. It completed in
-3998.709 seconds wrapper time / 3993.553 seconds proof time at about 4.74 GiB
-observed monitor peak. The source was 210,220 bytes,
-`sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4`;
-artifact, census, and stdout SHA prefixes/suffixes were
-`9ee396...6587`, `6580b7...0393`, and `730071...5268`. The request census was
-192 fragments/roots, 18,554 forms, 1,528 bindings, 1,266 locals, and 7,687
-resolutions; core counts were 15,286 nodes, 192 definitions, 3,082 calls,
-6,185 references, and zero keywords, with 187 function records, 3,082 call
-edges, and 14 recursion components. Its source-bound-derived contract still
-requires a separate reviewed attestation and does not grant exact, aggregate,
-or release authority. Because this receipt predates the Stage2 wrapper and
-its tool/dependency fingerprint changes, exactly one fresh no-resume candidate
-rerun is required after the final integration freeze.
-
-For a durable, resumable sequence of selected modules, use the checkpoint
-runner. It starts one fresh child for each module, writes stdout/stderr logs
-and a JSON receipt under `--state-dir`, and stops at the first failed or timed
-out module:
-
-```bash
-python3 tools/run_sh07_authoritative_modules.py --list
-python3 tools/run_sh07_authoritative_modules.py \
-  --module diagnostics --module c11-mir \
-  --state-dir target/validation/sh07-authoritative-checkpoints \
-  --timeout-seconds 21600
-python3 tools/run_sh07_authoritative_modules.py \
-  --module c7-types --state-dir target/validation/sh07-authoritative-checkpoints
-```
-
-`--module` is repeatable and is mutually exclusive with `--all` and
-`--list`. `--timeout-seconds` applies to each child. `--no-resume` disables
-checkpoint reuse; `--cwd` selects the repository root and `--lock` overrides
-the shared lock path (the default is `/tmp/gravity-sh07-heavy.lock`). The lock
-is acquired non-blocking, so a concurrent memory-heavy or exclusive run fails
-without competing for the host.
-
-Resume is conservative and uses the v2 manifest's two-tier context. The shared
-context covers all bootstrap Clojure implementation sources, `deps.edn`, the proof contract,
-authoritative runner, checkpoint tool, command and launcher contents, tool
-version, Java binary/version, Clojure configuration, every regular external
-classpath file by content, host OS/architecture, selected JVM environment,
-the stage-2 compiler/emitter, and the shared macro, resolution, and checked-core
-Gravity sources. A root-local classpath directory contributes its path and only the
-root load resources that can affect this runner, such as `data_readers.clj` or
-`data_readers.cljc`; unrelated test sources do not invalidate checkpoints.
-Any `.class` shadow, symlink, special file, path escape, missing classpath
-entry, or external classpath directory makes the runtime identity unusable.
-The shared context also binds the complete validated module-to-source catalog.
-The module context adds exactly the source path, byte count, and content hash
-reported for that module by the catalog.
-Thus a shared-context change invalidates every receipt, while a module-local
-source change invalidates only that module; changing an unselected module does
-not invalidate the selected receipts. The proof contract is conservatively
-hashed as one shared file. Consequently, updating one module's expected census
-or source binding invalidates every checkpoint receipt even though an ordinary
-source-only edit remains module-local. This deliberate global invalidation is
-the current fail-closed tradeoff; the tool does not yet fingerprint independent
-per-module contract projections.
-
-A module is resumed only when both context tiers and the command match, the
-prior schema-2 checkpoint receipt passes a structural single-EDN output check for exactly
-that module and its catalog source path, byte count, and SHA-256, and its
-coverage census has the exact shape and bindings, a recomputable canonical
-hash, nonnegative counts, true integrity flags, and a passed runner census
-contract check. The validator receives the proof-contract SHA from the initial
-shared-context snapshot, reads the contract bytes once, verifies those exact
-bytes against the trusted SHA, and only then parses that same byte array. It
-compares any module expectation plus the boundary task, request schema, and
-scope. A coherently edited and rehashed stdout receipt therefore cannot
-override the contract, even if a forged contract is visible only during
-validation and restored before the final shared-context sweep. The canonical
-non-symlink stdout/stderr files must also still
-match their SHA-256 hashes. The tool
-performs a two-discovery catalog/shared-context handshake at startup and one
-final catalog rediscovery. Process-local source checks surround children; the
-source-contract discovery record includes the hash of the exact contract bytes
-used to derive its bindings, and that hash must equal the trusted shared-context
-contract hash. Module sources are read through non-following regular file
-descriptors. The direct runner repeats the binding check on its immediately
-opened pre-proof source snapshot. The receipt byte binding catches a transient
-current-module edit even if its bytes
-are restored before the final snapshot. A mutation stops the sequence with
-exit 75, or rejects the output when its source binding differs. Each child
-command is the existing authoritative runner with `--fresh <module>`, and the
-manifest records
-per-module status, elapsed time, normalized and raw exit codes, output paths,
-and output hashes.
-
-Version 1 checkpoint manifests are deliberately unsupported and never resume.
-After upgrading the tool, archive or delete the old `--state-dir` and rerun the
-selected modules to create a v2 manifest; using a new state directory is also
-safe.
-
-The checkpoint manifest and its summary are coordination records, not a new
-aggregate proof. They explicitly report `aggregate_authoritative: false` and
-`authority_scope: individual-existing-runner-outputs-only`; only the individual
-fresh runner outputs can satisfy module-scoped authoritative evidence.
-
-### 8. Fixed Stage4 C8/SH09 candidate graph
-
-The manifest extends the fixed Stage3 runner policy with an exact C8/SH09
-graph; it does not add a generic namespace or module passthrough. After the
-narrow Stage3 runner-unit prerequisite (without pulling the C7 heavy chain),
-the route is:
-
-1. `stage4-c8-source-structural`, using the four fixed selectors in deliberate
-   fail-fast order: proof-contract registration, control-form arity, broader
-   source contracts/policy, and explicit structural limitations. The first
-   selector binds the C8 source, `sh07_proof_contract.edn`, and the 29
-   governing documents it reads. The source coverage file is partial: edits to
-   that file are fingerprinted but impact-excluded and therefore fail closed
-   as deferred because coverage selectors 5--9 remain outside this graph.
-2. `stage4-sh09-adapter`, one fixed six-selector batch in source order,
-   combining five synthetic checks with the authenticated C8-to-SH09
-   `.gravity` boundary, including the ordered-effect-identity seam added by
-   `eefb20d`.
-3. `stage4-public-c8`, the fixed bootstrap compatibility selector.
-4. `stage4-c8-proof-candidate`, a manual-only fresh `c8-authority` candidate
-   for module `c8-effects`; it is never selected by ordinary C8 change impact.
-
-Every production Stage4 node is fresh, exclusive, capacity one, and
-command-owned on `/private/tmp/gravity-sh07-heavy.lock`. Structural and public
-nodes pin `-J-Xmx2g`; synthetic, authenticated, and proof nodes pin
-`-J-Xmx8g`. The public timeout is at least 600 seconds and its receipt records
-observed wall time and sampled process-tree RSS. The proof node uses a new
-state directory, `--no-resume`, `authority: none`,
-`proof_candidate: true`, and `attestation_required: true`; it is a candidate,
-not an authority grant.
-
-All Stage4 production nodes inherit the complete centralized Stage3 runtime
-identity (`deps.edn`, both Python wrappers, the Clojure runners, `bootstrap.clj`,
-the five shared Gravity files, and `bootstrap/clojure/src/**`). The public node
-also binds `bin/gravity`, the packaged
-`target/phase-18/jvm-cli/gravity-jvm-cli.jar`, the P15-S23 seed-retirement
-artifact, and the partial bootstrap/CLI/diagnostics test chain. The combined
-SH-09 adapter node binds only the C8 source, its adapter test, the SH-08
-function/primitive test helpers, the C7 source, and the
-`function-value-typed-bool.gravity` fixture it actually loads.
-
-The graph is non-authoritative and makes no speedup or equivalence claim. The
-historical `f3729a5` proof evidence remains stale after the `eefb20d` source
-seam; no new C8 proof was run as part of this manifest update.
-
-### 9. Fixed Stage5 C9 ownership graph
-
-The manifest now routes the C9 ownership slice through a fixed,
-non-authoritative graph. It depends only on the cheap `stage3-runner-unit`
-prerequisite; it does not replay the Stage3 or Stage4 production chains and
-never selects either earlier proof candidate. The automatic route is:
-
-1. `stage5-c9-source-structural`, a 2 GiB source/contract gate whose four
-   selectors run in source order: proof-contract, control-form arity, source
-   contracts, and structural limitations. The C9 source is bound at 71,132
-   bytes with SHA
-   `sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd`.
-   Coverage vars 5--9 remain intentionally deferred: their partial namespace
-   is fingerprinted and impact-excluded so an edit fails closed rather than
-   being reported as covered by a different selector.
-2. `stage5-c9-kernel`, a 2 GiB four-selector SH-10 ownership-transition batch.
-   The accepted and rejected `.gravity`/`.qst` fixture pairs are bound as
-   inputs. The measured receipt was 4 tests/424 assertions in 6.42 seconds
-   with an observed process-tree peak of 1,039,777,792 bytes. This is a
-   non-authoritative development observation.
-3. `stage5-sh10-c8-adapter`, one 8 GiB five-selector batch in source order:
-   four synthetic C8-to-C9 ownership adapters followed by the authenticated
-   boundary. It binds the C8 and C9 sources, the SH-09 adapter, the SH-08
-   helper tests, the C7 source, and exactly the accepted typed-bool `.gravity`
-   fixture loaded by the boundary. The measured receipt was 5 tests/51
-   assertions in 68.073 seconds with an observed peak of 4,164,911,104 bytes;
-   no skipped vars or `.qst` carrier were reported. These are resource and
-   scheduling observations, not speedup claims.
-4. `stage5-public-c9`, the fixed public C9 compatibility selector, uses
-   `-J-Xmx2g`, a 600-second timeout, and observed wall/RSS telemetry. Its
-   partial bootstrap/CLI/diagnostics test chain, packaged JVM CLI jar,
-   `bin/gravity`, and seed-retirement artifact are declared inputs.
-
-The manual `stage5-c9-proof-candidate` is a fresh, no-resume `c9-authority`
-candidate for `c9-ownership`, with a new invocation state directory,
-`automatic: false`, `authority: none`, `proof_candidate: true`, and
-`attestation_required: true`. It uses `-J-Xmx8g` and a 21,600-second timeout;
-an exit-0 candidate is not an attestation or authority promotion. The
-historical b6e80f1 planning evidence (505.045-second candidate, artifact
-`sha256:56aa7b6c...b2de`, census `sha256:b28f186a...1a45`) is retained only as
-stale planning evidence because the source, contract, tool, and shared-input
-identities have changed. The current source requires a fresh candidate after
-integration and freeze. Do not rerun C8 authority for a C9-only change.
-
-C9 source changes select source structure and both automatic branches (kernel
-to public, and the merged adapter). Kernel fixture/test changes select only
-source, kernel, and public. Within the Stage5 graph, adapter/helper/C8 changes
-select source and the adapter only; upstream Stage4 routing for those same C8
-paths remains independent. Ordinary changed-path routing never selects the proof candidate;
-explicit `--check`/`--all` requests may include its dependency closure. C9
-paths are impact-excluded from the legacy broad Stage0 heavy checks so the
-fixed graph remains the sole automatic C9 owner.
-
-### 10. Fixed Stage6 C10 safety graph
-
-The C10 route is fixed, non-authoritative, and independent of Stage3--5
-production execution. It depends only on `stage3-runner-unit` and branches:
-
-1. `stage6-c10-source-structural` runs five source-only selectors at 2 GiB:
-   special-form arity, export completeness, proof-contract registration,
-   exact policy contracts, and static lookup/residual boundaries. It binds
-   112,712 source bytes with SHA
-   `sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968`.
-   Artifact, parity, replay, and rejected-family coverage remains deferred;
-   the partial namespace is fingerprinted and impact-excluded.
-2. `stage6-c10-kernel` keeps all seven numeric-safety vars in one 2 GiB JVM,
-   sharing the C10 plan and accepted/rejected `.gravity`/`.qst` fixture-plan
-   delays. It continues to `stage6-public-c10`, one exact 2 GiB public selector
-   with a 600-second timeout and wall/RSS receipt.
-3. `stage6-sh11-c9-safety-adapter` keeps four pure checks and its authenticated
-   `.gravity` boundary in one 8 GiB JVM. The measured lane passed 5 tests/147
-   assertions in 69.470 seconds; its final boundary took 61.220 seconds and
-   built one carrier. The `.qst` twin is bound for byte parity but is not built
-   as another authenticated carrier.
-
-C10 source changes select all four automatic Stage6 nodes. Kernel inputs select
-source/kernel/public; adapter inputs select source/adapter. C8/C9 paths retain
-their independent owning graphs and add only the Stage6 source/adapter branch.
-Legacy broad owners are impact-excluded. Every Stage6 production node is fresh,
-exclusive, capacity one, command-owned on the canonical heavy lock, and binds
-the centralized runtime/tool identity.
-
-`stage6-c10-proof-candidate` is manual-only and joins public plus adapter. It is
-fixed to `c10-authority` / `c10-safety`, fresh, no-resume, new-state, 8 GiB,
-21,600 seconds, `authority: none`, `proof_candidate: true`, and
-`attestation_required: true`. It is not selected by ordinary changed-path
-routing, and an exit-0 candidate does not promote authority. No C10 proof was
-run as part of this graph integration.
-
-### 11. Fixed Stage7 C11 MIR graph
-
-The C11 route is fixed, non-authoritative, and independent of Stage3--6
-production execution. It depends only on `stage3-runner-unit` and branches:
-
-1. `stage7-c11-source-structural` runs three source-only selectors in a
-   512 MiB JVM: exact source/proof-contract binding, control-form arity, and
-   exact ordered export definitions. It binds 253,588 bytes with SHA
-   `sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136`.
-   The corresponding plan/functions hashes are `sha256:974d3949...fb39` and
-   `sha256:ece068d2...89a4`; builder/verifier hashes remain unchanged. The
-   shape-only runner profile is deliberately absent from the durable manifest.
-2. `stage7-sh12-c10-mir-adapter` keeps the envelope helper, four semantic
-   checks, and the authenticated `.gravity` boundary in one 8 GiB JVM. Helper
-   placement first catches duplicated-carrier bounds before the cold carrier;
-   boundary placement last preserves fail-fast cache affinity. The
-   aggregate receipt at `target/validation/stage7-c11-post-native-3/receipt.json`
-   passed in 490866.529 ms with
-   `authority: fresh-command-pass-non-authoritative` under the canonical
-   command-owned lock. Its exact combined six-selector batch passed 6 tests/
-   235 assertions (runner 80730 ms, wrapper 86737.375 ms, peak
-   1,892,941,824 bytes), with exit 0 and no skipped selectors. The earlier
-   separate 1/53 helper and 5/182 suffix receipts are superseded planning
-   evidence. These measurements were fresh on the prior 6084-based composition;
-   coordinator changes since then alter the exact Stage7 tool input
-   `bootstrap/clojure/test/gravity/self_hosting_test_runner.clj`, so this receipt
-   is historical non-authoritative planning/performance evidence, not current
-   admission evidence. The final exact seven-node rerun is pending coordinator
-   C12/SH13 freeze.
-3. `stage7-public-c11` is a 2 GiB two-selector batch. It validates the complete
-   source/plan/functions/builder/verifier tuple before the public compatibility
-   selector. It is a sibling of the adapter, so an SH12-only edit does not
-   force public work. In the same aggregate receipt, the public batch
-   passed 2 tests/39 assertions (runner 350265 ms, wrapper 359909.526 ms,
-   peak 2,789,851,136 bytes) and the source gate passed 3/62 (runner 298 ms,
-   wrapper 6722.023 ms, peak 522,780,672 bytes); both exited 0 with no skipped
-   selectors. These are historical non-authoritative development receipts only,
-   not current admission evidence, proof, reviewed attestation, scoped
-   authority, or release evidence, and no C11 proof candidate was rerun. The
-   final exact seven-node rerun is pending coordinator C12/SH13 freeze.
-
-C11 source changes select all three automatic Stage7 nodes. SH12 test changes
-select source plus adapter. Legacy broad Stage0 ownership is impact-excluded,
-and both Stage7 test namespaces are excluded from the broad Stage1 test-file
-matcher while remaining exact declared inputs. Every production node is
-fresh, exclusive, capacity one, command-owned on the canonical heavy lock, and
-binds the centralized runtime/tool identity.
-
-`stage7-c11-proof-candidate` is manual-only and joins public plus adapter. It is
-fixed to `c11-authority` / `c11-mir`, fresh, no-resume, new-state, 8 GiB,
-21,600 seconds, `authority: none`, `proof_candidate: true`, and
-`attestation_required: true`. No current C11 proof candidate or reviewed
-attestation is claimed. The hash derivation and SH12 receipts are calibration
-and development evidence only.
-
-### 12. Fixed Stage8 C12 domain-IR graph
-
-Stage8 is an automatic non-authoritative development boundary with no proof
-node. `stage8-c12-source-shape` uses a 512 MiB JVM for exactly two source-only
-checks: control-form shape and export-definition completeness. It branches to
-`stage8-sh13-c11-domain-evidence`, which runs six exact selectors in one 8 GiB
-JVM, and `stage8-public-c12`, which runs one exact public compatibility selector
-in a 2 GiB JVM. A fourth node, `stage8-sh14-authenticated-layout`, depends on
-both the shape and SH13 nodes and runs its exact five selectors in source order
-in one 8 GiB JVM. Keeping each semantic selector family together preserves
-namespace-local plan affinity and exact fail-fast skipped-tail reporting.
-
-The bound C12 source is 162,404 bytes with SHA
-`sha256:827610557f96b2e54e5b89c675f44f7110e3c2658bebef4aafba981abfec9233`.
-Every production node is fresh, exclusive, capacity one, command-owned on the
-canonical heavy lock, and declares `authority: none`. C12 source changes select
-the four cheap unit prerequisites, the four Stage8 nodes, and the two
-downstream Stage9 evidence nodes described below. The C12 source is excluded
-exactly once from all seven legacy broad Stage0 owners, and
-the three Stage8 test files are excluded from the broad Stage1 test glob while
-remaining exact declared inputs. No current Stage8 authority, proof candidate,
-reviewed attestation, or release evidence is claimed. The exact four-node
-closure must be rerun after final composition. The separate SH14 R3 result
-(5 tests/304 assertions) is non-authoritative and its receipt did not bind the
-source snapshot, so it is runtime calibration rather than graph admission.
-
-### 13. Fixed Stage9 C13 evidence boundary
-
-Stage9 is an automatic non-authoritative evidence-only boundary with no proof
-or public node. `stage9-c13-source-shape` uses a 512 MiB JVM and runs exactly,
-in order, `sh07-c13-mir-optimization-source-shape-and-control` followed by
-`sh07-c13-mir-optimization-export-completeness`. The 8 GiB
-`stage9-sh16-c13-evidence-boundary` node then keeps these four selectors in one
-JVM, in source order, to reuse its namespace-local C13 plan and prepared C12
-carrier:
-
-1. `sh16-c13-evidence-boundary-surface`
-2. `sh16-c13-evidence-boundary-positive`
-3. `sh16-c13-evidence-boundary-rejects-substitution-and-hostile-carriers`
-4. `sh16-c13-evidence-boundary-separates-top-level-provenance`
-
-C13 source, the C13 shape test, and the SH16 evidence test select only the four
-cheap unit prerequisites plus the Stage9 shape and evidence nodes; they do not
-force Stage8 production. C12 and SH13 changes still select their true Stage8
-consumers and Stage9 as a downstream consumer. Both Stage9 nodes are fresh,
-no-resume, exclusive, capacity one, command-owned on the canonical heavy lock,
-and declare `authority: none`. They establish no proof, public compatibility,
-optimization credit, lowering, executable-load, self-hosting, or release claim.
-
-Historical direct-command measurements passed the shape namespace at 2 tests
-and 41 assertions in 1.187 seconds with peak RSS 111,738,880 bytes, and the
-evidence namespace at 4 tests and 69 assertions in 60.797 seconds with peak RSS
-1,602,322,432 bytes. Both are non-authoritative planning evidence only, not
-current wrapper receipts. A receipt-bearing run on the final composed tool and
-input identity is still required.
-
-### 14. Fixed Stage10 W1 lowering admission
-
-The Stage10 W1 graph replaces broad Stage0 fallback for C14 and B1-B4 with a
-fixed, non-authoritative development boundary. The 2 GiB static node executes
-22 exact selectors, beginning with the source-only C14 parser and continuing
-through exact source/plan pins plus the complete SH17 continuity and hardening
-catalogs. The automatic C14 edit path then runs one 3 GiB direct
-carrier-mutation selector. A separate 8 GiB SH25 catalog node checks the
-complete owned Gravity-source inventory. The 8 GiB SH25/SH26 fixture consumer
-runs three selectors without forcing the hostile packet matrix.
-
-The SH25 catalog selector rereads the reviewed ownership map and every owned
-Gravity source. Raw C15 source drift selects that catalog and fails closed on
-its stale tuple. An accepted C15 revision refreshes the SH25 engine and
-accepted Gravity/QST pair and runs the SH25/SH26 consumer once. The
-catalog receipt also binds the transitively loaded SH26 and
-authenticated-envelope test sources. The fixture consumer separately binds the
-SH19 runtime member, SH25 accepted/rejected fixtures, the exercised SH26
-engine/accepted fixtures, the authenticated-envelope source, and all three test
-sources. Changes invalidate every node that actually consumes them instead of
-silently preserving an earlier receipt.
-
-`stage10-w1-hostile-stable` is manual. It owns the complete two-test carrier
-namespace and executes direct mutation before packet substitution in one JVM;
-the automatic direct node is only an execution-profile subset of that owner.
-Every production node is fresh, no-resume, exclusive, capacity one,
-command-owned on `/private/tmp/gravity-sh07-heavy.lock`, and has
-`authority: none`. Historical direct measurements (about 113 seconds for the
-mutation discriminator, about 1323 seconds for packet substitution, and about
-25 seconds for SH25/SH26) guide timeouts only. They are not current wrapper
-receipts, proof, attestation, release evidence, or a generalized speed claim.
-
-### 15. Fixed Stage11 C15 diagnostics boundary
-
-Stage11 uses a 512 MiB source-only preflight over one bounded, nofollow,
-strict-UTF8 C15 snapshot. It checks reader/control shape, export completeness,
-and the exact frozen source identity without compiling C15. The preflight then
-branches independently to an 8 GiB five-selector SH15 semantic batch with a
-600-second timeout and the existing 2 GiB public C15 selector with a 900-second
-timeout. All three nodes are automatic, fresh, no-resume, exclusive,
-capacity-one users of the canonical command-owned lock and have
-`authority: none`.
-
-The source helper alone establishes one bounded coherent snapshot. Adversarial
-same-size swap/restore detection is supplied by the combined node and
-supervising wrapper's transient-mutation boundary; it is not a helper-only
-claim.
-
-The semantic node binds exactly C8-C12 plus C15 and SH09-SH15; C7 and SH08 are
-not direct inputs. The public node retains bootstrap, CLI, and diagnostics
-tests as executable inputs but excludes unrelated edits to those broad files
-from Stage11 impact. The old deep C15 coverage namespace remains deliberately
-unmatched and fail-closed after exclusion from broad owners; it requires a
-future manual node and refreshed census. No Stage11 proof candidate, authority,
-self-hosting, release, public acceptance, or seed-retirement claim follows from
-these non-authoritative development receipts.
-
-### 16. Full release gate
-
-Run only after the candidate is stable, the selected authoritative modules
-pass, and the worktree is ready for release review. This preserves every
-exhaustive gate; it merely moves those gates out of the edit loop.
-
-```bash
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
+clojure -M tools/validate_workstream_governance.clj
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -M:test
-python3 tools/validate_gravity_docs.py
-python3 tools/validate_full_language_roadmap.py
-python3 tools/generate_full_language_coverage_matrix.py --write --audit-public
 git diff --check
-bin/gravity self-host verify
 ```
 
-`bin/gravity self-host verify` is fail-closed and currently emits
-`P18T04007` while the Clojure seed boundary remains active. A release claim
-requires its proof artifact and the applicable Phase 18 evidence, not merely
-the exit status of a non-authoritative lane. If the release review explicitly
-requires the complete SH-07 transaction, run it as one isolated process:
+The full Clojure suite is necessary but does not by itself establish release,
+self-hosting, seed-retirement, performance, or safety authority.
+
+## Fresh Integration Candidate Lane
+
+Focused and incremental runners are development feedback. Before a candidate
+can supply publishable integration evidence, run the exact committed candidate
+through the separate fresh lane:
 
 ```bash
-clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-authoritative-runner --fresh all
+clojure -M tools/verify_integration_candidate.clj \
+  --base-ref BASE_COMMIT \
+  --candidate-base BASE_COMMIT \
+  --candidate-commit CANDIDATE_COMMIT \
+  --candidate-tree CANDIDATE_TREE
 ```
 
-## Memory and scheduling rule
+The runner first applies integration-mode worktree preflight to those exact
+identities. It then checks out the exact committed tree through a temporary
+Git index into a new directory,
+uses `-Srepro -Sforce`, runs the existing full `clojure -M:test` suite without
+narrowing it, and runs the document, roadmap, governance, and language-boundary
+gates in that tree. It also runs `git diff --check` over the exact base-to-
+candidate range in the preflight worktree. Existing repository target output
+and incremental runner caches are not visible to the exported tree; the
+temporary tree is not resumed.
+Candidate `.gitattributes` files are rejected so checkout filters cannot make
+the verified bytes depend on local Git configuration.
 
-Treat `:memory-heavy` and `:exclusive` as one shared capacity class. SH-07 is
-`:memory-heavy`; SH-26 through SH-29 are `:exclusive`. At most one job from
-that combined class may run at a time, including a release command. Normal
-jobs may use `--normal-parallelism`, and SH-07 jobs use
-`--memory-parallelism 1`. Exclusive work starts only after the normal and
-memory-heavy pools drain and runs one job at a time. Never run `--fresh all`, a
-full `clojure -M:test`, or the release verifier concurrently with another
-memory-heavy or exclusive lane.
+The receipt is written once to
+`target/validation/integration-fresh-verification/CANDIDATE_COMMIT/receipt.edn`.
+It records the candidate identities, fixed command list, exit codes, elapsed
+times, fresh-tree policy, and explicit nonclaims. A prior receipt is never
+overwritten or resumed. `C16-SPECULATIVE` rejects speculative, resumed, or
+repository-local-cache evidence at this publishable boundary.
 
-## Durable long-running commands
+For CI, provide the reviewed base SHA, candidate SHA, and candidate tree SHA
+from immutable job inputs and upload the receipt when the lane reaches receipt
+publication, including a failed verification receipt. Usage, identity, or
+receipt-publication errors can fail before a receipt exists.
+CI must also impose its own job timeout; an externally killed verifier cannot
+finish or publish a receipt.
+Do not derive a publishable candidate identity from a mutable branch after the
+job starts. For local admission preparation, commit first, keep the named
+branch clean, and pass the same identities intended for the workstream ledger.
 
-Wrap any command expected to outlive a task turn with the heartbeat runner.
-It launches the command without a shell, tees combined output to the requested
-log, and atomically refreshes a JSON status file with elapsed time, output
-bytes, process-tree RSS, process counts, CPU use, and the final exit code. It
-samples resource metrics independently every second by default and retains the
-highest observed RSS and process count in `:peak_rss_bytes` and
-`:peak_process_count`, even when the JVM releases memory before exiting. These
-are sampled high-water values, not an OS-guaranteed maximum. This prevents a
-silent verifier result or sustained resource spike from being lost when a turn
-or terminal view changes.
+This lane supplies candidate-only integration evidence. It does not replace an
+independent accepted review or grant release, self-hosting, seed-retirement,
+safety, performance, Stage3, or SH-07 authority. When the owning contract
+requires a Stage3 or SH-07 proof, run its existing fresh/no-resume command
+separately and record that receipt in the governed evidence bundle.
+`contracts/workstream-governance.json` still requires owned paths, governing
+contracts, accepted and rejected fixtures, stable diagnostics, successful
+checks, independent acceptance, residual boundaries, and explicit nonclaims
+in addition to exact Git identities; `WG009` through `WG012` fail closed when
+that admission evidence or authority boundary is incomplete.
+
+The fresh lane also emits optional bounded observability. During the full suite
+it gives the child test runner a temporary progress path, which records the
+currently running namespace/test var, and the parent prints sparse heartbeats
+with elapsed time, descendant RSS, and RSS high-water. These records are
+diagnostic-only. Process sampling inspects at most 256 process identifiers and
+records when that view is truncated; the host `ps` invocation is separately
+time-bounded. Telemetry does not resume work, read repository caches, select
+tests, change exit status, or add integration/release authority. The final
+receipt keeps the existing identities, command list, status, and exit-code
+semantics; the additive `:observability` field is safe to ignore when telemetry
+is unavailable.
+
+## Focused Development Runners
+
+Use the reviewed Clojure aliases:
 
 ```bash
-python3 tools/run_with_heartbeat.py \
-  --log /tmp/gravity-sh07-authoritative.log \
-  --status /tmp/gravity-sh07-authoritative.status.json \
-  --lock /tmp/gravity-sh07-heavy.lock \
-  --heartbeat-seconds 60 \
-  --metrics-sample-seconds 1 \
-  --timeout-seconds 21600 \
-  -- clojure -J-Xmx8g \
-  -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
-  -M -m gravity.self-hosting.sh07-authoritative-runner --fresh diagnostics
+clojure -M:incremental-check
+clojure -M:incremental-check --base-ref main
+clojure -M:sh01-test
+clojure -M:leaf-test --group foundation-reader
+clojure -M:dev-test --catalog
+clojure -M:project-structure-runner-unit
+clojure -M:project-structure-test --help
+clojure -M:stage3-verification --help
 ```
 
-Inspect the status without attaching to the running process:
+`clojure -M:incremental-check` passes the current tracked and untracked changed
+paths to the existing SH-01 impact planner. `--base-ref REF` additionally
+includes committed branch changes from `merge-base(REF, HEAD)..HEAD`, so a
+clean candidate branch still produces a plan. Discovery records the resolved
+base and merge-base plus committed, tracked-working, and untracked path sets.
+
+The deterministic explanation keeps SH-01 ownership and downstream slice
+closure as governance metadata while using the reviewed
+`contracts/stage0-incremental-test-dependencies.edn` map for component-level
+development invalidation. A reviewed component source selects its declared
+leaf and compatibility tests. A present dedicated test-file change selects its
+exact namespace. Deleted dedicated tests retain conservative slice fallback;
+malformed dependency records and relevant unowned paths fail closed. JVM
+groups in the reviewed map keep bootstrap-free tests isolated from tests that
+load the bootstrap facade. The plan and execution report are explicitly
+non-authoritative and cannot satisfy the standard gates below or any release,
+self-hosting, or seed-retirement gate.
+
+The SH-01 impact runner batches only normal namespaces from the same slice in
+warm JVMs, with a reviewed maximum batch size of eight. `:memory-heavy` work
+retains its capacity-one fresh-process lane, and `:exclusive` work remains
+fresh and sequential after the parallel lanes drain. Batch reports preserve
+namespace fixture boundaries, deterministic fail-fast skips, bounded output,
+and explicit non-authority.
+
+### Exact SH-07 B8 regression route
+
+The current B8 expectation changes are owned by one closed route. It runs the
+two affected test vars in one bounded child JVM, allowing the existing
+process-local fixture/artifact cache to be shared:
 
 ```bash
-python3 -m json.tool /tmp/gravity-sh07-authoritative.status.json
-tail -n 50 /tmp/gravity-sh07-authoritative.log
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-bounded-development-runner \
+  --route b8-regression \
+  --coordination-root "$GRAVITY_SH01_COORDINATION_ROOT"
 ```
 
-Use the same `--lock /tmp/gravity-sh07-heavy.lock` path for every SH-07
-memory-heavy command, even when different tasks start them. A second wrapper
-fails immediately with exit `75` and records `lock-unavailable` instead of
-starting another high-memory JVM. The lock is advisory: direct commands that
-bypass the wrapper are not protected.
+The route is memory-heavy and therefore requires the reviewed SH-01 host
+resource broker. Its child receipt reports the exact selected-var count and
+the number of calls to the SH-07 artifact constructor; both values are
+development observations only. Unknown routes, mixed namespace/route
+selection, and extra options fail closed before launch. Admission also compares
+the route owner with the live `SH-07` leaf owner and binds its path/namespace to
+the current test dependency catalog; drifted, missing, malformed, or extra
+owner metadata fails closed. This route remains non-authoritative: use the
+complete SH-07 namespace and fresh integration lane for acceptance evidence.
 
-The status is telemetry, not proof authority. The wrapped verifier's proof
-artifact and exit status remain the evidence. Use a unique log/status pair per
-run, and do not use the wrapper to start a second memory-heavy verifier while
-another one is active.
+## Bounded P15 Profiling Receipt
 
-## Benchmark record
-
-Use the repeatable stage2 microbenchmark when changing the hosted-core
-interpreter. It exercises the allocation and dispatch paths observed in live
-SH-07 profiles and reports five samples plus their median. The result is
-performance feedback only; it is never proof evidence.
+The fixed P15 stage2 profiling slice is a development-only observation over
+`bootstrap/clojure/fixtures/accepted/core-app.gravity`. It returns an EDN
+receipt with static stage2 instruction/function-call counts, finite static
+function-frame depth, request-scoped proof-DAG hit/build accounting, phase
+duration observations, and JVM thread-allocation observations when available:
 
 ```bash
-clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-benchmark --warmup 100000 --iterations 1000000 --rounds 5
-
-# Isolate one workload in a fresh JVM when comparing a small runtime change.
-clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-benchmark --workload interpreted-count --warmup 100000 --iterations 1000000 --rounds 5
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote [gravity.self-hosting.p15-bounded-profile :as p])) (prn (p/run-profile))'
 ```
 
-Compare medians using the same host, JVM, heap, worktree state, and workload.
-Do not infer an end-to-end SH-07 speedup from this microbenchmark; confirm it
-with a fresh selected-module or representative fixture run.
+The receipt id covers only stable source/accounting fields; duration and
+allocation remain observational. This slice neither changes nor reads the
+development result cache or fresh-verification authority. It is not benchmark,
+performance, allocation/stack-bound, stage-advancement, self-hosting, or
+seed-retirement evidence. Its DAG counters cover only the request-scoped
+P15 source-data node, and its frame-depth field is the static direct-call
+depth from the fixture entrypoint, not a runtime stack measurement.
 
-Record one row or EDN map for every lane that runs code. Keep the raw stdout,
-stderr, and proof/artifact paths beside the record.
+## Explicit SH-07 Cold-Build Phase Telemetry
 
-```text
-run_id:
-lane:
-authority: authoritative | non-authoritative
-command:
-git_revision:
-source_revision_ids_or_hashes:
-selected_slices:
-selected_namespaces_or_modules:
-started_at:
-finished_at:
-elapsed_ms:
-peak_rss_bytes:
-normal_parallelism:
-memory_parallelism:
-exclusive: true | false
-worker_count:
-cache_hits:
-cache_misses:
-tests:
-assertions:
-exit_code:
-artifact_paths:
-diagnostic_ids:
-host_and_runtime:
-notes:
+The SH-07 cold-build telemetry slice is an opt-in diagnostic around one
+`sh07-core-file-artifact` invocation.  It is intended for a long C6 source
+build, not for the ordinary test suite.  Run it only when the requested source
+path and its JVM have been reserved for this diagnostic:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh07-cold-build-phase-telemetry --source PATH
 ```
 
-Use the runner's `:elapsed-ms` and per-job output where available. Wrap a
-representative run with `/usr/bin/time -l` on macOS or `/usr/bin/time -v` on
-Linux to capture peak RSS. Compare like-for-like commands and record the
-source hash, runtime, parallelism, and cache state; otherwise a faster result
-is not evidence of a faster verification process.
+The receipt aggregates a fixed set of SH-06, SH-07, and Stage2 plan phases and
+the three declared SH-07 digest purposes plus a bounded `:other` bucket.  Each
+digest row records call count, elapsed time, failed calls, and capped counts
+for large preimage collections such as forms, nodes, bindings, resolutions,
+and children.  A synchronous `:on-progress` callback can print sparse phase
+and digest records while a long phase is running; callback failures are
+swallowed and a maximum of 256 progress records is retained by default.
+The collection bound is checked before realization, so an accidental infinite
+or unexpectedly wide sequence cannot make the observer unbounded.
+
+The profiler uses temporary process-local root-Var wrappers under a private
+lock.  It does not alter the observed source, plan, digest, proof, diagnostic,
+cache, or authoritative runner, and it does not memoize or reuse an artifact.
+The `:cold-plan-binding-realized-before?` field indicates whether the pinned
+SH-07 plan delay was already realized in that JVM; use a fresh JVM when a cold
+binding observation is required.  Elapsed values and the source path are
+host-variable observations.  The phase and digest accounting is diagnostic
+only and grants no benchmark, performance, proof, integration, release,
+self-hosting, seed-retirement, or cache authority.  No full or multi-hour
+SH-07 run is part of the default telemetry tests; those tests exercise the
+observer through bounded synthetic seams.
+
+## Explicit Stage2 Emitter Phase Benchmark
+
+The real Stage2 emitter benchmark is an explicit, bounded development
+observation; default-suite coverage uses only lightweight seams. Run at most
+three fresh emissions of the accepted hosted-core fixture with:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-plan-emitter-benchmark --iterations 1
+```
+
+Each sample retains the existing whole-emission elapsed time and optional
+current-thread allocation observation. Deterministic accounting is limited to
+the source/phase call counts and semantic receipt. The benchmark reports source
+kinds `:authenticated-envelope`, `:syntax`, `:plan-emitter`, and `:other`;
+`:other` includes the requested fixture and any unclassified source rather than
+silently dropping it. Elapsed time, allocation availability/bytes, and Java and
+Clojure runtime versions are host-variable observations. Safely observable
+phases are macro parse/expand, function-table construction, function lowering,
+instruction summary, canonicalization, and hashing. The emitted plan, semantic
+receipt, cache scope, and fresh-emission behavior are unchanged; nested calls
+are attributed once to their outermost observable phase.
+
+The temporary `with-redefs` wrappers are protected by a private process-local
+lock, so simultaneous benchmark requests in one JVM serialize rather than
+overlap. This isolation applies only to explicit benchmark invocations; it does
+not make the global Clojure Var replacement an authority boundary.
+
+This is diagnostic profiling only. It supplies no benchmark baseline,
+performance improvement/regression, allocation bound, fresh/no-cache
+verification, integration, release, self-hosting, seed-retirement, or stage
+advancement authority. The Clojure/JVM observer and the remaining Clojure seed
+rule runner remain explicit residual boundaries.
+
+## Explicit Stage2 Runtime Execution Attribution
+
+The real runtime-execution profiler is an opt-in, single-iteration observation
+over the accepted hosted-core fixture:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -m gravity.self-hosting.sh01-stage2-runtime-execution-profile
+```
+
+It attributes the Stage2 runtime calls made during fresh plan emission and one
+direct execution of that emitted plan. Deterministic accounting is limited to
+the semantic receipt, sparse function/instruction/call-edge rows, row-sum
+coverage, source identities, and a bounded plan-ID registry. The hot seams use
+preallocated primitive counters and an identity-keyed plan registry: they do
+not take clocks, read thread allocation, update atoms or persistent maps, or
+bind dynamic function state per instruction. Compiler artifact plans omit
+source paths, so the profiler registers at most eight plan identities at the
+compiler-plan seam and distinguishes authenticated-envelope, syntax, reader,
+plan-emitter, emitted-plan, runtime-artifact, and explicit `:other` execution.
+
+Elapsed time, runtime versions, and sampled inclusive function costs are
+host-variable. Allocation and elapsed samples are taken only once per 8,192
+calls of a function; they are inclusive, sparse, and not a cost ranking or a
+sum of the work. Exact instruction attribution is count-only. The output
+permits one sample, 128 function rows per source (including an overflow row),
+32 instruction operations, 255 named call-edge rows plus one exact overflow
+row, and eight plan identities.
+The receipt reports off-owner-thread events separately and excludes them from
+the owner-thread counters. Counters and sampled sums saturate instead of
+wrapping. `:counter-overflow?` makes row reconciliation explicitly incomplete;
+the separately host-variable `:sample-overflow?` marks sampled-cost saturation.
+
+Temporary root-Var wrappers are serialized by a private process-local lock.
+The lock prevents two explicit profiler requests from overlapping in one JVM;
+it does not make global Var replacement safe for unrelated concurrent work.
+Do not run it alongside unrelated same-JVM execution. It grants no fresh/no-
+cache, performance, allocation-bound, cost-ranking, integration, release,
+self-hosting, or seed-retirement authority.
+
+The profiler also exposes an opt-in targeted-cost view for the two currently
+authenticated clusters: `:authenticated-envelope-digest-cluster` and
+`:syntax-c3-lowercase-hex?`. Selection is predeclared and bounded (sample
+stride at most 4096); primitive counters count every selected call while host
+elapsed/allocation values are sampled only around selected spans. Targeted
+rows remain inclusive and non-exclusive. A ranking is withheld unless both
+clusters have nonzero deterministic counts and no sampled-cost saturation;
+unsupported targets and unbounded strides are rejected.
+
+`clojure -M:incremental-check` enables the thin development-loop wiring. In
+the parent, before any child JVM can launch, it computes one conservative
+SHA-256 identity over every tracked and non-ignored untracked repository path.
+Repository symlinks fail closed because their followed targets are outside this
+declared closure. That identity supplies the complete production, transitive,
+fixture/contract, runner, and classpath closure in each closed cache request;
+the request also
+binds the test unit, command, external classpath file bytes, Java and command
+executable bytes, runtime identities, policy, and bounded timeout. Ignored
+generated state is not an input: a test declared deterministic by this
+contract must not depend on it or on undeclared ambient environment state. An
+injected development-loop context is a test seam; its repository root and
+command identity must match the current execution or
+`SH01-DEVELOPMENT-LOOP-CONTEXT` fails closed. The reviewed component dependency contract is
+the only current source of deterministic cache eligibility. Slice-closure and
+ad hoc dedicated tests have no such declaration and therefore execute
+uncached. Authoritative,
+freshness-required, performance, proof, and nondeterministic policies always
+execute and are never stored.
+
+The contract may additionally opt a reviewed deterministic test into an
+explicit cache closure. Such a closure lists every production, transitive,
+test, fixture, runner, contract, and internal-classpath input directly; the
+runner never infers Clojure `require` edges. The content key sorts and hashes
+the declared repository-relative paths, roles, executable modes, and bytes,
+and also binds the dependency-contract schema, runner, semantic command,
+policy, external classpath, and runtime/tool identities. Internal classpath
+order, alternate `.cljc` and compiled-class shadows, data-reader resources,
+unexpected internal class files, and the self-hosting test-catalog path set are
+also bound; inventories are compared before and after closure reads. Absolute
+worktree paths are excluded, so identical declared inputs may reuse a result
+across Git worktrees. Missing, malformed, unknown, unowned, or undeclared
+closures retain the complete-repository identity. A detected read or inventory
+race fails closed rather than falling back. The initial and post-operation
+repository snapshot checks remain full. The reviewed set covers
+`gravity.c11-mir-test`, `gravity.compiler-pass-manifest-test`,
+`gravity.bootstrap-compatibility.c11-test`, and
+`gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test`. The two
+compatibility closures enumerate `gravity.bootstrap`'s complete internal eager
+namespace load set and the exact fixture used by each test. Mixed batches and
+authoritative, freshness-required, performance, proof, or nondeterministic
+work retain the complete-repository identity and remain uncached.
+
+An immutable parent probe removes an existing valid hit before executor
+submission, so that hit acquires no broker lease and launches no child JVM. A
+miss is rechecked by the cross-process per-key singleflight at execution time;
+concurrent identical checks can therefore race at the probe without producing
+duplicate child work. Only a successful, deterministic, non-authoritative
+result whose repository snapshot still matches after child completion is
+reusable. A parent hit is likewise revalidated before it is admitted. Failures,
+timeouts, corrupt entries, incomplete requests, and excluded policies run
+again. Reports retain deterministic cache receipts,
+the original producer's deterministic broker receipts, planned JVM count,
+post-cache planned JVM count, and successful launcher-return count. A launcher
+that throws before returning is not counted as a launch; its deterministic
+broker admission/release receipts and the parent cache-miss receipt remain in
+the failed report.
+
+The shared cache and broker roots are private mode-`0700` directories under
+the repository's Git common directory at
+`gravity-development-loop-v1/{cache,broker}`. Linked worktrees therefore use
+the same cooperative same-user state without a daemon. The default incremental
+child timeout is one hour. The authoritative `clojure -M:test` lane and fresh
+integration verifier do not enable this wiring, cannot observe its cache, and
+retain their existing authority boundaries.
+
+Fail-fast stops queue refill but does not cancel already-submitted workers that
+are waiting for a cache key or broker lease; those workers remain bounded by
+the same child/broker timeout and drain under the existing runner contract.
+The shared roots, repository snapshot reads, and child-published batch report
+remain a cooperative same-user boundary. They do not defend against hostile
+same-user path replacement while a check is running. No daemon, shared compiler
+blob, or authoritative result store is introduced by this slice.
+
+## Host-Wide Development Resource Broker Foundation
+
+The Clojure-only SH-01 host resource broker is available at
+`gravity.self-hosting.sh01-host-resource-broker`. The incremental-check wiring
+uses the canonical Git-common root described above. Other callers pass the
+same trusted, existing, absolute host-local `:coordination-root` from every
+participating worktree:
+
+```clojure
+(broker/with-lease
+ {:coordination-root "/private/tmp/gravity-sh01-resource-broker-v1"
+  :timeout-ms 3600000}
+ :memory-heavy
+ run-one-development-unit)
+```
+
+The coordination directory must be a non-symlink directory owned by the
+current user with mode `0700`. The broker creates only direct child policy,
+ticket, admission-lock, and slot-lock files. Reviewed host-wide capacities are
+fixed at two `:normal` leases, one `:memory-heavy` lease, and one
+`:exclusive` lease. An exclusive lease holds every class slot, so it cannot
+overlap normal or memory-heavy work. Tickets provide deterministic FIFO
+admission within each class; an earlier exclusive ticket blocks later class
+admission. Independent classes before that barrier may proceed within their
+own capacity.
+
+Waiting is bounded by `:timeout-ms`. OS file locks release on process death,
+and a queued ticket is reclaimed only after its lock proves that no process
+still owns it. Malformed state and policy mismatches fail closed. Queue,
+admission, timeout, stale-recovery, and release events use
+`:gravity/sh01-host-resource-telemetry-v1` with `:authority
+:non-authoritative`; they are operational observations, not test, proof,
+benchmark, integration, release, self-hosting, or seed-retirement evidence.
+An injected `:on-event` telemetry callback runs synchronously and must be
+nonblocking; callback work is outside the broker's bounded lock-wait claim.
+Each acquisition outcome also has a deterministic semantic receipt with schema
+`:gravity/sh01-host-resource-non-authoritative-receipt-v1`. The closed receipt
+fields are only `:schema`, `:resource-class`, `:capacity`, `:outcome`, and
+`:diagnostic-id`; successful release returns the same receipt shape. Absolute
+coordination roots, ticket names and sequences, queue positions and lengths,
+wait times, and concurrency-dependent stale counts remain observational
+telemetry and never enter the receipt. Neither form has evidence authority.
+Lease release is exactly-once and thread-affine. Callers must not nest
+acquisition; nested behavior is unspecified. Admission is interruptible and
+restores the interrupted flag with
+`SH01-BROKER-INTERRUPTED`; locks carry no poisoned state, so every acquisition
+revalidates the fixed policy and direct-child shapes before admission.
+
+The broker does not launch or execute tests, persist test results, or run a
+daemon. The incremental runner holds its lease only across one child process
+launch and completion; direct callers hold it around their thunk. A parent
+process that dies after launching an uncontained descendant can release its OS
+lock while that descendant survives; strict cross-session descendant
+containment remains
+an OS job/container boundary and is not claimed. The coordination root is a
+trusted cooperative boundary: same-user deletion or
+replacement of broker state files while leases are active is out of scope and
+can bypass inode-based file locks.
+
+Stable fail-closed diagnostics include `SH01-BROKER-ROOT-REQUIRED`,
+`SH01-BROKER-ROOT-ABSOLUTE`, `SH01-BROKER-ROOT-INVALID`,
+`SH01-BROKER-ROOT-OWNER`, `SH01-BROKER-ROOT-PERMISSIONS`,
+`SH01-BROKER-POLICY-MISMATCH`, `SH01-BROKER-RESOURCE-CLASS`,
+`SH01-BROKER-STATE-CORRUPT`, `SH01-BROKER-LOCK`,
+`SH01-BROKER-TIMEOUT-OPTION`, `SH01-BROKER-TIMEOUT`,
+`SH01-BROKER-INTERRUPTED`, `SH01-BROKER-STALE`, `SH01-BROKER-IO`, and
+`SH01-BROKER-RELEASE`.
+
+The namespace-lazy development runner can write an opt-in EDN timing receipt:
+
+```bash
+clojure -M:dev-test \
+  --exact hosted-hello-runs \
+  --timing-receipt target/validation/development-test-timing.edn
+```
+
+The `gravity/development-verification-timing-v1` receipt separates each
+selected namespace's observable require interval from its fixture-wrapped test
+execution, and records per-test-var elapsed time, outcome, assertion counts,
+selection, and bounded JVM/OS metadata. The JVM-start-to-runner-load interval
+is explicitly combined because the bootstrap and runner namespace portions are
+not separately observable from inside the runner.
+
+The receipt is non-authoritative scheduling input. It has no benchmark,
+performance-regression, proof, conformance, release, self-hosting, or
+seed-retirement authority, and it does not make results comparable across
+different source, JVM, host, profile, target, or runtime conditions. Omitting
+`--timing-receipt` preserves the existing command output and behavior.
+Receipts are published only after a selected test run returns normally;
+namespace-load or fixture exceptions retain the runner's existing error path
+and do not publish a partial receipt.
+
+Stage3 fixed batches run directly through the Clojure runner:
+
+```bash
+clojure -J-Xmx2g -M:stage3-verification --batch source-control-form-arity
+```
+
+Batch-specific heap requirements and accepted names are enforced by that
+runner. Its receipts remain non-authoritative unless a governing contract
+explicitly admits the exact result.
+
+## SH-07 And Integration
+
+For bounded cached development feedback, invoke the Clojure iteration runner
+directly:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-iteration-cache-runner --help
+```
+
+For a bounded exact SH-07 development selection, use the dedicated process
+runner:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-bounded-development-runner \
+  --route c6-contract --timeout-ms 900000
+```
+
+The route catalog is closed.  `c6-coverage` selects the single authentic C6
+coverage test and additionally requires the existing coordination-root option.
+The terminal non-authoritative receipt is printed as EDN on stdout; pass
+`--progress-file PATH` to retain bounded phase/heartbeat progress while the
+child runs.  Timeout, malformed output, failed tests, or missing admission are
+always non-passing, and no result is cached.  This helper does not replace the
+authoritative SH-07 command or grant proof, performance, integration, release,
+self-hosting, or seed-retirement authority.
+
+For a fresh reviewed SH-07 transaction:
+
+```bash
+clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -m gravity.self-hosting.sh07-authoritative-runner --fresh all
+```
+
+Workstream lifecycle and integration eligibility are governed by:
+
+```bash
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
+```
+
+The preflight is read-only. Integration mode requires the exact recorded base,
+candidate commit, candidate tree, named branch, and clean worktree. A passing
+development command never substitutes for independent acceptance or grants
+authority beyond the workstream ledger.

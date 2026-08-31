@@ -11,20 +11,181 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
+            [gravity.self-hosting.sh01-component-test-dependencies
+             :as component-dependencies]
             [gravity.self-hosting-test-runner :as runner]))
 
 (def ^:private slice-count 30)
 
-;; These namespaces are fixed-stage verification infrastructure.  The general
+(declare valid-slice? path-slice)
+
+;; These reviewed namespaces are verification infrastructure.  The general
 ;; self-hosting runner discovers and can execute them, but they are not SH-00
 ;; through SH-29 leaf tests and therefore must never enter the slice planner's
 ;; catalog (or be inferred as SH-07 by a broad fallback).
-(def ^:private fixed-stage-infrastructure-namespaces
+(def ^:private reviewed-non-slice-namespaces
+  #{'gravity.self-hosting.a1-canonical-schema-test
+    'gravity.self-hosting.p15-public-native-admission-test
+    'gravity.self-hosting.p18-t00-orchestration-test
+    'gravity.self-hosting.p18-t00-semantics-test
+    'gravity.self-hosting.stage3-fragment-size-preflight-test
+    'gravity.self-hosting.stage3-verification-runner-test
+    'gravity.self-hosting.w5-b13-artifact-emitter-test
+    'gravity.self-hosting.w5-b14-backend-conformance-verifier-test
+    'gravity.self-hosting.w5-c16-incremental-executor-test
+    'gravity.self-hosting.w5-c17-plugin-executor-test
+    'gravity.self-hosting.w5-c18-pass-verifier-test
+    'gravity.self-hosting.w5-compiler-identity-verifier-test
+    'gravity.self-hosting.w5-compiler-pipeline-verifier-test
+    'gravity.self-hosting.w5-domain-schema-ai-executor-test
+    'gravity.self-hosting.w5-full-language-evidence-verifier-test
+    'gravity.self-hosting.w5-ir-lowering-executor-test
+    'gravity.self-hosting.w5-performance-math-executor-test
+    'gravity.self-hosting.w5-reader-module-executor-test
+    'gravity.self-hosting.w5-stage-equivalence-verifier-test
+    'gravity.self-hosting.w5-stage-rebuild-orchestrator-test
+    'gravity.self-hosting.w5-subsystem-closure-verifier-test
+    'gravity.self-hosting.w5-tooling-conformance-verifier-test
+    'gravity.self-hosting.w5-trust-provenance-verifier-test
+    'gravity.self-hosting.w5-typed-effect-safety-executor-test
+    ;; Request-local optimization coverage is verification infrastructure, not
+    ;; a countable SH-00..SH-29 leaf namespace.  Keep it outside the slice
+    ;; catalog so adding it cannot make ordinary impact planning fail closed.
+    'gravity.self-hosting.macro-operations-normalization-test})
+
+(def ^:private exact-test-var-routes
+  "Reviewed exact test-var ownership for bounded development routes.
+
+  These routes deliberately narrow execution below a namespace boundary.  The
+  route still owns the complete test source path and slice; only the listed
+  vars are allowed to run during ordinary iteration.  A fresh namespace or
+  integration run remains required for authoritative evidence."
+  (sorted-map
+   "b8-regression"
+   {:slice "SH-07"
+    :owner :sh-core
+    :path "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+    :namespace 'gravity.self-hosting.sh07-try-catch-test
+    :test-vars
+    '[gravity.self-hosting.sh07-try-catch-test/sh07-b8-authenticated-input-substitution-fails-before-lowering
+      gravity.self-hosting.sh07-try-catch-test/sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts]
+    :selection-mode :exact-test-vars
+    :resource-class :memory-heavy}))
+
+(def ^:private exact-test-var-route-keys
+  #{:slice :owner :path :namespace :test-vars :selection-mode
+    :resource-class})
+
+(defn exact-test-var-route-names
+  "Returns the closed exact-test-var route catalog in deterministic order."
+  []
+  (vec (keys exact-test-var-routes)))
+
+(declare exact-test-var-route-options)
+
+(defn exact-test-var-route
+  "Returns one reviewed exact-test-var route or fails closed."
+  [route-name]
+  (let [route-name (when (string? route-name) route-name)]
+    (if-let [route (get exact-test-var-routes route-name)]
+      (exact-test-var-route-options route)
+      (throw
+       (ex-info
+        "Unknown SH-01 exact test-var route"
+        {:id "SH01-IMPACT-ROUTE"
+         :route route-name
+         :available (exact-test-var-route-names)})))))
+
+(defn- exact-test-var-route-options
+  [route]
+  (let [{:keys [slice owner path namespace test-vars selection-mode
+                resource-class]} route
+        route-keys (when (map? route) (set (keys route)))
+        missing-keys (vec (sort (set/difference exact-test-var-route-keys
+                                                (or route-keys #{}))))
+        extra-keys (vec (sort (set/difference (or route-keys #{})
+                                              exact-test-var-route-keys)))
+        invalid-vars
+        (->> test-vars
+             (remove
+              #(and (symbol? %)
+                    (= namespace (symbol (clojure.core/namespace %)))))
+             vec)]
+    (when-not (and (map? route)
+                   (= exact-test-var-route-keys route-keys)
+                   (valid-slice? slice)
+                   (keyword? owner)
+                   (string? path)
+                   (symbol? namespace)
+                   (vector? test-vars)
+                   (seq test-vars)
+                   (= (count test-vars) (count (distinct test-vars)))
+                   (= :exact-test-vars selection-mode)
+                   (keyword? resource-class)
+                   (empty? invalid-vars))
+      (throw
+       (ex-info
+        "SH-01 exact test-var route metadata is malformed"
+        {:id "SH01-IMPACT-ROUTE-CONTRACT"
+         :route route
+         :missing-keys missing-keys
+         :extra-keys extra-keys
+         :invalid-test-vars invalid-vars})))
+    route))
+
+(def ^:private required-fixed-stage-infrastructure-namespaces
   #{'gravity.self-hosting.stage3-fragment-size-preflight-test
     'gravity.self-hosting.stage3-verification-runner-test})
 
 (def ^:private component-cross-cutting-reason
   :reserved-component-owner-has-no-slice)
+
+(defn- standalone-test-index
+  [record dependency-index]
+  (let [owners (:standalone-test-owners record)
+        dependencies (:standalone-tests dependency-index)
+        dependencies-by-path (into {} (map (juxt :path identity)) dependencies)
+        owner-paths (set (keys owners))
+        dependency-paths (set (keys dependencies-by-path))]
+    (when-not (and (map? owners)
+                   (= owner-paths dependency-paths))
+      (throw
+       (ex-info
+        "Standalone incremental tests require matching ownership and dependency records"
+        {:id "SH01-STANDALONE-TEST-CONTRACT"
+         :ownership-only-paths
+         (vec (sort (set/difference owner-paths dependency-paths)))
+         :dependency-only-paths
+         (vec (sort (set/difference dependency-paths owner-paths)))})))
+    (let [entries
+          (mapv
+           (fn [relative]
+             (let [owner (get owners relative)
+                   dependency (get dependencies-by-path relative)
+                   slice (:slice owner)
+                   expected-owner
+                   (get-in record [:slice-owners slice :leaf-owner])]
+               (when-not (and (= #{:namespace :slice :owner}
+                                 (set (keys owner)))
+                              (= (:namespace owner) (:namespace dependency))
+                              (valid-slice? slice)
+                              (= expected-owner (:owner owner)))
+                 (throw
+                  (ex-info
+                   "Standalone incremental test ownership is malformed or disagrees with its dependency record"
+                   {:id "SH01-STANDALONE-TEST-CONTRACT"
+                    :path relative
+                    :owner owner
+                    :dependency dependency
+                    :expected-owner expected-owner})))
+               (merge dependency
+                      {:slice slice
+                       :owner (:owner owner)
+                       :classification :standalone-test})))
+           (sort owner-paths))]
+      {:by-path (into (sorted-map) (map (juxt :path identity)) entries)
+       :by-namespace
+       (into (sorted-map) (map (juxt :namespace identity)) entries)})))
 
 (defn- repository-root
   []
@@ -298,7 +459,8 @@
   non-authoritative. A path inside an owned self-hosting root that matches
   neither rule is unowned and causes changed-file planning to fail closed."
   [record relative]
-  (let [module-owner (get (:module-owners record) relative)
+  (let [standalone-owner (get (:standalone-test-owners record) relative)
+        module-owner (get (:module-owners record) relative)
         slice-owners (:slice-owners record)
         owner-slices
         (when module-owner
@@ -323,6 +485,12 @@
         :classification :coordinator
         :slices (vec (sort (all-slices)))}
        component-metadata)
+
+      standalone-owner
+      {:path relative
+       :classification :module
+       :slices [(:slice standalone-owner)]
+       :test-namespace (:namespace standalone-owner)}
 
       dedicated-slice
       {:path relative
@@ -373,16 +541,23 @@
        vec))
 
 (defn- test-catalog
-  []
+  ([]
+   (let [record (ownership-record)
+         dependencies (component-dependencies/dependency-index)]
+     (test-catalog (standalone-test-index record dependencies))))
+  ([standalone-index]
   (let [namespaces (vec (runner/dedicated-test-namespaces))
         duplicates (duplicate-namespaces namespaces)
         discovered (set namespaces)
+        standalone-by-namespace (:by-namespace standalone-index)
         missing-infrastructure
-        (set/difference fixed-stage-infrastructure-namespaces discovered)
+        (set/difference required-fixed-stage-infrastructure-namespaces
+                        discovered)
         unknown-non-slice
         (->> namespaces
              (remove
-              #(or (contains? fixed-stage-infrastructure-namespaces %)
+              #(or (contains? reviewed-non-slice-namespaces %)
+                   (contains? standalone-by-namespace %)
                    (namespace-slice %)))
              distinct
              sort
@@ -416,12 +591,14 @@
          :unknown-non-slice-namespaces unknown-non-slice
          :discovered-namespaces (vec (sort namespaces))})))
     (->> namespaces
-         (remove #(contains? fixed-stage-infrastructure-namespaces %))
+         (remove #(contains? reviewed-non-slice-namespaces %))
          (map
-          (fn [namespace]
+         (fn [namespace]
             {:namespace namespace
-             :slice (namespace-slice namespace)}))
-         vec)))
+             :slice (or (namespace-slice namespace)
+                        (get-in standalone-by-namespace
+                                [namespace :slice]))}))
+         vec))))
 
 (defn- valid-slice?
   [slice]
@@ -438,8 +615,11 @@
   is allowed to have no tests for a particular slice; every discovered entry
   must simply map to one of the bounded slices exactly once.
   "
-  [catalog]
+  ([catalog]
+   (validate-test-catalog catalog {:by-namespace {}}))
+  ([catalog standalone-index]
   (let [catalog (when (some? catalog) (vec catalog))
+        standalone-by-namespace (:by-namespace standalone-index)
         duplicate-details
         (when catalog
           (->> catalog
@@ -471,7 +651,10 @@
                     (not (valid-slice? (:slice entry)))
                     {:entry entry :reason :slice-invalid}
 
-                    (not= (:slice entry) (namespace-slice (:namespace entry)))
+                    (not= (:slice entry)
+                          (or (namespace-slice (:namespace entry))
+                              (get-in standalone-by-namespace
+                                      [(:namespace entry) :slice])))
                     {:entry entry :reason :namespace-slice-mismatch}
 
                     :else
@@ -503,7 +686,7 @@
               distinct
               (sort-by str)
               vec)})))
-    catalog))
+    catalog)))
 
 (defn planning-context
   "Creates an isolated, request-local planner context.
@@ -521,20 +704,31 @@
   ([]
    (planning-context {}))
   ([options]
-   (let [options (or options {})]
+   (let [options (or options {})
+         ownership
+         (if (contains? options :ownership)
+           (:ownership options)
+           (ownership-record))
+         component-dependencies
+         (if (contains? options :component-dependencies)
+           (:component-dependencies options)
+           (component-dependencies/dependency-index))
+         standalone-index
+         (standalone-test-index ownership component-dependencies)]
      {:ownership
-      (if (contains? options :ownership)
-        (:ownership options)
-        (ownership-record))
+      ownership
       :dependencies
       (if (contains? options :dependencies)
         (:dependencies options)
         (backlog-dependencies))
+      :component-dependencies
+      component-dependencies
+      :standalone-test-index standalone-index
       :catalog-delay
       (delay
        (if (contains? options :catalog)
          (:catalog options)
-         (test-catalog)))})))
+         (test-catalog standalone-index)))})))
 
 (defn- context-catalog
   [context]
@@ -551,12 +745,141 @@
       "SH-01 planner context is missing its test catalog"
       {:id "SH01-IMPACT-CONTEXT"}))))
 
+(declare dedicated-test-path? dedicated-test-namespace repository-path-exists?)
+
 (defn- resource-class
   [slice]
   (cond
     (= "SH-07" slice) :memory-heavy
     (contains? #{"SH-26" "SH-27" "SH-28" "SH-29"} slice) :exclusive
     :else :normal))
+
+(defn- reviewed-component-selection
+  [dependency-index entry]
+  (let [relative (:path entry)
+        source-entry (get-in dependency-index [:by-source-path relative])
+        test-entry (get-in dependency-index [:by-test-path relative])]
+    (cond
+      source-entry
+      (do
+        (when-not (= (:component-id source-entry) (:component-id entry))
+          (throw
+           (ex-info
+            "Reviewed component dependency disagrees with Stage0 ownership"
+            {:id "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+             :path relative
+             :dependency-component (:component-id source-entry)
+             :ownership-component (:component-id entry)})))
+        {:selection :reviewed-component-dependencies
+         :reason :reviewed-component-source
+         :component-id (:component-id source-entry)
+         :tests (:tests source-entry)
+         :test-namespaces (mapv :namespace (:tests source-entry))})
+
+      test-entry
+      (let [test-id (or (:component-id test-entry) (:test-id test-entry))]
+        (when (and (:component-id entry)
+                   (not= test-id (:component-id entry)))
+          (throw
+           (ex-info
+            "Reviewed test dependency disagrees with Stage0 ownership"
+            {:id "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+             :path relative
+             :dependency-component test-id
+             :ownership-component (:component-id entry)})))
+        (if (repository-path-exists? relative)
+          {:selection :exact-test-path
+           :reason :reviewed-component-test
+           :component-id test-id
+           :tests [(select-keys test-entry
+                                [:path :namespace :jvm-group :test-policy
+                                 :cache-closure
+                                 :cache-closure-valid?])]
+           :test-namespaces [(:namespace test-entry)]}
+          (let [component
+                (get-in dependency-index
+                        [:by-component-id test-id])]
+            {:selection :reviewed-component-dependencies
+             :reason :deleted-reviewed-component-test
+             :component-id test-id
+             :tests (:tests component)
+             :test-namespaces (mapv :namespace (:tests component))})))
+
+      :else
+      nil)))
+
+(defn- exact-dedicated-selection
+  [catalog entry]
+  (when (and (= :dedicated (:classification entry))
+             (dedicated-test-path? (:path entry)))
+    (when-let [namespace (dedicated-test-namespace catalog (:path entry))]
+      {:selection :exact-test-path
+       :reason :changed-dedicated-test
+       :tests [{:path (:path entry) :namespace namespace}]
+       :test-namespaces [namespace]})))
+
+(defn- development-selection
+  [dependency-index catalog entry]
+  (or (reviewed-component-selection dependency-index entry)
+      (exact-dedicated-selection catalog entry)))
+
+(defn- enrich-development-selections
+  [dependency-index catalog classified]
+  (mapv
+   (fn [entry]
+     (if-let [selection (development-selection dependency-index catalog entry)]
+       (merge entry
+              {:development-selection (:selection selection)
+               :development-invalidation-reason (:reason selection)
+               :development-component-id (:component-id selection)
+               :development-tests (:tests selection)
+               :development-test-namespaces (:test-namespaces selection)})
+       (assoc entry
+              :development-selection
+              (if (= :unrelated (:classification entry))
+                :ignored
+                :slice-closure)
+              :development-invalidation-reason
+              (if (= :unrelated (:classification entry))
+                :unrelated-path
+                :unreviewed-or-deleted-path))))
+   classified))
+
+(defn- exact-development-namespaces
+  [classified]
+  (->> classified
+       (mapcat :development-test-namespaces)
+       distinct
+       sort
+       vec))
+
+(defn- closure-owned?
+  [ownership closure]
+  (every?
+   #(contains? #{:coordinator :dedicated :module}
+               (:classification (classify-path ownership (:path %))))
+   (:inputs closure)))
+
+(defn- exact-development-job-metadata
+  [ownership classified]
+  (into
+   {}
+   (for [entry classified
+         test-entry (:development-tests entry)
+         :let [namespace (:namespace test-entry)]
+         :when (:development-component-id entry)]
+     [namespace
+      (cond->
+       {:component-id (:development-component-id entry)
+        :batch-key (str "component/"
+                        (:development-component-id entry)
+                        "/"
+                        (:jvm-group test-entry))
+        :test-policy (:test-policy test-entry)}
+        (and (:cache-closure-valid? test-entry)
+             (closure-owned? ownership (:cache-closure test-entry)))
+        (assoc :cache-closure (:cache-closure test-entry)
+               :cache-closure-authorized? true))])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.
@@ -701,7 +1024,9 @@
 
 (defn- build-iteration-plan
   [context classified changed-paths requested]
-  (let [catalog (-> context context-catalog validate-test-catalog)
+  (let [catalog (validate-test-catalog
+                 (context-catalog context)
+                 (:standalone-test-index context))
         requested (canonical-iteration-slices requested)
         _ (validate-unresolved-present-dedicated-test-paths!
            catalog
@@ -763,11 +1088,13 @@
              distinct
              sort
              vec)
+        catalog-by-namespace
+        (into {} (map (juxt :namespace :slice)) catalog)
         shards
         (->> namespaces
              (mapv
               (fn [namespace]
-                (let [slice (namespace-slice namespace)]
+                (let [slice (get catalog-by-namespace namespace)]
                   {:namespace namespace
                    :slice slice
                    :resource-class (resource-class slice)}))))]
@@ -808,6 +1135,116 @@
   (or (:planning-context request)
       (:context request)
       (planning-context)))
+
+(defn- validate-exact-test-var-route-owner!
+  "Admit an exact route only when its owner is live and unambiguous.
+
+  The route catalog is reviewed code, while the slice owner is mutable
+  coordinator state.  Keeping both identities in the admission check prevents
+  a stale route from selecting a leaf after ownership moves.  The owner entry
+  is intentionally closed as well: an extra or malformed owner field cannot
+  be silently ignored by the route planner.
+  "
+  [route context]
+  (let [ownership (when (map? context) (:ownership context))
+        slice-owners (when (map? ownership) (:slice-owners ownership))
+        slice (:slice route)
+        live-entry (when (map? slice-owners) (get slice-owners slice))
+        live-owner (when (map? live-entry) (:leaf-owner live-entry))
+        live-entry-keys (when (map? live-entry) (set (keys live-entry)))
+        expected-entry-keys #{:integration-owner :leaf-owner}]
+    (cond
+      (not (map? context))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires one planner context"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :route-path (:path route)
+         :reason :context-missing}))
+
+      (not (map? ownership))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires the live ownership record"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :ownership-missing}))
+
+      (not (map? slice-owners))
+      (throw
+       (ex-info
+        "Exact test-var route planning requires live slice owners"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owners-malformed}))
+
+      (not (map? live-entry))
+      (throw
+       (ex-info
+        "Exact test-var route has no live owner entry for its slice"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-missing
+         :slice-owners (vec (sort-by str (keys slice-owners)))}))
+
+      (not= expected-entry-keys live-entry-keys)
+      (throw
+       (ex-info
+        "Exact test-var route live owner entry has an unexpected shape"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-shape
+         :expected-keys expected-entry-keys
+         :actual-keys live-entry-keys}))
+
+      (not (and (keyword? (:integration-owner live-entry))
+                (keyword? live-owner)))
+      (throw
+       (ex-info
+        "Exact test-var route live owner entry is malformed"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :reason :slice-owner-malformed
+         :live-entry live-entry}))
+
+      (not= (:owner route) live-owner)
+      (throw
+       (ex-info
+        "Exact test-var route owner disagrees with the live slice owner"
+        {:id "SH01-IMPACT-ROUTE-OWNER"
+         :slice slice
+         :route-owner (:owner route)
+         :live-owner live-owner
+         :reason :owner-drift}))
+
+      :else
+      route)))
+
+(defn- validate-exact-test-var-route-dependency!
+  "Require the route path and namespace to resolve to one catalog identity.
+
+  This is the route-specific counterpart to the ordinary planner's dependency
+  checks.  It runs against the same request-local catalog that build-plan will
+  consume, so a stale or substituted test entry cannot be admitted as an exact
+  route merely because its path still looks slice-shaped.
+  "
+  [route context]
+  (let [catalog (validate-test-catalog
+                 (context-catalog context)
+                 (:standalone-test-index context))
+        catalog-namespace (dedicated-test-namespace catalog (:path route))]
+    (when-not (and (= (:slice route) (path-slice (:path route)))
+                   (= (:namespace route) catalog-namespace))
+      (throw
+       (ex-info
+        "Exact test-var route path and namespace disagree with the test dependency catalog"
+        {:id "SH01-IMPACT-ROUTE-CONTRACT"
+         :route-path (:path route)
+         :route-slice (:slice route)
+         :route-namespace (:namespace route)
+         :catalog-namespace catalog-namespace
+         :reason :dependency-identity})))
+    route))
 
 (defn- invalid-slices!
   [slices]
@@ -872,37 +1309,161 @@
             (if expand-dependants?
               (downstream-closure dependencies direct)
               direct)
-            catalog (-> context context-catalog validate-test-catalog)
+            catalog (validate-test-catalog
+                     (context-catalog context)
+                     (:standalone-test-index context))
             _ (validate-unresolved-present-dedicated-test-paths!
                catalog
                classified)
+            classified
+            (enrich-development-selections
+             (:component-dependencies context)
+             catalog
+             classified)
+            exact-namespaces
+            (exact-development-namespaces classified)
+            job-metadata-by-namespace
+            (exact-development-job-metadata record classified)
+            execution-path-slices
+            (->> classified
+                 (filter #(= :slice-closure
+                             (:development-selection %)))
+                 (mapcat :slices)
+                 set)
+            execution-direct
+            (set/union direct-slices execution-path-slices)
+            execution-selected
+            (if expand-dependants?
+              (downstream-closure dependencies execution-direct)
+              execution-direct)
             namespaces
             (->> catalog
-                 (filter #(contains? selected (:slice %)))
-                 (mapv :namespace)
+                 (filter #(contains? execution-selected (:slice %)))
+                 (map :namespace)
+                 (concat exact-namespaces)
+                 distinct
                  sort
                  vec)
+            catalog-by-namespace
+            (into {} (map (juxt :namespace :slice)) catalog)
             shards
             (->> namespaces
                  (mapv
                   (fn [namespace]
-                    (let [slice (namespace-slice namespace)]
-                      {:namespace namespace
-                       :slice slice
-                       :resource-class (resource-class slice)}))))]
+                    (let [slice (get catalog-by-namespace namespace)]
+                      (cond->
+                       {:namespace namespace
+                        :slice slice
+                        :resource-class (resource-class slice)}
+                        (contains? job-metadata-by-namespace namespace)
+                        (merge (get job-metadata-by-namespace namespace)))))))]
         (merge
-         {:schema :gravity/sh01-impact-test-plan-v1
+         (cond->
+          {:schema :gravity/sh01-impact-test-plan-v1
           :direct-slices (vec (sort direct))
           :affected-slices (vec (sort selected))
+          :execution-direct-slices (vec (sort execution-direct))
+          :execution-affected-slices (vec (sort execution-selected))
           :changed-paths changed-paths
           :classifications classified
           :namespaces namespaces
+          :development-selected-namespaces namespaces
           :shards shards
           :ignored-paths
           (->> classified
-              (filter #(= :unrelated (:classification %)))
-              (mapv :path))}
+               (filter #(= :unrelated (:classification %)))
+               (mapv :path))}
+           (seq exact-namespaces)
+           (assoc :authority :non-authoritative
+                  :authoritative? false
+                  :non-authoritative? true
+                  :selection-mode :exact-development-tests))
          (component-plan-fields classified))))))
+
+(defn build-test-var-plan
+  "Builds a closed, non-authoritative plan for one exact test-var route.
+
+  The route owns one complete dedicated test path but narrows development
+  execution to its reviewed vars.  A caller may provide the exact changed path
+  (for base-aware planning); any additional or mixed selection input fails
+  closed before ordinary slice planning is attempted.  The returned plan
+  retains the normal SH-01 slice/dependency metadata and adds the exact vars
+  that a bounded runner may execute in one JVM.
+  "
+  ([route-name]
+   (build-test-var-plan route-name {}))
+  ([route-name options]
+   (let [route (exact-test-var-route route-name)
+         options (or options {})
+         allowed #{:context :changed-paths}
+         extra (vec (sort (map str (set/difference (set (keys options))
+                                                   allowed))))
+         changed-paths
+         (if (contains? options :changed-paths)
+           (->> (or (:changed-paths options) []) distinct sort vec)
+           [(:path route)])]
+     (when (seq extra)
+       (throw
+        (ex-info
+         "Exact test-var routes do not accept mixed or extra selections"
+         {:id "SH01-IMPACT-ROUTE-SELECTION"
+          :route route-name
+          :extra-options extra})))
+     (when-not (= [(:path route)] changed-paths)
+       (throw
+        (ex-info
+         "Exact test-var route changed paths must match its owned path exactly"
+         {:id "SH01-IMPACT-ROUTE-PATH"
+          :route route-name
+          :expected [(:path route)]
+          :changed-paths changed-paths})))
+     (let [context (if (contains? options :context)
+                     (:context options)
+                     (planning-context))]
+       ;; Validate the live ownership identity before the normal planner can
+       ;; admit the path.  The same request-local context is then passed into
+       ;; build-plan so ownership, catalog, and dependency identities cannot
+       ;; change between admission and plan construction.
+       (validate-exact-test-var-route-owner! route context)
+       (validate-exact-test-var-route-dependency! route context)
+       (let [plan (build-plan {:changed-paths changed-paths
+                               :expand-dependants? false
+                               :context context})
+             classification (first (:classifications plan))
+             exact-dependency?
+             (and (= 1 (count (:classifications plan)))
+                  (= (:path route) (:path classification))
+                  (= :dedicated (:classification classification))
+                  (= [(:slice route)] (:slices classification))
+                  (= :exact-test-path
+                     (:development-selection classification))
+                  (= [(:namespace route)]
+                     (:development-test-namespaces classification)))]
+         (when-not (and (= [(:namespace route)] (:namespaces plan))
+                        exact-dependency?)
+           (throw
+            (ex-info
+             "Exact test-var route identity disagrees with SH-01 ownership or dependency planning"
+             {:id "SH01-IMPACT-ROUTE-CONTRACT"
+              :route route-name
+              :expected {:path (:path route)
+                         :slice (:slice route)
+                         :namespace (:namespace route)
+                         :classification :dedicated
+                         :development-selection :exact-test-path}
+              :actual {:namespaces (:namespaces plan)
+                       :classification classification}})))
+         (assoc plan
+                :selection-mode :exact-test-vars
+                :route route-name
+                :route-owner (:owner route)
+                :route-path (:path route)
+                :test-vars (:test-vars route)
+                :test-var-count (count (:test-vars route))
+                :resource-class (:resource-class route)
+                :route-authority :non-authoritative
+                :authoritative? false
+                :non-authoritative? true))))))
 
 (defn build-namespace-plan
   "Builds a non-authoritative plan for exact dedicated test namespaces.
@@ -942,7 +1503,9 @@
            "Requested namespace has no valid SH-00 through SH-29 slice"
            {:id "SH01-IMPACT-NAMESPACE-SLICE"
             :namespaces invalid-requested-slices}))))
-     (let [catalog (-> context context-catalog validate-test-catalog)
+     (let [catalog (validate-test-catalog
+                    (context-catalog context)
+                    (:standalone-test-index context))
            by-namespace (into {} (map (juxt :namespace identity)) catalog)
            unknown (vec (sort (remove #(contains? by-namespace %) namespaces)))
            invalid-slice-namespaces
@@ -986,11 +1549,15 @@
           :shards shards
           :ignored-paths []})))))
 
-(defn- process-lines
-  [& command]
-  (let [process
+(defn- process-lines-in
+  [working-directory & command]
+  (let [working-directory
+        (if (instance? java.nio.file.Path working-directory)
+          (.toFile ^java.nio.file.Path working-directory)
+          (io/file working-directory))
+        process
         (-> (ProcessBuilder. ^java.util.List (vec command))
-            (.directory (path "."))
+            (.directory working-directory)
             (.redirectErrorStream true)
             .start)
         output (slurp (.getInputStream process))
@@ -1005,16 +1572,110 @@
          :output output})))
     (remove str/blank? (str/split-lines output))))
 
+(defn- process-lines
+  [& command]
+  (apply process-lines-in (path ".") command))
+
+(defn- one-git-commit
+  [kind values details]
+  (let [values (vec values)]
+    (when-not (and (= 1 (count values))
+                   (re-matches #"[0-9a-f]{40}" (first values)))
+      (throw
+       (ex-info
+        "Repository base discovery did not produce one commit"
+        (merge {:id "SH01-IMPACT-BASE"
+                :kind kind
+                :values values}
+               details))))
+    (first values)))
+
+(defn change-discovery
+  "Returns deterministic committed and working change discovery metadata.
+
+  With an explicit base ref, committed paths are read from
+  merge-base(base, HEAD)..HEAD. Tracked and untracked working paths are always
+  included. The three sources remain separate in the result and their union is
+  returned under `:changed-paths`."
+  ([]
+   (change-discovery nil (path ".")))
+  ([base-ref]
+   (change-discovery base-ref (path ".")))
+  ([base-ref working-directory]
+   (when (and (some? base-ref)
+              (or (not (string? base-ref))
+                  (str/blank? base-ref)
+                  (some #(Character/isISOControl (int %)) base-ref)))
+     (throw
+      (ex-info
+       "Incremental base ref must be one nonempty line"
+       {:id "SH01-IMPACT-BASE" :base-ref base-ref})))
+   (let [run #(apply process-lines-in working-directory %)
+         base-commit
+         (when base-ref
+           (try
+             (one-git-commit
+              :base-commit
+              (run ["git" "rev-parse" "--verify" "--end-of-options"
+                    (str base-ref "^{commit}")])
+              {:base-ref base-ref})
+             (catch clojure.lang.ExceptionInfo exception
+               (throw
+                (ex-info
+                 "Incremental base ref could not be resolved"
+                 {:id "SH01-IMPACT-BASE"
+                  :base-ref base-ref
+                  :cause-id (:id (ex-data exception))}
+                 exception)))))
+         merge-base
+         (when base-commit
+           (try
+             (one-git-commit
+              :merge-base
+              (run ["git" "merge-base" base-commit "HEAD"])
+              {:base-ref base-ref :base-commit base-commit})
+             (catch clojure.lang.ExceptionInfo exception
+               (throw
+                (ex-info
+                 "Incremental base ref has no usable merge base with HEAD"
+                 {:id "SH01-IMPACT-BASE"
+                  :base-ref base-ref
+                  :base-commit base-commit
+                  :cause-id (:id (ex-data exception))}
+                 exception)))))
+         committed-paths
+         (if merge-base
+           (vec (run ["git" "diff" "--name-only" merge-base "HEAD"]))
+           [])
+         tracked-working-paths
+         (vec (run ["git" "diff" "--name-only" "HEAD"]))
+         untracked-paths
+         (vec (run ["git" "ls-files" "--others" "--exclude-standard"]))
+         changed-paths
+         (->> (concat committed-paths
+                      tracked-working-paths
+                      untracked-paths)
+              distinct
+              sort
+              vec)]
+     {:schema :gravity/sh01-change-discovery-v1
+      :authority :non-authoritative
+      :authoritative? false
+      :base-ref base-ref
+      :base-commit base-commit
+      :merge-base merge-base
+      :committed-paths (vec (sort (distinct committed-paths)))
+      :tracked-working-paths
+      (vec (sort (distinct tracked-working-paths)))
+      :untracked-paths (vec (sort (distinct untracked-paths)))
+      :changed-paths changed-paths})))
+
 (defn changed-paths
-  "Returns tracked and untracked working-tree paths in deterministic order."
-  []
-  (->> (concat
-        (process-lines "git" "diff" "--name-only" "HEAD")
-        (process-lines
-         "git" "ls-files" "--others" "--exclude-standard"))
-       distinct
-       sort
-       vec))
+  "Returns committed branch plus tracked/untracked working paths when based."
+  ([] (:changed-paths (change-discovery)))
+  ([base-ref] (:changed-paths (change-discovery base-ref)))
+  ([base-ref working-directory]
+   (:changed-paths (change-discovery base-ref working-directory))))
 
 (defn- owner-slices
   [owner]

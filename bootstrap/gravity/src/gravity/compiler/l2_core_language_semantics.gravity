@@ -8,8 +8,10 @@
              l2-nonlocal-control-contract
              l2-core-diagnostic-catalog
              l2-conformance-fixture-contract
+             l2-set-mutation-execution-contract
              build-l2-core-form-record
              build-l2-evaluation-order-record
+             execute-l2-set-mutation
              verify-l2-core-semantics])
   (:effects #{})
   (:capabilities #{})
@@ -44,7 +46,8 @@
                              :nonlocal-control-contract
                              :stable-l2-diagnostic-catalog
                              :accepted-core-semantics-fixtures
-                             :rejected-core-semantics-fixtures]
+                             :rejected-core-semantics-fixtures
+                             :bounded-set-mutation-execution]
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :origin-chains :generated-origin
@@ -296,6 +299,328 @@
                :diagnostics-matched-only-by-wording
                :accepted-fixture-without-core-artifact
                :rejected-fixture-without-stable-diagnostic]})
+
+(def l2-set-mutation-execution-contract
+  {:artifact :gravity/l2-set-mutation-execution-contract
+   :schema-version 1
+   :input :gravity/sh07-c6-verified-set-mutation-execution
+   :scope :same-namespace-top-level-var
+   :supported-value-forms [:literal :set!]
+   :supported-literal-kinds [:nil :integer]
+   :state-model :explicit-bounded-store
+   :semantics [:evaluate-value-exactly-once
+               :do-not-evaluate-target
+               :write-explicit-location
+               :yield-unit]
+   :trace-steps [:evaluate-value :evaluate-literal
+                 :write-target :yield-unit]
+   :maximum-steps 96
+   :result :unit
+   :required-effect :state/write
+   :verification-carrier :request-bound-substitution-and-staleness-guard
+   :pending-legality {:types :pending-sh08
+                      :effects-and-capabilities :pending-sh09
+                      :ownership :pending-sh10
+                      :safety :pending-sh11}
+   :nonclaims [:authenticated-b47-linkage
+               :authenticated-c6-verifier-issuer-or-b47-lineage
+               :adversarial-request-and-carrier-co-forgery
+               :generated-or-macro-origin-mutation-execution
+               :other-literal-kind-execution
+               :lexical-or-qualified-mutation
+               :field-cell-or-reference-mutation
+               :general-core-expression-execution
+               :sh07-complete]})
+
+(defn l2-set-execution-contract-value []
+  {:artifact :gravity/l2-set-mutation-execution-contract
+   :schema-version 1
+   :input :gravity/sh07-c6-verified-set-mutation-execution
+   :scope :same-namespace-top-level-var
+   :supported-value-forms [:literal :set!]
+   :supported-literal-kinds [:nil :integer]
+   :state-model :explicit-bounded-store
+   :semantics [:evaluate-value-exactly-once
+               :do-not-evaluate-target
+               :write-explicit-location
+               :yield-unit]
+   :trace-steps [:evaluate-value :evaluate-literal
+                 :write-target :yield-unit]
+   :maximum-steps 96
+   :result :unit
+   :required-effect :state/write
+   :verification-carrier :request-bound-substitution-and-staleness-guard
+   :pending-legality {:types :pending-sh08
+                      :effects-and-capabilities :pending-sh09
+                      :ownership :pending-sh10
+                      :safety :pending-sh11}
+   :nonclaims [:authenticated-b47-linkage
+               :authenticated-c6-verifier-issuer-or-b47-lineage
+               :adversarial-request-and-carrier-co-forgery
+               :generated-or-macro-origin-mutation-execution
+               :other-literal-kind-execution
+               :lexical-or-qualified-mutation
+               :field-cell-or-reference-mutation
+               :general-core-expression-execution
+               :sh07-complete]})
+
+(defn l2-set-execution-exact-keys? [value expected]
+  (if (map? value) (= (set (keys value)) expected) false))
+
+(defn l2-set-execution-c6-claim-boundary-value []
+  {:artifact :gravity/c6-set-mutation-execution-contract
+   :schema-version 1
+   :scope :same-namespace-top-level-var
+   :input :gravity/sh07-c6-set-mutation-execution-request
+   :output :gravity/sh07-c6-verified-set-mutation-execution
+   :supported-value-forms [:literal :set!]
+   :supported-literal-kinds [:nil :integer]
+   :required-order [:evaluate-value :write-target :yield-unit]
+   :result :unit
+   :required-effect :state/write
+   :verification-carrier :request-bound-substitution-and-staleness-guard
+   :bounds {:maximum-nodes 32
+            :maximum-mutations 16
+            :maximum-store-entries 16}
+   :pending-legality {:types :pending-sh08
+                      :effects-and-capabilities :pending-sh09
+                      :ownership :pending-sh10
+                      :safety :pending-sh11}
+   :nonclaims [:authenticated-b47-linkage
+               :authenticated-c6-verifier-issuer-or-b47-lineage
+               :adversarial-request-and-carrier-co-forgery
+               :generated-or-macro-origin-mutation-execution
+               :other-literal-kind-execution
+               :lexical-or-qualified-mutation
+               :field-cell-or-reference-mutation
+               :general-core-expression-execution
+               :sh07-complete]})
+
+(defn l2-set-execution-c6-verification-checks []
+  [:bounded-carriers
+   :unique-node-and-mutation-identities
+   :source-and-generated-origin-shape
+   :acyclic-root-reachable-node-graph
+   :exact-set-mutation-carriers
+   :literal-payload-shape
+   :same-namespace-top-level-var
+   :target-not-evaluated
+   :value-linked-exactly-once
+   :pending-downstream-legality-preserved
+   :value-then-write-then-unit])
+
+(defn l2-set-execution-c6-verification-carrier [request]
+  {:artifact :gravity/sh07-c6-set-mutation-verification-carrier
+   :schema-version 1
+   :verified-request request
+   :checks (l2-set-execution-c6-verification-checks)
+   :claim-boundary (l2-set-execution-c6-claim-boundary-value)})
+
+(defn l2-set-execution-verified-envelope-check [verified]
+  (if (map? verified)
+    (if
+     (l2-set-execution-exact-keys?
+      verified
+      #{:artifact :schema-version :status :verified-request :checks
+        :verification-carrier :diagnostics :claim-boundary})
+      (if (= (get verified :artifact)
+             :gravity/sh07-c6-verified-set-mutation-execution)
+        (if (= (get verified :schema-version) 1)
+          (if (= (get verified :status) :accepted)
+            (let [request (get verified :verified-request)]
+              (if (map? request)
+                (if (= (get verified :checks)
+                       (l2-set-execution-c6-verification-checks))
+                  (if (= (get verified :diagnostics) [])
+                    (if (= (get verified :claim-boundary)
+                           (l2-set-execution-c6-claim-boundary-value))
+                      (if (= (get verified :verification-carrier)
+                             (l2-set-execution-c6-verification-carrier
+                              request))
+                        {:status :accepted :request request}
+                        {:status :rejected
+                         :reason :verified-c6-carrier-mismatch})
+                      {:status :rejected
+                       :reason :verified-c6-claim-boundary-required})
+                    {:status :rejected
+                     :reason :verified-c6-diagnostics-required})
+                  {:status :rejected
+                   :reason :verified-c6-checks-required})
+                {:status :rejected :reason :verified-request-required}))
+            {:status :rejected
+             :reason :accepted-c6-verification-required})
+          {:status :rejected :reason :verified-schema-version})
+        {:status :rejected :reason :verified-c6-artifact-required})
+      {:status :rejected :reason :verified-envelope-shape-mismatch})
+    {:status :rejected :reason :verified-c6-result-map-required}))
+
+(defn l2-set-execution-find [values key-name expected]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      nil
+      (if (= (get (first remaining) key-name) expected)
+        (first remaining)
+        (recur (rest remaining))))))
+
+(defn l2-set-execution-trace-step
+  [state step node-id binding-id value]
+  (let [trace (get state :trace)
+        event {:ordinal (count trace)
+               :step step
+               :core-node-id node-id
+               :binding-id binding-id
+               :value value}]
+    (assoc state :trace (conj trace event))))
+
+(defn l2-set-execution-replace-store
+  [store binding-id namespace value]
+  (loop [remaining store values [] replaced? false]
+    (if (= (count remaining) 0)
+      (if replaced?
+        {:status :accepted :store values}
+        {:status :rejected :reason :set-target-store-location-required})
+      (let [entry (first remaining)]
+        (if (= (get entry :binding-id) binding-id)
+          (if (= (get entry :namespace) namespace)
+            (if (= (get entry :location) :top-level-var)
+              (recur
+               (rest remaining)
+               (conj values (assoc entry :value value))
+               true)
+              {:status :rejected :reason :set-location-deferred})
+            {:status :rejected :reason :set-same-namespace-required})
+          (recur (rest remaining) (conj values entry) replaced?))))))
+
+(defn l2-set-execution-rejected [verified reason node-id]
+  (let [request
+        (if (map? verified) (get verified :verified-request) nil)]
+    {:artifact :gravity/l2-set-mutation-execution-result
+     :schema-version 1
+     :status :rejected
+     :value nil
+     :store nil
+     :trace []
+     :diagnostics
+     [{:artifact :gravity/l2-set-mutation-execution-diagnostic
+       :diagnostic-id "SH07-L2-SET-MUTATION-EXECUTION"
+       :rule "L2-LOWERING-GAP"
+       :severity :error
+       :stage :core-semantics
+       :core-node-id node-id
+       :syntax-id nil
+       :source-span {:source
+                     (if (map? request)
+                       (get request :source-path)
+                       nil)}
+       :origin-chain []
+       :profile (if (map? request) (get request :profile) nil)
+       :target (if (map? request) (get request :target) nil)
+       :facts {:reason reason :fail-closed true}
+       :remediation
+       "Execute only a C6-verified bounded same-namespace set-mutation request."}]
+     :claim-boundary (l2-set-execution-contract-value)}))
+
+(defn l2-set-execution-node [request node-id state]
+  (if (> (get state :steps) 96)
+    {:status :rejected :reason :set-execution-step-bound
+     :node-id node-id}
+    (let [node
+          (l2-set-execution-find (get request :nodes) :node-id node-id)]
+      (if (map? node)
+        (if (= (get node :core-form) :literal)
+          (let [attributes (get node :attributes)
+                next-state
+                (l2-set-execution-trace-step
+                 (assoc state :steps (+ (get state :steps) 1))
+                 :evaluate-literal node-id nil (get attributes :value))]
+            {:status :accepted
+             :value (get attributes :value)
+             :state next-state})
+          (if (= (get node :core-form) :set!)
+            (let [mutation
+                  (l2-set-execution-find
+                   (get request :mutations) :core-node-id node-id)]
+              (if (map? mutation)
+                (let [value-node-id (get mutation :value-core-node-id)
+                      before-value
+                      (l2-set-execution-trace-step
+                       (assoc state :steps (+ (get state :steps) 1))
+                       :evaluate-value node-id nil value-node-id)
+                      evaluated
+                      (l2-set-execution-node
+                       request value-node-id before-value)]
+                  (if (= (get evaluated :status) :accepted)
+                    (let [binding-id
+                          (get mutation :target-binding-id)
+                          replaced
+                          (l2-set-execution-replace-store
+                           (get (get evaluated :state) :store)
+                           binding-id
+                           (get mutation :target-namespace)
+                           (get evaluated :value))]
+                      (if (= (get replaced :status) :accepted)
+                        (let [written-state
+                              (l2-set-execution-trace-step
+                               (assoc
+                                (get evaluated :state)
+                                :store (get replaced :store))
+                               :write-target node-id binding-id
+                               (get evaluated :value))
+                              result-state
+                              (l2-set-execution-trace-step
+                               (assoc written-state
+                                      :steps
+                                      (+ (get written-state :steps) 1))
+                               :yield-unit node-id nil :unit)]
+                          {:status :accepted
+                           :value :unit
+                           :state result-state})
+                        {:status :rejected
+                         :reason (get replaced :reason)
+                         :node-id node-id}))
+                    evaluated))
+                {:status :rejected
+                 :reason :set-mutation-record-required
+                 :node-id node-id}))
+            {:status :rejected
+             :reason :set-execution-value-form-deferred
+             :node-id node-id}))
+        {:status :rejected
+         :reason :set-value-link-mismatch
+         :node-id node-id}))))
+
+(defn execute-l2-set-mutation [verified]
+  (let [envelope-checked
+        (l2-set-execution-verified-envelope-check verified)]
+    (if (= (get envelope-checked :status) :accepted)
+      (let [request (get envelope-checked :request)
+            executed
+            (l2-set-execution-node
+             request (get request :root-node-id)
+             {:store (get request :store)
+              :trace []
+              :steps 0})]
+        (if (= (get executed :status) :accepted)
+          {:artifact :gravity/l2-set-mutation-execution-result
+           :schema-version 1
+           :status :accepted
+           :value (get executed :value)
+           :store (get (get executed :state) :store)
+           :trace (get (get executed :state) :trace)
+           :target-evaluated-children []
+           :required-effect :state/write
+           :downstream-legality
+           {:types :pending-sh08
+            :effects-and-capabilities :pending-sh09
+            :ownership :pending-sh10
+            :safety :pending-sh11}
+           :diagnostics []
+           :claim-boundary
+           (l2-set-execution-contract-value)}
+          (l2-set-execution-rejected
+           verified (get executed :reason) (get executed :node-id))))
+      (l2-set-execution-rejected
+       verified (get envelope-checked :reason) nil))))
 
 (defn build-l2-core-form-record
   [node-id form operands source-span origin-chain profile target facts]

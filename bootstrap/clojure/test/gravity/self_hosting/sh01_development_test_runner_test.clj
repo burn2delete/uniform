@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-development-test-runner-test
-  (:require [clojure.string :as str]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.test :as test :refer [deftest is testing]]
             [gravity.development-test-runner :as runner]
             [gravity.self-hosting.sh01-development-test-runner
@@ -87,7 +88,8 @@
             "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer"
             "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"
             "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative"
-            "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution"]}
+            "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-reuses-without-reader-execution"
+            "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-invalidates-changed-source"]}
           {:namespace 'gravity.bootstrap-compatibility.c3-test
            :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
           {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
@@ -278,6 +280,96 @@
       (finally
         (remove-ns 'gravity.runner-fixture-a)
         (remove-ns 'gravity.runner-fixture-b)))))
+
+(deftest timing-events-preserve-fixtures-and-record-passed-and-failed-vars
+  (let [namespace-symbol 'gravity.runner-timing-test
+        namespace-object (create-ns namespace-symbol)
+        fixture-events (atom [])
+        timing-events (atom {:namespace-loads [] :namespace-executions []})
+        passing-var (intern namespace-object 'passing-test (fn [] nil))
+        failing-var (intern namespace-object 'failing-test (fn [] nil))
+        records [{:namespace namespace-symbol
+                  :qualified-name "gravity.runner-timing-test/passing-test"
+                  :var passing-var}
+                 {:namespace namespace-symbol
+                  :qualified-name "gravity.runner-timing-test/failing-test"
+                  :var failing-var}]]
+    (try
+      (alter-meta! passing-var assoc :test #(test/is true))
+      (alter-meta! failing-var assoc :test #(test/is false))
+      (alter-meta! namespace-object assoc
+                   ::test/once-fixtures
+                   [(fn [body]
+                      (swap! fixture-events conj :once-before)
+                      (test/is false)
+                      (body)
+                      (swap! fixture-events conj :once-after))]
+                   ::test/each-fixtures
+                   [(fn [body]
+                      (swap! fixture-events conj :each)
+                      (body))])
+      (let [summary
+            (binding [gravity.development-test-runner/*timing-events*
+                      timing-events
+                      test/*test-out* (java.io.StringWriter.)]
+              ((deref #'gravity.development-test-runner/run-selected-tests)
+               [{:namespace namespace-symbol}] records false))
+            execution (first (:namespace-executions @timing-events))]
+        (is (= 2 (:test summary)))
+        (is (= 2 (:fail summary)))
+        (is (= [:once-before :each :each :once-after] @fixture-events))
+        (is (= :failed (:outcome execution)))
+        (is (= 2 (get-in execution [:counts :fail])))
+        (is (every? #(<= 0 %) (map :elapsed-ns (:test-vars execution))))
+        (is (= [:passed :failed]
+               (mapv :outcome (:test-vars execution)))))
+      (finally
+        (remove-ns namespace-symbol)))))
+
+(deftest timing-receipt-is-bounded-machine-readable-and-non-authoritative
+  (let [receipt-file (java.io.File/createTempFile "gravity-dev-timing-" ".edn")
+        write-receipt
+        (deref #'gravity.development-test-runner/write-timing-receipt!)]
+    (try
+      (write-receipt
+       (.getPath receipt-file)
+       {:fail-fast? true}
+       [{:namespace 'gravity.synthetic-test}]
+       [{:qualified-name "gravity.synthetic-test/passes"}]
+       {:namespace-loads [{:namespace "gravity.synthetic-test"
+                           :elapsed-ns 10
+                           :outcome :loaded}]
+        :namespace-executions
+        [{:namespace "gravity.synthetic-test"
+          :elapsed-ns 20
+          :outcome :passed
+          :counts {:test 1 :pass 1 :fail 0 :error 0}
+          :test-vars [{:test-var "gravity.synthetic-test/passes"
+                       :elapsed-ns 15
+                       :outcome :passed
+                       :counts {:test 1 :pass 1 :fail 0 :error 0}}]}]}
+       {:test 1 :pass 1 :fail 0 :error 0}
+       30)
+      (let [receipt (edn/read-string (slurp receipt-file))]
+        (is (= "gravity/development-verification-timing-v1" (:schema receipt)))
+        (is (= :non-authoritative (:authority receipt)))
+        (is (= false (:authoritative? receipt)))
+        (is (= :development-scheduling-input (:purpose receipt)))
+        (is (= {:runtime-string-code-units 160} (:metadata-bounds receipt)))
+        (is (= false (get-in receipt [:loading :jvm-start-to-runner-load :separable?])))
+        (is (= true (get-in receipt [:loading :jvm-start-to-runner-load :approximate?])))
+        (is (= :passed (:outcome receipt)))
+        (is (= "gravity.synthetic-test/passes"
+               (get-in receipt [:execution :namespaces 0 :test-vars 0 :test-var])))
+        (is (every? #(<= (count %) 160)
+                    (filter string? (vals (:runtime receipt))))))
+      (finally
+        (.delete receipt-file)))))
+
+(deftest timing-receipt-option-rejects-a-missing-path
+  (let [parse-args (deref #'gravity.development-test-runner/parse-args)]
+    (is (= :gravity.development-test-runner/invalid-selector
+           (:type (exception-data #(parse-args ["--timing-receipt"])))))))
 
 (deftest c2-compatibility-vars-moved-exactly-out-of-central-test
   (let [central (slurp "bootstrap/clojure/test/gravity/bootstrap_test.clj")

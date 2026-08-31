@@ -5,11 +5,6 @@ Tasks: historical scaffold for `P06-D080` through `P06-D097`
 Phase: 06 - Compiler Architecture
 Status: superseded historical scaffold evidence
 
-This file records the earlier JSON/Python scaffold harness. The current
-Clojure-backed Phase 06 evidence has completed `P06-T01` through `P06-T06` and
-`P06-D080` through `P06-D097`; every compiler document now has a current
-capability-backed proof record at the stage0 boundary.
-
 ## Governing Documents Read
 
 - `docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md`
@@ -33,8 +28,6 @@ capability-backed proof record at the stage0 boundary.
 
 ## Implemented Surface
 
-- `src/gravity/compiler_document_coverage.py`
-- `tools/validate_phase06_document_coverage.py`
 - `docs/artifacts/phase-06/fixtures/document-coverage/accepted-compiler-document-coverage.json`
 - `docs/artifacts/phase-06/document-coverage/compiler-document-coverage.accepted.json`
 
@@ -102,18 +95,6 @@ verifier reports, translation validation logs, proof and certificate
 references, differential and property fixture results, compiler trust report,
 release gate report, counterexample regression, plugin evidence, backend
 conformance, diagnostics, conformance results, and capability-based proof.
-
-## Validation
-
-```text
-python3 tools/validate_phase06_document_coverage.py --artifact-out docs/artifacts/phase-06/document-coverage/compiler-document-coverage.accepted.json
-Phase 06 document coverage validation passed: 18 accepted artifacts, 18 rejected diagnostics
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

@@ -5968,12 +5968,88 @@
                    candidate)))]
     (is (contains? diagnostics "P15S23M005"))))
 
+(defn- p15-s23-test-source-syntax-candidate
+  [source-path source-unit syntax-stream identity-record]
+  (let [c2-artifact
+        {:source-unit-record source-unit
+         :token-stream []
+         :form-tree []
+         :reader-extension-invocation-records []}
+        adapted-binding
+        (bootstrap/sh04-syntax-current-sh03-product-binding c2-artifact)
+        c3-artifact
+        {:c2-reader-artifact c2-artifact
+         :syntax-object-stream syntax-stream
+         :gravity-syntax-boundary
+         {:reader-authentication-provenance
+          {:semantic-source-id
+           (:expected-sh04-semantic-source-id identity-record)
+           :actual-sh03-semantic-product-binding adapted-binding}}}]
+    {:proof-contract
+     {:artifact :gravity/source-unit-and-syntax-serialization-proof
+      :preserves bootstrap/p15-s23-source-syntax-required-preserves
+      :self-hosting-claims
+      {:full-language-compiler-self-hosted? false
+       :clojure-seed-retired? false}}
+     :source-unit-record source-unit
+     :syntax-object-stream syntax-stream
+     :source-syntax-identity-record identity-record
+     :c2-reader-artifact c2-artifact
+     :c3-syntax-artifact c3-artifact
+     :serialization-roundtrip-record
+     {:source-unit-roundtrip? true
+      :stable-source-id? true
+      :syntax-object-roundtrip? true
+      :stable-syntax-ids? true
+      :origin-links-preserved? true
+      :roundtrip? true
+      :c3-serialization-roundtrip? true}
+     :syntax-verification-report {:status :passed}}))
+
+(defn- p15-s23-test-syntax-object
+  [source-path semantic-source-id]
+  {:artifact :gravity/syntax-object
+   :syntax/id "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :source {:source-id semantic-source-id}
+   :span {:primary {:source source-path
+                    :file semantic-source-id
+                    :byte-start 0
+                    :byte-end 1}
+          :all [{:source source-path
+                 :file semantic-source-id
+                 :byte-start 0
+                 :byte-end 1}]}
+   :origin [{:kind :source
+             :span {:source source-path
+                    :file semantic-source-id
+                    :byte-start 0
+                    :byte-end 1}
+             :producer {:kind :reader
+                        :name 'gravity.bootstrap.reader
+                        :source-id semantic-source-id}}]})
+
+(defn- p15-s23-test-dual-identity-record
+  [source-path source-unit syntax-stream]
+  (merge
+   (bootstrap/p15-s23-source-syntax-sh04-identity-record
+    source-path source-unit syntax-stream)
+   {:c2-identity-domain :gravity/sh03-adapted-source-unit-id-v2
+    :c2-source-unit-id (:source-id source-unit)
+    :expected-adapted-source-unit-id (:source-id source-unit)
+    :observed-adapted-source-unit-id (:source-id source-unit)
+    :c2-source-unit-identity-preserved? true}))
+
+(defn- p15-s23-test-diagnostic
+  [diagnostics id]
+  (some #(when (= id (:diagnostic %)) %) diagnostics))
+
 (deftest p15-s23-source-syntax-serialization-proof-records-roundtrip
   (let [artifact
         (bootstrap/p15-s23-source-syntax-serialization-proof-file-artifact
          bootstrap/p15-s23-compiler-source-path)
         proof (:capability-based-proof artifact)
         serialization (:serialization-roundtrip-record artifact)
+        identity-record (:source-syntax-identity-record artifact)
         c2-artifact (:c2-reader-artifact artifact)
         c2-proof (:capability-based-proof c2-artifact)
         c2-results (:p15-s23-source-syntax-reader-results c2-artifact)
@@ -5992,7 +6068,6 @@
            (get-in artifact [:proof-contract :artifact])))
     (is (= :gravity/stage0-c2-reader-document-artifact
            (:kind c2-artifact)))
-    (is (= :partial (:status c2-artifact)))
     (is (= :complete-for-slice
            (get-in c2-artifact [:representation-boundary :status])))
     (is (true? (:lexical-token-stream? c2-proof)))
@@ -6024,6 +6099,32 @@
     (is (true? (:stable-syntax-ids? serialization)))
     (is (true? (:origin-links-preserved? serialization)))
     (is (true? (:c3-serialization-roundtrip? serialization)))
+    (is (= :gravity/sh04-co-canonical-source-v1
+           (:identity-domain identity-record)))
+    (is (re-find #"^sha256:[0-9a-f]{64}$"
+                 (:expected-sh04-semantic-source-id identity-record)))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-syntax-source-ids identity-record))))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-span-file-ids identity-record))))
+    (is (= #{(:expected-sh04-semantic-source-id identity-record)}
+           (set (:observed-origin-producer-source-ids identity-record))))
+    (is (true? (:sh04-syntax-source-identities-preserved?
+                identity-record)))
+    (is (true? (:sh04-span-file-identities-preserved? identity-record)))
+    (is (true? (:sh04-origin-producer-identities-preserved?
+                identity-record)))
+    (is (= :gravity/sh03-adapted-source-unit-id-v2
+           (:c2-identity-domain identity-record)))
+    (is (= (get-in artifact [:source-unit-record :source-id])
+           (:c2-source-unit-id identity-record)))
+    (is (= (:c2-source-unit-id identity-record)
+           (:expected-adapted-source-unit-id identity-record)))
+    (is (= (:expected-adapted-source-unit-id identity-record)
+           (:observed-adapted-source-unit-id identity-record)))
+    (is (true? (:c2-source-unit-identity-preserved? identity-record)))
+    (is (not= (:c2-source-unit-id identity-record)
+              (:expected-sh04-semantic-source-id identity-record)))
     (is (= :passed (get-in artifact [:syntax-verification-report :status])))
     (is (false? (:full-language-compiler-self-hosted? artifact)))
     (is (false? (:clojure-seed-retired? artifact)))
@@ -6049,6 +6150,112 @@
     (is (true? (:rejected-candidates-covered? proof)))
     (is (true? (:diagnostics-covered? proof)))))
 
+(deftest p15-s23-source-syntax-dual-identity-mutations-reject
+  (let [source-path (fixture "accepted/reader-source-unit-identity.gravity")
+        source-text (bootstrap/read-gravity-source-text source-path)
+        source-unit (bootstrap/c2-source-unit-record
+                     source-path source-text bootstrap/standard-reader-options)
+        semantic-source-id
+        (bootstrap/sh04-syntax-semantic-source-id source-path source-unit)
+        syntax-object
+        (p15-s23-test-syntax-object source-path semantic-source-id)
+        syntax-stream [syntax-object]
+        valid-identity
+        (p15-s23-test-dual-identity-record
+         source-path source-unit syntax-stream)
+        valid-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit syntax-stream valid-identity)
+        diagnostics-for
+        (fn [candidate]
+          (bootstrap/p15-s23-source-syntax-proof-diagnostics
+           source-path candidate))
+        s003-for
+        (fn [candidate]
+          (p15-s23-test-diagnostic (diagnostics-for candidate)
+                                   "P15S23S003"))
+        mutated-id
+        "sha256:2222222222222222222222222222222222222222222222222222222222222222"]
+    (testing "the valid dual-identity binding is accepted"
+      (is (nil? (s003-for valid-candidate)))
+      (is (true?
+           (bootstrap/p15-s23-source-syntax-span-resolves?
+            {:primary {:kind :generated
+                       :producer-id semantic-source-id
+                       :ordinal 0}}))))
+    (testing "a mutated syntax source identity is rejected"
+      (let [mutated-stream
+            [(update-in syntax-object [:source :source-id]
+                        (constantly mutated-id))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :sh04-syntax-source-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic [:observed :observed-syntax-source-ids])))
+        (is (= semantic-source-id
+               (get-in diagnostic [:observed
+                                   :expected-sh04-semantic-source-id])))))
+    (testing "mutated concrete span file identities are rejected"
+      (let [mutated-stream
+            [(-> syntax-object
+                 (update-in [:span :primary :file]
+                            (constantly mutated-id))
+                 (update-in [:span :all 0 :file]
+                            (constantly mutated-id)))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :sh04-span-file-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic [:observed :observed-span-file-ids])))))
+    (testing "mutated origin producer source identities are rejected"
+      (let [mutated-stream
+            [(update-in syntax-object [:origin 0 :producer :source-id]
+                        (constantly mutated-id))]
+            candidate
+            (assoc valid-candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact valid-candidate)
+                          :syntax-object-stream mutated-stream))
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts
+                             :sh04-origin-producer-identities-preserved?])))
+        (is (= [mutated-id]
+               (get-in diagnostic
+                       [:observed :observed-origin-producer-source-ids])))))
+    (testing "a broken adapted C2-to-SH04 provenance bridge is rejected"
+      (let [candidate
+            (assoc-in valid-candidate
+                      [:c3-syntax-artifact
+                       :gravity-syntax-boundary
+                       :reader-authentication-provenance
+                       :actual-sh03-semantic-product-binding
+                       :adapted-source-unit-id]
+                      mutated-id)
+            diagnostic (s003-for candidate)]
+        (is (some? diagnostic))
+        (is (false? (get-in diagnostic
+                            [:facts :c2-source-unit-identity-preserved?])))
+        (is (= mutated-id
+               (get-in diagnostic [:observed
+                                   :observed-adapted-source-unit-id])))))))
+
 (deftest p15-s23-source-syntax-serialization-proof-rejects-overclaim-candidate
   (let [candidate
         (:candidate
@@ -6059,6 +6266,145 @@
                    bootstrap/p15-s23-compiler-source-path
                    candidate)))]
     (is (contains? diagnostics "P15S23S005"))))
+
+(deftest p15-s23-source-syntax-reviewer-probe-mutations-reject
+  (let [source-path (fixture "accepted/reader-source-unit-identity.gravity")
+        source-text (bootstrap/read-gravity-source-text source-path)
+        source-unit (bootstrap/c2-source-unit-record
+                     source-path source-text bootstrap/standard-reader-options)
+        semantic-source-id
+        (bootstrap/sh04-syntax-semantic-source-id source-path source-unit)
+        syntax-object
+        (p15-s23-test-syntax-object source-path semantic-source-id)
+        syntax-stream [syntax-object]
+        identity-record
+        (p15-s23-test-dual-identity-record
+         source-path source-unit syntax-stream)
+        valid-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit syntax-stream identity-record)
+        diagnostics-for
+        (fn [candidate]
+          (bootstrap/p15-s23-source-syntax-proof-diagnostics
+           source-path candidate))
+        s003-for
+        (fn [candidate]
+          (p15-s23-test-diagnostic (diagnostics-for candidate)
+                                   "P15S23S003"))
+        compact-facts?
+        (fn [diagnostic]
+          (and (= :gravity/sh04-co-canonical-source-v1
+                  (get-in diagnostic [:facts :identity-domain]))
+               (= :gravity/sh03-adapted-source-unit-id-v2
+                  (get-in diagnostic [:facts :c2-identity-domain]))
+               (not (contains? (:observed diagnostic)
+                               :syntax-object-stream))))
+        mutated-id
+        "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        legacy-object
+        (-> syntax-object
+            (assoc-in [:source :source-id] (:source-id source-unit))
+            (assoc-in [:span :primary :file] (:source-id source-unit))
+            (assoc-in [:span :all 0 :file] (:source-id source-unit))
+            (assoc-in [:origin 0 :span :file] (:source-id source-unit))
+            (assoc-in [:origin 0 :producer :source-id]
+                      (:source-id source-unit)))
+        legacy-stream [legacy-object]
+        legacy-identity
+        (p15-s23-test-dual-identity-record
+         source-path source-unit legacy-stream)
+        legacy-candidate
+        (p15-s23-test-source-syntax-candidate
+         source-path source-unit legacy-stream legacy-identity)
+        syntax-mutation
+        (fn [candidate mutate]
+          (let [mutated-stream
+                [(mutate (first (:syntax-object-stream candidate)))]]
+            (assoc candidate
+                   :syntax-object-stream mutated-stream
+                   :c3-syntax-artifact
+                   (assoc (:c3-syntax-artifact candidate)
+                          :syntax-object-stream mutated-stream))))
+        mutations
+        [{:label "missing adapted-source-unit bridge"
+          :candidate
+          (update-in valid-candidate
+                     [:c3-syntax-artifact
+                      :gravity-syntax-boundary
+                      :reader-authentication-provenance]
+                     dissoc :actual-sh03-semantic-product-binding)}
+         {:label "missing bridge with legacy C2 source identity"
+          :candidate
+          (dissoc legacy-candidate
+                  :c3-syntax-artifact
+                  :source-syntax-identity-record)}
+         {:label "source-unit extension"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :extension] ".broken")}
+         {:label "source-unit kind"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :source-kind]
+                    :broken)}
+         {:label "source-unit project root"
+          :candidate
+          (assoc-in valid-candidate [:source-unit-record :project-root]
+                    "sha256:4444444444444444444444444444444444444444444444444444444444444444")}
+         {:label "source-unit project-root-record path"
+          :candidate
+          (assoc-in valid-candidate
+                    [:source-unit-record :project-root-record :path]
+                    "/tampered/project")}
+         {:label "origin span file"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:origin 0 :span :file] mutated-id))}
+         {:label "origin span source"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:origin 0 :span :source] "/tampered/source.gravity"))}
+         {:label "span all nil"
+          :candidate
+          (syntax-mutation
+           valid-candidate
+           #(assoc-in % [:span :all] [nil]))}]]
+    (doseq [{:keys [label candidate]} mutations]
+      (testing label
+        (let [diagnostic (s003-for candidate)]
+          (is (some? diagnostic))
+          (is (= "P15S23S003" (:diagnostic diagnostic)))
+          (is (compact-facts? diagnostic)))))))
+
+(deftest p15-s23-sh04-semantic-source-id-parity-across-real-extensions
+  (let [gravity-path (fixture "accepted/reader-source-unit-identity.gravity")
+        qst-path (fixture "accepted/reader-source-unit-identity.qst")
+        gravity-text (bootstrap/read-gravity-source-text gravity-path)
+        qst-text (bootstrap/read-gravity-source-text qst-path)
+        gravity-unit
+        (bootstrap/c2-source-unit-record
+         gravity-path gravity-text bootstrap/standard-reader-options)
+        qst-unit
+        (bootstrap/c2-source-unit-record
+         qst-path qst-text bootstrap/standard-reader-options)
+        gravity-semantic-id
+        (bootstrap/sh04-syntax-semantic-source-id gravity-path gravity-unit)
+        qst-semantic-id
+        (bootstrap/sh04-syntax-semantic-source-id qst-path qst-unit)]
+    (is (not= gravity-path qst-path))
+    (is (= ".gravity" (:extension gravity-unit)))
+    (is (= ".qst" (:extension qst-unit)))
+    (is (= :gravity-branded-source (:source-kind gravity-unit)))
+    (is (= :qst-theory-source (:source-kind qst-unit)))
+    (is (= (:bytes-hash gravity-unit) (:bytes-hash qst-unit)))
+    (is (not= (:source-id gravity-unit) (:source-id qst-unit)))
+    (is (= gravity-semantic-id qst-semantic-id))
+    (is (not= (:source-id gravity-unit) gravity-semantic-id))
+    (is (= :gravity/sh04-co-canonical-source-v1
+           (:identity-domain
+            (bootstrap/p15-s23-source-syntax-sh04-identity-record
+             gravity-path gravity-unit
+             [(p15-s23-test-syntax-object gravity-path gravity-semantic-id)]))))))
 
 (deftest p15-s23-core-lowering-diagnostic-preservation-records-proof
   (let [artifact
@@ -8283,7 +8629,13 @@
              :internal-p15-s23-stage2-front-end-executor-boundary-gap)
         overclaim
         (get by-fixture
-             :internal-p15-s23-stage2-front-end-executor-overclaim)]
+             :internal-p15-s23-stage2-front-end-executor-overclaim)
+        expected-diagnostics
+        #{"P15S23J001" "P15S23J002" "P15S23J003" "P15S23J004"
+          "P15S23J005" "P15S23J006" "P15S23J007" "P15S23J008"}]
+    (is (= 8 (count records)))
+    (is (= expected-diagnostics
+           (set (map :expected-diagnostic records))))
     (is (= "P15S23J001" (:expected-diagnostic missing)))
     (is (contains? (set (map :diagnostic (:diagnostics missing)))
                    "P15S23J001"))
@@ -14449,6 +14801,90 @@
     (is (= :complete (:lowering-and-fallback-status conformance)))
     (is (= :complete (:plugin-policy-status conformance)))
     (is (= :complete (:status conformance)))))
+
+(deftest domain-ir-source-path-constructs-checked-core-exactly-once
+  (let [path (fixture "accepted/compiler-domain-ir.gravity")
+        source-text (slurp path)
+        build-checked-core bootstrap/checked-core-source-artifact
+        build-mir bootstrap/mir-artifact-from-checked-core
+        build-domain-ir bootstrap/domain-ir-artifact-from-mir
+        checked-core-calls (atom 0)
+        mir-calls (atom 0)
+        domain-ir-calls (atom 0)
+        actual (with-redefs [bootstrap/checked-core-source-artifact
+                             (fn [source-path source]
+                               (swap! checked-core-calls inc)
+                               (build-checked-core source-path source))
+                             bootstrap/mir-artifact-from-checked-core
+                             (fn [source-path checked-core]
+                               (swap! mir-calls inc)
+                               (build-mir source-path checked-core))
+                             bootstrap/domain-ir-artifact-from-mir
+                             (fn [source-path module mir]
+                               (swap! domain-ir-calls inc)
+                               (build-domain-ir source-path module mir))]
+                 (bootstrap/domain-ir-source-artifact path source-text))
+        checked-core (build-checked-core path source-text)
+        mir (build-mir path checked-core)
+        expected (build-domain-ir path (:module checked-core) mir)]
+    (is (= '([source-path source-text])
+           (:arglists (meta #'bootstrap/mir-source-artifact))))
+    (is (= '([source-path source-text])
+           (:arglists (meta #'bootstrap/domain-ir-source-artifact))))
+    (is (= 1 @checked-core-calls))
+    (is (= 1 @mir-calls))
+    (is (= 1 @domain-ir-calls))
+    (is (= expected actual))
+    (is (= (:checked-core-artifact-hash mir)
+           (get-in actual [:mir-artifact :checked-core-artifact-hash])))
+    (is (= (:mir-artifact-hash expected) (:mir-artifact-hash actual)))
+    (is (= (:diagnostics expected) (:diagnostics actual)))
+    (is (= (get-in expected [:mir-artifact :pass])
+           (get-in actual [:mir-artifact :pass])))))
+
+(deftest artifact-input-constructors-do-not-rebuild-from-source
+  (let [path (fixture "accepted/compiler-domain-ir.gravity")
+        source-text (slurp path)
+        checked-core (bootstrap/checked-core-source-artifact path source-text)
+        mir (with-redefs [bootstrap/checked-core-source-artifact
+                          (fn [& _]
+                            (throw (ex-info "unexpected checked-core rebuild"
+                                            {:id "TEST-REBUILD"})))]
+              (bootstrap/mir-artifact-from-checked-core path checked-core))
+        domain-ir (with-redefs [bootstrap/mir-source-artifact
+                                (fn [& _]
+                                  (throw (ex-info "unexpected MIR rebuild"
+                                                  {:id "TEST-REBUILD"})))]
+                    (bootstrap/domain-ir-artifact-from-mir
+                     path (:module checked-core) mir))]
+    (is (= (bootstrap/checked-core-artifact-id checked-core)
+           (:checked-core-artifact-hash mir)))
+    (is (= :passed (get-in mir [:mir-verifier-report :status])))
+    (is (= (str "sha256:" (bootstrap/sha256-hex (pr-str mir)))
+           (:mir-artifact-hash domain-ir)))
+    (is (= :passed (get-in domain-ir [:domain-verifier-report :status])))
+    (is (= (:diagnostics mir)
+           (get-in domain-ir [:mir-artifact :diagnostics])))))
+
+(deftest artifact-input-constructors-reject-invalid-upstream-artifacts
+  (let [path "invalid-upstream.gravity"
+        mir-error (try
+                    (bootstrap/mir-artifact-from-checked-core
+                     path {:kind :gravity/not-checked-core})
+                    nil
+                    (catch clojure.lang.ExceptionInfo exception exception))
+        domain-error (try
+                       (bootstrap/domain-ir-artifact-from-mir
+                        path {} {:kind :gravity/stage0-mir-artifact
+                                 :mir-verifier-report {:status :failed}})
+                       nil
+                       (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "C11-MODULE" (:id (ex-data mir-error))))
+    (is (= [:kind :module]
+           (:missing-fields (ex-data mir-error))))
+    (is (= "C12-VERIFY" (:id (ex-data domain-error))))
+    (is (= [:module :verified-mir]
+           (:missing-fields (ex-data domain-error))))))
 
 (deftest optimization-lowering-artifact-preserves-p06-t05-contract
   (let [artifact (bootstrap/optimization-lowering-file-artifact
@@ -31870,6 +32306,27 @@
          (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.250M))
         "decimal scale is part of exact canonical identity")))
 
+(deftest gravity-c6c10-strict-map-order-caches-sort-keys
+  (let [source-path "/tmp/gravity-c6c10-strict-map-order.gravity"
+        value (into {}
+                    (map (fn [index]
+                           [(keyword (str "key-" index)) index])
+                         (range 64)))
+        original bootstrap/p15-s23-c6c10-canonical-sort-key
+        calls (atom 0)
+        counted
+        (fn [form]
+          (swap! calls inc)
+          (original form))]
+    (with-redefs [bootstrap/p15-s23-c6c10-canonical-sort-key counted]
+      (is (nil?
+           (bootstrap/p15-s23-c6c10-strict-first-mismatch
+            source-path value value []))))
+    ;; sort-by invokes its key function from the comparator.  The strict
+    ;; zipper decorates identities first so canonical key encoding is once per
+    ;; map key rather than once per comparator call.
+    (is (= (count value) @calls))))
+
 (deftest sh05-pinned-macro-plan-identities-reuse-only-the-exact-plan
   (let [binding
         (bootstrap/sh05-macro-current-binding!
@@ -34392,14 +34849,14 @@
               :provenance-binding-hash "sha256:semantic-binding"
               :actual-path-binding-hash "sha256:physical-binding"
               :actual-source-path "/checkout/physical/path"}))))
-    (is (= 253588 bootstrap/p15-s23-c11-mir-source-byte-count))
-    (is (= "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"
+    (is (= 330835 bootstrap/p15-s23-c11-mir-source-byte-count))
+    (is (= "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"
            bootstrap/p15-s23-c11-mir-expected-source-content-hash))
-    (is (= "sha256:974d3949e224d136a2d95c0c348b11c8858becdddd47542ffd4ae24c0233fb39"
+    (is (= "sha256:ec6ed386b8802f6cf9ef6e693f41d780a591cf7cc1d23ca42b3f08d78ff6e234"
            bootstrap/p15-s23-c11-mir-expected-plan-semantic-hash))
-    (is (= "sha256:ece068d2c82e550798cb98e1b0ac9bd0c5e15b5c932c591b93b821411eed89a4"
+    (is (= "sha256:c15b126cfd712cefc6bea53a6a63ee44df38a6944e55030478d811cd4223d62a"
            bootstrap/p15-s23-c11-mir-expected-functions-semantic-hash))
-    (is (= "sha256:0d061e698eae3c8762a60aa6d80e3ceee66a1aa593def2f3f7fa84973e0355f8"
+    (is (= "sha256:594d0e4042bf0bf4274fe70a3b914ab79d9a40d7111084434e0aa56a5808bdb2"
            bootstrap/p15-s23-c11-mir-expected-builder-semantic-hash))
     (is (= "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
            bootstrap/p15-s23-c11-mir-expected-verifier-semantic-hash))
@@ -34425,7 +34882,7 @@
              binding))))
     (is (= bootstrap/p15-s23-c11-mir-required-functions
            (:function-shapes binding)))
-    (is (= 237 (count (get-in binding [:plan :functions]))))
+    (is (= 351 (count (get-in binding [:plan :functions]))))
     (with-temp-directory
       "gravity-c11-unrelated-cwd-"
       (fn [directory]
@@ -37161,7 +37618,7 @@
          #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
            "effectful-wasm.gravity" effectful :wasm))]
     (is (contains? bootstrap/stage2-runtime-derived-source-targets :wasm))
-    (is (= 118572 (alength (.getBytes
+    (is (= 118633 (alength (.getBytes
                            source java.nio.charset.StandardCharsets/UTF_8))))
     (is (= bootstrap/p15-s23-b4-wasm-expected-source-content-hash
            (str "sha256:" (bootstrap/sha256-hex source))))

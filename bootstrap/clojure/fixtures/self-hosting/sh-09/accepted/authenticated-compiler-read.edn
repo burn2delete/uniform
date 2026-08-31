@@ -1,0 +1,43 @@
+{:schema :gravity/sh09-authenticated-compiler-read-fixture-v1
+ :module-profile :meta
+ :module-effects [:compiler/read-ir]
+ :module-capabilities [:compiler/ir-read]
+ :authority-context
+ {:artifact :gravity/sh09-compiler-read-authority-context
+  :schema-version 1
+  :occurrence
+  {:artifact :gravity/sh09-compiler-read-occurrence
+   :call-core-node-id
+   "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+   :callee-function-syntax-id
+   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+  :package-effects #{:compiler/read-ir}
+  :deployment-effects #{:compiler/read-ir}
+  :package-capabilities #{:compiler/ir-read}
+  :deployment-capabilities #{:compiler/ir-read}
+  :provider
+  {:id :gravity.compiler/read-only-ir
+   :effects #{:compiler/read-ir}
+   :capabilities #{:compiler/ir-read}
+   :profiles #{:meta}
+   :targets #{:jvm}
+   :phases #{:build}}
+  :grant
+  {:id :sh09-authenticated-compiler-read
+   :principal gravity.self-hosting.sh09.compiler-read
+   :capability :compiler/ir-read
+   :provider :gravity.compiler/read-only-ir
+   :phase :build
+   :scope
+   {:ir-level :typed-core
+    :typed-artifact-id
+    "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}}
+  :resource-subject
+  {:ir-level :typed-core
+   :typed-artifact-id
+   "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}
+  :build-policy {:hermetic true :allowed-effects #{:compiler/read-ir}}
+  :safety-allowed true
+  :authority-mode :explicit
+  :replay-record nil
+  :ordering :sequence}}

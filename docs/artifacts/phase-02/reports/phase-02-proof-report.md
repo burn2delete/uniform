@@ -5,12 +5,6 @@ Agent: Codex
 Phase: 02 - Safety
 Status: complete (stage0 safety capability)
 
-Capability audit: Phase 02 has 23 of 23 tasks complete. `P02-T01` through
-`P02-T06`, `P02-D030` through `P02-D045`, and `P02-S1` are backed by Clojure
-stage0 capability evidence. Historical Python scaffold artifacts under
-`docs/artifacts/phase-02/` remain non-authoritative unless a task-specific
-roadmap entry links them to executable Gravity capability.
-
 ## Completed Tasks
 
 - `P02-T01` safety outcome classifier
@@ -167,16 +161,6 @@ instruction-runner boundary.
 
 ```bash
 clojure -M:test
-```
-
-Output:
-
-```text
-Testing gravity.bootstrap-test
-
-Ran 140 tests containing 8463 assertions.
-0 failures, 0 errors.
-clojure bootstrap validation passed: hosted hello, ... stage0 hosted core app artifacts, stage0 hosted core compiled app artifacts, stage0 hosted core compiled safety artifacts, ... and 1615 rejected fixtures
 ```
 
 ## Residual Risks

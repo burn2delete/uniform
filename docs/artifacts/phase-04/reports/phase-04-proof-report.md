@@ -300,10 +300,6 @@ Proof records:
 
 ## Remaining Limits
 
-The historical JSON/Python scaffold artifacts under `docs/artifacts/phase-04`
-are useful contract examples, but they are not current completion evidence for
-stage0 task completion.
-
 This report completes Phase 04 for the Clojure stage0 performance artifact and
 compiled app performance-gate boundary. It does not claim accepted throughput
 claims, zero-cost claims on the compiled app, native backend execution,

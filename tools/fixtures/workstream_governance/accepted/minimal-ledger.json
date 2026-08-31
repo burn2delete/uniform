@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "contract_id": "gravity/workstream-ledger-v1",
+  "governance_contract": "contracts/workstream-governance.json",
+  "workstreams": [
+    {
+      "id": "example-candidate",
+      "title": "Example bounded candidate",
+      "invariant_family": "example/family",
+      "owner": "example-owner",
+      "author": "example-author",
+      "state": "draft",
+      "dependencies": [],
+      "architecture_decision": "",
+      "base_commit": null,
+      "candidate_commit": null,
+      "clean_worktree": false,
+      "owned_paths": [],
+      "governing_contracts": ["D0"],
+      "evidence": {
+        "accepted_fixtures": [],
+        "rejected_fixtures": [],
+        "stable_diagnostics": [],
+        "validation_commands": []
+      },
+      "reviews": [],
+      "residual_host_boundaries": [],
+      "no_overclaim_authority": {
+        "integration_only": true,
+        "release": false,
+        "seed_retirement": false,
+        "self_hosting": false
+      },
+      "history": [
+        {
+          "state": "draft",
+          "at": "2026-08-23T00:00:00Z",
+          "actor": "example-author",
+          "reason": "open bounded candidate"
+        }
+      ],
+      "disposition": "Active draft; no acceptance or integration authority."
+    }
+  ]
+}

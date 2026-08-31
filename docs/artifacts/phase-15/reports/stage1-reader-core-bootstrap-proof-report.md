@@ -97,4 +97,3 @@ $ clojure -M:gravity stage1-reader-core-bootstrap bootstrap/clojure/fixtures/acc
 
 - `docs/artifacts/phase-15/bootstrap/stage1-reader-core-bootstrap-proof.edn`
 - `docs/artifacts/phase-15/reports/stage1-reader-core-bootstrap-proof-report.md`
-

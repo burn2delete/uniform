@@ -39,8 +39,6 @@ The proof record is
 - `bootstrap/clojure/test/gravity/bootstrap_test.clj`
 - `bootstrap/clojure/fixtures/accepted/schema-interop.gravity`
 - `bootstrap/clojure/fixtures/rejected/schema-s*.gravity`
-- `src/gravity/schema_interop.py`
-- `tools/validate_schema_interop.py`
 - `docs/artifacts/phase-10/fixtures/schema/accepted-schema-interop.json`
 - `docs/artifacts/phase-10/schema/schema-interop.accepted.json`
 
@@ -79,18 +77,6 @@ Clojure validation:
 clojure -M:test
 Ran 110 tests containing 7009 assertions.
 0 failures, 0 errors.
-```
-
-Historical/supporting Python validation:
-
-```bash
-python3 tools/validate_schema_interop.py --artifact-out docs/artifacts/phase-10/schema/schema-interop.accepted.json
-```
-
-Output:
-
-```text
-schema interop validation passed: 9 documents, 9 rejected fixtures
 ```
 
 ## Residual Risks

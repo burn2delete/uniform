@@ -1,6 +1,6 @@
 # Roadmap Capability Audit
 
-Date: 2026-07-08
+Date: 2026-08-08
 Status: active correction
 
 ## Finding
@@ -30,6 +30,18 @@ provenance, SBOM, signing records, release governance evidence, and
 `:clojure-seed-boundary? false` for the binary, compiler path, runtime path,
 and release compiler path.
 
+The P15 terminal dependency is broader than a single small implementation
+step. The current named gate is `P15-S23`, and its final proof
+`docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn`
+remains `:incomplete` with
+`:full-language-compiler-self-hosted? false`,
+`:clojure-seed-retired? false`, and `:clojure-seed-boundary? true`. Its
+fail-closed diagnostics `P15S23AD002` through `P15S23AD008` identify separate
+open capabilities: evidence-link closure, seedless compiler/runtime paths,
+stage3 equivalence and application execution, release-governance closure, TCB
+retirement, and provenance closure. Do not collapse those capabilities into
+one progress checkbox.
+
 ## Full-Language Completion Correction
 
 The next completion target is not the current accepted executable release
@@ -37,13 +49,13 @@ surface. It is the complete designed Gravity language, implemented and proven
 through the self-hosted public `gravity` binary. The active task map is
 [`docs/full-language-implementation-gap-map.md`](full-language-implementation-gap-map.md).
 
-Current public-binary audit on 2026-07-08:
+Current public-binary audit on 2026-08-08:
 
-- `bin/gravity check` accepts 74 of 181 accepted `.gravity` or `.qst` fixtures
+- `bin/gravity check` accepts 74 of 198 accepted `.gravity` or `.qst` fixtures
   under the current examples, Clojure accepted fixture, and Gravity bootstrap
   source trees.
-- 107 accepted fixtures fail through the public binary.
-- 1718 rejected fixtures fail closed through the public binary, but 1054 of
+- 124 accepted fixtures fail through the public binary.
+- 1720 rejected fixtures fail closed through the public binary, but 1056 of
   those failures are generic `P18T06004` unsupported-source diagnostics rather
   than the stable diagnostics required by their owning features.
 - Only 664 rejected fixtures currently reach feature-specific public
@@ -65,9 +77,20 @@ Current public-binary audit on 2026-07-08:
   `.gravity` source files: 33 stage1 source modules under
   `bootstrap/gravity/src` plus the P15 compiler source at
   `bootstrap/gravity/p15_s23/compiler.gravity`.
-- Python scaffold inventory under `src/gravity` contains 54 modules.
 - The Clojure bootstrap seed remains present and must continue shrinking until
   final public-binary proof records no Clojure product behavior.
+
+## Status Dimensions
+
+The canonical full-language coverage report records `0/240` normative
+documents complete. The bounded phase bookkeeping is `389/392` checked tasks,
+and the self-hosting slice backlog is `7/30` complete slices. These are
+different measures: phase-task and slice bookkeeping can advance while the
+full-language count remains zero and the product remains seed-bound. The
+public fixture audit above is likewise a reachability measure, not a release
+claim. See
+`docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md`
+for the canonical 2026-08-08 values.
 
 Latest L2 correction on 2026-07-08: public `gravity check` now accepts
 `core-semantics.gravity` and `core-semantics.qst`, rejects
@@ -2365,9 +2388,9 @@ Expected artifact kind:
 ```
 
 - All roadmap phases are complete for the current stage0 Clojure bootstrap
-  capability surface. Existing Python modules, validators, manifests, and proof
-  reports remain scaffold evidence unless a task explicitly governs that
-  validation tooling.
+  capability surface. The retired Python modules, validators, and manifests are
+  no longer executable repository inputs; historical proof reports remain
+  scaffold evidence rather than implementation authority.
 - The first post-stage0 source bridge now exists:
   `clojure -M:gravity stage1-bootstrap-source bootstrap/gravity/src` emits a
   `:gravity/stage1-bootstrap-source-artifact` from Gravity-authored reader,

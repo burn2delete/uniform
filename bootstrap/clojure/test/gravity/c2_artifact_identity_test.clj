@@ -159,6 +159,21 @@
                 (identity/reader-canonical-hash
                  (with-meta 'x {:tag 'annotated})))))))
 
+(deftest canonical-set-order-caches-exact-item-keys
+  (let [item-count 64
+        value (set (map (fn [index]
+                          [(keyword (str "k" index))
+                           (vec (range 256))])
+                        (range item-count)))
+        calls (atom 0)
+        original @#'clojure.core/pr-str]
+    (with-redefs [clojure.core/pr-str
+                  (fn [& args]
+                    (swap! calls inc)
+                    (apply original args))]
+      (identity/reader-canonical-value value))
+    (is (= item-count @calls))))
+
 (deftest path-neutral-span-and-token-projection-preserve-legacy-fields
   (let [neutral (identity/c2-path-neutral-span source-span-a)
         token-input (identity/c2-token-hash-input

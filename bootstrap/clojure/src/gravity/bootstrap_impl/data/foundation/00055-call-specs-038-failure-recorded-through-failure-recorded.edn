@@ -1,0 +1,4 @@
+[[workflow/failure-recorded
+  {:return-type "WorkflowFailureRecord",
+   :effects #{:workflow/failure},
+   :capabilities #{:workflow/event}}]]

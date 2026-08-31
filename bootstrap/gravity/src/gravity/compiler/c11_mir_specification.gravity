@@ -22,6 +22,9 @@
              build-c11-mir-source-map
              verify-c11-mir-module
              c11-build-target-independent-mir
+             sh12-branch-join-mir-policy
+             sh12-build-branch-join-mir
+             sh12-verify-branch-join-mir
              sh12-authenticated-c10-mir-adapter-policy
              sh12-authenticated-c10-mir-carrier-preflight
              sh12-authenticated-c10-mir-input-valid?
@@ -921,6 +924,12 @@
   [check]
   (str (get check :check-id) ":mir:token"))
 
+(defn c11-runtime-check-guarded-operation-id
+  [checked-core node]
+  (if (= :if (get node :source-operation))
+    (str (get checked-core :artifact-id) ":mir:entry:conditional")
+    (get node :node-id)))
+
 (defn c11-runtime-check-fact-id
   [check fact-kind]
   (let [check-id (get check :check-id)]
@@ -953,9 +962,11 @@
   (let [check (get (get node :safety) :check)]
     (if (= check nil)
       (get node :operands)
-      (c11-copy-vector
-       (get node :operands)
-       [(c11-runtime-check-token-id check)]))))
+      (if (= :if (get node :source-operation))
+        (get node :operands)
+        (c11-copy-vector
+         (get node :operands)
+         [(c11-runtime-check-token-id check)])))))
 
 (defn c11-operation-proof-certificate-ids
   [checked-core node]
@@ -1011,13 +1022,13 @@
      :source-origin-id (get (get node :source) :origin-id)}))
 
 (defn c11-build-runtime-check-table
-  [nodes result]
+  [checked-core nodes result]
   (if (= (count nodes) 0)
     result
     (let [node (first nodes)
           check (get (get node :safety) :check)]
       (c11-build-runtime-check-table
-       (rest nodes)
+       checked-core (rest nodes)
        (if (= check nil)
          result
          (let [check-id (get check :check-id)]
@@ -1025,7 +1036,9 @@
             result check-id
             (assoc
              (assoc
-              (assoc check :guarded-operation-id (get node :node-id))
+              (assoc check :guarded-operation-id
+                     (c11-runtime-check-guarded-operation-id
+                      checked-core node))
               :check-operation-id (c11-runtime-check-operation-id check))
              :token-value-id (c11-runtime-check-token-id check)))))))))
 
@@ -1071,7 +1084,7 @@
         {:fact-id fact-id
          :core-node-id node-id
          :mir-operation-id check-op-id
-         :direct #{}
+         :direct (get check :effects-introduced)
          :latent #{}
          :transitive #{}
          :residual #{}
@@ -1111,7 +1124,8 @@
               {:outcome-id fact-id
                :artifact :gravity/safety-outcome
                :operation check-op-id
-               :guarded-operation-id node-id
+               :guarded-operation-id
+               (c11-runtime-check-guarded-operation-id checked-core node)
                :kind :runtime-check
                :profile profile
                :target (get checked-core :source-target)
@@ -1215,12 +1229,12 @@
      :op-id (c11-runtime-check-operation-id check)
      :opcode :runtime-check
      :source-operation :runtime-check
-     :operands []
+     :operands (get (get check :predicate) :operand-ids)
      :result (c11-runtime-check-token-id check)
      :result-kind :runtime-check-token
      :constant-payload :not-applicable
      :type :gravity/runtime-check-token
-     :effects #{}
+     :effects (get check :effects-introduced)
      :capabilities #{}
      :ordering :sequence
      :source (c11-runtime-check-source node check)
@@ -1239,7 +1253,8 @@
       (c11-runtime-check-fact-id check :profile-target)
       :runtime-check-id check-id
       :proof-certificate-ids [(get check :capability-proof-id)]
-      :guarded-operation-id node-id
+      :guarded-operation-id
+      (c11-runtime-check-guarded-operation-id checked-core node)
       :failure-behavior (get check :failure)
       :source-origin-id (get (get node :source) :origin-id)}
      :domain-anchor nil
@@ -1290,6 +1305,28 @@
        (conj with-check
              (c11-build-operation checked-core node block-id))))))
 
+(defn c11-build-operations-skipping-check-for-node
+  [checked-core nodes block-id skipped-node-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)
+          check (get (get node :safety) :check)
+          with-check
+          (if (= check nil)
+            result
+            (if (= skipped-node-id (get node :node-id))
+              result
+              (conj result
+                    (c11-build-runtime-check-operation
+                     checked-core node block-id))))]
+      (c11-build-operations-skipping-check-for-node
+       checked-core
+       (rest nodes)
+       block-id
+       skipped-node-id
+       (conj with-check
+             (c11-build-operation checked-core node block-id))))))
+
 (defn c11-build-data-flow-for-operands
   [operands consumer consumer-block operand-index result]
   (if (= (count operands) 0)
@@ -1308,25 +1345,33 @@
             :edge-kind :operand}))))
 
 (defn c11-build-data-flow-for-node
-  [node consumer-block result]
+  [node consumer-block check-block result]
   (let [check (get (get node :safety) :check)
         node-id (get node :node-id)]
     (if (= check nil)
       (c11-build-data-flow-for-operands
        (get node :operands) node-id consumer-block 0 result)
-      (c11-build-data-flow-for-operands
-       (get node :operands)
-       node-id
-       consumer-block
-       1
-       (conj
-        result
-        {:from (c11-runtime-check-token-id check)
-         :consumer-kind :operation
-         :consumer-id node-id
-         :consumer-block consumer-block
-         :operand-index 0
-         :edge-kind :runtime-check-guard})))))
+      (let [check-operation-id (c11-runtime-check-operation-id check)
+            check-edges
+            (c11-build-data-flow-for-operands
+             (get (get check :predicate) :operand-ids)
+             check-operation-id check-block 0 result)]
+        (if (= :if (get node :source-operation))
+          (c11-build-data-flow-for-operands
+           (get node :operands) node-id consumer-block 0 check-edges)
+          (c11-build-data-flow-for-operands
+           (get node :operands)
+           node-id
+           consumer-block
+           1
+           (conj
+            check-edges
+            {:from (c11-runtime-check-token-id check)
+             :consumer-kind :operation
+             :consumer-id node-id
+             :consumer-block consumer-block
+             :operand-index 0
+             :edge-kind :runtime-check-guard})))))))
 
 (defn c11-node-block-id
   [node if-id then-ids else-ids downstream-ids
@@ -1348,6 +1393,7 @@
   (if (= (count nodes) 0)
     result
     (let [node (first nodes)
+          node-id (get node :node-id)
           block-id
           (c11-node-block-id
            node if-id then-ids else-ids downstream-ids
@@ -1355,7 +1401,10 @@
       (c11-build-data-flow
        (rest nodes) if-id then-ids else-ids downstream-ids
        entry-id then-id else-id join-id
-       (c11-build-data-flow-for-node node block-id result)))))
+       (c11-build-data-flow-for-node
+        node block-id
+        (if (= node-id if-id) entry-id block-id)
+        result)))))
 
 (defn c11-build-definitions
   [nodes if-id then-ids else-ids downstream-ids
@@ -1369,6 +1418,7 @@
            node if-id then-ids else-ids downstream-ids
            entry-id then-id else-id join-id)]
       (let [check (get (get node :safety) :check)
+            check-block-id (if (= node-id if-id) entry-id block-id)
             with-check
             (if (= check nil)
               result
@@ -1377,7 +1427,7 @@
                (c11-runtime-check-token-id check)
                {:value-id (c11-runtime-check-token-id check)
                 :operation-id (c11-runtime-check-operation-id check)
-                :block-id block-id}))]
+                :block-id check-block-id}))]
        (c11-build-definitions
        (rest nodes) if-id then-ids else-ids downstream-ids
        entry-id then-id else-id join-id
@@ -1431,7 +1481,7 @@
     (c11-append-uses (conj left (first right)) (rest right))))
 
 (defn c11-build-values
-  [nodes data-flow definitions terminator-uses result]
+  [checked-core nodes data-flow definitions terminator-uses result]
   (if (= (count nodes) 0)
     result
     (let [node (first nodes)
@@ -1444,21 +1494,28 @@
               result
               (assoc
                result token-id
-               {:artifact :gravity/mir-value
+              {:artifact :gravity/mir-value
                 :value-id token-id
                 :kind :runtime-check-token
                 :type :gravity/runtime-check-token
                 :constant-payload :not-applicable
                 :defined-by (get definitions token-id)
-                :uses (c11-uses-for-value data-flow token-id [])
+                :uses
+                (c11-append-uses
+                 (c11-uses-for-value data-flow token-id [])
+                 (c11-terminator-uses-for-value
+                  terminator-uses token-id []))
                 :source (c11-runtime-check-source node check)
                 :ownership :not-applicable
-                :effects #{}
-                :safety
-                {:outcome :runtime-check-token
-                 :runtime-check-id (get check :check-id)
-                 :guarded-operation-id (get node :node-id)}}))]
+                :effects (get check :effects-introduced)
+                 :safety
+                 {:outcome :runtime-check-token
+                  :runtime-check-id (get check :check-id)
+                  :guarded-operation-id
+                  (c11-runtime-check-guarded-operation-id
+                   checked-core node)}}))]
        (c11-build-values
+       checked-core
        (rest nodes)
        data-flow
        definitions
@@ -1563,7 +1620,8 @@
      :definitions definitions
      :terminator-uses terminator-uses
      :values
-     (c11-build-values nodes data-flow definitions terminator-uses {})
+     (c11-build-values
+      checked-core nodes data-flow definitions terminator-uses {})
      :source-map (c11-build-source-map nodes {})
      :conditional-count 0}))
 
@@ -1594,25 +1652,53 @@
         condition-id (first if-operands)
         then-result-id (second if-operands)
         else-result-id (first (rest (rest if-operands)))
-        entry-operations
+        runtime-check (get (get if-node :safety) :check)
+        runtime-check-token-id
+        (if (= runtime-check nil)
+          nil
+          (c11-runtime-check-token-id runtime-check))
+        entry-terminator-id (str entry-id ":conditional")
+        entry-operations-before-check
         (c11-build-operations checked-core entry-nodes entry-id [])
+        entry-operations
+        (if (= runtime-check nil)
+          entry-operations-before-check
+          (conj
+           entry-operations-before-check
+           (c11-build-runtime-check-operation
+            checked-core if-node entry-id)))
         then-operations
         (c11-build-operations checked-core then-nodes then-id [])
         else-operations
         (c11-build-operations checked-core else-nodes else-id [])
         join-operations
-        (c11-build-operations checked-core downstream-nodes join-id [])
+        (c11-build-operations-skipping-check-for-node
+         checked-core downstream-nodes join-id if-id [])
         source (get if-node :source)
+        entry-terminator-operands
+        (if (= runtime-check nil)
+          [condition-id]
+          [runtime-check-token-id condition-id])
+        entry-terminator-facts
+        (if (= runtime-check nil)
+          {:condition condition-id :join join-id}
+          {:condition condition-id
+           :join join-id
+           :runtime-check-id (get runtime-check :check-id)
+           :runtime-check-token-id runtime-check-token-id
+           :safety-outcome-id
+           (c11-runtime-check-fact-id runtime-check :safety)
+           :failure-behavior (get runtime-check :failure)})
         entry-terminator
         (c11-build-terminator
-         (str entry-id ":conditional") :conditional-branch [condition-id]
+         entry-terminator-id :conditional-branch entry-terminator-operands
          ; Branch selection itself is pure.  The checked-core `if` carries an
          ; aggregate child-effect summary, which remains available through the
          ; linked fact tables instead of being duplicated as a terminator
          ; effect/order obligation.
          [then-id else-id] #{} source
          (get checked-core :profile)
-         {:condition condition-id :join join-id})
+         entry-terminator-facts)
         then-terminator
         (c11-build-terminator
          (str then-id ":branch") :branch [then-result-id] [join-id] #{}
@@ -1628,31 +1714,47 @@
          (str join-id ":return") :return [return-value-id] [] #{}
          source (get checked-core :profile)
          {:returned-value return-value-id})
+        entry-terminator-uses
+        (if (= runtime-check nil)
+          [{:value-id condition-id
+            :consumer-kind :terminator
+            :consumer-id entry-terminator-id
+            :consumer-block entry-id
+            :operand-index 0
+            :edge-kind :condition}]
+          [{:value-id runtime-check-token-id
+            :consumer-kind :terminator
+            :consumer-id entry-terminator-id
+            :consumer-block entry-id
+            :operand-index 0
+            :edge-kind :runtime-check-guard}
+           {:value-id condition-id
+            :consumer-kind :terminator
+            :consumer-id entry-terminator-id
+            :consumer-block entry-id
+            :operand-index 1
+            :edge-kind :condition}])
         terminator-uses
-        [{:value-id condition-id
-          :consumer-kind :terminator
-          :consumer-id (str entry-id ":conditional")
-          :consumer-block entry-id
-          :operand-index 0
-          :edge-kind :condition}
-         {:value-id then-result-id
-          :consumer-kind :terminator
-          :consumer-id (str then-id ":branch")
-          :consumer-block then-id
-          :operand-index 0
-          :edge-kind :branch-value}
-         {:value-id else-result-id
-          :consumer-kind :terminator
-          :consumer-id (str else-id ":branch")
-          :consumer-block else-id
-          :operand-index 0
-          :edge-kind :branch-value}
-         {:value-id return-value-id
-          :consumer-kind :terminator
-          :consumer-id (str join-id ":return")
-          :consumer-block join-id
-          :operand-index 0
-          :edge-kind :return-value}]
+        (c11-append-uses
+         entry-terminator-uses
+         [{:value-id then-result-id
+           :consumer-kind :terminator
+           :consumer-id (str then-id ":branch")
+           :consumer-block then-id
+           :operand-index 0
+           :edge-kind :branch-value}
+          {:value-id else-result-id
+           :consumer-kind :terminator
+           :consumer-id (str else-id ":branch")
+           :consumer-block else-id
+           :operand-index 0
+           :edge-kind :branch-value}
+          {:value-id return-value-id
+           :consumer-kind :terminator
+           :consumer-id (str join-id ":return")
+           :consumer-block join-id
+           :operand-index 0
+           :edge-kind :return-value}])
         blocks
         {entry-id
          (c11-build-block entry-id [] entry-operations entry-terminator []
@@ -1698,7 +1800,8 @@
      :definitions definitions
      :terminator-uses terminator-uses
      :values
-     (c11-build-values nodes data-flow definitions terminator-uses {})
+     (c11-build-values
+      checked-core nodes data-flow definitions terminator-uses {})
      :source-map (c11-build-source-map nodes {})
      :conditional-count 1
      :join {:block-id join-id
@@ -1706,6 +1809,23 @@
             :incoming
             [{:predecessor then-id :value then-result-id}
              {:predecessor else-id :value else-result-id}]}}))
+
+(defn c11-add-values-to-set [values result]
+  (if (= (count values) 0)
+    result
+    (c11-add-values-to-set
+     (rest values) (conj result (first values)))))
+
+(defn c11-function-latent-effects [nodes declared-effects]
+  (if (= (count nodes) 0)
+    declared-effects
+    (let [check (get (get (first nodes) :safety) :check)]
+      (c11-function-latent-effects
+       (rest nodes)
+       (if (= check nil)
+         declared-effects
+         (c11-add-values-to-set
+          (get check :effects-introduced) declared-effects))))))
 
 (defn c11-build-target-independent-mir
   [checked-core]
@@ -1744,7 +1864,9 @@
          :params []
          :returns (get return-node :type)
          :latent-effects
-         (get (get checked-core :source-core-input) :declared-effects)
+         (c11-function-latent-effects
+          nodes
+          (get (get checked-core :source-core-input) :declared-effects))
          :capabilities
          (get (get checked-core :source-core-input) :declared-capabilities)
          :blocks (get graph :blocks)
@@ -1812,7 +1934,8 @@
        (c11-add-runtime-check-facts
         checked-core nodes :profile-target
         (c11-build-profile-target-table checked-core nodes {}))
-       :runtime-check-table (c11-build-runtime-check-table nodes {})
+       :runtime-check-table
+       (c11-build-runtime-check-table checked-core nodes {})
        :proof-certificate-table
        {:capability-proof-table-reference :capability-proof-table
         :safety-proofs (c11-build-safety-proof-table nodes {})}
@@ -1870,6 +1993,1815 @@
         :self-hosted? false}
        :clojure-seed-boundary? true
        :self-hosted? false})))
+
+; SH-12 owns this bounded checked-core-to-MIR control-flow family.  It does
+; not replace the generic C11 verifier contract above.  The verifier compares
+; the constructed diamond with the canonical MIR projection of the supplied
+; checked core, then checks each preservation family before it
+; checks data-flow details.  This gives fact loss a stable C11 diagnostic
+; instead of misclassifying it as a malformed block.
+
+(defn sh12-branch-join-mir-policy []
+  {:artifact :gravity/sh12-branch-join-mir-policy
+   :schema-version 1
+   :scope :single-conditional-branch-join
+   :checked-core-artifact :gravity/sh12-c11-checked-core
+   :control-flow-shape :entry-then-else-join-return
+   :verification-kind :checked-core-canonical-projection
+   :preserves [:type-facts :effect-facts :ownership-facts
+               :capability-facts :safety-facts :profile-target-facts
+               :source-spans :source-origin-map :generated-origin-chains
+               :control-flow-edges :data-flow-edges :dominance-facts]
+   :diagnostics ["C11-MODULE" "C11-BLOCK" "C11-DOMINANCE"
+                 "C11-TYPE" "C11-EFFECT" "C11-SAFETY"
+                 "C11-ORIGIN" "C11-VERIFY"]
+   :maximum-functions 1
+   :maximum-conditionals 1
+   :target-independent? true
+   :pending [:generic-c11-verifier :loops :calls :errors
+             :program-lowering :sh12-completion]
+   :nonclaims [:generic-c11-verifier :independent-acceptance
+               :optimizer-credit :backend-credit :self-hosted?]})
+
+(defn sh12-branch-join-node [checked-core]
+  (let [nodes (get checked-core :core-nodes)]
+    (if (vector? nodes)
+      (c11-find-if-node nodes)
+      nil)))
+
+(defn sh12-branch-join-source [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        node (sh12-branch-join-node checked-core)]
+    (if (= node nil)
+      (if (vector? nodes)
+        (get (first nodes) :source)
+        nil)
+      (get node :source))))
+
+(defn sh12-branch-join-diagnostic-operation-id
+  [diagnostic-id checked-core]
+  (let [node (sh12-branch-join-node checked-core)]
+    (if (= node nil)
+      :not-applicable
+      (if (= diagnostic-id "C11-MODULE")
+        :not-applicable
+        (if (= diagnostic-id "C11-BLOCK")
+          :not-applicable
+          (get node :node-id))))))
+
+(defn sh12-branch-join-diagnostic-block
+  [diagnostic-id checked-core]
+  (if (= diagnostic-id "C11-MODULE")
+    :not-applicable
+    (str (get checked-core :artifact-id) ":mir:join")))
+
+(defn sh12-branch-join-diagnostic-value-id
+  [diagnostic-id checked-core]
+  (if (= diagnostic-id "C11-DOMINANCE")
+    (let [node (sh12-branch-join-node checked-core)]
+      (if (= node nil) :not-applicable (get node :node-id)))
+    :not-applicable))
+
+(defn sh12-branch-join-remediation [diagnostic-id]
+  (if (= diagnostic-id "C11-MODULE")
+    :rebuild-module-from-authenticated-checked-core
+    (if (= diagnostic-id "C11-BLOCK")
+      :rebuild-blocks-terminators-and-cfg-edges
+      (if (= diagnostic-id "C11-DOMINANCE")
+        :rebuild-value-definitions-uses-and-edge-dominance
+        (if (= diagnostic-id "C11-TYPE")
+          :restore-checked-core-type-facts
+          (if (= diagnostic-id "C11-EFFECT")
+            :restore-effect-facts-and-ordering
+            (if (= diagnostic-id "C11-SAFETY")
+              :restore-safe1-outcomes-and-runtime-check-links
+              (if (= diagnostic-id "C11-ORIGIN")
+                :restore-source-span-and-origin-links
+                :restore-ownership-capability-profile-and-provenance-facts))))))))
+
+(defn sh12-branch-join-diagnostic
+  [diagnostic-id missing-fact checked-core mir]
+  (let [source (sh12-branch-join-source checked-core)]
+    {:diagnostic-id diagnostic-id
+     :severity :error
+     :stage :c11-mir-verification
+     :mir-module
+     (if (= mir nil) :not-constructed (get mir :module-id))
+     :function (get checked-core :entrypoint)
+     :block
+     (sh12-branch-join-diagnostic-block diagnostic-id checked-core)
+     :operation-id
+     (sh12-branch-join-diagnostic-operation-id diagnostic-id checked-core)
+     :value-id
+     (sh12-branch-join-diagnostic-value-id diagnostic-id checked-core)
+     :source-span (get source :span)
+     :origin-chain (get source :generated-origin)
+     :profile (get checked-core :profile)
+     :target-request
+     (get (get checked-core :target-request-metadata) :requested-target)
+     :missing-fact missing-fact
+     :provenance
+     {:checked-core-artifact-id (get checked-core :artifact-id)
+      :mir-source-core (if (= mir nil) nil (get mir :source-core))
+      :actual-source-path
+      (let [mir-path
+            (if (= mir nil)
+              nil
+              (get (first (get mir :diagnostics)) :actual-source-path))]
+        (if (= mir-path nil)
+          (get (get checked-core :provenance) :actual-source-path)
+          mir-path))}
+     :remediation (sh12-branch-join-remediation diagnostic-id)}))
+
+(defn sh12-branch-join-rejection
+  [phase diagnostic-id missing-fact checked-core mir]
+  {:artifact :gravity/sh12-branch-join-mir-report
+   :schema-version 1
+   :scope :single-conditional-branch-join
+   :phase phase
+   :status :rejected
+   :checked-core-artifact-id (get checked-core :artifact-id)
+   :mir-module-id (if (= mir nil) nil (get mir :module-id))
+   :checks []
+   :preserves []
+   :diagnostics
+   [(sh12-branch-join-diagnostic
+     diagnostic-id missing-fact checked-core mir)]
+   :nonclaims [:generic-c11-verifier :independent-acceptance
+               :optimizer-credit :backend-credit :self-hosted?]})
+
+(defn sh12-branch-join-problem [diagnostic-id missing-fact]
+  {:diagnostic-id diagnostic-id :missing-fact missing-fact})
+
+(defn sh12-branch-join-nonempty-string? [value]
+  (if (string? value) (> (count value) 0) false))
+
+(defn sh12-branch-join-named-token-valid? [value]
+  (if (keyword? value)
+    (> (count (str value)) 1)
+    (if (symbol? value)
+      (> (count (str value)) 0)
+      (sh12-branch-join-nonempty-string? value))))
+
+(defn sh12-branch-join-named-values-valid? [values]
+  (if (= (count values) 0)
+    true
+    (if (sh12-branch-join-named-token-valid? (first values))
+      (sh12-branch-join-named-values-valid? (rest values))
+      false)))
+
+(defn sh12-branch-join-present? [value]
+  (if (= nil value) false true))
+
+(defn sh12-branch-join-source-span-valid? [span]
+  (if (map? span)
+    (if (= (set (keys span)) #{:source-id :start :end})
+      (if (sh12-branch-join-nonempty-string? (get span :source-id))
+        (if (integer? (get span :start))
+          (if (integer? (get span :end))
+            (if (<= 0 (get span :start))
+              (<= (get span :start) (get span :end))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-origin-entry-valid? [entry]
+  (if (sh12-branch-join-named-token-valid? entry)
+    true
+    (if (map? entry)
+      (if (= (set (keys entry))
+             #{:role :producer-operation-id :runtime-check-id})
+        (if (sh12-branch-join-named-token-valid? (get entry :role))
+          (if (sh12-branch-join-nonempty-string?
+               (get entry :producer-operation-id))
+            (sh12-branch-join-nonempty-string?
+             (get entry :runtime-check-id))
+            false)
+          false)
+        (if (= (set (keys entry)) #{:kind :source-id})
+          (if (sh12-branch-join-named-token-valid? (get entry :kind))
+            (sh12-branch-join-nonempty-string? (get entry :source-id))
+            false)
+          false))
+      false)))
+
+(defn sh12-branch-join-origin-entries-valid? [entries]
+  (if (= (count entries) 0)
+    true
+    (if (sh12-branch-join-origin-entry-valid? (first entries))
+      (sh12-branch-join-origin-entries-valid? (rest entries))
+      false)))
+
+(defn sh12-branch-join-generated-origin-valid? [source]
+  (let [generated? (get source :generated?)
+        entries (get source :generated-origin)]
+    (if (boolean? generated?)
+      (if (vector? entries)
+        (if generated?
+          (if (> (count entries) 0)
+            (sh12-branch-join-origin-entries-valid? entries)
+            false)
+          (= (count entries) 0))
+        false)
+      false)))
+
+(defn sh12-branch-join-node-source-valid? [node]
+  (let [source (get node :source)]
+    (if (map? source)
+      (if (= (set (keys source))
+             #{:origin-id :span :enclosing-syntax-origin-id
+               :generated? :generated-origin})
+        (if (sh12-branch-join-nonempty-string?
+             (get source :origin-id))
+          (if (sh12-branch-join-source-span-valid?
+               (get source :span))
+            (if (sh12-branch-join-nonempty-string?
+                 (get source :enclosing-syntax-origin-id))
+              (sh12-branch-join-generated-origin-valid? source)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-node-type-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :type-facts) node-id)]
+    (if (map? fact)
+      (if (sh12-branch-join-nonempty-string?
+           (get fact :fact-id))
+        (if (= (get fact :core-node-id) node-id)
+          (= (get fact :type) (get node :type))
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-node-effect-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :effect-facts) node-id)
+        attributes (get node :attributes)]
+    (if (map? fact)
+      (if (sh12-branch-join-nonempty-string?
+           (get fact :fact-id))
+        (if (= (get fact :core-node-id) node-id)
+          (if (= (get fact :ordering) nil)
+            false
+            (if (= (get fact :direct)
+                   (get attributes :intrinsic-effects))
+              (if (= #{} (get fact :direct))
+                (if (= #{} (get fact :latent))
+                  (if (= #{} (get fact :transitive))
+                    (if (= #{} (get fact :residual))
+                      (if (= #{} (get node :effects))
+                        (if (= #{}
+                               (get
+                                (get checked-core :source-core-input)
+                                :declared-effects))
+                          (= [] (get checked-core :effect-graph))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false))
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-node-ownership-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :ownership-facts) node-id)
+        ownership (get node :ownership)]
+    (if (map? fact)
+      (if (sh12-branch-join-nonempty-string?
+           (get fact :fact-id))
+        (if (= (get fact :core-node-id) node-id)
+          (if (= (get fact :value-id) node-id)
+            (if (= (get ownership :value-id) node-id)
+              (= (get fact :model) (get ownership :model))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-capability-proof-record
+  [records proof-id]
+  (if (= (count records) 0)
+    nil
+    (let [record (first records)]
+      (if (= proof-id (get record :proof-id))
+        record
+        (sh12-branch-join-capability-proof-record
+         (rest records) proof-id)))))
+
+(defn sh12-branch-join-capability-proof-record-valid?
+  [checked-core record proof-id]
+  (if (map? record)
+    (if (= proof-id (get record :proof-id))
+      (if (= :authenticated (get record :status))
+        (= (get checked-core :artifact-id)
+           (get record :source-artifact-id))
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-capability-proof-ids-valid?
+  [checked-core proof-ids]
+  (if (= (count proof-ids) 0)
+    true
+    (let [proof-id (first proof-ids)
+          records (get checked-core :capability-proof-records)
+          record
+          (sh12-branch-join-capability-proof-record records proof-id)]
+      (if (sh12-branch-join-nonempty-string? proof-id)
+        (if (sh12-branch-join-capability-proof-record-valid?
+             checked-core record proof-id)
+          (sh12-branch-join-capability-proof-ids-valid?
+           checked-core (rest proof-ids))
+          false)
+        false))))
+
+(defn sh12-branch-join-node-capability-fact-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :capability-facts) node-id)
+        proof (get fact :capability-proof)
+        attributes (get node :attributes)]
+    (if (map? fact)
+      (if (= (get fact :fact-id)
+             (c11-capability-fact-id node-id))
+        (if (= (get fact :core-node-id) node-id)
+          (if (= (get fact :required)
+                 (get attributes :intrinsic-capabilities))
+            (if (set? (get fact :granted))
+              (if (map? proof)
+                (vector? (get proof :proof-ids))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-set-contained? [required available]
+  (if (= (count required) 0)
+    true
+    (if (contains? available (first required))
+      (sh12-branch-join-set-contained? (rest required) available)
+      false)))
+
+(defn sh12-branch-join-node-capability-authority-valid?
+  [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :capability-facts) node-id)
+        required (get fact :required)
+        granted (get fact :granted)
+        declared
+        (get (get checked-core :source-core-input)
+             :declared-capabilities)
+        proof-ids (get (get fact :capability-proof) :proof-ids)]
+    (if (sh12-branch-join-set-contained? required granted)
+      (if (sh12-branch-join-set-contained? required declared)
+        (if (sh12-branch-join-set-contained? granted declared)
+          (if (> (count granted) 0)
+            (> (count proof-ids) 0)
+            true)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-node-capability-valid? [checked-core node]
+  (if (sh12-branch-join-node-capability-fact-valid?
+       checked-core node)
+    (if (sh12-branch-join-node-capability-authority-valid?
+         checked-core node)
+      (sh12-branch-join-capability-proof-ids-valid?
+       checked-core
+       (get
+        (get
+         (get (get checked-core :capability-facts)
+              (get node :node-id))
+         :capability-proof)
+        :proof-ids))
+      false)
+    false))
+
+(defn sh12-branch-join-proven-safe-proof-valid? [proof]
+  (if (map? proof)
+    (if (sh12-branch-join-nonempty-string? (get proof :proof-id))
+      (if (= :valid (get proof :status))
+        (sh12-branch-join-named-token-valid? (get proof :rule))
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-runtime-check-node-precedes?
+  [nodes operand-id guarded-id]
+  (if (= (count nodes) 0)
+    false
+    (let [node-id (get (first nodes) :node-id)]
+      (if (= node-id operand-id)
+        true
+        (if (= node-id guarded-id)
+          false
+          (sh12-branch-join-runtime-check-node-precedes?
+           (rest nodes) operand-id guarded-id))))))
+
+(defn sh12-branch-join-runtime-check-operands-valid?
+  [checked-core node operand-ids]
+  (if (vector? operand-ids)
+    (if (= operand-ids [(first (get node :operands))])
+      (let [nodes (get checked-core :core-nodes)
+            guarded-id (get node :node-id)]
+        (if (sh12-branch-join-named-values-valid? operand-ids)
+          (sh12-branch-join-runtime-check-node-precedes?
+           nodes (first operand-ids) guarded-id)
+          false))
+      false)
+    false))
+
+(defn sh12-branch-join-runtime-check-predicate-valid?
+  [checked-core node predicate]
+  (if (map? predicate)
+    (if (= (set (keys predicate))
+           #{:expression :operation-id :kind :operand-ids})
+      (if (= :boolean-value (get predicate :expression))
+        (if (= (get predicate :operation-id) (get node :node-id))
+          (if (= :branch-condition (get predicate :kind))
+            (sh12-branch-join-runtime-check-operands-valid?
+             checked-core node (get predicate :operand-ids))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-runtime-check-id-count
+  [nodes check-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [check (get (get (first nodes) :safety) :check)]
+      (sh12-branch-join-runtime-check-id-count
+       (rest nodes) check-id
+       (if (= check-id (get check :check-id))
+         (+ result 1)
+         result)))))
+
+(defn sh12-branch-join-runtime-check-semantics-valid?
+  [checked-core node check]
+  (if (= :branch-condition (get check :condition))
+    (if (sh12-branch-join-runtime-check-predicate-valid?
+         checked-core node (get check :predicate))
+      (if (= :if (get node :source-operation))
+        (if (= :if (get check :source-operation))
+          (if (= :before-operation (get check :emitted-location))
+            (if (= (get node :profile) (get check :profile))
+              (if (= (get checked-core :source-target)
+                     (get check :target))
+                (if (= :error/invalid-branch-condition
+                       (get check :failure))
+                  (if (= #{:error/raise}
+                         (get check :effects-introduced))
+                    (if (= :constant-time
+                           (get check :performance-class))
+                      (if (= [:condition-value-change]
+                             (get check :invalidation-conditions))
+                        (let [proof-id
+                              (get check :capability-proof-id)]
+                          (if (sh12-branch-join-nonempty-string? proof-id)
+                            (sh12-branch-join-capability-proof-ids-valid?
+                             checked-core [proof-id])
+                            false))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-runtime-check-valid?
+  [checked-core node check]
+  (if (map? check)
+    (if (= (set (keys check))
+           #{:artifact :check-id :condition :predicate
+             :source-operation
+             :emitted-location :profile :target :failure
+             :effects-introduced :performance-class
+             :invalidation-conditions :capability-proof-id})
+      (if (= :gravity/sh11-runtime-safety-check (get check :artifact))
+        (if (sh12-branch-join-nonempty-string? (get check :check-id))
+          (if (= 1
+                 (sh12-branch-join-runtime-check-id-count
+                  (get checked-core :core-nodes)
+                  (get check :check-id) 0))
+            (sh12-branch-join-runtime-check-semantics-valid?
+             checked-core node check)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-unsafe-boundary-valid? [audit]
+  (if (= true (get audit :internal-only))
+    true
+    (let [wrapper (get audit :safe-wrapper)]
+      (if (symbol? wrapper)
+        (sh12-branch-join-named-token-valid? wrapper)
+        (sh12-branch-join-nonempty-string? wrapper)))))
+
+(defn sh12-branch-join-unsafe-value-substantive? [value]
+  (sh12-branch-join-named-token-valid? value))
+
+(defn sh12-branch-join-unsafe-values-substantive? [values]
+  (sh12-branch-join-named-values-valid? values))
+
+(defn sh12-branch-join-unsafe-obligation-set-valid? [values]
+  (if (set? values)
+    (if (> (count values) 0)
+      (sh12-branch-join-unsafe-values-substantive? values)
+      false)
+    false))
+
+(defn sh12-branch-join-unsafe-origin-valid? [node audit]
+  (let [expected (get (get node :source) :generated-origin)
+        origin? (contains? audit :generated-origin)
+        chain? (contains? audit :generated-origin-chain)]
+    (if origin?
+      (if chain?
+        false
+        (= expected (get audit :generated-origin)))
+      (if chain?
+        (= expected (get audit :generated-origin-chain))
+        false))))
+
+(defn sh12-branch-join-unsafe-audit-valid?
+  [checked-core node audit]
+  (if (map? audit)
+    (if (= :gravity/unsafe-island (get audit :artifact))
+      (if (sh12-branch-join-nonempty-string? (get audit :audit-id))
+        (if (= (get audit :operation) (get node :node-id))
+          (if (sh12-branch-join-nonempty-string? (get audit :owner))
+            (if (sh12-branch-join-unsafe-value-substantive?
+                 (get audit :reason))
+              (if (= (get audit :source-span)
+                     (get (get node :source) :span))
+                (if (sh12-branch-join-unsafe-origin-valid? node audit)
+                  (if (= (get node :profile) (get audit :profile))
+                    (if (= (get checked-core :source-target)
+                           (get audit :target))
+                      (if (= (get audit :effects)
+                             (get (get node :attributes)
+                                  :intrinsic-effects))
+                        (if (= (get audit :capabilities)
+                               (get (get node :attributes)
+                                    :intrinsic-capabilities))
+                          (if (sh12-branch-join-unsafe-obligation-set-valid?
+                               (get audit :preconditions))
+                            (if (sh12-branch-join-unsafe-obligation-set-valid?
+                                 (get audit :postconditions))
+                              (if (sh12-branch-join-unsafe-obligation-set-valid?
+                                   (get audit :invariants))
+                                (if (sh12-branch-join-unsafe-obligation-set-valid?
+                                     (get audit :evidence))
+                                  (if
+                                   (sh12-branch-join-unsafe-boundary-valid?
+                                    audit)
+                                    (if (map? (get audit :review))
+                                      (if (= :required
+                                             (get (get audit :review)
+                                                  :policy))
+                                        (sh12-branch-join-unsafe-value-substantive?
+                                         (get audit :re-review))
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-node-safety-shape-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :safety-facts) node-id)
+        outcome (get fact :outcome)]
+    (if (map? fact)
+      (if (= fact (get node :safety))
+        (if (= (get fact :outcome-id)
+               (c11-safety-outcome-id node-id))
+          (if (= (get fact :operation) node-id)
+            (c11-vector-contains?
+             [:proven-safe :runtime-checked :unsafe-island] outcome)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-node-safety-valid? [checked-core node]
+  (let [fact
+        (get (get checked-core :safety-facts) (get node :node-id))
+        outcome (get fact :outcome)]
+    (if (sh12-branch-join-node-safety-shape-valid?
+         checked-core node)
+      (if (= outcome :proven-safe)
+        (if (= nil (get fact :check))
+          (if (= nil (get fact :unsafe-audit))
+            (sh12-branch-join-proven-safe-proof-valid?
+             (get fact :proof))
+            false)
+          false)
+        (if (= outcome :runtime-checked)
+          (if (= nil (get fact :proof))
+            (if (= nil (get fact :unsafe-audit))
+              (sh12-branch-join-runtime-check-valid?
+               checked-core node (get fact :check))
+              false)
+            false)
+          (if (= nil (get fact :proof))
+            (if (= nil (get fact :check))
+              (sh12-branch-join-unsafe-audit-valid?
+               checked-core node (get fact :unsafe-audit))
+              false)
+            false)))
+      false)))
+
+(defn sh12-branch-join-node-profile-valid? [checked-core node]
+  (let [node-id (get node :node-id)
+        fact (get (get checked-core :profile-facts) node-id)]
+    (if (map? fact)
+      (if (= (get fact :profile) (get node :profile))
+        (= (get fact :target) (get checked-core :source-target))
+        false)
+      false)))
+
+(defn sh12-branch-join-node-problem [checked-core node]
+  (if (map? node)
+    (if (sh12-branch-join-nonempty-string? (get node :node-id))
+      (if (= :unsupported-checked-core-operation (c11-opcode node))
+        (sh12-branch-join-problem
+         "C11-TYPE" :checked-core-operation-schema)
+        (if (vector? (get node :path))
+          (if (vector? (get node :operands))
+          (if (map? (get node :attributes))
+            (if (set? (get (get node :attributes) :intrinsic-effects))
+              (if (set?
+                   (get (get node :attributes) :intrinsic-capabilities))
+                (if (sh12-branch-join-node-source-valid? node)
+                  (if (sh12-branch-join-node-type-valid?
+                       checked-core node)
+                    (if (sh12-branch-join-node-effect-valid?
+                         checked-core node)
+                      (if (sh12-branch-join-node-ownership-valid?
+                           checked-core node)
+                        (if (sh12-branch-join-node-capability-valid?
+                             checked-core node)
+                          (if (sh12-branch-join-node-safety-valid?
+                               checked-core node)
+                            (if (sh12-branch-join-node-profile-valid?
+                                 checked-core node)
+                              nil
+                              (sh12-branch-join-problem
+                               "C11-VERIFY" :profile-target-fact))
+                            (sh12-branch-join-problem
+                             "C11-SAFETY"
+                             (if (sh12-branch-join-node-safety-shape-valid?
+                                  checked-core node)
+                               (if (= :unsafe-island
+                                      (get (get node :safety) :outcome))
+                                 :unsafe-island-audit
+                                 :safety-outcome-evidence)
+                               :safety-outcome-fact)))
+                          (sh12-branch-join-problem
+                           "C11-VERIFY"
+                           (if
+                            (sh12-branch-join-node-capability-fact-valid?
+                             checked-core node)
+                             (if
+                              (sh12-branch-join-node-capability-authority-valid?
+                               checked-core node)
+                               :capability-proof-reference
+                               :capability-authority)
+                             :capability-fact)))
+                        (sh12-branch-join-problem
+                         "C11-VERIFY" :ownership-fact))
+                      (sh12-branch-join-problem
+                       "C11-EFFECT" :effect-fact-or-ordering))
+                    (sh12-branch-join-problem
+                     "C11-TYPE" :type-fact-or-operation-schema))
+                  (sh12-branch-join-problem
+                   "C11-ORIGIN" :source-span-or-origin-fact))
+                (sh12-branch-join-problem
+                 "C11-VERIFY" :intrinsic-capability-set))
+              (sh12-branch-join-problem
+               "C11-EFFECT" :intrinsic-effect-set))
+            (sh12-branch-join-problem
+             "C11-MODULE" :core-node-attributes))
+          (sh12-branch-join-problem
+           "C11-DOMINANCE" :core-node-operands))
+          (sh12-branch-join-problem "C11-BLOCK" :core-node-path)))
+      (sh12-branch-join-problem "C11-MODULE" :core-node-identity))
+    (sh12-branch-join-problem "C11-MODULE" :core-node-carrier)))
+
+(defn sh12-branch-join-nodes-problem [checked-core nodes]
+  (if (= (count nodes) 0)
+    nil
+    (let [problem
+          (sh12-branch-join-node-problem checked-core (first nodes))]
+      (if (= problem nil)
+        (sh12-branch-join-nodes-problem checked-core (rest nodes))
+        problem))))
+
+(defn sh12-branch-join-node-ids-unique? [nodes seen]
+  (if (= (count nodes) 0)
+    true
+    (let [node-id (get (first nodes) :node-id)]
+      (if (c11-vector-contains? seen node-id)
+        false
+        (sh12-branch-join-node-ids-unique?
+         (rest nodes) (conj seen node-id))))))
+
+(defn sh12-branch-join-fact-ids-unique?
+  [nodes fact-table id-field seen]
+  (if (= (count nodes) 0)
+    true
+    (let [node-id (get (first nodes) :node-id)
+          fact-id (get (get fact-table node-id) id-field)]
+      (if (c11-vector-contains? seen fact-id)
+        false
+        (sh12-branch-join-fact-ids-unique?
+         (rest nodes) fact-table id-field (conj seen fact-id))))))
+
+(defn sh12-branch-join-identity-problem [checked-core]
+  (let [nodes (get checked-core :core-nodes)]
+    (if (sh12-branch-join-node-ids-unique? nodes [])
+      (if (sh12-branch-join-fact-ids-unique?
+           nodes (get checked-core :type-facts) :fact-id [])
+        (if (sh12-branch-join-fact-ids-unique?
+             nodes (get checked-core :effect-facts) :fact-id [])
+          (if (sh12-branch-join-fact-ids-unique?
+               nodes (get checked-core :ownership-facts) :fact-id [])
+            (if (sh12-branch-join-fact-ids-unique?
+                 nodes (get checked-core :capability-facts) :fact-id [])
+              (if (sh12-branch-join-fact-ids-unique?
+                   nodes (get checked-core :safety-facts) :outcome-id [])
+                nil
+                (sh12-branch-join-problem
+                 "C11-SAFETY" :unique-safety-outcome-identity))
+              (sh12-branch-join-problem
+               "C11-VERIFY" :unique-capability-fact-identity))
+            (sh12-branch-join-problem
+             "C11-VERIFY" :unique-ownership-fact-identity))
+          (sh12-branch-join-problem
+           "C11-EFFECT" :unique-effect-fact-identity))
+        (sh12-branch-join-problem
+         "C11-TYPE" :unique-type-fact-identity))
+      (sh12-branch-join-problem
+       "C11-DOMINANCE" :unique-core-node-identity))))
+
+(defn sh12-branch-join-operands-defined? [nodes operands]
+  (if (= (count operands) 0)
+    true
+    (if (= (c11-find-node-by-id nodes (first operands)) nil)
+      false
+      (sh12-branch-join-operands-defined? nodes (rest operands)))))
+
+(defn sh12-branch-join-all-operands-defined? [nodes remaining]
+  (if (= (count remaining) 0)
+    true
+    (if (sh12-branch-join-operands-defined?
+         nodes (get (first remaining) :operands))
+      (sh12-branch-join-all-operands-defined? nodes (rest remaining))
+      false)))
+
+(defn sh12-branch-join-node-before? [nodes before-id after-id]
+  (if (= (count nodes) 0)
+    false
+    (let [node-id (get (first nodes) :node-id)]
+      (if (= node-id before-id)
+        true
+        (if (= node-id after-id)
+          false
+          (sh12-branch-join-node-before?
+           (rest nodes) before-id after-id))))))
+
+(defn sh12-branch-join-operands-before?
+  [nodes consumer-id operands]
+  (if (= (count operands) 0)
+    true
+    (if (sh12-branch-join-node-before?
+         nodes (first operands) consumer-id)
+      (sh12-branch-join-operands-before?
+       nodes consumer-id (rest operands))
+      false)))
+
+(defn sh12-branch-join-all-operands-before? [nodes remaining]
+  (if (= (count remaining) 0)
+    true
+    (let [node (first remaining)]
+      (if (sh12-branch-join-operands-before?
+           nodes (get node :node-id) (get node :operands))
+        (sh12-branch-join-all-operands-before?
+         nodes (rest remaining))
+        false))))
+
+(defn sh12-branch-join-control-problem [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-branch-join-node checked-core)
+        operands (get if-node :operands)
+        root-id (first (get checked-core :root-node-ids))
+        root (c11-find-node-by-id nodes root-id)]
+    (if (= 1 (c11-if-count nodes 0))
+      (if (= 3 (count operands))
+        (if (sh12-branch-join-all-operands-defined? nodes nodes)
+          (let [condition (c11-find-node-by-id nodes (first operands))
+                then-node (c11-find-node-by-id nodes (second operands))
+                else-node
+                (c11-find-node-by-id nodes (first (rest (rest operands))))
+                if-path (get if-node :path)]
+            (if (= (get condition :type) :gravity.type/bool)
+              (if (c11-path-prefix?
+                   (conj if-path :condition) (get condition :path))
+                (if (sh12-branch-join-node-before?
+                     nodes (get condition :node-id) (get if-node :node-id))
+                  (if (= (get then-node :type) (get else-node :type))
+                    (if (= (get then-node :type) (get if-node :type))
+                      (if (c11-path-prefix?
+                           (conj if-path :then) (get then-node :path))
+                        (if (c11-path-prefix?
+                             (conj if-path :else) (get else-node :path))
+                          (if (map? root)
+                            (if (= (get root :source-operation) :function)
+                              (if (= (c11-last-value (get root :operands))
+                                     (get if-node :node-id))
+                                (if (sh12-branch-join-node-before?
+                                     nodes
+                                     (get if-node :node-id)
+                                     (get root :node-id))
+                                  nil
+                                  (sh12-branch-join-problem
+                                   "C11-DOMINANCE"
+                                   :function-return-dominance))
+                                (sh12-branch-join-problem
+                                 "C11-DOMINANCE" :function-return-value))
+                              (sh12-branch-join-problem
+                               "C11-MODULE" :function-root-operation))
+                            (sh12-branch-join-problem
+                             "C11-MODULE" :function-root-node))
+                          (sh12-branch-join-problem
+                           "C11-BLOCK" :else-branch-path))
+                        (sh12-branch-join-problem
+                         "C11-BLOCK" :then-branch-path))
+                      (sh12-branch-join-problem
+                       "C11-TYPE" :conditional-result-type))
+                    (sh12-branch-join-problem
+                     "C11-TYPE" :branch-result-type))
+                  (sh12-branch-join-problem
+                   "C11-DOMINANCE" :conditional-definition-dominance))
+                (sh12-branch-join-problem
+                 "C11-DOMINANCE" :conditional-definition-path))
+              (sh12-branch-join-problem
+               "C11-TYPE" :conditional-value-type)))
+          (sh12-branch-join-problem
+           "C11-DOMINANCE" :undefined-core-operand))
+        (sh12-branch-join-problem
+         "C11-BLOCK" :conditional-operands))
+      (sh12-branch-join-problem
+       "C11-BLOCK" :single-conditional-checked-core))))
+
+(defn sh12-branch-join-checked-core-lineage-valid? [checked-core]
+  (let [source-core (get checked-core :source-core-input)
+        target-request (get checked-core :target-request-metadata)
+        provenance (get checked-core :provenance)]
+    (if (sh12-branch-join-nonempty-string?
+         (get checked-core :artifact-id))
+      (if (sh12-branch-join-nonempty-string?
+           (get checked-core :mapping-id))
+        (if (sh12-branch-join-nonempty-string?
+             (get checked-core :provenance-binding-id))
+          (if (map? source-core)
+            (if (symbol? (get source-core :module))
+              (if (set? (get source-core :declared-effects))
+                (if (set? (get source-core :declared-capabilities))
+                  (if (map? target-request)
+                    (if (= (get target-request :requested-target) nil)
+                      false
+                      (if (symbol? (get checked-core :entrypoint))
+                        (if (= (get checked-core :profile) nil)
+                          false
+                          (if (= (get checked-core :source-target) nil)
+                            false
+                            (if (map? provenance)
+                              (sh12-branch-join-nonempty-string?
+                               (get provenance :actual-source-path))
+                              false)))
+                        false))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-checked-core-shape-valid? [checked-core]
+  (if (map? checked-core)
+    (if (= :gravity/sh12-c11-checked-core
+           (get checked-core :artifact))
+      (if (= 1 (get checked-core :schema-version))
+        (if (= :accepted (get checked-core :status))
+          (if (sh12-branch-join-checked-core-lineage-valid? checked-core)
+            (if (vector? (get checked-core :core-nodes))
+              (if (> (count (get checked-core :core-nodes)) 0)
+                (if (vector? (get checked-core :root-node-ids))
+                  (if (= 1 (count (get checked-core :root-node-ids)))
+                    (if (map? (get checked-core :type-facts))
+                      (if (map? (get checked-core :effect-facts))
+                        (if (map? (get checked-core :ownership-facts))
+                          (if (map? (get checked-core :capability-facts))
+                            (if (vector?
+                                 (get checked-core
+                                      :capability-proof-records))
+                              (if (map? (get checked-core :safety-facts))
+                                (map? (get checked-core :profile-facts))
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-checked-core-preflight [checked-core]
+  (if (sh12-branch-join-checked-core-shape-valid? checked-core)
+    (let [node-problem
+          (sh12-branch-join-nodes-problem
+           checked-core (get checked-core :core-nodes))]
+      (if (= node-problem nil)
+        (let [identity-problem
+              (sh12-branch-join-identity-problem checked-core)]
+          (if (= identity-problem nil)
+            (let [control-problem
+                  (sh12-branch-join-control-problem checked-core)]
+              (if (= control-problem nil)
+                (if (sh12-branch-join-all-operands-before?
+                     (get checked-core :core-nodes)
+                     (get checked-core :core-nodes))
+                  {:status :accepted}
+                  {:status :rejected
+                   :diagnostic-id "C11-DOMINANCE"
+                   :missing-fact :definitions-uses-or-edge-dominance})
+                (assoc control-problem :status :rejected)))
+            (assoc identity-problem :status :rejected)))
+        (assoc node-problem :status :rejected)))
+    {:status :rejected
+     :diagnostic-id "C11-MODULE"
+     :missing-fact :checked-core-shape}))
+
+(defn sh12-branch-join-checked-core-admissible? [checked-core]
+  (= :accepted
+     (get (sh12-branch-join-checked-core-preflight checked-core) :status)))
+
+(defn sh12-branch-join-block-dominates?
+  [mir definition-block consumer-block]
+  (let [dominance
+        (get (get mir :control-flow-graph) :dominance)
+        dominators (if (map? dominance) (get dominance consumer-block) nil)]
+    (if (vector? dominators)
+      (c11-vector-contains? dominators definition-block)
+      false)))
+
+(defn sh12-branch-join-block-instructions [mir block-id]
+  (let [function-name (first (keys (get mir :functions)))
+        function (get (get mir :functions) function-name)
+        block (get (get function :blocks) block-id)]
+    (if (map? block) (get block :instructions) nil)))
+
+(defn sh12-branch-join-operation-present?
+  [operations operation-id]
+  (if (= (count operations) 0)
+    false
+    (if (= operation-id (get (first operations) :op-id))
+      true
+      (sh12-branch-join-operation-present?
+       (rest operations) operation-id))))
+
+(defn sh12-branch-join-operation-before?
+  [operations definition-id consumer-id]
+  (if (= definition-id consumer-id)
+    false
+    (if (= (count operations) 0)
+      false
+      (let [operation-id (get (first operations) :op-id)]
+        (if (= operation-id consumer-id)
+          false
+          (if (= operation-id definition-id)
+            true
+            (sh12-branch-join-operation-before?
+             (rest operations) definition-id consumer-id)))))))
+
+(defn sh12-branch-join-same-block-operation-use-valid?
+  [mir edge definition]
+  (let [block-id (get definition :block-id)
+        operations (sh12-branch-join-block-instructions mir block-id)]
+    (if (vector? operations)
+      (sh12-branch-join-operation-before?
+       operations
+       (get definition :operation-id)
+       (get edge :consumer-id))
+      false)))
+
+(defn sh12-branch-join-same-block-terminator-use-valid?
+  [mir definition]
+  (let [operations
+        (sh12-branch-join-block-instructions
+         mir (get definition :block-id))]
+    (if (vector? operations)
+      (sh12-branch-join-operation-present?
+       operations (get definition :operation-id))
+      false)))
+
+(defn sh12-branch-join-incoming-matches?
+  [incoming predecessor value-id]
+  (if (= (count incoming) 0)
+    false
+    (let [edge (first incoming)]
+      (if (= predecessor (get edge :predecessor))
+        (if (= value-id (get edge :value))
+          true
+          (sh12-branch-join-incoming-matches?
+           (rest incoming) predecessor value-id))
+        (sh12-branch-join-incoming-matches?
+         (rest incoming) predecessor value-id)))))
+
+(defn sh12-branch-join-edge-specific-join-use-valid?
+  [mir edge definition]
+  (let [join (get (get mir :control-flow-graph) :join)]
+    (if (map? join)
+      (if (= (get edge :consumer-id) (get join :value-id))
+        (if (= (get edge :consumer-block) (get join :block-id))
+          (let [incoming (get join :incoming)]
+            (if (vector? incoming)
+              (sh12-branch-join-incoming-matches?
+               incoming (get definition :block-id) (get edge :from))
+              false))
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-data-edges-dominate?
+  [mir edges definitions]
+  (if (= (count edges) 0)
+    true
+    (let [edge (first edges)
+          definition (get definitions (get edge :from))]
+      (if (map? edge)
+        (if (map? definition)
+          (if (= (get definition :block-id)
+                 (get edge :consumer-block))
+            (if (sh12-branch-join-same-block-operation-use-valid?
+                 mir edge definition)
+              (sh12-branch-join-data-edges-dominate?
+               mir (rest edges) definitions)
+              false)
+            (if (sh12-branch-join-block-dominates?
+                 mir
+                 (get definition :block-id)
+                 (get edge :consumer-block))
+              (sh12-branch-join-data-edges-dominate?
+               mir (rest edges) definitions)
+              (if (sh12-branch-join-edge-specific-join-use-valid?
+                   mir edge definition)
+                (sh12-branch-join-data-edges-dominate?
+                 mir (rest edges) definitions)
+                false)))
+          false)
+        false))))
+
+(defn sh12-branch-join-terminator-uses-dominate?
+  [mir uses definitions]
+  (if (= (count uses) 0)
+    true
+    (let [use (first uses)
+          definition (get definitions (get use :value-id))]
+      (if (map? use)
+        (if (map? definition)
+          (if (= (get definition :block-id)
+                 (get use :consumer-block))
+            (if (sh12-branch-join-same-block-terminator-use-valid?
+                 mir definition)
+              (sh12-branch-join-terminator-uses-dominate?
+               mir (rest uses) definitions)
+              false)
+            (if (sh12-branch-join-block-dominates?
+                 mir
+                 (get definition :block-id)
+                 (get use :consumer-block))
+              (sh12-branch-join-terminator-uses-dominate?
+               mir (rest uses) definitions)
+              false))
+          false)
+        false))))
+
+(defn sh12-branch-join-mir-dominance-valid? [mir]
+  (let [data (get mir :data-flow-graph)
+        edges (if (map? data) (get data :edges) nil)
+        uses (if (map? data) (get data :terminator-uses) nil)
+        definitions (if (map? data) (get data :definitions) nil)]
+    (if (vector? edges)
+      (if (vector? uses)
+        (if (map? definitions)
+          (if (sh12-branch-join-data-edges-dominate?
+               mir edges definitions)
+            (sh12-branch-join-terminator-uses-dominate?
+             mir uses definitions)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-build-branch-join-mir [checked-core]
+  (let [preflight
+        (sh12-branch-join-checked-core-preflight checked-core)]
+    (if (= :accepted (get preflight :status))
+      (let [mir (c11-build-target-independent-mir checked-core)]
+        (if (sh12-branch-join-mir-dominance-valid? mir)
+          mir
+          (sh12-branch-join-rejection
+           :construction "C11-DOMINANCE"
+           :definitions-uses-or-edge-dominance checked-core mir)))
+      (sh12-branch-join-rejection
+       :construction
+       (get preflight :diagnostic-id)
+       (get preflight :missing-fact)
+       checked-core nil))))
+
+(defn sh12-branch-join-operation-ids [operations result]
+  (if (= (count operations) 0)
+    result
+    (sh12-branch-join-operation-ids
+     (rest operations)
+     (conj result (get (first operations) :op-id)))))
+
+(defn sh12-branch-join-block-structure [block]
+  (let [terminator (get block :terminator)]
+    {:artifact (get block :artifact)
+     :block-id (get block :block-id)
+     :arguments (get block :arguments)
+     :operation-ids
+     (sh12-branch-join-operation-ids
+      (get block :instructions) [])
+     :terminator
+     {:artifact (get terminator :artifact)
+      :terminator-id (get terminator :terminator-id)
+      :kind (get terminator :kind)
+      :operands (get terminator :operands)
+      :successors (get terminator :successors)
+      :facts (get terminator :facts)
+      :verifier-status (get terminator :verifier-status)}
+     :predecessors (get block :predecessors)
+     :successors (get block :successors)
+     :dominators (get block :dominators)
+     :data-flow (get block :data-flow)}))
+
+(defn sh12-branch-join-block-structures
+  [block-ids blocks result]
+  (if (= (count block-ids) 0)
+    result
+    (let [block-id (first block-ids)]
+      (sh12-branch-join-block-structures
+       (rest block-ids) blocks
+       (conj result
+             (sh12-branch-join-block-structure
+              (get blocks block-id)))))))
+
+(defn sh12-branch-join-block-ids [mir]
+  (let [function-name (first (keys (get mir :functions)))
+        function (get (get mir :functions) function-name)
+        entry-id (get function :entry)
+        join (get (get mir :control-flow-graph) :join)
+        incoming (get join :incoming)]
+    [entry-id
+     (get (first incoming) :predecessor)
+     (get (second incoming) :predecessor)
+     (get join :block-id)]))
+
+(defn sh12-branch-join-function [mir]
+  (get (get mir :functions) (first (keys (get mir :functions)))))
+
+(defn sh12-branch-join-instructions
+  [block-ids blocks result]
+  (if (= (count block-ids) 0)
+    result
+    (sh12-branch-join-instructions
+     (rest block-ids) blocks
+     (c11-append-uses
+      result (get (get blocks (first block-ids)) :instructions)))))
+
+(defn sh12-branch-join-terminators
+  [block-ids blocks result]
+  (if (= (count block-ids) 0)
+    result
+    (sh12-branch-join-terminators
+     (rest block-ids) blocks
+     (conj result
+           (get (get blocks (first block-ids)) :terminator)))))
+
+(defn sh12-branch-join-type-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (sh12-branch-join-type-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :type (get operation :type)
+              :type-fact-id
+              (get (get operation :facts) :type-fact-id)})))))
+
+(defn sh12-branch-join-effect-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (sh12-branch-join-effect-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :effects (get operation :effects)
+              :ordering (get operation :ordering)
+              :effect-fact-id
+              (get (get operation :facts) :effect-fact-id)})))))
+
+(defn sh12-branch-join-safety-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          facts (get operation :facts)]
+      (sh12-branch-join-safety-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :safety-outcome-id (get facts :safety-outcome-id)
+              :safety-proof-id (get facts :safety-proof-id)
+              :runtime-check-id (get facts :runtime-check-id)
+              :proof-certificate-ids
+              (get facts :proof-certificate-ids)
+              :failure-behavior (get facts :failure-behavior)})))))
+
+(defn sh12-branch-join-other-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)
+          facts (get operation :facts)]
+      (sh12-branch-join-other-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :capability-fact-id (get facts :capability-fact-id)
+              :capability-proof-ids (get facts :capability-proof-ids)
+              :ownership-fact-id (get facts :ownership-fact-id)
+             :profile-target-fact-id
+              (get facts :profile-target-fact-id)
+              :facts facts
+              :capabilities (get operation :capabilities)
+              :profile (get operation :profile)
+              :domain-anchor (get operation :domain-anchor)
+              :verifier-status (get operation :verifier-status)})))))
+
+(defn sh12-branch-join-data-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (sh12-branch-join-data-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :artifact (get operation :artifact)
+              :opcode (get operation :opcode)
+              :source-operation (get operation :source-operation)
+              :operands (get operation :operands)
+              :result (get operation :result)
+              :result-kind (get operation :result-kind)
+              :constant-payload (get operation :constant-payload)
+              :block-id (get operation :block-id)})))))
+
+(defn sh12-branch-join-origin-operation-view [operations result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (sh12-branch-join-origin-operation-view
+       (rest operations)
+       (conj result
+             {:op-id (get operation :op-id)
+              :source (get operation :source)
+              :source-origin-id
+              (get (get operation :facts) :source-origin-id)})))))
+
+(defn sh12-branch-join-terminator-effect-view [terminators result]
+  (if (= (count terminators) 0)
+    result
+    (let [terminator (first terminators)]
+      (sh12-branch-join-terminator-effect-view
+       (rest terminators)
+       (conj result
+             {:terminator-id (get terminator :terminator-id)
+              :effects (get terminator :effects)
+              :ordering (get terminator :ordering)})))))
+
+(defn sh12-branch-join-terminator-origin-view [terminators result]
+  (if (= (count terminators) 0)
+    result
+    (let [terminator (first terminators)]
+      (sh12-branch-join-terminator-origin-view
+       (rest terminators)
+       (conj result
+             {:terminator-id (get terminator :terminator-id)
+              :source (get terminator :source)
+              :profile (get terminator :profile)})))))
+
+(defn sh12-branch-join-value-type-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-type-view
+       (rest value-ids) values
+       (conj result {:value-id value-id :type (get value :type)})))))
+
+(defn sh12-branch-join-value-effect-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-effect-view
+       (rest value-ids) values
+       (conj result
+             {:value-id value-id :effects (get value :effects)})))))
+
+(defn sh12-branch-join-value-safety-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-safety-view
+       (rest value-ids) values
+       (conj result
+             {:value-id value-id :safety (get value :safety)})))))
+
+(defn sh12-branch-join-value-other-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-other-view
+       (rest value-ids) values
+       (conj result
+             {:value-id value-id :ownership (get value :ownership)})))))
+
+(defn sh12-branch-join-value-origin-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-origin-view
+       (rest value-ids) values
+       (conj result
+             {:value-id value-id :source (get value :source)})))))
+
+(defn sh12-branch-join-value-data-view [value-ids values result]
+  (if (= (count value-ids) 0)
+    result
+    (let [value-id (first value-ids)
+          value (get values value-id)]
+      (sh12-branch-join-value-data-view
+       (rest value-ids) values
+       (conj result
+             {:value-id (get value :value-id)
+              :artifact (get value :artifact)
+              :kind (get value :kind)
+              :constant-payload (get value :constant-payload)
+              :defined-by (get value :defined-by)
+              :uses (get value :uses)})))))
+
+(defn sh12-branch-join-block-origin-view [block-ids blocks result]
+  (if (= (count block-ids) 0)
+    result
+    (let [block-id (first block-ids)
+          block (get blocks block-id)]
+      (sh12-branch-join-block-origin-view
+       (rest block-ids) blocks
+       (conj result
+             {:block-id block-id :source (get block :source)})))))
+
+(defn sh12-branch-join-module-view [mir]
+  {:artifact (get mir :artifact)
+   :schema-version (get mir :schema-version)
+   :source-core (get mir :source-core)
+   :module-id (get mir :module-id)
+   :profile (get mir :profile)
+   :source-target (get mir :source-target)
+   :target-request (get mir :target-request)
+   :target-request-metadata (get mir :target-request-metadata)
+   :globals (get mir :globals)
+   :construction (get mir :construction)
+   :pass-contract (get mir :pass-contract)
+   :pass-execution-record (get mir :pass-execution-record)
+   :verification-status (get mir :verification-status)
+   :target-independent? (get mir :target-independent?)
+   :b1-preflight (get mir :b1-preflight)
+   :scope (get mir :scope)
+   :clojure-seed-boundary? (get mir :clojure-seed-boundary?)
+   :self-hosted? (get mir :self-hosted?)})
+
+(defn sh12-branch-join-function-view [function]
+  {:artifact (get function :artifact)
+   :fn-id (get function :fn-id)
+   :name (get function :name)
+   :params (get function :params)
+   :entry (get function :entry)})
+
+(defn sh12-branch-join-module-carrier-valid? [expected mir]
+  (let [functions (get mir :functions)
+        expected-function-name
+        (first (keys (get expected :functions)))]
+    (if (map? functions)
+      (if (map? (get functions expected-function-name))
+        (if (map? (get mir :control-flow-graph))
+          (map? (get mir :data-flow-graph))
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-block-carriers-valid?
+  [block-ids blocks]
+  (if (= (count block-ids) 0)
+    true
+    (let [block (get blocks (first block-ids))]
+      (if (map? block)
+        (if (vector? (get block :instructions))
+          (if (map? (get block :terminator))
+            (sh12-branch-join-block-carriers-valid?
+             (rest block-ids) blocks)
+            false)
+          false)
+        false))))
+
+(defn sh12-branch-join-block-carrier-valid? [expected mir]
+  (let [function (sh12-branch-join-function mir)
+        blocks (get function :blocks)]
+    (if (map? blocks)
+      (sh12-branch-join-block-carriers-valid?
+       (sh12-branch-join-block-ids expected) blocks)
+      false)))
+
+(defn sh12-branch-join-data-carrier-valid? [mir]
+  (let [data (get mir :data-flow-graph)]
+    (if (map? data)
+      (if (vector? (get data :edges))
+        (if (vector? (get data :terminator-uses))
+          (if (map? (get data :definitions))
+            (map? (get data :values))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-blocks-valid? [expected mir]
+  (let [expected-functions (get expected :functions)
+        functions (get mir :functions)
+        function-name (first (keys expected-functions))
+        expected-function (get expected-functions function-name)
+        function (get functions function-name)
+        expected-blocks (get expected-function :blocks)
+        blocks (get function :blocks)
+        block-ids (sh12-branch-join-block-ids expected)]
+    (if (= (set (keys functions)) (set (keys expected-functions)))
+      (if (= (set (keys blocks)) (set (keys expected-blocks)))
+        (if (= (sh12-branch-join-function-view function)
+               (sh12-branch-join-function-view expected-function))
+          (if (= (sh12-branch-join-block-structures
+                  block-ids blocks [])
+                 (sh12-branch-join-block-structures
+                  block-ids expected-blocks []))
+            (= (get mir :control-flow-graph)
+               (get expected :control-flow-graph))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-fact-context [expected mir]
+  (let [block-ids (sh12-branch-join-block-ids expected)
+        expected-function (sh12-branch-join-function expected)
+        function (sh12-branch-join-function mir)
+        expected-blocks (get expected-function :blocks)
+        blocks (get function :blocks)
+        expected-operations
+        (sh12-branch-join-instructions block-ids expected-blocks [])
+        operations (sh12-branch-join-instructions block-ids blocks [])
+        expected-terminators
+        (sh12-branch-join-terminators block-ids expected-blocks [])
+        terminators
+        (sh12-branch-join-terminators block-ids blocks [])
+        expected-values
+        (get (get expected :data-flow-graph) :values)
+        values (get (get mir :data-flow-graph) :values)
+        value-ids (keys expected-values)]
+    {:block-ids block-ids
+     :expected-function expected-function
+     :function function
+     :expected-blocks expected-blocks
+     :blocks blocks
+     :expected-operations expected-operations
+     :operations operations
+     :expected-terminators expected-terminators
+     :terminators terminators
+     :expected-values expected-values
+     :values values
+     :value-ids value-ids}))
+
+(defn sh12-branch-join-types-valid? [expected mir context]
+  (if (= (get mir :type-table) (get expected :type-table))
+    (if (= (get (get context :function) :returns)
+           (get (get context :expected-function) :returns))
+      (if (= (sh12-branch-join-type-operation-view
+              (get context :operations) [])
+             (sh12-branch-join-type-operation-view
+              (get context :expected-operations) []))
+        (= (sh12-branch-join-value-type-view
+            (get context :value-ids) (get context :values) [])
+           (sh12-branch-join-value-type-view
+            (get context :value-ids)
+            (get context :expected-values) []))
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-effects-valid? [expected mir context]
+  (if (= (get mir :effect-table) (get expected :effect-table))
+    (if (= (get mir :effect-order-graph)
+           (get expected :effect-order-graph))
+      (if (= (get (get context :function) :latent-effects)
+             (get (get context :expected-function) :latent-effects))
+        (if (= (sh12-branch-join-effect-operation-view
+                (get context :operations) [])
+               (sh12-branch-join-effect-operation-view
+                (get context :expected-operations) []))
+          (if (= (sh12-branch-join-terminator-effect-view
+                  (get context :terminators) [])
+                 (sh12-branch-join-terminator-effect-view
+                  (get context :expected-terminators) []))
+            (= (sh12-branch-join-value-effect-view
+                (get context :value-ids) (get context :values) [])
+               (sh12-branch-join-value-effect-view
+                (get context :value-ids)
+                (get context :expected-values) []))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-safety-valid? [expected mir context]
+  (if (= (get mir :safety-table) (get expected :safety-table))
+    (if (= (get mir :runtime-check-table)
+           (get expected :runtime-check-table))
+      (if (= (get mir :proof-certificate-table)
+             (get expected :proof-certificate-table))
+        (if (= (sh12-branch-join-safety-operation-view
+                (get context :operations) [])
+               (sh12-branch-join-safety-operation-view
+                (get context :expected-operations) []))
+          (= (sh12-branch-join-value-safety-view
+              (get context :value-ids) (get context :values) [])
+             (sh12-branch-join-value-safety-view
+              (get context :value-ids)
+              (get context :expected-values) []))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-origins-valid? [expected mir context]
+  (if (= (get mir :source-map) (get expected :source-map))
+    (if (= (get (get context :function) :source)
+           (get (get context :expected-function) :source))
+      (if (= (sh12-branch-join-block-origin-view
+              (get context :block-ids) (get context :blocks) [])
+             (sh12-branch-join-block-origin-view
+              (get context :block-ids)
+              (get context :expected-blocks) []))
+        (if (= (sh12-branch-join-origin-operation-view
+                (get context :operations) [])
+               (sh12-branch-join-origin-operation-view
+                (get context :expected-operations) []))
+          (if (= (sh12-branch-join-terminator-origin-view
+                  (get context :terminators) [])
+                 (sh12-branch-join-terminator-origin-view
+                  (get context :expected-terminators) []))
+            (= (sh12-branch-join-value-origin-view
+                (get context :value-ids) (get context :values) [])
+               (sh12-branch-join-value-origin-view
+                (get context :value-ids)
+                (get context :expected-values) []))
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-other-facts-valid? [expected mir context]
+  (if (= (get mir :ownership-table) (get expected :ownership-table))
+    (if (= (get mir :capability-table) (get expected :capability-table))
+      (if (= (get mir :capability-proof-table)
+             (get expected :capability-proof-table))
+        (if (= (get mir :profile-target-table)
+               (get expected :profile-target-table))
+          (if (= (sh12-branch-join-other-operation-view
+                  (get context :operations) [])
+                 (sh12-branch-join-other-operation-view
+                  (get context :expected-operations) []))
+            (if (= (get (get context :function) :capabilities)
+                   (get (get context :expected-function) :capabilities))
+              (if (= (get (get context :function) :facts)
+                     (get (get context :expected-function) :facts))
+                (if (= (get (get context :function) :provenance)
+                       (get (get context :expected-function) :provenance))
+                  (if (= (sh12-branch-join-value-other-view
+                          (get context :value-ids)
+                          (get context :values) [])
+                         (sh12-branch-join-value-other-view
+                          (get context :value-ids)
+                          (get context :expected-values) []))
+                    (if (= (get mir :provenance)
+                           (get expected :provenance))
+                      (= (get mir :domain-anchors)
+                         (get expected :domain-anchors))
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh12-branch-join-data-flow-valid? [expected mir context]
+  (let [expected-data (get expected :data-flow-graph)
+        data (get mir :data-flow-graph)]
+    (if (sh12-branch-join-mir-dominance-valid? mir)
+      (if (= (set (keys (get data :values)))
+             (set (keys (get expected-data :values))))
+        (if (= (get data :edges) (get expected-data :edges))
+          (if (= (get data :terminator-uses)
+                 (get expected-data :terminator-uses))
+            (if (= (get data :definitions)
+                   (get expected-data :definitions))
+              (if (= (sh12-branch-join-data-operation-view
+                      (get context :operations) [])
+                     (sh12-branch-join-data-operation-view
+                      (get context :expected-operations) []))
+                (= (sh12-branch-join-value-data-view
+                    (get context :value-ids) (get context :values) [])
+                   (sh12-branch-join-value-data-view
+                    (get context :value-ids)
+                    (get context :expected-values) []))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh12-branch-join-passed [checked-core mir]
+  {:artifact :gravity/sh12-branch-join-mir-report
+   :schema-version 1
+   :scope :single-conditional-branch-join
+   :phase :verification
+   :status :passed
+   :checked-core-artifact-id (get checked-core :artifact-id)
+   :mir-module-id (get mir :module-id)
+   :checks [:single-function-diamond
+            :blocks-terminators-and-cfg-edges
+            :edge-specific-join-dominance
+            :type-fact-preservation
+            :effect-order-preservation
+            :ownership-capability-and-profile-preservation
+            :safety-outcome-preservation
+            :source-origin-preservation]
+   :preserves [:type-facts :effect-facts :ownership-facts
+               :capability-facts :safety-facts :profile-target-facts
+               :source-spans :source-origin-map :generated-origin-chains
+               :control-flow-edges :data-flow-edges :dominance-facts]
+   :diagnostics []
+   :nonclaims [:generic-c11-verifier :independent-acceptance
+               :optimizer-credit :backend-credit :self-hosted?]})
+
+(defn sh12-verify-branch-join-mir [checked-core mir]
+  (let [preflight
+        (sh12-branch-join-checked-core-preflight checked-core)]
+    (if (= :accepted (get preflight :status))
+      (if (map? mir)
+        (if (= :gravity/mir-module (get mir :artifact))
+          (let [expected (c11-build-target-independent-mir checked-core)]
+            (if (= (sh12-branch-join-module-view mir)
+                   (sh12-branch-join-module-view expected))
+              (if (sh12-branch-join-module-carrier-valid? expected mir)
+                (if (sh12-branch-join-block-carrier-valid? expected mir)
+                  (if (sh12-branch-join-blocks-valid? expected mir)
+                    (if (sh12-branch-join-data-carrier-valid? mir)
+                      (let [context
+                            (sh12-branch-join-fact-context expected mir)]
+                        (if (sh12-branch-join-types-valid?
+                             expected mir context)
+                          (if (sh12-branch-join-effects-valid?
+                               expected mir context)
+                            (if (sh12-branch-join-safety-valid?
+                                 expected mir context)
+                              (if (sh12-branch-join-origins-valid?
+                                   expected mir context)
+                                (if (sh12-branch-join-other-facts-valid?
+                                     expected mir context)
+                                  (if (sh12-branch-join-data-flow-valid?
+                                       expected mir context)
+                                    (sh12-branch-join-passed
+                                     checked-core mir)
+                                    (sh12-branch-join-rejection
+                                     :verification "C11-DOMINANCE"
+                                     :definitions-uses-or-edge-dominance
+                                     checked-core mir))
+                                  (sh12-branch-join-rejection
+                                   :verification "C11-VERIFY"
+                                   :ownership-capability-profile-or-provenance-fact
+                                   checked-core mir))
+                                (sh12-branch-join-rejection
+                                 :verification "C11-ORIGIN"
+                                 :source-span-or-origin-fact checked-core mir))
+                              (sh12-branch-join-rejection
+                               :verification "C11-SAFETY"
+                               :safety-outcome-or-runtime-check-fact
+                               checked-core mir))
+                            (sh12-branch-join-rejection
+                             :verification "C11-EFFECT"
+                             :effect-fact-or-ordering checked-core mir))
+                          (sh12-branch-join-rejection
+                           :verification "C11-TYPE"
+                           :type-fact-or-operation-schema checked-core mir)))
+                      (sh12-branch-join-rejection
+                       :verification "C11-DOMINANCE"
+                       :data-flow-carrier checked-core mir))
+                    (sh12-branch-join-rejection
+                     :verification "C11-BLOCK"
+                     :block-terminator-or-control-flow-edge checked-core mir))
+                  (sh12-branch-join-rejection
+                   :verification "C11-BLOCK"
+                   :block-carrier checked-core mir))
+                (sh12-branch-join-rejection
+                 :verification "C11-MODULE"
+                 :module-function-carrier checked-core mir))
+              (sh12-branch-join-rejection
+               :verification "C11-MODULE"
+               :module-identity-or-target-independence checked-core mir)))
+          (sh12-branch-join-rejection
+           :verification "C11-MODULE" :mir-module-artifact checked-core mir))
+        (sh12-branch-join-rejection
+         :verification "C11-MODULE" :mir-module-carrier checked-core mir))
+      (sh12-branch-join-rejection
+       :verification
+       (get preflight :diagnostic-id)
+       (get preflight :missing-fact)
+       checked-core mir))))
 
 ; C11 owns this additive proof-reference adapter.  It is intentionally not an
 ; executable load and does not route through the legacy SH12 checked-core

@@ -201,8 +201,8 @@
         (assoc (:function-shapes source-rule)
                'c11-build-data-flow-for-node
                {:arity 2 :params '[node result]})]
-    (is (= 253588 (:source-byte-count revision)))
-    (is (= 237 (:function-count revision)))
+    (is (= 330835 (:source-byte-count revision)))
+    (is (= 351 (:function-count revision)))
     (is (= 'verify-c11-mir-module (:verifier-function revision)))
     (is (= 27 (count (:function-shapes revision))))
     (is (pos? (count if-calls)))

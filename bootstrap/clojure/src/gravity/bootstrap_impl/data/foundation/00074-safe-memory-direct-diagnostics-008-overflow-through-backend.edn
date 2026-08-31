@@ -1,0 +1,66 @@
+[[safe9/overflow
+  {:id "SAFE9-OVERFLOW",
+   :rule :SAFE9,
+   :operation :numeric-overflow,
+   :missing-fact :numeric-mode-or-range-proof,
+   :message "integer overflow is unhandled"}]
+ [safe9/div-zero
+  {:id "SAFE9-DIV-ZERO",
+   :rule :SAFE9,
+   :operation :division,
+   :missing-fact :nonzero-proof-or-check,
+   :message "division or remainder may use a zero divisor"}]
+ [safe9/shift
+  {:id "SAFE9-SHIFT",
+   :rule :SAFE9,
+   :operation :shift,
+   :missing-fact :shift-count-proof,
+   :message "shift count may be invalid for the numeric width"}]
+ [safe9/narrow
+  {:id "SAFE9-NARROW",
+   :rule :SAFE9,
+   :operation :numeric-cast,
+   :missing-fact :checked-or-proven-narrowing,
+   :message "narrowing conversion is unchecked"}]
+ [safe9/float-mode
+  {:id "SAFE9-FLOAT-MODE",
+   :rule :SAFE9,
+   :operation :floating-point,
+   :missing-fact :floating-mode,
+   :message "floating-point mode is missing or unsupported"}]
+ [safe9/float-input
+  {:id "SAFE9-FLOAT-INPUT",
+   :rule :SAFE9,
+   :operation :floating-point-input,
+   :missing-fact :nan-infinity-or-invalid-input-policy,
+   :message "NaN, infinity, or invalid floating input is unhandled"}]
+ [safe9/elementary-domain
+  {:id "SAFE9-ELEMENTARY-DOMAIN",
+   :rule :SAFE9,
+   :operation :elementary-function,
+   :missing-fact :domain-proof-or-check,
+   :message "elementary-function domain is not proven or checked"}]
+ [safe9/approx
+  {:id "SAFE9-APPROX",
+   :rule :SAFE9,
+   :operation :numeric-approximation,
+   :missing-fact :accuracy-evidence,
+   :message "approximation lacks accuracy evidence"}]
+ [safe9/relaxed
+  {:id "SAFE9-RELAXED",
+   :rule :SAFE9,
+   :operation :relaxed-numeric-mode,
+   :missing-fact :source-opt-in,
+   :message "relaxed numeric behavior lacks source opt-in"}]
+ [safe9/optimization
+  {:id "SAFE9-OPTIMIZATION",
+   :rule :SAFE9,
+   :operation :numeric-optimization,
+   :missing-fact :mode-preserving-proof,
+   :message "numeric transformation lacks a mode-preserving proof"}]
+ [safe9/backend
+  {:id "SAFE9-BACKEND",
+   :rule :SAFE9,
+   :operation :numeric-backend-lowering,
+   :missing-fact :target-mode-preservation,
+   :message "target lowering cannot preserve numeric mode"}]]

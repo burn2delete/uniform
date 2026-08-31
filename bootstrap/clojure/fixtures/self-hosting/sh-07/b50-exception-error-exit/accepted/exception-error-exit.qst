@@ -1,0 +1,18 @@
+(ns self-hosting.sh07-b50.exception-error-exit
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [handle-error])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07
+              :candidate :sh07-authenticated-exception-error-exit-v1}))
+
+; Strict UTF-8 evidence includes 2-byte ¢, 3-byte €, and 4-byte 🙂 scalars.
+(defn handle-error []
+  (try
+    (throw :fixture/failure)
+    (catch Exception error
+      error)))
+
+(def harmless-sibling :fixture/harmless)

@@ -4,7 +4,11 @@
   The static catalog is the complete require authority. Selection changes only
   the vars passed through clojure.test's normal namespace and fixture pipeline."
   (:require [clojure.string :as str]
-            [clojure.test :as test]))
+            [clojure.test :as test])
+  (:import [java.lang.management ManagementFactory]))
+
+(def ^:private runner-loaded-at-epoch-ms (System/currentTimeMillis))
+(def ^:dynamic *timing-events* nil)
 
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
@@ -23,7 +27,8 @@
      "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer"
      "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile"
      "gravity.c2-pass-cache-test/leaf-contract-is-explicitly-local-and-nonauthoritative"
-     "gravity.c2-pass-cache-test/opt-in-bootstrap-integration-reuses-without-reader-execution"]}
+     "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-reuses-without-reader-execution"
+     "gravity.c2-pass-cache-test/ordinary-bootstrap-c2-path-invalidates-changed-source"]}
    {:namespace 'gravity.bootstrap-compatibility.c3-test
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"}
    {:namespace 'gravity.bootstrap-compatibility.module-analysis-test
@@ -102,6 +107,8 @@
    "  --list            print selected qualified names without running tests\n"
    "  --catalog         print the static namespace/path catalog without loading tests\n"
    "  --fail-fast       stop after the first test failure or error\n"
+   "  --timing-receipt FILE\n"
+   "                    write non-authoritative machine-readable EDN timing telemetry\n"
    "  --help            print this help without loading tests\n"
    "\n"
    "Qualified selectors resolve only within explicitly selected namespaces.\n"))
@@ -116,7 +123,8 @@
 (defn- parse-args [args]
   (loop [remaining (seq args)
          options {:namespaces [] :exact [] :regex [] :prefix []
-                  :list? false :catalog? false :fail-fast? false :help? false}]
+                  :list? false :catalog? false :fail-fast? false :help? false
+                  :timing-receipt nil}]
     (if-not remaining
       options
       (let [argument (first remaining)
@@ -126,6 +134,14 @@
           (= argument "--list") (recur tail (assoc options :list? true))
           (= argument "--catalog") (recur tail (assoc options :catalog? true))
           (= argument "--fail-fast") (recur tail (assoc options :fail-fast? true))
+
+          (= argument "--timing-receipt")
+          (if (seq tail)
+            (recur (next tail)
+                   (assoc options :timing-receipt
+                          (selector-value argument (first tail))))
+            (throw (ex-info "--timing-receipt requires a non-empty value"
+                            {:type ::invalid-selector :option argument})))
 
           (= argument "--namespace")
           (if (seq tail)
@@ -179,7 +195,25 @@
 
 (defn- load-selected-namespaces! [namespace-records]
   (doseq [{:keys [namespace]} namespace-records]
-    (require namespace)))
+    (if *timing-events*
+      (let [already-loaded? (boolean (find-ns namespace))
+            started (System/nanoTime)]
+        (try
+          (require namespace)
+          (swap! *timing-events* update :namespace-loads conj
+                 {:namespace (str namespace)
+                  :already-loaded? already-loaded?
+                  :elapsed-ns (- (System/nanoTime) started)
+                  :outcome :loaded})
+          (catch Throwable ex
+            (swap! *timing-events* update :namespace-loads conj
+                   {:namespace (str namespace)
+                    :already-loaded? already-loaded?
+                    :elapsed-ns (- (System/nanoTime) started)
+                    :outcome :error
+                    :error-class (.getName (class ex))})
+            (throw ex))))
+      (require namespace))))
 
 (defn- test-var-records [namespace-records]
   (->> namespace-records
@@ -257,6 +291,10 @@
               :let [records (get selected-by-namespace namespace)]
               :when (and (seq records) (not @stopped?))]
         (let [namespace-object (the-ns namespace)
+              namespace-started (when *timing-events* (System/nanoTime))
+              namespace-counters-before (when *timing-events*
+                                          @test/*report-counters*)
+              namespace-events (when *timing-events* (atom []))
               once-fixture-fn (test/join-fixtures
                                (::test/once-fixtures (meta namespace-object)))
               each-fixture-fn (test/join-fixtures
@@ -264,14 +302,90 @@
           (test/do-report {:type :begin-test-ns :ns namespace-object})
           (once-fixture-fn
            (fn []
-             (doseq [{:keys [var]} records :while (not @stopped?)]
-               (each-fixture-fn #(test/test-var var))
+             (doseq [{:keys [var qualified-name]} records :while (not @stopped?)]
+               (if *timing-events*
+                 (let [before @test/*report-counters*
+                       started (System/nanoTime)]
+                   (each-fixture-fn #(test/test-var var))
+                   (let [after @test/*report-counters*
+                         counts (merge-with - after before)
+                         outcome (cond
+                                   (pos? (:error counts)) :error
+                                   (pos? (:fail counts)) :failed
+                                   :else :passed)]
+                     (swap! namespace-events conj
+                            {:test-var qualified-name
+                             :elapsed-ns (- (System/nanoTime) started)
+                             :outcome outcome
+                             :counts counts})))
+                 (each-fixture-fn #(test/test-var var)))
                (when (and fail-fast?
                           (pos? (+ (:fail @test/*report-counters*)
                                    (:error @test/*report-counters*))))
                  (reset! stopped? true)))))
-          (test/do-report {:type :end-test-ns :ns namespace-object})))
+          (test/do-report {:type :end-test-ns :ns namespace-object})
+          (when *timing-events*
+            (let [counts (merge-with - @test/*report-counters*
+                                     namespace-counters-before)]
+              (swap! *timing-events* update :namespace-executions conj
+                     {:namespace (str namespace)
+                      :elapsed-ns (- (System/nanoTime) namespace-started)
+                      :outcome (cond
+                                 (pos? (:error counts)) :error
+                                 (pos? (:fail counts)) :failed
+                                 :else :passed)
+                      :counts counts
+                      :test-vars @namespace-events})))))
       (report-summary @test/*report-counters*))))
+
+(defn- bounded-property [property]
+  (let [value (System/getProperty property "")]
+    (subs value 0 (min 160 (count value)))))
+
+(defn- runtime-metadata []
+  {:java-version (bounded-property "java.version")
+   :java-vendor (bounded-property "java.vendor")
+   :vm-name (bounded-property "java.vm.name")
+   :os-name (bounded-property "os.name")
+   :os-arch (bounded-property "os.arch")
+   :available-processors (.availableProcessors (Runtime/getRuntime))
+   :max-heap-bytes (.maxMemory (Runtime/getRuntime))})
+
+(defn- write-timing-receipt!
+  [path options namespace-records selected-records events summary elapsed-ns]
+  (let [jvm-started-at (.getStartTime (ManagementFactory/getRuntimeMXBean))
+        receipt
+        {:schema "gravity/development-verification-timing-v1"
+         :authority :non-authoritative
+         :authoritative? false
+         :purpose :development-scheduling-input
+         :clock {:elapsed :monotonic-nanoseconds
+                 :jvm-boundary :epoch-milliseconds}
+         :metadata-bounds {:runtime-string-code-units 160}
+         :runtime (runtime-metadata)
+         :loading
+         {:jvm-start-to-runner-load
+          {:elapsed-ns (* 1000000 (max 0 (- runner-loaded-at-epoch-ms
+                                             jvm-started-at)))
+           :includes [:jvm-bootstrap :runner-namespace-loading]
+           :separable? false
+           :approximate? true
+           :outcome :observed}
+          :namespaces (:namespace-loads events)}
+         :execution
+         {:elapsed-ns elapsed-ns
+          :namespaces (:namespace-executions events)}
+         :selection
+         {:namespaces (mapv (comp str :namespace) namespace-records)
+          :test-vars (mapv :qualified-name selected-records)
+          :fail-fast? (:fail-fast? options)}
+         :outcome (cond
+                    (pos? (:error summary)) :error
+                    (pos? (:fail summary)) :failed
+                    (= (:test summary) (count selected-records)) :passed
+                    :else :incomplete)
+         :summary summary}]
+    (spit path (str (pr-str receipt) "\n"))))
 
 (defn- print-selection [selected-records]
   (doseq [{:keys [qualified-name]} selected-records]
@@ -290,18 +404,29 @@
       (:catalog? options) (do (print-catalog) 0)
       :else
       (let [namespace-records (selected-namespace-records options)
-            _ (load-selected-namespaces! namespace-records)
-            records (test-var-records namespace-records)
-            selected-records (select-test-vars records options)]
-        (if (:list? options)
-          (do (print-selection selected-records) 0)
-          (let [summary (run-selected-tests namespace-records selected-records
-                                            (:fail-fast? options))]
-            (if (and (zero? (:fail summary))
-                     (zero? (:error summary))
-                     (= (:test summary) (count selected-records)))
-              0
-              1)))))))
+            timing-events (when (:timing-receipt options)
+                            (atom {:namespace-loads [] :namespace-executions []}))]
+        (binding [*timing-events* timing-events]
+          (load-selected-namespaces! namespace-records)
+          (let [records (test-var-records namespace-records)
+                selected-records (select-test-vars records options)]
+            (if (:list? options)
+              (do (print-selection selected-records) 0)
+              (let [execution-started (when (:timing-receipt options)
+                                        (System/nanoTime))
+                    summary (run-selected-tests namespace-records selected-records
+                                                (:fail-fast? options))
+                    elapsed-ns (when execution-started
+                                 (- (System/nanoTime) execution-started))]
+                (when-let [path (:timing-receipt options)]
+                  (write-timing-receipt! path options namespace-records
+                                         selected-records @timing-events summary
+                                         elapsed-ns))
+                (if (and (zero? (:fail summary))
+                         (zero? (:error summary))
+                         (= (:test summary) (count selected-records)))
+                  0
+                  1)))))))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]

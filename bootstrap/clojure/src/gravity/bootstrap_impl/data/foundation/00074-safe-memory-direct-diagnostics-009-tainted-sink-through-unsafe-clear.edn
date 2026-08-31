@@ -1,0 +1,61 @@
+[[safe11/tainted-sink
+  {:id "SAFE11-TAINTED-SINK",
+   :rule :SAFE11,
+   :operation :taint-sink,
+   :missing-fact :validator-encoder-parameterizer-or-capability,
+   :message "tainted data reaches a sensitive sink without required handling"}]
+ [safe11/validator
+  {:id "SAFE11-VALIDATOR",
+   :rule :SAFE11,
+   :operation :validator,
+   :missing-fact :compatible-validator-contract,
+   :message "validator contract is missing or incompatible"}]
+ [safe11/residual
+  {:id "SAFE11-RESIDUAL",
+   :rule :SAFE11,
+   :operation :residual-constraint,
+   :missing-fact :sink-accepted-residual,
+   :message "residual constraints are not accepted by the sink"}]
+ [safe11/parameterization-diagnostic
+  {:id "SAFE11-PARAMETERIZATION",
+   :rule :SAFE11,
+   :operation :parameterization,
+   :missing-fact :structured-parameters,
+   :message
+   "query, command, or tool call is built from tainted syntax instead of structured parameters"}]
+ [safe11/deserialization-diagnostic
+  {:id "SAFE11-DESERIALIZATION",
+   :rule :SAFE11,
+   :operation :deserialization,
+   :missing-fact :schema-validation,
+   :message "deserialized value is unsafe or unvalidated"}]
+ [safe11/secret-leak
+  {:id "SAFE11-SECRET-LEAK",
+   :rule :SAFE11,
+   :operation :secret-output,
+   :missing-fact :redaction-policy,
+   :message "secret-tainted data enters public output"}]
+ [safe11/prompt-injection
+  {:id "SAFE11-PROMPT-INJECTION",
+   :rule :SAFE11,
+   :operation :prompt-tool-boundary,
+   :missing-fact :policy-mediation,
+   :message "untrusted prompt content controls privileged tool behavior"}]
+ [safe11/generated
+  {:id "SAFE11-GENERATED",
+   :rule :SAFE11,
+   :operation :generated-code,
+   :missing-fact :taint-provenance,
+   :message "generated code drops taint facts"}]
+ [safe11/foreign
+  {:id "SAFE11-FOREIGN",
+   :rule :SAFE11,
+   :operation :foreign-boundary,
+   :missing-fact :taint-preservation,
+   :message "interop boundary erases taint metadata"}]
+ [safe11/unsafe-clear
+  {:id "SAFE11-UNSAFE-CLEAR",
+   :rule :SAFE11,
+   :operation :taint-suppression,
+   :missing-fact :unsafe-audit,
+   :message "taint suppression appears outside unsafe policy"}]]

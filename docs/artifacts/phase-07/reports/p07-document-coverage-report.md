@@ -23,8 +23,6 @@ Phase: 07 - Backend Architecture
 
 ## Implemented Surface
 
-- `src/gravity/backend_document_coverage.py`
-- `tools/validate_phase07_document_coverage.py`
 - `docs/artifacts/phase-07/fixtures/document-coverage/accepted-backend-document-coverage.json`
 - `docs/artifacts/phase-07/document-coverage/backend-document-coverage.accepted.json`
 
@@ -34,18 +32,6 @@ The document coverage validator accepts one artifact-backed fixture for each
 `B1` through `B14` document and rejects one stable diagnostic fixture for each
 document. Required artifact fields are checked per document so coverage remains
 grounded in the owning backend architecture artifact surface.
-
-## Validation
-
-```text
-python3 tools/validate_phase07_document_coverage.py --artifact-out docs/artifacts/phase-07/document-coverage/backend-document-coverage.accepted.json
-Phase 07 document coverage validation passed: 14 accepted artifacts, 14 rejected diagnostics
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

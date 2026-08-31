@@ -1,0 +1,1 @@
+[[host/error-normalized {:return-type "HostErrorRecord", :effects #{:host/error}}]]

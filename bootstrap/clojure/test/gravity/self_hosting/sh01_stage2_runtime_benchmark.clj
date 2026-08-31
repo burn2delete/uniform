@@ -82,6 +82,13 @@
    :args [{:op :local :name 'record}
           {:op :literal :value :value}
           {:op :literal :value 2}]})
+(def ^:private map-literal-instruction
+  {:op :map-literal
+   :entries
+   (mapv (fn [index]
+           {:key {:op :literal :value (keyword (str "key-" index))}
+            :value {:op :literal :value index}})
+         (range 32))})
 (def ^:private function-plan
   {:source {:path source-path}
    :functions
@@ -135,6 +142,9 @@
    :interpreted-map-predicate
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime compiler-plan predicate-environment map-predicate-instruction)
+   :interpreted-map-literal
+   #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+     runtime simple-plan {} map-literal-instruction)
    :interpreted-rest
    #(bootstrap/p15-s23-stage2-runtime-execute-instruction
      runtime simple-plan collection-environment rest-instruction)

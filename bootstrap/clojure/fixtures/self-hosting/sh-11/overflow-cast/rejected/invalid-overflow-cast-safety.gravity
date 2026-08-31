@@ -1,0 +1,65 @@
+(ns gravity.self-hosting.sh11.overflow-cast.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh11-unproved-operation
+             sh11-unsafe-operation
+             sh11-malformed-operation])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh11-invalid-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions numeric-mode safety-mode]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 2
+   :typed-operation typed-operation
+   :typed-operation-resolution typed-operation-resolution
+   :operation-id (get typed-operation :operation-id)
+   :kind (get typed-operation :kind)
+   :operator (get typed-operation :operator)
+   :core-node-id (get typed-operation :core-node-id)
+   :source-span (get typed-operation :source-span)
+   :origin-chain (get typed-operation :origin-chain)
+   :profile (get typed-operation :profile)
+   :target (get typed-operation :target)
+   :type-fact-id (get typed-operation :type-fact-id)
+   :effect-fact-id (get typed-operation :effect-fact-id)
+   :capability-proof-id (get typed-operation :capability-proof-id)
+   :ownership-fact-id (get typed-operation :ownership-fact-id)
+   :operands (get typed-operation :operands)
+   :numeric-contract (get typed-operation :numeric-contract)
+   :numeric-mode numeric-mode
+   :safety-mode safety-mode
+   :failure-behavior
+   (if (= numeric-mode :checked) :error/numeric nil)
+   :effects-introduced
+   (if (= numeric-mode :checked) #{:error/raise} nil)
+   :performance-class
+   (if (= numeric-mode :checked) :constant-time-branch nil)
+   :invalidation-conditions invalidation-conditions
+   :target-support target-support
+   :target-support-resolution target-support-resolution
+   :target-support-id (get target-support-resolution :digest)
+   :provider-id (get target-support :provider)
+   :support-evidence (get target-support :execution-evidence)})
+
+(defn sh11-unproved-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions]
+  (sh11-invalid-operation
+   typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions :proof-required :safe))
+
+(defn sh11-unsafe-operation
+  [typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions]
+  (sh11-invalid-operation
+   typed-operation typed-operation-resolution target-support
+   target-support-resolution invalidation-conditions
+   :unsafe-unchecked :systems))
+
+(defn sh11-malformed-operation [typed-operation]
+  {:artifact :gravity/sh11-authenticated-overflow-cast-operation
+   :schema-version 2
+   :typed-operation typed-operation})

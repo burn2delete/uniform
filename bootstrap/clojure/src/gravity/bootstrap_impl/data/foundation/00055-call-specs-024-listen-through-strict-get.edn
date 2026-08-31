@@ -1,0 +1,9 @@
+[[network/listen
+  {:return-type "Listener",
+   :effects #{:network/listen},
+   :capabilities #{:network/listener}}]
+ [network/strict-get
+  {:return-type "HttpResponse",
+   :effects #{:network/http},
+   :capabilities #{:network/client},
+   :capability-diagnostic "L6-EFFECT-CAPABILITY"}]]

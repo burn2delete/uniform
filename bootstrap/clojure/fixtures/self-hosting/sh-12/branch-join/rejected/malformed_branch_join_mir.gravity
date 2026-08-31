@@ -1,0 +1,1135 @@
+; Rejected SH-12 mutations for the bounded branch/join MIR verifier.
+(ns gravity.self-hosting.sh12.branch-join.rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh12-branch-join-rejection-cases
+             sh12-malformed-branch-join-mir
+             sh12-checked-core-rejection-cases
+             sh12-runtime-checked-core
+             sh12-malformed-checked-core])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh12-add-actual-source-path [cases actual-source-path result]
+  (if (= (count cases) 0)
+    result
+    (sh12-add-actual-source-path
+     (rest cases) actual-source-path
+     (conj result
+           (assoc (first cases)
+                  :actual-source-path actual-source-path)))))
+
+(defn sh12-branch-join-rejection-cases [actual-source-path]
+  (sh12-add-actual-source-path
+   [{:case :malformed-module
+    :diagnostic-id "C11-MODULE"
+    :missing-fact :mir-module-artifact}
+   {:case :module-boundary-escalation
+    :diagnostic-id "C11-MODULE"
+    :missing-fact :module-identity-or-target-independence}
+   {:case :malformed-functions-carrier
+    :diagnostic-id "C11-MODULE"
+    :missing-fact :module-function-carrier}
+   {:case :malformed-block
+    :diagnostic-id "C11-BLOCK"
+    :missing-fact :block-carrier}
+   {:case :malformed-blocks-carrier
+    :diagnostic-id "C11-BLOCK"
+    :missing-fact :block-carrier}
+   {:case :function-fact-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :operation-authority-escalation
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :malformed-edge
+    :diagnostic-id "C11-BLOCK"
+    :missing-fact :block-terminator-or-control-flow-edge}
+   {:case :malformed-terminator
+    :diagnostic-id "C11-BLOCK"
+    :missing-fact :block-terminator-or-control-flow-edge}
+   {:case :malformed-value
+    :diagnostic-id "C11-DOMINANCE"
+    :missing-fact :definitions-uses-or-edge-dominance}
+   {:case :malformed-data-carrier
+    :diagnostic-id "C11-DOMINANCE"
+    :missing-fact :data-flow-carrier}
+   {:case :type-fact-loss
+    :diagnostic-id "C11-TYPE"
+    :missing-fact :type-fact-or-operation-schema}
+   {:case :effect-fact-loss
+    :diagnostic-id "C11-EFFECT"
+    :missing-fact :effect-fact-or-ordering}
+   {:case :ownership-fact-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :capability-fact-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :capability-proof-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :profile-target-fact-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :provenance-fact-loss
+    :diagnostic-id "C11-VERIFY"
+    :missing-fact :ownership-capability-profile-or-provenance-fact}
+   {:case :safety-fact-loss
+    :diagnostic-id "C11-SAFETY"
+    :missing-fact :safety-outcome-or-runtime-check-fact}
+   {:case :source-fact-loss
+    :diagnostic-id "C11-ORIGIN"
+    :missing-fact :source-span-or-origin-fact}]
+   actual-source-path []))
+
+(defn sh12-checked-core-rejection-cases [actual-source-path]
+  (sh12-add-actual-source-path
+   [{:case :checked-type-fact-loss
+     :diagnostic-id "C11-TYPE"
+     :missing-fact :type-fact-or-operation-schema}
+    {:case :checked-unsupported-operation
+     :diagnostic-id "C11-TYPE"
+     :missing-fact :checked-core-operation-schema}
+    {:case :checked-nondominating-condition
+     :diagnostic-id "C11-DOMINANCE"
+     :missing-fact :conditional-definition-dominance}
+    {:case :checked-same-block-forward-use
+     :diagnostic-id "C11-DOMINANCE"
+     :missing-fact :definitions-uses-or-edge-dominance}
+    {:case :checked-duplicate-node-identity
+     :diagnostic-id "C11-DOMINANCE"
+     :missing-fact :unique-core-node-identity}
+    {:case :checked-duplicate-type-fact-identity
+     :diagnostic-id "C11-TYPE"
+     :missing-fact :unique-type-fact-identity}
+    {:case :checked-duplicate-effect-fact-identity
+     :diagnostic-id "C11-EFFECT"
+     :missing-fact :unique-effect-fact-identity}
+    {:case :checked-duplicate-ownership-fact-identity
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :unique-ownership-fact-identity}
+    {:case :checked-empty-provenance-binding
+     :diagnostic-id "C11-MODULE"
+     :missing-fact :checked-core-shape}
+    {:case :checked-empty-provenance-path
+     :diagnostic-id "C11-MODULE"
+     :missing-fact :checked-core-shape}
+    {:case :checked-effect-fact-loss
+     :diagnostic-id "C11-EFFECT"
+     :missing-fact :effect-fact-or-ordering}
+    {:case :checked-ownership-fact-loss
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :ownership-fact}
+    {:case :checked-capability-fact-loss
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :capability-fact}
+    {:case :checked-dangling-capability-proof
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :capability-proof-reference}
+    {:case :checked-capability-authority-gap
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :capability-authority}
+    {:case :checked-surplus-capability-authority
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :capability-authority}
+    {:case :checked-safety-fact-loss
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-fact}
+    {:case :checked-empty-safety-proof-rule
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-empty-condition
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-empty-predicate
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-always-true-predicate
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-nonrejecting-failure
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-unauthorized-effect
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-wrong-predicate-operation
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-wrong-predicate-operand
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-wrong-source-operation
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-empty-emitted-location
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-empty-failure
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-nil-effects
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-empty-performance-class
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-nil-invalidation
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-dangling-capability-proof
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-wrong-guarded-operation
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-duplicate-identity
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-surplus-proof
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-runtime-check-surplus-unsafe-audit
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :safety-outcome-evidence}
+    {:case :checked-empty-unsafe-audit
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-incomplete-unsafe-audit
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-misbound-unsafe-audit
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-artifact-mismatch
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-source-span-mismatch
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-origin-mismatch
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-effect-mismatch
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-capability-mismatch
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-contradictory-origins
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-malformed-extra-origin-chain
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-empty-boundary
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-empty-reason
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-empty-review-policy
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-empty-rereview
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-nil-precondition
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-nil-postcondition
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-nil-invariant
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-unsafe-audit-nil-evidence
+     :diagnostic-id "C11-SAFETY"
+     :missing-fact :unsafe-island-audit}
+    {:case :checked-profile-fact-loss
+     :diagnostic-id "C11-VERIFY"
+     :missing-fact :profile-target-fact}
+    {:case :checked-source-fact-loss
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-invalid-source-span
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-invalid-generated-origin
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-invalid-generated-origin-nested-map
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-invalid-generated-origin-nested-vector
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-generated-origin-loss
+     :diagnostic-id "C11-ORIGIN"
+     :missing-fact :source-span-or-origin-fact}
+    {:case :checked-condition-type-mismatch
+     :diagnostic-id "C11-TYPE"
+     :missing-fact :conditional-value-type}]
+   actual-source-path []))
+
+(defn sh12-replace-function [mir function-name function]
+  (assoc mir :functions
+         (assoc (get mir :functions) function-name function)))
+
+(defn sh12-remove-key [value rejected-key]
+  (loop [remaining (keys value) result {}]
+    (if (= (count remaining) 0)
+      result
+      (let [key (first remaining)]
+        (recur
+         (rest remaining)
+         (if (= key rejected-key)
+           result
+           (assoc result key (get value key))))))))
+
+(defn sh12-find-if-node [nodes]
+  (if (= (count nodes) 0)
+    nil
+    (if (= :if (get (first nodes) :source-operation))
+      (first nodes)
+      (sh12-find-if-node (rest nodes)))))
+
+(defn sh12-find-node [nodes node-id]
+  (if (= (count nodes) 0)
+    nil
+    (if (= node-id (get (first nodes) :node-id))
+      (first nodes)
+      (sh12-find-node (rest nodes) node-id))))
+
+(defn sh12-replace-node [nodes node-id replacement result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (sh12-replace-node
+       (rest nodes) node-id replacement
+       (conj result
+             (if (= node-id (get node :node-id)) replacement node))))))
+
+(defn sh12-remove-node [nodes node-id result]
+  (if (= (count nodes) 0)
+    result
+    (let [node (first nodes)]
+      (sh12-remove-node
+       (rest nodes) node-id
+       (if (= node-id (get node :node-id))
+         result
+         (conj result node))))))
+
+(defn sh12-prepend-node [node nodes]
+  (loop [remaining nodes result [node]]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn sh12-malformed-checked-core-bound [case checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        if-id (get if-node :node-id)]
+    (if (= case :checked-type-fact-loss)
+      (assoc checked-core :type-facts
+             (sh12-remove-key (get checked-core :type-facts) if-id))
+      (if (= case :checked-unsupported-operation)
+        (let [condition-id (first (get if-node :operands))
+              condition (sh12-find-node nodes condition-id)]
+          (assoc checked-core :core-nodes
+                 (sh12-replace-node
+                  nodes condition-id
+                  (assoc condition :source-operation :mystery-operation)
+                  [])))
+        (if (= case :checked-nondominating-condition)
+          (let [condition-id (first (get if-node :operands))
+                condition (sh12-find-node nodes condition-id)]
+            (assoc checked-core :core-nodes
+                   (conj
+                    (sh12-remove-node nodes condition-id []) condition)))
+          (if (= case :checked-effect-fact-loss)
+            (assoc checked-core :effect-facts
+                   (sh12-remove-key (get checked-core :effect-facts) if-id))
+            (if (= case :checked-ownership-fact-loss)
+              (assoc checked-core :ownership-facts
+                     (sh12-remove-key
+                      (get checked-core :ownership-facts) if-id))
+              (if (= case :checked-capability-fact-loss)
+                (assoc checked-core :capability-facts
+                       (sh12-remove-key
+                        (get checked-core :capability-facts) if-id))
+                (if (= case :checked-dangling-capability-proof)
+                  (assoc checked-core :capability-proof-records [])
+                  (if (= case :checked-safety-fact-loss)
+                    (assoc checked-core :safety-facts
+                           (sh12-remove-key
+                            (get checked-core :safety-facts) if-id))
+                    (if (= case :checked-empty-unsafe-audit)
+                      (let [safety
+                            (assoc
+                             (assoc
+                              (assoc (get if-node :safety)
+                                     :outcome :unsafe-island)
+                              :proof nil)
+                             :unsafe-audit {})
+                            unsafe-safety (assoc safety :check nil)]
+                        (assoc
+                         (assoc
+                          checked-core :core-nodes
+                          (sh12-replace-node
+                           nodes if-id
+                           (assoc if-node :safety unsafe-safety) []))
+                         :safety-facts
+                         (assoc (get checked-core :safety-facts)
+                                if-id unsafe-safety)))
+                      (if (= case :checked-profile-fact-loss)
+                        (assoc checked-core :profile-facts
+                               (sh12-remove-key
+                                (get checked-core :profile-facts) if-id))
+                        (if (= case :checked-source-fact-loss)
+                          (assoc checked-core :core-nodes
+                                 (sh12-replace-node
+                                  nodes if-id
+                                  (assoc if-node :source {}) []))
+                          (if (= case :checked-condition-type-mismatch)
+                            (let [condition-id
+                                  (first (get if-node :operands))
+                                  condition
+                                  (sh12-find-node nodes condition-id)
+                                  type-facts (get checked-core :type-facts)
+                                  type-fact (get type-facts condition-id)]
+                              (assoc
+                               (assoc
+                                checked-core :core-nodes
+                                (sh12-replace-node
+                                 nodes condition-id
+                                 (assoc condition :type :gravity.type/i64)
+                                 []))
+                               :type-facts
+                               (assoc type-facts condition-id
+                                      (assoc
+                                       (assoc type-fact
+                                              :type :gravity.type/i64)
+                                       :type-id :gravity.type/i64))))
+                            nil))))))))))))))
+
+(defn sh12-malformed-checked-core-identity [case checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        operands (get if-node :operands)
+        condition-id (first operands)
+        then-id (second operands)
+        condition (sh12-find-node nodes condition-id)]
+    (if (= case :checked-duplicate-node-identity)
+      (assoc checked-core :core-nodes (conj nodes condition))
+      (if (= case :checked-duplicate-type-fact-identity)
+        (let [facts (get checked-core :type-facts)
+              condition-fact (get facts condition-id)
+              then-fact (get facts then-id)]
+          (assoc checked-core :type-facts
+                 (assoc facts then-id
+                        (assoc then-fact :fact-id
+                               (get condition-fact :fact-id)))))
+        (if (= case :checked-duplicate-effect-fact-identity)
+          (let [facts (get checked-core :effect-facts)
+                condition-fact (get facts condition-id)
+                then-fact (get facts then-id)]
+            (assoc checked-core :effect-facts
+                   (assoc facts then-id
+                          (assoc then-fact :fact-id
+                                 (get condition-fact :fact-id)))))
+          (if (= case :checked-duplicate-ownership-fact-identity)
+            (let [facts (get checked-core :ownership-facts)
+                  condition-fact (get facts condition-id)
+                  then-fact (get facts then-id)]
+              (assoc checked-core :ownership-facts
+                     (assoc facts then-id
+                            (assoc then-fact :fact-id
+                                   (get condition-fact :fact-id)))))
+            (if (= case :checked-empty-provenance-binding)
+              (assoc checked-core :provenance-binding-id "")
+              (if (= case :checked-empty-provenance-path)
+                (assoc checked-core :provenance
+                       {:actual-source-path ""})
+                nil))))))))
+
+(defn sh12-malformed-forward-use [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        condition-id (first (get if-node :operands))
+        condition (sh12-find-node nodes condition-id)
+        forward-id "sh12:branch-join:forward-use"
+        source
+        (assoc (get condition :source)
+               :origin-id (str forward-id ":origin"))
+        proof
+        (assoc (get (get condition :safety) :proof)
+               :proof-id (str forward-id ":safety-proof"))
+        safety
+        (assoc
+         (assoc
+          (assoc (get condition :safety)
+                 :outcome-id (str forward-id ":safety-outcome"))
+          :operation forward-id)
+         :proof proof)
+        forward
+        {:node-id forward-id
+         :path [:entry :body :forward-use]
+         :source-operation :truthy
+         :operands [condition-id]
+         :type :gravity.type/bool
+         :attributes {:value nil
+                      :intrinsic-effects #{}
+                      :intrinsic-capabilities #{}}
+         :source source
+         :profile :meta
+         :ownership {:model :persistent-immutable
+                     :value-id forward-id}
+         :effects #{}
+         :safety safety}]
+    (assoc
+     (assoc
+      (assoc
+       (assoc
+        (assoc
+         (assoc
+          (assoc
+           checked-core
+           :core-nodes (sh12-prepend-node forward nodes))
+          :type-facts
+          (assoc (get checked-core :type-facts) forward-id
+                 {:fact-id (str forward-id ":type-fact")
+                  :core-node-id forward-id
+                  :type-id :gravity.type/bool
+                  :type :gravity.type/bool
+                  :producer-rule :fixture-checked-core
+                  :dependencies []
+                  :constraints []}))
+         :effect-facts
+         (assoc (get checked-core :effect-facts) forward-id
+                {:fact-id (str forward-id ":effect-fact")
+                 :core-node-id forward-id
+                 :direct #{} :latent #{} :transitive #{} :residual #{}
+                 :ordering :none}))
+        :ownership-facts
+        (assoc (get checked-core :ownership-facts) forward-id
+               {:fact-id (str forward-id ":ownership-fact")
+                :core-node-id forward-id
+                :value-id forward-id
+                :model :persistent-immutable
+                :mutation :forbidden}))
+       :capability-facts
+       (assoc (get checked-core :capability-facts) forward-id
+              {:fact-id (str forward-id ":capability-fact")
+               :core-node-id forward-id
+               :required #{} :granted #{}
+               :capability-proof
+               {:proof-ids ["sh12:branch-join:capability-proof"]}}))
+      :safety-facts
+      (assoc (get checked-core :safety-facts) forward-id safety))
+     :profile-facts
+     (assoc (get checked-core :profile-facts) forward-id
+            {:profile :meta :target :jvm}))))
+
+(defn sh12-malformed-capability-authority [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        condition-id (first (get if-node :operands))
+        condition (sh12-find-node nodes condition-id)
+        attributes
+        (assoc (get condition :attributes)
+               :intrinsic-capabilities #{:filesystem/read})
+        capability-facts (get checked-core :capability-facts)
+        capability-fact (get capability-facts condition-id)
+        invalid-fact
+        (assoc
+         (assoc
+          (assoc capability-fact :required #{:filesystem/read})
+          :granted #{})
+         :capability-proof {:proof-ids []})
+        source-core (get checked-core :source-core-input)]
+    (assoc
+     (assoc
+      (assoc checked-core :core-nodes
+             (sh12-replace-node
+              nodes condition-id
+              (assoc condition :attributes attributes) []))
+      :capability-facts
+      (assoc capability-facts condition-id invalid-fact))
+     :source-core-input
+     (assoc source-core :declared-capabilities #{:filesystem/read}))))
+
+(defn sh12-malformed-surplus-capability-authority [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        condition-id (first (get if-node :operands))
+        capability-facts (get checked-core :capability-facts)
+        capability-fact (get capability-facts condition-id)
+        invalid-fact
+        (assoc
+         (assoc capability-fact :granted #{:ambient/root})
+         :capability-proof {:proof-ids []})]
+    (assoc checked-core :capability-facts
+           (assoc capability-facts condition-id invalid-fact))))
+
+(defn sh12-malformed-source-schema [case checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        if-id (get if-node :node-id)
+        source (get if-node :source)
+        malformed-source
+        (if (= case :checked-invalid-source-span)
+          (assoc source :span {})
+          (assoc
+           (assoc source :generated? true)
+           :generated-origin
+           (if (= case :checked-invalid-generated-origin-nested-map)
+             [{:origin {}}]
+             (if (= case :checked-invalid-generated-origin-nested-vector)
+               [{:origin []}]
+               [nil]))))]
+    (assoc checked-core :core-nodes
+           (sh12-replace-node
+            nodes if-id (assoc if-node :source malformed-source) []))))
+
+(defn sh12-malformed-empty-proof-rule [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        condition-id (first (get if-node :operands))
+        condition (sh12-find-node nodes condition-id)
+        safety (get condition :safety)
+        malformed-safety
+        (assoc safety :proof (assoc (get safety :proof) :rule ""))]
+    (assoc
+     (assoc checked-core :core-nodes
+            (sh12-replace-node
+             nodes condition-id
+             (assoc condition :safety malformed-safety) []))
+     :safety-facts
+     (assoc (get checked-core :safety-facts)
+            condition-id malformed-safety))))
+
+(defn sh12-runtime-checked-core [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        if-id (get if-node :node-id)
+        condition-id (first (get if-node :operands))
+        check
+        {:artifact :gravity/sh11-runtime-safety-check
+         :check-id "sh12:branch-join:runtime-check"
+         :condition :branch-condition
+         :predicate {:expression :boolean-value
+                     :operation-id if-id
+                     :kind :branch-condition
+                     :operand-ids [condition-id]}
+         :source-operation :if
+         :emitted-location :before-operation
+         :profile :meta
+         :target :jvm
+         :failure :error/invalid-branch-condition
+         :effects-introduced #{:error/raise}
+         :performance-class :constant-time
+         :invalidation-conditions [:condition-value-change]
+         :capability-proof-id "sh12:branch-join:capability-proof"}
+        safety
+        (assoc
+         (assoc
+          (assoc
+           (assoc (get if-node :safety) :outcome :runtime-checked)
+           :proof nil)
+          :check check)
+         :unsafe-audit nil)]
+    (assoc
+     (assoc checked-core :core-nodes
+            (sh12-replace-node
+             nodes if-id (assoc if-node :safety safety) []))
+     :safety-facts
+     (assoc (get checked-core :safety-facts) if-id safety))))
+
+(defn sh12-duplicate-runtime-check-core [checked-core]
+  (let [runtime-core (sh12-runtime-checked-core checked-core)
+        nodes (get runtime-core :core-nodes)
+        root-id (first (get runtime-core :root-node-ids))
+        root (sh12-find-node nodes root-id)
+        if-node (sh12-find-if-node nodes)
+        check (get (get if-node :safety) :check)
+        duplicate-check
+        (assoc
+         (assoc
+          (assoc
+           (assoc check :condition :function-result)
+           :predicate {:expression :function-result-value
+                       :operation-id root-id
+                       :kind :function-result
+                       :operand-ids [(first (get root :operands))]})
+          :source-operation :function)
+         :check-id "sh12:branch-join:runtime-check")
+        safety
+        (assoc
+         (assoc
+          (assoc
+           (assoc (get root :safety) :outcome :runtime-checked)
+           :proof nil)
+          :check duplicate-check)
+         :unsafe-audit nil)]
+    (assoc
+     (assoc runtime-core :core-nodes
+            (sh12-replace-node
+             nodes root-id (assoc root :safety safety) []))
+     :safety-facts
+     (assoc (get runtime-core :safety-facts) root-id safety))))
+
+(defn sh12-runtime-check-case? [case]
+  (contains?
+   #{:checked-runtime-check-empty-condition
+     :checked-runtime-check-empty-predicate
+     :checked-runtime-check-always-true-predicate
+     :checked-runtime-check-nonrejecting-failure
+     :checked-runtime-check-unauthorized-effect
+     :checked-runtime-check-wrong-predicate-operation
+     :checked-runtime-check-wrong-predicate-operand
+     :checked-runtime-check-wrong-source-operation
+     :checked-runtime-check-empty-emitted-location
+     :checked-runtime-check-empty-failure
+     :checked-runtime-check-nil-effects
+     :checked-runtime-check-empty-performance-class
+     :checked-runtime-check-nil-invalidation
+     :checked-runtime-check-dangling-capability-proof
+     :checked-runtime-check-wrong-guarded-operation
+     :checked-runtime-check-duplicate-identity
+     :checked-runtime-check-surplus-proof
+     :checked-runtime-check-surplus-unsafe-audit}
+   case))
+
+(defn sh12-malformed-runtime-check [case checked-core]
+  (if (= case :checked-runtime-check-duplicate-identity)
+    (sh12-duplicate-runtime-check-core checked-core)
+    (let [runtime-core (sh12-runtime-checked-core checked-core)
+          nodes (get runtime-core :core-nodes)
+          if-node (sh12-find-if-node nodes)
+          if-id (get if-node :node-id)
+          then-id (second (get if-node :operands))
+          safety (get if-node :safety)
+          check (get safety :check)
+          predicate (get check :predicate)
+          malformed-check
+        (if (= case :checked-runtime-check-empty-condition)
+          (assoc check :condition "")
+          (if (= case :checked-runtime-check-empty-predicate)
+            (assoc check :predicate {})
+            (if (= case :checked-runtime-check-wrong-predicate-operation)
+              (assoc check :predicate
+                     (assoc predicate :operation-id "wrong:operation"))
+              (if (= case :checked-runtime-check-wrong-predicate-operand)
+                (assoc check :predicate
+                       (assoc predicate :operand-ids [then-id]))
+                (if (= case :checked-runtime-check-wrong-source-operation)
+                  (assoc check :source-operation :literal)
+                  (if (= case :checked-runtime-check-empty-emitted-location)
+                    (assoc check :emitted-location "")
+                    (if (= case :checked-runtime-check-empty-failure)
+                      (assoc check :failure "")
+                      (if (= case :checked-runtime-check-nil-effects)
+                        (assoc check :effects-introduced #{nil})
+                        (if (= case
+                               :checked-runtime-check-empty-performance-class)
+                          (assoc check :performance-class "")
+                          (if (= case :checked-runtime-check-nil-invalidation)
+                            (assoc check :invalidation-conditions [nil])
+                            (if (= case
+                                   :checked-runtime-check-dangling-capability-proof)
+                              (assoc check :capability-proof-id
+                                     "missing:capability-proof")
+                              (if (= case
+                                     :checked-runtime-check-wrong-guarded-operation)
+                                (assoc check :guarded-operation-id
+                                       "wrong:operation")
+                                check))))))))))))
+          semantic-check
+          (if (= case :checked-runtime-check-always-true-predicate)
+            (assoc malformed-check :predicate
+                   (assoc predicate :expression :always-true))
+            (if (= case :checked-runtime-check-nonrejecting-failure)
+              (assoc malformed-check :failure :continue/success)
+              (if (= case :checked-runtime-check-unauthorized-effect)
+                (assoc malformed-check :effects-introduced #{:network/http})
+                malformed-check)))
+        checked-safety (assoc safety :check semantic-check)
+        malformed-safety
+        (if (= case :checked-runtime-check-surplus-proof)
+          (assoc checked-safety :proof
+                 {:proof-id "surplus:safety-proof"
+                  :status :valid
+                  :rule :surplus-runtime-check-proof})
+          (if (= case :checked-runtime-check-surplus-unsafe-audit)
+            (assoc checked-safety :unsafe-audit {})
+            checked-safety))]
+    (assoc
+     (assoc runtime-core :core-nodes
+            (sh12-replace-node
+             nodes if-id (assoc if-node :safety malformed-safety) []))
+     :safety-facts
+     (assoc (get runtime-core :safety-facts)
+            if-id malformed-safety)))))
+
+(defn sh12-incomplete-unsafe-audit [checked-core]
+  (let [nodes (get checked-core :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        if-id (get if-node :node-id)
+        source (get if-node :source)
+        audit
+        {:artifact :gravity/unsafe-island
+         :audit-id "sh12:branch-join:incomplete-unsafe-audit"
+         :operation if-id
+         :owner "sh12-fixture"
+         :reason :fixture-unsafe-probe
+         :source-span (get source :span)
+         :generated-origin (get source :generated-origin)
+         :profile :meta
+         :target :jvm
+         :effects #{}
+         :capabilities #{}
+         :invariants #{:explicit-unsafe-mode}
+         :safe-wrapper "gravity.self-hosting.sh12/checked-branch"
+         :review {:policy :required}
+         :re-review :on-source-change}
+        safety
+        (assoc
+         (assoc
+          (assoc (get if-node :safety) :outcome :unsafe-island)
+          :proof nil)
+         :unsafe-audit audit)
+        unsafe-safety (assoc safety :check nil)]
+    (assoc
+     (assoc checked-core :core-nodes
+            (sh12-replace-node
+             nodes if-id (assoc if-node :safety unsafe-safety) []))
+     :safety-facts
+     (assoc (get checked-core :safety-facts) if-id unsafe-safety))))
+
+(defn sh12-unsafe-audit-capability-core [case checked-core]
+  (if (= case :checked-unsafe-audit-capability-mismatch)
+    (let [nodes (get checked-core :core-nodes)
+          if-node (sh12-find-if-node nodes)
+          if-id (get if-node :node-id)
+          attributes
+          (assoc (get if-node :attributes)
+                 :intrinsic-capabilities #{:filesystem/read})
+          capability-facts (get checked-core :capability-facts)
+          capability-fact (get capability-facts if-id)
+          authority-fact
+          (assoc
+           (assoc capability-fact :required #{:filesystem/read})
+           :granted #{:filesystem/read})
+          source-core (get checked-core :source-core-input)]
+      (assoc
+       (assoc
+        (assoc checked-core :core-nodes
+               (sh12-replace-node
+                nodes if-id (assoc if-node :attributes attributes) []))
+        :capability-facts
+        (assoc capability-facts if-id authority-fact))
+       :source-core-input
+       (assoc source-core :declared-capabilities #{:filesystem/read})))
+    checked-core))
+
+(defn sh12-malformed-unsafe-audit-binding [case checked-core]
+  (let [authority-core
+        (sh12-unsafe-audit-capability-core case checked-core)
+        incomplete (sh12-incomplete-unsafe-audit authority-core)
+        nodes (get incomplete :core-nodes)
+        if-node (sh12-find-if-node nodes)
+        if-id (get if-node :node-id)
+        safety (get if-node :safety)
+        audit (get safety :unsafe-audit)
+        complete
+        (assoc
+         (assoc
+          (assoc
+           audit :preconditions #{:fixture-precondition})
+          :postconditions #{:fixture-postcondition})
+         :evidence #{:fixture-evidence})
+        malformed
+        (if (= case :checked-misbound-unsafe-audit)
+          (assoc complete :operation "wrong:operation")
+          (if (= case :checked-unsafe-audit-artifact-mismatch)
+            (assoc complete :artifact :attacker/not-an-unsafe-island)
+            (if (= case :checked-unsafe-audit-source-span-mismatch)
+              (assoc complete :source-span {:source "unrelated"})
+              (if (= case :checked-unsafe-audit-origin-mismatch)
+                (assoc complete :generated-origin [:unrelated-origin])
+                (if (= case :checked-unsafe-audit-effect-mismatch)
+                  (assoc complete :effects #{:io})
+                  (if (= case :checked-unsafe-audit-capability-mismatch)
+                    complete
+                    (if (= case :checked-unsafe-audit-contradictory-origins)
+                      (assoc
+                       (assoc complete :generated-origin [:wrong-origin])
+                       :generated-origin-chain [])
+                      (if (= case :checked-unsafe-audit-malformed-extra-origin-chain)
+                        (assoc complete :generated-origin-chain "garbage")
+                        (if (= case :checked-unsafe-audit-empty-boundary)
+                          (assoc
+                           (assoc complete :internal-only false)
+                           :safe-wrapper "")
+                          (if (= case :checked-unsafe-audit-empty-reason)
+                            (assoc complete :reason "")
+                            (if (= case :checked-unsafe-audit-empty-review-policy)
+                              (assoc complete :review {:policy ""})
+                              (if (= case :checked-unsafe-audit-empty-rereview)
+                                (assoc complete :re-review "")
+                                (if (= case :checked-unsafe-audit-nil-precondition)
+                                  (assoc complete :preconditions #{nil})
+                                  (if (= case :checked-unsafe-audit-nil-postcondition)
+                                    (assoc complete :postconditions #{nil})
+                                    (if (= case :checked-unsafe-audit-nil-invariant)
+                                      (assoc complete :invariants #{nil})
+                                      (if (= case :checked-unsafe-audit-nil-evidence)
+                                        (assoc complete :evidence #{nil})
+                                        complete))))))))))))))))
+        misbound-safety (assoc safety :unsafe-audit malformed)]
+    (assoc
+     (assoc incomplete :core-nodes
+            (sh12-replace-node
+             nodes if-id (assoc if-node :safety misbound-safety) []))
+     :safety-facts
+     (assoc (get incomplete :safety-facts) if-id misbound-safety))))
+
+(defn sh12-unsafe-audit-binding-case? [case]
+  (contains?
+   #{:checked-misbound-unsafe-audit
+     :checked-unsafe-audit-artifact-mismatch
+     :checked-unsafe-audit-source-span-mismatch
+     :checked-unsafe-audit-origin-mismatch
+     :checked-unsafe-audit-effect-mismatch
+     :checked-unsafe-audit-capability-mismatch
+     :checked-unsafe-audit-contradictory-origins
+     :checked-unsafe-audit-malformed-extra-origin-chain
+     :checked-unsafe-audit-empty-boundary
+     :checked-unsafe-audit-empty-reason
+     :checked-unsafe-audit-empty-review-policy
+     :checked-unsafe-audit-empty-rereview
+     :checked-unsafe-audit-nil-precondition
+     :checked-unsafe-audit-nil-postcondition
+     :checked-unsafe-audit-nil-invariant
+     :checked-unsafe-audit-nil-evidence}
+   case))
+
+(defn sh12-malformed-checked-core-review [case checked-core]
+  (if (= case :checked-same-block-forward-use)
+    (sh12-malformed-forward-use checked-core)
+    (if (sh12-runtime-check-case? case)
+      (sh12-malformed-runtime-check case checked-core)
+      (if (= case :checked-surplus-capability-authority)
+        (sh12-malformed-surplus-capability-authority checked-core)
+        (if (= case :checked-capability-authority-gap)
+          (sh12-malformed-capability-authority checked-core)
+          (if (= case :checked-incomplete-unsafe-audit)
+            (sh12-incomplete-unsafe-audit checked-core)
+            (if (= case :checked-empty-safety-proof-rule)
+              (sh12-malformed-empty-proof-rule checked-core)
+              (if (sh12-unsafe-audit-binding-case? case)
+                (sh12-malformed-unsafe-audit-binding case checked-core)
+                (if (= case :checked-invalid-source-span)
+                  (sh12-malformed-source-schema case checked-core)
+                  (if (contains?
+                       #{:checked-invalid-generated-origin
+                         :checked-invalid-generated-origin-nested-map
+                         :checked-invalid-generated-origin-nested-vector}
+                       case)
+                    (sh12-malformed-source-schema case checked-core)
+                    (if (= case :checked-generated-origin-loss)
+                      (let [nodes (get checked-core :core-nodes)
+                            if-node (sh12-find-if-node nodes)
+                            if-id (get if-node :node-id)]
+                        (assoc checked-core :core-nodes
+                               (sh12-replace-node
+                                nodes if-id
+                                (assoc if-node :source
+                                       (sh12-remove-key
+                                        (get if-node :source)
+                                        :generated-origin))
+                                [])))
+                      nil)))))))))))
+
+(defn sh12-malformed-checked-core
+  [case checked-core actual-source-path]
+  (let [candidate
+        (assoc checked-core :provenance
+               {:actual-source-path actual-source-path})
+        malformed
+        (sh12-malformed-checked-core-bound case candidate)]
+    (if (= malformed nil)
+      (let [review
+            (sh12-malformed-checked-core-review case candidate)]
+        (if (= review nil)
+          (let [identity
+                (sh12-malformed-checked-core-identity case candidate)]
+            (if (= identity nil) candidate identity))
+          review))
+      malformed)))
+
+(defn sh12-replace-block
+  [mir function-name function block-id block]
+  (sh12-replace-function
+   mir function-name
+   (assoc function :blocks
+          (assoc (get function :blocks) block-id block))))
+
+(defn sh12-replace-operation
+  [operations operation-id replacement result]
+  (if (= (count operations) 0)
+    result
+    (let [operation (first operations)]
+      (sh12-replace-operation
+       (rest operations) operation-id replacement
+       (conj result
+             (if (= operation-id (get operation :op-id))
+               replacement
+               operation))))))
+
+(defn sh12-find-operation [operations operation-id]
+  (if (= (count operations) 0)
+    nil
+    (if (= operation-id (get (first operations) :op-id))
+      (first operations)
+      (sh12-find-operation (rest operations) operation-id))))
+
+(defn sh12-malformed-branch-join-structure [case mir]
+  (let [functions (get mir :functions)
+        function-name (first (keys functions))
+        function (get functions function-name)
+        entry-id (get function :entry)
+        blocks (get function :blocks)
+        entry-block (get blocks entry-id)
+        control-flow (get mir :control-flow-graph)
+        join (get control-flow :join)
+        join-id (get join :block-id)
+        value-id (get join :value-id)
+        data-flow (get mir :data-flow-graph)]
+    (if (= case :malformed-module)
+      (assoc mir :artifact :gravity/malformed-mir-module)
+      (if (= case :module-boundary-escalation)
+        (assoc
+         (assoc
+          (assoc
+           (assoc
+            (assoc mir :verification-status :passed)
+            :b1-preflight
+            {:input-kind :gravity/mir
+             :requires-verifier-status :passed
+             :status :passed
+             :backend-credit? true})
+           :scope
+           (assoc
+            (assoc (get mir :scope) :backend-credit? true)
+            :release-credit? true))
+          :clojure-seed-boundary? false)
+         :self-hosted? true)
+        (if (= case :malformed-functions-carrier)
+        (assoc mir :functions "malformed-functions")
+          (if (= case :function-fact-loss)
+            (sh12-replace-function
+             mir function-name (assoc function :facts {}))
+            (if (= case :operation-authority-escalation)
+              (let [join-block (get blocks join-id)
+                    operations (get join-block :instructions)
+                    operation (sh12-find-operation operations value-id)
+                    escalated
+                    (assoc
+                     (assoc operation :capabilities #{:ambient/root})
+                     :verifier-status :passed)]
+                (sh12-replace-block
+                 mir function-name function join-id
+                 (assoc join-block :instructions
+                        (sh12-replace-operation
+                         operations value-id escalated []))))
+              (if (= case :malformed-block)
+                (sh12-replace-function
+                 mir function-name
+                 (assoc function :blocks
+                        (sh12-remove-key blocks join-id)))
+                (if (= case :malformed-blocks-carrier)
+                  (sh12-replace-function
+                   mir function-name
+                   (assoc function :blocks "malformed-blocks"))
+                  (if (= case :malformed-edge)
+                    (assoc mir :control-flow-graph
+                           (assoc control-flow :edges []))
+                    (if (= case :malformed-terminator)
+                      (sh12-replace-block
+                       mir function-name function entry-id
+                       (assoc entry-block :terminator
+                              (assoc (get entry-block :terminator)
+                                     :kind :return)))
+                      (if (= case :malformed-value)
+                        (assoc mir :data-flow-graph
+                               (assoc data-flow :definitions
+                                      (sh12-remove-key
+                                       (get data-flow :definitions)
+                                       value-id)))
+                        (if (= case :malformed-data-carrier)
+                          (assoc mir :data-flow-graph
+                                 (assoc data-flow :values
+                                        "malformed-values"))
+                          nil)))))))))))))
+
+(defn sh12-malformed-branch-join-fact [case mir]
+  (let [control-flow (get mir :control-flow-graph)
+        join (get control-flow :join)
+        value-id (get join :value-id)]
+    (if (= case :type-fact-loss)
+      (assoc mir :type-table
+             (sh12-remove-key
+              (get mir :type-table) (str value-id ":type-fact")))
+      (if (= case :effect-fact-loss)
+        (assoc mir :effect-table
+               (sh12-remove-key
+                (get mir :effect-table) (str value-id ":effect-fact")))
+        (if (= case :ownership-fact-loss)
+          (assoc mir :ownership-table
+                 (sh12-remove-key
+                  (get mir :ownership-table)
+                  (str value-id ":ownership-fact")))
+          (if (= case :capability-fact-loss)
+            (assoc mir :capability-table
+                   (sh12-remove-key
+                    (get mir :capability-table)
+                    (str value-id ":capability-fact")))
+            (if (= case :capability-proof-loss)
+              (assoc mir :capability-proof-table
+                     (sh12-remove-key
+                      (get mir :capability-proof-table)
+                      "sh12:branch-join:capability-proof"))
+              (if (= case :profile-target-fact-loss)
+                (assoc mir :profile-target-table
+                       (sh12-remove-key
+                        (get mir :profile-target-table)
+                        (str value-id ":profile-target-fact")))
+                (if (= case :provenance-fact-loss)
+                  (assoc mir :provenance {})
+                  (if (= case :safety-fact-loss)
+                    (assoc mir :safety-table
+                           (sh12-remove-key
+                            (get mir :safety-table)
+                            (str value-id ":safety-outcome")))
+                    (if (= case :source-fact-loss)
+                      (assoc mir :source-map
+                             (sh12-remove-key
+                              (get mir :source-map) value-id))
+                      nil)))))))))))
+
+(defn sh12-malformed-branch-join-mir [case mir actual-source-path]
+  (let [structure
+        (sh12-malformed-branch-join-structure case mir)
+        candidate
+        (if (= structure nil)
+          (let [fact (sh12-malformed-branch-join-fact case mir)]
+            (if (= fact nil) mir fact))
+          structure)]
+    {:actual-source-path actual-source-path
+     :mir
+     (assoc candidate :diagnostics
+            [{:actual-source-path actual-source-path}])}))

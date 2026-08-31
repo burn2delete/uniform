@@ -63,6 +63,10 @@
   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test)
 (def ^:private sh16-evidence-ns
   'gravity.self-hosting.sh16-c12-domain-evidence-boundary-test)
+(def ^:private c15-shape-ns
+  'gravity.self-hosting.sh07-c15-diagnostics-shape-preflight-test)
+(def ^:private sh15-boundary-ns
+  'gravity.self-hosting.sh15-diagnostic-boundary-test)
 (def ^:private sh17-continuity-ns
   'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test)
 (def ^:private sh17-hardening-ns
@@ -168,6 +172,17 @@
                 (source-deftest-selectors namespace-symbol relative-path)]))
         stage10-source-files))
 
+(defn- stage11-discovered-catalog
+  []
+  {c15-shape-ns
+   (source-deftest-selectors
+    c15-shape-ns
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_c15_diagnostics_shape_preflight_test.clj")
+   sh15-boundary-ns
+   (source-deftest-selectors
+    sh15-boundary-ns
+    "bootstrap/clojure/test/gravity/self_hosting/sh15_diagnostic_boundary_test.clj")})
+
 (deftest fixed-batches-have-exact-source-order-vectors
   (is (= [:primitive-pure
           :primitive-bool-authenticated
@@ -205,7 +220,10 @@
           :stage10-w1-hostile-stable
           :stage10-w1-direct-mutation
           :stage10-w1-sh25-catalog
-          :stage10-w1-sh25-sh26-consumer]
+          :stage10-w1-sh25-sh26-consumer
+          :stage11-c15-source-preflight
+          :stage11-sh15-diagnostic-boundary
+          :stage11-public-c15]
          runner/fixed-batch-ids))
   (is (= runner/primitive-pure-selectors
          (get runner/fixed-batch-selectors :primitive-pure)))
@@ -418,7 +436,8 @@
                            "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
-         (stage10-discovered-catalog))]
+         (stage10-discovered-catalog)
+         (stage11-discovered-catalog))]
     (let [catalog-result
           (runner/validate-fixed-catalog! runner/fixed-batches discovered)]
       (is (= :passed (:status catalog-result)))
@@ -812,7 +831,8 @@
                            "bootstrap/clojure/test/gravity/self_hosting/sh16_c12_domain_evidence_boundary_test.clj")
          fragment-ns (selectors-for fragment-ns)
          bootstrap-ns (selectors-for bootstrap-ns)}
-         (stage10-discovered-catalog))
+         (stage10-discovered-catalog)
+         (stage11-discovered-catalog))
         missing (update base primitive-ns pop)
         extra (update base primitive-ns conj
                       'gravity.self-hosting.sh08-primitive-function-type-test/new-test)

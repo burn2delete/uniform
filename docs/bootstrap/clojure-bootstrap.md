@@ -3,7 +3,7 @@
 Status: stage0 executable seed
 
 Gravity is a Lisp-family language, so the first executable bootstrap is written
-in Clojure rather than Python. This keeps the seed implementation close to the
+in Clojure. This keeps the seed implementation close to the
 language model while remaining explicit that Clojure is a temporary trusted
 tool, not the definition of Gravity.
 

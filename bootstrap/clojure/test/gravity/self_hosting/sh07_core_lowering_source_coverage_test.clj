@@ -33,36 +33,300 @@
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 9109)
+(def ^:private expected-source-byte-count 298180)
 (def ^:private expected-source-revision-id
-  "sha256:d9d2acced4092f7e5c3244504351b6a4f6f2a90ce202400a48c3c1f690544afc")
+  "sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2")
 (def ^:private expected-coverage
-  {:fragment-count 7
-   :root-form-count 7
-   :form-count 348
-   :binding-count 289
-   :local-binding-count 27
-   :resolution-count 13})
+  {:fragment-count 263
+   :root-form-count 263
+   :form-count 29231
+   :binding-count 1878
+   :local-binding-count 1616
+   :resolution-count 11790})
 (def ^:private expected-core-census
-  {:core-node-count 220
-   :definition-count 7
-   :call-count 0
-   :reference-count 0
+  {:core-node-count 24597
+   :definition-count 263
+   :call-count 4896
+   :reference-count 9508
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 172
-    :collection-literal 35
-    :def 7
-    :quote 3
-    :fn 3}})
+   {:call 4896
+    :collection-literal 881
+    :def 263
+    :fn 258
+    :if 1174
+    :let 200
+    :literal 7030
+    :loop 156
+    :quote 40
+    :recur 191
+    :reference 9508}})
 (def ^:private expected-definition-names
-  '#{c6-core-node-contract
-     c6-lowering-rule-contract
-     c6-domain-boundary-contract
-     c6-core-lowering-diagnostic-catalog
-     build-c6-core-node
-     build-c6-desugaring-trace
-     verify-c6-core-lowering})
+  '[c6-core-node-contract
+    c6-lowering-rule-contract
+    c6-domain-boundary-contract
+    c6-core-lowering-diagnostic-catalog
+    c6-set-mutation-execution-contract
+    c6-set-execution-contract-value
+    c6-set-execution-verification-checks
+    c6-set-execution-verification-carrier
+    c6-set-execution-exact-keys?
+    c6-set-execution-id?
+    c6-set-execution-find
+    c6-set-execution-remediation
+    c6-set-execution-diagnostic
+    c6-set-execution-request-shape?
+    c6-set-execution-store-entry?
+    c6-set-execution-store-valid?
+    c6-set-execution-node-index-valid?
+    c6-set-execution-mutation-shape?
+    c6-set-execution-mutation-index-valid?
+    c6-set-execution-positive-integer?
+    c6-set-execution-semantic-span-valid?
+    c6-set-execution-generated-origin-valid?
+    c6-set-execution-literal-value-kind-valid?
+    c6-set-execution-source-valid?
+    c6-set-execution-core-node-shape?
+    c6-set-execution-mutation-pending-legality?
+    c6-set-execution-set-node-ids
+    c6-set-execution-mutation-node-ids
+    c6-set-execution-first-mismatched-set-node
+    c6-set-execution-first-unseen-node
+    c6-set-execution-graph-check
+    c6-set-execution-literal-check
+    c6-set-execution-set-check
+    c6-set-execution-node-check
+    c6-set-execution-all-nodes-check
+    verify-c6-set-mutation-execution-request
+    c6-sh07-exception-contract-value
+    c6-sh07-exception-exact-keys?
+    c6-sh07-exception-find
+    c6-sh07-exception-sha256-id?
+    c6-sh07-exception-all-unique?
+    c6-sh07-exception-bounded-vector?
+    c6-sh07-exception-aggregate?
+    c6-sh07-exception-post-reader-scalar?
+    c6-sh07-exception-components
+    c6-sh07-exception-carrier-preflight
+    c6-sh07-exception-diagnostic
+    c6-sh07-exception-rule-for-reason
+    c6-sh07-exception-request-shape?
+    c6-sh07-exception-snapshot-shape?
+    c6-sh07-exception-byte-vector-valid?
+    c6-sh07-exception-utf8-continuation?
+    c6-sh07-exception-utf8-bytes-valid?
+    c6-sh07-exception-snapshot-strict-utf8?
+    c6-sh07-exception-carrier-shape?
+    c6-sh07-exception-source-unit
+    c6-sh07-exception-core-request
+    c6-sh07-exception-core
+    c6-sh07-exception-index-shaped-request
+    c6-sh07-exception-index-request
+    c6-sh07-exception-form
+    c6-sh07-exception-form-by-syntax
+    c6-sh07-exception-binding
+    c6-sh07-exception-definition-binding
+    c6-sh07-exception-resolution
+    c6-sh07-exception-form-operator
+    c6-sh07-exception-form-root-id
+    c6-sh07-exception-project-binding
+    c6-sh07-exception-upstream-binding
+    c6-sh07-exception-upstream-request-binding
+    c6-sh07-exception-core-external-authorized?
+    c6-sh07-exception-upstream-import-dependency
+    c6-sh07-exception-alias-record-valid?
+    c6-sh07-exception-alias-table-valid?
+    c6-sh07-exception-qualified-alias-record
+    c6-sh07-exception-import-external-authorized?
+    c6-sh07-exception-edge-classification
+    c6-sh07-exception-all-checks-true?
+    c6-sh07-exception-exact-checks-true?
+    c6-sh07-exception-sh06-report-checks
+    c6-sh07-exception-b47-report-checks
+    c6-sh07-exception-sh05-report-checks
+    c6-sh07-exception-sh05-run-verification-valid?
+    c6-sh07-exception-sh05-gravity-verifiers-valid?
+    c6-sh07-exception-sh05-report-valid?
+    c6-sh07-exception-verification-reports-valid?
+    c6-sh07-exception-authorized-edges
+    c6-sh07-exception-path-segments-valid?
+    c6-sh07-exception-absolute-normalized-path?
+    c6-sh07-exception-relative-normalized-path?
+    c6-sh07-exception-path-has-extension?
+    c6-sh07-exception-path-membership-valid?
+    c6-sh07-exception-membership-valid?
+    c6-sh07-exception-vector-sha?
+    c6-sh07-exception-span-valid?
+    c6-sh07-exception-origin-entry-valid?
+    c6-sh07-exception-origin-vector-valid?
+    c6-sh07-exception-form-record-valid?
+    c6-sh07-exception-binding-record-valid?
+    c6-sh07-exception-resolution-record-valid?
+    c6-sh07-exception-trace-record-valid?
+    c6-sh07-exception-lineage-valid?
+    c6-sh07-exception-module-valid?
+    c6-sh07-exception-preserved-macro-step-valid?
+    c6-sh07-exception-origin-expectation-valid?
+    c6-sh07-exception-trace-pair-valid?
+    c6-sh07-exception-origin-entries
+    c6-sh07-exception-origin-follow-acyclic?
+    c6-sh07-exception-retained-origins-unique?
+    c6-sh07-exception-origin-closure-valid?
+    c6-sh07-exception-flatten-fragment-field
+    c6-sh07-exception-form-ids
+    c6-sh07-exception-local-binding-ids
+    c6-sh07-exception-resolution-reference-ids
+    c6-sh07-exception-fragment-record-valid?
+    c6-sh07-exception-form-graph-valid?
+    c6-sh07-exception-fragment-products-valid?
+    c6-sh07-exception-request-collections-shaped?
+    c6-sh07-exception-request-bounds-valid?
+    c6-sh07-exception-carrier-admission
+    c6-sh07-exception-child
+    c6-sh07-exception-operator-resolution-valid?
+    c6-sh07-exception-origin-valid?
+    c6-sh07-exception-fragment-forms
+    c6-sh07-exception-operator-count
+    c6-sh07-exception-selected-fragment
+    c6-sh07-exception-definition-binding-valid?
+    c6-sh07-exception-catch-valid
+    c6-sh07-exception-raw-candidate
+    c6-sh07-exception-raw-selection
+    c6-sh07-exception-value-edge
+    c6-sh07-exception-value-node-authorized?
+    c6-sh07-exception-canonical-cross-check
+    c6-sh07-exception-shape
+    c6-sh07-exception-path-neutral-record
+    c6-sh07-exception-path-neutral-binding
+    c6-sh07-exception-path-neutral-resolution
+    c6-sh07-exception-semantic-edges
+    c6-sh07-exception-semantic-bindings
+    c6-sh07-exception-semantic-node
+    c6-sh07-exception-semantic-nodes
+    c6-sh07-exception-node-sources
+    c6-sh07-exception-source-map
+    c6-sh07-exception-snapshot-membership-view
+    c6-sh07-exception-build-template
+    c6-sh07-independent-template-check
+    c6-sh07-exception-digest-entry-valid?
+    c6-sh07-exception-digest-transcript-valid?
+    c6-sh07-exception-digest-at
+    c6-sh07-exception-snapshot-digests-valid?
+    c6-sh07-exception-resolved-template
+    c6-sh07-exception-circular-verifier-retired
+    c6-sh07-independent-exception-aggregate?
+    c6-sh07-independent-exception-post-reader-scalar?
+    c6-sh07-independent-exception-components
+    c6-sh07-independent-exception-carrier-preflight
+    c6-sh07-independent-exception-utf8-continuation?
+    c6-sh07-independent-exception-strict-utf8?
+    c6-sh07-independent-exception-snapshot-valid?
+    c6-sh07-independent-exception-path-segments-valid?
+    c6-sh07-independent-exception-paths-valid?
+    c6-sh07-independent-exception-all-checks-true?
+    c6-sh07-independent-exception-sh06-check-set
+    c6-sh07-independent-exception-b47-check-set
+    c6-sh07-independent-exception-sh05-check-set
+    c6-sh07-independent-exception-sh05-run-valid?
+    c6-sh07-independent-exception-sh05-verifiers-valid?
+    c6-sh07-independent-exception-sh05-report-valid?
+    c6-sh07-independent-exception-reports-valid?
+    c6-sh07-independent-exception-membership-valid?
+    c6-sh07-independent-exception-index-request
+    c6-sh07-independent-exception-vector-sha?
+    c6-sh07-independent-exception-span-valid?
+    c6-sh07-independent-exception-origin-vector-shaped?
+    c6-sh07-independent-exception-form-shaped?
+    c6-sh07-independent-exception-binding-shaped?
+    c6-sh07-independent-exception-resolution-shaped?
+    c6-sh07-independent-exception-alias-shaped?
+    c6-sh07-independent-exception-trace-shaped?
+    c6-sh07-independent-exception-fragment-shaped?
+    c6-sh07-independent-exception-lineage-shaped?
+    c6-sh07-independent-exception-module-shaped?
+    c6-sh07-independent-exception-macro-step-shaped?
+    c6-sh07-independent-exception-records-shaped?
+    c6-sh07-independent-exception-origin-expectation-valid?
+    c6-sh07-independent-exception-macro-products-valid?
+    c6-sh07-independent-exception-tree-id-set
+    c6-sh07-independent-exception-ordered-form-ids
+    c6-sh07-independent-exception-ordered-local-binding-ids
+    c6-sh07-independent-exception-ordered-resolution-ids
+    c6-sh07-independent-exception-ordered-external-binding-ids
+    c6-sh07-independent-exception-resolution-alias
+    c6-sh07-independent-exception-fragment-aliases
+    c6-sh07-independent-exception-fragment-derived-valid?
+    c6-sh07-independent-exception-append-values
+    c6-sh07-independent-exception-flatten-field
+    c6-sh07-independent-exception-disjoint?
+    c6-sh07-independent-exception-union
+    c6-sh07-independent-exception-form-graph-valid?
+    c6-sh07-independent-exception-fragment-products-valid?
+    c6-sh07-independent-exception-edge-occurrences
+    c6-sh07-independent-exception-request-collections-valid?
+    c6-sh07-independent-exception-request-domain-valid?
+    c6-sh07-independent-exception-origin-entries
+    c6-sh07-independent-exception-origin-entry-valid?
+    c6-sh07-independent-exception-retained-unique?
+    c6-sh07-independent-exception-origin-closure-valid?
+    c6-sh07-independent-exception-carrier-admission
+    c6-sh07-independent-exception-upstream-binding
+    c6-sh07-independent-exception-upstream-request-binding
+    c6-sh07-independent-exception-core-external-authorized?
+    c6-sh07-independent-exception-upstream-import-dependency
+    c6-sh07-independent-exception-alias-record-valid?
+    c6-sh07-independent-exception-qualified-alias-record
+    c6-sh07-independent-exception-import-external-authorized?
+    c6-sh07-independent-exception-edge-classification
+    c6-sh07-independent-exception-authorized-edges
+    c6-sh07-independent-exception-operator-resolution-valid?
+    c6-sh07-independent-exception-origin-valid?
+    c6-sh07-independent-exception-fragment-forms
+    c6-sh07-independent-exception-operator-count
+    c6-sh07-independent-exception-selected-fragment
+    c6-sh07-independent-exception-definition-binding-valid?
+    c6-sh07-independent-exception-catch-valid
+    c6-sh07-independent-exception-raw-candidate
+    c6-sh07-independent-exception-raw-selection
+    c6-sh07-independent-exception-value-edge
+    c6-sh07-independent-exception-value-node-authorized?
+    c6-sh07-independent-exception-canonical-cross-check
+    c6-sh07-independent-exception-resolve-eligible?
+    c6-sh07-independent-exception-path-neutral-record
+    c6-sh07-independent-exception-semantic-node
+    c6-sh07-independent-exception-semantic-nodes
+    c6-sh07-independent-exception-semantic-binding
+    c6-sh07-independent-exception-semantic-bindings
+    c6-sh07-independent-exception-semantic-edges
+    c6-sh07-independent-exception-snapshot-view
+    c6-sh07-independent-exception-source-map
+    c6-sh07-independent-exception-node-sources
+    c6-sh07-independent-exception-derived-context
+    c6-sh07-independent-exception-template-from-context
+    c6-sh07-exception-not-equal?
+    c6-sh07-independent-exception-resolved-template-check
+    c6-sh07-independent-exception-resolved-core-check
+    c6-sh07-independent-exception-lower-hex-character?
+    c6-sh07-independent-exception-sha256-id?
+    c6-sh07-independent-exception-digest-entry-valid?
+    c6-sh07-independent-exception-digest-transcript-valid?
+    c6-sh07-independent-exception-expected-digest-requests
+    c6-sh07-independent-exception-snapshot-digests-valid?
+    c6-sh07-independent-exception-verifier-from-resolved
+    c6-sh07-independent-exception-verifier
+    c6-sh07-exception-admission-diagnostic
+    c6-sh07-exception-phase-payload-valid?
+    c6-sh07-exception-admit-phase
+    c6-sh07-exception-verify-template-phase
+    c6-sh07-exception-template-literal-value?
+    c6-sh07-exception-resolve-phase
+    c6-sh07-exception-verify-resolved-phase
+    c6-sh07-authenticated-exception-entrypoint
+    build-c6-core-node
+    build-c6-desugaring-trace
+    verify-c6-core-lowering])
+(def ^:private expected-definition-names-hash
+  "sha256:14a9f0c1894b0d1eaba775e5a42d69f2c56bd96960fa698d39a3f5d024f46df3")
 (def ^:private rejected-families
   {"core-shape" "C6-CORE-SHAPE"
    "lowering-gap" "C6-LOWERING-GAP"})
@@ -213,7 +477,7 @@
   (let [contract
         (edn/read-string
          (slurp (path proof-contract-relative-path)))]
-    (is (= "SH-07-B18" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c6-relative-path
            (get-in contract [:authoritative-modules :c6-core])))
     (is (= {:keyword-lookups 0}
@@ -268,9 +532,13 @@
         quote-nodes (filterv #(= :quote (:core-form %)) nodes)
         fn-nodes (filterv #(= :fn (:core-form %)) nodes)]
     (is (= expected-definition-names
-           (set (map :name definitions))))
-    (is (= 7 (count definitions)))
-    (is (= 3 (count quote-nodes) (count fn-nodes)))
+           (mapv :name definitions)))
+    (is (= expected-definition-names-hash
+           (gravity.bootstrap/p15-s23-c11-mir-digest
+            expected-definition-names)))
+    (is (= 263 (count definitions)))
+    (is (= 40 (count quote-nodes)))
+    (is (= 258 (count fn-nodes)))
     (is (every? #(= :def
                     (:core-form (get node-by-id (:core-node-id %))))
                 definitions))
@@ -280,9 +548,7 @@
       (is (= [] (get-in node [:evaluation :order])))
       (is (= #{:quoted-form-id :quoted-syntax-id
                :quoted-kind :quoted-value}
-             (set (keys (:attributes node))))))
-    (is (empty? (:reference-uses core-artifact)))
-    (is (empty? (:calls core-artifact)))))
+             (set (keys (:attributes node))))))))
 
 (deftest sh07-b18-c6-is-deterministic-path-neutral-and-provenanced
   (let [{:keys [left right left-path right-path]} @parity-artifacts]

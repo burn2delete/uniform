@@ -31,17 +31,17 @@
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 210220)
+(def ^:private expected-source-byte-count 284176)
 (def ^:private expected-source-revision-id
-  "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4")
+  "sha256:e33a54b8cf202399a1f7dfae23221f653a8d43387566539fb026a54d2f44b275")
 (def ^:private expected-plan-semantic-id
-  "sha256:aa39464005e7abd3ab452020891aa7846753798300cb7587cb49f1a9a34678d4")
+  "sha256:24a18819f6ca46a507fc0d6b823a4d5738ecf3e63e094f08355067bd0ceb2918")
 (def ^:private expected-functions-semantic-id
-  "sha256:64d0209402a9e567afe4103f943564b62684e09aae22e4be599e4c815b4e5d58")
+  "sha256:46304d3da737c9b821f6b577e5e2d399cb820f70f88ede4f583e822760fe1ee3")
 (def ^:private expected-function-names-id
-  "sha256:a0c89a91b11de3851d39cac963b9dc307832d6d6a1e325ab05fd60e1fe19ec3a")
+  "sha256:f1a3ae245feab54a4cfe9495b872308d3dfaf50db0ef9b8a523ce0792f5501c6")
 (def ^:private expected-function-shapes-id
-  "sha256:4e172c20effb3dc0dbba7074a3510462451d628a2a1b697525dfd4bd3c32a194")
+  "sha256:301b37d04f398169dd4d356a50413edcf3a617fe6b735d2d1556c3a900996df3")
 (def ^:private expected-public-function-hashes
   {'sh08-type-core-artifact
    "sha256:9a6ce8c438e9126c44c8610e740909f1aa31381bded4e375cc8c48e6ea0cffdb"
@@ -52,35 +52,47 @@
    'sh08-function-type-core-artifact
    "sha256:79ac1e36aa8119f1f838d360c6fc25d45aa27c947ecf05cf25faac34989b091b"
    'sh08-verify-function-type-result
-   "sha256:8dc884ece47f4f039d81371aaf15bb65f33e689718a2545ce161f3caf69abe7f"})
+   "sha256:8dc884ece47f4f039d81371aaf15bb65f33e689718a2545ce161f3caf69abe7f"
+   'sh08-record-union-type-boundary-policy
+   "sha256:bab4d5ca6ee5f524035bcf5465063ffe382729bdaa112d81e2fa065a91571423"
+   'sh08-record-union-type-core-artifact
+   "sha256:fdcef70a5026737293d6d2fa465ff770af27fcc79a1b22cdb73db8abd384081f"
+   'sh08-verify-record-union-type-result
+   "sha256:83305d0dc0d16a08c15986f4f9fbf36660b63d452cbaaf30f09cf6ac5ffcf562"
+   'sh08-record-access-match-typing-boundary-policy
+   "sha256:504139214b92b319749a918ea3dcbf3709fcdd079217e316f1af0a1b6ae594b4"
+   'sh08-record-access-match-typed-core-artifact
+   "sha256:4392148868d2a893d607e82f17b417e475993f558ec72e4e50cff4da0a78c7a4"
+   'sh08-verify-record-access-match-typing-result
+   "sha256:ae823d54151e3a9c533ea1f8ddda16e4a076b1b20c181507def6ef13e6b9f1eb"})
 (def ^:private expected-coverage
-  {:fragment-count 142
-   :root-form-count 142
-   :form-count 12759
-   :binding-count 1114
-   :local-binding-count 852
-   :resolution-count 5221})
+  {:fragment-count 252
+   :root-form-count 252
+   :form-count 24902
+   :binding-count 1938
+   :local-binding-count 1676
+   :resolution-count 10086})
 (def ^:private expected-core-census
-  {:core-node-count 10405
-   :definition-count 142
-   :call-count 2069
-   :function-record-count 137
-   :call-edge-count 2069
-   :recursion-component-count 10
-   :reference-count 4117
+  {:core-node-count 20685
+   :definition-count 252
+   :call-count 4063
+   :function-record-count 247
+   :call-edge-count 4063
+   :recursion-component-count 25
+   :reference-count 8186
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 2852
-    :collection-literal 263
-    :def 142
-    :reference 4117
-    :call 2069
-    :if 566
-    :let 98
-    :loop 73
-    :recur 85
+   {:literal 6018
+    :collection-literal 518
+    :def 252
+    :reference 8186
+    :call 4063
+    :if 967
+    :let 198
+    :loop 106
+    :recur 127
     :quote 3
-    :fn 137}})
+    :fn 247}})
 (def ^:private expected-export-names
   '[c7-type-fact-contract
     c7-type-environment-contract
@@ -96,6 +108,12 @@
     sh08-function-type-boundary-policy
     sh08-function-type-core-artifact
     sh08-verify-function-type-result
+    sh08-record-union-type-boundary-policy
+    sh08-record-union-type-core-artifact
+    sh08-verify-record-union-type-result
+    sh08-record-access-match-typing-boundary-policy
+    sh08-record-access-match-typed-core-artifact
+    sh08-verify-record-access-match-typing-result
     verify-c7-type-checker])
 (def ^:private expected-definition-names
   '#{c7-type-fact-contract
@@ -156,9 +174,9 @@
         'build-c7-function-type
         'verify-c7-type-checker))
 (def ^:private expected-definition-names-hash
-  "sha256:6489521946211d9ff70d2b30b08e6b79c6d491b7da92388db3f846daa4bb4ea9")
+  "sha256:5930bd7c2db12138099ff98ed3b960898929feeb1327fb243ab033e5d78e88cb")
 (def ^:private expected-executable-names-hash
-  "sha256:d0c316b55ac4346808713a536c32cba52001c06a57ec11ce1541381c138a1273")
+  "sha256:b39b811bf3d26f37604b29502f5aa4633128e5b774def935f8c583c7cc2a5622")
 (def ^:private expected-document-ids
   ["C7" "L5" "L7" "L8" "L9" "L10"
    "C5" "C6" "C8" "C9" "C10" "C11"
@@ -597,7 +615,7 @@
     (is (= :gravity/stage2-compiler-artifact-plan (:kind plan)))
     (is (= expected-plan-semantic-id (plan-semantic-id plan)))
     (is (= expected-functions-semantic-id (digest functions)))
-    (is (= 187 (count functions)))
+    (is (= 247 (count functions)))
     (is (= expected-function-names-id
            (digest (vec (sort (keys functions))))))
     (is (= expected-function-shapes-id
@@ -653,7 +671,7 @@
         core-shape-form (get definition-forms 'sh08-validate-core-shape)
         type-node-form (get definition-forms 'sh08-type-node)
         verifier-form (get definition-forms 'verify-c7-type-checker)]
-    (is (= 193 (count forms)))
+    (is (= 253 (count forms)))
     (is (every? #(<= (source-form-node-count %)
                      maximum-top-level-form-nodes)
                 forms))
@@ -708,16 +726,16 @@
              :clojure-c7-diagnostic-catalog]}
            (:lineage bootstrap-metadata)))
     (is (every? (set (keys definition-forms)) expected-definition-names))
-    (is (= 192 (count definition-forms)))
+    (is (= 252 (count definition-forms)))
     (is (= expected-definition-names-hash
            (gravity.bootstrap/p15-s23-c11-mir-digest
             (vec (sort (keys definition-forms))))))
     (is (= 5 (count (filter #(= 'def (first %))
                             (vals definition-forms)))))
-    (is (= 187 (count (filter #(= 'defn (first %))
+    (is (= 247 (count (filter #(= 'defn (first %))
                             (vals definition-forms)))))
     (is (every? executable-names expected-executable-sh08-names))
-    (is (= 184 (count executable-names)))
+    (is (= 244 (count executable-names)))
     (is (= expected-executable-names-hash
            (gravity.bootstrap/p15-s23-c11-mir-digest
             (vec (sort executable-names)))))
@@ -826,10 +844,10 @@
                                (#{'def 'defn} (first %)))
                          (source-forms))))
            (set (map :name (:definitions core-artifact)))))
-    (is (= 833 (count get-calls)))
-    (is (= 774 (count literal-keyword-get-calls)))
-    (is (= 59 (count dynamic-get-calls)))
-    (is (= {:call 42 :reference 17}
+    (is (= 1905 (count get-calls)))
+    (is (= 1819 (count literal-keyword-get-calls)))
+    (is (= 86 (count dynamic-get-calls)))
+    (is (= {:call 61 :reference 25}
            (frequencies
             (map
              #(get-in node-by-id

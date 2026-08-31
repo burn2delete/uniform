@@ -1,0 +1,4 @@
+[[borrow/read
+  {:return-type "Borrow[Buffer]", :memory-regime :borrowing, :borrow-mode :immutable}]
+ [borrow/write
+  {:return-type "BorrowMut[Buffer]", :memory-regime :borrowing, :borrow-mode :mutable}]]

@@ -1,0 +1,29 @@
+[[safe12/macro-safety-declaration
+  {:return-type "Safe12MacroSafetyDeclaration",
+   :safety-conformance-kind :safe12-macro-safety-declaration}]
+ [safe12/generated-origin-chain
+  {:return-type "Safe12GeneratedOriginChain",
+   :safety-conformance-kind :safe12-generated-origin-chain}]
+ [safe12/macro-build-effect-record
+  {:return-type "Safe12MacroBuildEffectRecord",
+   :effects #{:build/read-file},
+   :safety-conformance-kind :safe12-macro-build-effect-record,
+   :build-grant-diagnostic "SAFE12-BUILD-EFFECT"}]
+ [safe12/generated-unsafe-island
+  {:return-type "Safe12GeneratedUnsafeIslandRecord",
+   :safety-conformance-kind :safe12-generated-unsafe-island}]
+ [safe12/hygiene-capture-record
+  {:return-type "Safe12HygieneCaptureRecord",
+   :safety-conformance-kind :safe12-hygiene-capture-record}]
+ [safe12/taint-capability-propagation
+  {:return-type "Safe12TaintCapabilityPropagation",
+   :safety-conformance-kind :safe12-taint-capability-propagation}]
+ [safe12/facet-output-record
+  {:return-type "Safe12FacetOutputRecord",
+   :safety-conformance-kind :safe12-facet-output-record}]
+ [safe12/alternative-engine-equivalence
+  {:return-type "Safe12AlternativeEngineEquivalence",
+   :safety-conformance-kind :safe12-alternative-engine-equivalence}]
+ [safe12/conformance
+  {:return-type "Safe12ConformanceRecord",
+   :safety-conformance-kind :safe12-conformance}]]

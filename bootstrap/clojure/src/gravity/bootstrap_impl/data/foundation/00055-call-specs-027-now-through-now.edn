@@ -1,0 +1,2 @@
+[[time/now
+  {:return-type "Instant", :effects #{:time/read}, :capabilities #{:time/read}}]]

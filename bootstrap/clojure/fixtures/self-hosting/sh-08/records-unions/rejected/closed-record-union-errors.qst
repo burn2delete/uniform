@@ -1,0 +1,107 @@
+(ns self-hosting.sh08.records-unions.closed-family-errors
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [missing-field-family
+             wrong-field-type-family
+             invalid-variant-family
+             nonexhaustive-match-family])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-08-records-unions
+              :scope :authenticated-descriptor-model-rejections
+              :preparatory-source-model? true
+              :roadmap-credit? false
+              :executable-record-union-language-behavior? false
+              :nominal-sh07-carrier? false
+              :non-claims [:surface-record-union-syntax
+                           :record-construction-typing
+                           :record-access-typing
+                           :union-construction-typing
+                           :union-match-typing-and-narrowing
+                           :constructor-pattern-lowering
+                           :uniform-gravity-and-qst-execution-gates
+                           :sh07-completion
+                           :sh08-completion]}))
+
+(def missing-field-family
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}]}
+   :record-access {:record-type :user :field :id}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :some :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})
+
+(def wrong-field-type-family
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value 42}]}
+   :record-access {:record-type :user :field :name}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :some :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})
+
+(def invalid-variant-family
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value "Ada"}]}
+   :record-access {:record-type :user :field :id}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :unknown :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})
+
+(def nonexhaustive-match-family
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value "Ada"}]}
+   :record-access {:record-type :user :field :name}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :some :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}]}})

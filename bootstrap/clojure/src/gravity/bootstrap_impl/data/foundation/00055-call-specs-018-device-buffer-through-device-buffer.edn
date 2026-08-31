@@ -1,0 +1,8 @@
+[[gpu/device-buffer
+  {:return-type "DeviceMemory[Buffer]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :device-memory,
+   :allocation-kind :gpu-device,
+   :memory-space :gpu/global,
+   :runtime-assumption :device-provider}]]

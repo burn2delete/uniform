@@ -32,33 +32,35 @@
   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 71132)
+(def ^:private expected-source-byte-count 111921)
 (def ^:private expected-source-revision-id
-  "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd")
+  "sha256:130faedf9ba0af79b557f4cc05dd8077397e0cdafd0d12f0b9efef27d0a8ce06")
 (def ^:private expected-sh06-semantic-projection-id
-  "sha256:a0b95515faa899db463683ad98a37b0511def5dffa5964fd364cdc16547d3edc")
+  "sha256:43320512fbf3c177c5710d3a8a096b53b7e9961ed1dd5e4bdf4646bda91a752f")
 (def ^:private expected-coverage
-  {:fragment-count 31
-   :root-form-count 31
-   :form-count 2320
-   :binding-count 370
-   :resolution-count 741})
+  {:fragment-count 107
+   :root-form-count 107
+   :form-count 8608
+   :binding-count 735
+   :resolution-count 3019})
 (def ^:private expected-core-census
-  {:core-node-count 1964
-   :definition-count 31
-   :call-count 288
-   :reference-count 602
+  {:core-node-count 7298
+   :definition-count 107
+   :call-count 1234
+   :reference-count 2428
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 847
-    :collection-literal 88
-    :def 31
-    :reference 602
-    :call 288
-    :if 76
-    :let 5
+   {:literal 2748
+    :collection-literal 297
+    :def 107
+    :reference 2428
+    :call 1234
+    :if 306
+    :let 60
+    :loop 6
+    :recur 9
     :quote 3
-    :fn 24}})
+    :fn 100}})
 (def ^:private expected-export-names
   '[c9-ownership-analysis-contract
     c9-borrow-graph-contract
@@ -76,55 +78,124 @@
     sh10-authenticated-sh09-adapter-policy
     sh10-build-authenticated-ownership-core
     sh10-verify-authenticated-ownership-core
+    sh10-authenticated-owned-mutable-policy
+    sh10-build-authenticated-owned-mutable-analysis
+    sh10-verify-authenticated-owned-mutable-analysis
     sh10-authenticated-ownership-identity-requests
     sh10-authenticated-ownership-core-identity-request
     sh10-bind-authenticated-ownership-identities
-    sh10-verify-authenticated-ownership-identities])
+    sh10-verify-authenticated-ownership-identities
+    sh10-runtime-mutable-borrow-policy
+    sh10-build-runtime-mutable-borrow-analysis
+    sh10-verify-runtime-mutable-borrow-analysis])
 (def ^:private expected-definition-names
-  '#{c9-ownership-analysis-contract
+  '#{build-c9-borrow-record
+     build-c9-linear-resource-record
      c9-borrow-graph-contract
      c9-lifetime-interval-contract
-     c9-region-arena-contract
      c9-linear-resource-flow-contract
-     c9-transfer-runtime-unsafe-contract
+     c9-ownership-analysis-contract
      c9-ownership-diagnostic-catalog
-     build-c9-borrow-record
-     build-c9-linear-resource-record
-     verify-c9-ownership-checker
-     sh10-ownership-policy
-     sh10-not
-     sh10-and
-     sh10-member?
-     sh10-exact-keys?
-     sh10-event-allowed-for-ownership-kind?
-     sh10-events-allowed-for-ownership-kind?
-     sh10-lowercase-hex?
-     sh10-sha256-id?
-     sh10-unique-event-ids?
-     sh10-active-borrow?
+     c9-region-arena-contract
+     c9-transfer-runtime-unsafe-contract
      sh10-active-borrow-id?
-     sh10-valid-request-shape?
-     sh10-valid-event-shape?
-     sh10-diagnostic
-     sh10-rejected
-     sh10-fact
-     sh10-transition-accepted
-     sh10-transition-rejected
-     sh10-transition-initialized
-     sh10-transition
-     sh10-result-scope
-     sh10-run-events
-     sh10-check-ownership-request
-     sh10-verify-ownership-result
-     sh10-authenticated-sh09-adapter-policy
-     sh10-authenticated-sh09-input-valid?
+     sh10-active-borrow?
+     sh10-and
+     sh10-authenticated-adapter-diagnostic
+     sh10-authenticated-effect-request-for
+     sh10-authenticated-owned-mutable-borrow-event-fields?
+     sh10-authenticated-owned-mutable-diagnostic
+     sh10-authenticated-owned-mutable-escape-event-fields?
+     sh10-authenticated-owned-mutable-event
+     sh10-authenticated-owned-mutable-event-valid?
+     sh10-authenticated-owned-mutable-events
+     sh10-authenticated-owned-mutable-events-valid?
+     sh10-authenticated-owned-mutable-move-event-fields?
+     sh10-authenticated-owned-mutable-operation-fields?
+     sh10-authenticated-owned-mutable-policy
+     sh10-authenticated-owned-mutable-preserves
+     sh10-authenticated-owned-mutable-request
+     sh10-authenticated-owned-mutable-result
+     sh10-authenticated-owned-mutable-scenario-bound?
+     sh10-authenticated-owned-mutable-scenario-valid?
+     sh10-authenticated-owned-mutable-simple-event-fields?
+     sh10-authenticated-ownership-core-identity-request
+     sh10-authenticated-ownership-identity-pending
+     sh10-authenticated-ownership-identity-requests
+     sh10-authenticated-ownership-products
+     sh10-authenticated-ownership-request
      sh10-authenticated-primitive-type?
      sh10-authenticated-pure-node?
-     sh10-authenticated-ownership-request
-     sh10-authenticated-ownership-products
-     sh10-authenticated-adapter-diagnostic
+     sh10-authenticated-sh09-adapter-policy
+     sh10-authenticated-sh09-input-valid?
+     sh10-bind-authenticated-ownership-identities
+     sh10-bound-ownership-fact-identities
+     sh10-build-authenticated-owned-mutable-analysis
      sh10-build-authenticated-ownership-core
-     sh10-verify-authenticated-ownership-core})
+     sh10-build-runtime-mutable-borrow-analysis
+     sh10-check-ownership-request
+     sh10-core-resolution-valid?
+     sh10-diagnostic
+     sh10-event-allowed-for-ownership-kind?
+     sh10-events-allowed-for-ownership-kind?
+     sh10-exact-keys?
+     sh10-fact
+     sh10-identity-aggregate?
+     sh10-identity-candidate-preflight
+     sh10-identity-carrier-preflight
+     sh10-identity-components
+     sh10-identity-digests-unique?
+     sh10-identity-public-input-preflight
+     sh10-identity-resolution-digests
+     sh10-identity-resolution-entry-valid?
+     sh10-lifetime-coordinate?
+     sh10-lowercase-hex?
+     sh10-member?
+     sh10-not
+     sh10-one-fact-per-ownership-result?
+     sh10-ownership-core-identity-request
+     sh10-ownership-fact-identity-request
+     sh10-ownership-fact-identity-requests-loop
+     sh10-ownership-fact-records-in-result
+     sh10-ownership-fact-records-loop
+     sh10-ownership-policy
+     sh10-rejected
+     sh10-resolved-ownership-facts-valid?
+     sh10-result-scope
+     sh10-run-events
+     sh10-runtime-c8-evidence-valid?
+     sh10-runtime-c8-residual-evidence
+     sh10-runtime-effect-legality-for
+     sh10-runtime-finalize-ownership-result
+     sh10-runtime-mutable-borrow-check-record
+     sh10-runtime-mutable-borrow-check-records
+     sh10-runtime-mutable-borrow-diagnostic
+     sh10-runtime-mutable-borrow-end-fact?
+     sh10-runtime-mutable-borrow-event-valid?
+     sh10-runtime-mutable-borrow-events-valid?
+     sh10-runtime-mutable-borrow-operation-fields?
+     sh10-runtime-mutable-borrow-policy
+     sh10-runtime-mutable-borrow-profile-supported?
+     sh10-runtime-mutable-borrow-result
+     sh10-runtime-mutable-borrow-scenario-valid?
+     sh10-runtime-provenance-consistent?
+     sh10-runtime-pure-legality-valid?
+     sh10-runtime-pure-request-valid?
+     sh10-runtime-terminal-borrow-id
+     sh10-sha256-id?
+     sh10-transition
+     sh10-transition-accepted
+     sh10-transition-initialized
+     sh10-transition-rejected
+     sh10-unique-event-ids?
+     sh10-valid-event-shape?
+     sh10-valid-request-shape?
+     sh10-verify-authenticated-owned-mutable-analysis
+     sh10-verify-authenticated-ownership-core
+     sh10-verify-authenticated-ownership-identities
+     sh10-verify-ownership-result
+     sh10-verify-runtime-mutable-borrow-analysis
+     verify-c9-ownership-checker})
 (def ^:private quoted-definition-names
   '#{build-c9-borrow-record
      build-c9-linear-resource-record
@@ -235,7 +306,7 @@
    #{:move-without-destination-owner
      :immutable-borrow-without-identity
      :end-of-inactive-borrow
-     :duplicate-active-borrow-identity
+     :borrow-identity-reuse
      :mutable-borrow-without-identity
      :consume-during-active-borrow
      :double-initialization
@@ -668,7 +739,7 @@
         (collect-calls
          'sh10-diagnostic
          (get definitions 'sh10-verify-ownership-result))]
-    (is (= 67 (count forms)))
+    (is (= 108 (count forms)))
     (is (= 'gravity.compiler.c9-ownership-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -714,11 +785,11 @@
            (:lineage bootstrap-metadata)))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 7 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 37 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 100 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= expected-executable-sh10-names executable))
-    (is (= 34 (count executable)))
+    (is (= 97 (count executable)))
     (is (= expected-policy policy))
     (is (= expected-authenticated-adapter-policy adapter-policy))
     (is (= expected-diagnostic-catalog
@@ -726,7 +797,7 @@
     (doseq [[name contract] expected-contract-structures]
       (is (= contract (nth (get definitions name) 2))))
     (is (= expected-transition-reasons reason-map))
-    (is (= 19 (count transition-calls)))
+    (is (= 20 (count transition-calls)))
     (is (some
          #(and (= "C9-UNSAFE" (nth % 3))
                (= :malformed-normalized-ownership-request (nth % 4)))
@@ -852,13 +923,13 @@
         quote-nodes (filterv #(= :quote (:core-form %)) nodes)]
     (is (= expected-definition-names
            (set (map :name (:definitions core-artifact)))))
-    (is (= 134 (count get-calls)))
-    (is (= 129 (count literal-keyword-get-calls)))
-    (is (= 5 (count dynamic-get-calls)))
+    (is (= 543 (count get-calls)))
+    (is (= 525 (count literal-keyword-get-calls)))
+    (is (= 18 (count dynamic-get-calls)))
     (is (= (count get-calls)
            (+ (count literal-keyword-get-calls)
               (count dynamic-get-calls))))
-    (is (= {:reference 3 :call 2}
+    (is (= {:reference 13 :call 5}
            (frequencies
             (map #(get-in node-by-id
                           [(second (:argument-node-ids %)) :core-form])

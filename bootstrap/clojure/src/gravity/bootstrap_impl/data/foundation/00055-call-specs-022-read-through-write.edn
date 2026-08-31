@@ -1,0 +1,8 @@
+[[fs/read
+  {:return-type "String",
+   :effects #{:filesystem/read},
+   :capabilities #{:filesystem/read}}]
+ [fs/write
+  {:return-type "Nil",
+   :effects #{:filesystem/write},
+   :capabilities #{:filesystem/write}}]]

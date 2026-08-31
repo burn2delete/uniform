@@ -1,0 +1,1 @@
+[[union/ok {:return-type "Union", :type-family :tagged-union}]]

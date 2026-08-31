@@ -5,10 +5,6 @@ Phase: 08 - Runtime Architecture
 Status: complete for the Clojure stage0 runtime architecture capability and compiled hosted core runtime gate
 Progress: 19/19 tasks complete
 
-Historical JSON and Python scaffold evidence in this phase remains superseded.
-Current completion evidence is limited to Clojure-backed tasks recorded in the
-phase roadmap.
-
 ## Governing Documents Read
 
 - `docs/phase-08-runtime-architecture/IMPLEMENTATION-ROADMAP.md`

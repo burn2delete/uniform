@@ -145,6 +145,38 @@
         (is (= 'get (:function data)))
         (is (= generic-data data))))))
 
+(deftest map-literal-carriers-preserve-order-duplicates-and-recur-boundaries
+  (let [entry
+        (fn [key value]
+          {:key {:op :literal :value key}
+           :value {:op :literal :value value}})
+        instruction
+        (fn [entries]
+          (bootstrap/p15-s23-stage2-runtime-execute-instruction
+           runtime plan {}
+           {:op :map-literal :entries entries}))]
+    (is (= {:first 1 :second 2}
+           (instruction [(entry :first 1) (entry :second 2)])))
+    (is (= {:same :last}
+           (instruction [(entry :same :first) (entry :same :last)])))
+    (is (= {:first 1 :second 2}
+           (instruction (apply list [(entry :first 1) (entry :second 2)]))))
+    (testing "malformed list entries fail closed instead of ending traversal"
+      (doseq [entries [(list nil (entry :second 2))
+                       (list false (entry :second 2))
+                       (list (entry :first 1) nil)
+                       (list (entry :first 1) false)]]
+        (let [data (diagnostic #(instruction entries))]
+          (is (= "L2-UNKNOWN-CORE-FORM" (:id data)) entries))))
+    (testing "key evaluation precedes value evaluation and preserves recur rejection"
+      (let [data
+            (diagnostic
+             #(instruction
+               [{:key {:op :recur :args [{:op :literal :value :key}]}
+                 :value {:op :literal :value :value}}]))]
+        (is (= "L2-RECUR-TARGET" (:id data)))
+        (is (= :recur-inside-map-key (:reason data)))))))
+
 (deftest interpreted-get-evaluates-arguments-left-to-right-exactly-once
   (let [execute-value
         (ns-resolve 'gravity.bootstrap

@@ -1,7 +1,38 @@
 (ns gravity.self-hosting.sh01-impact-test-planner-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.test :refer [deftest is testing]]
+            [gravity.self-hosting.sh01-component-test-dependencies
+             :as component-dependencies]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]
-            [gravity.self-hosting-test-runner :as runner]))
+            [gravity.self-hosting-test-runner :as runner])
+  (:import [java.nio.file Files]
+           [java.nio.file.attribute FileAttribute]))
+
+(defn- run-process!
+  [directory & command]
+  (let [directory (if (instance? java.nio.file.Path directory)
+                    (.toFile ^java.nio.file.Path directory)
+                    (io/file directory))
+        process (-> (ProcessBuilder. ^java.util.List (vec command))
+                    (.directory directory)
+                    (.redirectErrorStream true)
+                    .start)
+        output (slurp (.getInputStream process))
+        exit-code (.waitFor process)]
+    (when-not (zero? exit-code)
+      (throw (ex-info "test process failed"
+                      {:command command :exit exit-code :output output})))
+    (str/trim output)))
+
+(defn- delete-tree!
+  [root]
+  (when (Files/exists root (make-array java.nio.file.LinkOption 0))
+    (with-open [paths (Files/walk root
+                                  (make-array
+                                   java.nio.file.FileVisitOption 0))]
+      (doseq [path (reverse (vec (iterator-seq (.iterator paths))))]
+        (Files/deleteIfExists path)))))
 
 (deftest backlog-dependency-expansion-is-transitive
   (let [dependencies (planner/backlog-dependencies)
@@ -52,21 +83,364 @@
          #(= "SH-01" (:slice %))
          (:shards plan)))))
 
-(deftest changed-leaf-test-expands-to-dependent-slices
+(deftest changed-dedicated-test-keeps-governance-closure-but-selects-exactly
   (let [plan
         (planner/build-plan
          {:changed-paths
-          ["bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_test.clj"]
+          ["bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj"]
           :expand-dependants? true})]
     (is (= ["SH-06"] (:direct-slices plan)))
     (is (contains? (set (:affected-slices plan)) "SH-07"))
     (is (contains? (set (:affected-slices plan)) "SH-29"))
-    (is (some
-         #{'gravity.self-hosting.sh06-resolution-adapter-test}
-         (:namespaces plan)))
-    (is (some
-         #{'gravity.self-hosting.sh07-checked-core-test}
-         (:namespaces plan)))))
+    (is (= [] (:execution-affected-slices plan)))
+    (is (= ['gravity.self-hosting.sh06-resolution-adapter-test]
+           (:namespaces plan)))
+    (is (= :exact-test-path
+           (get-in plan [:classifications 0 :development-selection])))
+    (is (= :changed-dedicated-test
+           (get-in plan
+                   [:classifications 0
+                    :development-invalidation-reason])))))
+
+(deftest sh07-b8-exact-route-is-owned-and-var-scoped
+  (let [route (planner/exact-test-var-route "b8-regression")
+        plan (planner/build-test-var-plan "b8-regression")
+        route-path (:path route)
+        error-data
+        (fn [request]
+          (try
+            (planner/build-test-var-plan "b8-regression" request)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (is (= ["b8-regression"]
+           (planner/exact-test-var-route-names)))
+    (is (= "SH-07" (:slice route)))
+    (is (= :sh-core (:owner route)))
+    (is (= :sh-core
+           (get-in (planner/planning-context)
+                   [:ownership :slice-owners "SH-07" :leaf-owner])))
+    (is (= :sh-core (:route-owner plan)))
+    (is (= route-path (:route-path plan)))
+    (is (= :exact-test-vars (:selection-mode plan)))
+    (is (= 2 (:test-var-count plan)))
+    (is (= (:test-vars route) (:test-vars plan)))
+    (is (= ['gravity.self-hosting.sh07-try-catch-test]
+           (:namespaces plan)))
+    (is (= [route-path]
+           (:changed-paths plan)))
+    (is (= "SH01-IMPACT-ROUTE"
+           (:id (try
+                  (planner/build-test-var-plan "unknown")
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    (ex-data error))))))
+    (is (= "SH01-IMPACT-ROUTE-PATH"
+           (:id (error-data {:changed-paths
+                             [route-path
+                              "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj"]}))))
+    (is (= "SH01-IMPACT-ROUTE-SELECTION"
+           (:id (error-data {:test-vars (:test-vars route)}))))))
+
+(deftest sh07-b8-route-owner-and-dependency-identities-fail-closed
+  (let [route (planner/exact-test-var-route "b8-regression")
+        context (planner/planning-context)
+        owner-path [:ownership :slice-owners "SH-07"]
+        error-data
+        (fn [request]
+          (try
+            (planner/build-test-var-plan "b8-regression" request)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))
+        owner-validator
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'validate-exact-test-var-route-owner!)
+        route-options
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'exact-test-var-route-options)
+        owner-error
+        (fn [candidate-route candidate-context]
+          (try
+            (owner-validator candidate-route candidate-context)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (testing "the route owner matches the live leaf owner"
+      (is (= route
+             (owner-validator route context)))
+      (is (= :sh-core
+             (get-in (:ownership context)
+                     [:slice-owners "SH-07" :leaf-owner]))))
+    (testing "owner drift, missing, malformed, and extra owner records reject"
+      (doseq [[label candidate expected-reason]
+              [["drifted route owner" (assoc route :owner :other-owner)
+                :owner-drift]
+               ["missing live owner"
+                route
+                :slice-owner-missing]
+               ["malformed live owner"
+                route
+                :slice-owner-malformed]
+               ["extra live owner key"
+                route
+                :slice-owner-shape]]]
+        (let [candidate-context
+              (case label
+                "missing live owner"
+                (update-in context [:ownership :slice-owners] dissoc "SH-07")
+                "malformed live owner"
+                (assoc-in context (conj owner-path :leaf-owner) "sh-core")
+                "extra live owner key"
+                (assoc-in context (conj owner-path :extra-owner) :other-owner)
+                context)
+              data (owner-error candidate candidate-context)
+              admission-data (when (= candidate route)
+                               (error-data {:context candidate-context}))]
+          (is (= "SH01-IMPACT-ROUTE-OWNER" (:id data)) label)
+          (is (= expected-reason (:reason data)) label)
+          (when admission-data
+            (is (= "SH01-IMPACT-ROUTE-OWNER" (:id admission-data)) label)
+            (is (= expected-reason (:reason admission-data)) label)))))
+    (testing "route owner metadata is closed"
+      (doseq [candidate [(dissoc route :owner)
+                        (assoc route :owner "sh-core")
+                        (assoc route :extra-owner :other-owner)]]
+        (let [data
+              (try
+                (route-options candidate)
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= "SH01-IMPACT-ROUTE-CONTRACT" (:id data)) candidate))))
+    (testing "the exact path/namespace dependency identity is required"
+      (let [catalog (->> @(:catalog-delay context)
+                         (mapv #(if (= (:namespace %) (:namespace route))
+                                  (assoc % :namespace
+                                         'gravity.self-hosting.sh07-other-test)
+                                  %)))
+            data (error-data {:context (assoc context
+                                              :catalog-delay (delay catalog))})]
+        (is (= "SH01-IMPACT-ROUTE-CONTRACT" (:id data)) data)))))
+
+(deftest reviewed-component-sources-select-declared-tests-without-changing-governance
+  (doseq [[path expected-component expected-tests direct-count affected-count]
+          [["bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
+            "compiler-pass-manifest"
+            ['gravity.compiler-pass-manifest-test
+             'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]
+            30 30]
+           ["bootstrap/clojure/src/gravity/c11_mir.clj"
+            "c11-mir"
+            ['gravity.bootstrap-compatibility.c11-test
+             'gravity.c11-mir-test]
+            2 18]]]
+    (let [plan (planner/build-plan {:changed-paths [path]
+                                    :expand-dependants? true})
+          classification (first (:classifications plan))]
+      (is (= expected-component (:component-id classification)) path)
+      (is (= :reviewed-component-dependencies
+             (:development-selection classification)) path)
+      (is (= :reviewed-component-source
+             (:development-invalidation-reason classification)) path)
+      (is (= expected-tests (:namespaces plan)) path)
+      (is (= direct-count (count (:direct-slices plan))) path)
+      (is (= affected-count (count (:affected-slices plan))) path)
+      (is (empty? (:execution-affected-slices plan)) path)
+      (is (= :non-authoritative (:authority plan)) path)
+      (is (false? (:authoritative? plan)) path)
+      (is (every?
+           #(= {:deterministic? true
+                :performance? false
+                :proof? false
+                :freshness-required? false}
+               (:test-policy %))
+           (:shards plan))
+          path)
+      (doseq [namespace expected-tests]
+        (is (= [namespace]
+               (:namespaces
+                (runner/select-tests
+                 ["--namespace" (str namespace)])))
+            [path namespace])))))
+
+(deftest reviewed-component-test-path-selects-only-its-exact-namespace
+  (let [path "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
+        plan (planner/build-plan {:changed-paths [path]
+                                  :expand-dependants? true})]
+    (is (= ['gravity.compiler-pass-manifest-test] (:namespaces plan)))
+    (is (= :exact-test-path
+           (get-in plan [:classifications 0 :development-selection])))
+    (is (= :reviewed-component-test
+           (get-in plan
+                   [:classifications 0
+                    :development-invalidation-reason])))
+    (is (= 30 (count (:affected-slices plan))))
+    (is (empty? (:execution-affected-slices plan)))))
+
+(deftest standalone-p15-tests-have-exact-fail-closed-incremental-plans
+  (doseq [[path namespace test-id]
+          [["bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+            'gravity.self-hosting.p15-bounded-profile-test
+            "p15-bounded-profile"]
+           ["bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+            'gravity.self-hosting.p15-proof-artifact-dag-test
+            "p15-proof-artifact-dag"]]]
+    (let [path-plan (planner/build-plan {:changed-paths [path]})
+          namespace-plan (planner/build-namespace-plan [namespace])
+          classification (first (:classifications path-plan))]
+      (is (= ["SH-01"] (:direct-slices path-plan)) path)
+      (is (= [namespace] (:namespaces path-plan)) path)
+      (is (= :exact-test-path
+             (:development-selection classification)) path)
+      (is (= :reviewed-component-test
+             (:development-invalidation-reason classification)) path)
+      (is (= test-id (:development-component-id classification)) path)
+      (is (= [namespace] (:namespaces namespace-plan)) namespace)
+      (is (= ["SH-01"] (:affected-slices namespace-plan)) namespace)
+      (is (= [namespace]
+             (:namespaces
+              (runner/select-tests ["--namespace" (str namespace)])))
+          namespace))))
+
+(deftest deleted-reviewed-test-conservatively-selects-component-dependencies
+  (let [exists-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'repository-path-exists?)]
+    (with-redefs-fn
+      {exists-var (constantly false)}
+      (fn []
+        (let [path
+              "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
+              plan (planner/build-plan {:changed-paths [path]})]
+          (is (= ['gravity.compiler-pass-manifest-test
+                  'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]
+                 (:namespaces plan)))
+          (is (= :deleted-reviewed-component-test
+                 (get-in plan
+                         [:classifications 0
+                          :development-invalidation-reason]))))))))
+
+(deftest component-dependency-contract-rejects-path-namespace-drift
+  (let [contract (component-dependencies/read-contract)
+        malformed
+        (assoc-in contract [:components 0 :tests 0 :namespace]
+                  'gravity.wrong-test)
+        exception
+        (try
+          (component-dependencies/validate-contract malformed)
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+           (:id (ex-data exception))))))
+
+(deftest standalone-test-contract-rejects-stale-dependency-and-owner-pins
+  (let [contract (component-dependencies/read-contract)
+        malformed
+        (assoc-in contract [:standalone-tests 0 :namespace]
+                  'gravity.self-hosting.stale-test)
+        dependency-exception
+        (try
+          (component-dependencies/validate-contract malformed)
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))
+        ownership-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'ownership-record)
+        ownership (@ownership-var)
+        path "bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+        stale-ownership (assoc-in ownership
+                                  [:standalone-test-owners path :slice]
+                                  "SH-02")
+        ownership-exception
+        (try
+          (planner/planning-context {:ownership stale-ownership})
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+           (:id (ex-data dependency-exception))))
+    (is (= "SH01-STANDALONE-TEST-CONTRACT"
+           (:id (ex-data ownership-exception))))))
+
+(deftest component-dependency-contract-requires-closed-test-policy
+  (let [contract (component-dependencies/read-contract)
+        malformed (update-in contract [:components 0 :tests 0]
+                             dissoc :test-policy)
+        exception
+        (try
+          (component-dependencies/validate-contract malformed)
+          nil
+          (catch clojure.lang.ExceptionInfo exception exception))]
+    (is (= "SH01-COMPONENT-DEPENDENCY-CONTRACT"
+           (:id (ex-data exception))))))
+
+(deftest explicit-cache-closures-are-reviewed-opt-in-and-fallback-safe
+  (let [index (component-dependencies/dependency-index)
+        entries (vals (:by-test-path index))
+        by-namespace (into {} (map (juxt :namespace identity)) entries)]
+    (is (= :gravity/stage0-incremental-test-dependencies-v2
+           (:schema index)))
+    (is (true? (get-in by-namespace
+                       ['gravity.c11-mir-test :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.compiler-pass-manifest-test
+                        :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.bootstrap-compatibility.c11-test
+                        :cache-closure-valid?])))
+    (is (true? (get-in by-namespace
+                       ['gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+                        :cache-closure-valid?])))
+    (doseq [namespace
+            ['gravity.bootstrap-compatibility.c11-test
+             'gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test]]
+      (let [inputs (get-in by-namespace [namespace :cache-closure :inputs])]
+        (is (= 52 (count (filter #(contains? #{:production :transitive}
+                                             (:role %))
+                                 inputs))))
+        (is (= 1 (count (filter #(= :fixture (:role %)) inputs))))))
+    (let [contract (component-dependencies/read-contract)
+          malformed
+          (assoc-in contract
+                    [:components 0 :tests 0 :cache-closure :schema]
+                    :gravity/unknown-closure)
+          unknown-path
+          (assoc-in contract
+                    [:components 0 :tests 0 :cache-closure :inputs 0 :path]
+                    "bootstrap/clojure/src/gravity/unowned.clj")]
+      (is (false?
+           (get-in (component-dependencies/dependency-index malformed)
+                   [:by-test-path
+                    "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+                    :cache-closure-valid?])))
+      (is (false?
+           (get-in (component-dependencies/dependency-index unknown-path)
+                   [:by-test-path
+                    "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+                    :cache-closure-valid?]))))))
+
+(deftest exact-development-metadata-carries-only-validated-closure
+  (let [index (component-dependencies/dependency-index)
+        component (get-in index [:by-component-id "c11-mir"])
+        metadata-builder
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'exact-development-job-metadata)
+        metadata
+        (metadata-builder
+         (:ownership (planner/planning-context))
+         [{:development-component-id "c11-mir"
+           :development-tests (:tests component)}])]
+    (is (map? (get-in metadata
+                      ['gravity.c11-mir-test :cache-closure])))
+    (is (true? (get-in metadata
+                       ['gravity.c11-mir-test
+                        :cache-closure-authorized?])))
+    (is (map? (get-in metadata
+                      ['gravity.bootstrap-compatibility.c11-test
+                       :cache-closure])))
+    (is (true? (get-in metadata
+                       ['gravity.bootstrap-compatibility.c11-test
+                        :cache-closure-authorized?])))))
 
 (deftest stage0-c2-module-maps-to-reader-slice-and-downstream-closure
   (let [source "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"
@@ -502,21 +876,35 @@
                    (:reason (last (:entries data))))
                 request)))))))
 
-(deftest fixed-stage-infrastructure-is-discoverable-but-never-a-slice
-  (let [fixed-stage
-        #{'gravity.self-hosting.stage3-fragment-size-preflight-test
-          'gravity.self-hosting.stage3-verification-runner-test}
+(deftest reviewed-non-slice-infrastructure-is-discoverable-but-never-a-slice
+  (let [reviewed-var
+        (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
+                    'reviewed-non-slice-namespaces)
+        reviewed @reviewed-var
         catalog-var
         (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner
                     'test-catalog)
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
-    (testing "the general runner still owns both fixed-stage namespaces"
-      (is (every? #(contains? general %) fixed-stage))
-      (is (= (- (count general) (count fixed-stage))
+    (testing "the reviewed exclusions are explicit and discoverable"
+      (is (= 25 (count reviewed)))
+      (is (contains? reviewed
+                     'gravity.self-hosting.a1-canonical-schema-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.p15-public-native-admission-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.p18-t00-orchestration-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.p18-t00-semantics-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.macro-operations-normalization-test))
+      (is (contains? reviewed
+                     'gravity.self-hosting.w5-c16-incremental-executor-test))
+      (is (every? #(contains? general %) reviewed))
+      (is (= (- (count general) (count reviewed))
              (count catalog))))
     (testing "the planner catalog contains only bounded SH slices"
-      (is (not-any? fixed-stage (map :namespace catalog)))
+      (is (not-any? reviewed (map :namespace catalog)))
       (is (every? #(re-matches #"SH-\d{2}" (:slice %)) catalog))
       (is (some #{'gravity.self-hosting.sh07-checked-core-test}
                 (map :namespace catalog))))))
@@ -586,7 +974,7 @@
          (swap! dependency-scans inc)
          (dependency-loader))
        catalog-var
-       (fn []
+       (fn [_standalone-index]
          (swap! catalog-scans inc)
          [{:namespace 'gravity.self-hosting.sh01-ownership-test
            :slice "SH-01"}])}
@@ -646,6 +1034,61 @@
     (is (= [present] (:paths (ex-data exception))))
     (is (= ["SH-01"] (:direct-slices plan)))
     (is (= ["SH-01"] (:affected-slices plan)))))
+
+(deftest base-aware-discovery-includes-clean-branch-commit-and-working-union
+  (let [attributes (make-array FileAttribute 0)
+        repository (Files/createTempDirectory
+                    "gravity-impact-base-" attributes)
+        committed-path
+        "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_adapter_test.clj"]
+    (try
+      (run-process! repository "git" "init" "-b" "main")
+      (run-process! repository "git" "config" "user.name" "Gravity Test")
+      (run-process! repository "git" "config" "user.email"
+                    "gravity-test@example.invalid")
+      (spit (.toFile (.resolve repository "README.md")) "base\n")
+      (run-process! repository "git" "add" "README.md")
+      (run-process! repository "git" "commit" "-m" "base")
+      (let [base-commit (run-process! repository "git" "rev-parse" "HEAD")]
+        (run-process! repository "git" "switch" "-c" "topic")
+        (let [file (.resolve repository committed-path)]
+          (Files/createDirectories (.getParent file)
+                                   (make-array FileAttribute 0))
+          (spit (.toFile file) "(ns gravity.self-hosting.sh06-resolution-adapter-test)\n"))
+        (run-process! repository "git" "add" committed-path)
+        (run-process! repository "git" "commit" "-m" "topic")
+        (is (str/blank? (run-process! repository "git" "status"
+                                     "--short")))
+        (let [discovery (planner/change-discovery "main" repository)]
+          (is (= base-commit (:base-commit discovery)))
+          (is (= base-commit (:merge-base discovery)))
+          (is (= [committed-path] (:committed-paths discovery)))
+          (is (empty? (:tracked-working-paths discovery)))
+          (is (empty? (:untracked-paths discovery)))
+          (is (= [committed-path] (:changed-paths discovery)))
+          (is (= ['gravity.self-hosting.sh06-resolution-adapter-test]
+                 (:namespaces
+                  (planner/build-plan
+                   {:changed-paths (:changed-paths discovery)
+                    :expand-dependants? true})))))
+        (spit (.toFile (.resolve repository "README.md")) "working\n")
+        (spit (.toFile (.resolve repository "notes.txt")) "untracked\n")
+        (let [discovery (planner/change-discovery "main" repository)]
+          (is (= ["README.md" committed-path "notes.txt"]
+                 (:changed-paths discovery)))
+          (is (= ["README.md"] (:tracked-working-paths discovery)))
+          (is (= ["notes.txt"] (:untracked-paths discovery)))))
+      (finally
+        (delete-tree! repository)))))
+
+(deftest base-aware-discovery-rejects-missing-and-malformed-base-refs
+  (doseq [base-ref ["" "\u0000" "missing-gravity-base-ref"]]
+    (let [exception
+          (try
+            (planner/change-discovery base-ref)
+            nil
+            (catch clojure.lang.ExceptionInfo exception exception))]
+      (is (= "SH01-IMPACT-BASE" (:id (ex-data exception))) base-ref))))
 
 (deftest parse-plan-only-is-always-boolean
   (let [parse (ns-resolve 'gravity.self-hosting.sh01-impact-test-planner

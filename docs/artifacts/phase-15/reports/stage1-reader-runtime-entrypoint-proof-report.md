@@ -108,4 +108,3 @@ $ clojure -M:gravity stage1-reader-runtime-entrypoint bootstrap/clojure/fixtures
 
 - `docs/artifacts/phase-15/bootstrap/stage1-reader-runtime-entrypoint-proof.edn`
 - `docs/artifacts/phase-15/reports/stage1-reader-runtime-entrypoint-proof-report.md`
-

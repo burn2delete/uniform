@@ -1,0 +1,38 @@
+[[compile-time
+  {:return-type "Comptime[Integer]",
+   :compile-time-kind :pure-constant,
+   :pure-compile-time? true}]
+ [compile/read-schema
+  {:return-type "Schema[CompileTimeInput]",
+   :effects #{:build/read-file},
+   :compile-time-kind :schema-loading,
+   :declared-input-required? true,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]
+ [compile/emit-artifact
+  {:return-type "ArtifactRef[Generated]",
+   :effects #{:build/write-artifact},
+   :compile-time-kind :write-artifact,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]
+ [compile/target-probe
+  {:return-type "TargetFeatureSet",
+   :effects #{:build/target-probe},
+   :compile-time-kind :target-probe,
+   :target-manifest-required? true,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]
+ [compile/replay-random
+  {:return-type "RandomBytes",
+   :effects #{:build/random},
+   :compile-time-kind :nondeterministic-replay,
+   :requires-replay-policy? true,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]
+ [compile/model-derive
+  {:return-type "GeneratedFormArtifact",
+   :effects #{:build/model-call},
+   :compile-time-kind :model-codegen,
+   :requires-replay-policy? true,
+   :generated-form? true,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]
+ [compile/cache
+  {:return-type "CachedCompileTimeValue",
+   :compile-time-kind :cache-decision,
+   :requires-strict-cache-policy? true}]]

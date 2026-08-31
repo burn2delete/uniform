@@ -1,0 +1,60 @@
+[[p10/model
+  {:id "P10-MODEL",
+   :rule :P10,
+   :operation :ai/model-call,
+   :effect :ai/model-call,
+   :message "AI model call lacks declared effect, provider, or policy"}]
+ [p10/tool
+  {:id "P10-TOOL",
+   :rule :P10,
+   :operation :ai/tool-call,
+   :requested-capability :ai/tool,
+   :message "AI tool call lacks schema, capability, or human review"}]
+ [p10/prompt
+  {:id "P10-PROMPT",
+   :rule :P10,
+   :operation :ai/prompt-policy,
+   :prompt-role :untrusted,
+   :message "AI prompt role violates authority policy"}]
+ [p10/memory
+  {:id "P10-MEMORY",
+   :rule :P10,
+   :operation :ai/memory-policy,
+   :missing-fact :memory-retention-policy,
+   :message "AI memory policy is invalid"}]
+ [p10/secret
+  {:id "P10-SECRET",
+   :rule :P10,
+   :operation :ai/secret,
+   :denied-authority :secret-context,
+   :message "AI profile rejects secret leakage to model, tool, or log"}]
+ [p10/generated
+  {:id "P10-GENERATED",
+   :rule :P10,
+   :operation :ai/generated-code,
+   :missing-fact :compiler-validation,
+   :message "AI generated code is used before compiler validation"}]
+ [p10/replay
+  {:id "P10-REPLAY",
+   :rule :P10,
+   :operation :ai/replay,
+   :missing-fact :replay-or-audit-record,
+   :message "AI interaction lacks replay or audit record"}]
+ [p10/budget
+  {:id "P10-BUDGET",
+   :rule :P10,
+   :operation :ai/budget,
+   :missing-fact :token-or-call-budget,
+   :message "AI model or tool budget is invalid"}]
+ [p10/destructive
+  {:id "P10-DESTRUCTIVE",
+   :rule :P10,
+   :operation :ai/destructive-tool,
+   :requested-capability :ai/tool,
+   :message "AI destructive tool requires explicit grant and human review"}]
+ [p10/raw
+  {:id "P10-RAW",
+   :rule :P10,
+   :operation :ai/raw-memory,
+   :effect :memory/raw,
+   :message "AI profile rejects raw memory and FFI in agent logic"}]]

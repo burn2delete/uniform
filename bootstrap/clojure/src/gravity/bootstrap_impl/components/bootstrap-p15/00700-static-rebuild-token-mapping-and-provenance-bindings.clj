@@ -1,0 +1,131 @@
+(defn- __gravity_bootstrap_checked_core_mapping_and_provenance_bindings [state]
+  (let [{:syms
+         [source-path
+          source-text
+          requested-target
+          authority-record
+          construction-mode
+          static-execution-evidence
+          static-rebuild-token-candidate
+          source-byte-count
+          source-content-hash
+          early-module-products
+          module-attempt
+          _
+          early-module
+          authoritative-front-end
+          authoritative-module
+          authoritative-records
+          namespace-record
+          function-record
+          namespace-subject
+          function-subject
+          executable-form-records
+          executable-form-by-id
+          source-surface-validation
+          malformed-quote-record
+          source-surface-subject
+          early-metadata-bearing-form
+          c7-source-violation
+          unsupported-quote-literal-form
+          unsupported-numeric-form
+          invalid-str-arity-form
+          preflight-stage2-rule
+          preflight-driver-rule
+          preflight-plan
+          preflight-plan-validation
+          packet-delay
+          front-end
+          fresh-front-end
+          top-level-forms
+          reader-products
+          c2-artifact
+          form-tree
+          root-form-ids
+          indexes
+          token-stream
+          token-ordinal-by-id
+          plan
+          preflight-effect-requirements
+          entrypoint
+          functions
+          definition
+          declared-exports
+          entrypoint-binding
+          entrypoint-visibility
+          source-function-records
+          all-source-functions
+          root-record-wrapper
+          root-form-id
+          root-record
+          metadata-bearing-form
+          root-syntax
+          expanded-root-syntax
+          function-shape
+          instructions
+          body-form-ids
+          validation
+          observed-operation-set
+          ctx
+          function-path
+          function-origin
+          body-product
+          body-node-by-path
+          body-node-ids
+          function-node
+          product
+          effectful-diagnostic-subject
+          pre-authority-nodes
+          derived-effect-requirements
+          effectful-reference?
+          pure-admission
+          runtime-rule
+          authority-policy
+          expected-authority-record
+          authority-evidence
+          ownership-normalized-nodes
+          nodes
+          core-operation-set
+          packet
+          packet-observed-operation-set
+          packet-context
+          pre-execution-facts
+          dependency-order
+          declared-effects
+          declared-capabilities
+          c2-semantic-input
+          c3-semantic-input
+          adapter-output
+          reference-execution-evidence
+          facts
+          source-core-input
+          authenticated-input]} state
+        mapping-id (p15-s23-closed-core-digest
+                     {:source-content-hash source-content-hash,
+                      :plan-id (:plan-id plan),
+                      :nodes (mapv #(select-keys % [:node-id :path :source]) nodes),
+                      :source-origin-table (:origin-table product)})
+        provenance-binding-id (p15-s23-closed-core-recomputed-provenance-binding-id
+                                {:source-content-hash source-content-hash,
+                                 :source-core-input source-core-input,
+                                 :origin-closure (:origin-closure product)})
+        actual-path-binding-id (p15-s23-closed-core-recomputed-actual-path-binding-id
+                                 {:provenance-binding-id provenance-binding-id,
+                                  :origin-closure (:origin-closure product)})
+        instruction-origin-sidecar (p15-s23-closed-core-instruction-origin-sidecar
+                                     {:source-core-input source-core-input,
+                                      :mapping-id mapping-id,
+                                      :provenance-binding-id provenance-binding-id,
+                                      :actual-path-binding-id actual-path-binding-id,
+                                      :core-nodes nodes,
+                                      :source-origin-table (:origin-table product)})]
+    (assoc
+      state
+      'mapping-id
+      mapping-id
+      'provenance-binding-id
+      provenance-binding-id
+      'actual-path-binding-id
+      actual-path-binding-id
+      'instruction-origin-sidecar
+      instruction-origin-sidecar)))

@@ -99,6 +99,10 @@
         (edn/read-string
          (slurp
           (io/resource "gravity/self_hosting/sh07_proof_contract.edn")))
+        c6-expectation
+        (get-in contract
+                [:authoritative-coverage-census
+                 :module-expectations :c6-core])
         c7-expectation
         (get-in contract
                 [:authoritative-coverage-census
@@ -122,6 +126,16 @@
         source-contracts (runner/module-source-contracts)]
     (is (= :source-bound-derived
            (:coverage-census-policy contract)))
+    (is (= {:source-byte-count 298180
+            :source-bytes-sha256
+            "sha256:da0ab07d6fad0304c0a3ac0e42533c4ef51197262e503cb928dbe4aecfd937c2"}
+           (:source-binding c6-expectation)))
+    (is (not (contains? c6-expectation :request-counts)))
+    (is (not (contains? c6-expectation :core-counts)))
+    (is (= {:source-path
+            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            :source-binding (:source-binding c6-expectation)}
+           (get source-contracts "c6-core")))
     (is (= {:source-byte-count 210220
             :source-bytes-sha256
             "sha256:78a100be4fff12d3f4225e1eb4ef305188ee7227c7c087c3ef35d154fe88dab4"}
@@ -142,9 +156,9 @@
             "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :source-binding (:source-binding c8-expectation)}
            (get source-contracts "c8-effects")))
-    (is (= {:source-byte-count 71132
+    (is (= {:source-byte-count 111921
             :source-bytes-sha256
-            "sha256:4f26a5ca5fdd7755016f332fc5c795f84a98b83b76cef79806b8021807897fcd"}
+            "sha256:130faedf9ba0af79b557f4cc05dd8077397e0cdafd0d12f0b9efef27d0a8ce06"}
            (:source-binding c9-expectation)))
     (is (not (contains? c9-expectation :request-counts)))
     (is (not (contains? c9-expectation :core-counts)))
@@ -152,9 +166,9 @@
             "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :source-binding (:source-binding c9-expectation)}
            (get source-contracts "c9-ownership")))
-    (is (= {:source-byte-count 112712
+    (is (= {:source-byte-count 199815
             :source-bytes-sha256
-            "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}
+            "sha256:1413be3abe20427f57af9c3c394d2512b21754acc90754ce24ad89be50a400a9"}
            (:source-binding c10-expectation)))
     (is (not (contains? c10-expectation :request-counts)))
     (is (not (contains? c10-expectation :core-counts)))
@@ -162,9 +176,9 @@
             "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
             :source-binding (:source-binding c10-expectation)}
            (get source-contracts "c10-safety")))
-    (is (= {:source-byte-count 253588
+    (is (= {:source-byte-count 330835
             :source-bytes-sha256
-            "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}
+            "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"}
            (:source-binding c11-expectation)))
     (is (not (contains? c11-expectation :request-counts)))
     (is (not (contains? c11-expectation :core-counts)))
@@ -182,7 +196,7 @@
         (or (ns-resolve 'gravity.bootstrap 'sh07-core-file-proof-transaction)
             (throw (ex-info "proof transaction seam is absent" {})))
         proof-called? (atom false)]
-    (doseq [selection ["c7-types" "all"]]
+    (doseq [selection ["c6-core" "c7-types" "all"]]
       (reset! proof-called? false)
       (let [failure
             (try

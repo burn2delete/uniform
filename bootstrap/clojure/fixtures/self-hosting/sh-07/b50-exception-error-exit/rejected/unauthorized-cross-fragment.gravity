@@ -1,0 +1,17 @@
+(ns self-hosting.sh07-b50.unauthorized-cross-fragment
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [handle-error])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07
+              :candidate :sh07-authenticated-exception-error-exit-v1}))
+
+(def sibling-value :fixture/failure)
+
+(defn handle-error []
+  (try
+    (throw sibling-value)
+    (catch Exception error
+      error)))

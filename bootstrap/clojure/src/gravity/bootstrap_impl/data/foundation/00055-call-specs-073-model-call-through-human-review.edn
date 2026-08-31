@@ -1,0 +1,20 @@
+[[ai/model-call
+  {:return-type "ModelOutput", :effects #{:ai/model-call}, :capabilities #{:ai/model}}]
+ [ai/tool-call
+  {:return-type "ToolOutput", :effects #{:ai/tool-call}, :capabilities #{:ai/tool}}]
+ [ai/embedding
+  {:return-type "Embedding", :effects #{:ai/embedding}, :capabilities #{:ai/model}}]
+ [ai/memory-read
+  {:return-type "MemoryEntry",
+   :effects #{:ai/memory-read},
+   :capabilities #{:ai/memory}}]
+ [ai/memory-write
+  {:return-type "Nil", :effects #{:ai/memory-write}, :capabilities #{:ai/memory}}]
+ [ai/prompt-render {:return-type "Prompt", :effects #{:ai/prompt-render}}]
+ [ai/output-validate {:return-type "ValidatedOutput", :effects #{:ai/output-validate}}]
+ [ai/eval-run
+  {:return-type "EvalReport", :effects #{:ai/eval-run}, :capabilities #{:ai/eval}}]
+ [ai/human-review
+  {:return-type "HumanReviewDecision",
+   :effects #{:ai/human-review},
+   :capabilities #{:ai/human-review}}]]

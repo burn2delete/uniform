@@ -1,0 +1,36 @@
+{:schema :gravity/sh09-authenticated-compiler-read-rejections-v1
+ :cases
+ [{:id :undeclared-effect
+   :module-effects []
+   :module-capabilities [:compiler/ir-read]
+   :context-overrides {}
+   :expected
+   {:rule "C8-UNDECLARED"
+    :reason :effect-not-declared
+    :denied-layer :source-declaration}}
+  {:id :missing-authority
+   :module-effects [:compiler/read-ir]
+   :module-capabilities [:compiler/ir-read]
+   :context-overrides {:package-capabilities #{}}
+   :expected
+   {:rule "C8-CAPABILITY"
+    :reason :capability-not-allowed-by-all-authorities
+    :denied-layer :capability-intersection}}
+  {:id :ambient-access
+   :module-effects [:compiler/read-ir]
+   :module-capabilities [:compiler/ir-read]
+   :context-overrides {:authority-mode :ambient}
+   :expected
+   {:rule "C8-CAPABILITY"
+    :reason :explicit-authority-required
+    :denied-layer :grant}}
+  {:id :illegal-profile
+   :route :normalized-effect-request
+   :module-profile :hosted
+   :module-effects [:compiler/read-ir]
+   :module-capabilities [:compiler/ir-read]
+   :context-overrides {}
+   :expected
+   {:rule "C8-PROFILE"
+    :reason :slice-profile-mismatch
+    :denied-layer :profile}}]}

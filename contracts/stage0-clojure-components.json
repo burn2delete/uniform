@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 53,
-    "sources": 53,
-    "tests": 53,
-    "bootstrap_free_tests": 47,
+    "components": 54,
+    "sources": 54,
+    "tests": 54,
+    "bootstrap_free_tests": 48,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -1380,6 +1380,42 @@
       },
       "contract_var": "shared-contract",
       "stage0_group": "compatibility-support",
+      "leaf_execution_group": "compiler"
+    },
+    {
+      "id": "compiler-pass-manifest",
+      "owner": "master-coordinator",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj",
+        "namespace": "gravity.compiler-pass-manifest"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj",
+        "namespace": "gravity.compiler-pass-manifest-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [
+        "diagnostics",
+        "digest"
+      ],
+      "direct_test_dependencies": [
+        "compiler-pass-manifest"
+      ],
+      "canonical_pass_refs": [
+        "compiler-pass-contracts"
+      ],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "non-authoritative",
+        "compatibility_only": true,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "namespace-contract",
+      "stage0_group": "compiler",
       "leaf_execution_group": "compiler"
     },
     {

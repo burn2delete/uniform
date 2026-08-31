@@ -5,17 +5,6 @@ Tasks: `P05-T01` through `P05-T06`
 Phase: 05 - Mathematical and Elementary Function System
 Status: superseded historical scaffold evidence
 
-This file records the earlier JSON/Python scaffold harness. Current executable
-stage0 evidence begins with
-`docs/artifacts/phase-05/reports/p05-t01-numeric-mode-report.md`,
-`docs/artifacts/phase-05/reports/p05-t02-efir-report.md`,
-`docs/artifacts/phase-05/reports/p05-t03-eml-report.md`,
-`docs/artifacts/phase-05/reports/p05-t04-approximation-report.md`,
-`docs/artifacts/phase-05/reports/p05-t05-math-proof-report.md`,
-`docs/artifacts/phase-05/reports/p05-t06-math-conformance-report.md`, and the
-current Phase 05 proof report. Do not use this scaffold-era report alone as
-completion evidence.
-
 ## Governing Documents Read
 
 - `docs/phase-05-mathematical-and-elementary-function-system/README.md`
@@ -38,8 +27,6 @@ completion evidence.
 
 ## Historical Implemented Surface
 
-- `src/gravity/math_system.py`
-- `tools/validate_math_system.py`
 - `docs/artifacts/phase-05/fixtures/math/accepted-math-system.json`
 - `docs/artifacts/phase-05/math/math-system.accepted.json`
 
@@ -75,23 +62,6 @@ The validator checks stable diagnostics for:
 - `MATH9-EQUALITY`
 - `MATH10-PROOF`
 - `MATH11-DIAGNOSTIC`
-
-## Historical Validation
-
-```text
-python3 tools/validate_math_system.py --artifact-out docs/artifacts/phase-05/math/math-system.accepted.json
-math validation passed: 1 EFIR graph, 1 EML trace, 11 rejected fixtures
-```
-
-```text
-python3 -m compileall -q src/gravity/math_system.py src/gravity/math_document_coverage.py tools/validate_math_system.py tools/validate_phase05_document_coverage.py
-passed
-```
-
-```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

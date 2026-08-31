@@ -29,4 +29,3 @@ P18-T06 is incomplete. The generated release evidence is blocked because the cur
 ## Next Required Capability
 
 `:self_hosted_public_binary_final_verification`
-

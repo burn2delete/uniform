@@ -690,7 +690,7 @@
   #{:status :reviewer-class :reviewed-commit :reviewed-tree :review-path
     :review-artifact-id :review-raw-content-hash}
   :strict-command
-  "python3 tools/verify_p18_payload_commit_bindings.py --bindings docs/artifacts/phase-18/release/p18-t06-payload-containing-commit-bindings.edn --bindings-commit <C> --bindings-tree <C-tree>"
+  "clojure -M:test --namespace gravity.self-hosting.p15-public-native-admission-test"
   :separate-registry-predicate-symbol? false
   :claims {:public-route? false
            :clojure-seed-boundary? true

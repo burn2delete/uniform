@@ -1,0 +1,20 @@
+[[safe2/memory-operation
+  {:return-type "MemorySafetyOperationRecord", :safe-memory-kind :memory-operation}]
+ [safe2/runtime-check
+  {:return-type "MemoryRuntimeCheckRecord",
+   :effects #{:safety/check-failure},
+   :safe-memory-kind :runtime-check}]
+ [safe2/allocation-release
+  {:return-type "AllocationReleaseMap", :safe-memory-kind :allocation-release}]
+ [safe2/escape-analysis
+  {:return-type "EscapeAnalysisRecord", :safe-memory-kind :escape-analysis}]
+ [safe2/optimization-proof
+  {:return-type "MemoryCheckErasureProof", :safe-memory-kind :optimization-proof}]
+ [safe2/backend-preservation
+  {:return-type "BackendMemoryPreservationRecord",
+   :safe-memory-kind :backend-preservation}]
+ [safe2/unsafe-audit
+  {:return-type "UnsafeMemoryAuditRecord",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :safe-memory-kind :unsafe-audit}]]

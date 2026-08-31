@@ -443,9 +443,9 @@
     :content-hash
     "sha256:2d334872a84394acc636280796e205a74b227327aa3d646d6c19d55210bd4968"}
    {:component-id :mir
-    :byte-count 253588
+    :byte-count 330835
     :content-hash
-    "sha256:34f0e797420b35417dbecb32c28465f7ffbb867c18ac59159bf8ace465054136"}
+    "sha256:cf7af2e3a7709bcc3ce5056cf75bab1bb0b4ac01c6627fe3d1f3d90d5c83c0aa"}
    {:component-id :domain-ir
     :byte-count 162404
     :content-hash
@@ -467,25 +467,25 @@
     :content-hash
     "sha256:52529a1a77290252567b1a7e0c7c87aede36d0e94e7ef8f2939151f1e183f4c0"}
    {:component-id :target-lowering
-    :byte-count 173292
+    :byte-count 173349
     :content-hash
-    "sha256:5c500fd4ad8a6652ce9a8918ff31ee7d9947732b47860071f6dca0dfc61839ae"}
+    "sha256:18843bb01315cd5a55902fd8c9f38875d93aeba3c2b2fd1e3252afa2107114aa"}
    {:component-id :backend-interface
-    :byte-count 141683
+    :byte-count 141751
     :content-hash
-    "sha256:c827a5bcbc6dcd8778d958ae8daba30a2861bf44cfb079a5d227dfc73ddb4e8d"}
+    "sha256:75a1fd3364636249919f9853bd3ace2e77fc5e69aaf7289b12d754924ed9eefe"}
    {:component-id :backend-c
     :byte-count 122488
     :content-hash
-    "sha256:d78e042dbe6257ee4270ae3e784daf7298e74376602e06061c4b6686bff0e5e6"}
+    "sha256:63811e04d496ca3e0d49f6d4effac2ff892b7510c02708ff14a1ece014d53217"}
    {:component-id :backend-llvm
     :byte-count 91077
     :content-hash
     "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300"}
    {:component-id :backend-wasm
-    :byte-count 118572
+    :byte-count 118633
     :content-hash
-    "sha256:b0e2f2c1e8ff98541f4af07770eb54488234124b8ed03975ff8a5ebed2412d85"}
+    "sha256:96e2fa6a41118edacd026f878cc6c817a5d65f06973ccee24974b62a3b3d7488"}
    {:component-id :backend-jvm
     :byte-count 23533
     :content-hash

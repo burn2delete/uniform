@@ -15,6 +15,10 @@
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting.sh01-development-test-runner"]}
 
+  :incremental-check
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.self-hosting.sh01-incremental-check"]}
+
   :stage3-verification
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting.stage3-verification-runner"]}

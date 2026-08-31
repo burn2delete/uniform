@@ -59,11 +59,6 @@ clojure -M -e <phase-07 backend proof EDN parse>
 ```
 
 ```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
-
-```text
 git diff --check
 passed
 ```

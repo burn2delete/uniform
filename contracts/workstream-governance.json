@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "contract_id": "gravity/workstream-governance-v1",
+  "normative_sources": [
+    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    "docs/phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md",
+    "docs/phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md",
+    "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md"
+  ],
+  "ledger_schema": {
+    "contract_id": "gravity/workstream-ledger-v1",
+    "top_level_keys": ["contract_id", "governance_contract", "schema_version", "workstreams"],
+    "workstream_keys": ["architecture_decision", "author", "base_commit", "candidate_commit", "clean_worktree", "dependencies", "disposition", "evidence", "governing_contracts", "history", "id", "invariant_family", "no_overclaim_authority", "owned_paths", "owner", "residual_host_boundaries", "reviews", "state", "title"],
+    "evidence_keys": ["accepted_fixtures", "rejected_fixtures", "stable_diagnostics", "validation_commands"],
+    "validation_command_keys": ["command", "exit_code", "result"],
+    "review_keys": ["kind", "result", "reviewer"],
+    "history_event_keys": ["actor", "at", "reason", "state"],
+    "authority_keys": ["integration_only", "release", "seed_retirement", "self_hosting"]
+  },
+  "lifecycle": {
+    "states": ["draft", "frozen", "review-pending", "accepted", "integration-eligible", "integrated", "held", "rejected", "superseded", "abandoned"],
+    "active_candidate_states": ["draft", "frozen", "review-pending", "accepted", "integration-eligible"],
+    "failure_states": ["rejected"],
+    "terminal_states": ["integrated", "rejected", "superseded", "abandoned"],
+    "transitions": {
+      "draft": ["frozen", "held", "rejected", "superseded", "abandoned"],
+      "frozen": ["draft", "review-pending", "held", "rejected", "superseded", "abandoned"],
+      "review-pending": ["draft", "accepted", "held", "rejected", "superseded", "abandoned"],
+      "accepted": ["integration-eligible", "held", "rejected", "superseded", "abandoned"],
+      "integration-eligible": ["integrated", "held", "rejected", "superseded", "abandoned"],
+      "held": ["draft", "frozen", "rejected", "superseded", "abandoned"],
+      "integrated": [],
+      "rejected": [],
+      "superseded": [],
+      "abandoned": []
+    }
+  },
+  "admission_policy": {
+    "one_active_candidate_per_invariant_family": true,
+    "architecture_decision_after_failures": 2,
+    "dependency_state_floor": {
+      "review-pending": ["accepted", "integration-eligible", "integrated"],
+      "accepted": ["accepted", "integration-eligible", "integrated"],
+      "integration-eligible": ["integrated"],
+      "integrated": ["integrated"]
+    },
+    "integration_eligible_requires": ["exact_base_commit", "exact_candidate_commit", "clean_worktree", "owned_paths", "governing_contracts", "accepted_fixtures", "rejected_fixtures", "stable_diagnostics", "successful_validation_commands", "independent_accepted_review", "residual_host_boundaries", "no_overclaim_authority"],
+    "review_kinds": ["independent", "self-audit"],
+    "review_results": ["accepted", "changes-requested", "rejected"],
+    "self_audit_confers_eligibility": false,
+    "commit_pattern": "^[0-9a-f]{40}$",
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    }
+  },
+  "diagnostics": {
+    "WG001": "strict JSON decoding or top-level schema failed",
+    "WG002": "the governance contract is malformed or weakened",
+    "WG003": "a workstream record or nested record is not closed",
+    "WG004": "a lifecycle history or transition is illegal",
+    "WG005": "an identifier, invariant family, owner, or list is invalid or duplicated",
+    "WG006": "more than one active candidate occupies an invariant family",
+    "WG007": "a dependency is missing, cyclic, or below its required admission state",
+    "WG008": "two failed candidates require a nonempty architecture decision before new active work",
+    "WG009": "integration evidence is incomplete or malformed",
+    "WG010": "an independent accepted review is absent or is not independent",
+    "WG011": "a self-audit attempted to confer integration eligibility",
+    "WG012": "an authority or product-completion overclaim was attempted"
+  },
+  "nonclaims": [
+    "Ledger acceptance does not establish implementation correctness.",
+    "Integration eligibility is authority only to request integration of the exact candidate commit over the exact base commit.",
+    "A self-audit never confers integration eligibility.",
+    "Integrated work does not by itself establish release, self-hosting, or seed-retirement authority.",
+    "Held, rejected, superseded, and abandoned work receives no roadmap completion credit."
+  ]
+}

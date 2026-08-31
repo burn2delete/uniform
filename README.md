@@ -4,6 +4,11 @@ This workspace contains the Gravity design document set derived from `/Users/mat
 
 Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for the whole stack. The core design is one semantic model with many compilation profiles, not one runtime everywhere.
 
+Implementation direction is Lisp-only: Clojure is the temporary bootstrap,
+seed, and tooling language, and Gravity/Uniform incrementally replaces it. New
+Python source, bytecode, and executable shebangs are prohibited. See
+[docs/tooling-language-migration.md](docs/tooling-language-migration.md).
+
 ## Document Set
 
 - [docs/README.md](docs/README.md) is the entry point.
@@ -14,6 +19,26 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 - [docs/roadmap-capability-audit.md](docs/roadmap-capability-audit.md) records the capability-gated correction to roadmap status.
 - [docs/phase-18-binary-distribution-and-seedless-release/README.md](docs/phase-18-binary-distribution-and-seedless-release/README.md) owns the open product release roadmap for a user-facing seedless `gravity` executable.
 - [docs/bootstrap/clojure-bootstrap.md](docs/bootstrap/clojure-bootstrap.md) describes the active Clojure stage0 bootstrap.
+
+## Coordination Guardrails
+
+Parallel work is governed by a closed lifecycle contract and a current
+workstream ledger. The guardrails allow only one active candidate per invariant
+family, require an architecture decision after two rejected attempts, and bind
+integration eligibility to exact Git identities, evidence, independent review,
+residual boundaries, and explicit nonclaims. See
+[docs/workstream-governance.md](docs/workstream-governance.md).
+
+```bash
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
+```
+
+Use preflight `--mode integration` with the ledger's exact base, candidate, and
+tree identities immediately before integration. The command is read-only and
+fails on a dirty or detached candidate, an unresolved or divergent base, or an
+identity mismatch. Identical and tree-equivalent candidates are reported as
+`no_remerge` so squashed or previously reconciled work is not replayed.
 
 ## Stage0 Bootstrap
 
@@ -81,67 +106,31 @@ gravity self-host verify
 until final self-hosting and seed retirement are proven.
 
 For development, plan the smallest Stage 0 verification graph before running
-it. The bounded Stage1 SH-01 handoff runs only the planner and parallel-runner
-unit namespaces in one JVM; use exact or related test vars for implementation
-work outside that unit boundary:
+it. The bounded Stage1 SH-01 handoff runs only the incremental-check, planner,
+and parallel-runner unit namespaces in one JVM; use exact or related test vars
+for implementation work outside that unit boundary:
 
 ```bash
-python3 tools/verify_development.py --dry-run --explain --human
-python3 tools/verify_development.py --lane preflight --lane focused --resume --human
+clojure -M:incremental-check
+clojure -M:incremental-check --base-ref main
 clojure -M:sh01-test
 clojure -M:dev-test --exact hosted-hello-runs --exact hosted-core-app-runs-user-functions-and-builtins
 clojure -M:project-structure-runner-unit
 clojure -J-Xmx512m -M:project-structure-test --exact gravity.bootstrap-test/hosted-hello-runs --exact gravity.bootstrap-test/reader-source-unit-identity-preserves-path-extension-and-options --exact gravity.bootstrap-test/reader-file-policy-rejects-extension-and-malformed-utf8 --exact gravity.bootstrap-test/c2-reader-treats-cr-lf-and-crlf-as-line-terminators --fail-fast
 ```
 
-`:sh01-test` runs its two namespaces in a fixed order, emits an explicitly
-non-authoritative EDN result, and exits nonzero on a failure or error. It does
-not run the selected self-hosting implementation namespaces or replace exact,
-iteration, authoritative, or release verification.
-
-The manifest's focused `stage0-project-structure-extraction` node is the
-one-JVM form of the final command. It runs the three extracted leaf test
-namespaces before the four compatibility vars, after the cheap runner-unit
-prerequisite, and is fresh and
-non-authoritative. Changing one of its six source-unit/source-span/digest
-leaves selects this node without selecting the broad `stage0-clojure-suite` or
-`stage0-bootstrap-authority`. The compatibility component alone was observed
-at 4 tests and 190 assertions in 51.05 seconds; the full gate's measured result
-was 19 tests and 397 assertions in 51.97 seconds with a peak resident set of
-789,315,584 bytes (about 753 MiB). These observations are not an equivalence or
-general speedup claim. The runner-unit prerequisite itself observed 9 tests and
-28 assertions in 0.62 seconds with a peak resident set of 144,703,488 bytes
-(about 138 MiB), without loading the production leaf or bootstrap test
-namespaces.
-
-The SH-01 parallel runner treats every child timeout as containment-unproven
-and stops the scheduler even without `--fail-fast`: queued and exclusive jobs
-are skipped while work already in flight drains. Its `ProcessHandle` cleanup
-is best effort, not strict containment of arbitrary descendants. Stream-capture
-failure is also a nonzero fatal stop; stdout and stderr are fully drained with
-bounded byte/character retention and stateful UTF-8 accounting.
-
-`--resume` applies only to matching non-authoritative receipts. The
-`heavy-candidate` lane is always fresh and serialized, but its command results
-remain non-authoritative until deferred output-artifact validation and an
-explicit authority promotion step exist. See
-`docs/development-verification-workflow.md` for the gate, cache, lock, and
-evidence rules.
-
-The Stage2 authority-admission unit is a fresh, cheap preflight after the
-Stage1 gate:
-
-```bash
-python3 -m unittest tools.tests.test_stage2_authority_admission -v
-```
-
-An integration that changes a shared or module fingerprint must use the
-lock-held wrapper, keeping `/private/tmp/gravity-sh07-heavy.lock` held through
-the recheck and fast-forward mutation. An advisory probe grants no reservation
-or authority and cannot be used to justify a later merge. For long-running
-authority work, use an immutable detached worktree pinned to the candidate
-commit/tree and bind the proof to that exact revision; a changed fingerprint
-requires a new proof.
+`clojure -M:incremental-check` discovers working-tree changes. With
+`--base-ref REF`, it also includes committed branch paths from
+`merge-base(REF, HEAD)..HEAD`. It emits the unchanged SH-01 governance
+ownership closure separately from the reviewed development-test selection and
+runs only the selected namespaces. Reviewed component sources select their
+declared leaf and compatibility tests; present dedicated test-file changes
+select their exact namespace. Deleted tests fall back conservatively, and
+relevant paths without an SH-01 owner fail closed. These Clojure runners emit
+non-authoritative development feedback and exit nonzero on failure. They do
+not replace fresh authoritative or release verification. See
+`docs/development-verification.md` for direct Clojure Stage3, SH-07,
+governance, preflight, and the fresh integration-candidate lane.
 
 The current SH-02 development audit measured namespace require at 5.88 seconds
 and about 1.40 GiB peak resident memory, and the first ten leaf vars warm in one
@@ -149,8 +138,12 @@ JVM at 13.97 seconds and about 1.46 GiB. The coordinator var exceeded the
 60-second bound and was stopped at 66.53 seconds after about 2.47 GiB; these
 are scheduling observations, not proof or speed claims. Run cheap exact vars
 first, then coordinator vars 11-13 together behind the heavy lock with
-`--fail-fast`; separate JVMs repeat the shared proof. Normal-only batching and
-SH-07 cache-affine scheduling remain future work.
+`--fail-fast`; separate JVMs repeat the shared proof. The SH-01 development
+runner now packs normal namespaces from the same slice into reviewed batches
+of at most eight per warm JVM. Memory-heavy work remains capacity-one and
+exclusive work remains fresh and sequential. These batches emit only
+non-authoritative development receipts; SH-07 cache-affine scheduling remains
+future work.
 
 The current C7 observation is 3351.068 seconds (55.85 minutes) at 176,551
 source bytes; a user-provided historical observation is 2416.213 seconds at
@@ -1347,20 +1340,19 @@ clojure -M:gravity governance-evolution bootstrap/clojure/fixtures/accepted/gove
 
 ## Validation
 
-Run:
+Run the Clojure validation surface:
 
 ```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
+clojure -M:test
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
-Expected result:
-
-```text
-validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
-```
+The Clojure structural validator checks the canonical inventory, phase indexes,
+ASCII policy, required headings, and roadmap completion evidence. Document
+semantic consistency still requires direct review of the governing documents.
 
 ## Generation and Enrichment
 
-- [tools/generate_gravity_docs.py](tools/generate_gravity_docs.py) contains the canonical 240-document inventory and baseline document renderer.
-- [tools/enrich_remaining_docs.py](tools/enrich_remaining_docs.py) records the deterministic enrichment pass used for phases that were not completed by workers.
-- Do not rerun the baseline generator over edited documents unless you intend to regenerate the full tree and then reapply enrichment.
+- The retired document generator and enrichment pass are provenance only. Git
+  history preserves them; do not reconstruct them over reviewed documents.

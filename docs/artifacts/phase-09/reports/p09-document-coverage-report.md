@@ -31,8 +31,6 @@ All 21 Phase 09 source documents were read directly:
 
 - `bootstrap/clojure/src/gravity/bootstrap.clj`
 - `bootstrap/clojure/test/gravity/bootstrap_test.clj`
-- `src/gravity/domain_document_coverage.py`
-- `tools/validate_phase09_document_coverage.py`
 - `docs/artifacts/phase-09/fixtures/document-coverage/accepted-domain-document-coverage.json`
 - `docs/artifacts/phase-09/document-coverage/domain-document-coverage.accepted.json`
 
@@ -45,23 +43,6 @@ Each coverage record links:
 - the document-specific rejected fixture,
 - the expected stable diagnostic id,
 - a coverage claim summarizing the accepted and rejected behavior.
-
-## Validation
-
-Command:
-
-```bash
-clojure -M:test
-python3 tools/validate_phase09_document_coverage.py --artifact-out docs/artifacts/phase-09/document-coverage/domain-document-coverage.accepted.json
-```
-
-Output:
-
-```text
-Ran 109 tests containing 6907 assertions.
-0 failures, 0 errors.
-Phase 09 document coverage validation passed: 21 accepted artifacts, 21 rejected diagnostics
-```
 
 ## Residual Risks
 

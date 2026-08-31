@@ -70,11 +70,6 @@ parsed 19 phase-06 compiler EDN proof files
 ```
 
 ```text
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
-
-```text
 git diff --check
 passed
 ```

@@ -1,0 +1,88 @@
+(ns self-hosting.sh08.record-access-match-typing.accepted
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [closed-record-union-descriptor
+             accepted-record-access-match-program
+             accepted-record-construction
+             accepted-record-access
+             accepted-union-construction
+             accepted-union-match
+             accepted-some-branch
+             accepted-none-branch])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-08-record-access-match-typing-v1
+              :scope :bounded-authenticated-node-linked-type-facts
+              :roadmap-credit? false
+              :non-claims [:surface-record-union-syntax
+                           :general-pattern-compiler
+                           :match-guards-and-effects
+                           :default-and-unreachable-branch-analysis
+                           :general-pattern-binding-environments
+                           :complete-branch-provenance
+                           :complete-constraint-ledger
+                           :ownership-and-linear-pattern-moves
+                           :safe-classification
+                           :generics :protocols :dynamic-dispatch
+                           :layout-and-allocation :runtime-behavior
+                           :native-gravity-digest-authority
+                           :sh07-completion :sh08-completion]}))
+
+(def closed-record-union-descriptor
+  {:record-type
+   {:name :user
+    :fields [{:name :id :type :gravity.type/integer}
+             {:name :name :type :gravity.type/string}]}
+   :record-construction
+   {:type :user
+    :fields [{:name :id :value 7}
+             {:name :name :value "Ada"}]}
+   :record-access {:record-type :user :field :name}
+   :union-type
+   {:name :maybe-integer
+    :variants [{:tag :some :payload-type :gravity.type/integer}
+               {:tag :none :payload-type :gravity.type/nil}]}
+   :union-construction
+   {:type :maybe-integer :variant :some :payload 7}
+   :union-match
+   {:union-type :maybe-integer
+    :branches [{:variant :some :result 1}
+               {:variant :none :result 0}]}})
+
+(def accepted-record-access-match-program
+  {:record-construction-definition accepted-record-construction
+   :record-access-definition accepted-record-access
+   :union-construction-definition accepted-union-construction
+   :union-match-definition accepted-union-match})
+
+(def accepted-record-construction
+  {:type :user
+   :fields [{:name :id :value 7}
+            {:name :name :value "Ada"}]})
+
+(def accepted-record-access
+  {:record-definition accepted-record-construction
+   :field :name})
+
+(def accepted-union-construction
+  {:type :maybe-integer
+   :variant :some
+   :payload 7})
+
+(def accepted-union-match
+  {:union-type :maybe-integer
+   :scrutinee-definition accepted-union-construction
+   :branch-definitions [accepted-some-branch accepted-none-branch]})
+
+(def accepted-some-branch
+  {:variant :some
+   :binding :payload
+   :pattern-payload-type :gravity.type/integer
+   :result "present"})
+
+(def accepted-none-branch
+  {:variant :none
+   :binding :empty-payload
+   :pattern-payload-type :gravity.type/nil
+   :result "absent"})

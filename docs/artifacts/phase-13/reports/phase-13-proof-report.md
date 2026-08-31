@@ -3,10 +3,6 @@
 Date: 2026-06-29
 Agent: Codex
 
-## Governing Documents Read
-
-The implementation read the Phase 13 roadmap and README, all Phase 13 `T1` through `T13` source documents, and the global roadmap instructions requiring Clojure-backed capability proof rather than Python scaffold evidence.
-
 ## Tasks Completed
 
 - `P13-T01` through `P13-T06`

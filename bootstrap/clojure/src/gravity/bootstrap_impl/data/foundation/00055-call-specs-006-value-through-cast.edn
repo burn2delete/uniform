@@ -1,0 +1,2 @@
+[[dynamic/value {:return-type "Dynamic", :effects #{:dynamic/eval}}]
+ [dynamic/cast {:return-type "Dynamic", :effects #{:dynamic/eval}}]]

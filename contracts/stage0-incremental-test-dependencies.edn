@@ -1,0 +1,299 @@
+{:schema :gravity/stage0-incremental-test-dependencies-v2
+ :authority :non-authoritative
+ :authoritative? false
+ :components
+ [{:component-id "c11-mir"
+   :source-path "bootstrap/clojure/src/gravity/c11_mir.clj"
+   :tests
+   [{:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+     :namespace gravity.c11-mir-test
+     :jvm-group "c11-mir-leaf"
+     :cache-closure
+     {:schema :gravity/stage0-explicit-test-cache-closure-v1
+      :inventories
+      [{:kind :relative-test-path-set-v1
+        :root "bootstrap/clojure/test/gravity/self_hosting"
+        :suffix "_test.clj"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/src"
+        :suffix ".class"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/test"
+        :suffix ".class"}]
+      :inputs
+      [{:path "bootstrap/clojure/src/gravity/c11_mir.clj"
+        :role :production}
+       {:path "bootstrap/clojure/src/gravity/digest.clj"
+        :role :production}
+       {:path "bootstrap/clojure/test/gravity/c11_mir_test.clj"
+        :role :test}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+        :role :runner}
+       {:path "contracts/stage0-incremental-test-dependencies.edn"
+        :role :contract}
+       {:path "docs/self-hosting-slice-backlog.md" :role :contract}
+       {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
+       {:path "deps.edn" :role :classpath}]}
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}
+    {:path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"
+     :namespace gravity.bootstrap-compatibility.c11-test
+     :jvm-group "c11-mir-compatibility"
+     :cache-closure
+     {:schema :gravity/stage0-explicit-test-cache-closure-v1
+      :inventories
+      [{:kind :relative-test-path-set-v1
+        :root "bootstrap/clojure/test/gravity/self_hosting"
+        :suffix "_test.clj"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/src"
+        :suffix ".class"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/test"
+        :suffix ".class"}]
+      :inputs
+      [{:path "bootstrap/clojure/src/gravity/c11_mir.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/bootstrap.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c12_domain_ir.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c13_optimization.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c14_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c15_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c16_incremental.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c17_plugin.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c18_verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_pass_cache.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_source_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_artifact_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_literal_projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_reader_integrity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_construction.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c4_macro_evidence.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c5_name_resolution.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c6_core_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c7_type_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c8_effect_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/capability_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/cli.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_verification_shared.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/core_ast_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/darwin_publication.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/digest.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/macro_expansion.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/module_analysis.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/optimization_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/pass_cache.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/pass_execution.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/profile_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_cursor.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_namespace.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_primitives.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/source_span.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/source_unit.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/syntax_origin.clj" :role :transitive}
+       {:path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj" :role :test}
+       {:path "bootstrap/clojure/fixtures/accepted/compiler-c11-mir-spec.gravity" :role :fixture}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj" :role :runner}
+       {:path "contracts/stage0-incremental-test-dependencies.edn" :role :contract}
+       {:path "docs/self-hosting-slice-backlog.md" :role :contract}
+       {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
+       {:path "deps.edn" :role :classpath}]}
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}]}
+  {:component-id "compiler-pass-manifest"
+   :source-path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
+   :tests
+   [{:path "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
+     :namespace gravity.compiler-pass-manifest-test
+     :jvm-group "compiler-pass-manifest-leaf"
+     :cache-closure
+     {:schema :gravity/stage0-explicit-test-cache-closure-v1
+      :inventories
+      [{:kind :relative-test-path-set-v1
+        :root "bootstrap/clojure/test/gravity/self_hosting"
+        :suffix "_test.clj"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/src"
+        :suffix ".class"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/test"
+        :suffix ".class"}]
+      :inputs
+      [{:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
+        :role :production}
+       {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
+        :role :production}
+       {:path "bootstrap/clojure/src/gravity/digest.clj"
+        :role :production}
+       {:path "bootstrap/clojure/test/gravity/compiler_pass_manifest_test.clj"
+        :role :test}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj"
+        :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+        :role :runner}
+       {:path "contracts/stage0-incremental-test-dependencies.edn"
+        :role :contract}
+       {:path "docs/self-hosting-slice-backlog.md" :role :contract}
+       {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
+       {:path "deps.edn" :role :classpath}]}
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}
+    {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_compiler_pass_manifest_compatibility_test.clj"
+     :namespace gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test
+     :jvm-group "compiler-pass-manifest-compatibility"
+     :cache-closure
+     {:schema :gravity/stage0-explicit-test-cache-closure-v1
+      :inventories
+      [{:kind :relative-test-path-set-v1
+        :root "bootstrap/clojure/test/gravity/self_hosting"
+        :suffix "_test.clj"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/src"
+        :suffix ".class"}
+       {:kind :internal-class-path-set-v1
+        :root "bootstrap/clojure/test"
+        :suffix ".class"}]
+      :inputs
+      [{:path "bootstrap/clojure/src/gravity/compiler_pass_manifest.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/bootstrap.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c11_mir.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c12_domain_ir.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c13_optimization.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c14_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c15_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c16_incremental.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c17_plugin.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c18_verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_pass_cache.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_source_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_artifact_identity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_literal_projection.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_reader_integrity.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_construction.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c3_syntax_verification.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c4_macro_evidence.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c5_name_resolution.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c6_core_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c7_type_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c8_effect_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/capability_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/cli.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/compiler_verification_shared.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/core_ast_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/darwin_publication.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/diagnostics.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/digest.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/macro_expansion.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/module_analysis.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/optimization_lowering.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/pass_cache.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/pass_execution.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/profile_validation.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_cursor.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_namespace.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/reader_primitives.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/source_span.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/source_unit.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/syntax_origin.clj" :role :transitive}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_compiler_pass_manifest_compatibility_test.clj" :role :test}
+       {:path "bootstrap/clojure/fixtures/accepted/compiler-passes.gravity" :role :fixture}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj" :role :runner}
+       {:path "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj" :role :runner}
+       {:path "contracts/stage0-incremental-test-dependencies.edn" :role :contract}
+       {:path "docs/self-hosting-slice-backlog.md" :role :contract}
+       {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
+       {:path "deps.edn" :role :classpath}]}
+     :test-policy {:deterministic? true
+                   :performance? false
+                   :proof? false
+                   :freshness-required? false}}]}]
+ :standalone-tests
+ [{:test-id "p15-bounded-profile"
+   :path "bootstrap/clojure/test/gravity/self_hosting/p15_bounded_profile_test.clj"
+   :namespace gravity.self-hosting.p15-bounded-profile-test
+   :jvm-group "p15-bounded-profile"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? false}}
+  {:test-id "p15-proof-artifact-dag"
+   :path "bootstrap/clojure/test/gravity/self_hosting/p15_proof_artifact_dag_test.clj"
+   :namespace gravity.self-hosting.p15-proof-artifact-dag-test
+   :jvm-group "p15-proof-artifact-dag"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? false}}]
+ :nonclaims
+ ["This development dependency map does not replace slice ownership."
+  "Selected tests are non-authoritative development feedback."
+  "Selection does not establish compiler, self-hosting, seed-retirement, or release authority."]}

@@ -6,10 +6,6 @@ Phase: 09
 
 ## Current Completion Evidence
 
-Phase 09 is now completed by the Clojure bootstrap. The earlier Python
-validators remain supporting historical checks, not the active completion
-proof.
-
 The active domain-coverage command is:
 
 ```bash
@@ -72,7 +68,6 @@ The proof reads the Phase 09 roadmap, Phase 09 README, all 21 DOM source documen
   source fixtures.
 - `bootstrap/clojure/fixtures/rejected/core-app-domain-*.gravity` are the
   compiled hosted core app domain-gate rejected fixtures.
-- The earlier Python validators remain historical/supporting contract checks.
 
 The accepted manifest records:
 
@@ -113,16 +108,6 @@ path.
 - `docs/artifacts/phase-09/reports/phase-09-proof-report.md`
 
 ## Validation Commands
-
-```bash
-clojure -M:gravity domain-coverage bootstrap/clojure/fixtures/accepted/domain-coverage.gravity
-clojure -M:gravity hosted-core-compiled-domain bootstrap/clojure/fixtures/accepted/core-app.gravity
-clojure -M:test
-python3 tools/validate_domain_coverage.py --artifact-out docs/artifacts/phase-09/domain/domain-coverage.accepted.json
-python3 tools/validate_phase09_document_coverage.py --artifact-out docs/artifacts/phase-09/document-coverage/domain-document-coverage.accepted.json
-python3 -m compileall src/gravity/domain_coverage.py src/gravity/domain_document_coverage.py tools/validate_domain_coverage.py tools/validate_phase09_document_coverage.py
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
 
 Observed validation outputs:
 

@@ -5,12 +5,6 @@ Phase: 06 - Compiler Architecture
 Status: complete (stage0 compiler architecture capability)
 Progress: 24/24 tasks complete
 
-Capability audit: current executable evidence completes exactly `P06-T01`,
-`P06-T02`, `P06-T03`, `P06-T04`, `P06-T05`, `P06-T06`, `P06-D080`, and
-`P06-D081` through `P06-D097`. The older JSON/Python scaffold files under
-`docs/artifacts/phase-06/` are review context and are not completion evidence
-for the remaining Phase 06 tasks.
-
 ## Governing Documents Read
 
 - `docs/phase-06-compiler-architecture/README.md`

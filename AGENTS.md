@@ -7,6 +7,23 @@ yet a compiler/runtime codebase. Treat the documents under `docs/` as normative
 inputs for implementation work. Do not replace the contract with assumptions
 from a host language, target backend, or ad hoc prototype.
 
+## Source Language Boundary
+
+- Gravity/Uniform is the destination implementation language.
+- Clojure is the only permitted temporary bootstrap, seed, and repository
+  tooling language. New bootstrap or tooling code must be Clojure.
+- Do not add Python. The boundary gate rejects Python source, bytecode, and
+  executable shebangs; Python has no implementation or evidence authority.
+- Do not introduce another host language to extend the seed.
+- Clojure is retired incrementally behind Gravity/Uniform-authored equivalents
+  and the governing self-hosting evidence.
+
+Run the boundary gate after adding, removing, or replacing source or tooling:
+
+```bash
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+```
+
 ## Start Here
 
 Before making project changes, read:
@@ -82,40 +99,51 @@ records the second-pass review standard and phase status.
   certificates, diagnostics, benchmark reports, SBOMs, and bootstrap records
   need provenance when the governing document requires it.
 
+## Agent Guardrails: Preventing Over-Engineering
+
+1. **Deliver the Smallest Complete Solution:** Write only the minimum code
+   necessary to satisfy the immediate requirements. Do not add unrequested
+   features, premature abstractions, or "gold-plating."
+2. **Strict Scope Control:** Use only the tools and capabilities necessary for
+   the explicit task. Avoid redundant autonomous logic loops or wasting tokens
+   on unrequested analysis.
+3. **Require Proof of Intent:** Justify all code changes using existing
+   repository evidence and current requirements. Never add code to handle
+   hypothetical future use cases.
+4. **Preserve Surrounding Behavior:** Modify only the exact lines of code
+   required to complete the task. Actively preserve all surrounding code and
+   avoid unrelated "clean-ups" or improvements.
+
 ## Documentation Work
 
 - Keep Markdown and tooling text ASCII unless a task explicitly requires
   otherwise.
 - Do not add scaffold or filler markers that the validator rejects to canonical
-  docs; see `tools/validate_gravity_docs.py` for the exact pattern.
+  docs; see `tools/validate_gravity_docs.clj` for the exact pattern.
 - Canonical docs are expected to contain sections equivalent to purpose,
   requirements, dependencies, outputs/artifacts, and conformance/acceptance
   criteria.
-- Do not rerun `tools/generate_gravity_docs.py` over edited documents unless the
-  task is a deliberate full-tree regeneration and you will reapply enrichment
-  afterward. `tools/enrich_remaining_docs.py` records the deterministic
-  enrichment pass used for earlier incomplete phases.
+- The historical reviewed-source generators were retired after the document
+  set was enriched. Do not reconstruct or rerun them over canonical documents;
+  Git history preserves them for audit and recovery.
 - When reviewing docs, read the phase README and the documents directly. Search
   is useful for drift scans, but it is not a substitute for document review.
 
 ## Validation
 
-Run the structural validator after documentation changes:
+The structural document and full-language roadmap validators are Clojure
+tooling. Run them with the repository's Clojure tests; do not add new Python to
+close validation gaps:
 
 ```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
+clojure -M:test
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
 ```
 
-Expected output:
-
-```text
-validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
-```
-
-If that Python path is unavailable, `python3 tools/validate_gravity_docs.py`
-should be equivalent in a normal local environment. Passing validation is
-necessary but not sufficient; it does not prove semantic consistency across
-documents.
+Passing the Clojure suite is necessary but not sufficient; it does not prove
+semantic consistency across documents. The language-boundary gate enforces the
+repository language policy.
 
 ## Working Discipline
 
@@ -125,3 +153,36 @@ documents.
   the governing document requires them.
 - Do not claim release, milestone, safety, performance, or self-hosting support
   without the evidence bundle required by the relevant docs.
+
+## Workstream Lifecycle And Integration
+
+The machine-readable lifecycle policy is
+`contracts/workstream-governance.json`; current dispositions are recorded in
+`contracts/workstream-ledger.json`. Validate both before proposing or admitting
+work:
+
+```bash
+clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
+```
+
+- Use one active candidate per invariant family. A competing attempt must wait
+  until the current candidate is integrated, held, rejected, superseded, or
+  abandoned.
+- After two rejected candidates in one invariant family, stop implementation.
+  Record a nonempty architecture decision before another candidate becomes
+  active. Do not route downstream work around the failed invariant.
+- Move candidates through the recorded lifecycle. A self-audit may find
+  defects, but it cannot confer acceptance or integration eligibility.
+- Integration eligibility is bound to the exact base commit, candidate commit,
+  clean worktree, owned paths, governing contracts, positive and negative
+  fixtures, stable diagnostics, successful checks, independent acceptance,
+  residual host boundaries, and explicit nonclaims.
+- Run the preflight in `integration` mode with the ledger's exact identities
+  immediately before integration. Dirty or detached worktrees, missing or
+  divergent bases, and identity mismatches fail closed.
+- Compare both ancestry and tree identity. If the candidate is already
+  identical or tree-equivalent to the base, do not merge or replay it again.
+- Held, rejected, superseded, and abandoned work receives no roadmap credit.
+  Integrated work receives only the authority explicitly recorded for it; it
+  does not imply release, self-hosting, or seed-retirement completion.

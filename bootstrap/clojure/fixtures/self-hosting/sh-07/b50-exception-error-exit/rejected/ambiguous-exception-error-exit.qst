@@ -1,0 +1,21 @@
+(ns self-hosting.sh07-b50.ambiguous-exception-error-exit
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [handle-first handle-second])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07
+              :candidate :sh07-authenticated-exception-error-exit-v1}))
+
+(defn handle-first []
+  (try
+    (throw :fixture/first)
+    (catch Exception error
+      error)))
+
+(defn handle-second []
+  (try
+    (throw :fixture/second)
+    (catch Exception error
+      error)))

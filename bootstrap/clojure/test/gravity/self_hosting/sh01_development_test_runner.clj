@@ -1,11 +1,13 @@
 (ns gravity.self-hosting.sh01-development-test-runner
-  "Bounded, non-authoritative SH-01 planner and scheduler unit gate."
+  "Bounded, non-authoritative SH-01 incremental planner and runner unit gate."
   (:require [clojure.test :as test]
+            [gravity.self-hosting.sh01-incremental-check-test]
             [gravity.self-hosting.sh01-impact-test-planner-test]
             [gravity.self-hosting.sh01-parallel-test-runner-test]))
 
 (def ^:private test-namespaces
-  '[gravity.self-hosting.sh01-impact-test-planner-test
+  '[gravity.self-hosting.sh01-incremental-check-test
+    gravity.self-hosting.sh01-impact-test-planner-test
     gravity.self-hosting.sh01-parallel-test-runner-test])
 
 (defn- namespace-result
@@ -22,7 +24,7 @@
      :error (:error summary))))
 
 (defn run-gate
-  "Runs the two SH-01 unit namespaces in a fixed order and returns a report."
+  "Runs the SH-01 unit namespaces in a fixed order and returns a report."
   []
   (let [results (mapv namespace-result test-namespaces)
         summary

@@ -1,0 +1,10 @@
+[[unsafe/raw-read
+  {:return-type "RawPtr[U8]",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :memory-regime :raw-memory}]
+ [unsafe/mmio-read
+  {:return-type "MMIO[U32]",
+   :effects #{:memory/mmio},
+   :capabilities #{:hardware/mmio},
+   :memory-regime :mmio}]]

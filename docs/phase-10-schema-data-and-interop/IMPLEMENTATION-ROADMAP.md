@@ -3,8 +3,6 @@
 Status: complete; compiled app schema gate active
 Progress: 16/16 tasks complete
 
-Capability audit: Phase 10 is complete for the Clojure stage0 schema/data/interop surface and now has a compiled hosted core app schema/data/interop gate. Earlier Python scaffold artifacts remain supporting historical evidence, while the active completion proofs are the runnable `schema-interop` bootstrap command, accepted and rejected Gravity fixtures, stable diagnostics, `hosted-core-compiled-schema`, and current proof artifacts.
-
 ## Objective
 
 Implement schemas, serialization, canonical data, generated APIs, migrations, binary ABI, typed configuration, and artifact schemas from one source schema model.

@@ -1,0 +1,124 @@
+{:scan-roots ["."],
+ :schema :gravity/language-boundary-v1,
+ :programming-language-extensions
+ [".py"
+  ".pyw"
+  ".pyi"
+  ".pyx"
+  ".pyc"
+  ".pyo"
+  ".java"
+  ".c"
+  ".h"
+  ".cc"
+  ".cpp"
+  ".cxx"
+  ".hpp"
+  ".hh"
+  ".hxx"
+  ".m"
+  ".mm"
+  ".swift"
+  ".rs"
+  ".go"
+  ".js"
+  ".jsx"
+  ".ts"
+  ".tsx"
+  ".rb"
+  ".php"
+  ".pl"
+  ".pm"
+  ".lua"
+  ".dart"
+  ".kt"
+  ".kts"
+  ".scala"
+  ".cs"
+  ".fs"
+  ".fsx"
+  ".vb"
+  ".sh"
+  ".bash"
+  ".zsh"
+  ".fish"
+  ".ps1"
+  ".r"
+  ".jl"
+  ".ex"
+  ".exs"
+  ".erl"
+  ".hrl"
+  ".hs"
+  ".lhs"
+  ".ml"
+  ".mli"
+  ".asm"
+  ".s"],
+ :non-lisp-shebang-interpreters
+ ["bash"
+  "deno"
+  "fish"
+  "lua"
+  "node"
+  "perl"
+  "php"
+  "python"
+  "python2"
+  "python3"
+  "ruby"
+  "sh"
+  "swift"
+  "zsh"],
+ :permitted-data-extensions [".edn"],
+ :permitted-lisp-extensions [".clj" ".cljc" ".cljs" ".gravity" ".qst"],
+ :legacy-shell
+ {:classification :frozen-removal-only-shell-launcher-debt,
+  :entries
+  [["bin/gravity"
+    "990d1dc11079df9fa1fbc267e49153be3c00239e0659843a0cfeaec542fc00a5"]
+   ["bin/gravity-bootstrap"
+    "97d796548093e845255dc4ffc766cf50831f5a1a1712155e3b3804e0a6b2a118"]]},
+ :policy
+ {:bootstrap-seed-tooling-language :clojure,
+  :successor-languages [:gravity :uniform],
+  :python-authority :none,
+  :legacy-python-policy :frozen-removal-only,
+  :legacy-java-policy :frozen-removal-only,
+  :legacy-shell-policy :frozen-removal-only,
+  :new-non-lisp-policy :reject},
+ :legacy-java
+ {:classification :frozen-host-shim-debt,
+  :entries
+  [["bootstrap/clojure/java/gravity/cli/Main.java"
+    "b8a9d62a8871f1fe9dc1394900f32a565d56b027a75db4397ceaf99a259e0d99"]]},
+ :ignored-directory-paths [".cpcache" ".git" "target"],
+ :legacy-python
+ {:classification :frozen-removal-only-debt,
+  :authority :none,
+  :entries []},
+ :legacy-c
+ {:classification :frozen-removal-only-target-and-native-debt,
+  :entries
+  [["bootstrap/clojure/fixtures/p15-native-launcher/argv_stdout.c"
+    "c8ccfa6f72601d45a61b403d54ec38d19edba7c4f302f15f5e6e05b16ec12c1c"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/exit_23.c"
+    "68e3186bbec465af00f296b5f7bc017bdb7380cb8c371d4b5e215514eeb0ffb3"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/leader_descendant.c"
+    "d3c8e928a34ef6892999957d9d14e1412583e72d8d071a53b1619f2b285a2a0e"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/marker.c"
+    "ca02c8a2cc41d927e6c289125eab19cf18e9e6215b62d5e896a523f87b04b854"]
+   ["bootstrap/clojure/fixtures/p15-native-launcher/timeout_group.c"
+    "a2ce6be6e383098eb8c617e638a40617f07cd85d0690ea4c082e7dd11227f318"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/accepted/argv-arithmetic-stdout.c"
+    "a67408972d1a466d47dd129c96248c3e90ac66a900d33a0d72cd1dfa2ff4f003"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/compile-error.c"
+    "751d251ed8de8e46c0fec7c657431e083dcd7a2232ab8ba05bbdfa1ec48e2fb5"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-nonzero.c"
+    "7c99e46e7f36f7efa47e3614181007fc528e84fa2034ec8be4aa7c8cd8e2328a"]
+   ["bootstrap/clojure/fixtures/self-hosting/sh-18/rejected/runtime-timeout.c"
+    "65ec94919b4db6dde47c182bcccff3eb41e521deff07b799ccd32640fe947a75"]
+   ["bootstrap/native/p15_native_runtime_driver.c"
+    "ba62e0f054667daa9487d1d77e071ef2929b49ea7ffbccc83daac1b10a5f0ecd"]
+   ["bootstrap/native/p15_public_native_launcher.c"
+    "8db1b618f7a3803229f464235cf2594ee95dfbdd7586b34574fe6a381c91f1d6"]]}}

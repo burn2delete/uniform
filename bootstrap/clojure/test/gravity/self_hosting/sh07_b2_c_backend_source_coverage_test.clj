@@ -29,11 +29,11 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count 122488)
 (def ^:private expected-source-revision-id
-  "sha256:d78e042dbe6257ee4270ae3e784daf7298e74376602e06061c4b6686bff0e5e6")
+  "sha256:63811e04d496ca3e0d49f6d4effac2ff892b7510c02708ff14a1ece014d53217")
 (def ^:private expected-plan-semantic-id
-  "sha256:9976083b35646cd4c408529dc71abd3971be8c2634aebf684e9bb86fd5ec13a8")
+  "sha256:2c0420eb7695ec26174a1a4f469e3c17412f76211ceb53f9ac8de796381c9886")
 (def ^:private expected-functions-semantic-id
-  "sha256:ec929cab60eb3321a911b6d85cc34164e7f4a5a4ab9bc90d3461f9b631f1986f")
+  "sha256:a870a77b0a225d7983304cfc7946a5784f21b1df9abcff6dbb4127487727b63c")
 (def ^:private expected-builder-semantic-id
   "sha256:1eb13380d0364d7cbf49c442e4b3ed571153b22fd25ac726d9eb30bccca032e8")
 (def ^:private expected-export-names

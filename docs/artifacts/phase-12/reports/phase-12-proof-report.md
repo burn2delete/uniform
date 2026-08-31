@@ -6,10 +6,6 @@ Phase: 12
 
 ## Current Completion Evidence
 
-Phase 12 is now completed by the Clojure bootstrap. The earlier Python
-validators remain supporting historical checks, not the active completion
-proof.
-
 The active command is:
 
 ```bash
@@ -109,16 +105,6 @@ Compiled app rejected fixtures:
 - `docs/artifacts/phase-12/reports/phase-12-proof-report.md`
 
 ## Validation Commands
-
-```bash
-clojure -M:gravity package-artifacts bootstrap/clojure/fixtures/accepted/package-artifacts.gravity
-clojure -M:gravity hosted-core-compiled-package bootstrap/clojure/fixtures/accepted/core-app.gravity
-clojure -M:gravity run-compiled examples/core-app.gravity
-clojure -M:test
-python3 tools/validate_package_artifacts.py --artifact-out docs/artifacts/phase-12/package/package-artifacts.accepted.json
-python3 tools/validate_phase12_document_coverage.py --artifact-out docs/artifacts/phase-12/document-coverage/package-document-coverage.accepted.json
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
 
 Observed historical scaffold outputs:
 

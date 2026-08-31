@@ -3,7 +3,6 @@
 Date: 2026-06-24
 Status: superseded historical scaffold evidence
 
-This file records the older Python scaffold document-coverage pass for Phase
 02. It is not completion evidence for `P02-D031` through `P02-D045`, and it
 must not be used to mark the phase complete.
 

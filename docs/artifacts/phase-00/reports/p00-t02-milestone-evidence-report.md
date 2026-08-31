@@ -23,67 +23,11 @@ Task: `P00-T02` - Milestone evidence system
 
 ## Implemented Surface
 
-- Added `tools/validate_milestone_evidence.py`.
 - Added `docs/artifacts/phase-00/milestone-evidence-system.json`.
 - Added accepted fixture `docs/artifacts/phase-00/fixtures/milestone-evidence/accepted-m1-hosted-hello.json`.
 - Added rejected fixture `docs/artifacts/phase-00/fixtures/milestone-evidence/rejected-missing-negative-fixture.json`.
 
 The evidence system converts D2 milestones M0 through M8 into ordered release gates. Each gate records governing documents, positive fixtures, negative fixtures, diagnostics, required artifacts, proof records, and claim limits. The validator blocks missing evidence categories, sequence skips, absent artifacts, deferred safety, and missing proof records using D2, D8, and D9 diagnostics.
-
-## Accepted Behavior
-
-Command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_milestone_evidence.py docs/artifacts/phase-00/milestone-evidence-system.json
-```
-
-Output:
-
-```text
-milestone evidence validation passed: 9 milestones, 13 required bundle fields
-```
-
-Accepted fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_milestone_evidence.py docs/artifacts/phase-00/fixtures/milestone-evidence/accepted-m1-hosted-hello.json
-```
-
-Output:
-
-```text
-milestone evidence bundle validation passed: M1
-```
-
-## Rejected Behavior
-
-Rejected fixture command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_milestone_evidence.py docs/artifacts/phase-00/fixtures/milestone-evidence/rejected-missing-negative-fixture.json --expect-failure D2-MILESTONE-EVIDENCE
-```
-
-Output:
-
-```text
-expected diagnostic observed: D2-MILESTONE-EVIDENCE
-bundle requires non-empty negative_fixtures
-```
-
-## Repository Validation
-
-Command:
-
-```bash
-/Users/mattr/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 tools/validate_gravity_docs.py
-```
-
-Output:
-
-```text
-validation passed: 240 docs, 18 phase indexes, ASCII, no placeholders
-```
 
 ## Residual Risks
 

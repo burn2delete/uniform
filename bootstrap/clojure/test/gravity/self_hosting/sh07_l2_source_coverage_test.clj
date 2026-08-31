@@ -33,28 +33,34 @@
   "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 17557)
+(def ^:private expected-source-byte-count 31532)
 (def ^:private expected-source-revision-id
-  "sha256:25cf07308bf8a98f9933b56ea3555a7c7906fcda81dd73be883c55140a986284")
+  "sha256:2af841450bf51b4db90538fb3af023ced502b5a6d2fa616516857f7b6e6441c5")
 (def ^:private expected-coverage
-  {:fragment-count 9
-   :root-form-count 9
-   :form-count 600
-   :binding-count 286
-   :local-binding-count 24
-   :resolution-count 15})
+  {:fragment-count 22
+   :root-form-count 22
+   :form-count 1705
+   :binding-count 345
+   :local-binding-count 83
+   :resolution-count 337})
 (def ^:private expected-core-census
-  {:core-node-count 465
-   :definition-count 9
-   :call-count 0
-   :reference-count 0
+  {:core-node-count 1412
+   :definition-count 22
+   :call-count 126
+   :reference-count 249
    :keyword-lookup-count 0
    :core-form-frequencies
-   {:literal 375
-    :collection-literal 75
-    :def 9
+   {:let 12
+    :fn 15
+    :call 126
+    :if 31
+    :recur 3
+    :loop 2
+    :reference 249
     :quote 3
-    :fn 3}})
+    :collection-literal 137
+    :literal 812
+    :def 22}})
 (def ^:private expected-definition-names
   '#{l2-core-form-contract
      l2-evaluation-order-contract
@@ -62,6 +68,19 @@
      l2-nonlocal-control-contract
      l2-core-diagnostic-catalog
      l2-conformance-fixture-contract
+     l2-set-mutation-execution-contract
+     l2-set-execution-contract-value
+     l2-set-execution-exact-keys?
+     l2-set-execution-c6-claim-boundary-value
+     l2-set-execution-c6-verification-checks
+     l2-set-execution-c6-verification-carrier
+     l2-set-execution-verified-envelope-check
+     l2-set-execution-find
+     l2-set-execution-trace-step
+     l2-set-execution-replace-store
+     l2-set-execution-rejected
+     l2-set-execution-node
+     execute-l2-set-mutation
      build-l2-core-form-record
      build-l2-evaluation-order-record
      verify-l2-core-semantics})
@@ -215,7 +234,7 @@
   (let [contract
         (edn/read-string
          (slurp (path proof-contract-relative-path)))]
-    (is (= "SH-07-B19" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (contains?
          (set (:governing-documents contract))
          "docs/phase-01-core-language/012-l2-core-language-semantics.md"))
@@ -274,8 +293,9 @@
         fn-nodes (filterv #(= :fn (:core-form %)) nodes)]
     (is (= expected-definition-names
            (set (map :name definitions))))
-    (is (= 9 (count definitions)))
-    (is (= 3 (count quote-nodes) (count fn-nodes)))
+    (is (= 22 (count definitions)))
+    (is (= 3 (count quote-nodes)))
+    (is (= 15 (count fn-nodes)))
     (is (every? #(= :def
                     (:core-form (get node-by-id (:core-node-id %))))
                 definitions))
@@ -285,9 +305,7 @@
       (is (= [] (get-in node [:evaluation :order])))
       (is (= #{:quoted-form-id :quoted-syntax-id
                :quoted-kind :quoted-value}
-             (set (keys (:attributes node))))))
-    (is (empty? (:reference-uses core-artifact)))
-    (is (empty? (:calls core-artifact)))))
+             (set (keys (:attributes node))))))))
 
 (deftest sh07-b19-l2-is-deterministic-path-neutral-and-provenanced
   (let [{:keys [left right left-path right-path]} @parity-artifacts]

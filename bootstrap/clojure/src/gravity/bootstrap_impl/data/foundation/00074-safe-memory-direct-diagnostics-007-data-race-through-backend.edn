@@ -1,0 +1,66 @@
+[[safe8/data-race
+  {:id "SAFE8-DATA-RACE",
+   :rule :SAFE8,
+   :operation :concurrent-mutable-access,
+   :missing-fact :synchronization-or-transfer-proof,
+   :message "concurrent mutable access is not synchronized or ownership-transferred"}]
+ [safe8/task-capture-diagnostic
+  {:id "SAFE8-TASK-CAPTURE",
+   :rule :SAFE8,
+   :operation :task-capture,
+   :missing-fact :borrow-lifetime-proof,
+   :message "spawned or detached work captures invalid borrowed state"}]
+ [safe8/move
+  {:id "SAFE8-MOVE",
+   :rule :SAFE8,
+   :operation :ownership-transfer,
+   :missing-fact :source-consumption,
+   :message "owned mutable data is used after transfer to another task"}]
+ [safe8/share
+  {:id "SAFE8-SHARE",
+   :rule :SAFE8,
+   :operation :immutable-sharing,
+   :missing-fact :concurrency-safe-representation,
+   :message "shared value representation is not proven concurrency-safe"}]
+ [safe8/lock-guard
+  {:id "SAFE8-LOCK-GUARD",
+   :rule :SAFE8,
+   :operation :lock-guard,
+   :missing-fact :guard-lifetime-and-release,
+   :message "lock guard lifetime or release behavior is invalid"}]
+ [safe8/atomic-order-diagnostic
+  {:id "SAFE8-ATOMIC-ORDER",
+   :rule :SAFE8,
+   :operation :atomic,
+   :missing-fact :memory-order-and-target-support,
+   :message "atomic operation lacks a supported memory order"}]
+ [safe8/fence
+  {:id "SAFE8-FENCE",
+   :rule :SAFE8,
+   :operation :memory-fence,
+   :missing-fact :target-fence-support,
+   :message "target fence requirements are not satisfied"}]
+ [safe8/channel
+  {:id "SAFE8-CHANNEL",
+   :rule :SAFE8,
+   :operation :channel,
+   :missing-fact :ownership-close-or-backpressure-contract,
+   :message "channel ownership, close, or backpressure behavior is invalid"}]
+ [safe8/actor
+  {:id "SAFE8-ACTOR",
+   :rule :SAFE8,
+   :operation :actor,
+   :missing-fact :mailbox-message-contract,
+   :message "actor mailbox or message contract is invalid"}]
+ [safe8/workflow-replay
+  {:id "SAFE8-WORKFLOW-REPLAY",
+   :rule :SAFE8,
+   :operation :workflow-concurrency,
+   :missing-fact :deterministic-replay-record,
+   :message "workflow concurrency cannot be replayed deterministically"}]
+ [safe8/backend
+  {:id "SAFE8-BACKEND",
+   :rule :SAFE8,
+   :operation :backend-lowering,
+   :missing-fact :synchronization-preservation,
+   :message "backend lowering cannot preserve synchronization semantics"}]]
