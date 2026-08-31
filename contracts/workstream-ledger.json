@@ -9261,7 +9261,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9384,9 +9384,15 @@
         "at": "2026-08-31T04:52:10Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 3ed00a806f63e9263305f7f51c69897683f81e3b and immutable architecture-only Attempt-14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T04:53:00Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/attempt11_exact_review of immutable Attempt-14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6: canonical UTF-8 comparator semantics, recursive C11 collection ordering, compiler/runtime closure, G13 preservation, evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-14 candidate for exact independent review. It resolves the canonical collection-order contradiction with one closed UTF-8 text comparator and no implementation or pin authority. No review result, acceptance, integration eligibility, or SH-07 completion is conferred."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-14 candidate for fresh independent exact review. No acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
   }
 ]
 }
