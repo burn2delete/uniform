@@ -10,7 +10,6 @@
   "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" 392
   "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" 393
   "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj" 477
-  "bootstrap/clojure/src/gravity/c2_reader_product_projection.clj" 325
   "bootstrap/clojure/src/gravity/c2_source_identity.clj" 406
   "bootstrap/clojure/src/gravity/c4_macro_evidence.clj" 309
   "bootstrap/clojure/src/gravity/c5_name_resolution.clj" 1168
