@@ -1,0 +1,167 @@
+{
+  "architecture_decision": "Attempt 2 factors the exact four-variable C10 semantic product below requested-path provenance. Admission authenticates live pins and source snapshots, reconstructs and freshly verifies each requested path, requires the closed eleven-slot selection, admits successful strict SH-06 and SH-07 reports only, bounds the process-local cache, and fails closed on source mutation, stale pins, malformed envelopes, recursion, cancellation, and resource failures. The carrier is non-authoritative development tooling and does not cache final artifacts or reports.",
+  "author": "development-verification",
+  "base_commit": "c344a8ad1cfcc2f441133c1871e97f4fd1d0a745",
+  "candidate_commit": "ea187ee67983f3de6ca8f20d0fa2bcb79fb9447b",
+  "clean_worktree": true,
+  "dependencies": [
+    "host-wide-development-resource-broker-v1",
+    "incremental-development-loop-runner-wiring-v1"
+  ],
+  "disposition": "Accepted for integration as a bounded, successful-only, authenticated, path-neutral SH-07 C10 development semantic cache. This grants no authoritative SH-07, proof, performance, roadmap, release, self-hosting, or seed-retirement credit.",
+  "evidence": {
+    "accepted_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#construct-bind-and-cache-key-coverage",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner_test.clj#exact-c10-semantic-carrier-route",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner_test.clj#same-and-distinct-semantic-key-state",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj#sh07-b8-semantic-carrier-authentic-acceptance-evidence",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#cancelled-construction-is-not-published-and-retries"
+    ],
+    "rejected_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#source-mutation-is-rejected",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#source-bounds-and-invalid-utf8-are-rejected",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#metadata-and-envelope-tampering-are-rejected",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#failed-producers-recursion-and-cancellation-are-not-published"
+    ],
+    "stable_diagnostics": [
+      "SH07-SEMANTIC-CACHE",
+      "SH07-ITERATION-CACHE-MAXIMUM",
+      "SH07-ITERATION-CACHE-ARGUMENT",
+      "SH07-ITERATION-CACHE-SELECTION",
+      "SH07-ITERATION-CACHE-SELECTION-CONFLICT",
+      "SH07-ITERATION-CACHE-TEST-VAR"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh07-semantic-run-product-carrier-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh07-iteration-cache-runner-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1 clojure -M:test --namespace gravity.self-hosting.sh07-try-catch-test --test-var sh07-b8-semantic-carrier-authentic-acceptance-evidence",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check c344a8ad1cfcc2f441133c1871e97f4fd1d0a745..ea187ee67983f3de6ca8f20d0fa2bcb79fb9447b",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref c344a8ad1cfcc2f441133c1871e97f4fd1d0a745 --candidate-base c344a8ad1cfcc2f441133c1871e97f4fd1d0a745 --candidate-commit ea187ee67983f3de6ca8f20d0fa2bcb79fb9447b --candidate-tree d0c1b45a7bd1aba75353d7b507a844ba34ad0d13",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C10",
+    "TEST2",
+    "TEST13",
+    "docs/development-verification.md",
+    "docs/artifacts/phase-15/sh07-semantic-run-product-carrier-v2.md",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "development-verification",
+      "at": "2026-08-31T20:02:33Z",
+      "reason": "reconcile the accepted path-neutral semantic carrier onto the current authoritative main lineage",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:02:34Z",
+      "reason": "freeze exact base c344a8ad1cfcc2f441133c1871e97f4fd1d0a745, candidate ea187ee67983f3de6ca8f20d0fa2bcb79fb9447b, tree d0c1b45a7bd1aba75353d7b507a844ba34ad0d13, and seven-path scope",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:02:35Z",
+      "reason": "request independent exact semantic and reconciliation review",
+      "state": "review-pending"
+    },
+    {
+      "actor": "sh02_c11_pin_repair",
+      "at": "2026-08-31T20:02:36Z",
+      "reason": "accept bounded successful-only admission, authenticated source and pins, independent path provenance, exact selection, mutation and cancellation closure, and explicit nonclaims",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:02:37Z",
+      "reason": "exact reconciled identities, clean worktree, focused gates, two independent acceptances, residual host boundaries, and nonclaims verified",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-c10-development-artifact-reuse-attempt-2",
+  "invariant_family": "tooling/sh07-c10-development-artifact-reuse",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner_test.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj",
+    "docs/development-verification.md",
+    "docs/artifacts/phase-15/sh07-semantic-run-product-carrier-v2.md"
+  ],
+  "owner": "development-verification",
+  "residual_host_boundaries": [
+    "Clojure, the JVM, the filesystem, dynamic redefinition, and one process-local bounded mutable cache remain temporary development boundaries",
+    "the cache is non-authoritative and does not cross processes, stages, final artifacts, reports, proof authority, or release authority",
+    "the authentic B8 opt-in lane was accepted under the user's explicit successful-run assumption and was not rerun during bounded reconciliation",
+    "cache-free and cross-root evidence, broader executable language coverage, public routing, and seed retirement remain outstanding"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "sh02_c11_pin_repair"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "rereview_sh07_c10_routing"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 C10 development semantic artifact reuse candidate attempt 2"
+}
