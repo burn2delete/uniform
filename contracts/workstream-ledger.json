@@ -10260,7 +10260,7 @@
     "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
     "owner": "sh-core-architecture",
     "author": "sh07-root6-utf8-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-15",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
@@ -10379,9 +10379,15 @@
         "at": "2026-08-31T06:34:48Z",
         "actor": "sh07-root6-utf8-architecture",
         "reason": "register exact architecture-only SH07 Root6 UTF8 byte-census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, and report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9: realize Attempt15's shared scalar-only allowance with one exact allocation-free Unicode-validating prospective count observation through the governed 1GiB maximum while preserving independent collection traversal, ordering/digest separation, all bounds, and G13; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-31T12:27:50Z",
+        "actor": "sh07-root6-utf8-architecture-coordinator",
+        "reason": "freeze authoritative main base 1be7a083aecbf24888766e950980e4f5875e23a4 and immutable architecture-only Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only SH-07 Root-6 UTF-8 byte-census candidate registered for later exact freeze and independent review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "FROZEN architecture-only SH-07 Root-6 UTF-8 byte-census candidate awaiting fresh independent exact review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
