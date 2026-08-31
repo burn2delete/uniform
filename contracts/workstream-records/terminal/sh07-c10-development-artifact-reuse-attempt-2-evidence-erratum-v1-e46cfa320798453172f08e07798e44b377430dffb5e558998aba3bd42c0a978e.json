@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-c10-development-artifact-reuse-attempt-2"
   ],
-  "disposition": "Accepted for integration as an append-only evidence correction. Semantic-cache code is unchanged, the invalid original commands confer no evidence, and no additional implementation, performance, roadmap, release, self-hosting, or seed-retirement authority is granted.",
+  "disposition": "Integrated an append-only evidence correction. Semantic-cache code is unchanged, the invalid original commands confer no evidence, and no additional implementation, performance, roadmap, release, self-hosting, or seed-retirement authority is granted.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum.md",
@@ -109,6 +109,12 @@
       "at": "2026-08-31T20:11:30Z",
       "reason": "exact identities, clean report-only candidate, focused replay, independent acceptance, residual invalid evidence, and nonclaims verified",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:14:00Z",
+      "reason": "append the accepted evidence correction to main and close its active reservation",
+      "state": "integrated"
     }
   ],
   "id": "sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum-v1",
@@ -136,6 +142,6 @@
       "reviewer": "review_sh07_lifecycle_erratum"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 C10 development artifact reuse attempt 2 evidence erratum version 1"
 }
