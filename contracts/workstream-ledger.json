@@ -10260,9 +10260,8 @@
     "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
     "owner": "sh-core-architecture",
     "author": "sh07-root6-utf8-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
-      "sh07-b51-vector-destructuring-architecture-v18-attempt-15",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19"
     ],
@@ -10300,7 +10299,7 @@
     ],
     "evidence": {
       "accepted_fixtures": [
-        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-15",
+        "incorporated semantic baseline through integrated Attempt17:sh07-b51-vector-destructuring-architecture-v18-attempt-15",
         "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-17",
         "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-19",
         "authoritative main:1be7a083aecbf24888766e950980e4f5875e23a4",
@@ -10385,9 +10384,15 @@
         "at": "2026-08-31T12:27:50Z",
         "actor": "sh07-root6-utf8-architecture-coordinator",
         "reason": "freeze authoritative main base 1be7a083aecbf24888766e950980e4f5875e23a4 and immutable architecture-only Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T13:43:12Z",
+        "actor": "sh07-root6-utf8-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/implementation_writer of immutable Root6 UTF8 census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9: arity3 closed observation contract, strict Unicode widths/surrogates, prospective exact counting through 1GiB without encoded allocation, caller closure and containment, compiler/runtime evidence, high-bound testing, and preservation of independent collection traversal plus Attempt15/17/19/G13"
       }
     ],
-    "disposition": "FROZEN architecture-only SH-07 Root-6 UTF-8 byte-census candidate awaiting fresh independent exact review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "REVIEW-PENDING architecture-only SH-07 Root-6 UTF-8 byte-census candidate routed to fresh independent exact review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
