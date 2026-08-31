@@ -9261,7 +9261,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9315,6 +9315,7 @@
         "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
       ],
       "rejected_fixtures": [
+        "independent review REJECT: recursive collection ordering is not bounded or cycle-closed because exact limits, counting points, at-limit/+1 behavior, direct/indirect cycle semantics, shared-subgraph recounting, per-caller boundaries, and required evidence are absent",
         "C2 source order, reader encounter order, host iteration, host sort-by pr-str, host compare, locale, Unicode normalization, numeric order, hash order, or digest order governs B51 map/set traversal",
         "the comparator accepts wrong arity, non-strings, malformed Unicode, lone surrogates, out-of-bound strings, or emits a value outside exact -1/0/1",
         "UTF-16 code-unit, signed-byte, platform-default encoding, normalization, case-folding, character-category, locale, or host collation substitutes for unsigned lexicographic UTF-8",
@@ -9358,7 +9359,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt11_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded UTF-8 comparator substrate, and observer",
       "the seed/runtime may implement the exact comparator algorithm but host pr-str, collection iteration, string compare, locale, encoding defaults, and object identity are not semantic authority",
@@ -9390,9 +9397,15 @@
         "at": "2026-08-31T04:53:00Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review by /root/attempt11_exact_review of immutable Attempt-14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6: canonical UTF-8 comparator semantics, recursive C11 collection ordering, compiler/runtime closure, G13 preservation, evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-31T04:54:00Z",
+        "actor": "/root/attempt11_exact_review",
+        "reason": "REJECT - exact Attempt 14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6. Blocker: recursive collection ordering is not bounded/cycle-closed; exact limits/cycle/shared-subgraph/per-caller boundaries/evidence are absent."
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only Attempt-14 candidate for fresh independent exact review. No acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable Attempt-14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6. Its comparator and order migration remain viable, but recursive collection ordering lacks exact bounds, counting points, cycle closure, shared-subgraph semantics, per-caller boundary mapping, and evidence. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
