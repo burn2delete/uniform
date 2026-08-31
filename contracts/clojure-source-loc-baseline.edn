@@ -18,7 +18,6 @@
   "bootstrap/clojure/src/gravity/c3_reader_integrity.clj" 318
   "bootstrap/clojure/src/gravity/c3_syntax_construction.clj" 269
   "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj" 270
-  "bootstrap/clojure/src/gravity/c3_syntax_verification.clj" 266
   "bootstrap/clojure/src/gravity/c4_macro_evidence.clj" 309
   "bootstrap/clojure/src/gravity/c5_name_resolution.clj" 1168
   "bootstrap/clojure/src/gravity/c6_core_lowering.clj" 697
