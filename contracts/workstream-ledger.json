@@ -10412,7 +10412,7 @@
     "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
     "owner": "sh-core-architecture",
     "author": "sh07-root6-utf8-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19"
@@ -10542,9 +10542,15 @@
         "at": "2026-08-31T13:56:44Z",
         "actor": "sh07-root6-utf8-architecture-coordinator",
         "reason": "freeze authoritative main base 5f4200be1bef02f0b69019d01fb3df239fea5c5a and immutable architecture-only Root6 UTF8 census V2 candidate 942372eb3476d86724c94d52d2c460eaec99e8cf, tree ea4a3730818f8d58d22229f6b94d6b96483e7b86, report SHA-256 6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T13:57:42Z",
+        "actor": "sh07-root6-utf8-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/implementation_writer of immutable Root6 UTF8 census V2 candidate 942372eb3476d86724c94d52d2c460eaec99e8cf, tree ea4a3730818f8d58d22229f6b94d6b96483e7b86, report SHA-256 6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b: exact correction of V1 authority/history blocker, Attempt15 terminal-only wording, integrated Attempt17/19 dependencies, and preserved arity3 observation, Unicode, prospective high-bound counting, caller closure, containment, compiler/runtime evidence, ordering/digest separation, and G13"
       }
     ],
-    "disposition": "FROZEN architecture-only V2 successor correcting the sole V1 authority-history blocker while preserving the coherent exact UTF8 census contract. Await fresh independent review. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, pin, or seed-retirement authority is conferred."
+    "disposition": "REVIEW-PENDING architecture-only V2 successor correcting the sole V1 authority-history blocker while preserving the coherent exact UTF8 census contract. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, pin, or seed-retirement authority is conferred."
   }
 ]
 }
