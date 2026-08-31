@@ -1,7 +1,848 @@
 (ns gravity.self-hosting.sh07-iteration-cache-runner-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh07-iteration-cache-runner :as runner]))
+            [gravity.self-hosting.sh07-iteration-cache-runner :as runner]
+            [gravity.self-hosting.sh07-semantic-carrier :as semantic-carrier])
+  (:import [java.util.concurrent CountDownLatch TimeUnit]))
+
+(def ^:private semantic-counter-keys
+  [:semantic-hits :semantic-misses :semantic-joined :semantic-published
+   :semantic-evictions :semantic-failed-producers :semantic-rejected-hits])
+
+(defn- semantic-counters []
+  (atom (zipmap semantic-counter-keys (repeat 0))))
+
+(defn- await-condition
+  [predicate timeout-ms]
+  (let [deadline (+ (System/nanoTime) (* timeout-ms 1000000))]
+    (loop []
+      (if (predicate)
+        true
+        (if (< (System/nanoTime) deadline)
+          (do (Thread/yield) (recur))
+          false)))))
+
+(defn- semantic-test-cache
+  [maximum-entries maximum-bytes counters]
+  (#'runner/bounded-semantic-cache maximum-entries maximum-bytes counters))
+
+(defn- semantic-test-value
+  ([key] (semantic-test-value key 1))
+  ([key weight] {:key key :weight weight}))
+
+(deftest semantic-cache-same-key-joins-and-different-key-progresses
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        active (atom 0)
+        maximum-active (atom 0)
+        calls (atom {})
+        a-started (CountDownLatch. 1)
+        b-started (CountDownLatch. 1)
+        release-a (CountDownLatch. 1)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(operation [key]
+                (swap! calls update key (fnil inc 0))
+                (let [now (swap! active inc)]
+                  (swap! maximum-active max now)
+                  (try
+                    (if (= :a key)
+                      (do
+                        (.countDown a-started)
+                        (when-not (.await release-a 2 TimeUnit/SECONDS)
+                          (throw (ex-info "semantic producer timed out" {}))))
+                      (.countDown b-started))
+                    (semantic-test-value key)
+                    (finally
+                      (swap! active dec)))))]
+        (let [producer (future (cache :a (constantly true) #(operation :a)))]
+          (try
+            (is (.await a-started 1 TimeUnit/SECONDS))
+            (let [waiters (mapv (fn [_]
+                                  (future (cache :a (constantly true)
+                                                 #(operation :a))))
+                                (range 3))]
+              (is (await-condition #(= 3 (:semantic-joined @counters)) 2000))
+              (let [different-key
+                    (future (cache :b (constantly true) #(operation :b)))]
+                (is (.await b-started 1 TimeUnit/SECONDS))
+                (.countDown release-a)
+                (is (not= ::timeout (deref producer 3000 ::timeout)))
+                (is (not= ::timeout (deref different-key 3000 ::timeout)))
+                (doseq [waiter waiters]
+                  (is (not= ::timeout (deref waiter 3000 ::timeout))))
+                (is (= {:a 1 :b 1} @calls))
+                (is (>= @maximum-active 2))
+                (is (= 2 (:semantic-misses @counters)))
+                (is (= 3 (:semantic-joined @counters)))
+                (is (= 2 (:semantic-published @counters)))))
+            (finally
+              (.countDown release-a)
+              (deref producer 3000 nil))))))))
+
+(deftest semantic-cache-producer-failure-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        attempts (atom 0)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        capture (fn [operation]
+                  (try
+                    {:value (operation)}
+                    (catch clojure.lang.ExceptionInfo error
+                      {:error (ex-data error)})))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [operation
+            (fn []
+              (if (= 1 (swap! attempts inc))
+                (do
+                  (.countDown started)
+                  (when-not (.await release 2 TimeUnit/SECONDS)
+                    (throw (ex-info "semantic producer timed out" {})))
+                  (throw (ex-info "synthetic producer failure"
+                                  {:id "SEMANTIC-PRODUCER-FAILED"})))
+                (semantic-test-value :failed)))
+            producer (future (capture #(cache :failed (constantly true)
+                                              operation)))]
+        (try
+          (is (.await started 1 TimeUnit/SECONDS))
+          (let [waiter (future (capture #(cache :failed (constantly true)
+                                                operation)))]
+            (is (await-condition #(= 1 (:semantic-joined @counters)) 2000))
+            (.countDown release)
+            (let [producer-result (deref producer 3000 ::timeout)
+                  waiter-result (deref waiter 3000 ::timeout)
+                  expected {:artifact :gravity/sh07-semantic-cache-diagnostic
+                            :rule "SH07-SEMANTIC-CACHE"
+                            :severity :error :stage :development-cache
+                            :reason :producer-failed :source-path nil
+                            :fail-closed true
+                            :fresh-authoritative-run-required? true}]
+              (is (= expected (:error producer-result)))
+              (is (= expected (:error waiter-result)))
+              (is (= 1 (:semantic-failed-producers @counters)))
+              (is (= 0 (:semantic-published @counters)))
+              (is (= 1 (:semantic-misses @counters)))
+              (is (= 1 (:semantic-joined @counters)))
+              (is (= (semantic-test-value :failed)
+                     (cache :failed (constantly true) operation)))
+              (is (= 2 (:semantic-misses @counters)))
+              (is (= 1 (:semantic-published @counters)))))
+          (finally
+            (.countDown release)
+            (deref producer 3000 nil)))))))
+
+(deftest semantic-cache-producer-interruption-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        producer-result (promise)
+        producer
+        (Thread.
+         #(deliver producer-result
+                   (try
+                     {:value
+                      (cache :interrupted (constantly true)
+                             (fn []
+                               (.countDown started)
+                               (.await release 10 TimeUnit/SECONDS)
+                               (semantic-test-value :interrupted)))}
+                     (catch clojure.lang.ExceptionInfo error
+                       {:error (ex-data error)}))))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (.start producer)
+      (try
+        (is (.await started 1 TimeUnit/SECONDS))
+        (let [waiter
+              (future
+                (try
+                  (cache :interrupted (constantly true)
+                         #(semantic-test-value :interrupted))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    (ex-data error))))]
+          (is (await-condition #(= 1 (:semantic-joined @counters)) 2000))
+          (.interrupt producer)
+          (.join producer 3000)
+          (let [expected {:artifact :gravity/sh07-semantic-cache-diagnostic
+                          :rule "SH07-SEMANTIC-CACHE"
+                          :severity :error :stage :development-cache
+                          :reason :producer-interrupted :source-path nil
+                          :fail-closed true
+                          :fresh-authoritative-run-required? true}]
+            (is (= expected (:error @producer-result)))
+            (is (= expected (deref waiter 3000 ::timeout)))
+            (is (.isInterrupted producer))
+            (is (= 1 (:semantic-failed-producers @counters)))
+            (is (= 0 (:semantic-published @counters)))
+            (is (= (semantic-test-value :interrupted)
+                   (cache :interrupted (constantly true)
+                          #(semantic-test-value :interrupted))))
+            (is (= 2 (:semantic-misses @counters)))
+            (is (= 1 (:semantic-published @counters)))))
+        (finally
+          (.countDown release)
+          (.interrupt producer)
+            (.join producer 3000))))))
+
+(deftest semantic-cache-cancellation-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 1 100 counters)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        producer
+        (future
+          (cache :cancelled (constantly true)
+                 (fn []
+                   (.countDown started)
+                   (.await release 10 TimeUnit/SECONDS)
+                   (semantic-test-value :cancelled))))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (try
+        (is (.await started 1 TimeUnit/SECONDS))
+        (is (future-cancel producer))
+        (is (await-condition
+             #(= 1 (:semantic-failed-producers @counters)) 2000))
+        (is (zero? (:semantic-published @counters)))
+        (is (= (semantic-test-value :cancelled)
+               (cache :cancelled (constantly true)
+                      #(semantic-test-value :cancelled))))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-published @counters)))
+        (finally
+          (.countDown release)
+          (future-cancel producer))))))
+
+(deftest semantic-cache-reentry-fails-and-retry-is-fresh
+  (let [counters (semantic-counters)
+        cache-holder (atom nil)
+        attempts (atom 0)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [cache (semantic-test-cache 4 100 counters)]
+        (reset! cache-holder cache)
+        (let [failure
+              (try
+                (cache :reentrant (constantly true)
+                       (fn []
+                         (swap! attempts inc)
+                         (@cache-holder :reentrant (constantly true)
+                                        #(semantic-test-value :reentrant))))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= :reentrant-request (:reason failure)))
+          (is (= 1 (:semantic-failed-producers @counters)))
+          (is (= 0 (:semantic-published @counters)))
+          (is (= (semantic-test-value :reentrant)
+                 (cache :reentrant (constantly true)
+                        #(do (swap! attempts inc)
+                             (semantic-test-value :reentrant)))))
+          (is (= 2 @attempts))
+          (is (= 2 (:semantic-misses @counters)))
+          (is (= 1 (:semantic-published @counters))))))))
+
+(deftest semantic-cache-uses-fifo-entry-eviction-without-hit-promotion
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 2 100 counters)
+        calls (atom {})]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(load [key]
+                (cache key (constantly true)
+                       #(do (swap! calls update key (fnil inc 0))
+                            (semantic-test-value key))))]
+        (load :a)
+        (load :b)
+        (load :a)
+        (load :c)
+        (load :b)
+        (load :a)
+        (is (= {:a 2 :b 1 :c 1} @calls))
+        (is (= 4 (:semantic-misses @counters)))
+        (is (= 2 (:semantic-hits @counters)))
+        (is (= 4 (:semantic-published @counters)))
+        (is (= 2 (:semantic-evictions @counters)))))))
+
+(deftest semantic-cache-evicts-by-canonical-byte-bound
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 5 counters)
+        calls (atom {})]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(load [key weight]
+                (cache key (constantly true)
+                       #(do (swap! calls update key (fnil inc 0))
+                            (semantic-test-value key weight))))]
+        (load :a 3)
+        (load :b 2)
+        (load :c 4)
+        (load :c 4)
+        (load :a 3)
+        (is (= {:a 2 :b 1 :c 1} @calls))
+        (is (= 4 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-hits @counters)))
+        (is (= 4 (:semantic-published @counters)))
+        (is (= 3 (:semantic-evictions @counters)))))))
+
+(deftest semantic-cache-rejects-oversized-values-without-publication
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 3 counters)
+        attempts (atom 0)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [failure
+            (try
+              (cache :oversized (constantly true)
+                     #(if (= 1 (swap! attempts inc))
+                        (semantic-test-value :oversized 4)
+                        (semantic-test-value :oversized 3)))
+              nil
+              (catch clojure.lang.ExceptionInfo error
+                (ex-data error)))]
+        (is (= :carrier-too-large (:reason failure)))
+        (is (= 1 (:semantic-failed-producers @counters)))
+        (is (= 0 (:semantic-published @counters)))
+        (is (= 1 (:semantic-misses @counters)))
+        (is (= (semantic-test-value :oversized 3)
+               (cache :oversized (constantly true)
+                      #(if (= 1 (swap! attempts inc))
+                         (semantic-test-value :oversized 4)
+                         (semantic-test-value :oversized 3)))))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-published @counters)))))))
+
+(deftest semantic-cache-rejects-invalid-entry-and-reruns-producer
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        valid? (atom true)
+        calls (atom 0)
+        validate (fn [_] @valid?)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [load #(cache :invalid validate
+                         (fn []
+                           (swap! calls inc)
+                           (semantic-test-value :invalid)))]
+        (is (= (semantic-test-value :invalid) (load)))
+        (reset! valid? false)
+        (is (= (semantic-test-value :invalid) (load)))
+        (reset! valid? true)
+        (is (= (semantic-test-value :invalid) (load)))
+        (is (= 2 @calls))
+        (is (= 1 (:semantic-hits @counters)))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 2 (:semantic-published @counters)))
+        (is (= 1 (:semantic-rejected-hits @counters)))))))
+
+(def ^:private exact-c10-semantic-test-vars
+  '[gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-has-exact-authentic-coverage
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-calls-lookups-and-quotes-are-exact
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-is-deterministic-path-neutral-and-provenanced
+    gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained])
+
+(defn- synthetic-semantic-request [resolution]
+  (let [path (get-in resolution [:provenance :source-path])
+        canonical (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot)]
+    {:artifact :gravity/sh07-authenticated-sh06-core-request
+     :schema-version 15
+     :lineage {:source-revision-id (:sha256 canonical)
+               :sh06-semantic-projection-id "projection"
+               :authenticated-sh06-artifact-id (:artifact-id resolution)}
+        :module {:namespace 'gravity.compiler.c10-safety-analysis-pipeline
+                 :source-revision-id (:sha256 canonical)
+                 :profile :meta :target :jvm
+              :safety :safe :effects [] :capabilities [] :exports []}
+     :provenance {:actual-source-path path}
+     :scope :sh07-b15-keyword-map-lookup}))
+
+(defn- synthetic-semantic-artifact [resolution]
+  (let [request (synthetic-semantic-request resolution)
+        path (get-in request [:provenance :actual-source-path])
+        sh06-id (:artifact-id resolution)
+        identity-preimage {:lineage {:source-revision-id
+                                     (get-in request [:lineage :source-revision-id])
+                                     :sh06-semantic-projection-id "projection"
+                                     :authenticated-sh06-artifact-id sh06-id}}
+        provenance-preimage
+        {:actual-source-path path
+         :core-artifact-id-request
+         {:artifact :gravity/sh07-internal-digest-reference
+          :schema-version 1 :ordinal 0 :authority :sh07-digest-resolver}}
+        requests [{:ordinal 0 :purpose :sh07-core-artifact-id
+                   :preimage identity-preimage}
+                  {:ordinal 1 :purpose :sh07-core-provenance-binding-id
+                   :preimage provenance-preimage}]
+        digest (fn [purpose preimage resolved-digests]
+                 (let [resolved-preimage
+                       (case purpose
+                         :sh07-core-artifact-id
+                         (bootstrap/sh07-core-semantic-identity-preimage
+                          preimage)
+                         :sh07-core-provenance-binding-id
+                         (assoc preimage :core-artifact-id-request
+                                (first resolved-digests))
+                         preimage)]
+                   (bootstrap/reader-canonical-hash
+                    {:domain :gravity/sh07-declared-digest-v1
+                     :purpose purpose :preimage resolved-preimage})))
+        artifact-digest (digest :sh07-core-artifact-id identity-preimage [])
+        provenance-digest
+        (digest :sh07-core-provenance-binding-id provenance-preimage
+                [artifact-digest])
+        resolved [artifact-digest provenance-digest]
+        core {:artifact-id (first resolved)
+              :identity-preimage identity-preimage
+              :provenance {:actual-source-path path}
+              :provenance-binding-preimage provenance-preimage
+              :provenance-binding-id (second resolved)
+              :lineage (:lineage request)
+              :empty-vector [] :empty-map {} :empty-set #{}}
+        run {:raw-template-result
+             {:artifact :gravity/sh07-core-template-result
+              :schema-version 16 :status :accepted
+              :core-template {:provenance {:actual-source-path path}
+                              :provenance-binding-preimage provenance-preimage
+                              :lineage (:lineage request)}
+              :diagnostics [] :bounds {} :containment {}
+              :execution-boundary {}
+              :digest-requests requests}
+             :canonical-core-artifact core :digest-requests requests
+             :resolved-digests resolved
+             :template-verification
+             {:artifact :gravity/sh07-core-template-verification
+              :schema-version 16 :status :passed :rule nil :reason nil :details {}}
+             :resolved-verification
+             {:artifact :gravity/sh07-core-resolved-verification
+              :schema-version 16 :status :passed :rule nil}}]
+    {:kind :gravity/sh07-core-artifact :status :accepted
+     :artifact-id (:artifact-id core) :sh06-resolution-artifact resolution
+     :gravity-core-boundary run :provenance {:source-path path}}))
+
+(deftest semantic-reuse-requires-the-exact-c10-selection
+  (let [enabled?
+        (fn [selection]
+          (:semantic-cache-enabled?
+           (runner/with-iteration-cache
+            {:maximum-entries 1 :selection selection}
+            (constantly :ok))))]
+    (is (true? (enabled? {:mode :test-vars
+                          :units exact-c10-semantic-test-vars})))
+    (is (true? (enabled? {:mode :test-vars
+                          :units (vec (reverse exact-c10-semantic-test-vars))})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (subvec exact-c10-semantic-test-vars 0 3)})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (conj exact-c10-semantic-test-vars
+                                        (first exact-c10-semantic-test-vars))})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (conj exact-c10-semantic-test-vars
+                                        'gravity.self-hosting.sh07-c10-safety-source-coverage-test/unknown)})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units [(first exact-c10-semantic-test-vars)
+                                   'gravity.self-hosting.sh07-iteration-cache-runner-test/semantic-reuse-requires-the-exact-c10-selection]})))
+    (is (false? (enabled? {:mode :test-vars :units []})))
+    (is (false? (enabled? {:mode :namespaces
+                           :units ['gravity.self-hosting.sh07-c10-safety-source-coverage-test]})))))
+
+(deftest exact-c10-route-rebinds-one-successful-carrier-across-paths
+  (let [left-root (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-runner-left-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        right-root (java.nio.file.Files/createTempDirectory
+                    "sh07-semantic-runner-right-"
+                    (make-array java.nio.file.attribute.FileAttribute 0))
+        left (.resolve left-root "left.gravity")
+        right (.resolve right-root "right.gravity")
+        source (String.
+                ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
+                java.nio.charset.StandardCharsets/UTF_8)
+        core-builds (atom 0)
+        verification-reports (atom 0)
+        hit-forbidden-calls (atom {})
+        phase (atom :admission)
+        plan-leaves (atom [])
+        plan-binding-var
+        (ns-resolve 'gravity.self-hosting.sh07-iteration-cache-runner
+                    'current-sh07-plan-binding)]
+    (try
+      (doseq [path [left right]]
+        (java.nio.file.Files/write
+         path (.getBytes source java.nio.charset.StandardCharsets/UTF_8)
+         (make-array java.nio.file.OpenOption 0)))
+      (with-redefs-fn
+        {plan-binding-var (constantly {:synthetic true})}
+        #(with-redefs
+          [bootstrap/sh06-resolution-source-artifact
+           (fn [path _source]
+             {:kind :gravity/sh06-resolution-artifact :status :accepted
+              :artifact-id "sh06"
+              :provenance
+              {:source-path path
+               :source-revision-id
+               (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}
+              :gravity-resolution-boundary
+              {:plan-binding {:unrelated-sh06-pin true}
+               :authenticated-resolution-request
+               {:module
+                {:source-revision-id
+                 (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}}
+               :resolved-analysis {:semantic-projection-id "projection"}}})
+           bootstrap/sh06-resolution-artifact-verification
+           (fn [resolution]
+             {:artifact :gravity/sh06-resolution-artifact-verification
+              :status :passed :checks {:synthetic true} :failed-checks []
+              :source-path (get-in resolution [:provenance :source-path])})
+           bootstrap/sh07-core-authenticated-request synthetic-semantic-request
+           bootstrap/sh07-core-from-resolution-artifact
+           (fn [resolution]
+             (swap! core-builds inc)
+             (when (= :hit @phase)
+               (swap! hit-forbidden-calls update :from-resolution (fnil inc 0)))
+             (synthetic-semantic-artifact resolution))
+           bootstrap/sh07-core-execute!
+           (fn [_ function arguments]
+             (when (= :hit @phase)
+               (swap! plan-leaves conj function))
+             {:status :accepted
+              :value (if (= 'sh07-resolve-provenance-preimage function)
+                       (assoc (first arguments) :core-artifact-id-request
+                              (first (second arguments)))
+                       (first arguments))})
+           bootstrap/sh07-core-verification-checks
+           (fn [_ _ _] {:synthetic-check true})
+           bootstrap/sh07-core-proof-from-checks
+           (fn [_] {:artifact :gravity/sh07-core-capability-proof
+                    :status :complete :failed-checks []})
+           bootstrap/sh07-core-artifact-verification
+           (fn [artifact]
+             (swap! verification-reports inc)
+             (when (= :hit @phase)
+               (swap! hit-forbidden-calls update :artifact-verification (fnil inc 0)))
+             (bootstrap/sh07-core-from-resolution-artifact
+             (:sh06-resolution-artifact artifact))
+             {:artifact :gravity/sh07-core-artifact-verification
+              :status :passed :checks {:synthetic-check true}
+              :failed-checks []
+              :source-path (get-in artifact [:provenance :source-path])})
+           bootstrap/sh07-core-run-request-for-test
+           (fn [& _]
+             (swap! hit-forbidden-calls update :run-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 run request" {})))
+           bootstrap/sh07-core-run-structural-request-for-test
+           (fn [& _]
+             (swap! hit-forbidden-calls update :run-structural-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 structural request" {})))
+           bootstrap/sh07-core-from-authenticated-request
+           (fn [& _]
+             (swap! hit-forbidden-calls update :from-authenticated-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 authenticated request" {})))
+           bootstrap/sh07-core-verification-session
+           (fn [& _]
+             (swap! hit-forbidden-calls update :verification-session (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 verification session" {})))]
+          (let [result
+                (runner/with-iteration-cache
+                 {:maximum-entries 2
+                  :selection {:mode :test-vars
+                              :units exact-c10-semantic-test-vars}}
+                 (fn []
+                   (mapv
+                    (fn [[index path]]
+                      (when (= 1 index)
+                        (reset! phase :hit)
+                        (reset! plan-leaves []))
+                      (let [resolution
+                            (bootstrap/sh06-resolution-source-artifact
+                             (str path) source)
+                            artifact
+                            (bootstrap/sh07-core-from-resolution-artifact resolution)
+                            report
+                            (bootstrap/sh07-core-artifact-verification artifact)]
+                        {:path (get-in artifact [:provenance :source-path])
+                         :artifact-id (:artifact-id artifact)
+                         :artifact artifact
+                         :report-status (:status report)}))
+                    (map-indexed vector [left right]))))]
+            (is (= 2 @core-builds) (:cache result))
+            (is (= 1 @verification-reports) (:cache result))
+            (is (= ['sh07-resolve-identity-preimage
+                    'sh07-resolve-provenance-preimage]
+                   @plan-leaves))
+            (is (= {} @hit-forbidden-calls))
+            (is (= 1 (get-in result [:cache :semantic-misses])))
+            (is (= 1 (get-in result [:cache :semantic-hits])))
+            (is (= [(str left) (str right)]
+                   (mapv :path (:value result))))
+            (is (apply = (map :artifact-id (:value result))))
+            (is (#'gravity.self-hosting.sh07-iteration-cache-runner/aggregate-identities-disjoint?
+                 (get-in result [:value 0 :artifact])
+                 (get-in result [:value 1 :artifact])))
+            (is (every? #{:passed} (map :report-status (:value result)))))))
+      (finally
+        (java.nio.file.Files/deleteIfExists left)
+        (java.nio.file.Files/deleteIfExists right)
+        (java.nio.file.Files/deleteIfExists left-root)
+        (java.nio.file.Files/deleteIfExists right-root)))))
+
+(deftest exact-c10-selection-bypasses-semantic-cache-for-altered-bytes
+  (let [path (java.nio.file.Files/createTempFile
+              "sh07-altered-c10-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        current (String.
+                 ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
+                 java.nio.charset.StandardCharsets/UTF_8)
+        altered (str (if (= \space (first current)) \; \space)
+                     (subs current 1))
+        core-builds (atom 0)]
+    (try
+      (java.nio.file.Files/write
+       path (.getBytes altered java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (with-redefs
+        [bootstrap/sh06-resolution-source-artifact
+         (fn [source-path _]
+           {:artifact-id "altered-sh06" :provenance {:source-path source-path}
+            :gravity-resolution-boundary
+            {:resolved-analysis {:semantic-projection-id "altered"}}})
+         bootstrap/sh07-core-from-resolution-artifact
+         (fn [resolution]
+           (swap! core-builds inc)
+           {:artifact-id "ordinary" :sh06-resolution-artifact resolution})
+         bootstrap/sh07-core-artifact-verification
+         (fn [_] {:artifact :gravity/sh07-core-artifact-verification
+                  :status :passed :failed-checks []})]
+        (let [result
+              (runner/with-iteration-cache
+               {:maximum-entries 2
+                :selection {:mode :test-vars
+                            :units exact-c10-semantic-test-vars}}
+               (fn []
+                 (dotimes [_ 2]
+                   (let [resolution
+                         (bootstrap/sh06-resolution-source-artifact
+                          (str path) altered)]
+                     (bootstrap/sh07-core-artifact-verification
+                      (bootstrap/sh07-core-from-resolution-artifact resolution))))))]
+          (is (= 1 @core-builds))
+          (is (= 0 (get-in result [:cache :semantic-misses])))
+          (is (= 0 (get-in result [:cache :semantic-hits])))
+          (is (= 0 (get-in result [:cache :semantic-published])))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
+
+(deftest exact-c10-selection-captures-canonical-source-once
+  (let [captures (atom 0)
+        original @#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot]
+    (with-redefs-fn
+      {#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot
+       (fn [] (swap! captures inc) (original))}
+      #(runner/with-iteration-cache
+        {:maximum-entries 1
+         :selection {:mode :test-vars :units exact-c10-semantic-test-vars}}
+        (constantly :ok)))
+    (is (= 1 @captures))))
+
+(deftest exact-c10-selection-bypasses-each-live-binding-mismatch
+  (let [canonical (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot)
+        source (String. ^bytes (:bytes canonical)
+                        java.nio.charset.StandardCharsets/UTF_8)
+        path (java.nio.file.Files/createTempFile
+              "sh07-c10-pin-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        base-resolution
+        {:kind :gravity/sh06-resolution-artifact :status :accepted
+         :artifact-id "sh06"
+         :provenance {:source-path (str path)
+                      :source-revision-id (:sha256 canonical)}
+         :gravity-resolution-boundary
+         {:plan-binding {:unrelated-sh06-pin true}
+          :authenticated-resolution-request
+          {:module {:source-revision-id (:sha256 canonical)}}
+          :resolved-analysis {:semantic-projection-id "projection"}}}
+        base-request (synthetic-semantic-request base-resolution)
+        cases
+        [[:resolution-revision
+          (assoc-in base-resolution [:provenance :source-revision-id] "sha256:bad")
+          base-request]
+         [:resolution-request-revision
+          (assoc-in base-resolution
+                    [:gravity-resolution-boundary :authenticated-resolution-request
+                     :module :source-revision-id]
+                    "sha256:bad")
+          base-request]
+         [:request-revision base-resolution
+          (assoc-in base-request [:lineage :source-revision-id] "sha256:bad")]
+         [:module base-resolution
+          (assoc-in base-request [:module :namespace] 'demo.core)]
+         [:projection base-resolution
+          (assoc-in base-request [:lineage :sh06-semantic-projection-id] "other")]]]
+    (try
+      (java.nio.file.Files/write path (:bytes canonical)
+                                 (make-array java.nio.file.OpenOption 0))
+      (doseq [[label resolution request] cases]
+        (with-redefs
+          [bootstrap/sh06-resolution-source-artifact (fn [_ _] resolution)
+           bootstrap/sh07-core-authenticated-request (fn [_] request)
+           bootstrap/sh07-core-from-resolution-artifact
+           (fn [current]
+             {:artifact-id "ordinary" :sh06-resolution-artifact current})
+           bootstrap/sh07-core-artifact-verification
+           (fn [_] {:artifact :gravity/sh07-core-artifact-verification
+                    :status :passed :failed-checks []})]
+          (let [result
+                (runner/with-iteration-cache
+                 {:maximum-entries 1
+                  :selection {:mode :test-vars :units exact-c10-semantic-test-vars}}
+                 #(let [current (bootstrap/sh06-resolution-source-artifact
+                                 (str path) source)]
+                    (bootstrap/sh07-core-artifact-verification
+                     (bootstrap/sh07-core-from-resolution-artifact current))))]
+            (is (= [0 0 0]
+                   (mapv #(get-in result [:cache %])
+                         [:semantic-misses :semantic-hits :semantic-published]))
+                (str label)))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
+
+(deftest semantic-source-snapshot-rejects-missing-symlink-and-nul
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        target (.resolve directory "target.gravity")
+        link (.resolve directory "link.gravity")
+        missing (.resolve directory "missing.gravity")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       target (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/createSymbolicLink
+       link (.getFileName target)
+       (make-array java.nio.file.attribute.FileAttribute 0))
+      (is (= :source-missing (reason missing "")))
+      (is (= :source-symlink (reason link "ok")))
+      (is (= :source-missing
+             (reason (str "invalid" (char 0) ".gravity") "ok")))
+      (java.nio.file.Files/write
+       target (byte-array [(byte 0)])
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :invalid-utf8 (reason target (str (char 0)))))
+      (finally
+        (java.nio.file.Files/deleteIfExists link)
+        (java.nio.file.Files/deleteIfExists target)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-detects-mutation-during-bounded-read
+  (let [path (java.nio.file.Files/createTempFile
+              "sh07-semantic-mutating-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        source "same-length-source"
+        changed "same-length-change"
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        original @#'runner/read-bounded-bytes]
+    (try
+      (java.nio.file.Files/write
+       path (.getBytes source java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (let [data
+            (with-redefs-fn
+              {#'runner/read-bounded-bytes
+               (fn [resolved source-path]
+                 (let [bytes (original resolved source-path)]
+                   (java.nio.file.Files/write
+                    resolved
+                    (.getBytes changed java.nio.charset.StandardCharsets/UTF_8)
+                    (make-array java.nio.file.OpenOption 0))
+                   (java.nio.file.Files/setLastModifiedTime
+                    resolved
+                    (java.nio.file.attribute.FileTime/fromMillis
+                     (+ (System/currentTimeMillis) 5000)))
+                   bytes))}
+              #(ex-data
+                (try
+                  (#'runner/strict-source-snapshot
+                   (str path) source resolution)
+                  (catch clojure.lang.ExceptionInfo error error))))]
+        (is (= :source-mutated (:reason data))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
+
+(deftest semantic-source-snapshot-rejects-not-regular-invalid-extension-and-mutation
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-rules-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        regular (.resolve directory "regular.gravity")
+        directory-path (.resolve directory "nested.gravity")
+        text-path (.resolve directory "text.txt")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       regular (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/createDirectory
+       directory-path (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/write
+       text-path (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :source-not-regular (reason directory-path "ok")))
+      (is (= :invalid-extension (reason text-path "ok")))
+      (is (= :source-mutated (reason regular "changed")))
+      (finally
+        (java.nio.file.Files/deleteIfExists regular)
+        (java.nio.file.Files/deleteIfExists text-path)
+        (java.nio.file.Files/deleteIfExists directory-path)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-rejects-malformed-utf8-and-oversize
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-bounds-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        malformed (.resolve directory "malformed.gravity")
+        oversized (.resolve directory "oversized.gravity")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       malformed (byte-array [(unchecked-byte 0xC3) (unchecked-byte 0x28)])
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :invalid-utf8 (reason malformed "x")))
+      (java.nio.file.Files/write
+       oversized (byte-array (inc (* 16 1024 1024)))
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :source-too-large (reason oversized "x")))
+      (finally
+        (java.nio.file.Files/deleteIfExists malformed)
+        (java.nio.file.Files/deleteIfExists oversized)
+        (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest iteration-cache-reuses-equal-source-and-identical-artifacts
   (let [sh06-calls (atom 0)
@@ -39,7 +880,9 @@
         (is (= {:sh06-hits 1 :sh06-misses 1
                 :core-hits 1 :core-misses 1
                 :verification-hits 1 :verification-misses 1}
-               (:cache result)))
+               (select-keys (:cache result)
+                            [:sh06-hits :sh06-misses :core-hits :core-misses
+                             :verification-hits :verification-misses])))
         (is (= :non-authoritative (:authority result)))
         (is (false? (:authoritative? result)))
         (is (false? (:cache-authoritative? result)))
@@ -85,6 +928,60 @@
         (is (= 1 (get-in result [:cache :sh06-misses])))
         (is (= 7 (get-in result [:cache :sh06-hits])))
         (is (apply = (:value result)))))))
+
+(deftest iteration-cache-allows-different-keys-and-retries-failures
+  (let [active (atom 0)
+        maximum-active (atom 0)
+        attempts (atom 0)]
+    (with-redefs
+      [bootstrap/sh06-resolution-source-artifact
+       (fn [path source]
+         (swap! attempts inc)
+         (let [now (swap! active inc)]
+           (swap! maximum-active max now)
+           (try
+             (Thread/sleep 40)
+             (when (= source :failed)
+               (throw (ex-info "synthetic failure" {:id "FAILED"})))
+             [path source]
+             (finally (swap! active dec)))))]
+      (let [parallel
+            (runner/with-iteration-cache
+             {:maximum-entries 2}
+             #(mapv deref
+                    [(future
+                       (bootstrap/sh06-resolution-source-artifact "a" :one))
+                     (future
+                       (bootstrap/sh06-resolution-source-artifact "b" :two))]))]
+        (is (= 2 @maximum-active))
+        (is (= 2 (get-in parallel [:cache :sh06-misses]))))
+      (dotimes [_ 2]
+        (let [data
+              (try
+                (runner/with-iteration-cache
+                 {:maximum-entries 1}
+                 #(bootstrap/sh06-resolution-source-artifact "a" :failed))
+                nil
+                (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "FAILED" (:id data)))))
+      (is (= 4 @attempts)))))
+
+(deftest iteration-cache-reentrant-same-key-fails-without-deadlock
+  (let [delegate (atom nil)]
+    (with-redefs
+      [bootstrap/sh06-resolution-source-artifact
+       (fn [path source]
+         (@delegate path source))]
+      (let [data
+            (try
+              (runner/with-iteration-cache
+               {:maximum-entries 1}
+               (fn []
+                 (reset! delegate bootstrap/sh06-resolution-source-artifact)
+                 (bootstrap/sh06-resolution-source-artifact "same" "bytes")))
+              nil
+              (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "SH07-ITERATION-CACHE-REENTRANT" (:id data)))))))
 
 (deftest iteration-cache-reports-per-namespace-time-and-cache-deltas
   (let [calls (atom 0)
