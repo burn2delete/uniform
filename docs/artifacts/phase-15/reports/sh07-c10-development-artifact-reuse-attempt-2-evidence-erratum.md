@@ -28,9 +28,11 @@ The carrier test file contains the following relevant exact fixtures rather
 than the composite fixture names recorded originally:
 
 - `construct-carrier-neutralizes-exactly-eleven-slots-and-closes-shape`
+- `cache-key-includes-the-complete-static-module-envelope`
 - `carrier-integrity-and-pins-fail-closed`
 - `bind-carrier-rebinds-second-path-without-aggregate-aliasing`
 - `carrier-and-candidate-values-are-closed-and-metadata-free`
+- `supplied-products-reject-extra-keys-sentinels-and-inexact-statuses`
 - `every-live-pin-family-invalidates-a-carrier-hit`
 - `source-snapshot-schema-is-exact-and-typed`
 - `top-level-carrier-tampering-fails-as-data-without-throwing`
@@ -39,6 +41,7 @@ The runner test file contains the source-mutation, invalid UTF-8, bounded
 source, failed producer, recursion, interruption, and cancellation fixtures:
 
 - `semantic-cache-producer-failure-clears-flight-and-allows-retry`
+- `semantic-cache-same-key-joins-and-different-key-progresses`
 - `semantic-cache-cancellation-clears-flight-and-allows-retry`
 - `semantic-cache-reentry-fails-and-retry-is-fresh`
 - `exact-c10-route-rebinds-one-successful-carrier-across-paths`
@@ -54,6 +57,12 @@ the direct `clojure.test/test-vars` command documented in
 `docs/development-verification.md`. Per the user's explicit direction, that
 long command's result was assumed successful for reconciliation and was not
 rerun in this bounded erratum.
+
+```bash
+GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1 \
+  clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -e "(require 'clojure.test 'gravity.self-hosting.sh07-try-catch-test) (binding [clojure.test/*report-counters* (ref clojure.test/*initial-report-counters*)] (clojure.test/test-vars [#'gravity.self-hosting.sh07-try-catch-test/sh07-b8-semantic-carrier-authentic-acceptance-evidence]) (let [r @clojure.test/*report-counters*] (prn r) (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1))))"
+```
 
 ## Acceptance
 
