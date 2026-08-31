@@ -9406,6 +9406,137 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable Attempt-14 candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6. Its comparator and order migration remain viable, but recursive collection ordering lacks exact bounds, counting points, cycle closure, shared-subgraph semantics, per-caller boundary mapping, and evidence. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-15",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 15",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-15.md",
+    "base_commit": "3bd8cba6818115c75863644276ae463536deb4bd",
+    "candidate_commit": "e8b3a8d9eea5e463e0db2235eb92c6d7446d2034",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-15.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L1",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-13",
+        "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-14",
+        "Attempt-14 terminal commit:3bd8cba6818115c75863644276ae463536deb4bd",
+        "Attempt-14 candidate:2fd37682bf5b94586459c22b52ad67e6a9c58e58",
+        "Attempt-14 candidate tree:cd0cf6b275ff735b98d78d090fd3c2e58ce652ef",
+        "Attempt-14 report-sha256:4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-15.md",
+        "report-sha256:3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae",
+        "candidate-tree:0463c7b54ddd763381614c384ac09c62e020ad5b",
+        "author preservation audit:all accepted Attempt14 UTF-8 comparator, C11 order, map/set, Unicode/decimal, closure, G13, migration, pin, and nonclaim content remains exact",
+        "author limits audit:exact limits are 4096 node occurrences, depth 96, collection width 512, per-scalar canonical UTF-8 bytes 32768, and final output UTF-8 bytes 262144 with at-limit acceptance and first-over rejection",
+        "author counting audit:root depth zero, map entry width one with key/value nodes two, occurrence-based recounting, exact scalar spelling bytes, exact final bytes, and closed precedence are normative",
+        "author cycle audit:active-path carrier identity rejects direct and indirect cycles as :cyclic-value while shared acyclic subgraphs are allowed, removed on exit, rendered, and recounted per occurrence",
+        "author boundary audit:Root1 and Root6 retain exact G13 boundary tags and outer :source-integrity-mismatch while contained printer reasons remain exact; source oracle uses C6-VERIFY",
+        "author evidence audit:every limit/+1, direct/indirect cycle, shared subgraph, nested/permuted maps/sets, host-stack/iteration negative, and caller mapping requires independent evidence",
+        "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
+      ],
+      "rejected_fixtures": [
+        "node 4097, depth 97, width 513, scalar spelling 32769 UTF-8 bytes, or final output byte 262145 is accepted or reported under a different limit reason",
+        "an exact at-limit value is rejected, a limit is backend/profile/host dependent, counters wrap, or host recursion/iteration exhaustion chooses the result",
+        "map width counts keys and values separately, root depth is one, nodes are deduplicated by identity, scalar bytes use raw/UTF-16/pre-escape length, or output omits delimiters/separators/escapes",
+        "direct or indirect cycle is accepted, normalized, host-overflowed, or differs from contained :cyclic-value",
+        "active-path detection uses structural equality/global visited state, fails to remove on exit, or rejects/counts once a shared acyclic sibling subgraph",
+        "Root1, Root6, source-oracle, comparator, malformed Unicode, or limit/cycle failures use the wrong public boundary, pending reason, schema, or host exception",
+        "host stack, lazy iterator, host order, host pr-str, host compare, locale, default encoding, normalization, numeric order, hash order, digest order, reflection, callback, FFI, generic compare, or generic sort gains authority",
+        "Attempt14 comparator/order semantics or G13 Root1/4/5/6/8 topology, digest, ABI, tags, counts, duplicate/recur rules, pins, or nonclaims drift",
+        "implementation, test, fixture, proof-contract, pin, roadmap, prior report, terminal ledger history, or unrelated canonical-document drift occurs in the report candidate"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "L2-BUILTIN-ARITY",
+        "L2-BUILTIN-ERROR"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 3bd8cba6818115c75863644276ae463536deb4bd..e8b3a8d9eea5e463e0db2235eb92c6d7446d2034",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded printer/comparator substrate, and observer",
+      "the host may implement the exact bounded traversal and comparator but host stack, iteration, pr-str, string compare, locale, default encoding, object ordering, and exception type are not semantic authority",
+      "Attempt 15 requires exact freeze, fresh independent acceptance, integration eligibility, and reconciliation to authoritative main before it can amend implementation baseline G13",
+      "the existing implementation workstream receives no source, test, fixture, pin, acceptance, or integration authority from this draft",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-31T04:57:06Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only Attempt-15 report candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, and report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae: preserve accepted Attempt-14 content and close its sole blocker with exact C11 limits/counting, active-path cycle rejection, shared-subgraph recounting, caller boundaries, and evidence; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only Attempt-15 candidate registered for later exact freeze and independent review. It preserves accepted Attempt-14 ordering semantics and closes only the recursive bound/cycle blocker. No implementation or pin authority is conferred."
   }
 ]
 }
