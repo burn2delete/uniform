@@ -146,6 +146,7 @@
                             (bootstrap/sh07-core-artifact-verification artifact)]
                         {:path (get-in artifact [:provenance :source-path])
                          :artifact-id (:artifact-id artifact)
+                         :artifact artifact
                          :report-status (:status report)}))
                     [left right])))]
             (is (= 2 @core-builds))
@@ -158,6 +159,9 @@
             (is (= [(str left) (str right)]
                    (mapv :path (:value result))))
             (is (apply = (map :artifact-id (:value result))))
+            (is (#'gravity.self-hosting.sh07-iteration-cache-runner/aggregate-identities-disjoint?
+                 (get-in result [:value 0 :artifact])
+                 (get-in result [:value 1 :artifact])))
             (is (every? #{:passed} (map :report-status (:value result)))))))
       (finally
         (java.nio.file.Files/deleteIfExists left)
