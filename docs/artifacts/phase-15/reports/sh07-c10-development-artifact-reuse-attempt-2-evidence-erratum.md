@@ -47,9 +47,13 @@ source, failed producer, recursion, interruption, and cancellation fixtures:
 
 The authentic opt-in fixture remains
 `sh07-b8-semantic-carrier-authentic-acceptance-evidence` in
-`gravity.self-hosting.sh07-try-catch-test`. Per the user's explicit direction,
-its long execution result was assumed successful for reconciliation and was
-not rerun in this bounded erratum.
+`gravity.self-hosting.sh07-try-catch-test`. The immutable record's use of
+`clojure -M:test ... --test-var` is also unsupported: the repository test
+runner accepts `--namespace`, not `--test-var`. The valid exact-var route is
+the direct `clojure.test/test-vars` command documented in
+`docs/development-verification.md`. Per the user's explicit direction, that
+long command's result was assumed successful for reconciliation and was not
+rerun in this bounded erratum.
 
 ## Acceptance
 
@@ -57,5 +61,8 @@ not rerun in this bounded erratum.
 - Append a terminal lifecycle record for this correction.
 - Treat the nonexistent carrier namespace command in the original record as
   invalid evidence and use the correct 18-test, 128-assertion replay instead.
+- Treat the original `--test-var` authentic command as invalid evidence and
+  use the documented direct `clojure.test/test-vars` command under the user's
+  authorized successful-run assumption.
 - Grant no additional implementation, performance, roadmap, release,
   self-hosting, or seed-retirement authority.
