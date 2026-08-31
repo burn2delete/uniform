@@ -10253,6 +10253,135 @@
       }
     ],
     "disposition": "INTEGRATED lifecycle record for exact independently accepted Attempt-19 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main 2777086d92aa87e297ce77e19be7ebdb834b4260 and, upon that verified fast-forward, establishes architecture-only canonical decimal baseline G19 for the governed B51 implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, pin, or seed-retirement authority is granted."
+  },
+  {
+    "id": "sh07-root6-utf8-byte-census-architecture-v1",
+    "title": "SH-07 Root-6 exact UTF-8 byte census architecture v1",
+    "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
+    "owner": "sh-core-architecture",
+    "author": "sh07-root6-utf8-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-15",
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-19"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-root6-utf8-byte-census-architecture-v1.md",
+    "base_commit": "1be7a083aecbf24888766e950980e4f5875e23a4",
+    "candidate_commit": "6d1656733d7c4327b829046dd17f8ab59071131d",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-root6-utf8-byte-census-architecture-v1.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L1",
+      "L2",
+      "C2",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-15",
+        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-17",
+        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-19",
+        "authoritative main:1be7a083aecbf24888766e950980e4f5875e23a4",
+        "docs/artifacts/phase-15/reports/sh07-root6-utf8-byte-census-architecture-v1.md",
+        "report-sha256:725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9",
+        "candidate-tree:8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170",
+        "author seam audit:sh07-observe-utf8-byte-count is exact internal arity3 string/count/maximum, pure, capability-free, bounded through 1073741824, and returns one closed nine-key observation record",
+        "author Unicode audit:exact UTF16 scan maps valid scalar ranges to UTF8 width 1/2/3/4 and rejects every unpaired/reversed/truncated surrogate shape before commit",
+        "author prospective audit:exact-at-limit commits, first over-limit does not commit, exact prospective count is at most 1073741828, and checked comparison cannot wrap",
+        "author allocation audit:linear constant-state scan allocates no encoded byte array, byte buffer, substring, codepoint vector, replacement text, or normalized copy",
+        "author high-bound audit:268435456 and 1073741824 logical boundaries are evidenced with authenticated prior counts plus at most four UTF8 bytes, not heavyweight allocation",
+        "author closure audit:only authenticated carrier preflight, producer scalar accounting, independent source oracle, and separate Root6 aggregate replay may call; collection traversal remains independently authored and Root8 is forbidden",
+        "author separation audit:the observation carries no text bytes, ordering key, digest, coordinate, path, semantic id, or public envelope authority and changes no existing bounds/counts/ABIs/pins",
+        "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
+      ],
+      "rejected_fixtures": [
+        "four-times-carrier-length, UTF16-unit count, scalar count, UTF32 width, CESU8 supplementary width, replacement decoding, or host encoder output substitutes for exact UTF8 count",
+        "an unpaired/reversed/truncated surrogate is admitted, counted, replaced, skipped, or exposed as a host exception",
+        "exact maximum rejects, offending scalar commits, prospective count is inexact, scan continues after first limit failure, or fixed-width arithmetic wraps/saturates/narrows",
+        "maximum above 1073741824, negative/noninteger count, observed-before above maximum, wrong arity/type, or malformed result record is admitted",
+        "high-bound evidence allocates proportional to 268435456 or 1073741824 bytes instead of using near-bound prior counts and small strings",
+        "the seam coerces nonstrings, prints, serializes, normalizes, enumerates collections, sorts, hashes, digests, selects coordinates, constructs envelopes, or authenticates caller bounds",
+        "producer, source oracle, and Root6 share collection traversal/probe/fold/sort code or Root8/application/dynamic/reflection/FFI/generic encoding reaches the seam",
+        "Attempt15/17/19, G13 roots/digest/ABI/tags/counts, proof-contract carrier limits, printer limits, B47/B51 pins, implementation, test, fixture, roadmap, or unrelated canonical document changes in the report candidate"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "L2-BUILTIN-ARITY",
+        "L2-BUILTIN-ERROR"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 1be7a083aecbf24888766e950980e4f5875e23a4..6d1656733d7c4327b829046dd17f8ab59071131d",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, exact primitive substrate, and observer",
+      "a UTF16-backed host may expose indexed code units but host encoders, replacement policy, byte arrays, locale, normalization, printing, sorting, hashing, exceptions, and iteration are not semantic authority",
+      "this architecture requires exact freeze, fresh independent acceptance, integration eligibility, and reconciliation to authoritative main before any implementation or pin consequence",
+      "the existing implementation workstream receives no source, test, fixture, pin, acceptance, or integration authority from this draft",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-31T06:34:48Z",
+        "actor": "sh07-root6-utf8-architecture",
+        "reason": "register exact architecture-only SH07 Root6 UTF8 byte-census candidate 6d1656733d7c4327b829046dd17f8ab59071131d, tree 8ea59abf3c41f53a4147f0e8dfa148b1e0d0b170, and report SHA-256 725318d6c8fdae4d3bdbc6bb6b9e0d73c9157ed6080fdb5cd599a3baa50840d9: realize Attempt15's shared scalar-only allowance with one exact allocation-free Unicode-validating prospective count observation through the governed 1GiB maximum while preserving independent collection traversal, ordering/digest separation, all bounds, and G13; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only SH-07 Root-6 UTF-8 byte-census candidate registered for later exact freeze and independent review. It grants no implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
