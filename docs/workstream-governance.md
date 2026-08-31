@@ -47,6 +47,10 @@ terminally rejected record may be cited as history, but it can never be an
 authority dependency. The pre-freeze gate checks these relations before review
 or freezing:
 
+When the v2 sharded ledger is in use, the linter authenticates each referenced
+record path and SHA-256 before consulting base, report, or dependency fields;
+missing, unreadable, or tampered shards fail closed.
+
 ```bash
 clojure -M tools/validate_architecture_authority.clj \
   --report docs/artifacts/phase-15/reports/REPORT.md

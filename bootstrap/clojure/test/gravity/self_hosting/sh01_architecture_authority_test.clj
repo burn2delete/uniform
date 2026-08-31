@@ -7,6 +7,22 @@
 (alias 'authority 'gravity.architecture-authority)
 
 (def ^:private ledger-path "contracts/workstream-ledger.json")
+(def ^:private fixture-ledger
+  {"workstreams"
+   [{"id" "sh07-root6-fixture-v2" "state" "draft"
+     "invariant_family" "architecture/self-hosting-sh07-root6-fixture"
+     "base_commit" "e143921004ff76b5f5ad7e55e8cd24fe23455ded"
+     "architecture_decision" "tools/fixtures/architecture_authority/accepted/root6-v2-history.md"
+     "dependencies" ["sh07-b51-vector-destructuring-architecture-v18-attempt-17"
+                     "sh07-b51-vector-destructuring-architecture-v18-attempt-19"]}
+    {"id" "sh07-b51-vector-destructuring-architecture-v18-attempt-17" "state" "integrated"}
+    {"id" "sh07-b51-vector-destructuring-architecture-v18-attempt-19" "state" "integrated"}
+    {"id" "sh07-b51-vector-destructuring-architecture-v18-attempt-15" "state" "rejected"}
+    {"id" "sh07-root6-fixture-v1" "state" "draft"
+     "invariant_family" "architecture/self-hosting-sh07-root6-fixture"
+     "base_commit" "e143921004ff76b5f5ad7e55e8cd24fe23455ded"
+     "architecture_decision" "tools/fixtures/architecture_authority/rejected/root6-v1-integrated-attempt15.md"
+     "dependencies" ["sh07-b51-vector-destructuring-architecture-v18-attempt-15"]}]})
 (def ^:private accepted-fixture
   "tools/fixtures/architecture_authority/accepted/root6-v2-history.md")
 (def ^:private rejected-fixture
@@ -22,10 +38,14 @@
   (some #(str/starts-with? % (str code " ")) errors))
 
 (deftest corrected-machine-authority-history-passes
-  (is (empty? (authority/validate-report accepted-fixture ledger-path))))
+  (is (empty? (authority/validate-report-content
+               accepted-fixture (authority/read-report accepted-fixture)
+               fixture-ledger))))
 
 (deftest rejected-integrated-history-fails-closed
-  (let [errors (authority/validate-report rejected-fixture ledger-path)]
+  (let [errors (authority/validate-report-content
+                rejected-fixture (authority/read-report rejected-fixture)
+                fixture-ledger)]
     (is (has-code? errors "AA005"))
     (is (has-code? errors "AA006"))))
 
@@ -54,5 +74,22 @@
         mutated (str/replace content
                              "\"required_state\": \"integrated\""
                              "\"required_state\": \"accepted\"")
-        errors (authority/validate-report-content accepted-fixture mutated ledger-path)]
+        errors (authority/validate-report-content accepted-fixture mutated fixture-ledger)]
     (is (has-code? errors "AA002"))))
+
+(deftest unknown-workstream-is-not-authority
+  (let [content (authority/read-report accepted-fixture)
+        mutated (str/replace content "sh07-root6-fixture-v2" "unknown-workstream")
+        errors (authority/validate-report-content accepted-fixture mutated fixture-ledger)]
+    (is (has-code? errors "AA004"))))
+
+(deftest missing-v2-shard-fails-closed
+  (let [manifest {"schema_version" 2
+                  "records" [{"ordinal" 0 "id" "missing" "state" "integrated"
+                               "invariant_family" "x" "dependencies" []
+                               "path" "contracts/workstream-records/does-not-exist.json"
+                               "sha256" (apply str (repeat 64 "0"))}]}
+        errors (authority/validate-report-content accepted-fixture
+                                                   (authority/read-report accepted-fixture)
+                                                   manifest)]
+    (is (has-code? errors "AA004"))))

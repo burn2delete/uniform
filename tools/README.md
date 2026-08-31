@@ -30,6 +30,9 @@ reports written before the block was introduced; legacy prose grants no
 authority and is checked for false claims such as describing a rejected
 Attempt 15 as integrated.
 
+With the v2 sharded ledger, the linter verifies every manifest path and digest
+and decodes the full record before checking exact report/base identities.
+
 The integration-candidate verifier applies exact-identity preflight, exports a
 new candidate tree, runs the unchanged full suite and standard gates with a
 fresh Clojure basis, and emits a candidate-bound receipt. It grants only

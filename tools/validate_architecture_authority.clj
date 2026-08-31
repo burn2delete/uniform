@@ -8,10 +8,11 @@
   explicitly non-authoritative and is intended only for retained history."
   (:require [clojure.string :as str])
   (:import (java.io PushbackReader StringReader)
+           (java.security MessageDigest)
            (java.nio ByteBuffer)
            (java.nio.charset CharacterCodingException CodingErrorAction
                               StandardCharsets)
-           (java.nio.file Files Paths)))
+           (java.nio.file Files Path Paths)))
 
 (def ^:private authority-schema "gravity/architecture-authority-v1")
 (def ^:private authority-keys
@@ -260,15 +261,87 @@
                  :errors [(issue "AA001" "report.authority"
                                  "authority block is not strict JSON")]}))))))))
 
+(defn- sha256-bytes [bytes]
+  (let [digest (.digest (MessageDigest/getInstance "SHA-256") bytes)]
+    (apply str (map #(format "%02x" (bit-and (int %) 0xff)) digest))))
+
 (defn- ledger-items [ledger]
-  (if (and (map? ledger) (vector? (get ledger "workstreams")))
+  (cond
+    (and (map? ledger) (vector? (get ledger "__authenticated_items")))
+    (get ledger "__authenticated_items")
+    (and (map? ledger) (vector? (get ledger "workstreams")))
     (get ledger "workstreams")
-    ;; The sharded v2 manifest carries the closed identity/state/dependency
-    ;; projection in `records`.  It is sufficient for authority checks and
-    ;; avoids re-reading every terminal record during a pre-freeze invocation.
-    (if (and (map? ledger) (vector? (get ledger "records")))
-      (get ledger "records")
-      [])))
+    ;; A v2 manifest is authenticated by `ledger-shard-view` before this
+    ;; accessor is used.  The fallback keeps malformed manifests from gaining
+    ;; authority through an empty projection.
+    :else []))
+
+(defn- ledger-errors [ledger]
+  (vec (or (get ledger "__authentication_errors") [])))
+
+(defn- load-ledger-shard [root entry]
+  (let [location (str "ledger.records[" (get entry "ordinal") "]")
+        path (get entry "path")
+        resolved (when (safe-relative-path? path)
+                   (.normalize (.resolve root path)))]
+    (cond
+      (not (safe-relative-path? path))
+      {:errors [(issue "AA003" (str location ".path")
+                       "must be a safe repository-relative shard path")]}
+      (not (.startsWith ^Path resolved ^Path root))
+      {:errors [(issue "AA003" (str location ".path")
+                       "must remain within the repository root")]}
+      (or (not (Files/exists ^Path resolved
+                            (make-array java.nio.file.LinkOption 0)))
+          (Files/isSymbolicLink ^Path resolved)
+          (not (Files/isRegularFile ^Path resolved
+                                    (make-array java.nio.file.LinkOption 0))))
+      {:errors [(issue "AA004" (str location ".path")
+                       "manifest shard is missing or unreadable")]}
+      :else
+      (try
+        (let [bytes (Files/readAllBytes ^Path resolved)
+              expected (get entry "sha256")
+              observed (sha256-bytes bytes)]
+          (if (not= expected observed)
+            {:errors [(issue "AA003" (str location ".sha256")
+                             "manifest shard hash does not match bytes")]}
+            (let [record (strict-json (strict-utf8 bytes (str resolved)))]
+              (if-not (map? record)
+                {:errors [(issue "AA002" (str location ".record")
+                                 "manifest shard must contain an object")]}
+                (let [identity-errors
+                      (vec (concat
+                            (when-not (= (get entry "id") (get record "id"))
+                              [(issue "AA003" (str location ".id")
+                                      "manifest identity does not match shard")])
+                            (when-not (= (get entry "state") (get record "state"))
+                              [(issue "AA003" (str location ".state")
+                                      "manifest state does not match shard")])
+                            (when-not (= (get entry "invariant_family")
+                                         (get record "invariant_family"))
+                              [(issue "AA003" (str location ".invariant_family")
+                                      "manifest invariant family does not match shard")])
+                            (when-not (= (get entry "dependencies")
+                                         (get record "dependencies"))
+                              [(issue "AA003" (str location ".dependencies")
+                                      "manifest dependencies do not match shard")])))]
+                  {:record record :errors identity-errors})))))
+        (catch Throwable exception
+          {:errors [(issue "AA001" (str location ".record")
+                           (str "manifest shard cannot be decoded: "
+                                (.getMessage exception)))]})))))
+
+(defn- ledger-shard-view [ledger]
+  (if-not (and (map? ledger) (vector? (get ledger "records")))
+    {:ledger ledger :errors []}
+    (let [root (.normalize (.toAbsolutePath (Paths/get "." (make-array String 0))))
+          loaded (mapv #(load-ledger-shard root %) (get ledger "records"))
+          records (vec (keep :record loaded))
+          errors (vec (mapcat :errors loaded))]
+      {:ledger (assoc ledger "__authenticated_items" records
+                      "__authentication_errors" errors)
+       :errors errors})))
 
 (defn- ledger-by-id [ledger]
   (into {} (keep (fn [item]
@@ -376,10 +449,10 @@
                   (get block "historical_references") [])
         dependency-ids (mapv #(get % "id") dependencies)
         history-ids (mapv #(get % "id") history)
-        duplicate-dependencies (for [[id count] (frequencies dependency-ids)
-                                     :when (and id (> count 1))] id)
-        duplicate-history (for [[id count] (frequencies history-ids)
-                                :when (and id (> count 1))] id)
+        duplicate-dependencies (sort (for [[id count] (frequencies dependency-ids)
+                                           :when (and id (> count 1))] id))
+        duplicate-history (sort (for [[id count] (frequencies history-ids)
+                                      :when (and id (> count 1))] id))
         cycle? (fn [start]
                  (letfn [(walk [node visiting]
                            (cond
@@ -390,6 +463,9 @@
                    (boolean (walk start #{}))))]
     (vec
      (concat
+      (when-not (contains? by-id own-id)
+        [(issue "AA004" "report.authority.workstream_id"
+                (str "workstream " own-id " is missing from the governance ledger"))])
       (when (some nil? dependency-ids) [])
       (map #(issue "AA004" "report.authority.dependencies"
                    (str "duplicate dependency " %)) duplicate-dependencies)
@@ -441,13 +517,17 @@
       (when-not (= (get block "invariant_family") (get record "invariant_family"))
         [(issue "AA003" "report.authority.invariant_family"
                 "does not match the ledger workstream")])
-      (when (and (string? (get record "base_commit"))
-                 (not= (get block "base_commit") (get record "base_commit")))
+      (when-not (and (string? (get record "base_commit"))
+                     (re-matches oid-pattern (get record "base_commit")))
+        [(issue "AA003" "report.authority.base_commit"
+                "ledger workstream must carry an exact base commit")])
+      (when (not= (get block "base_commit") (get record "base_commit"))
         [(issue "AA003" "report.authority.base_commit"
                 "does not match the ledger workstream")])
-      (when (and (string? (get record "architecture_decision"))
-                 (not= (normalized-report-path (get record "architecture_decision"))
-                       (get block "report_path")))
+      (when-not (and (string? (get record "architecture_decision"))
+                     (not (str/blank? (get record "architecture_decision")))
+                     (= (normalized-report-path (get record "architecture_decision"))
+                        (get block "report_path")))
         [(issue "AA003" "report.authority.report_path"
                 "does not match the ledger architecture report")])
       (when-not (= (get block "status") (get record "state"))
@@ -467,7 +547,7 @@
         found))))
 
 (defn- prose-authority-errors [content ledger]
-  (let [rejected (filter #(and (map? %) (= "rejected" (get % "state")))
+  (let [rejected (filter #(and (map? %) (contains? terminal-states (get % "state")))
                          (ledger-items ledger))
         full-id-errors
         (for [record rejected
@@ -498,7 +578,8 @@
   ([report-path content ledger]
    (validate-report-content report-path content ledger {:require-block? true}))
   ([report-path content ledger {:keys [require-block?] :or {require-block? true}}]
-   (let [ledger (load-ledger-value ledger)
+   (let [raw-ledger (load-ledger-value ledger)
+         {:keys [ledger errors]} (ledger-shard-view raw-ledger)
          extracted (extract-authority-block content)
          block-errors (:errors extracted)
          missing-only? (and (= 1 (count block-errors))
@@ -509,11 +590,12 @@
                          block-errors)
          block (:block extracted)]
      (if (and missing-only? (not require-block?))
-       (vec report-errors)
+       (vec (concat errors report-errors))
        (if (seq report-errors)
-         (vec report-errors)
+         (vec (concat errors report-errors))
          (let [shape-errors (authority-shape-errors block report-path)]
            (vec (concat
+                 errors
                  shape-errors
                  (when (empty? shape-errors)
                    (relation-errors block ledger))
