@@ -42,12 +42,12 @@
         requests [identity provenance]
         resolved (mapv #(resolver (:purpose %) (:preimage %)) requests)]
     {:raw-template-result
-     {:core-template {:provenance {:source-path path}
+     {:core-template {:provenance {:actual-source-path path}
                       :provenance-binding-preimage {:actual-source-path path}
                       :lineage {:authenticated-sh06-artifact-id "sh06-artifact"}}
       :digest-requests requests}
      :canonical-core-artifact
-     {:provenance {:source-path path}
+     {:provenance {:actual-source-path path}
       :provenance-binding-preimage {:actual-source-path path}
       :provenance-binding-id (second resolved)}
      :digest-requests requests
@@ -143,7 +143,8 @@
                   product (:bound-run-product bound)]
               (is (= :accepted (:status bound)))
               (is (= "right.gravity"
-                     (get-in product [:canonical-core-artifact :provenance :source-path])))
+                     (get-in product [:canonical-core-artifact :provenance
+                                      :actual-source-path])))
               (is (= "sh06-artifact"
                      (get-in product [:digest-requests 0 :preimage :lineage
                                       :authenticated-sh06-artifact-id])))

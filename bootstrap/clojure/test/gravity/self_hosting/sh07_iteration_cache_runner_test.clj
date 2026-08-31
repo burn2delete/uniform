@@ -40,12 +40,12 @@
         resolved (mapv #(digest (:purpose %) (:preimage %)) requests)
         core {:artifact-id (first resolved)
               :identity-preimage identity-preimage
-              :provenance {:source-path path}
+              :provenance {:actual-source-path path}
               :provenance-binding-preimage provenance-preimage
               :provenance-binding-id (second resolved)
               :lineage (:lineage request)}
         run {:raw-template-result
-             {:core-template {:provenance {:source-path path}
+             {:core-template {:provenance {:actual-source-path path}
                               :provenance-binding-preimage provenance-preimage
                               :lineage (:lineage request)}
               :digest-requests requests}

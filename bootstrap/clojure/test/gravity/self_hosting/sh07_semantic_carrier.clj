@@ -346,7 +346,7 @@
         provenance-index (:provenance-ordinal indexes)
         provenance-digest (get-in product [:resolved-digests provenance-index])]
     (case address
-      [:raw-template-result :core-template :provenance] {:source-path path}
+      [:raw-template-result :core-template :provenance] (:provenance request)
       [:raw-template-result :core-template :provenance-binding-preimage :actual-source-path] path
       [:raw-template-result :core-template :lineage :authenticated-sh06-artifact-id] sh06-id
       [:raw-template-result :digest-requests :artifact-id-ordinal :preimage :lineage :authenticated-sh06-artifact-id]
@@ -358,7 +358,7 @@
       [:digest-requests :provenance-ordinal :preimage :actual-source-path]
       path
       [:resolved-digests :provenance-ordinal] provenance-digest
-      [:canonical-core-artifact :provenance] {:source-path path}
+      [:canonical-core-artifact :provenance] (:provenance request)
       [:canonical-core-artifact :provenance-binding-preimage :actual-source-path] path
       [:canonical-core-artifact :provenance-binding-id] provenance-digest)))
 
