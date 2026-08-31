@@ -10412,7 +10412,7 @@
     "invariant_family": "architecture/self-hosting-sh07-root6-utf8-byte-census-v1",
     "owner": "sh-core-architecture",
     "author": "sh07-root6-utf8-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19"
@@ -10460,6 +10460,7 @@
         "report-sha256:6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b",
         "candidate-tree:ea4a3730818f8d58d22229f6b94d6b96483e7b86",
         "independent review ACCEPT by /root/implementation_writer for exact immutable Root6 UTF8 census V2 candidate 942372eb3476d86724c94d52d2c460eaec99e8cf, tree ea4a3730818f8d58d22229f6b94d6b96483e7b86, report SHA-256 6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b; no blockers",
+        "integration preflight PASS for accepted lifecycle HEAD 73b97aace2250299132aa384450435900340237a, tree 5e9270037ed8ead875fc92824491508e3fb915c9, over authoritative main 5f4200be1bef02f0b69019d01fb3df239fea5c5a; recommendation integrate_candidate",
         "authority correction audit:Attempt15 is named only as terminal rejection history; incorporated scalar-sharing, bound, cycle, collection-order, and failure-fold authority is derived through integrated Attempt17",
         "dependency audit:the complete lifecycle dependency vector contains integrated Attempt17 and integrated Attempt19 only",
         "technical preservation audit:V1 arity3 seam, exact nine-key record, Unicode scan, prospective counting, high-bound evidence, caller closure, containment, allocation, ordering separation, digest separation, and evidence obligations remain semantically unchanged",
@@ -10514,6 +10515,16 @@
           "command": "git diff --check 5f4200be1bef02f0b69019d01fb3df239fea5c5a..942372eb3476d86724c94d52d2c460eaec99e8cf",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "git diff --check 5f4200be1bef02f0b69019d01fb3df239fea5c5a..73b97aace2250299132aa384450435900340237a",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 5f4200be1bef02f0b69019d01fb3df239fea5c5a --candidate-commit 73b97aace2250299132aa384450435900340237a --candidate-tree 5e9270037ed8ead875fc92824491508e3fb915c9",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -10561,9 +10572,15 @@
         "at": "2026-08-31T13:59:47Z",
         "actor": "/root/implementation_writer",
         "reason": "ACCEPT exact immutable Root6 UTF8 census V2 candidate 942372eb3476d86724c94d52d2c460eaec99e8cf, tree ea4a3730818f8d58d22229f6b94d6b96483e7b86, report SHA-256 6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b with no blockers after independent exact review of the corrected Attempt15 terminal history, integrated Attempt17/19 authority, and preserved arity3 observation, Unicode, prospective counting, high-bound evidence, caller closure, containment, contract, and ordering/digest separation rules."
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-31T14:01:15Z",
+        "actor": "sh07-root6-utf8-architecture-coordinator",
+        "reason": "exact accepted lifecycle HEAD 73b97aace2250299132aa384450435900340237a, tree 5e9270037ed8ead875fc92824491508e3fb915c9 passed documentation, roadmap, governance, SH-01 language-boundary, exact range diff, identity, clean-worktree, ancestry, and exact integration preflight against authoritative main 5f4200be1bef02f0b69019d01fb3df239fea5c5a; recommendation integrate_candidate; integration-only architecture authority remains bounded to this lineage"
       }
     ],
-    "disposition": "ACCEPTED by independent reviewer /root/implementation_writer for exact immutable Root6 UTF8 census V2 candidate 942372eb3476d86724c94d52d2c460eaec99e8cf, tree ea4a3730818f8d58d22229f6b94d6b96483e7b86, report SHA-256 6017666bd8fcff5d4cb2c91615de19a0ceb3b24bf0a705b84ad87db2876d1d9b. Architecture acceptance only; integration eligibility and reconciliation remain pending, with no implementation, aggregate SH-07, self-hosting, release, performance, pin, or seed-retirement authority."
+    "disposition": "INTEGRATION-ELIGIBLE architecture-only Root6 UTF8 census V2 lineage after exact preflight against authoritative main. Reconciliation remains pending; no implementation, aggregate SH-07, self-hosting, release, performance, pin, or seed-retirement authority is granted."
   }
 ]
 }
