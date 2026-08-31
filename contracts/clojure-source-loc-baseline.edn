@@ -11,6 +11,5 @@
   "bootstrap/clojure/src/gravity/core_ast_lowering.clj" 696
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" 752
   "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj" 559
-  "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj" 814
   "bootstrap/clojure/src/gravity/profile_validation.clj" 569
   }}
