@@ -449,6 +449,28 @@ Receipts are published only after a selected test run returns normally;
 namespace-load or fixture exceptions retain the runner's existing error path
 and do not publish a partial receipt.
 
+### Exact-tree warm development worker
+
+Repeated exact development selections can reuse one already-started JVM:
+
+```bash
+clojure -M:warm-dev-worker \
+  --expected-commit CANDIDATE_COMMIT \
+  --expected-tree CANDIDATE_TREE \
+  --max-requests 64
+```
+
+The worker accepts one closed EDN request per input line. Requests must repeat
+the exact startup commit and tree and may use only explicit `--namespace` and
+`--exact` development-test selections, with optional `--fail-fast`. It checks
+the live commit, tree, and clean worktree before and after every request. Any
+failure, dirty checkout, identity drift, malformed request, or request bound
+terminates reuse. Output is returned in bounded `WARM_DEV` receipts.
+
+This worker is non-authoritative development feedback. It never supplies fresh
+integration or SH-07 evidence, and it does not alter the cold exported-tree,
+authoritative SH-07, release, self-hosting, or seed-retirement lanes.
+
 Stage3 fixed batches run directly through the Clojure runner:
 
 ```bash

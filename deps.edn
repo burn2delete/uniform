@@ -31,6 +31,10 @@
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.development-test-runner"]}
 
+  :warm-dev-worker
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.self-hosting.sh01-exact-tree-warm-worker"]}
+
   :project-structure-test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.project-structure-test-runner"]}
