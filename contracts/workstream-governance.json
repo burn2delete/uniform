@@ -12,14 +12,17 @@
     "docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md"
   ],
   "ledger_schema": {
-    "contract_id": "gravity/workstream-ledger-v1",
-    "top_level_keys": ["contract_id", "governance_contract", "schema_version", "workstreams"],
+    "contract_id": "gravity/workstream-ledger-v2",
+    "top_level_keys": ["active_count", "active_root", "aggregate_sha256", "contract_id", "governance_contract", "migration", "record_count", "record_root", "records", "schema_version", "terminal_count"],
     "workstream_keys": ["architecture_decision", "author", "base_commit", "candidate_commit", "clean_worktree", "dependencies", "disposition", "evidence", "governing_contracts", "history", "id", "invariant_family", "no_overclaim_authority", "owned_paths", "owner", "residual_host_boundaries", "reviews", "state", "title"],
     "evidence_keys": ["accepted_fixtures", "rejected_fixtures", "stable_diagnostics", "validation_commands"],
     "validation_command_keys": ["command", "exit_code", "result"],
     "review_keys": ["kind", "result", "reviewer"],
     "history_event_keys": ["actor", "at", "reason", "state"],
-    "authority_keys": ["integration_only", "release", "seed_retirement", "self_hosting"]
+    "authority_keys": ["integration_only", "release", "seed_retirement", "self_hosting"],
+    "manifest_keys": ["active_count", "active_root", "aggregate_sha256", "contract_id", "governance_contract", "migration", "record_count", "record_root", "records", "schema_version", "terminal_count"],
+    "manifest_entry_keys": ["dependencies", "id", "invariant_family", "ordinal", "path", "sha256", "state", "terminal"],
+    "migration_keys": ["decoded_aggregate_sha256", "decoded_record_count", "parity", "source_contract_id", "source_path", "source_schema_version", "source_sha256"]
   },
   "lifecycle": {
     "states": ["draft", "frozen", "review-pending", "accepted", "integration-eligible", "integrated", "held", "rejected", "superseded", "abandoned"],
@@ -72,7 +75,8 @@
     "WG009": "integration evidence is incomplete or malformed",
     "WG010": "an independent accepted review is absent or is not independent",
     "WG011": "a self-audit attempted to confer integration eligibility",
-    "WG012": "an authority or product-completion overclaim was attempted"
+    "WG012": "an authority or product-completion overclaim was attempted",
+    "WG013": "a sharded manifest, active reservation, or immutable terminal record was tampered with"
   },
   "nonclaims": [
     "Ledger acceptance does not establish implementation correctness.",
