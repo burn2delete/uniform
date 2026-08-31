@@ -9911,7 +9911,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17"
     ],
@@ -10037,9 +10037,15 @@
         "at": "2026-08-31T05:59:39Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only Attempt-18 report candidate 6d179d440386b9b4f6bd7078e167df2ddada2e94, tree 016da13629588fff46692108c6d7461bf84bc5b4, and report SHA-256 0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386: define the missing host-independent canonical decimal readable spelling as a bounded inverse of the authenticated exact C2 semantic key while preserving integrated Attempt-17 authority; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-31T06:03:12Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "freeze authoritative main base 57914082a4e6ef523778b4b24e4a2f93363b7fac and immutable architecture-only Attempt-18 candidate 6d179d440386b9b4f6bd7078e167df2ddada2e94, tree 016da13629588fff46692108c6d7461bf84bc5b4, report SHA-256 0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only Attempt-18 candidate registered for later exact freeze and independent review. It closes the missing canonical decimal readable-spelling prerequisite without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "FROZEN architecture-only Attempt-18 candidate awaiting fresh independent exact review. It closes the missing canonical decimal readable-spelling prerequisite without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
