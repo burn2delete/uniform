@@ -1,4 +1,5 @@
 .cpcache/
 .cpcache-bootstrap.lock
+.workstream-ledger.lock
 target/development-loop-batches/
 target/validation/integration-fresh-verification/
