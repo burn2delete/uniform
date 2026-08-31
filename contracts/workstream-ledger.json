@@ -9954,6 +9954,7 @@
     ],
     "evidence": {
       "accepted_fixtures": [
+        "integration preflight PASS for accepted lifecycle HEAD bfea03f4f178e414e4a19c3f5c5504a88dcd53f8, tree d9ed58beb2574a394f7f4dcb75c6f3637975dd4c, over authoritative main 2777086d92aa87e297ce77e19be7ebdb834b4260; recommendation integrate_candidate",
         "independent review ACCEPT by /root/implementation_writer for exact immutable Attempt-19 candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5; no blockers",
         "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-17",
         "terminal rejection history:sh07-b51-vector-destructuring-architecture-v18-attempt-14",
@@ -10072,7 +10073,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17"
     ],
@@ -10174,6 +10175,16 @@
           "command": "git diff --check 2777086d92aa87e297ce77e19be7ebdb834b4260..409b2de200314680fd87c2d0c30241de39242c2d",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "git diff --check 2777086d92aa87e297ce77e19be7ebdb834b4260..bfea03f4f178e414e4a19c3f5c5504a88dcd53f8",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 2777086d92aa87e297ce77e19be7ebdb834b4260 --candidate-commit bfea03f4f178e414e4a19c3f5c5504a88dcd53f8 --candidate-tree d9ed58beb2574a394f7f4dcb75c6f3637975dd4c",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -10221,9 +10232,15 @@
         "at": "2026-08-31T06:21:45Z",
         "actor": "/root/implementation_writer",
         "reason": "ACCEPT exact immutable Attempt-19 candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5 with no blockers after independent exact review of the corrected 256/257-to-261 current-C2 threshold, separately bounded semantic inverse, signed exponent reconstruction and representation, exact 261-byte maximum, failures, independent caller algorithms, and preserved Attempt-18/17/G13 authority."
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-31T06:23:09Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "exact accepted lifecycle HEAD bfea03f4f178e414e4a19c3f5c5504a88dcd53f8, tree d9ed58beb2574a394f7f4dcb75c6f3637975dd4c passed documentation, roadmap, governance, SH-01 language-boundary, exact range diff, identity, clean-worktree, ancestry, and exact integration preflight against authoritative main 2777086d92aa87e297ce77e19be7ebdb834b4260; recommendation integrate_candidate; integration-only architecture authority remains bounded to this lineage"
       }
     ],
-    "disposition": "ACCEPTED by independent reviewer /root/implementation_writer for exact immutable Attempt-19 candidate 409b2de200314680fd87c2d0c30241de39242c2d, tree 815183d0ba946f5a896a1bfe299eabda66c67a28, report SHA-256 bdd3de0e8328ead0ea22c443f91ef5a9402dd982937cbbc0a3459c3f333855d5. Architecture acceptance only; integration eligibility and reconciliation remain pending, with no implementation, aggregate SH-07, self-hosting, release, performance, pin, or seed-retirement authority."
+    "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-19 lineage after exact preflight against authoritative main. Reconciliation remains pending; no implementation, aggregate SH-07, self-hosting, release, performance, pin, or seed-retirement authority is granted."
   }
 ]
 }
