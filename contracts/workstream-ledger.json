@@ -9254,6 +9254,133 @@
       }
     ],
     "disposition": "INTEGRATED lifecycle record for exact independently accepted Attempt-13 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main 3624255adf586fc9d368d76335170393aece49c0 and, upon that verified fast-forward, establishes corrected architecture-only baseline G13 for the governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-14",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 14",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-14.md",
+    "base_commit": "3ed00a806f63e9263305f7f51c69897683f81e3b",
+    "candidate_commit": "2fd37682bf5b94586459c22b52ad67e6a9c58e58",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-14.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D8",
+      "D9",
+      "L1",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-13",
+        "Attempt-13 integration commit:3ed00a806f63e9263305f7f51c69897683f81e3b",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-14.md",
+        "report-sha256:4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6",
+        "candidate-tree:cd0cf6b275ff735b98d78d090fd3c2e58ce652ef",
+        "author contradiction audit:SH05 sets are unordered, macro-introduced sets have no C2 source order, the producer uses host sort-by pr-str, Gravity lacks a text comparator, and the ordinary symbolic-set fixture requires independent Root6 replay",
+        "author primitive audit:one exact arity-2 pure capability-free sh07-canonical-text-compare builtin compares strict valid Unicode strings by unsigned lexicographic UTF-8 and returns only -1, 0, or 1",
+        "author order audit:B51 migrates to recursive C11 canonical-readable traversal order while G13 reader-canonical digest hashing remains separate and unchanged",
+        "author collection audit:sets sort canonical member text, maps sort canonical key text then canonical value text, vectors and lists retain authenticated order, and no iterator/source/host tie-breaker is admitted",
+        "author closure audit:only producer, disjoint Root6, their C11 printer closure, and independent evidence oracle may call the comparator; Root8 and public application/runtime code may not",
+        "author preservation audit:all G13 duplicate, recur, root topology, authority, ABI, digest, count, boundary, evidence, pin, and nonclaim rules remain exact",
+        "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
+      ],
+      "rejected_fixtures": [
+        "C2 source order, reader encounter order, host iteration, host sort-by pr-str, host compare, locale, Unicode normalization, numeric order, hash order, or digest order governs B51 map/set traversal",
+        "the comparator accepts wrong arity, non-strings, malformed Unicode, lone surrogates, out-of-bound strings, or emits a value outside exact -1/0/1",
+        "UTF-16 code-unit, signed-byte, platform-default encoding, normalization, case-folding, character-category, locale, or host collation substitutes for unsigned lexicographic UTF-8",
+        "set ordering uses insertion/iterator fallback or map ordering is value-first, lacks the value tie-breaker, or uses whole host-entry printing",
+        "nested map/set pr-str leaks unordered inner iteration, unequal values with byte-equal canonical text are host-tie-broken, or decimal values use numeric/raw-source/host-object order",
+        "Root6 shares producer decoration/sort/traversal helpers or the comparator is reachable through Root8, unrelated modules, public source, dynamic resolve, apply, reflection, callback, FFI, generic compare, or generic sort",
+        "sh07-declared-digest-hash changes, digest values order collections, or G13 Root1/4/5/6/8 authority and topology drift",
+        "public ABI, tag, schema, purpose, edge, path, pending reason, diagnostic mapping, count, pin, or nonclaim changes",
+        "implementation, test, fixture, proof-contract, pin, roadmap, prior report, or unrelated canonical-document drift occurs in the report candidate"
+      ],
+      "stable_diagnostics": [
+        "C6-VERIFY",
+        "L2-BUILTIN-ARITY",
+        "L2-BUILTIN-ERROR"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 3ed00a806f63e9263305f7f51c69897683f81e3b..2fd37682bf5b94586459c22b52ad67e6a9c58e58",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain the source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded UTF-8 comparator substrate, and observer",
+      "the seed/runtime may implement the exact comparator algorithm but host pr-str, collection iteration, string compare, locale, encoding defaults, and object identity are not semantic authority",
+      "Attempt 14 requires an exact freeze, fresh independent acceptance, integration eligibility, and reconciliation to authoritative main before it can amend implementation baseline G13",
+      "the existing implementation workstream receives no source, test, fixture, pin, acceptance, or integration authority from this draft",
+      "this draft grants no aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-31T04:45:38Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only report candidate 2fd37682bf5b94586459c22b52ad67e6a9c58e58, tree cd0cf6b275ff735b98d78d090fd3c2e58ce652ef, and report SHA-256 4926f000377a672ee147f6af328fd6a1cfca1ad57940a17194f974d3e48598c6: add one minimal pure UTF-8 text comparator, migrate B51 map/set traversal to recursive C11 canonical-readable order, preserve G13 reader-canonical digesting and every other G13 rule, and request no freeze or review"
+      }
+    ],
+    "disposition": "DRAFT architecture-only Attempt-14 candidate registered for later exact freeze and independent review. It resolves the canonical collection-order contradiction with one closed UTF-8 text comparator and no implementation or pin authority."
   }
 ]
 }
