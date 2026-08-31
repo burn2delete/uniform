@@ -382,14 +382,14 @@
 (defn- copy-value [value]
   (cond
     (map? value) (if (empty? value)
-                   (sorted-map)
+                   (clojure.lang.PersistentArrayMap. (object-array 0))
                    (into {} (map (fn [[key item]]
                                    [(copy-value key) (copy-value item)]) value)))
     (vector? value) (if (empty? value)
                       (subvec [nil] 0 0)
                       (mapv copy-value value))
     (set? value) (if (empty? value)
-                   (sorted-set)
+                   (with-meta #{} {})
                    (into #{} (map copy-value) value))
     :else value))
 
