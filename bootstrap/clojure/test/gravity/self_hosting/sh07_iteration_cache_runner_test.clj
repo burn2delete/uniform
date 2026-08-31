@@ -10,13 +10,15 @@
     gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained])
 
 (defn- synthetic-semantic-request [resolution]
-  (let [path (get-in resolution [:provenance :source-path])]
+  (let [path (get-in resolution [:provenance :source-path])
+        canonical (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot)]
     {:artifact :gravity/sh07-authenticated-sh06-core-request
      :schema-version 15
-     :lineage {:source-revision-id "revision"
+     :lineage {:source-revision-id (:sha256 canonical)
                :sh06-semantic-projection-id "projection"
                :authenticated-sh06-artifact-id (:artifact-id resolution)}
-     :module {:namespace 'demo.core :profile :meta :target :jvm
+     :module {:namespace 'gravity.compiler.c10-safety-analysis-pipeline
+              :profile :meta :target :jvm
               :safety :safe :effects [] :capabilities [] :exports []}
      :provenance {:actual-source-path path}
      :scope :sh07-b15-keyword-map-lookup}))
@@ -25,7 +27,8 @@
   (let [request (synthetic-semantic-request resolution)
         path (get-in request [:provenance :actual-source-path])
         sh06-id (:artifact-id resolution)
-        identity-preimage {:lineage {:source-revision-id "revision"
+        identity-preimage {:lineage {:source-revision-id
+                                     (get-in request [:lineage :source-revision-id])
                                      :sh06-semantic-projection-id "projection"
                                      :authenticated-sh06-artifact-id sh06-id}}
         provenance-preimage {:actual-source-path path}
@@ -83,7 +86,9 @@
                    (make-array java.nio.file.attribute.FileAttribute 0))
         left (.resolve directory "left.gravity")
         right (.resolve directory "right.gravity")
-        source "(ns demo.core)"
+        source (String.
+                ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
+                java.nio.charset.StandardCharsets/UTF_8)
         core-builds (atom 0)
         verification-reports (atom 0)
         resolver-leaves (atom [])
@@ -103,7 +108,11 @@
              {:kind :gravity/sh06-resolution-artifact :status :accepted
               :artifact-id "sh06" :provenance {:source-path path}
               :gravity-resolution-boundary
-              {:resolved-analysis {:semantic-projection-id "projection"}}})
+              {:plan-binding
+               {:source-byte-count (alength (.getBytes ^String source java.nio.charset.StandardCharsets/UTF_8))
+                :source-bytes-sha256
+                (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}
+               :resolved-analysis {:semantic-projection-id "projection"}}})
            bootstrap/sh06-resolution-artifact-verification
            (fn [_]
              {:artifact :gravity/sh06-resolution-artifact-verification
@@ -149,8 +158,8 @@
                          :artifact artifact
                          :report-status (:status report)}))
                     [left right])))]
-            (is (= 2 @core-builds))
-            (is (= 1 @verification-reports))
+            (is (= 2 @core-builds) (:cache result))
+            (is (= 1 @verification-reports) (:cache result))
             (is (= [:sh07-core-artifact-id
                     :sh07-core-provenance-binding-id]
                    @resolver-leaves))
@@ -167,6 +176,121 @@
         (java.nio.file.Files/deleteIfExists left)
         (java.nio.file.Files/deleteIfExists right)
         (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest exact-c10-selection-bypasses-semantic-cache-for-altered-bytes
+  (let [path (java.nio.file.Files/createTempFile
+              "sh07-altered-c10-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        current (String.
+                 ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
+                 java.nio.charset.StandardCharsets/UTF_8)
+        altered (str current "\n; altered")
+        core-builds (atom 0)]
+    (try
+      (java.nio.file.Files/write
+       path (.getBytes altered java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (with-redefs
+        [bootstrap/sh06-resolution-source-artifact
+         (fn [source-path _]
+           {:artifact-id "altered-sh06" :provenance {:source-path source-path}
+            :gravity-resolution-boundary
+            {:resolved-analysis {:semantic-projection-id "altered"}}})
+         bootstrap/sh07-core-from-resolution-artifact
+         (fn [resolution]
+           (swap! core-builds inc)
+           {:artifact-id "ordinary" :sh06-resolution-artifact resolution})
+         bootstrap/sh07-core-artifact-verification
+         (fn [_] {:artifact :gravity/sh07-core-artifact-verification
+                  :status :passed :failed-checks []})]
+        (let [result
+              (runner/with-iteration-cache
+               {:maximum-entries 2
+                :selection {:mode :test-vars
+                            :units exact-c10-semantic-test-vars}}
+               (fn []
+                 (dotimes [_ 2]
+                   (let [resolution
+                         (bootstrap/sh06-resolution-source-artifact
+                          (str path) altered)]
+                     (bootstrap/sh07-core-artifact-verification
+                      (bootstrap/sh07-core-from-resolution-artifact resolution))))))]
+          (is (= 1 @core-builds))
+          (is (= 0 (get-in result [:cache :semantic-misses])))
+          (is (= 0 (get-in result [:cache :semantic-hits])))
+          (is (= 0 (get-in result [:cache :semantic-published])))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
+
+(deftest exact-c10-selection-captures-canonical-source-once
+  (let [captures (atom 0)
+        original @#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot]
+    (with-redefs-fn
+      {#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot
+       (fn [] (swap! captures inc) (original))}
+      #(runner/with-iteration-cache
+        {:maximum-entries 1
+         :selection {:mode :test-vars :units exact-c10-semantic-test-vars}}
+        (constantly :ok)))
+    (is (= 1 @captures))))
+
+(deftest exact-c10-selection-bypasses-each-live-binding-mismatch
+  (let [canonical (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot)
+        source (String. ^bytes (:bytes canonical)
+                        java.nio.charset.StandardCharsets/UTF_8)
+        path (java.nio.file.Files/createTempFile
+              "sh07-c10-pin-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        base-resolution
+        {:artifact-id "sh06" :provenance {:source-path (str path)}
+         :gravity-resolution-boundary
+         {:plan-binding {:source-byte-count (:byte-count canonical)
+                         :source-bytes-sha256 (:sha256 canonical)}
+          :resolved-analysis {:semantic-projection-id "projection"}}}
+        base-request (synthetic-semantic-request base-resolution)
+        cases
+        [[:plan-count
+          (update-in base-resolution
+                     [:gravity-resolution-boundary :plan-binding :source-byte-count] inc)
+          base-request]
+         [:plan-hash
+          (assoc-in base-resolution
+                    [:gravity-resolution-boundary :plan-binding :source-bytes-sha256]
+                    "sha256:bad")
+          base-request]
+         [:request-revision base-resolution
+          (assoc-in base-request [:lineage :source-revision-id] "sha256:bad")]
+         [:module base-resolution
+          (assoc-in base-request [:module :namespace] 'demo.core)]
+         [:projection base-resolution
+          (assoc-in base-request [:lineage :sh06-semantic-projection-id] "other")]]]
+    (try
+      (java.nio.file.Files/write path (:bytes canonical)
+                                 (make-array java.nio.file.OpenOption 0))
+      (doseq [[label resolution request] cases]
+        (with-redefs
+          [bootstrap/sh06-resolution-source-artifact (fn [_ _] resolution)
+           bootstrap/sh07-core-authenticated-request (fn [_] request)
+           bootstrap/sh07-core-from-resolution-artifact
+           (fn [current]
+             {:artifact-id "ordinary" :sh06-resolution-artifact current})
+           bootstrap/sh07-core-artifact-verification
+           (fn [_] {:artifact :gravity/sh07-core-artifact-verification
+                    :status :passed :failed-checks []})]
+          (let [result
+                (runner/with-iteration-cache
+                 {:maximum-entries 1
+                  :selection {:mode :test-vars :units exact-c10-semantic-test-vars}}
+                 #(let [current (bootstrap/sh06-resolution-source-artifact
+                                 (str path) source)]
+                    (bootstrap/sh07-core-artifact-verification
+                     (bootstrap/sh07-core-from-resolution-artifact current))))]
+            (is (= [0 0 0]
+                   (mapv #(get-in result [:cache %])
+                         [:semantic-misses :semantic-hits :semantic-published]))
+                (str label)))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
 
 (deftest semantic-source-snapshot-rejects-missing-symlink-and-nul
   (let [directory (java.nio.file.Files/createTempDirectory

@@ -241,9 +241,54 @@
 (defn- assoc-address [product address value]
   (assoc-in product (resolved-address product address) value))
 
-(defn- neutralize-product [product]
+(declare request-path request-sh06-id)
+
+(defn- expected-slot-value [product request address]
+  (let [path (request-path request)
+        sh06-id (request-sh06-id request)
+        provenance-index (:provenance-ordinal
+                          (purpose-indexes (:digest-requests product)))
+        provenance-digest (get-in product [:resolved-digests provenance-index])]
+    (case address
+      [:raw-template-result :core-template :provenance] (:provenance request)
+      [:raw-template-result :core-template :provenance-binding-preimage :actual-source-path] path
+      [:raw-template-result :core-template :lineage :authenticated-sh06-artifact-id] sh06-id
+      [:raw-template-result :digest-requests :artifact-id-ordinal :preimage :lineage :authenticated-sh06-artifact-id] sh06-id
+      [:raw-template-result :digest-requests :provenance-ordinal :preimage :actual-source-path] path
+      [:digest-requests :artifact-id-ordinal :preimage :lineage :authenticated-sh06-artifact-id] sh06-id
+      [:digest-requests :provenance-ordinal :preimage :actual-source-path] path
+      [:resolved-digests :provenance-ordinal] provenance-digest
+      [:canonical-core-artifact :provenance] (:provenance request)
+      [:canonical-core-artifact :provenance-binding-preimage :actual-source-path] path
+      [:canonical-core-artifact :provenance-binding-id] provenance-digest)))
+
+(defn- neutralize-product [product request]
+  (doseq [address path-slot-addresses]
+    (when-not (= (expected-slot-value product request address)
+                 (get-address product address))
+      (diagnostic! :path-slot-mismatch (request-path request))))
   (reduce (fn [current address] (assoc-address current address path-slot-sentinel))
           product path-slot-addresses))
+
+(defn- contains-value? [value forbidden]
+  (cond
+    (contains? forbidden value) true
+    (map? value) (boolean (some (fn [[key item]]
+                                  (or (contains-value? key forbidden)
+                                      (contains-value? item forbidden)))
+                                value))
+    (or (vector? value) (set? value))
+    (boolean (some #(contains-value? % forbidden) value))
+    :else false))
+
+(defn- path-neutral? [product request]
+  (let [path (request-path request)
+        path-hash (when (string? path)
+                    (sha256 (.getBytes ^String path StandardCharsets/UTF_8)))]
+    (not (contains-value? product
+                          (cond-> #{}
+                            (and (string? path) (not (empty? path))) (conj path)
+                            path-hash (conj path-hash (subs path-hash 7)))))))
 
 (defn- request-path [request]
   (get-in request [:provenance :actual-source-path]))
@@ -320,7 +365,9 @@
                  (get-in product [:raw-template-result :digest-requests]))
       (diagnostic! :digest-purpose-mismatch path))
     (purpose-indexes (:digest-requests product))
-    (let [neutral (neutralize-product product)
+    (let [neutral (neutralize-product product request)
+          _ (when-not (path-neutral? neutral request)
+              (diagnostic! :path-slot-mismatch path))
           base {:artifact :gravity/sh07-semantic-run-product-carrier-v2
                 :schema-version 2 :status :accepted :authority :non-authoritative
                 :semantic-key key :path-slot-addresses path-slot-addresses
@@ -333,6 +380,8 @@
                             :cross-process? false :cross-stage? false
                             :final-artifact-cached? false
                             :verification-report-cached? false}}
+          _ (when-not (path-neutral? base request)
+              (diagnostic! :path-slot-mismatch path))
           counted (fixpoint-carrier base)]
       (when (> (:canonical-byte-count counted) maximum-canonical-bytes)
         (diagnostic! :carrier-too-large path))
@@ -342,6 +391,11 @@
   (and (map? carrier)
        (= carrier-keys (set (keys carrier)))
        (= path-slot-addresses (:path-slot-addresses carrier))
+       (try
+         (every? #(= path-slot-sentinel
+                      (get-address (:run-product carrier) %))
+                 path-slot-addresses)
+         (catch Exception _ false))
        (= (:shape-manifest carrier) (shape-manifest (:run-product carrier)))
        (= (:canonical-byte-count carrier) (carrier-byte-count carrier))
        (= (:integrity-hash carrier) (final-integrity carrier))
@@ -431,7 +485,7 @@
   ([carrier snapshot sh06 verification request candidate seams]
    (let [path (request-path request)
          product (product-from candidate)
-         neutral (try (neutralize-product product) (catch Exception _ ::invalid))
+         neutral (try (neutralize-product product request) (catch Exception _ ::invalid))
          checks {:carrier-integrity (valid-carrier? carrier)
                  :closed-schema (and (= run-product-keys (set (keys product)))
                                      (= (:shape-manifest carrier)
@@ -441,7 +495,9 @@
                  :upstream-verification (sh06-passed? verification sh06)
                  :source-envelope (= (semantic-key snapshot) (:semantic-key carrier))
                  :static-envelope (= (static-envelope request) (:static-envelope carrier))
-                 :path-slot-completeness (= neutral (:run-product carrier))
+                 :path-slot-completeness (and (not= ::invalid neutral)
+                                              (path-neutral? neutral request)
+                                              (= neutral (:run-product carrier)))
                  :digest-purpose-uniqueness (try (purpose-indexes (:digest-requests product)) true
                                                   (catch Exception _ false))
                  :digest-rebinding (if-let [predicate (:digest-rebinding? seams)]

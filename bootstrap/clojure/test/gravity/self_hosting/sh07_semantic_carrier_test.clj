@@ -123,6 +123,69 @@
         (is (not (re-find #"left\\.gravity" (pr-str built))))
         (is (= (:canonical-byte-count built) (carrier/carrier-byte-count built)))))))
 
+(deftest carrier-construction-rejects-missing-slots-and-undeclared-paths
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           (carrier/construct-carrier
+            (snapshot "left.gravity") (sh06) request
+            (update-in (run-product "left.gravity")
+                       [:canonical-core-artifact :provenance-binding-preimage]
+                       dissoc :actual-source-path))))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           (carrier/construct-carrier
+            (snapshot "left.gravity") (sh06) request
+            (assoc-in (run-product "left.gravity")
+                      [:canonical-core-artifact :unexpected-path]
+                      "left.gravity"))))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           (carrier/construct-carrier
+            (snapshot "left.gravity") (sh06) request
+            (assoc-in (run-product "left.gravity")
+                      [:template-verification "left.gravity"] true))))
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           (carrier/construct-carrier
+            (snapshot "left.gravity") (sh06) request
+            (assoc (run-product "left.gravity") :resolved-digests [])))))))
+
+(deftest carrier-construction-rejects-every-same-type-slot-alteration
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (doseq [address carrier/path-slot-addresses]
+        (let [product (run-product "left.gravity")
+              value (#'gravity.self-hosting.sh07-semantic-carrier/get-address
+                     product address)
+              altered (if (map? value)
+                        (assoc value :unexpected true)
+                        (str value "-altered"))]
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (carrier/construct-carrier
+                        (snapshot "left.gravity") (sh06) request
+                        (#'gravity.self-hosting.sh07-semantic-carrier/assoc-address
+                         product address altered)))
+              (str address)))))))
+
+(deftest supplied-verification-rejects-a-missing-declared-coordinate
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            missing (update-in (run-product "left.gravity")
+                               [:canonical-core-artifact :provenance-binding-preimage]
+                               dissoc :actual-source-path)
+            report (carrier/verify-supplied-product
+                    built (snapshot "left.gravity") (sh06) (verification)
+                    request missing (seams))]
+        (is (= :failed (:status report)))
+        (is (some #{:path-slot-completeness} (:failed-checks report)))))))
+
 (deftest carrier-integrity-and-pins-fail-closed
   (with-authenticated-fixture
     "left.gravity"
