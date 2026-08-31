@@ -9413,7 +9413,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "draft",
+    "state": "frozen",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9534,9 +9534,15 @@
         "at": "2026-08-31T04:57:06Z",
         "actor": "sh07-b51-v18-architecture",
         "reason": "register exact architecture-only Attempt-15 report candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, and report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae: preserve accepted Attempt-14 content and close its sole blocker with exact C11 limits/counting, active-path cycle rejection, shared-subgraph recounting, caller boundaries, and evidence; no freeze or review is requested"
+      },
+      {
+        "state": "frozen",
+        "at": "2026-08-31T05:01:38Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "freeze authoritative main base 3bd8cba6818115c75863644276ae463536deb4bd and immutable architecture-only Attempt-15 candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
       }
     ],
-    "disposition": "DRAFT architecture-only Attempt-15 candidate registered for later exact freeze and independent review. It preserves accepted Attempt-14 ordering semantics and closes only the recursive bound/cycle blocker. No implementation or pin authority is conferred."
+    "disposition": "FROZEN architecture-only Attempt-15 candidate for exact independent review. No review result, acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
   }
 ]
 }
