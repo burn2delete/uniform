@@ -30,6 +30,7 @@
   [selection]
   (let [units (:units selection)]
     (and (= :test-vars (:mode selection))
+         (vector? units)
          (= (count c10-semantic-test-vars) (count units))
          (= c10-semantic-test-vars (set units)))))
 
@@ -279,6 +280,27 @@
                               (:digest-requests product))]
     (when (= 1 (count indexes)) (first indexes))))
 
+(defn- aggregate-identities-disjoint?
+  [left right]
+  (let [left-identities (java.util.IdentityHashMap.)]
+    (letfn [(aggregate? [value]
+              (or (map? value) (vector? value) (set? value)))
+            (children [value]
+              (cond
+                (map? value) (mapcat identity value)
+                (or (vector? value) (set? value)) value
+                :else []))
+            (record-left! [value]
+              (when (aggregate? value)
+                (.put left-identities value true)
+                (doseq [child (children value)] (record-left! child))))
+            (disjoint-right? [value]
+              (or (not (aggregate? value))
+                  (and (not (.containsKey left-identities value))
+                       (every? disjoint-right? (children value)))))]
+      (record-left! left)
+      (disjoint-right? right))))
+
 (defn- semantic-seams
   [source-path carrier]
   (letfn [(resolved [product]
@@ -319,7 +341,7 @@
                  (get-in core [:lineage :authenticated-sh06-artifact-id])))))
      :no-alias?
      (fn [stored bound]
-       (not (identical? (:run-product stored) bound)))}))
+       (aggregate-identities-disjoint? (:run-product stored) bound))}))
 
 (defn- current-sh07-plan-binding
   []

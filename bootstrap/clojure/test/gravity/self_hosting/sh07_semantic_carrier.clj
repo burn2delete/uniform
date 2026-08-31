@@ -364,9 +364,16 @@
 
 (defn- copy-value [value]
   (cond
-    (map? value) (into {} (map (fn [[key item]] [(copy-value key) (copy-value item)]) value))
-    (vector? value) (mapv copy-value value)
-    (set? value) (into #{} (map copy-value) value)
+    (map? value) (if (empty? value)
+                   (sorted-map)
+                   (into {} (map (fn [[key item]]
+                                   [(copy-value key) (copy-value item)]) value)))
+    (vector? value) (if (empty? value)
+                      (subvec [nil] 0 0)
+                      (mapv copy-value value))
+    (set? value) (if (empty? value)
+                   (sorted-set)
+                   (into #{} (map copy-value) value))
     :else value))
 
 (defn- bind-product [carrier request resolve-digest]
