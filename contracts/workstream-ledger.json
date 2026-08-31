@@ -10760,6 +10760,153 @@
       }
     ],
     "disposition": "REJECTED by independent reviewer /root/implementation_writer for immutable Attempt-20 candidate 1e387f10e60bd338f2d2f82306f7ae5eea6c4fec, tree 23c1019a29df3699997f816ea13fd18027c45b19, actual report SHA-256 2ae086ef5d46bf44e95895dbef8ec68347511f96a5043c0c205787f5ce9abf5b. The review-pending identity was truncated, the adapter rule does not distinguish all three authentic decimal states, and exact final C2/SH04/SH05/SH06 field paths, schema/version changes, and identity joins are missing. No implementation acceptance, integration eligibility, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+  },
+  {
+    "id": "sh07-b51-vector-destructuring-architecture-v18-attempt-21",
+    "title": "SH-07 B51 let/loop vector destructuring architecture decision v18 attempt 21",
+    "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+    "owner": "sh-core-architecture",
+    "author": "sh07-b51-v18-architecture",
+    "state": "draft",
+    "dependencies": [
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
+      "sh07-b51-vector-destructuring-architecture-v18-attempt-19",
+      "sh07-root6-utf8-byte-census-architecture-v2"
+    ],
+    "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-21.md",
+    "base_commit": "69cb93d8d709d902c8bd964160b50a1736ccb63f",
+    "candidate_commit": "45aac72934b80a172592b39d3b7b6662b4ea2008",
+    "clean_worktree": true,
+    "owned_paths": [
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-21.md"
+    ],
+    "governing_contracts": [
+      "AGENTS.md",
+      "D1",
+      "D2",
+      "D3",
+      "D6",
+      "D8",
+      "D9",
+      "L1",
+      "L2",
+      "L7",
+      "L9",
+      "C2",
+      "C5",
+      "C6",
+      "C11",
+      "BOOT7",
+      "BOOT8",
+      "TEST10",
+      "TEST11",
+      "TEST13",
+      "docs/self-hosting-slice-backlog.md",
+      "docs/self-hosting-slice-ownership.edn",
+      "docs/workstream-governance.md",
+      "contracts/workstream-governance.json",
+      "bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+      "bootstrap/clojure/src/gravity/bootstrap.clj",
+      "bootstrap/gravity/src/gravity/checked_core.gravity",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+    ],
+    "evidence": {
+      "accepted_fixtures": [
+        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-17",
+        "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-19",
+        "integrated dependency:sh07-root6-utf8-byte-census-architecture-v2",
+        "terminal rejection history:Attempt-20 candidate 1e387f10e60bd338f2d2f82306f7ae5eea6c4fec, tree 23c1019a29df3699997f816ea13fd18027c45b19, actual report SHA-256 2ae086ef5d46bf44e95895dbef8ec68347511f96a5043c0c205787f5ce9abf5b",
+        "authoritative main:69cb93d8d709d902c8bd964160b50a1736ccb63f",
+        "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-21.md",
+        "report-sha256:bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60",
+        "candidate-tree:0c202ab06bba53984b103a064b266b188d68bbb5",
+        "author identity audit:the candidate commit and tree are exact 40-hex identities and the report SHA-256 is exactly bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60 with 64 lowercase hexadecimal digits",
+        "author three-state audit:accepted exact-normalized has zero deferred rows; exact-key host-independent-decimal-range has exactly one; reader-semantic-work-boundary bounded-key normalization-deferred has exactly one",
+        "author projection audit:the closed V3 adapter projection contains every raw decimal occurrence with exact semantic entry and raw-to-adapted form/token joins under one domain-separated digest",
+        "author V3 binding audit:the V3 adapter summary, SH02 descriptor and envelope semantic projection, final C2 boundary, C2 integrity, and C2 artifact identity all bind the exact occurrence projection id",
+        "author C2 schema audit:final C2 has exactly top-level :sh07-decimal-occurrence-projection, cache schema and identity V2, V3 adapter binding, and stale V2 cache rejection",
+        "author nested carrier audit:C3 preserves C2[:sh07-decimal-occurrence-projection]; SH05 carries it only under gravity-macro-boundary/authenticated-sh04-artifact; SH06 carries it only through its embedded SH05 artifact; no copied projection exists",
+        "author identity-join audit:SH04 reader binding/source revision V2 and fresh C3 id bind the projection; SH05 joins through exact top-level SH04-view id equality; SH06 joins through fresh SH05 verification and its existing upstream-artifact-id",
+        "author Root8 audit:authentic raw takes exactly one byte-identical public Root1 call, so comparator/decimal/C2/G20 work is truthfully transitive Root1 authority while Root8 retains zero direct canonical authority",
+        "author rejection audit:Root8 preserves zero calls for malformed raw, finalizes only eight pending reasons, maps success to not-rejected, and maps all Root1 boundaries to canonical-replay-boundary",
+        "author G20 audit:the G20 observation seam is the sole B51 census, comparator use occurs only after census, and the three named legacy helpers plus host encoding length have zero B51 callers",
+        "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
+      ],
+      "rejected_fixtures": [
+        "an Attempt21 lifecycle report SHA-256 is abbreviated, truncated, non-lowercase, non-hexadecimal, or not exactly 64 digits",
+        "accepted, host-range-deferred, and normalization-deferred decimal states are collapsed into an absent/present binary",
+        "State B lacks its exact normalized four-key semantic key or its one host-independent-decimal-range deferred row",
+        "State C is treated as an exact normalized key, lacks its bounded reader-semantic-work-boundary key, or lacks its one normalization-deferred row",
+        "a V2 adapter/C2/cache artifact, table id alone, or locally well-shaped literal/deferred rows are admitted as G19 occurrence authority",
+        "the V3 summary/SH02 envelope, final C2 integrity/artifact identity, or cache revalidator omits the projection id",
+        "C3 drops the projection, SH04 fails to bind it, or SH05/SH06 copy it instead of using the exact nested path and fresh transitive identity join",
+        "SH05 or SH06 is falsely claimed to directly hash the nested projection object",
+        "R1, source oracle, or Root6 rebuilds occurrence authority from host value equality, object/hash/iteration identity, adapted values, raw spelling, or canonical text",
+        "original source rows substitute for current-C2 replay over generated canonical bytes or the 256/257/261 branch law drifts",
+        "a legacy B51 counter, host encoding length, comparator bound, comparator-before-census path, or extra G20 direct caller remains",
+        "Root8 transitive public-Root1 canonical work is excluded, the mandatory call is bypassed/caller-sensitive/cached, or Root8 gains direct semantic authority",
+        "Attempt17 ordering/equality, Attempt19 spelling/inverse/branch, G20 Unicode/census, G13 topology/digests, existing bounds, public ABIs/counts, pins, diagnostics, or nonclaims drift beyond the exact carrier evolution",
+        "implementation, test, fixture, proof-contract, pin, roadmap, prior report, terminal history, or unrelated canonical-document change occurs in the report candidate"
+      ],
+      "stable_diagnostics": [
+        "C2-HASH",
+        "C2-NUMERIC",
+        "C6-VERIFY",
+        "L2-BUILTIN-ARITY",
+        "L2-BUILTIN-ERROR"
+      ],
+      "validation_commands": [
+        {
+          "command": "clojure -M tools/validate_gravity_docs.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_full_language_roadmap.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/validate_workstream_governance.clj",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "git diff --check 69cb93d8d709d902c8bd964160b50a1736ccb63f..45aac72934b80a172592b39d3b7b6662b4ea2008",
+          "exit_code": 0,
+          "result": "passed"
+        }
+      ]
+    },
+    "reviews": [],
+    "residual_host_boundaries": [
+      "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, exact bounded primitive substrate, and observer, not semantic authority",
+      "the V3 adapter may retain and bind raw decimal occurrences, but host decimal objects, value equality, hash, identity, iteration, parsing, formatting, encoding length, exceptions, and ambient caller state remain non-authoritative",
+      "Root8 transitive execution of unchanged public Root1 remains Root1 authority and does not make Root8 a fourth caller or independent algorithm",
+      "Attempt 21 requires exact freeze, fresh independent acceptance, integration eligibility, and reconciliation to authoritative main before any implementation or pin consequence",
+      "the existing implementation workstream receives no source, test, fixture, proof-contract, pin, acceptance, or integration authority from this draft",
+      "this draft grants no aggregate SH-07 completion, readable-printer self-hosting, full language support, self-hosting, release, performance, or seed-retirement authority"
+    ],
+    "no_overclaim_authority": {
+      "integration_only": true,
+      "release": false,
+      "seed_retirement": false,
+      "self_hosting": false
+    },
+    "history": [
+      {
+        "state": "draft",
+        "at": "2026-08-31T16:05:41Z",
+        "actor": "sh07-b51-v18-architecture",
+        "reason": "register exact architecture-only Attempt-21 report candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, and report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60: preserve every coherent Attempt-20 rule while correcting exact lifecycle identity, the three authentic decimal/deferred states, V3 summary/SH02 binding, final C2 schema/integrity/cache identity, exact C3/SH04/SH05/SH06 nested carrier paths and transitive joins, and sole-G20 cleanup; no freeze or review is requested"
+      }
+    ],
+    "disposition": "DRAFT architecture-only Attempt-21 report candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60. Exact freeze and fresh independent review are required before any acceptance, integration eligibility, implementation, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement consequence."
   }
 ]
 }
