@@ -10,6 +10,7 @@ clojure -M tools/validate_gravity_docs.clj
 clojure -M tools/validate_full_language_roadmap.clj
 clojure -M tools/validate_full_language_roadmap.clj --self-test
 clojure -M tools/validate_workstream_governance.clj
+clojure -M tools/validate_architecture_authority.clj --report REPORT
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
 # Add --worktree-scan all (or --full-inventory) for an explicit peer inventory.
 clojure -M tools/verify_integration_candidate.clj --help
@@ -19,6 +20,15 @@ The document and roadmap validators are non-authoritative repository gates.
 Workstream governance and preflight are read-only coordination tools. Passing
 these checks does not establish compiler correctness, self-hosting, seed
 retirement, or release eligibility.
+
+Architecture reports have a closed, strict JSON authority block fenced as
+`json gravity-architecture-authority-v1`. The pre-freeze command runs the
+governance contract and ledger checks, then verifies exact report identity,
+integrated dependency states, terminal-history references, and the
+integration-only authority ceiling. Use `--legacy` only to inspect retained
+reports written before the block was introduced; legacy prose grants no
+authority and is checked for false claims such as describing a rejected
+Attempt 15 as integrated.
 
 The integration-candidate verifier applies exact-identity preflight, exports a
 new candidate tree, runs the unchanged full suite and standard gates with a
