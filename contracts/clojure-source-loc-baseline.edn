@@ -7,7 +7,6 @@
   "bootstrap/clojure/src/gravity/c17_plugin.clj" 719
   "bootstrap/clojure/src/gravity/c18_verification.clj" 769
   "bootstrap/clojure/src/gravity/c6_core_lowering.clj" 697
-  "bootstrap/clojure/src/gravity/c8_effect_checker.clj" 724
   "bootstrap/clojure/src/gravity/capability_validation.clj" 537
   "bootstrap/clojure/src/gravity/core_ast_lowering.clj" 696
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" 752
