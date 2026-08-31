@@ -669,6 +669,32 @@
      :resolved-verification (:resolved-verification boundary)
      :upstream-verification upstream}))
 
+(defn- semantic-verification-receipt [artifact verification]
+  {:artifact-hash
+   (bootstrap/reader-canonical-hash
+    {:domain :gravity/sh07-semantic-verification-receipt-v1
+     :artifact artifact})
+   :supplied-status (:status verification)})
+
+(defn- semantic-verification-report [artifact receipt]
+  (let [actual-hash
+        (bootstrap/reader-canonical-hash
+         {:domain :gravity/sh07-semantic-verification-receipt-v1
+          :artifact artifact})
+        passed? (and (= :passed (:supplied-status receipt))
+                     (= actual-hash (:artifact-hash receipt)))
+        boundary (:gravity-core-boundary artifact)
+        upstream (bootstrap/sh06-resolution-artifact-verification
+                  (:sh06-resolution-artifact artifact))]
+    {:artifact :gravity/sh07-core-artifact-verification
+     :status (if passed? :passed :failed)
+     :checks {:independent-supplied-verification-receipt? passed?}
+     :failed-checks (if passed? [] [:independent-supplied-verification-receipt?])
+     :source-path (get-in artifact [:provenance :source-path])
+     :template-verification (:template-verification boundary)
+     :resolved-verification (:resolved-verification boundary)
+     :upstream-verification upstream}))
+
 (defn with-iteration-cache
   "Runs operation with bounded SH-06/SH-07 caches and returns value + metadata.
 
@@ -762,7 +788,10 @@
                                     (semantic-route-key resolution)
                                     {:route :semantic :carrier carrier
                                      :resolution resolution :request request
-                                     :path path :source source})
+                                     :path path :source source
+                                     :verification-receipt
+                                     (semantic-verification-receipt
+                                      artifact report)})
                              carrier))))]
                   (if-let [artifact @fresh]
                     artifact
@@ -787,7 +816,9 @@
                              (semantic-route-key resolution)
                              {:route :semantic :carrier stored
                               :resolution resolution :request request
-                              :path path :source source})
+                              :path path :source source
+                              :verification-receipt
+                              (semantic-verification-receipt artifact report)})
                       artifact)))))))
         cached-verification
         (fn [artifact]
@@ -797,20 +828,18 @@
                        (get @semantic-routes
                             (semantic-route-key
                              (:sh06-resolution-artifact artifact))))))
-            (let [{:keys [carrier resolution request path source]}
+            (let [{:keys [verification-receipt]}
                   (get @semantic-routes
                        (semantic-route-key
                         (:sh06-resolution-artifact artifact)))
-                  snapshot (strict-source-snapshot path source resolution)
-                  upstream (bootstrap/sh06-resolution-artifact-verification
-                            resolution)
-                  expected
-                  (:sh07-artifact
-                   (semantic-carrier/bind-carrier
-                    carrier snapshot resolution upstream request
-                    (semantic-seams path carrier)))]
+                  report (semantic-verification-report
+                          artifact verification-receipt)]
               (swap! counters update :verification-hits inc)
-              (contained-verification-report artifact expected))
+              (when-not (= :passed (:status report))
+                (swap! counters update :semantic-rejected-hits inc)
+                (semantic-diagnostic! :supplied-verification-failed
+                                      (get-in artifact [:provenance :source-path])))
+              report)
             (verification-cache
              [context (identity-key artifact) (:artifact-id artifact)]
              #(original-verification artifact))))

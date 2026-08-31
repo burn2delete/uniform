@@ -1,7 +1,314 @@
 (ns gravity.self-hosting.sh07-iteration-cache-runner-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh07-iteration-cache-runner :as runner]))
+            [gravity.self-hosting.sh07-iteration-cache-runner :as runner]
+            [gravity.self-hosting.sh07-semantic-carrier :as semantic-carrier])
+  (:import [java.util.concurrent CountDownLatch TimeUnit]))
+
+(def ^:private semantic-counter-keys
+  [:semantic-hits :semantic-misses :semantic-joined :semantic-published
+   :semantic-evictions :semantic-failed-producers :semantic-rejected-hits])
+
+(defn- semantic-counters []
+  (atom (zipmap semantic-counter-keys (repeat 0))))
+
+(defn- await-condition
+  [predicate timeout-ms]
+  (let [deadline (+ (System/nanoTime) (* timeout-ms 1000000))]
+    (loop []
+      (if (predicate)
+        true
+        (if (< (System/nanoTime) deadline)
+          (do (Thread/yield) (recur))
+          false)))))
+
+(defn- semantic-test-cache
+  [maximum-entries maximum-bytes counters]
+  (#'runner/bounded-semantic-cache maximum-entries maximum-bytes counters))
+
+(defn- semantic-test-value
+  ([key] (semantic-test-value key 1))
+  ([key weight] {:key key :weight weight}))
+
+(deftest semantic-cache-same-key-joins-and-different-key-progresses
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        active (atom 0)
+        maximum-active (atom 0)
+        calls (atom {})
+        a-started (CountDownLatch. 1)
+        b-started (CountDownLatch. 1)
+        release-a (CountDownLatch. 1)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(operation [key]
+                (swap! calls update key (fnil inc 0))
+                (let [now (swap! active inc)]
+                  (swap! maximum-active max now)
+                  (try
+                    (if (= :a key)
+                      (do
+                        (.countDown a-started)
+                        (when-not (.await release-a 2 TimeUnit/SECONDS)
+                          (throw (ex-info "semantic producer timed out" {}))))
+                      (.countDown b-started))
+                    (semantic-test-value key)
+                    (finally
+                      (swap! active dec)))))]
+        (let [producer (future (cache :a (constantly true) #(operation :a)))]
+          (try
+            (is (.await a-started 1 TimeUnit/SECONDS))
+            (let [waiters (mapv (fn [_]
+                                  (future (cache :a (constantly true)
+                                                 #(operation :a))))
+                                (range 3))]
+              (is (await-condition #(= 3 (:semantic-joined @counters)) 2000))
+              (let [different-key
+                    (future (cache :b (constantly true) #(operation :b)))]
+                (is (.await b-started 1 TimeUnit/SECONDS))
+                (.countDown release-a)
+                (is (not= ::timeout (deref producer 3000 ::timeout)))
+                (is (not= ::timeout (deref different-key 3000 ::timeout)))
+                (doseq [waiter waiters]
+                  (is (not= ::timeout (deref waiter 3000 ::timeout))))
+                (is (= {:a 1 :b 1} @calls))
+                (is (>= @maximum-active 2))
+                (is (= 2 (:semantic-misses @counters)))
+                (is (= 3 (:semantic-joined @counters)))
+                (is (= 2 (:semantic-published @counters)))))
+            (finally
+              (.countDown release-a)
+              (deref producer 3000 nil))))))))
+
+(deftest semantic-cache-producer-failure-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        attempts (atom 0)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        capture (fn [operation]
+                  (try
+                    {:value (operation)}
+                    (catch clojure.lang.ExceptionInfo error
+                      {:error (ex-data error)})))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [operation
+            (fn []
+              (if (= 1 (swap! attempts inc))
+                (do
+                  (.countDown started)
+                  (when-not (.await release 2 TimeUnit/SECONDS)
+                    (throw (ex-info "semantic producer timed out" {})))
+                  (throw (ex-info "synthetic producer failure"
+                                  {:id "SEMANTIC-PRODUCER-FAILED"})))
+                (semantic-test-value :failed)))
+            producer (future (capture #(cache :failed (constantly true)
+                                              operation)))]
+        (try
+          (is (.await started 1 TimeUnit/SECONDS))
+          (let [waiter (future (capture #(cache :failed (constantly true)
+                                                operation)))]
+            (is (await-condition #(= 1 (:semantic-joined @counters)) 2000))
+            (.countDown release)
+            (let [producer-result (deref producer 3000 ::timeout)
+                  waiter-result (deref waiter 3000 ::timeout)
+                  expected {:artifact :gravity/sh07-semantic-cache-diagnostic
+                            :rule "SH07-SEMANTIC-CACHE"
+                            :severity :error :stage :development-cache
+                            :reason :producer-failed :source-path nil
+                            :fail-closed true
+                            :fresh-authoritative-run-required? true}]
+              (is (= expected (:error producer-result)))
+              (is (= expected (:error waiter-result)))
+              (is (= 1 (:semantic-failed-producers @counters)))
+              (is (= 0 (:semantic-published @counters)))
+              (is (= 1 (:semantic-misses @counters)))
+              (is (= 1 (:semantic-joined @counters)))
+              (is (= (semantic-test-value :failed)
+                     (cache :failed (constantly true) operation)))
+              (is (= 2 (:semantic-misses @counters)))
+              (is (= 1 (:semantic-published @counters)))))
+          (finally
+            (.countDown release)
+            (deref producer 3000 nil)))))))
+
+(deftest semantic-cache-producer-interruption-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        producer-result (promise)
+        producer
+        (Thread.
+         #(deliver producer-result
+                   (try
+                     {:value
+                      (cache :interrupted (constantly true)
+                             (fn []
+                               (.countDown started)
+                               (.await release 10 TimeUnit/SECONDS)
+                               (semantic-test-value :interrupted)))}
+                     (catch clojure.lang.ExceptionInfo error
+                       {:error (ex-data error)}))))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (.start producer)
+      (try
+        (is (.await started 1 TimeUnit/SECONDS))
+        (let [waiter
+              (future
+                (try
+                  (cache :interrupted (constantly true)
+                         #(semantic-test-value :interrupted))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    (ex-data error))))]
+          (is (await-condition #(= 1 (:semantic-joined @counters)) 2000))
+          (.interrupt producer)
+          (.join producer 3000)
+          (let [expected {:artifact :gravity/sh07-semantic-cache-diagnostic
+                          :rule "SH07-SEMANTIC-CACHE"
+                          :severity :error :stage :development-cache
+                          :reason :producer-interrupted :source-path nil
+                          :fail-closed true
+                          :fresh-authoritative-run-required? true}]
+            (is (= expected (:error @producer-result)))
+            (is (= expected (deref waiter 3000 ::timeout)))
+            (is (.isInterrupted producer))
+            (is (= 1 (:semantic-failed-producers @counters)))
+            (is (= 0 (:semantic-published @counters)))
+            (is (= (semantic-test-value :interrupted)
+                   (cache :interrupted (constantly true)
+                          #(semantic-test-value :interrupted))))
+            (is (= 2 (:semantic-misses @counters)))
+            (is (= 1 (:semantic-published @counters)))))
+        (finally
+          (.countDown release)
+          (.interrupt producer)
+          (.join producer 3000))))))
+
+(deftest semantic-cache-reentry-fails-and-retry-is-fresh
+  (let [counters (semantic-counters)
+        cache-holder (atom nil)
+        attempts (atom 0)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [cache (semantic-test-cache 4 100 counters)]
+        (reset! cache-holder cache)
+        (let [failure
+              (try
+                (cache :reentrant (constantly true)
+                       (fn []
+                         (swap! attempts inc)
+                         (@cache-holder :reentrant (constantly true)
+                                        #(semantic-test-value :reentrant))))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= :reentrant-request (:reason failure)))
+          (is (= 1 (:semantic-failed-producers @counters)))
+          (is (= 0 (:semantic-published @counters)))
+          (is (= (semantic-test-value :reentrant)
+                 (cache :reentrant (constantly true)
+                        #(do (swap! attempts inc)
+                             (semantic-test-value :reentrant)))))
+          (is (= 2 @attempts))
+          (is (= 2 (:semantic-misses @counters)))
+          (is (= 1 (:semantic-published @counters))))))))
+
+(deftest semantic-cache-uses-fifo-entry-eviction-without-hit-promotion
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 2 100 counters)
+        calls (atom {})]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(load [key]
+                (cache key (constantly true)
+                       #(do (swap! calls update key (fnil inc 0))
+                            (semantic-test-value key))))]
+        (load :a)
+        (load :b)
+        (load :a)
+        (load :c)
+        (load :b)
+        (load :a)
+        (is (= {:a 2 :b 1 :c 1} @calls))
+        (is (= 4 (:semantic-misses @counters)))
+        (is (= 2 (:semantic-hits @counters)))
+        (is (= 4 (:semantic-published @counters)))
+        (is (= 2 (:semantic-evictions @counters)))))))
+
+(deftest semantic-cache-evicts-by-canonical-byte-bound
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 5 counters)
+        calls (atom {})]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (letfn [(load [key weight]
+                (cache key (constantly true)
+                       #(do (swap! calls update key (fnil inc 0))
+                            (semantic-test-value key weight))))]
+        (load :a 3)
+        (load :b 2)
+        (load :c 4)
+        (load :c 4)
+        (load :a 3)
+        (is (= {:a 2 :b 1 :c 1} @calls))
+        (is (= 4 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-hits @counters)))
+        (is (= 4 (:semantic-published @counters)))
+        (is (= 3 (:semantic-evictions @counters)))))))
+
+(deftest semantic-cache-rejects-oversized-values-without-publication
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 3 counters)
+        attempts (atom 0)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [failure
+            (try
+              (cache :oversized (constantly true)
+                     #(if (= 1 (swap! attempts inc))
+                        (semantic-test-value :oversized 4)
+                        (semantic-test-value :oversized 3)))
+              nil
+              (catch clojure.lang.ExceptionInfo error
+                (ex-data error)))]
+        (is (= :carrier-too-large (:reason failure)))
+        (is (= 1 (:semantic-failed-producers @counters)))
+        (is (= 0 (:semantic-published @counters)))
+        (is (= 1 (:semantic-misses @counters)))
+        (is (= (semantic-test-value :oversized 3)
+               (cache :oversized (constantly true)
+                      #(if (= 1 (swap! attempts inc))
+                         (semantic-test-value :oversized 4)
+                         (semantic-test-value :oversized 3)))))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-published @counters)))))))
+
+(deftest semantic-cache-rejects-invalid-entry-and-reruns-producer
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 4 100 counters)
+        valid? (atom true)
+        calls (atom 0)
+        validate (fn [_] @valid?)]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (let [load #(cache :invalid validate
+                         (fn []
+                           (swap! calls inc)
+                           (semantic-test-value :invalid)))]
+        (is (= (semantic-test-value :invalid) (load)))
+        (reset! valid? false)
+        (is (= (semantic-test-value :invalid) (load)))
+        (reset! valid? true)
+        (is (= (semantic-test-value :invalid) (load)))
+        (is (= 2 @calls))
+        (is (= 1 (:semantic-hits @counters)))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 2 (:semantic-published @counters)))
+        (is (= 1 (:semantic-rejected-hits @counters)))))))
 
 (def ^:private exact-c10-semantic-test-vars
   '[gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-source-has-exact-authentic-coverage
@@ -38,9 +345,14 @@
                   {:ordinal 1 :purpose :sh07-core-provenance-binding-id
                    :preimage provenance-preimage}]
         digest (fn [purpose preimage]
-                 (bootstrap/reader-canonical-hash
-                  {:domain :gravity/sh07-declared-digest-v1
-                   :purpose purpose :preimage preimage}))
+                 (let [resolved-preimage
+                       (if (= :sh07-core-artifact-id purpose)
+                         (bootstrap/sh07-core-semantic-identity-preimage
+                          preimage)
+                         preimage)]
+                   (bootstrap/reader-canonical-hash
+                    {:domain :gravity/sh07-declared-digest-v1
+                     :purpose purpose :preimage resolved-preimage})))
         resolved (mapv #(digest (:purpose %) (:preimage %)) requests)
         core {:artifact-id (first resolved)
               :identity-preimage identity-preimage
@@ -90,17 +402,22 @@
                            :units ['gravity.self-hosting.sh07-c10-safety-source-coverage-test]})))))
 
 (deftest exact-c10-route-rebinds-one-successful-carrier-across-paths
-  (let [directory (java.nio.file.Files/createTempDirectory
-                   "sh07-semantic-runner-"
+  (let [left-root (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-runner-left-"
                    (make-array java.nio.file.attribute.FileAttribute 0))
-        left (.resolve directory "left.gravity")
-        right (.resolve directory "right.gravity")
+        right-root (java.nio.file.Files/createTempDirectory
+                    "sh07-semantic-runner-right-"
+                    (make-array java.nio.file.attribute.FileAttribute 0))
+        left (.resolve left-root "left.gravity")
+        right (.resolve right-root "right.gravity")
         source (String.
                 ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
                 java.nio.charset.StandardCharsets/UTF_8)
         core-builds (atom 0)
         verification-reports (atom 0)
-        resolver-leaves (atom [])
+        hit-forbidden-calls (atom {})
+        phase (atom :admission)
+        plan-leaves (atom [])
         plan-binding-var
         (ns-resolve 'gravity.self-hosting.sh07-iteration-cache-runner
                     'current-sh07-plan-binding)]
@@ -136,11 +453,14 @@
            bootstrap/sh07-core-from-resolution-artifact
            (fn [resolution]
              (swap! core-builds inc)
+             (when (= :hit @phase)
+               (swap! hit-forbidden-calls update :from-resolution (fnil inc 0)))
              (synthetic-semantic-artifact resolution))
-           bootstrap/sh07-core-resolve-digest-preimage!
-           (fn [_ purpose preimage _]
-             (swap! resolver-leaves conj purpose)
-             preimage)
+           bootstrap/sh07-core-execute!
+           (fn [_ function arguments]
+             (when (= :hit @phase)
+               (swap! plan-leaves conj function))
+             {:status :accepted :value (first arguments)})
            bootstrap/sh07-core-verification-checks
            (fn [_ _ _] {:synthetic-check true})
            bootstrap/sh07-core-proof-from-checks
@@ -149,10 +469,28 @@
            bootstrap/sh07-core-artifact-verification
            (fn [artifact]
              (swap! verification-reports inc)
+             (when (= :hit @phase)
+               (swap! hit-forbidden-calls update :artifact-verification (fnil inc 0)))
              (bootstrap/sh07-core-from-resolution-artifact
               (:sh06-resolution-artifact artifact))
              {:artifact :gravity/sh07-core-artifact-verification
-              :status :passed :failed-checks []})]
+              :status :passed :failed-checks []})
+           bootstrap/sh07-core-run-request-for-test
+           (fn [& _]
+             (swap! hit-forbidden-calls update :run-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 run request" {})))
+           bootstrap/sh07-core-run-structural-request-for-test
+           (fn [& _]
+             (swap! hit-forbidden-calls update :run-structural-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 structural request" {})))
+           bootstrap/sh07-core-from-authenticated-request
+           (fn [& _]
+             (swap! hit-forbidden-calls update :from-authenticated-request (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 authenticated request" {})))
+           bootstrap/sh07-core-verification-session
+           (fn [& _]
+             (swap! hit-forbidden-calls update :verification-session (fnil inc 0))
+             (throw (ex-info "forbidden SH-07 verification session" {})))]
           (let [result
                 (runner/with-iteration-cache
                  {:maximum-entries 2
@@ -160,7 +498,9 @@
                               :units exact-c10-semantic-test-vars}}
                  (fn []
                    (mapv
-                    (fn [path]
+                    (fn [[index path]]
+                      (when (= 1 index)
+                        (reset! phase :hit))
                       (let [resolution
                             (bootstrap/sh06-resolution-source-artifact
                              (str path) source)
@@ -172,13 +512,13 @@
                          :artifact-id (:artifact-id artifact)
                          :artifact artifact
                          :report-status (:status report)}))
-                    [left right])))]
+                    (map-indexed vector [left right]))))]
             (is (= 2 @core-builds) (:cache result))
             (is (= 1 @verification-reports) (:cache result))
-            (is (= 6 (count @resolver-leaves)))
-            (is (= {:sh07-core-artifact-id 3
-                    :sh07-core-provenance-binding-id 3}
-                   (frequencies @resolver-leaves)))
+            (is (= ['sh07-resolve-identity-preimage
+                    'sh07-resolve-provenance-preimage]
+                   @plan-leaves))
+            (is (= {} @hit-forbidden-calls))
             (is (= 1 (get-in result [:cache :semantic-misses])))
             (is (= 1 (get-in result [:cache :semantic-hits])))
             (is (= [(str left) (str right)]
@@ -191,7 +531,8 @@
       (finally
         (java.nio.file.Files/deleteIfExists left)
         (java.nio.file.Files/deleteIfExists right)
-        (java.nio.file.Files/deleteIfExists directory)))))
+        (java.nio.file.Files/deleteIfExists left-root)
+        (java.nio.file.Files/deleteIfExists right-root)))))
 
 (deftest exact-c10-selection-bypasses-semantic-cache-for-altered-bytes
   (let [path (java.nio.file.Files/createTempFile
