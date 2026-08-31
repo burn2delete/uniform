@@ -10767,7 +10767,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17",
       "sh07-b51-vector-destructuring-architecture-v18-attempt-19",
@@ -10883,7 +10883,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/implementation_writer",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, exact bounded primitive substrate, and observer, not semantic authority",
       "the V3 adapter may retain and bind raw decimal occurrences, but host decimal objects, value equality, hash, identity, iteration, parsing, formatting, encoding length, exceptions, and ambient caller state remain non-authoritative",
@@ -10916,9 +10922,15 @@
         "at": "2026-08-31T16:11:04Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review by /root/implementation_writer of immutable Attempt-21 candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60: exact three-state decimal/deferred joins, V3 adapter summary and SH02 binding, final C2 schema/integrity/cache identity, exact nested C3/SH04/SH05/SH06 carrier paths and transitive identity joins, sole G20 byte-census authority, mandatory Root8 transitive public-Root1 execution versus forbidden Root8 direct authority, preserved rejection semantics, evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-31T16:15:14Z",
+        "actor": "/root/implementation_writer",
+        "reason": "REJECT exact immutable Attempt-21 candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60. Blocker 1: report lines 167-173 falsely require every raw decimal descriptor to have exactly 10 keys, while authentic normalization-deferred State C also has :spelling-codepoints and :numeric-semantic-work and therefore has exactly 12 keys. Blocker 2: report lines 215-232 conflate distinct descriptor, raw-entry semantic-key, and adapted-value shapes: State C's descriptor contains an eight-key bounded spelling key, sh03-token-semantic-key wraps it as the raw semantic entry's three-key {:kind :normalization :bounded-semantic-key} key, the adapted State-C value is an eight-key deferred-numeric envelope with a nested descriptor, and the adapted State-B value is a distinct nine-key host-range decimal map rather than an exact adapted descriptor with State-B fields. Blocker 3: report lines 394-396 require current-C2 semantic completion for 257-261, contradicting integrated Attempt-19 lines 142-155 and 214-219, which require C2 to remain normalization-deferred and an independent inverse to supply the key. Blocker 4: report lines 45-47 describe Attempt-20's truncated review-pending SHA-256 as 63 digits, but the actual truncated string has 62 digits. The new candidate identity, carrier paths and version joins, Root8 direct-versus-transitive correction, and G20 sole authority otherwise check out but do not cure these exact blockers."
       }
     ],
-    "disposition": "REVIEW-PENDING for fresh independent exact review by /root/implementation_writer of immutable Attempt-21 candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60. No acceptance, integration eligibility, implementation, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement consequence exists before an independent terminal review result."
+    "disposition": "REJECTED by independent reviewer /root/implementation_writer for immutable Attempt-21 candidate 45aac72934b80a172592b39d3b7b6662b4ea2008, tree 0c202ab06bba53984b103a064b266b188d68bbb5, report SHA-256 bfff9d1b77f05723f6cfb52529f52636b3d475ddf812e5437f546980be1a9a60. State C has a 12-key descriptor, States B and C have distinct descriptor/raw-entry/adapted-value shapes, current C2 must remain normalization-deferred at 257-261 while independent inverse supplies the key, and Attempt-20's prior truncated SHA length was 62 rather than 63. No implementation acceptance, integration eligibility, pin, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
