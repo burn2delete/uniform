@@ -102,6 +102,19 @@
      {:artifact-id (get-in product [:canonical-core-artifact :artifact-id])
       :sh06-resolution-artifact sh06
       :gravity-core-boundary (boundary sh06 request product)})
+   :upstream-verification?
+   (fn [sh06 report]
+     (and (= (:artifact-id sh06) "sh06-artifact")
+          (= report (verification))))
+   :final-envelope?
+   (fn [sh06 request product candidate]
+     (or (= #{:raw-template-result :canonical-core-artifact :digest-requests
+              :resolved-digests :template-verification :resolved-verification}
+            (set (keys candidate)))
+         (= candidate
+            {:artifact-id (get-in product [:canonical-core-artifact :artifact-id])
+             :sh06-resolution-artifact sh06
+             :gravity-core-boundary (boundary sh06 request product)})))
    :digest-rebinding? (fn [_ product]
                          (= (:resolved-digests product)
                             (mapv #(resolver (:purpose %) (:preimage %))
@@ -315,17 +328,21 @@
       (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
                                              request (run-product "left.gravity"))
             malformed (assoc built :run-product (Object.))
-            metadata-candidate
-            (with-meta (run-product "left.gravity") {:unexpected true})]
+            metadata-candidates
+            [(with-meta (run-product "left.gravity") {:unexpected true})
+             (with-meta (run-product "left.gravity") {})]]
         (is (false? (carrier/lookup-valid? malformed
                                            (snapshot "left.gravity") request)))
         (is (false? (carrier/lookup-valid? (with-meta built {:unexpected true})
                                            (snapshot "left.gravity") request)))
-        (let [report (carrier/verify-supplied-product
-                      built (snapshot "left.gravity") (sh06) (verification)
-                      request metadata-candidate (seams))]
-          (is (false? (get-in report [:checks :closed-schema])))
-          (is (some #{:closed-schema} (:failed-checks report))))))))
+        (is (false? (carrier/lookup-valid? (with-meta built {})
+                                           (snapshot "left.gravity") request)))
+        (doseq [metadata-candidate metadata-candidates]
+          (let [report (carrier/verify-supplied-product
+                        built (snapshot "left.gravity") (sh06) (verification)
+                        request metadata-candidate (seams))]
+            (is (false? (get-in report [:checks :closed-schema])))
+            (is (some #{:closed-schema} (:failed-checks report)))))))))
 
 (deftest supplied-products-reject-extra-keys-sentinels-and-inexact-statuses
   (with-authenticated-fixture
@@ -340,6 +357,10 @@
             [(assoc (run-product "left.gravity") :unexpected true)
              (update (artifact (run-product "left.gravity"))
                      :gravity-core-boundary assoc :unexpected true)
+             (assoc-in (artifact (run-product "left.gravity"))
+                       [:gravity-core-boundary
+                        :authenticated-envelope-descriptor :source-revision-id]
+                       "sha256:tampered")
              (assoc-in (run-product "left.gravity")
                        [:template-verification :details :sentinel]
                        carrier/path-slot-sentinel)

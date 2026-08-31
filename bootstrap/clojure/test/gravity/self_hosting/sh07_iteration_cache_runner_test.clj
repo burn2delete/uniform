@@ -30,6 +30,13 @@
   ([key] (semantic-test-value key 1))
   ([key weight] {:key key :weight weight}))
 
+(defn- b8-fixture-var
+  [name]
+  (require 'gravity.self-hosting.sh07-try-catch-test)
+  (or (ns-resolve 'gravity.self-hosting.sh07-try-catch-test name)
+      (throw (ex-info "Required SH-07-B8 fixture helper is absent"
+                      {:name name}))))
+
 (deftest semantic-cache-same-key-joins-and-different-key-progresses
   (let [counters (semantic-counters)
         cache (semantic-test-cache 4 100 counters)
@@ -79,6 +86,51 @@
             (finally
               (.countDown release-a)
               (deref producer 3000 nil))))))))
+
+(deftest sh07-b8-fixture-contract-parity-is-bounded
+  ;; This is deliberately a fixture-level guard.  The ordinary SH-07
+  ;; artifact/status and diagnostic parity clause requires a bounded frozen
+  ;; artifact source; invoking `file-artifact` here would redo the full
+  ;; lowering and turn this focused test into the long SH-07 run it protects.
+  ;; Keep the distinction explicit rather than treating source inventory as
+  ;; ordinary artifact evidence.
+  (let [fixture-path (b8-fixture-var 'fixture-path)
+        source-bytes (b8-fixture-var 'source-bytes)
+        pair (fn [family basename]
+               (mapv (fn [extension]
+                       (let [path (fixture-path family basename extension)
+                             bytes (source-bytes path)]
+                         {:extension extension
+                          :path path
+                          :source (String. ^bytes bytes
+                                            java.nio.charset.StandardCharsets/UTF_8)
+                          :bytes bytes}))
+                     [".gravity" ".qst"]))
+        accepted (pair "accepted" "top-level-typed-catch")
+        rejected (pair "rejected" "missing-catch")
+        same-bytes? (fn [items]
+                      (= (seq (:bytes (first items)))
+                         (seq (:bytes (second items)))))]
+    (testing "accepted B8 source pair declares the accepted shape"
+      (is (same-bytes? accepted))
+      (is (every? #(= :accepted (:fixture-status %))
+                  (map #(assoc % :fixture-status :accepted) accepted)))
+      (is (every? #(.contains ^String (:source %) "(catch Exception error")
+                  accepted))
+      (is (every? #(.contains ^String (:source %) ":slice :SH-07-B8")
+                  accepted)))
+    (testing "rejected B8 source pair carries the same diagnostic oracle"
+      (is (same-bytes? rejected))
+      (is (every? #(= :rejected (:fixture-status %))
+                  (map #(assoc % :fixture-status :rejected) rejected)))
+      (is (every? #(.contains ^String (:source %) ":expected-rule \"C6-CORE-SHAPE\"")
+                  rejected))
+      (is (every? #(.contains ^String (:source %) ":expected-reason :try-catch-required")
+                  rejected))
+      (is (every? #(.contains ^String (:source %) ":expected-severity :error")
+                  rejected))
+      (is (every? #(not (.contains ^String (:source %) "(catch ") )
+                  rejected)))))
 
 (deftest semantic-cache-producer-failure-clears-flight-and-allows-retry
   (let [counters (semantic-counters)
@@ -398,6 +450,13 @@
     (is (false? (enabled? {:mode :test-vars
                            :units (conj exact-c10-semantic-test-vars
                                         (first exact-c10-semantic-test-vars))})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units (conj exact-c10-semantic-test-vars
+                                        'gravity.self-hosting.sh07-c10-safety-source-coverage-test/unknown)})))
+    (is (false? (enabled? {:mode :test-vars
+                           :units [(first exact-c10-semantic-test-vars)
+                                   'gravity.self-hosting.sh07-iteration-cache-runner-test/semantic-reuse-requires-the-exact-c10-selection]})))
+    (is (false? (enabled? {:mode :test-vars :units []})))
     (is (false? (enabled? {:mode :namespaces
                            :units ['gravity.self-hosting.sh07-c10-safety-source-coverage-test]})))))
 
@@ -472,9 +531,11 @@
              (when (= :hit @phase)
                (swap! hit-forbidden-calls update :artifact-verification (fnil inc 0)))
              (bootstrap/sh07-core-from-resolution-artifact
-              (:sh06-resolution-artifact artifact))
+             (:sh06-resolution-artifact artifact))
              {:artifact :gravity/sh07-core-artifact-verification
-              :status :passed :failed-checks []})
+              :status :passed :checks {:synthetic-check true}
+              :failed-checks []
+              :source-path (get-in artifact [:provenance :source-path])})
            bootstrap/sh07-core-run-request-for-test
            (fn [& _]
              (swap! hit-forbidden-calls update :run-request (fnil inc 0))
@@ -500,7 +561,8 @@
                    (mapv
                     (fn [[index path]]
                       (when (= 1 index)
-                        (reset! phase :hit))
+                        (reset! phase :hit)
+                        (reset! plan-leaves []))
                       (let [resolution
                             (bootstrap/sh06-resolution-source-artifact
                              (str path) source)
@@ -679,7 +741,7 @@
        (make-array java.nio.file.attribute.FileAttribute 0))
       (is (= :source-missing (reason missing "")))
       (is (= :source-symlink (reason link "ok")))
-      (is (= :source-invalid-path
+      (is (= :source-missing
              (reason (str "invalid" (char 0) ".gravity") "ok")))
       (java.nio.file.Files/write
        target (byte-array [(byte 0)])
@@ -688,6 +750,69 @@
       (finally
         (java.nio.file.Files/deleteIfExists link)
         (java.nio.file.Files/deleteIfExists target)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-rejects-not-regular-invalid-extension-and-mutation
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-rules-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        regular (.resolve directory "regular.gravity")
+        directory-path (.resolve directory "nested.gravity")
+        text-path (.resolve directory "text.txt")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       regular (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/createDirectory
+       directory-path (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/write
+       text-path (.getBytes "ok" java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :source-not-regular (reason directory-path "ok")))
+      (is (= :invalid-extension (reason text-path "ok")))
+      (is (= :source-mutated (reason regular "changed")))
+      (finally
+        (java.nio.file.Files/deleteIfExists regular)
+        (java.nio.file.Files/deleteIfExists text-path)
+        (java.nio.file.Files/deleteIfExists directory-path)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-rejects-malformed-utf8-and-oversize
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-semantic-source-bounds-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        malformed (.resolve directory "malformed.gravity")
+        oversized (.resolve directory "oversized.gravity")
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        snapshot #'gravity.self-hosting.sh07-iteration-cache-runner/strict-source-snapshot
+        reason (fn [path source]
+                 (:reason
+                  (ex-data
+                   (try
+                     (snapshot (str path) source resolution)
+                     (catch clojure.lang.ExceptionInfo error error)))))]
+    (try
+      (java.nio.file.Files/write
+       malformed (byte-array [(unchecked-byte 0xC3) (unchecked-byte 0x28)])
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :invalid-utf8 (reason malformed "x")))
+      (java.nio.file.Files/write
+       oversized (byte-array (inc (* 16 1024 1024)))
+       (make-array java.nio.file.OpenOption 0))
+      (is (= :source-too-large (reason oversized "x")))
+      (finally
+        (java.nio.file.Files/deleteIfExists malformed)
+        (java.nio.file.Files/deleteIfExists oversized)
         (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest iteration-cache-reuses-equal-source-and-identical-artifacts

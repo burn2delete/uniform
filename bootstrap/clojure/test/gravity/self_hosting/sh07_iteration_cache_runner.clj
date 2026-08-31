@@ -40,7 +40,9 @@
            (map #(format "%02x" (bit-and % 0xff))
                 (.digest digest)))))
 
-(defn- read-bounded-bytes [path]
+(declare semantic-diagnostic!)
+
+(defn- read-bounded-bytes [path source-path]
   (with-open [channel
               (java.nio.channels.FileChannel/open
                path
@@ -56,7 +58,7 @@
             (.toByteArray output)
             (let [next-total (+ total read)]
               (when (> next-total (* 16 1024 1024))
-                (throw (ex-info "C10 source snapshot exceeded bound" {})))
+                (semantic-diagnostic! :source-too-large source-path))
               (.write output (.array buffer) 0 read)
               (recur next-total))))))))
 
@@ -82,7 +84,7 @@
         (let [before (java.nio.file.Files/readAttributes
                       path java.nio.file.attribute.BasicFileAttributes options)]
           (when (<= (.size before) (* 16 1024 1024))
-            (let [bytes (read-bounded-bytes path)
+            (let [bytes (read-bounded-bytes path nil)
                   after (java.nio.file.Files/readAttributes
                          path java.nio.file.attribute.BasicFileAttributes options)]
               (when (and (<= (alength bytes) (* 16 1024 1024))
@@ -166,13 +168,6 @@
    (get-in artifact
            [:gravity-resolution-boundary :resolved-analysis
             :semantic-projection-id])])
-
-(defn- semantic-route-key [artifact]
-  [(:artifact-id artifact)
-   (get-in artifact [:provenance :source-path])
-   (get-in artifact [:gravity-resolution-boundary :plan-binding])
-   (get-in artifact [:gravity-resolution-boundary :resolved-analysis
-                     :semantic-projection-id])])
 
 (defn- bounded-cache
   [maximum-entries counters hit-key miss-key]
@@ -395,6 +390,10 @@
                       (.endsWith path ".gravity") ".gravity"
                       (.endsWith path ".qst") ".qst"
                       :else nil)]
+      (when-not (and (java.nio.file.Files/exists resolved options)
+                     (not (java.nio.file.Files/isSymbolicLink resolved))
+                     (java.nio.file.Files/isRegularFile resolved options))
+        (semantic-diagnostic! :source-mutated path))
       (when (some zero? bytes) (semantic-diagnostic! :invalid-utf8 path))
       (try
         (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
@@ -425,11 +424,11 @@
     (catch clojure.lang.ExceptionInfo error
       (throw error))
     (catch java.nio.file.InvalidPathException _
-      (semantic-diagnostic! :source-invalid-path path))
+      (semantic-diagnostic! :source-missing path))
     (catch java.io.IOException _
-      (semantic-diagnostic! :source-read-failed path))
+      (semantic-diagnostic! :source-missing path))
     (catch SecurityException _
-      (semantic-diagnostic! :source-read-failed path))))
+      (semantic-diagnostic! :source-missing path))))
 
 (defn- same-source-snapshot?
   [left right]
@@ -486,7 +485,7 @@
 (declare artifact-from-bound-product)
 
 (defn- semantic-seams
-  [source-path carrier]
+  [source-path carrier expected-resolution expected-upstream]
   (let [resolution-receipt (atom nil)]
     {:resolve-digests
      (fn [_ requests]
@@ -499,7 +498,19 @@
                      [] requests)]
          (reset! resolution-receipt receipts)
          (mapv :digest receipts)))
-     :assemble-artifact artifact-from-bound-product
+     :assemble-artifact
+     (fn [resolution request product]
+       (artifact-from-bound-product
+        resolution request product expected-upstream))
+     :upstream-verification?
+     (fn [resolution verification]
+       (and (identical? expected-resolution resolution)
+            (= expected-upstream verification)))
+     :final-envelope?
+     (fn [resolution request product artifact]
+       (= artifact
+          (artifact-from-bound-product
+           resolution request product expected-upstream)))
      :digest-rebinding?
      (fn [_ product]
        (let [receipts @resolution-receipt]
@@ -561,7 +572,7 @@
     (dissoc @(var-get binding-var) :plan :source-path)))
 
 (defn- artifact-from-bound-product
-  [resolution request product]
+  [resolution request product upstream]
   (let [core (:canonical-core-artifact product)
         source-path (get-in request [:provenance :actual-source-path])
         boundary
@@ -647,11 +658,34 @@
            :guard-patterns :match-exhaustiveness :match-result-type-join]
           :sh07-complete? false :self-hosted? false}
          :capability-based-proof nil :diagnostics []}
-        upstream (bootstrap/sh06-resolution-artifact-verification resolution)
         proof (bootstrap/sh07-core-proof-from-checks
                (bootstrap/sh07-core-verification-checks
                 artifact-base artifact-base upstream))]
     (assoc artifact-base :capability-based-proof proof)))
+
+(defn- strict-sh06-verification-report?
+  [resolution report]
+  (and (map? report)
+       (= :gravity/sh06-resolution-artifact-verification (:artifact report))
+       (= :passed (:status report))
+       (map? (:checks report))
+       (seq (:checks report))
+       (every? true? (vals (:checks report)))
+       (= [] (:failed-checks report))
+       (= (get-in resolution [:provenance :source-path])
+          (:source-path report))))
+
+(defn- strict-sh07-verification-report?
+  [artifact report]
+  (and (map? report)
+       (= :gravity/sh07-core-artifact-verification (:artifact report))
+       (= :passed (:status report))
+       (map? (:checks report))
+       (seq (:checks report))
+       (every? true? (vals (:checks report)))
+       (= [] (:failed-checks report))
+       (= (get-in artifact [:provenance :source-path])
+          (:source-path report))))
 
 (defn- contained-verification-report
   [artifact expected]
@@ -669,12 +703,13 @@
      :resolved-verification (:resolved-verification boundary)
      :upstream-verification upstream}))
 
-(defn- semantic-verification-receipt [artifact verification]
+(defn- semantic-verification-receipt [artifact verification upstream]
   {:artifact-hash
    (bootstrap/reader-canonical-hash
     {:domain :gravity/sh07-semantic-verification-receipt-v1
      :artifact artifact})
-   :supplied-status (:status verification)})
+   :supplied-status (:status verification)
+   :upstream-verification upstream})
 
 (defn- semantic-verification-report [artifact receipt]
   (let [actual-hash
@@ -684,8 +719,7 @@
         passed? (and (= :passed (:supplied-status receipt))
                      (= actual-hash (:artifact-hash receipt)))
         boundary (:gravity-core-boundary artifact)
-        upstream (bootstrap/sh06-resolution-artifact-verification
-                  (:sh06-resolution-artifact artifact))]
+        upstream (:upstream-verification receipt)]
     {:artifact :gravity/sh07-core-artifact-verification
      :status (if passed? :passed :failed)
      :checks {:independent-supplied-verification-receipt? passed?}
@@ -714,12 +748,12 @@
                         (try (current-c10-source-snapshot)
                              (catch Exception _ nil)))
         original-sh06 bootstrap/sh06-resolution-source-artifact
+        original-sh06-verification bootstrap/sh06-resolution-artifact-verification
         original-core bootstrap/sh07-core-from-resolution-artifact
         original-verification bootstrap/sh07-core-artifact-verification
         counters (atom empty-cache-counters)
-        resolution-inputs
-        (java.util.Collections/synchronizedMap (java.util.IdentityHashMap.))
-        semantic-routes (atom {})
+        resolution-context (ThreadLocal.)
+        verification-context (ThreadLocal.)
         sh06-cache (bounded-cache maximum-entries counters
                                   :sh06-hits :sh06-misses)
         core-cache (bounded-cache maximum-entries counters
@@ -734,31 +768,41 @@
         (fn [path source]
           (let [resolution
                 (sh06-cache [context path (sha256 source)]
-                            #(original-sh06 path source))]
+                            #(original-sh06 path source))
+                request (when (and semantic? (string? path) (string? source))
+                          (try
+                            (bootstrap/sh07-core-authenticated-request resolution)
+                            (catch clojure.lang.ExceptionInfo _ nil)))
+                eligible? (and semantic?
+                               (c10-semantic-eligible?
+                                canonical-c10 source resolution request))
+                upstream (when eligible?
+                           (original-sh06-verification resolution))]
+            (when (and eligible?
+                       (not (strict-sh06-verification-report?
+                             resolution upstream)))
+              (semantic-diagnostic! :sh06-verification-failed path))
             (when semantic?
-              (.put resolution-inputs resolution {:path path :source source}))
+              (.set resolution-context
+                    {:resolution resolution :path path :source source
+                     :request request :eligible? eligible? :upstream upstream}))
             resolution))
         cached-core
         (fn [resolution]
           (if *semantic-fresh-verification*
             (original-core resolution)
-            (let [{:keys [path source]} (.get resolution-inputs resolution)
-                  request (when (and (string? path) (string? source))
-                            (try
-                              (bootstrap/sh07-core-authenticated-request resolution)
-                              (catch clojure.lang.ExceptionInfo _ nil)))
-                  eligible? (and semantic?
-                                 (c10-semantic-eligible?
-                                  canonical-c10 source resolution request))]
+            (let [{bound-resolution :resolution
+                   :keys [path source request eligible? upstream]}
+                  (when semantic? (.get resolution-context))
+                  _ (.remove resolution-context)
+                  _ (when (and semantic?
+                               (not (identical? resolution bound-resolution)))
+                      (semantic-diagnostic! :producer-failed nil))]
               (if-not eligible?
                 (let [artifact (core-cache (resolution-key context resolution)
                                            #(original-core resolution))]
-                  (swap! semantic-routes assoc
-                         (semantic-route-key resolution) :ordinary)
                   artifact)
-                (let [_ (swap! semantic-routes assoc
-                               (semantic-route-key resolution) :semantic)
-                      _ (when-not (and (string? path) (string? source))
+                (let [_ (when-not (and (string? path) (string? source))
                           (semantic-diagnostic! :source-missing nil))
                       snapshot (strict-source-snapshot path source resolution)
                       key (semantic-carrier/cache-key snapshot request)
@@ -772,7 +816,8 @@
                                report
                                (binding [*semantic-fresh-verification* true]
                                  (original-verification artifact))]
-                           (when-not (= :passed (:status report))
+                           (when-not (strict-sh07-verification-report?
+                                      artifact report)
                              (semantic-diagnostic! :producer-failed path))
                            (let [final-snapshot
                                  (strict-source-snapshot path source resolution)
@@ -784,24 +829,20 @@
                                   final-snapshot resolution request
                                   (run-product-from-artifact artifact))]
                              (reset! fresh artifact)
-                             (swap! semantic-routes assoc
-                                    (semantic-route-key resolution)
-                                    {:route :semantic :carrier carrier
-                                     :resolution resolution :request request
-                                     :path path :source source
-                                     :verification-receipt
-                                     (semantic-verification-receipt
-                                      artifact report)})
+                             (.set verification-context
+                                   {:route :semantic :artifact artifact
+                                    :verification-receipt
+                                    (semantic-verification-receipt
+                                     artifact report upstream)})
                              carrier))))]
                   (if-let [artifact @fresh]
                     artifact
                     (let [current-snapshot
                           (strict-source-snapshot path source resolution)
-                          upstream
-                          (bootstrap/sh06-resolution-artifact-verification resolution)
                           bound (semantic-carrier/bind-carrier
                                  stored current-snapshot resolution upstream request
-                                 (semantic-seams path stored))
+                                 (semantic-seams
+                                  path stored resolution upstream))
                           artifact (:sh07-artifact bound)
                           final-snapshot
                           (strict-source-snapshot path source resolution)
@@ -812,27 +853,20 @@
                       (when-not (= :passed (:status report))
                         (swap! counters update :semantic-rejected-hits inc)
                         (semantic-diagnostic! :supplied-verification-failed path))
-                      (swap! semantic-routes assoc
-                             (semantic-route-key resolution)
-                             {:route :semantic :carrier stored
-                              :resolution resolution :request request
-                              :path path :source source
-                              :verification-receipt
-                              (semantic-verification-receipt artifact report)})
+                      (.set verification-context
+                            {:route :semantic :artifact artifact
+                             :verification-receipt
+                             (semantic-verification-receipt
+                              artifact report upstream)})
                       artifact)))))))
         cached-verification
         (fn [artifact]
-          (if (and semantic?
-                   (= :semantic
-                      (:route
-                       (get @semantic-routes
-                            (semantic-route-key
-                             (:sh06-resolution-artifact artifact))))))
-            (let [{:keys [verification-receipt]}
-                  (get @semantic-routes
-                       (semantic-route-key
-                        (:sh06-resolution-artifact artifact)))
-                  report (semantic-verification-report
+          (let [{routed-artifact :artifact
+                 :keys [route verification-receipt]} (.get verification-context)]
+            (.remove verification-context)
+            (if (and semantic? (= :semantic route)
+                     (identical? artifact routed-artifact))
+            (let [report (semantic-verification-report
                           artifact verification-receipt)]
               (swap! counters update :verification-hits inc)
               (when-not (= :passed (:status report))
@@ -842,15 +876,19 @@
               report)
             (verification-cache
              [context (identity-key artifact) (:artifact-id artifact)]
-             #(original-verification artifact))))
+             #(original-verification artifact)))))
         started (System/nanoTime)
         value
-        (binding [*iteration-cache-counters* counters]
-          (with-redefs [bootstrap/sh06-resolution-source-artifact cached-sh06
-                        bootstrap/sh07-core-from-resolution-artifact cached-core
-                        bootstrap/sh07-core-artifact-verification
-                        cached-verification]
-            (operation)))]
+        (try
+          (binding [*iteration-cache-counters* counters]
+            (with-redefs [bootstrap/sh06-resolution-source-artifact cached-sh06
+                          bootstrap/sh07-core-from-resolution-artifact cached-core
+                          bootstrap/sh07-core-artifact-verification
+                          cached-verification]
+              (operation)))
+          (finally
+            (.remove resolution-context)
+            (.remove verification-context)))]
     {:value value
      :cache @counters
      :cache-context context

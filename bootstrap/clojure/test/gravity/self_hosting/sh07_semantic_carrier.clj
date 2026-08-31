@@ -226,10 +226,10 @@
   (cond
     (nil? value) true
     (or (boolean? value) (integer? value) (string? value)
-        (keyword? value) (symbol? value)) (not (seq (meta value)))
-    (vector? value) (and (not (seq (meta value))) (every? closed-value? value))
-    (set? value) (and (not (seq (meta value))) (every? closed-value? value))
-    (map? value) (and (not (record? value)) (not (seq (meta value)))
+        (keyword? value) (symbol? value)) (nil? (meta value))
+    (vector? value) (and (nil? (meta value)) (every? closed-value? value))
+    (set? value) (and (nil? (meta value)) (every? closed-value? value))
+    (map? value) (and (not (record? value)) (nil? (meta value))
                       (every? (fn [[key item]]
                                 (and (closed-value? key) (closed-value? item))) value))
     :else false))
@@ -417,20 +417,17 @@
        (= (get-in sh06 [:provenance :source-path])
           (:source-path verification))))
 
-(defn- current-sh06-verification [sh06 source-path]
+(defn- sh06-passed? [verification sh06]
+  (passed-sh06-report? verification sh06))
+
+(defn- fresh-sh06-verification [sh06 source-path]
   (try
     (bootstrap/sh06-resolution-artifact-verification sh06)
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
-      (diagnostic! :sh06-verification-failed source-path))
+      (diagnostic! :producer-interrupted source-path))
     (catch Exception _
       (diagnostic! :sh06-verification-failed source-path))))
-
-(defn- sh06-passed? [verification sh06]
-  (and (passed-sh06-report? verification sh06)
-       (= verification
-          (current-sh06-verification
-           sh06 (get-in sh06 [:provenance :source-path])))))
 
 (defn- product-from [value]
   (cond
@@ -534,7 +531,7 @@
   [snapshot sh06 request run-product]
   (let [key (semantic-key snapshot)
         path (request-path request)
-        verified (current-sh06-verification sh06 path)
+        verified (fresh-sh06-verification sh06 path)
         expected (current-authenticated-request sh06 path)
         product (product-from run-product)]
     (when-not (sh06-passed? verified sh06) (diagnostic! :sh06-verification-failed path))
@@ -716,6 +713,9 @@
                  (closed-value? candidate)
                  (= run-product-keys (set (keys product)))
                  (exact-run-product-status? product)
+                 (if-let [predicate (:final-envelope? seams)]
+                   (predicate sh06 request product candidate)
+                   true)
                  (= (:shape-manifest carrier)
                     (shape-manifest (:run-product carrier)))))
           :live-pins
@@ -724,7 +724,12 @@
                                (live-pins))))
           :request-membership
           (safe-check #(= request (current-authenticated-request sh06 path)))
-          :upstream-verification (safe-check #(sh06-passed? verification sh06))
+          :upstream-verification
+          (safe-check
+           #(and (sh06-passed? verification sh06)
+                 (if-let [predicate (:upstream-verification? seams)]
+                   (predicate sh06 verification)
+                   true)))
           :source-envelope
           (safe-check #(and (snapshot-matches-request? snapshot request)
                             (= (semantic-key snapshot) (:semantic-key carrier))))
@@ -785,7 +790,12 @@
        (diagnostic! :source-mutated path))
      (when-not (= (:semantic-key carrier) (semantic-key snapshot))
        (diagnostic! :source-mutated path))
-     (when-not (sh06-passed? verification sh06) (diagnostic! :sh06-verification-failed path))
+     (when-not
+      (and (sh06-passed? verification sh06)
+           (if-let [predicate (:upstream-verification? seams)]
+             (safe-check #(predicate sh06 verification))
+             true))
+       (diagnostic! :sh06-verification-failed path))
      (when-not (= request (current-authenticated-request sh06 path))
        (diagnostic! :request-membership-mismatch path))
      (when-not (= (:static-envelope carrier) (static-envelope request))
