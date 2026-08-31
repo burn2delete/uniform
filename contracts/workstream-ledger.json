@@ -9726,7 +9726,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9766,6 +9766,7 @@
     ],
     "evidence": {
       "accepted_fixtures": [
+        "final integration preflight PASS for exact integration-eligible HEAD e2df329b0fc3b59be9a3da8b2503bd6d62de25ae, tree f553d7ea830fa64ca514b3431bb232b440373a6f, over authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac; recommendation integrate_candidate",
         "integration preflight PASS for accepted lifecycle HEAD 33667c0ac90c829eef346a80a2e9e5a0da31dcdf, tree 85dfb713b82ba98fac06de90caa28d48e5575f58, over authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac; recommendation integrate_candidate",
         "independent review ACCEPT by /root/attempt11_exact_review for exact immutable Attempt-17 candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2; no blockers",
         "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-13",
@@ -9836,6 +9837,11 @@
           "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 50e8d14422effd26a6ded2f34f94765f050461ac --candidate-commit 33667c0ac90c829eef346a80a2e9e5a0da31dcdf --candidate-tree 85dfb713b82ba98fac06de90caa28d48e5575f58",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 50e8d14422effd26a6ded2f34f94765f050461ac --candidate-commit e2df329b0fc3b59be9a3da8b2503bd6d62de25ae --candidate-tree f553d7ea830fa64ca514b3431bb232b440373a6f",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -9889,9 +9895,15 @@
         "at": "2026-08-31T05:17:10Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "exact accepted lifecycle HEAD 33667c0ac90c829eef346a80a2e9e5a0da31dcdf, tree 85dfb713b82ba98fac06de90caa28d48e5575f58 passed documentation, roadmap, governance, SH-01 language-boundary, exact range diff, identity, clean-worktree, ancestry, and exact integration preflight against authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac; recommendation integrate_candidate; integration-only architecture authority remains bounded to this lineage"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-31T05:18:00Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "admit exact integration-eligible architecture commit e2df329b0fc3b59be9a3da8b2503bd6d62de25ae, tree f553d7ea830fa64ca514b3431bb232b440373a6f for verified fast-forward onto clean authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac, tree 2525039e65c41c00af39807f948f45d16f44ee53; upon that fast-forward this architecture-only lifecycle establishes accepted canonical collection-order amendment G17 and grants no implementation acceptance or aggregate SH-07 completion authority"
       }
     ],
-    "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-17 lineage after independent acceptance and exact clean preflight. Authority is limited to reconciling this exact report/ledger lineage onto authoritative main; no implementation or SH-07 completion authority is conferred."
+    "disposition": "INTEGRATED lifecycle record for exact independently accepted Attempt-17 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac and, upon that verified fast-forward, establishes architecture-only canonical collection-order baseline G17 for the governed B51 implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
