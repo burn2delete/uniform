@@ -253,7 +253,7 @@ The exact source-order topology separates the B51 producer/Root-1 family,
 the independently authored Root-6 verifier family, and Root 8. Excluding the
 262 core bindings available to every plan, a module has at most 2,178 local
 definition-plus-lexical slots before external bindings. The complete producer
-family has local weight 7,330 and therefore requires at least four modules;
+family has local weight 7,306 and therefore requires at least four modules;
 Root 6 has local weight 3,032 and requires at least two; the nonempty Root-8
 family requires one. Mixing Root-6 definitions into producer
 modules or moving Root-8 code into a Root-6 module would falsify the
