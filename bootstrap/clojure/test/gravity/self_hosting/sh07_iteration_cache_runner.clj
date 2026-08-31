@@ -61,32 +61,66 @@
 
 (defn- bounded-cache
   [maximum-entries counters hit-key miss-key]
-  (let [state (atom {:order [] :values {}})
+  (let [state (atom {:order [] :values {} :flights {}})
         monitor (Object.)]
     (fn [key operation]
-      ;; Computation stays under the monitor intentionally: two test futures
-      ;; must not duplicate a multi-gigabyte core build for the same key.
-      (locking monitor
-        (if-let [entry (find (:values @state) key)]
-          (do
-            (swap! counters update hit-key inc)
-            (val entry))
-          (let [value (operation)
-                {:keys [order values]} @state
-                order' (conj order key)
-                values' (assoc values key value)
-                overflow (- (count order') maximum-entries)
-                evicted (if (pos? overflow)
-                          (subvec order' 0 overflow)
-                          [])
-                retained-order (if (pos? overflow)
-                                 (subvec order' overflow)
-                                 order')]
-            (swap! counters update miss-key inc)
-            (reset! state
-                    {:order retained-order
-                     :values (apply dissoc values' evicted)})
-            value))))))
+      (let [thread (Thread/currentThread)
+            decision
+            (locking monitor
+              (if-let [entry (find (:values @state) key)]
+                (do (swap! counters update hit-key inc)
+                    [:hit (val entry)])
+                (if-let [flight (get-in @state [:flights key])]
+                  (if (identical? thread (:producer flight))
+                    [:reentrant nil]
+                    (do (swap! counters update hit-key inc)
+                        [:wait (:result flight)]))
+                  (let [result (promise)]
+                    (swap! state assoc-in [:flights key]
+                           {:producer thread :result result})
+                    (swap! counters update miss-key inc)
+                    [:produce result]))))]
+        (case (first decision)
+          :hit (second decision)
+          :reentrant
+          (throw
+           (ex-info "Iteration cache operation reentered its own key"
+                    {:id "SH07-ITERATION-CACHE-REENTRANT"}))
+          :wait
+          (let [{:keys [value error]} @(second decision)]
+            (if error (throw error) value))
+          :produce
+          (let [result (second decision)]
+            (try
+              (let [value (operation)]
+                (locking monitor
+                  (let [{:keys [order values flights]} @state
+                        order' (conj order key)
+                        values' (assoc values key value)
+                        overflow (- (count order') maximum-entries)
+                        evicted (if (pos? overflow)
+                                  (subvec order' 0 overflow)
+                                  [])
+                        retained-order (if (pos? overflow)
+                                         (subvec order' overflow)
+                                         order')]
+                    (reset! state
+                            {:order retained-order
+                             :values (apply dissoc values' evicted)
+                             :flights (dissoc flights key)})))
+                (deliver result {:value value})
+                value)
+              (catch InterruptedException interrupted
+                (locking monitor
+                  (swap! state update :flights dissoc key))
+                (deliver result {:error interrupted})
+                (.interrupt thread)
+                (throw interrupted))
+              (catch Throwable error
+                (locking monitor
+                  (swap! state update :flights dissoc key))
+                (deliver result {:error error})
+                (throw error)))))))))
 
 (defn with-iteration-cache
   "Runs operation with bounded SH-06/SH-07 caches and returns value + metadata.

@@ -86,6 +86,60 @@
         (is (= 7 (get-in result [:cache :sh06-hits])))
         (is (apply = (:value result)))))))
 
+(deftest iteration-cache-allows-different-keys-and-retries-failures
+  (let [active (atom 0)
+        maximum-active (atom 0)
+        attempts (atom 0)]
+    (with-redefs
+      [bootstrap/sh06-resolution-source-artifact
+       (fn [path source]
+         (swap! attempts inc)
+         (let [now (swap! active inc)]
+           (swap! maximum-active max now)
+           (try
+             (Thread/sleep 40)
+             (when (= source :failed)
+               (throw (ex-info "synthetic failure" {:id "FAILED"})))
+             [path source]
+             (finally (swap! active dec)))))]
+      (let [parallel
+            (runner/with-iteration-cache
+             {:maximum-entries 2}
+             #(mapv deref
+                    [(future
+                       (bootstrap/sh06-resolution-source-artifact "a" :one))
+                     (future
+                       (bootstrap/sh06-resolution-source-artifact "b" :two))]))]
+        (is (= 2 @maximum-active))
+        (is (= 2 (get-in parallel [:cache :sh06-misses]))))
+      (dotimes [_ 2]
+        (let [data
+              (try
+                (runner/with-iteration-cache
+                 {:maximum-entries 1}
+                 #(bootstrap/sh06-resolution-source-artifact "a" :failed))
+                nil
+                (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "FAILED" (:id data)))))
+      (is (= 4 @attempts)))))
+
+(deftest iteration-cache-reentrant-same-key-fails-without-deadlock
+  (let [delegate (atom nil)]
+    (with-redefs
+      [bootstrap/sh06-resolution-source-artifact
+       (fn [path source]
+         (@delegate path source))]
+      (let [data
+            (try
+              (runner/with-iteration-cache
+               {:maximum-entries 1}
+               (fn []
+                 (reset! delegate bootstrap/sh06-resolution-source-artifact)
+                 (bootstrap/sh06-resolution-source-artifact "same" "bytes")))
+              nil
+              (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "SH07-ITERATION-CACHE-REENTRANT" (:id data)))))))
+
 (deftest iteration-cache-reports-per-namespace-time-and-cache-deltas
   (let [calls (atom 0)
         tested-namespaces (atom [])
