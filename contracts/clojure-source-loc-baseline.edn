@@ -21,6 +21,5 @@
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" 752
   "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj" 559
   "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj" 814
-  "bootstrap/clojure/src/gravity/pass_execution.clj" 1186
   "bootstrap/clojure/src/gravity/profile_validation.clj" 569
   "bootstrap/clojure/src/gravity/self_hosting/a1_canonical_schema.clj" 922}}
