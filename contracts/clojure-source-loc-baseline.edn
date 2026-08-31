@@ -11,7 +11,6 @@
   "bootstrap/clojure/src/gravity/c8_effect_checker.clj" 724
   "bootstrap/clojure/src/gravity/capability_validation.clj" 537
   "bootstrap/clojure/src/gravity/core_ast_lowering.clj" 696
-  "bootstrap/clojure/src/gravity/macro_expansion.clj" 885
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" 752
   "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj" 559
   "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj" 814
