@@ -22,7 +22,8 @@
   (let [bytes (.getBytes "(ns demo.core)" StandardCharsets/UTF_8)]
     {:source-path path :source-bytes bytes :source-byte-count (alength bytes)
      :source-bytes-sha256 (sha256 bytes) :source-extension ".gravity"
-     :source-kind :gravity/source
+     :source-kind :gravity/source :file-key "fixture-file-key"
+     :last-modified-millis 1
      :sh06-semantic-projection-id
      "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}))
 
@@ -367,3 +368,134 @@
             product (get-in bound [:sh07-artifact :gravity-core-boundary])]
         (is (nil? (meta (get-in product [:raw-template-result :diagnostics]))))
         (is (nil? (meta (get-in product [:template-verification :details]))))))))
+
+(deftest every-live-pin-family-invalidates-a-carrier-hit
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            pin-spec @#'gravity.self-hosting.sh07-semantic-carrier/pin-spec]
+        (doseq [[family symbols] pin-spec]
+          (let [pin-var (ns-resolve 'gravity.bootstrap (first symbols))]
+            (is (false?
+                 (with-redefs-fn
+                   {pin-var [:mutated @pin-var]}
+                   #(carrier/lookup-valid? built
+                                           (snapshot "left.gravity") request)))
+                (name family))))
+        (is (false?
+             (with-redefs [clojure.core/clojure-version (constantly "changed")]
+               (carrier/lookup-valid? built (snapshot "left.gravity") request)))
+            "runtime pin family")))))
+
+(deftest static-module-envelope-closes-every-field-and-canonicalizes-policy-order
+  (let [base (-> (request "left.gravity")
+                 (assoc-in [:module :effects] [:state :io])
+                 (assoc-in [:module :capabilities] [:network :filesystem]))
+        baseline (carrier/cache-key (snapshot "left.gravity") base)
+        mutations
+        [[:namespace (assoc-in base [:module :namespace] 'other.core)]
+         [:profile (assoc-in base [:module :profile] :firmware)]
+         [:target (assoc-in base [:module :target] :wasm)]
+         [:safety (assoc-in base [:module :safety] :unsafe)]
+         [:effects (assoc-in base [:module :effects] [:io])]
+         [:capabilities (assoc-in base [:module :capabilities] [:filesystem])]
+         [:exports (assoc-in base [:module :exports] ['other])]]]
+    (doseq [[field changed] mutations]
+      (is (not= baseline (carrier/cache-key (snapshot "left.gravity") changed))
+          (name field)))
+    (let [reordered
+          (carrier/cache-key
+           (snapshot "left.gravity")
+           (-> base
+               (update-in [:module :effects] #(vec (reverse %)))
+               (update-in [:module :capabilities] #(vec (reverse %)))))]
+      (is (= (get-in baseline [1 :module-policy])
+             (get-in reordered [1 :module-policy])))
+      (is (= [:io :state]
+             (get-in baseline [1 :module-policy :effects])))
+      (is (= [:filesystem :network]
+             (get-in baseline [1 :module-policy :capabilities])))
+      (is (not= baseline reordered)
+          "the complete neutral request still preserves exact authenticated order"))))
+
+(deftest source-snapshot-schema-is-exact-and-typed
+  (let [request (request "left.gravity")
+        valid (snapshot "left.gravity")
+        malformed
+        (concat
+         [(assoc valid :unexpected true)]
+         (map #(dissoc valid %)
+              [:source-path :source-bytes :source-byte-count
+               :source-bytes-sha256 :source-extension :source-kind :file-key
+               :last-modified-millis :sh06-semantic-projection-id])
+         [(assoc valid :source-path :not-a-string)
+          (assoc valid :source-bytes "not-bytes")
+          (assoc valid :source-byte-count -1)
+          (assoc valid :source-bytes-sha256 "sha256:bad")
+          (assoc valid :source-extension ".txt")
+          (assoc valid :source-kind :other/source)
+          (assoc valid :file-key nil)
+          (assoc valid :last-modified-millis "one")
+          (assoc valid :sh06-semantic-projection-id nil)])]
+    (doseq [candidate malformed]
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (carrier/cache-key candidate request))
+          (pr-str (dissoc candidate :source-bytes))))))
+
+(defn- reseal-carrier [value]
+  (let [counted
+        (#'gravity.self-hosting.sh07-semantic-carrier/fixpoint-carrier
+         (assoc value :integrity-hash nil))]
+    (assoc counted :integrity-hash
+           (#'gravity.self-hosting.sh07-semantic-carrier/final-integrity counted))))
+
+(deftest top-level-carrier-tampering-fails-as-data-without-throwing
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            resealed
+            [(reseal-carrier (assoc built :status :rejected))
+             (reseal-carrier (assoc built :authority :authoritative))
+             (reseal-carrier (assoc-in built [:nonclaims :authoritative?] true))
+             (reseal-carrier (assoc-in built [:semantic-key :unexpected] true))
+             (reseal-carrier
+              (assoc-in built [:semantic-key :pins :request-schema-version] 16))
+             (reseal-carrier
+              (assoc-in built [:semantic-key :pins :runtime :clojure-version]
+                        "changed"))
+             (reseal-carrier (assoc-in built [:static-envelope :unexpected] true))]
+            candidates (conj resealed
+                             (assoc built :canonical-byte-count "invalid")
+                             (assoc built :integrity-hash "sha256:bad"))]
+        (doseq [candidate candidates]
+          (is (false? (carrier/lookup-valid? candidate
+                                             (snapshot "left.gravity") request)))
+          (let [report (carrier/verify-supplied-product
+                        candidate (snapshot "left.gravity") (sh06)
+                        (verification) request (run-product "left.gravity")
+                        (seams))]
+            (is (= :failed (:status report)))
+            (is (or (false? (get-in report [:checks :carrier-integrity]))
+                    (false? (get-in report [:checks :live-pins]))))))))))
+
+(deftest unrelated-nil-and-path-looking-strings-remain-valid-data
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [product (-> (run-product "left.gravity")
+                        (assoc-in [:canonical-core-artifact :optional-value] nil)
+                        (assoc-in [:canonical-core-artifact :documentation]
+                                  "other/root/example.gravity"))
+            built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request product)]
+        (is (true? (carrier/lookup-valid? built
+                                          (snapshot "left.gravity") request)))
+        (is (nil? (get-in built [:run-product :canonical-core-artifact
+                                 :optional-value])))
+        (is (= "other/root/example.gravity"
+               (get-in built [:run-product :canonical-core-artifact
+                              :documentation])))))))

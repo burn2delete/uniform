@@ -36,7 +36,24 @@
 
 (def ^:private snapshot-required-keys
   #{:source-path :source-bytes :source-byte-count :source-bytes-sha256
-    :source-extension :source-kind :sh06-semantic-projection-id})
+    :source-extension :source-kind :file-key :last-modified-millis
+    :sh06-semantic-projection-id})
+
+(def ^:private semantic-key-keys
+  #{:source-byte-count :source-bytes-sha256 :source-extension :source-kind
+    :sh06-semantic-projection-id :pins})
+
+(def ^:private static-envelope-keys
+  #{:scope :adapter :task :module-policy :source-revision-id
+    :sh06-semantic-projection-id :authenticated-request-path-neutral})
+
+(def ^:private module-policy-keys
+  #{:namespace :profile :target :safety :effects :capabilities :exports})
+
+(def ^:private expected-nonclaims
+  {:authoritative? false :fresh-authoritative-run-required? true
+   :cross-process? false :cross-stage? false :final-artifact-cached? false
+   :verification-report-cached? false})
 
 (def ^:private raw-template-result-keys
   #{:artifact :schema-version :status :core-template :digest-requests
@@ -185,7 +202,7 @@
         source-kind (:source-kind snapshot)
         projection-id (:sh06-semantic-projection-id snapshot)]
     (when-not (and (map? snapshot)
-                   (every? #(contains? snapshot %) snapshot-required-keys)
+                   (= snapshot-required-keys (set (keys snapshot)))
                    (string? path) (not (empty? path))
                    (instance? (Class/forName "[B") bytes)
                    (integer? byte-count) (not (neg? byte-count))
@@ -193,6 +210,9 @@
                    (= source-hash (sha256 bytes))
                    (#{".gravity" ".qst"} extension)
                    (= :gravity/source source-kind)
+                   (string? (:file-key snapshot))
+                   (integer? (:last-modified-millis snapshot))
+                   (not (neg? (:last-modified-millis snapshot)))
                    (string? projection-id))
       (diagnostic! :invalid-selection path))
     {:source-byte-count byte-count
@@ -458,6 +478,42 @@
                            (boolean (re-matches #"sha256:[0-9a-f]{64}" %))))
                  digests))))
 
+(defn- semantic-key-valid? [key]
+  (and (map? key)
+       (= semantic-key-keys (set (keys key)))
+       (integer? (:source-byte-count key))
+       (not (neg? (:source-byte-count key)))
+       (string? (:source-bytes-sha256 key))
+       (boolean (re-matches #"sha256:[0-9a-f]{64}"
+                            (:source-bytes-sha256 key)))
+       (#{".gravity" ".qst"} (:source-extension key))
+       (= :gravity/source (:source-kind key))
+       (string? (:sh06-semantic-projection-id key))
+       (map? (:pins key))))
+
+(defn- static-envelope-valid? [envelope]
+  (let [policy (:module-policy envelope)]
+    (and (map? envelope)
+         (= static-envelope-keys (set (keys envelope)))
+         (= :sh07-b15-keyword-map-lookup (:scope envelope))
+         (= :gravity/sh07-to-c6-core-products-v16 (:adapter envelope))
+         (= "SH-07-B47" (:task envelope))
+         (map? policy)
+         (= module-policy-keys (set (keys policy)))
+         (symbol? (:namespace policy))
+         (keyword? (:profile policy))
+         (keyword? (:target policy))
+         (keyword? (:safety policy))
+         (vector? (:effects policy))
+         (= (:effects policy) (vec (sort (:effects policy))))
+         (every? keyword? (:effects policy))
+         (vector? (:capabilities policy))
+         (= (:capabilities policy) (vec (sort (:capabilities policy))))
+         (every? keyword? (:capabilities policy))
+         (string? (:source-revision-id envelope))
+         (string? (:sh06-semantic-projection-id envelope))
+         (map? (:authenticated-request-path-neutral envelope)))))
+
 (defn- carrier-preimage [carrier]
   (dissoc carrier :integrity-hash))
 
@@ -530,6 +586,9 @@
          (= 2 (:schema-version carrier))
          (= :accepted (:status carrier))
          (= :non-authoritative (:authority carrier))
+         (semantic-key-valid? (:semantic-key carrier))
+         (static-envelope-valid? (:static-envelope carrier))
+         (= expected-nonclaims (:nonclaims carrier))
          (= path-slot-addresses (:path-slot-addresses carrier))
          (= run-product-keys (set (keys (:run-product carrier))))
          (exact-run-product-status? (:run-product carrier))
