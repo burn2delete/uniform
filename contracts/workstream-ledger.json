@@ -9413,7 +9413,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9471,6 +9471,7 @@
         "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
       ],
       "rejected_fixtures": [
+        "independent review REJECT: unordered map/set decoration can fail before canonical order exists, but Attempt15 selects failure by a circular canonical preorder and does not define order-independent aggregation for multiple failures",
         "node 4097, depth 97, width 513, scalar spelling 32769 UTF-8 bytes, or final output byte 262145 is accepted or reported under a different limit reason",
         "an exact at-limit value is rejected, a limit is backend/profile/host dependent, counters wrap, or host recursion/iteration exhaustion chooses the result",
         "map width counts keys and values separately, root depth is one, nodes are deduplicated by identity, scalar bytes use raw/UTF-16/pre-escape length, or output omits delimiters/separators/escapes",
@@ -9514,7 +9515,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt11_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded printer/comparator substrate, and observer",
       "the host may implement the exact bounded traversal and comparator but host stack, iteration, pr-str, string compare, locale, default encoding, object ordering, and exception type are not semantic authority",
@@ -9546,9 +9553,15 @@
         "at": "2026-08-31T05:02:10Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review by /root/attempt11_exact_review of immutable Attempt-15 candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae: exact recursive limits/counting, active-path cycles, shared-subgraph recounting, caller boundaries, preserved Attempt-14/G13 semantics, evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-31T05:03:00Z",
+        "actor": "/root/attempt11_exact_review",
+        "reason": "REJECT exact Attempt-15 candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae. Blocker: unordered failure selection remains circular because canonical preorder cannot select among map/set decoration failures until those decorations succeed; exact order-independent multi-failure behavior and evidence are absent."
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only Attempt-15 candidate for fresh independent exact review. No acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable Attempt-15 candidate e8b3a8d9eea5e463e0db2235eb92c6d7446d2034, tree 0463c7b54ddd763381614c384ac09c62e020ad5b, report SHA-256 3c6d10d0e4dfbaf9f24cd3d5d025d2d9a43b4148ac8584550bd9188e4997b7ae. Its comparator, order, bounds, cycles, shared-subgraph, and caller-boundary semantics remain viable, but failure selection for unordered collection decoration is circular and lacks an order-independent multi-failure rule. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
