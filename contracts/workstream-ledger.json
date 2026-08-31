@@ -9569,7 +9569,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "review-pending",
+    "state": "rejected",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9628,6 +9628,7 @@
         "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration, so candidate identity does not self-reference the ledger"
       ],
       "rejected_fixtures": [
+        "independent review REJECT: Attempt16 requires cross-caller byte-identical Root1/source-oracle/Root6 public results even though G13 mandates distinct caller envelopes and reasons; equality must be scoped within each caller only",
         "unordered failure selection uses canonical preorder, carrier iteration, source coordinate, path, hash, key/member identity, partial text, host exception order, or task completion order",
         "one/many or same/different hidden child failures produce different contained/public bytes or expose an offending coordinate/reason",
         "map failure aggregation prefers key over value, value over key, one entry over another, or set over map",
@@ -9671,7 +9672,13 @@
         }
       ]
     },
-    "reviews": [],
+    "reviews": [
+      {
+        "reviewer": "/root/attempt11_exact_review",
+        "kind": "independent",
+        "result": "rejected"
+      }
+    ],
     "residual_host_boundaries": [
       "Clojure and the JVM remain source reader, strict decoder, SH-06/B47 host, Stage2 executor, runtime-check host, digest transport, bounded printer/comparator/probe substrate, and observer",
       "the host may schedule bounded probes but host iteration, stack, exception, task completion, cancellation, object identity ordering, pr-str, compare, locale, and encoding defaults are not semantic authority",
@@ -9703,9 +9710,15 @@
         "at": "2026-08-31T05:09:20Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "request fresh independent exact review by /root/attempt11_exact_review of immutable Attempt-16 candidate 6f9e736710e2838026e08a5379f1029427ad8b31, tree 95a61137482291664c20f7fda0ca46669f6b6e78, report SHA-256 e6ccc61c2bf2e7c205e4d7f620b2a506996d42b68b62753ff1a05d9e82560d3c: bounded independent probes, commutative generic failure fold, multi-failure/carrier invariance, caller boundaries, preserved Attempt-15/G13 semantics, evidence, governance, and nonclaims"
+      },
+      {
+        "state": "rejected",
+        "at": "2026-08-31T05:10:00Z",
+        "actor": "/root/attempt11_exact_review",
+        "reason": "REJECT exact Attempt-16 candidate 6f9e736710e2838026e08a5379f1029427ad8b31, tree 95a61137482291664c20f7fda0ca46669f6b6e78, report SHA-256 e6ccc61c2bf2e7c205e4d7f620b2a506996d42b68b62753ff1a05d9e82560d3c. Blocker: cross-caller byte-equality wording contradicts the distinct mandated Root1, source-oracle, and Root6 envelopes/reasons; byte equality must apply within each caller across permutations and hidden failure combinations, not across callers."
       }
     ],
-    "disposition": "REVIEW-PENDING architecture-only Attempt-16 candidate for fresh independent exact review. No acceptance, integration eligibility, implementation authority, or SH-07 completion is conferred."
+    "disposition": "REJECTED by independent reviewer /root/attempt11_exact_review for exact immutable Attempt-16 candidate 6f9e736710e2838026e08a5379f1029427ad8b31, tree 95a61137482291664c20f7fda0ca46669f6b6e78, report SHA-256 e6ccc61c2bf2e7c205e4d7f620b2a506996d42b68b62753ff1a05d9e82560d3c. Its probe and commutative OR architecture is viable, but cross-caller byte-equality wording contradicts G13's distinct caller envelopes/reasons. A successor must scope equality within each caller only. No implementation acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
   }
 ]
 }
