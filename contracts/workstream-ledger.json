@@ -9726,7 +9726,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "accepted",
+    "state": "integration-eligible",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-13"
     ],
@@ -9766,6 +9766,7 @@
     ],
     "evidence": {
       "accepted_fixtures": [
+        "integration preflight PASS for accepted lifecycle HEAD 33667c0ac90c829eef346a80a2e9e5a0da31dcdf, tree 85dfb713b82ba98fac06de90caa28d48e5575f58, over authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac; recommendation integrate_candidate",
         "independent review ACCEPT by /root/attempt11_exact_review for exact immutable Attempt-17 candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2; no blockers",
         "integrated baseline:sh07-b51-vector-destructuring-architecture-v18-attempt-13",
         "terminal rejection:sh07-b51-vector-destructuring-architecture-v18-attempt-14",
@@ -9825,6 +9826,16 @@
           "command": "git diff --check 50e8d14422effd26a6ded2f34f94765f050461ac..ddae98a7e6d56cb31f788c4fecb82377d0f16a70",
           "exit_code": 0,
           "result": "passed"
+        },
+        {
+          "command": "git diff --check 50e8d14422effd26a6ded2f34f94765f050461ac..33667c0ac90c829eef346a80a2e9e5a0da31dcdf",
+          "exit_code": 0,
+          "result": "passed"
+        },
+        {
+          "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 50e8d14422effd26a6ded2f34f94765f050461ac --candidate-commit 33667c0ac90c829eef346a80a2e9e5a0da31dcdf --candidate-tree 85dfb713b82ba98fac06de90caa28d48e5575f58",
+          "exit_code": 0,
+          "result": "passed"
         }
       ]
     },
@@ -9872,9 +9883,15 @@
         "at": "2026-08-31T05:16:10Z",
         "actor": "/root/attempt11_exact_review",
         "reason": "ACCEPT exact immutable Attempt-17 candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2 with no blockers after independent exact review of caller-scoped equality, cross-caller distinction, preserved probe/OR and bound/cycle architecture, G13 authority, evidence, governance, and nonclaims"
+      },
+      {
+        "state": "integration-eligible",
+        "at": "2026-08-31T05:17:10Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "exact accepted lifecycle HEAD 33667c0ac90c829eef346a80a2e9e5a0da31dcdf, tree 85dfb713b82ba98fac06de90caa28d48e5575f58 passed documentation, roadmap, governance, SH-01 language-boundary, exact range diff, identity, clean-worktree, ancestry, and exact integration preflight against authoritative main 50e8d14422effd26a6ded2f34f94765f050461ac; recommendation integrate_candidate; integration-only architecture authority remains bounded to this lineage"
       }
     ],
-    "disposition": "ACCEPTED by independent reviewer /root/attempt11_exact_review for exact immutable Attempt-17 report candidate ddae98a7e6d56cb31f788c4fecb82377d0f16a70, tree 7588d812fa371a93459be79fe4e286dadf6ef1c0, report SHA-256 367f1c62fdb7799ad276963e8c415cee68babc35cc9df622254ef0a81dc285d2. Integration eligibility and reconciliation remain separate; no implementation or SH-07 completion authority is conferred."
+    "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-17 lineage after independent acceptance and exact clean preflight. Authority is limited to reconciling this exact report/ledger lineage onto authoritative main; no implementation or SH-07 completion authority is conferred."
   }
 ]
 }
