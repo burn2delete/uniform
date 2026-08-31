@@ -1,0 +1,7 @@
+[[region/alloc
+  {:return-type "Region[r,Buffer]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :region-memory,
+   :allocation-kind :region,
+   :runtime-assumption :bounded-region}]]

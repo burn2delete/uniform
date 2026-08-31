@@ -1,0 +1,17 @@
+[[facet/manifest {:return-type "FacetManifest", :facet-kind :manifest}]
+ [facet/activate {:return-type "FacetActivation", :facet-kind :activation}]
+ [facet/generated-code
+  {:return-type "FacetGeneratedCode",
+   :effects #{:build/write-artifact},
+   :facet-kind :generated-code,
+   :build-grant-diagnostic "L14-BUILD-EFFECT"}]
+ [facet/domain-ir
+  {:return-type "FacetDomainIR",
+   :effects #{:compiler/write-ir},
+   :capabilities #{:compiler/ir},
+   :facet-kind :domain-ir}]
+ [facet/compose {:return-type "FacetComposition", :facet-kind :composition}]
+ [facet/privacy-record
+  {:return-type "FacetPrivacyBoundary", :facet-kind :privacy-boundary}]
+ [facet/compat-event
+  {:return-type "FacetCompatibilityEvent", :facet-kind :compatibility}]]

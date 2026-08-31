@@ -1,0 +1,60 @@
+[[safe4/region-escape
+  {:id "SAFE4-REGION-ESCAPE",
+   :rule :SAFE4,
+   :operation :region-escape,
+   :missing-fact :region-lifetime-proof,
+   :message "value escapes a region lifetime"}]
+ [safe4/arena-escape
+  {:id "SAFE4-ARENA-ESCAPE",
+   :rule :SAFE4,
+   :operation :arena-escape,
+   :missing-fact :arena-generation-proof,
+   :message "value escapes an arena generation"}]
+ [safe4/post-reset
+  {:id "SAFE4-POST-RESET",
+   :rule :SAFE4,
+   :operation :arena-use,
+   :missing-fact :current-arena-generation,
+   :message "arena value is used after reset"}]
+ [safe4/inner-to-outer
+  {:id "SAFE4-INNER-TO-OUTER",
+   :rule :SAFE4,
+   :operation :region-store,
+   :missing-fact :nested-region-proof,
+   :message "inner-region reference is stored in outer storage"}]
+ [safe4/return
+  {:id "SAFE4-RETURN",
+   :rule :SAFE4,
+   :operation :return,
+   :missing-fact :region-independent-result,
+   :message "region-scoped value is returned"}]
+ [safe4/task
+  {:id "SAFE4-TASK",
+   :rule :SAFE4,
+   :operation :task-transfer,
+   :missing-fact :structured-task-lifetime,
+   :message "region value crosses concurrency boundary without lifetime proof"}]
+ [safe4/ffi-retain
+  {:id "SAFE4-FFI-RETAIN",
+   :rule :SAFE4,
+   :operation :ffi-retain,
+   :missing-fact :foreign-no-retain-proof,
+   :message "foreign code may retain region or arena memory"}]
+ [safe4/cleanup
+  {:id "SAFE4-CLEANUP",
+   :rule :SAFE4,
+   :operation :cleanup,
+   :missing-fact :valid-cleanup-policy,
+   :message "region or arena cleanup behavior is invalid"}]
+ [safe4/provider
+  {:id "SAFE4-PROVIDER",
+   :rule :SAFE4,
+   :operation :provider,
+   :missing-fact :provider-contract,
+   :message "region or arena provider omits required behavior"}]
+ [safe4/runtime-check
+  {:id "SAFE4-RUNTIME-CHECK",
+   :rule :SAFE4,
+   :operation :generation-check,
+   :missing-fact :profile-generation-check,
+   :message "runtime region check is unavailable in the active profile"}]]

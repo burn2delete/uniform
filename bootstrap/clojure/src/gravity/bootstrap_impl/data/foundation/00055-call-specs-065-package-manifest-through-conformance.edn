@@ -1,0 +1,31 @@
+[[safe14/package-manifest
+  {:return-type "Safe14PackageSafetyManifest",
+   :safe-capability-kind :safe14-package-manifest}]
+ [safe14/lockfile-record
+  {:return-type "Safe14LockfileRecord", :safe-capability-kind :safe14-lockfile}]
+ [safe14/build-effect-summary
+  {:return-type "Safe14BuildEffectSummary",
+   :effects #{:build/read-file},
+   :safe-capability-kind :safe14-build-effect-summary,
+   :build-grant-diagnostic "SAFE14-BUILD-EFFECT"}]
+ [safe14/runtime-capability-summary
+  {:return-type "Safe14RuntimeCapabilitySummary",
+   :safe-capability-kind :safe14-runtime-capability-summary}]
+ [safe14/unsafe-summary-record
+  {:return-type "Safe14UnsafeSummary", :safe-capability-kind :safe14-unsafe-summary}]
+ [safe14/native-dependency
+  {:return-type "Safe14NativeDependencyRecord",
+   :safe-capability-kind :safe14-native-dependency}]
+ [safe14/generated-provenance
+  {:return-type "Safe14GeneratedArtifactProvenance",
+   :effects #{:build/write-artifact},
+   :safe-capability-kind :safe14-generated-provenance,
+   :build-grant-diagnostic "SAFE14-GENERATED"}]
+ [safe14/signature-attestation
+  {:return-type "Safe14SignatureAttestationRecord",
+   :safe-capability-kind :safe14-signature-attestation}]
+ [safe14/authority-diff-record
+  {:return-type "Safe14TransitiveAuthorityDiff",
+   :safe-capability-kind :safe14-authority-diff}]
+ [safe14/conformance
+  {:return-type "Safe14ConformanceRecord", :safe-capability-kind :safe14-conformance}]]

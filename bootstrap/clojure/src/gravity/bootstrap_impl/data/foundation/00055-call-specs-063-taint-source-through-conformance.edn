@@ -1,0 +1,41 @@
+[[safe11/taint-source
+  {:return-type "Safe11TaintSourceRecord",
+   :effects #{:io/read},
+   :safe-boundary-kind :safe11-taint-source}]
+ [safe11/taint-flow
+  {:return-type "Safe11TaintFlowRecord", :safe-boundary-kind :safe11-taint-flow}]
+ [safe11/validator-contract
+  {:return-type "Safe11ValidatorContract",
+   :safe-boundary-kind :safe11-validator-contract}]
+ [safe11/residual-constraint
+  {:return-type "Safe11ResidualConstraint",
+   :safe-boundary-kind :safe11-residual-constraint}]
+ [safe11/sink-authorization
+  {:return-type "Safe11SinkAuthorization",
+   :effects #{:network/http},
+   :capabilities #{:network/client},
+   :safe-boundary-kind :safe11-sink-authorization}]
+ [safe11/parameterization
+  {:return-type "Safe11ParameterizationRecord",
+   :safe-boundary-kind :safe11-parameterization}]
+ [safe11/deserialization
+  {:return-type "Safe11DeserializationRecord",
+   :safe-boundary-kind :safe11-deserialization}]
+ [safe11/secret-redaction
+  {:return-type "Safe11SecretRedactionRecord",
+   :effects #{:secrets/read},
+   :capabilities #{:secrets/read},
+   :safe-boundary-kind :safe11-secret-redaction}]
+ [safe11/prompt-tool-policy
+  {:return-type "Safe11PromptToolPolicyRecord",
+   :effects #{:ai/tool-call},
+   :capabilities #{:ai/tool},
+   :safe-boundary-kind :safe11-prompt-tool-policy}]
+ [safe11/generated-taint
+  {:return-type "Safe11GeneratedTaintPropagation",
+   :safe-boundary-kind :safe11-generated-taint}]
+ [safe11/unsafe-clear-audit
+  {:return-type "Safe11UnsafeClearAudit",
+   :safe-boundary-kind :safe11-unsafe-clear-audit}]
+ [safe11/conformance
+  {:return-type "Safe11ConformanceRecord", :safe-boundary-kind :safe11-conformance}]]

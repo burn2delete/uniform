@@ -1,0 +1,37 @@
+[[safe8/concurrency-graph
+  {:return-type "Safe8ConcurrencyGraph",
+   :effects #{:thread/spawn},
+   :capabilities #{:scheduler/task},
+   :safe-boundary-kind :safe8-concurrency-graph}]
+ [safe8/task-capture
+  {:return-type "Safe8TaskCaptureRecord",
+   :effects #{:thread/spawn},
+   :capabilities #{:scheduler/task},
+   :safe-boundary-kind :safe8-task-capture}]
+ [safe8/ownership-transfer
+  {:return-type "Safe8OwnershipTransferRecord",
+   :effects #{:thread/spawn},
+   :capabilities #{:scheduler/task},
+   :safe-boundary-kind :safe8-ownership-transfer}]
+ [safe8/shared-state-access
+  {:return-type "Safe8SharedStateAccessRecord",
+   :effects #{:sync/block},
+   :safe-boundary-kind :safe8-shared-state-access}]
+ [safe8/synchronization-proof
+  {:return-type "Safe8SynchronizationProof",
+   :effects #{:sync/block},
+   :safe-boundary-kind :safe8-synchronization-proof}]
+ [safe8/atomic-order
+  {:return-type "Safe8AtomicMemoryOrderRecord",
+   :safe-boundary-kind :safe8-atomic-order}]
+ [safe8/blocking-cancellation
+  {:return-type "Safe8BlockingCancellationRecord",
+   :effects #{:sync/block},
+   :safe-boundary-kind :safe8-blocking-cancellation}]
+ [safe8/backend-preservation
+  {:return-type "Safe8BackendPreservationRecord",
+   :safe-boundary-kind :safe8-backend-preservation}]
+ [safe8/race-analysis
+  {:return-type "Safe8RaceAnalysisReport", :safe-boundary-kind :safe8-race-analysis}]
+ [safe8/conformance
+  {:return-type "Safe8ConformanceRecord", :safe-boundary-kind :safe8-conformance}]]

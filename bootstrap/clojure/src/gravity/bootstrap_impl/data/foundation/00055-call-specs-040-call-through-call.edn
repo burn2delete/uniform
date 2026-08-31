@@ -1,0 +1,2 @@
+[[ffi/call
+  {:return-type "FfiValue", :effects #{:ffi/call}, :capabilities #{:ffi/call}}]]

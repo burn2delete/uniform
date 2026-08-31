@@ -1,0 +1,2 @@
+[[ai/error-recorded
+  {:return-type "AiErrorRecord", :effects #{:ai/error}, :capabilities #{:ai/tool}}]]

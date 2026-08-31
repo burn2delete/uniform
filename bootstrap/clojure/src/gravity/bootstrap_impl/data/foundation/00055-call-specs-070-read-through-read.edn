@@ -1,0 +1,4 @@
+[[secrets/read
+  {:return-type "SecretBytes",
+   :effects #{:secrets/read},
+   :capabilities #{:secrets/read}}]]

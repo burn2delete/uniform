@@ -1,0 +1,22 @@
+[[stdlib/namespace
+  {:return-type "StdlibNamespaceContract", :standard-library-kind :namespace-contract}]
+ [stdlib/api {:return-type "StdlibApiContract", :standard-library-kind :api-contract}]
+ [stdlib/profile-report
+  {:return-type "ProfileAvailabilityReport",
+   :standard-library-kind :profile-availability}]
+ [stdlib/example
+  {:return-type "DocumentationExample", :standard-library-kind :example}]
+ [stdlib/unsafe-wrapper
+  {:return-type "UnsafeWrapperAudit",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :standard-library-kind :unsafe-wrapper}]
+ [stdlib/compat-event
+  {:return-type "CompatibilityEvent", :standard-library-kind :compatibility}]
+ [stdlib/numeric-mode
+  {:return-type "NumericModeContract", :standard-library-kind :numeric-mode}]
+ [stdlib/resource-api
+  {:return-type "ResourceApiContract",
+   :effects #{:resource/open :resource/close},
+   :capabilities #{:resource/file},
+   :standard-library-kind :resource-api}]]

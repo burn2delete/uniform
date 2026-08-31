@@ -1,0 +1,31 @@
+[[altmacro/provider-declaration
+  {:return-type "AlternativeMacroProviderDeclaration",
+   :alternative-macro-kind :provider}]
+ [altmacro/expansion-trace
+  {:return-type "AlternativeMacroExpansionTrace",
+   :alternative-macro-kind :expansion-trace}]
+ [altmacro/syntax-object
+  {:return-type "AlternativeSyntaxObjectSerialization",
+   :alternative-macro-kind :syntax-object}]
+ [altmacro/hygiene-record
+  {:return-type "AlternativeMacroHygieneRecord", :alternative-macro-kind :hygiene}]
+ [altmacro/explicit-capture
+  {:return-type "AlternativeMacroExplicitCapture",
+   :alternative-macro-kind :explicit-capture}]
+ [altmacro/build-effect-trace
+  {:return-type "AlternativeMacroBuildEffectTrace",
+   :effects #{:build/read-file},
+   :alternative-macro-kind :build-effect-trace,
+   :build-grant-diagnostic "L16-BUILD-EFFECT"}]
+ [altmacro/cache-decision
+  {:return-type "AlternativeMacroCacheDecision",
+   :alternative-macro-kind :cache-decision}]
+ [altmacro/equivalence-report
+  {:return-type "AlternativeMacroEquivalenceReport",
+   :alternative-macro-kind :equivalence}]
+ [altmacro/facet-dispatch
+  {:return-type "AlternativeMacroFacetDispatch",
+   :alternative-macro-kind :facet-dispatch}]
+ [altmacro/generated-validation
+  {:return-type "AlternativeMacroGeneratedValidation",
+   :alternative-macro-kind :generated-validation}]]

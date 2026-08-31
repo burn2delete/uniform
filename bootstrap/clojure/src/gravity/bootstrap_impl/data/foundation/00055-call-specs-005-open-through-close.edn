@@ -1,0 +1,10 @@
+[[resource/open
+  {:return-type "Linear[FileHandle]",
+   :effects #{:resource/open},
+   :capabilities #{:resource/file},
+   :linear-resource "FileHandle"}]
+ [resource/close
+  {:return-type "Nil",
+   :effects #{:resource/close},
+   :capabilities #{:resource/file},
+   :linear-resource "FileHandle"}]]

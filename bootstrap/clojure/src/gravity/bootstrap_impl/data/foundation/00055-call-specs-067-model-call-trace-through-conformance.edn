@@ -1,0 +1,35 @@
+[[safe13/model-call-trace
+  {:return-type "Safe13ModelCallTrace",
+   :effects #{:ai/model-call},
+   :capabilities #{:ai/model},
+   :safety-conformance-kind :safe13-model-call-trace}]
+ [safe13/tool-call-trace
+  {:return-type "Safe13ToolCallTrace",
+   :effects #{:ai/tool-call},
+   :capabilities #{:ai/tool},
+   :safety-conformance-kind :safe13-tool-call-trace}]
+ [safe13/prompt-provenance
+  {:return-type "Safe13PromptProvenance",
+   :safety-conformance-kind :safe13-prompt-provenance}]
+ [safe13/tool-schema-validation
+  {:return-type "Safe13ToolSchemaValidation",
+   :safety-conformance-kind :safe13-tool-schema-validation}]
+ [safe13/human-review-record
+  {:return-type "Safe13HumanReviewRecord",
+   :effects #{:ai/human-review},
+   :capabilities #{:ai/human-review},
+   :safety-conformance-kind :safe13-human-review-record}]
+ [safe13/replay-record
+  {:return-type "Safe13ReplayRecord", :safety-conformance-kind :safe13-replay-record}]
+ [safe13/model-output-taint
+  {:return-type "Safe13ModelOutputTaint",
+   :safety-conformance-kind :safe13-model-output-taint}]
+ [safe13/generated-code-safety
+  {:return-type "Safe13GeneratedCodeSafety",
+   :safety-conformance-kind :safe13-generated-code-safety}]
+ [safe13/memory-retention-policy
+  {:return-type "Safe13MemoryRetentionPolicy",
+   :safety-conformance-kind :safe13-memory-retention-policy}]
+ [safe13/conformance
+  {:return-type "Safe13ConformanceRecord",
+   :safety-conformance-kind :safe13-conformance}]]

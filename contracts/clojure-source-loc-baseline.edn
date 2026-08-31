@@ -2,6 +2,4 @@
  :maximum-physical-lines 250
  :source-roots ["bootstrap/clojure/src"]
  :extensions [".clj" ".cljc"]
- :oversized-files
- {"bootstrap/clojure/src/gravity/bootstrap.clj" 164445
-  }}
+ :oversized-files {}}

@@ -1,0 +1,8 @@
+[[workflow/event
+  {:return-type "WorkflowEvent",
+   :effects #{:workflow/event},
+   :capabilities #{:workflow/event}}]
+ [workflow/replay
+  {:return-type "ReplayRecord",
+   :effects #{:workflow/replay},
+   :capabilities #{:workflow/replay}}]]

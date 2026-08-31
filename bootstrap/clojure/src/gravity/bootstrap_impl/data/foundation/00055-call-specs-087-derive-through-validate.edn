@@ -1,0 +1,2 @@
+[[schema/derive {:return-type "Schema", :type-family :schema}]
+ [schema/validate {:return-type "Validated[Schema]", :type-family :schema}]]

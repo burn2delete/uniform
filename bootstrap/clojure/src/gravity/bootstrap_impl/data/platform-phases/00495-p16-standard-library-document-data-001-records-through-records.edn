@@ -1,0 +1,108 @@
+[{:owned-surface :library-module-manifest,
+  :rejected-diagnostic "STD1001",
+  :rejected-fixture "standard-library-std1-profile-metadata.gravity",
+  :file "docs/phase-16-standard-library/211-std1-standard-library-architecture.md",
+  :title "Standard Library Architecture",
+  :module :standard-library-architecture,
+  :accepted-behavior :profile_aware_module_manifest,
+  :document "STD1",
+  :check-key :profile-metadata,
+  :sequence 211,
+  :artifact-keys
+  [:library-module-manifest :profile-support-matrix :api-stability-record],
+  :profiles
+  [:core
+   :meta
+   :hosted
+   :native
+   :firmware
+   :kernel
+   :hardware
+   :distributed
+   :ai
+   :gpu
+   :formal],
+  :namespace :gravity.std,
+  :dependencies
+  #{"D3"
+    "TEST1"
+    "D9"
+    "PKG12"
+    "L15"
+    "L5"
+    "L6"
+    "GOV1"
+    "D6"
+    "D1"
+    "SAFE10"
+    "GOV10"
+    "P13"
+    "SAFE1"
+    "TEST13"
+    "SAFE6"
+    "L2"
+    "D0"
+    "D8"
+    "P1"
+    "PKG1"}}
+ {:owned-surface :core-module-manifest,
+  :rejected-diagnostic "STD2002",
+  :rejected-fixture "standard-library-std2-host-state.gravity",
+  :file "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+  :diagnostic-count 7,
+  :title "Core Library Specification",
+  :module :core-library,
+  :accepted-behavior :pure_core_value_helpers,
+  :document "STD2",
+  :check-key :host-state-free,
+  :sequence 212,
+  :artifact-keys [:library-module-manifest :library-conformance-fixture],
+  :profiles [:core :meta :hosted :native :firmware :kernel :hardware :gpu :formal],
+  :namespace :gravity.core,
+  :dependencies #{"STD1" "L1" "L15" "L7" "D1" "SAFE1" "L12"}}
+ {:owned-surface :collections-module-manifest,
+  :rejected-diagnostic "STD3001",
+  :rejected-fixture "standard-library-std3-allocation.gravity",
+  :file "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+  :title "Collections Library Specification",
+  :module :collections-library,
+  :accepted-behavior :persistent_collection_value_semantics,
+  :document "STD3",
+  :check-key :allocation-policy,
+  :sequence 213,
+  :artifact-keys
+  [:library-module-manifest :safe-wrapper-audit :library-conformance-fixture],
+  :profiles [:core :hosted :native :firmware :kernel :distributed :ai :gpu :formal],
+  :namespace :gravity.collections,
+  :dependencies #{"D3" "L10" "PERF1" "D1" "STD2" "SAFE1" "SAFE6" "L2"}}
+ {:owned-surface :text-module-manifest,
+  :rejected-diagnostic "STD4002",
+  :rejected-fixture "standard-library-std4-text-boundary.gravity",
+  :file
+  "docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md",
+  :title "String and Text Library Specification",
+  :module :text-library,
+  :accepted-behavior :unicode_text_boundary_and_encoding_policy,
+  :document "STD4",
+  :check-key :text-boundaries,
+  :sequence 214,
+  :artifact-keys [:library-module-manifest :library-conformance-fixture],
+  :profiles [:core :hosted :native :firmware :kernel :distributed :ai :formal],
+  :namespace :gravity.text,
+  :dependencies #{"D3" "STD3" "SAFE11" "D1" "STD2" "L2"}}
+ {:owned-surface :math-module-manifest,
+  :rejected-diagnostic "STD5003",
+  :rejected-fixture "standard-library-std5-certificate.gravity",
+  :file
+  "docs/phase-16-standard-library/215-std5-numeric-and-math-library-specification.md",
+  :title "Numeric and Math Library Specification",
+  :module :math-library,
+  :accepted-behavior :checked_numeric_and_efir_math_contracts,
+  :document "STD5",
+  :check-key :math-certificate,
+  :sequence 215,
+  :artifact-keys
+  [:library-module-manifest :safe-wrapper-audit :library-conformance-fixture],
+  :profiles [:core :hosted :native :firmware :kernel :gpu :formal :distributed :ai],
+  :namespace :gravity.math,
+  :dependencies #{"L10" "STD20" "MATH1" "SAFE15" "SAFE9" "MATH11" "L2"}}]

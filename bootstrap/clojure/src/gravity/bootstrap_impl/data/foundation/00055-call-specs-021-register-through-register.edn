@@ -1,0 +1,4 @@
+[[interrupt/register
+  {:return-type "InterruptHandler",
+   :effects #{:interrupt/register},
+   :capabilities #{:hardware/interrupt}}]]

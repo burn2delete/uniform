@@ -1,0 +1,13 @@
+[[build/read-file {:return-type "String", :effects #{:build/read-file}}]
+ [build/write-artifact
+  {:return-type "ArtifactRef[Schema]", :effects #{:build/write-artifact}}]
+ [build/env {:return-type "String", :effects #{:build/env}}]
+ [build/network {:return-type "PackageBytes", :effects #{:build/network}}]
+ [build/exec {:return-type "BuildProcessResult", :effects #{:build/exec}}]
+ [build/time {:return-type "Instant", :effects #{:build/time}}]
+ [build/random {:return-type "RandomBytes", :effects #{:build/random}}]
+ [build/model-call {:return-type "BuildModelOutput", :effects #{:build/model-call}}]
+ [build/tool-call {:return-type "BuildToolOutput", :effects #{:build/tool-call}}]
+ [build/target-probe
+  {:return-type "TargetFeatureSet", :effects #{:build/target-probe}}]
+ [build/package-index {:return-type "PackageIndex", :effects #{:build/package-index}}]]

@@ -1,0 +1,2 @@
+[[ffi/error-mapped
+  {:return-type "FfiErrorRecord", :effects #{:ffi/error}, :capabilities #{:ffi/call}}]]

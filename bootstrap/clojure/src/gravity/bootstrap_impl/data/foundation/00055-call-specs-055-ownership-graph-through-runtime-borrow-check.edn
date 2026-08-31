@@ -1,0 +1,12 @@
+[[safe3/ownership-graph
+  {:return-type "OwnershipGraphRecord", :safe-memory-kind :ownership-graph}]
+ [safe3/borrow-graph
+  {:return-type "BorrowGraphRecord", :safe-memory-kind :borrow-graph}]
+ [safe3/lifetime-map
+  {:return-type "LifetimeIntervalRecord", :safe-memory-kind :lifetime-map}]
+ [safe3/transfer-record
+  {:return-type "OwnershipTransferRecord", :safe-memory-kind :transfer-record}]
+ [safe3/runtime-borrow-check
+  {:return-type "RuntimeBorrowCheckRecord",
+   :effects #{:safety/check-failure},
+   :safe-memory-kind :runtime-borrow-check}]]

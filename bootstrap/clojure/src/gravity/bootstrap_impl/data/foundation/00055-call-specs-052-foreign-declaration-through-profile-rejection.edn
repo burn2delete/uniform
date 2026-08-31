@@ -1,0 +1,28 @@
+[[interop/foreign-declaration
+  {:return-type "ForeignBindingDeclaration", :interop-kind :foreign-declaration}]
+ [interop/boundary-metadata
+  {:return-type "InteropBoundaryMetadata", :interop-kind :boundary-metadata}]
+ [interop/generated-binding
+  {:return-type "GeneratedInteropBinding", :interop-kind :generated-binding}]
+ [interop/safe-wrapper-audit
+  {:return-type "InteropSafeWrapperAudit", :interop-kind :safe-wrapper-audit}]
+ [interop/type-mapping
+  {:return-type "InteropTypeMapping", :interop-kind :type-mapping}]
+ [interop/ownership-map
+  {:return-type "InteropOwnershipMap", :interop-kind :ownership-map}]
+ [interop/error-map {:return-type "InteropErrorMap", :interop-kind :error-map}]
+ [interop/capability-effect
+  {:return-type "InteropCapabilityEffectRecord",
+   :effects #{:ffi/call},
+   :capabilities #{:ffi/call},
+   :interop-kind :capability-effect}]
+ [interop/migration-shim
+  {:return-type "InteropMigrationShim", :interop-kind :migration-shim}]
+ [interop/parity-report
+  {:return-type "InteropParityReport", :interop-kind :parity-report}]
+ [interop/compatibility-record
+  {:return-type "InteropCompatibilityRecord", :interop-kind :compatibility-record}]
+ [interop/schema-drift-check
+  {:return-type "InteropSchemaDriftCheck", :interop-kind :schema-drift-check}]
+ [interop/profile-rejection
+  {:return-type "InteropProfileRejection", :interop-kind :profile-rejection}]]

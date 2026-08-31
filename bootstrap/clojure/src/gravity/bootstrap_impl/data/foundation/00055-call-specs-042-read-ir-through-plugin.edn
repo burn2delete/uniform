@@ -1,0 +1,12 @@
+[[compiler/read-ir
+  {:return-type "IR[GravityMIR]",
+   :effects #{:compiler/read-ir},
+   :capabilities #{:compiler/ir}}]
+ [compiler/write-ir
+  {:return-type "ArtifactRef[Schema]",
+   :effects #{:compiler/write-ir},
+   :capabilities #{:compiler/ir}}]
+ [compiler/plugin
+  {:return-type "PluginResult",
+   :effects #{:compiler/plugin},
+   :capabilities #{:compiler/plugin}}]]

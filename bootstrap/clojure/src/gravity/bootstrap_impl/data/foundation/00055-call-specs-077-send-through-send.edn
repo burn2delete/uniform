@@ -1,0 +1,5 @@
+[[channel/send
+  {:return-type "ChannelSend",
+   :effects #{:async/suspend},
+   :capabilities #{:scheduler/task},
+   :concurrency-family :channel}]]

@@ -1,0 +1,6 @@
+[
+ {:resource "gravity/bootstrap_impl/semantic_tail/001-stage2-whole-compiler-inputs.clj", :reader-line 93470}
+ {:resource "gravity/bootstrap_impl/semantic_tail/002-stage2-whole-compiler-cross-evidence.clj", :reader-line 93470}
+ {:resource "gravity/bootstrap_impl/semantic_tail/003-stage2-whole-compiler-final-artifact.clj", :reader-line 93470}
+ {:resource "gravity/bootstrap_impl/semantic_tail/004-p15-s23-stage2-whole-language-compiler-source-artifact.clj", :reader-line 93470}
+]

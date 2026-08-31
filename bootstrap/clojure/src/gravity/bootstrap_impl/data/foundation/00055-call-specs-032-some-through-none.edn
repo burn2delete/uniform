@@ -1,0 +1,2 @@
+[[option/some {:return-type "Option[Some]"}]
+ [option/none {:return-type "Option[None]"}]]

@@ -1,0 +1,41 @@
+[[alttype/provider-declaration
+  {:return-type "AlternativeTypeProviderDeclaration",
+   :alternative-type-kind :provider}]
+ [alttype/typed-core-lowering
+  {:return-type "AlternativeTypedCoreLoweringRule",
+   :effects #{:compiler/write-ir},
+   :capabilities #{:compiler/ir},
+   :alternative-type-kind :typed-core-lowering}]
+ [alttype/fact-export
+  {:return-type "AlternativeTypeFactExportSchema",
+   :alternative-type-kind :fact-export}]
+ [alttype/proof-artifact
+  {:return-type "AlternativeTypeProofArtifact",
+   :alternative-type-kind :proof-artifact}]
+ [alttype/runtime-check
+  {:return-type "AlternativeTypeRuntimeCheckRecord",
+   :alternative-type-kind :runtime-check}]
+ [alttype/diagnostic-map
+  {:return-type "AlternativeTypeDiagnosticMapping",
+   :alternative-type-kind :diagnostic-map}]
+ [alttype/compatibility-report
+  {:return-type "AlternativeTypeCompatibilityReport",
+   :alternative-type-kind :compatibility-report}]
+ [alttype/profile-soundness
+  {:return-type "AlternativeTypeProfileSoundnessEvidence",
+   :alternative-type-kind :profile-soundness}]
+ [alttype/effect-capability-preservation
+  {:return-type "AlternativeTypeEffectCapabilityPreservation",
+   :alternative-type-kind :effect-capability-preservation}]
+ [alttype/ownership-facts
+  {:return-type "AlternativeTypeOwnershipFactExport",
+   :alternative-type-kind :ownership-facts}]
+ [alttype/gradual-boundary
+  {:return-type "AlternativeTypeGradualBoundary",
+   :alternative-type-kind :gradual-boundary}]
+ [alttype/domain-facts
+  {:return-type "AlternativeTypeDomainFactExport",
+   :alternative-type-kind :domain-facts}]
+ [alttype/optimization-proof
+  {:return-type "AlternativeTypeOptimizationProof",
+   :alternative-type-kind :optimization-proof}]]

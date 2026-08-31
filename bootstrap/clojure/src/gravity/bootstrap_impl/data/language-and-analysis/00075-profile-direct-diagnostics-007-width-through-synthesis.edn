@@ -1,0 +1,90 @@
+[[p8/width
+  {:id "P8-WIDTH",
+   :rule :P8,
+   :operation :hardware/fixed-width,
+   :missing-fact :fixed-width-type,
+   :message "hardware profile requires fixed signal widths"}]
+ [p8/clock
+  {:id "P8-CLOCK",
+   :rule :P8,
+   :operation :hardware/clock-domain,
+   :missing-fact :clock-domain,
+   :message "hardware profile requires clock-domain evidence"}]
+ [p8/reset
+  {:id "P8-RESET",
+   :rule :P8,
+   :operation :hardware/reset-domain,
+   :missing-fact :reset-behavior,
+   :message "hardware profile requires reset-domain evidence"}]
+ [p8/cdc
+  {:id "P8-CDC",
+   :rule :P8,
+   :operation :hardware/clock-domain-crossing,
+   :missing-fact :synchronizer-or-proof,
+   :message "hardware profile rejects unmediated clock-domain crossing"}]
+ [p8/unbounded
+  {:id "P8-UNBOUNDED",
+   :rule :P8,
+   :operation :hardware/unbounded-control-flow,
+   :missing-fact :static-unroll-proof,
+   :message "hardware profile rejects unbounded loops or recursion"}]
+ [p8/runtime
+  {:id "P8-RUNTIME",
+   :rule :P8,
+   :operation :hardware/runtime-construct,
+   :missing-fact :hardware-lowering,
+   :message "hardware profile rejects runtime-only constructs"}]
+ [p8/port
+  {:id "P8-PORT",
+   :rule :P8,
+   :operation :hardware/external-port,
+   :missing-fact :port-interface,
+   :message "hardware profile requires typed external port metadata"}]
+ [p8/numeric
+  {:id "P8-NUMERIC",
+   :rule :P8,
+   :operation :hardware/numeric-width,
+   :missing-fact :width-and-overflow-mode,
+   :message "hardware profile rejects implicit host numeric behavior"}]
+ [p8/timing
+  {:id "P8-TIMING",
+   :rule :P8,
+   :operation :hardware/timing,
+   :missing-fact :timing-constraint,
+   :message "hardware profile requires timing constraint evidence"}]
+ [p8/target
+  {:id "P8-TARGET",
+   :rule :P8,
+   :operation :hardware/target-manifest,
+   :missing-fact :hardware-target-manifest,
+   :message "hardware profile requires a compatible target manifest"}]
+ [p8/capability
+  {:id "P8-CAPABILITY",
+   :rule :P8,
+   :operation :hardware/capability-pointer,
+   :missing-fact :capability-pointer-layout,
+   :message "hardware capability pointer metadata is incomplete"}]
+ [p8/tag
+  {:id "P8-TAG",
+   :rule :P8,
+   :operation :hardware/capability-tag,
+   :missing-fact :tag-preservation,
+   :message "hardware path loses capability tags without an audited boundary"}]
+ [p8/compartment
+  {:id "P8-COMPARTMENT",
+   :rule :P8,
+   :operation :hardware/compartment,
+   :missing-fact :entry-authority,
+   :message "hardware compartment boundary lacks authority transfer metadata"}]
+ [p8/temporal
+  {:id "P8-TEMPORAL",
+   :rule :P8,
+   :operation :hardware/temporal-safety,
+   :missing-fact :temporal-safety-assumption,
+   :message "hardware capability target lacks temporal-safety evidence"}]
+ [p8/synthesis
+  {:id "P8-SYNTHESIS",
+   :rule :P8,
+   :operation :hardware/synthesis,
+   :missing-fact :typed-hardware-ir,
+   :message "hardware construct cannot lower to typed hardware IR"}]]

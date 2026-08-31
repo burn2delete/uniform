@@ -1,0 +1,60 @@
+[[p4/host-effect
+  {:id "P4-HOST-EFFECT",
+   :rule :P4,
+   :operation :hosted/host-effect,
+   :effect :reflection/use,
+   :message "hosted profile host effect is undeclared"}]
+ [p4/host-capability
+  {:id "P4-HOST-CAPABILITY",
+   :rule :P4,
+   :operation :hosted/host-capability,
+   :requested-capability :reflection/use,
+   :message "hosted profile host authority is missing"}]
+ [p4/reflection
+  {:id "P4-REFLECTION",
+   :rule :P4,
+   :operation :hosted/reflection,
+   :effect :reflection/use,
+   :message "host reflection is denied or undeclared"}]
+ [p4/dynamic
+  {:id "P4-DYNAMIC",
+   :rule :P4,
+   :operation :hosted/dynamic,
+   :effect :dynamic/eval,
+   :message "dynamic eval or loading is denied"}]
+ [p4/host-object
+  {:id "P4-HOST-OBJECT",
+   :rule :P4,
+   :operation :hosted/host-object,
+   :missing-fact :typed-boundary,
+   :message "host object crosses a boundary without typed metadata"}]
+ [p4/exception
+  {:id "P4-EXCEPTION",
+   :rule :P4,
+   :operation :hosted/exception,
+   :missing-fact :exception-translation,
+   :message "host exception is not translated into Gravity error semantics"}]
+ [p4/resource
+  {:id "P4-RESOURCE",
+   :rule :P4,
+   :operation :hosted/resource,
+   :missing-fact :linear-cleanup,
+   :message "hosted resource relies on GC instead of deterministic cleanup"}]
+ [p4/raw-memory
+  {:id "P4-RAW-MEMORY",
+   :rule :P4,
+   :operation :hosted/raw-memory,
+   :effect :memory/raw,
+   :message "hosted profile rejects raw memory and MMIO attempts"}]
+ [p4/cross-import
+  {:id "P4-CROSS-IMPORT",
+   :rule :P4,
+   :operation :hosted/cross-import,
+   :dependency-profile :native,
+   :message "hosted profile import lacks facade or artifact boundary"}]
+ [p4/sourcemap
+  {:id "P4-SOURCEMAP",
+   :rule :P4,
+   :operation :hosted/source-map,
+   :missing-fact :diagnostic-map,
+   :message "hosted lowering lacks required diagnostic mapping"}]]

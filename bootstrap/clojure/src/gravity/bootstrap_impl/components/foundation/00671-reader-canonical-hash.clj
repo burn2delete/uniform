@@ -1,0 +1,4 @@
+
+
+
+(declare reader-canonical-hash)

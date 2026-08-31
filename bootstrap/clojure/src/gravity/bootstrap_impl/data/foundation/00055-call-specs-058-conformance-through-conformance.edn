@@ -1,0 +1,2 @@
+[[safe-memory/conformance
+  {:return-type "SafeMemoryConformanceRecord", :safe-memory-kind :conformance}]]

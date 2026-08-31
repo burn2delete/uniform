@@ -1,0 +1,6 @@
+[[async/suspend
+  {:return-type "Suspended",
+   :effects #{:async/suspend},
+   :capabilities #{:scheduler/task}}]
+ [async/await
+  {:return-type "Awaited", :effects #{:async/await}, :capabilities #{:scheduler/task}}]]

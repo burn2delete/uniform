@@ -1,0 +1,60 @@
+[[p9/replay
+  {:id "P9-REPLAY",
+   :rule :P9,
+   :operation :distributed/replay,
+   :missing-fact :replay-record,
+   :message "distributed replay context has unrecorded nondeterminism"}]
+ [p9/schema
+  {:id "P9-SCHEMA",
+   :rule :P9,
+   :operation :distributed/schema,
+   :missing-fact :message-or-state-schema,
+   :message "distributed boundary lacks message, state, or service schema"}]
+ [p9/migration
+  {:id "P9-MIGRATION",
+   :rule :P9,
+   :operation :distributed/schema-migration,
+   :missing-fact :migration-policy,
+   :message "distributed schema changed without migration policy"}]
+ [p9/retry
+  {:id "P9-RETRY",
+   :rule :P9,
+   :operation :distributed/retry-timeout,
+   :missing-fact :retry-timeout-idempotency,
+   :message "distributed step lacks retry, timeout, or idempotency policy"}]
+ [p9/compensation
+  {:id "P9-COMPENSATION",
+   :rule :P9,
+   :operation :distributed/compensation,
+   :missing-fact :compensation-policy,
+   :message "distributed side effect requires compensation"}]
+ [p9/capability
+  {:id "P9-CAPABILITY",
+   :rule :P9,
+   :operation :distributed/service-capability,
+   :requested-capability :network/client,
+   :message "distributed external service lacks capability grant"}]
+ [p9/effect
+  {:id "P9-EFFECT",
+   :rule :P9,
+   :operation :distributed/effect,
+   :effect :network/http,
+   :message "distributed effect is undeclared or ungranted"}]
+ [p9/raw
+  {:id "P9-RAW",
+   :rule :P9,
+   :operation :distributed/raw-memory,
+   :effect :memory/raw,
+   :message "distributed profile rejects raw memory and device authority"}]
+ [p9/service-error
+  {:id "P9-SERVICE-ERROR",
+   :rule :P9,
+   :operation :distributed/service-error,
+   :missing-fact :typed-failure-map,
+   :message "distributed external failure mode is untyped"}]
+ [p9/event-log
+  {:id "P9-EVENT-LOG",
+   :rule :P9,
+   :operation :distributed/event-log,
+   :missing-fact :event-log-artifact,
+   :message "distributed persistence lacks event-log artifact"}]]

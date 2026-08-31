@@ -1,0 +1,22 @@
+[[provider/declaration
+  {:return-type "ProviderDeclaration", :provider-kind :declaration}]
+ [provider/grant {:return-type "ProviderGrant", :provider-kind :grant}]
+ [provider/capability-value
+  {:return-type "CapabilityValue", :provider-kind :capability-value}]
+ [provider/select {:return-type "ProviderSelection", :provider-kind :selection}]
+ [provider/scope-audit
+  {:return-type "CapabilityScopeAudit", :provider-kind :scope-audit}]
+ [provider/compile-replay
+  {:return-type "CompileTimeProviderReplay",
+   :effects #{:build/read-file},
+   :provider-kind :compile-time-replay,
+   :build-grant-diagnostic "L15-PHASE"}]
+ [provider/runtime-manifest
+  {:return-type "RuntimeProviderManifest", :provider-kind :runtime-manifest}]
+ [provider/conformance
+  {:return-type "ProviderConformanceResult", :provider-kind :conformance}]
+ [provider/attenuate
+  {:return-type "AttenuatedCapability", :provider-kind :attenuation}]
+ [provider/revoke {:return-type "CapabilityRevocation", :provider-kind :revocation}]
+ [provider/replacement
+  {:return-type "ProviderReplacement", :provider-kind :replacement}]]

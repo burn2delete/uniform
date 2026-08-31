@@ -1,0 +1,5 @@
+[[workflow/parallel
+  {:return-type "WorkflowBranches",
+   :effects #{:workflow/event},
+   :capabilities #{:workflow/event},
+   :concurrency-family :durable-workflow}]]

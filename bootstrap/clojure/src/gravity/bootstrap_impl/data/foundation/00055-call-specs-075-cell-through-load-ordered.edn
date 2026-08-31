@@ -1,0 +1,9 @@
+[[atomic/cell
+  {:return-type "Atomic[Integer]",
+   :concurrency-family :atomic,
+   :atomic-order :seq-cst}]
+ [atomic/load-ordered
+  {:return-type "Integer",
+   :effects #{:sync/block},
+   :concurrency-family :atomic,
+   :atomic-order :seq-cst}]]

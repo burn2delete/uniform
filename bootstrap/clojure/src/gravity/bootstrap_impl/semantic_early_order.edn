@@ -1,0 +1,270 @@
+[{:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-core-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-alternatives-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-interop-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-safe-memory-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-safety-early-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-checker-safety-late-keys.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/3650-new-typed-checker-install.clj",
+  :reader-line 3650}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-start.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l05-l06.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l08-l09.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l10-l11.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l12.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l13.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l14.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l15.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l16.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l17.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l18.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-l19.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-safe1.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/06106-call-specific-diagnostic-install.clj",
+  :reader-line 6106}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-start.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-safe7.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-safe8.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-safe9.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-safe11.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10125-record-boundary-safety-call!-install.clj",
+  :reader-line 10125}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10547-record-safe-capability-call!-start.clj",
+  :reader-line 10547}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10547-record-safe-capability-call!-safe10.clj",
+  :reader-line 10547}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10547-record-safe-capability-call!-safe14.clj",
+  :reader-line 10547}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10547-record-safe-capability-call!-install.clj",
+  :reader-line 10547}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-start.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-safe12.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-safe13.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-safe15.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-safe16.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/10816-record-safety-conformance-call!-install.clj",
+  :reader-line 10816}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-01.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-02.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-03.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-04.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-05.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-emits-06.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-01.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-02.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-03.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-04.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-05.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-pass-rejects-06.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-pass.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-01.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-02.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-03.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-04.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-05.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-06.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-07.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-08.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-09.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-10.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-11.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-12.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-13.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-14.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-15.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-16.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-17.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-18.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/12567-typed-source-artifact-install.clj",
+  :reader-line 12567}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-contract-and-input.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-manifests-and-graph.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-wasm-backend.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-jvm-backend.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-javascript-typescript-backend.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-evidence-and-results.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/24702-hosted-lowering-install.clj",
+  :reader-line 24702}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-contract-and-input.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-manifests-and-graph.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-gpu-and-hdl-backends.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-workflow-and-query-backends.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-mobile-backend.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-evidence-and-results.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-install.clj",
+  :reader-line 25345}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-contract-and-backend-inputs.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-manifests-content-and-graph.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-provenance.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-safety-effects-runtime-and-layout.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-reproducibility-conformance-and-release.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-diagnostics-and-results.clj",
+  :reader-line 26010}
+ {:resource
+  "gravity/bootstrap_impl/semantic_early/26010-artifact-emission-install.clj",
+  :reader-line 26010}]

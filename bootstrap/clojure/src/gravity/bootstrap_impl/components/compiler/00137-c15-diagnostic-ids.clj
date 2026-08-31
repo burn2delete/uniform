@@ -1,0 +1,16 @@
+
+
+(def c15-diagnostic-ids
+  ["C15-SCHEMA" "C15-ID" "C15-SPAN" "C15-ORIGIN" "C15-FACTS"
+   "C15-REMEDIATION" "C15-REDACTION" "C15-ORDER"])
+
+(def c16-diagnostic-ids
+  ["C16-KEY" "C16-ENTRY" "C16-PROOF" "C16-SPECULATIVE"])
+
+(def c17-diagnostic-ids
+  ["C17-MANIFEST" "C17-API" "C17-CAPABILITY"
+   "C17-PASS-CONTRACT" "C17-OUTPUT"])
+
+(def c18-diagnostic-ids
+  ["C18-RISK" "C18-EVIDENCE" "C18-TRUST-REPORT"
+   "C18-RELEASE-GATE"])

@@ -1,0 +1,53 @@
+[[p2/effect
+  {:id "P2-EFFECT",
+   :rule :P2,
+   :operation :core/runtime-effect,
+   :effect :io/write,
+   :message "core profile rejects runtime effects"}]
+ [p2/capability
+  {:id "P2-CAPABILITY",
+   :rule :P2,
+   :operation :core/capability,
+   :requested-capability :io/stdout,
+   :message "core profile rejects requested authority"}]
+ [p2/runtime
+  {:id "P2-RUNTIME",
+   :rule :P2,
+   :operation :core/runtime,
+   :missing-fact :no-runtime-provider,
+   :message "core profile rejects hidden runtime assumptions"}]
+ [p2/memory
+  {:id "P2-MEMORY",
+   :rule :P2,
+   :operation :core/memory,
+   :memory-regime :managed-runtime,
+   :message "core profile rejects concrete memory regime dependency"}]
+ [p2/unsafe
+  {:id "P2-UNSAFE",
+   :rule :P2,
+   :operation :core/unsafe,
+   :safety-outcome :unsafe-island,
+   :message "core profile forbids unsafe behavior"}]
+ [p2/nondeterminism
+  {:id "P2-NONDETERMINISM",
+   :rule :P2,
+   :operation :core/nondeterminism,
+   :effect :time/read,
+   :message "core profile rejects nondeterminism"}]
+ [p2/macro
+  {:id "P2-MACRO",
+   :rule :P2,
+   :operation :core/macro-output,
+   :message "macro expansion leaves the core subset"}]
+ [p2/import
+  {:id "P2-IMPORT",
+   :rule :P2,
+   :operation :core/import,
+   :dependency-profile :hosted,
+   :message "core profile rejects authority-bearing imports"}]
+ [p2/backend
+  {:id "P2-BACKEND",
+   :rule :P2,
+   :operation :core/backend-intrinsic,
+   :target :backend-specific,
+   :message "core profile rejects backend-specific intrinsics"}]]

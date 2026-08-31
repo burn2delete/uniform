@@ -1,0 +1,5 @@
+[[raw/deref
+  {:return-type "Dynamic",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :memory-regime :raw-memory}]]
