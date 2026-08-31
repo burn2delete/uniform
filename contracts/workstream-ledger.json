@@ -9081,7 +9081,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "integration-eligible",
+    "state": "integrated",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-10"
     ],
@@ -9245,9 +9245,15 @@
         "at": "2026-08-30T23:59:59Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "exact accepted lifecycle HEAD cecc95199a29d1e0a51058ef69f0abfb03b51efc, tree efc8ec392a585bdc18571d4c5e126d7fed28ab22 passed documentation, roadmap, governance, SH-01 language-boundary, report-only range diff, identity, clean-worktree, ancestry, and exact integration preflight against authoritative main 3624255adf586fc9d368d76335170393aece49c0; recommendation integrate_candidate; integration-only architecture authority remains bounded to this lineage"
+      },
+      {
+        "state": "integrated",
+        "at": "2026-08-31T00:01:42Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "admit exact integration-eligible architecture commit 53006143d18cf73904d8f193a5bd3977387f37f4, tree d2863ba5d47d998397d3ba79885806baf99b6c76 for verified fast-forward onto clean authoritative main 3624255adf586fc9d368d76335170393aece49c0, tree c45950b7a4cd71bcb9d4566d99afa49a2ae0785d; upon that fast-forward this architecture-only lifecycle establishes corrected implementation baseline G13 and grants no implementation acceptance or aggregate SH-07 completion authority"
       }
     ],
-    "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-13 lifecycle for exact independently accepted candidate 9f17fea7a6a2296ea941eba08c7448fbdc71e542 over terminal Attempt-12 main 3624255adf586fc9d368d76335170393aece49c0 after exact admission. Reconciliation to main remains a separate event. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred."
+    "disposition": "INTEGRATED lifecycle record for exact independently accepted Attempt-13 architecture lineage. This terminal ledger commit is to be fast-forwarded onto clean authoritative main 3624255adf586fc9d368d76335170393aece49c0 and, upon that verified fast-forward, establishes corrected architecture-only baseline G13 for the governed sh07-b51-v18-atomic-stack implementation workstream. No implementation acceptance, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted."
   }
 ]
 }
