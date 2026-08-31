@@ -5,5 +5,4 @@
  :oversized-files
  {"bootstrap/clojure/src/gravity/bootstrap.clj" 164445
   "bootstrap/clojure/src/gravity/p15_native_packet_binding.clj" 559
-  "bootstrap/clojure/src/gravity/profile_validation.clj" 569
   }}
