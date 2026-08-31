@@ -22,17 +22,22 @@
   (let [bytes (.getBytes "(ns demo.core)" StandardCharsets/UTF_8)]
     {:source-path path :source-bytes bytes :source-byte-count (alength bytes)
      :source-bytes-sha256 (sha256 bytes) :source-extension ".gravity"
-     :source-kind :gravity/source :sh06-semantic-projection-id "sh06-projection"}))
+     :source-kind :gravity/source
+     :sh06-semantic-projection-id
+     "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}))
 
 (defn- request [path]
-  {:artifact :gravity/sh07-authenticated-sh06-core-request
-   :schema-version 15
-   :lineage {:source-revision-id "revision"
-             :sh06-semantic-projection-id "sh06-projection"
-             :authenticated-sh06-artifact-id "sh06-artifact"}
-   :module {:namespace 'demo.core :profile :hosted :target :jvm :safety :safe
-            :effects [:io] :capabilities [:filesystem] :exports ['main]}
-   :provenance {:actual-source-path path}})
+  (let [source-id (:source-bytes-sha256 (snapshot path))]
+    {:artifact :gravity/sh07-authenticated-sh06-core-request
+     :schema-version 15
+     :lineage {:source-revision-id source-id
+               :sh06-semantic-projection-id
+               "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+               :authenticated-sh06-artifact-id "sh06-artifact"}
+     :module {:namespace 'demo.core :profile :hosted :target :jvm :safety :safe
+              :effects [:io] :capabilities [:filesystem] :exports ['main]
+              :source-revision-id source-id}
+     :provenance {:actual-source-path path}}))
 
 (defn- run-product [path]
   (let [identity {:ordinal 0 :purpose :sh07-core-artifact-id
@@ -42,23 +47,51 @@
         requests [identity provenance]
         resolved (mapv #(resolver (:purpose %) (:preimage %)) requests)]
     {:raw-template-result
-     {:core-template {:provenance {:actual-source-path path}
+     {:artifact :gravity/sh07-core-template-result
+      :schema-version 16 :status :accepted
+      :core-template {:provenance {:actual-source-path path}
                       :provenance-binding-preimage {:actual-source-path path}
                       :lineage {:authenticated-sh06-artifact-id "sh06-artifact"}}
-      :digest-requests requests}
+      :digest-requests requests :diagnostics [] :bounds {}
+      :containment {} :execution-boundary {}}
      :canonical-core-artifact
-     {:provenance {:actual-source-path path}
+     {:artifact-id (first resolved)
+      :identity-preimage (:preimage identity)
+      :provenance {:actual-source-path path}
       :provenance-binding-preimage {:actual-source-path path}
       :provenance-binding-id (second resolved)}
      :digest-requests requests
      :resolved-digests resolved
-     :template-verification {:status :passed}
-     :resolved-verification {:status :passed}}))
+     :template-verification
+     {:artifact :gravity/sh07-core-template-verification
+      :schema-version 16 :status :passed :rule nil :reason nil :details {}}
+     :resolved-verification
+     {:artifact :gravity/sh07-core-resolved-verification
+      :schema-version 16 :status :passed :rule nil}}))
 
-(defn- sh06 [] {:artifact-id "sh06-artifact"})
+(def ^:dynamic *fixture-path* nil)
+
+(defn- sh06 []
+  {:artifact-id "sh06-artifact" :provenance {:source-path *fixture-path*}})
 (defn- verification []
   {:artifact :gravity/sh06-resolution-artifact-verification
-   :status :passed :failed-checks []})
+   :status :passed :checks {:artifact-current? true} :failed-checks []
+   :source-path *fixture-path*})
+
+(defn- boundary [sh06 request product]
+  {:slice :SH-07 :owner :gravity-source :adapter-contract :adapter
+   :plan-binding {} :authenticated-sh06-resolution-artifact sh06
+   :authenticated-core-request request
+   :raw-template-result (:raw-template-result product)
+   :canonical-core-artifact (:canonical-core-artifact product)
+   :digest-requests (:digest-requests product)
+   :resolved-digests (:resolved-digests product)
+   :template-verification (:template-verification product)
+   :resolved-verification (:resolved-verification product)
+   :authenticated-envelope-descriptor {}
+   :authenticated-envelope {}
+   :target-source-reread? false :clojure-adapter-residual? true
+   :self-hosted? false})
 
 (defn- seams []
   {:resolve-digests (fn [_ requests]
@@ -67,8 +100,7 @@
    (fn [sh06 request product]
      {:artifact-id (get-in product [:canonical-core-artifact :artifact-id])
       :sh06-resolution-artifact sh06
-      :gravity-core-boundary
-      (assoc product :authenticated-core-request request)})
+      :gravity-core-boundary (boundary sh06 request product)})
    :digest-rebinding? (fn [_ product]
                          (= (:resolved-digests product)
                             (mapv #(resolver (:purpose %) (:preimage %))
@@ -81,9 +113,11 @@
 
 (defn- with-authenticated-fixture [path operation]
   (let [current-request (request path)]
-    (with-redefs [bootstrap/sh06-resolution-artifact-verification (fn [_] (verification))
-                  bootstrap/sh07-core-authenticated-request (fn [_] current-request)]
-      (operation current-request))))
+    (binding [*fixture-path* path]
+      (with-redefs [bootstrap/sh06-resolution-artifact-verification
+                    (fn [_] (verification))
+                    bootstrap/sh07-core-authenticated-request (fn [_] current-request)]
+        (operation current-request)))))
 
 (deftest live-pins-close-all-families-and-literal-request-schema
   (let [pins (carrier/live-pins)]
@@ -142,13 +176,13 @@
                       [:canonical-core-artifact :unexpected-path]
                       "left.gravity"))))
       (is (thrown-with-msg?
-           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           clojure.lang.ExceptionInfo #"supplied-verification-failed"
            (carrier/construct-carrier
             (snapshot "left.gravity") (sh06) request
             (assoc-in (run-product "left.gravity")
                       [:template-verification "left.gravity"] true))))
       (is (thrown-with-msg?
-           clojure.lang.ExceptionInfo #"path-slot-mismatch"
+           clojure.lang.ExceptionInfo #"supplied-verification-failed"
            (carrier/construct-carrier
             (snapshot "left.gravity") (sh06) request
             (assoc (run-product "left.gravity") :resolved-digests [])))))))
@@ -245,3 +279,91 @@
                (filterv (set (:failed-checks report))
                         [:digest-rebinding :artifact-identity :provenance-identity
                          :lineage :no-alias])))))))
+
+(deftest snapshot-and-upstream-verification-bind-the-current-request-and-artifact
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            forged (assoc (verification) :checks {:artifact-current? false})
+            report (carrier/verify-supplied-product
+                    built (snapshot "left.gravity") (sh06) forged request
+                    (run-product "left.gravity") (seams))]
+        (is (false? (get-in report [:checks :upstream-verification])))
+        (is (some #{:upstream-verification} (:failed-checks report)))
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo #"sh06-verification-failed"
+             (carrier/bind-carrier built (snapshot "left.gravity") (sh06)
+                                   forged request (seams))))
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo #"source-mutated"
+             (carrier/construct-carrier
+              (assoc (snapshot "left.gravity") :source-path "other.gravity")
+              (sh06) request (run-product "left.gravity"))))
+        (is (thrown-with-msg?
+             clojure.lang.ExceptionInfo #"invalid-selection"
+             (carrier/cache-key (dissoc (snapshot "left.gravity")
+                                        :source-bytes-sha256)
+                                request)))))))
+
+(deftest carrier-and-candidate-values-are-closed-and-metadata-free
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            malformed (assoc built :run-product (Object.))
+            metadata-candidate
+            (with-meta (run-product "left.gravity") {:unexpected true})]
+        (is (false? (carrier/lookup-valid? malformed
+                                           (snapshot "left.gravity") request)))
+        (is (false? (carrier/lookup-valid? (with-meta built {:unexpected true})
+                                           (snapshot "left.gravity") request)))
+        (let [report (carrier/verify-supplied-product
+                      built (snapshot "left.gravity") (sh06) (verification)
+                      request metadata-candidate (seams))]
+          (is (false? (get-in report [:checks :closed-schema])))
+          (is (some #{:closed-schema} (:failed-checks report))))))))
+
+(deftest supplied-products-reject-extra-keys-sentinels-and-inexact-statuses
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            artifact (fn [product]
+                       {:artifact-id "artifact"
+                        :gravity-core-boundary (boundary (sh06) request product)})
+            candidates
+            [(assoc (run-product "left.gravity") :unexpected true)
+             (update (artifact (run-product "left.gravity"))
+                     :gravity-core-boundary assoc :unexpected true)
+             (assoc-in (run-product "left.gravity")
+                       [:template-verification :details :sentinel]
+                       carrier/path-slot-sentinel)
+             (assoc-in (run-product "left.gravity")
+                       [:raw-template-result :diagnostics]
+                       [{:unexpected true}])
+             (assoc-in (run-product "left.gravity")
+                       [:template-verification :reason] :unexpected)
+             (assoc-in (run-product "left.gravity")
+                       [:resolved-verification :rule] "C6-VERIFY")
+             (update (run-product "left.gravity") :resolved-digests pop)]]
+        (doseq [candidate candidates]
+          (let [report (carrier/verify-supplied-product
+                        built (snapshot "left.gravity") (sh06) (verification)
+                        request candidate (seams))]
+            (is (= :failed (:status report)) (pr-str candidate))))))))
+
+(deftest rebound-empty-aggregates-have-no-metadata
+  (with-authenticated-fixture
+    "left.gravity"
+    (fn [request]
+      (let [built (carrier/construct-carrier (snapshot "left.gravity") (sh06)
+                                             request (run-product "left.gravity"))
+            bound (carrier/bind-carrier built (snapshot "left.gravity") (sh06)
+                                        (verification) request (seams))
+            product (get-in bound [:sh07-artifact :gravity-core-boundary])]
+        (is (nil? (meta (get-in product [:raw-template-result :diagnostics]))))
+        (is (nil? (meta (get-in product [:template-verification :details]))))))))

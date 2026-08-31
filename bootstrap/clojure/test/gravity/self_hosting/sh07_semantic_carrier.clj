@@ -34,6 +34,28 @@
   #{:raw-template-result :canonical-core-artifact :digest-requests
     :resolved-digests :template-verification :resolved-verification})
 
+(def ^:private snapshot-required-keys
+  #{:source-path :source-bytes :source-byte-count :source-bytes-sha256
+    :source-extension :source-kind :sh06-semantic-projection-id})
+
+(def ^:private raw-template-result-keys
+  #{:artifact :schema-version :status :core-template :digest-requests
+    :diagnostics :bounds :containment :execution-boundary})
+
+(def ^:private template-verification-keys
+  #{:artifact :schema-version :status :rule :reason :details})
+
+(def ^:private resolved-verification-keys
+  #{:artifact :schema-version :status :rule})
+
+(def ^:private sh07-boundary-keys
+  #{:slice :owner :adapter-contract :plan-binding
+    :authenticated-sh06-resolution-artifact :authenticated-core-request
+    :raw-template-result :canonical-core-artifact :digest-requests
+    :resolved-digests :template-verification :resolved-verification
+    :authenticated-envelope-descriptor :authenticated-envelope
+    :target-source-reread? :clojure-adapter-residual? :self-hosted?})
+
 (def ^:private carrier-keys
   #{:artifact :schema-version :status :authority :semantic-key
     :path-slot-addresses :shape-manifest :static-envelope :run-product
@@ -137,30 +159,35 @@
       (when (nil? value) (diagnostic! :stale-pin nil))
       value)))
 
+(declare closed-value?)
+
 (defn live-pins []
   (let [groups (into {}
                      (for [[group symbols] (dissoc pin-spec :request-schema-version)]
                        [group (mapv live-var-value symbols)]))]
-    (assoc groups
-           :request-schema-version 15
-           :runtime {:java-runtime-version (System/getProperty "java.runtime.version")
-                     :clojure-version (clojure-version)})))
-
-(defn- snapshot-value [snapshot keys]
-  (some #(when (contains? snapshot %) (get snapshot %)) keys))
+    (let [pins (assoc groups
+                      :request-schema-version 15
+                      :runtime
+                      {:java-runtime-version (System/getProperty "java.runtime.version")
+                       :clojure-version (clojure-version)})]
+      (when-not (closed-value? pins) (diagnostic! :stale-pin nil))
+      pins)))
 
 (defn semantic-key
   "Returns the path-free identity projection for a bounded source snapshot.
   The snapshot remains caller-owned; only byte-derived identity is retained."
   [snapshot]
-  (let [path (snapshot-value snapshot [:source-path :path])
-        bytes (snapshot-value snapshot [:source-bytes :bytes])
-        byte-count (snapshot-value snapshot [:source-byte-count :byte-count])
-        source-hash (snapshot-value snapshot [:source-bytes-sha256 :source-content-hash :sha256])
-        extension (snapshot-value snapshot [:source-extension :extension])
-        source-kind (or (:source-kind snapshot) :gravity/source)
-        projection-id (snapshot-value snapshot [:sh06-semantic-projection-id :semantic-projection-id])]
-    (when-not (and (string? path) (instance? (Class/forName "[B") bytes)
+  (let [path (:source-path snapshot)
+        bytes (:source-bytes snapshot)
+        byte-count (:source-byte-count snapshot)
+        source-hash (:source-bytes-sha256 snapshot)
+        extension (:source-extension snapshot)
+        source-kind (:source-kind snapshot)
+        projection-id (:sh06-semantic-projection-id snapshot)]
+    (when-not (and (map? snapshot)
+                   (every? #(contains? snapshot %) snapshot-required-keys)
+                   (string? path) (not (empty? path))
+                   (instance? (Class/forName "[B") bytes)
                    (integer? byte-count) (not (neg? byte-count))
                    (= byte-count (alength ^bytes bytes))
                    (= source-hash (sha256 bytes))
@@ -296,6 +323,35 @@
 (defn- request-sh06-id [request]
   (get-in request [:lineage :authenticated-sh06-artifact-id]))
 
+(defn- snapshot-matches-request? [snapshot request]
+  (and (= (:source-path snapshot) (request-path request))
+       (= (:sh06-semantic-projection-id snapshot)
+          (get-in request [:lineage :sh06-semantic-projection-id]))
+       (= (:source-bytes-sha256 snapshot)
+          (get-in request [:lineage :source-revision-id])
+          (get-in request [:module :source-revision-id]))))
+
+(defn- request-envelope-valid? [request]
+  (let [module (:module request)]
+    (and (closed-value? request)
+         (string? (request-path request))
+         (not (empty? (request-path request)))
+         (string? (request-sh06-id request))
+         (map? module)
+         (vector? (:effects module))
+         (every? keyword? (:effects module))
+         (vector? (:capabilities module))
+         (every? keyword? (:capabilities module)))))
+
+(defn- current-authenticated-request [sh06 source-path]
+  (try
+    (bootstrap/sh07-core-authenticated-request sh06)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (diagnostic! :producer-interrupted source-path))
+    (catch Exception _
+      (diagnostic! :request-membership-mismatch source-path))))
+
 (defn- static-envelope [request]
   (let [neutral (-> request
                     (assoc-in [:provenance :actual-source-path] path-slot-sentinel)
@@ -319,18 +375,88 @@
   "Returns the complete path-free cache key, including the exact request
   envelope and every live implementation pin."
   [snapshot request]
-  [(semantic-key snapshot) (static-envelope request)])
+  (when-not (request-envelope-valid? request)
+    (diagnostic! :invalid-selection (:source-path snapshot)))
+  (let [key (semantic-key snapshot)
+        envelope (static-envelope request)]
+    (when-not (and (snapshot-matches-request? snapshot request)
+                   (closed-value? key)
+                   (closed-value? envelope))
+      (diagnostic! :invalid-selection (:source-path snapshot)))
+    [key envelope]))
+
+(defn- passed-sh06-report? [verification sh06]
+  (and (map? verification)
+       (= :gravity/sh06-resolution-artifact-verification
+          (:artifact verification))
+       (= :passed (:status verification))
+       (map? (:checks verification))
+       (seq (:checks verification))
+       (every? true? (vals (:checks verification)))
+       (= [] (:failed-checks verification))
+       (= (get-in sh06 [:provenance :source-path])
+          (:source-path verification))))
+
+(defn- current-sh06-verification [sh06 source-path]
+  (try
+    (bootstrap/sh06-resolution-artifact-verification sh06)
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (diagnostic! :sh06-verification-failed source-path))
+    (catch Exception _
+      (diagnostic! :sh06-verification-failed source-path))))
 
 (defn- sh06-passed? [verification sh06]
-  (and (= :passed (:status verification))
-       (empty? (:failed-checks verification))
-       (= (:artifact verification) :gravity/sh06-resolution-artifact-verification)))
+  (and (passed-sh06-report? verification sh06)
+       (= verification
+          (current-sh06-verification
+           sh06 (get-in sh06 [:provenance :source-path])))))
 
 (defn- product-from [value]
-  (select-keys (if (contains? value :gravity-core-boundary)
-                 (:gravity-core-boundary value)
-                 value)
-               run-product-keys))
+  (cond
+    (and (map? value) (= run-product-keys (set (keys value)))) value
+    (and (map? value) (contains? value :gravity-core-boundary))
+    (let [boundary (:gravity-core-boundary value)]
+      (when (and (map? boundary)
+                 (= sh07-boundary-keys (set (keys boundary))))
+        (select-keys boundary run-product-keys)))
+    :else nil))
+
+(defn- exact-run-product-status? [product]
+  (let [raw (:raw-template-result product)
+        template (:template-verification product)
+        resolved (:resolved-verification product)
+        requests (:digest-requests product)
+        digests (:resolved-digests product)]
+    (and (map? raw)
+         (= raw-template-result-keys (set (keys raw)))
+         (= :gravity/sh07-core-template-result (:artifact raw))
+         (= 16 (:schema-version raw))
+         (= :accepted (:status raw))
+         (= [] (:diagnostics raw))
+         (= requests (:digest-requests raw))
+         (map? (:core-template raw))
+         (map? template)
+         (= template-verification-keys (set (keys template)))
+         (= :gravity/sh07-core-template-verification (:artifact template))
+         (= 16 (:schema-version template))
+         (= :passed (:status template))
+         (nil? (:rule template))
+         (nil? (:reason template))
+         (= {} (:details template))
+         (map? resolved)
+         (= resolved-verification-keys (set (keys resolved)))
+         (= :gravity/sh07-core-resolved-verification (:artifact resolved))
+         (= 16 (:schema-version resolved))
+         (= :passed (:status resolved))
+         (nil? (:rule resolved))
+         (vector? requests)
+         (vector? digests)
+         (= (count requests) (count digests))
+         (every? #(or (= path-slot-sentinel %)
+                      (and (string? %)
+                           (boolean (re-matches #"sha256:[0-9a-f]{64}" %))))
+                 digests))))
 
 (defn- carrier-preimage [carrier]
   (dissoc carrier :integrity-hash))
@@ -352,15 +478,21 @@
   [snapshot sh06 request run-product]
   (let [key (semantic-key snapshot)
         path (request-path request)
-        verified (bootstrap/sh06-resolution-artifact-verification sh06)
-        expected (bootstrap/sh07-core-authenticated-request sh06)
+        verified (current-sh06-verification sh06 path)
+        expected (current-authenticated-request sh06 path)
         product (product-from run-product)]
     (when-not (sh06-passed? verified sh06) (diagnostic! :sh06-verification-failed path))
-    (when-not (= expected request) (diagnostic! :request-membership-mismatch path))
-    (when-not (and (= run-product-keys (set (keys run-product)))
-                   (= :passed (get-in product [:template-verification :status]))
-                   (= :passed (get-in product [:resolved-verification :status])))
+    (when-not (and (= expected request) (request-envelope-valid? request))
+      (diagnostic! :request-membership-mismatch path))
+    (when-not (snapshot-matches-request? snapshot request)
+      (diagnostic! :source-mutated path))
+    (when-not (and product
+                   (= run-product-keys (set (keys run-product)))
+                   (closed-value? run-product)
+                   (exact-run-product-status? product))
       (diagnostic! :supplied-verification-failed path))
+    (when (contains-value? product #{path-slot-sentinel})
+      (diagnostic! :path-slot-mismatch path))
     (when-not (= (:digest-requests product)
                  (get-in product [:raw-template-result :digest-requests]))
       (diagnostic! :digest-purpose-mismatch path))
@@ -382,32 +514,48 @@
                             :verification-report-cached? false}}
           _ (when-not (path-neutral? base request)
               (diagnostic! :path-slot-mismatch path))
+          _ (when-not (closed-value? base)
+              (diagnostic! :carrier-schema path))
           counted (fixpoint-carrier base)]
       (when (> (:canonical-byte-count counted) maximum-canonical-bytes)
         (diagnostic! :carrier-too-large path))
       (assoc counted :integrity-hash (final-integrity counted)))))
 
 (defn- valid-carrier? [carrier]
-  (and (map? carrier)
-       (= carrier-keys (set (keys carrier)))
-       (= path-slot-addresses (:path-slot-addresses carrier))
-       (try
+  (try
+    (and (map? carrier)
+         (closed-value? carrier)
+         (= carrier-keys (set (keys carrier)))
+         (= :gravity/sh07-semantic-run-product-carrier-v2 (:artifact carrier))
+         (= 2 (:schema-version carrier))
+         (= :accepted (:status carrier))
+         (= :non-authoritative (:authority carrier))
+         (= path-slot-addresses (:path-slot-addresses carrier))
+         (= run-product-keys (set (keys (:run-product carrier))))
+         (exact-run-product-status? (:run-product carrier))
          (every? #(= path-slot-sentinel
                       (get-address (:run-product carrier) %))
                  path-slot-addresses)
-         (catch Exception _ false))
-       (= (:shape-manifest carrier) (shape-manifest (:run-product carrier)))
-       (= (:canonical-byte-count carrier) (carrier-byte-count carrier))
-       (= (:integrity-hash carrier) (final-integrity carrier))
-       (<= (:canonical-byte-count carrier) maximum-canonical-bytes)))
+         (= (:shape-manifest carrier) (shape-manifest (:run-product carrier)))
+         (integer? (:canonical-byte-count carrier))
+         (pos? (:canonical-byte-count carrier))
+         (= (:canonical-byte-count carrier) (carrier-byte-count carrier))
+         (= (:integrity-hash carrier) (final-integrity carrier))
+         (<= (:canonical-byte-count carrier) maximum-canonical-bytes))
+    (catch Exception _ false)
+    (catch StackOverflowError _ false)))
 
 (defn lookup-valid?
   "Validates an immutable process-local entry before it is counted as a hit."
   [carrier snapshot request]
-  (and (valid-carrier? carrier)
-       (= (:semantic-key carrier) (semantic-key snapshot))
-       (= (get-in carrier [:semantic-key :pins]) (live-pins))
-       (= (:static-envelope carrier) (static-envelope request))))
+  (try
+    (and (valid-carrier? carrier)
+         (snapshot-matches-request? snapshot request)
+         (= (:semantic-key carrier) (semantic-key snapshot))
+         (= (get-in carrier [:semantic-key :pins]) (live-pins))
+         (= (:static-envelope carrier) (static-envelope request)))
+    (catch Exception _ false)
+    (catch StackOverflowError _ false)))
 
 (defn- bound-slot-value [product request address]
   (let [path (request-path request)
@@ -440,10 +588,10 @@
                    (into {} (map (fn [[key item]]
                                    [(copy-value key) (copy-value item)]) value)))
     (vector? value) (if (empty? value)
-                      (with-meta [] {})
+                      (clojure.lang.PersistentVector/create (object-array 0))
                       (mapv copy-value value))
     (set? value) (if (empty? value)
-                   (with-meta #{} {})
+                   (clojure.lang.PersistentHashSet/create (object-array 0))
                    (into #{} (map copy-value) value))
     :else value))
 
@@ -476,6 +624,15 @@
    :non-path-equality :template-status :resolved-status :artifact-identity
    :provenance-identity :lineage :no-alias])
 
+(defn- safe-check [predicate]
+  (try
+    (boolean (predicate))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      false)
+    (catch Exception _ false)
+    (catch StackOverflowError _ false)))
+
 (defn verify-supplied-product
   "Independent closed predicates for a supplied bound product.  The optional
   `seams` map supplies integration-only pure checks (for exact digest and
@@ -485,36 +642,70 @@
   ([carrier snapshot sh06 verification request candidate seams]
    (let [path (request-path request)
          product (product-from candidate)
-         neutral (try (neutralize-product product request) (catch Exception _ ::invalid))
-         checks {:carrier-integrity (valid-carrier? carrier)
-                 :closed-schema (and (= run-product-keys (set (keys product)))
-                                     (= (:shape-manifest carrier)
-                                        (shape-manifest (:run-product carrier))))
-                 :live-pins (= (get-in carrier [:semantic-key :pins]) (live-pins))
-                 :request-membership (= request (bootstrap/sh07-core-authenticated-request sh06))
-                 :upstream-verification (sh06-passed? verification sh06)
-                 :source-envelope (= (semantic-key snapshot) (:semantic-key carrier))
-                 :static-envelope (= (static-envelope request) (:static-envelope carrier))
-                 :path-slot-completeness (and (not= ::invalid neutral)
-                                              (path-neutral? neutral request)
-                                              (= neutral (:run-product carrier)))
-                 :digest-purpose-uniqueness (try (purpose-indexes (:digest-requests product)) true
-                                                  (catch Exception _ false))
-                 :digest-rebinding (if-let [predicate (:digest-rebinding? seams)]
-                                      (boolean (predicate request product)) false)
-                 :non-path-equality (java.util.Arrays/equals
-                                     ^bytes (canonical-bytes neutral)
-                                     ^bytes (canonical-bytes (:run-product carrier)))
-                 :template-status (= :passed (get-in product [:template-verification :status]))
-                 :resolved-status (= :passed (get-in product [:resolved-verification :status]))
-                 :artifact-identity (if-let [predicate (:artifact-identity? seams)]
-                                      (boolean (predicate request product candidate)) false)
-                 :provenance-identity (if-let [predicate (:provenance-identity? seams)]
-                                        (boolean (predicate request product candidate)) false)
-                 :lineage (if-let [predicate (:lineage? seams)]
-                            (boolean (predicate request product candidate)) false)
-                 :no-alias (if-let [predicate (:no-alias? seams)]
-                             (boolean (predicate carrier candidate)) false)}
+         sentinel-free? (and product
+                             (not (contains-value? candidate
+                                                   #{path-slot-sentinel})))
+         neutral (if sentinel-free?
+                   (try (neutralize-product product request)
+                        (catch Exception _ ::invalid))
+                   ::invalid)
+         checks
+         {:carrier-integrity (valid-carrier? carrier)
+          :closed-schema
+          (safe-check
+           #(and product
+                 (closed-value? candidate)
+                 (= run-product-keys (set (keys product)))
+                 (exact-run-product-status? product)
+                 (= (:shape-manifest carrier)
+                    (shape-manifest (:run-product carrier)))))
+          :live-pins
+          (safe-check #(and (closed-value? (live-pins))
+                            (= (get-in carrier [:semantic-key :pins])
+                               (live-pins))))
+          :request-membership
+          (safe-check #(= request (current-authenticated-request sh06 path)))
+          :upstream-verification (safe-check #(sh06-passed? verification sh06))
+          :source-envelope
+          (safe-check #(and (snapshot-matches-request? snapshot request)
+                            (= (semantic-key snapshot) (:semantic-key carrier))))
+          :static-envelope
+          (safe-check #(= (static-envelope request) (:static-envelope carrier)))
+          :path-slot-completeness
+          (safe-check #(and sentinel-free?
+                            (not= ::invalid neutral)
+                            (path-neutral? neutral request)
+                            (= neutral (:run-product carrier))))
+          :digest-purpose-uniqueness
+          (safe-check #(do (purpose-indexes (:digest-requests product)) true))
+          :digest-rebinding
+          (if-let [predicate (:digest-rebinding? seams)]
+            (safe-check #(predicate request product)) false)
+          :non-path-equality
+          (safe-check
+           #(and (not= ::invalid neutral)
+                 (java.util.Arrays/equals
+                  ^bytes (canonical-bytes neutral)
+                  ^bytes (canonical-bytes (:run-product carrier)))))
+          :template-status
+          (safe-check #(and (exact-run-product-status? product)
+                            (= (:digest-requests product)
+                               (get-in product [:raw-template-result
+                                                :digest-requests]))))
+          :resolved-status
+          (safe-check #(and (exact-run-product-status? product)
+                            (= (count (:digest-requests product))
+                               (count (:resolved-digests product)))))
+          :artifact-identity
+          (if-let [predicate (:artifact-identity? seams)]
+            (safe-check #(predicate request product candidate)) false)
+          :provenance-identity
+          (if-let [predicate (:provenance-identity? seams)]
+            (safe-check #(predicate request product candidate)) false)
+          :lineage (if-let [predicate (:lineage? seams)]
+                     (safe-check #(predicate request product candidate)) false)
+          :no-alias (if-let [predicate (:no-alias? seams)]
+                      (safe-check #(predicate carrier candidate)) false)}
          checks (into (sorted-map) checks)
          failed (->> check-catalog (remove checks) vec)]
      {:artifact :gravity/sh07-supplied-run-product-verification-v2
@@ -530,10 +721,13 @@
   ([carrier snapshot sh06 verification request seams]
    (let [path (request-path request)]
      (when-not (valid-carrier? carrier) (diagnostic! :carrier-integrity path))
+     (when-not (and (snapshot-matches-request? snapshot request)
+                    (request-envelope-valid? request))
+       (diagnostic! :source-mutated path))
      (when-not (= (:semantic-key carrier) (semantic-key snapshot))
        (diagnostic! :source-mutated path))
      (when-not (sh06-passed? verification sh06) (diagnostic! :sh06-verification-failed path))
-     (when-not (= request (bootstrap/sh07-core-authenticated-request sh06))
+     (when-not (= request (current-authenticated-request sh06 path))
        (diagnostic! :request-membership-mismatch path))
      (when-not (= (:static-envelope carrier) (static-envelope request))
        (diagnostic! :request-membership-mismatch path))
@@ -542,9 +736,29 @@
            _ (when-not (and (fn? resolve-digests) (fn? assemble-artifact))
                (diagnostic! :digest-purpose-mismatch path))
            product (bind-product carrier request)
-           resolved (resolve-digests request (:digest-requests product))
+           resolved (try
+                      (resolve-digests request (:digest-requests product))
+                      (catch InterruptedException interrupted
+                        (.interrupt (Thread/currentThread))
+                        (diagnostic! :producer-interrupted path))
+                      (catch Exception _
+                        (diagnostic! :digest-purpose-mismatch path)))
+           _ (when-not (and (vector? resolved)
+                            (= (count (:digest-requests product))
+                               (count resolved))
+                            (every? #(and (string? %)
+                                          (boolean
+                                           (re-matches #"sha256:[0-9a-f]{64}" %)))
+                                    resolved))
+               (diagnostic! :digest-purpose-mismatch path))
            product (apply-resolved-digests product resolved)
-           artifact (copy-value (assemble-artifact sh06 request product))
+           artifact (try
+                      (copy-value (assemble-artifact sh06 request product))
+                      (catch InterruptedException interrupted
+                        (.interrupt (Thread/currentThread))
+                        (diagnostic! :producer-interrupted path))
+                      (catch Exception _
+                        (diagnostic! :supplied-verification-failed path)))
            supplied (verify-supplied-product
                      carrier snapshot sh06 verification request artifact seams)]
        (when-not (= :passed (:status supplied))
