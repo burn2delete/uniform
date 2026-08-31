@@ -1,0 +1,61 @@
+[[p7/hidden-alloc
+  {:id "P7-HIDDEN-ALLOC",
+   :rule :P7,
+   :operation :kernel/hidden-allocation,
+   :memory-regime :hidden-allocation,
+   :message "kernel profile rejects hidden allocation"}]
+ [p7/gc
+  {:id "P7-GC",
+   :rule :P7,
+   :operation :kernel/gc,
+   :memory-regime :managed-runtime,
+   :message "kernel profile rejects GC or managed runtime assumptions"}]
+ [p7/raw-memory
+  {:id "P7-RAW-MEMORY",
+   :rule :P7,
+   :operation :kernel/raw-memory,
+   :effect :memory/raw,
+   :message "kernel raw memory requires reviewed unsafe policy"}]
+ [p7/mmio
+  {:id "P7-MMIO",
+   :rule :P7,
+   :operation :kernel/mmio,
+   :requested-capability :hardware/mmio,
+   :message "kernel MMIO requires device map and authority"}]
+ [p7/interrupt
+  {:id "P7-INTERRUPT",
+   :rule :P7,
+   :operation :kernel/interrupt,
+   :requested-capability :hardware/interrupt,
+   :message "kernel interrupt handler metadata is invalid"}]
+ [p7/scheduler
+  {:id "P7-SCHEDULER",
+   :rule :P7,
+   :operation :kernel/scheduler,
+   :missing-fact :scheduler-context,
+   :message
+   "kernel scheduler operation lacks blocking, preemption, or allocation proof"}]
+ [p7/atomic
+  {:id "P7-ATOMIC",
+   :rule :P7,
+   :operation :kernel/atomic,
+   :missing-fact :target-memory-order,
+   :message "kernel atomic or fence lacks target support"}]
+ [p7/exception
+  {:id "P7-EXCEPTION",
+   :rule :P7,
+   :operation :kernel/exception,
+   :missing-fact :bounded-error-model,
+   :message "kernel profile rejects unbounded exception behavior"}]
+ [p7/abi
+  {:id "P7-ABI",
+   :rule :P7,
+   :operation :kernel/driver-abi,
+   :missing-fact :driver-abi-metadata,
+   :message "kernel driver or module ABI metadata is incomplete"}]
+ [p7/authority
+  {:id "P7-AUTHORITY",
+   :rule :P7,
+   :operation :kernel/ambient-authority,
+   :denied-authority :privileged-action,
+   :message "kernel profile rejects ambient privileged authority"}]]

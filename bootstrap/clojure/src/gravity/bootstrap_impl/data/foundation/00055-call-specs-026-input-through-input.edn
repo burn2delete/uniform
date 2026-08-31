@@ -1,0 +1,4 @@
+[[network/input
+  {:return-type "Untrusted[NetworkInput]",
+   :effects #{:network/http},
+   :capabilities #{:network/client}}]]

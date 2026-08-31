@@ -1,0 +1,88 @@
+[[safe16/fixture
+  {:expected-outcome :accept,
+   :rule :SAFE16,
+   :operation :fixture-manifest,
+   :actual-outcome :malformed,
+   :missing-artifact :fixture-manifest,
+   :missing-fact :well-formed-fixture-manifest,
+   :id "SAFE16-FIXTURE",
+   :document-id :SAFE16,
+   :fixture-id :safe16/bad-fixture,
+   :message "fixture manifest is malformed"}]
+ [safe16/outcome
+  {:expected-outcome :reject,
+   :rule :SAFE16,
+   :operation :expected-outcome,
+   :actual-outcome :accept,
+   :missing-artifact nil,
+   :missing-fact :matching-outcome,
+   :id "SAFE16-OUTCOME",
+   :document-id :SAFE1,
+   :fixture-id :safe1/outcome,
+   :message "expected and actual outcome mismatch"}]
+ [safe16/diagnostic
+  {:expected-outcome :reject,
+   :rule :SAFE16,
+   :operation :diagnostic-match,
+   :actual-outcome :reject,
+   :missing-artifact :diagnostic-id,
+   :missing-fact :diagnostic-id-or-span,
+   :id "SAFE16-DIAGNOSTIC",
+   :document-id :SAFE10,
+   :fixture-id :safe10/scope,
+   :message "diagnostic id or source span does not match"}]
+ [safe16/artifact
+  {:expected-outcome :accept,
+   :rule :SAFE16,
+   :operation :artifact-inspection,
+   :actual-outcome :accept,
+   :missing-artifact :certificate-record,
+   :missing-fact :required-artifact,
+   :id "SAFE16-ARTIFACT",
+   :document-id :SAFE15,
+   :fixture-id :safe15/certificate,
+   :message "required artifact inspection is missing or invalid"}]
+ [safe16/profile
+  {:expected-outcome :reject,
+   :rule :SAFE16,
+   :operation :profile-matrix,
+   :actual-outcome :accept,
+   :missing-artifact :profile-matrix-row,
+   :missing-fact :profile-specific-outcome,
+   :id "SAFE16-PROFILE",
+   :document-id :SAFE8,
+   :fixture-id :safe8/actor-profile,
+   :message "profile matrix result does not match expected behavior"}]
+ [safe16/certificate
+  {:expected-outcome :certificate-backed-proof,
+   :rule :SAFE16,
+   :operation :certificate-inspection,
+   :actual-outcome :accept,
+   :missing-artifact :proof-record,
+   :missing-fact :proof-or-certificate-inspection,
+   :id "SAFE16-CERTIFICATE",
+   :document-id :SAFE15,
+   :fixture-id :safe15/check-erasure,
+   :message "proof or certificate inspection is missing"}]
+ [safe16/backend
+  {:expected-outcome :retain-check,
+   :rule :SAFE16,
+   :operation :backend-preservation,
+   :actual-outcome :erased-check,
+   :missing-artifact :backend-preservation-report,
+   :missing-fact :backend-preservation-report,
+   :id "SAFE16-BACKEND",
+   :document-id :SAFE9,
+   :fixture-id :safe9/backend,
+   :message "backend preservation result does not match"}]
+ [safe16/report
+  {:expected-outcome :report-valid,
+   :rule :SAFE16,
+   :operation :conformance-report,
+   :actual-outcome :report-invalid,
+   :missing-artifact :conformance-report,
+   :missing-fact :machine-readable-report,
+   :id "SAFE16-REPORT",
+   :document-id :SAFE16,
+   :fixture-id :phase02/conformance,
+   :message "conformance report output is invalid"}]]

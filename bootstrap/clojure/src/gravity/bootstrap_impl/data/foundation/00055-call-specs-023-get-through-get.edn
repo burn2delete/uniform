@@ -1,0 +1,4 @@
+[[http/get
+  {:return-type "HttpResponse",
+   :effects #{:network/http},
+   :capabilities #{:network/client}}]]

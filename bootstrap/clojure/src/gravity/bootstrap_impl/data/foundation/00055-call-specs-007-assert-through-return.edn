@@ -1,0 +1,3 @@
+[[typed/assert {:return-type "Checked"}]
+ [typed/value {:return-type "TypedValue"}]
+ [typed/return {:return-type "CheckedReturn"}]]

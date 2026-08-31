@@ -1,0 +1,2 @@
+[[shared/immutable
+  {:return-type "SharedImmutable", :concurrency-family :immutable-sharing}]]

@@ -1,0 +1,33 @@
+(defn- __gravity_bootstrap_closed_core_structure_validation_status [state]
+  (let [{:syms
+         [source-path
+          artifact
+          mode
+          expected-authority-evidence
+          effectful?
+          authority-evidence
+          execution-evidence
+          nodes
+          plan-nodes
+          node-ids
+          paths
+          node-origin-ids
+          origin-table
+          origin-closure
+          declared-effects
+          declared-capabilities
+          declared-exports
+          observed-operation-set
+          recomputed-effect-requirements
+          entrypoint-visibility
+          node-by-id
+          expected-managed-node-ids
+          capability-proof-by-node-capability
+          dependency-graph
+          _
+          recomputed-facts
+          function-nodes
+          diagnostic-module
+          enriched-subject]}
+        state]
+    :passed))

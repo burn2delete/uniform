@@ -1,0 +1,4 @@
+[[reflection/use
+  {:return-type "HostObject",
+   :effects #{:reflection/use},
+   :capabilities #{:reflection/use}}]]

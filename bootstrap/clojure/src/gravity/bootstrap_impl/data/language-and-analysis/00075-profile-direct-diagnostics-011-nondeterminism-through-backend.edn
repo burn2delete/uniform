@@ -1,0 +1,60 @@
+[[p12/nondeterminism
+  {:id "P12-NONDETERMINISM",
+   :rule :P12,
+   :operation :formal/nondeterminism,
+   :effect :random/read,
+   :message "formal profile rejects unmodeled nondeterminism"}]
+ [p12/effect
+  {:id "P12-EFFECT",
+   :rule :P12,
+   :operation :formal/runtime-effect,
+   :effect :io/write,
+   :message "formal profile rejects runtime effects not modeled as assumptions"}]
+ [p12/math-mode
+  {:id "P12-MATH-MODE",
+   :rule :P12,
+   :operation :formal/math-mode,
+   :missing-fact :proof-math-mode,
+   :message "formal profile requires explicit math mode"}]
+ [p12/assumption
+  {:id "P12-ASSUMPTION",
+   :rule :P12,
+   :operation :formal/assumption,
+   :missing-fact :assumption-manifest,
+   :message "formal profile requires machine-readable assumptions"}]
+ [p12/proof
+  {:id "P12-PROOF",
+   :rule :P12,
+   :operation :formal/proof-check,
+   :proof-id :missing,
+   :message "formal proof checking failed or is missing"}]
+ [p12/certificate
+  {:id "P12-CERTIFICATE",
+   :rule :P12,
+   :operation :formal/imported-certificate,
+   :certificate-id :missing,
+   :message "formal imported certificate is invalid"}]
+ [p12/trust
+  {:id "P12-TRUST",
+   :rule :P12,
+   :operation :formal/trusted-kernel,
+   :trust-root :untrusted,
+   :message "formal proof provider or trusted kernel is untrusted"}]
+ [p12/unsafe
+  {:id "P12-UNSAFE",
+   :rule :P12,
+   :operation :formal/unsafe,
+   :safety-outcome :unsafe-island,
+   :message "formal profile forbids unsafe code"}]
+ [p12/symbolic-lowering
+  {:id "P12-SYMBOLIC-LOWERING",
+   :rule :P12,
+   :operation :formal/symbolic-lowering,
+   :missing-fact :symbolic-ir,
+   :message "formal code cannot lower to symbolic IR"}]
+ [p12/backend
+  {:id "P12-BACKEND",
+   :rule :P12,
+   :operation :formal/backend-assumption,
+   :missing-fact :backend-proof-assumption,
+   :message "formal backend assumptions are not covered by proof artifacts"}]]

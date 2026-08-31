@@ -1,0 +1,29 @@
+[[safe15/proof-record
+  {:return-type "Safe15ProofRecord", :safety-conformance-kind :safe15-proof-record}]
+ [safe15/certificate
+  {:return-type "Safe15SafetyCertificate",
+   :safety-conformance-kind :safe15-certificate}]
+ [safe15/check-erasure
+  {:return-type "Safe15CheckErasureRecord",
+   :safety-conformance-kind :safe15-check-erasure}]
+ [safe15/trust-record
+  {:return-type "Safe15CertificateTrustRecord",
+   :safety-conformance-kind :safe15-trust-record}]
+ [safe15/invalidation-record
+  {:return-type "Safe15InvalidationRecord",
+   :safety-conformance-kind :safe15-invalidation-record}]
+ [safe15/imported-certificate
+  {:return-type "Safe15ImportedCertificateVerification",
+   :safety-conformance-kind :safe15-imported-certificate}]
+ [safe15/proof-provider
+  {:return-type "Safe15ProofProviderRecord",
+   :safety-conformance-kind :safe15-proof-provider}]
+ [safe15/unsafe-wrapper-audit
+  {:return-type "Safe15UnsafeWrapperAuditView",
+   :safety-conformance-kind :safe15-unsafe-wrapper-audit}]
+ [safe15/backend-preservation
+  {:return-type "Safe15BackendProofPreservation",
+   :safety-conformance-kind :safe15-backend-preservation}]
+ [safe15/conformance
+  {:return-type "Safe15ConformanceRecord",
+   :safety-conformance-kind :safe15-conformance}]]

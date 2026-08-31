@@ -35,6 +35,8 @@
    "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"
    "bootstrap/clojure/test/gravity/bootstrap_test.clj"
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/p18_t00_orchestration_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/p18_t00_semantics_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
    "contracts/stage0-incremental-test-dependencies.edn"

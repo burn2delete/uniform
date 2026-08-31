@@ -1,0 +1,1 @@
+[[generator/yield {:return-type "Yielded", :effects #{:generator/yield}}]]

@@ -1,0 +1,22 @@
+[[safe6/unsafe-island
+  {:return-type "Safe6UnsafeIslandRecord",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :safe6-kind :unsafe-island}]
+ [safe6/safe-wrapper
+  {:return-type "Safe6SafeWrapperRecord", :safe6-kind :safe-wrapper}]
+ [safe6/operation-inventory
+  {:return-type "Safe6OperationInventoryRecord", :safe6-kind :operation-inventory}]
+ [safe6/review-status
+  {:return-type "Safe6ReviewStatusRecord", :safe6-kind :review-status}]
+ [safe6/invariant-proof
+  {:return-type "Safe6InvariantProofRecord", :safe6-kind :invariant-proof}]
+ [safe6/generated-provenance
+  {:return-type "Safe6GeneratedUnsafeProvenance", :safe6-kind :generated-provenance}]
+ [safe6/policy-decision
+  {:return-type "Safe6PolicyDecisionRecord", :safe6-kind :policy-decision}]
+ [safe6/dependency-summary
+  {:return-type "Safe6DependencyUnsafeSummary", :safe6-kind :dependency-summary}]
+ [safe6/release-audit
+  {:return-type "Safe6ReleaseAuditReport", :safe6-kind :release-audit}]
+ [safe6/conformance {:return-type "Safe6ConformanceRecord", :safe6-kind :conformance}]]

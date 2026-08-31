@@ -1,0 +1,5 @@
+[[actor/send
+  {:return-type "ActorMessage",
+   :effects #{:async/suspend},
+   :capabilities #{:scheduler/task},
+   :concurrency-family :actor}]]

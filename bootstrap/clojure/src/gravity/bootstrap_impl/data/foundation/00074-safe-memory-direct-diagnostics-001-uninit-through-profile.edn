@@ -1,0 +1,72 @@
+[[safe2/uninit
+  {:id "SAFE2-UNINIT",
+   :rule :SAFE2,
+   :operation :memory/load,
+   :missing-fact :initialization,
+   :message "code reads storage before initialization"}]
+ [safe2/bounds
+  {:id "SAFE2-BOUNDS",
+   :rule :SAFE2,
+   :operation :slice/index,
+   :missing-fact :bounds-proof,
+   :message "memory access may be out of bounds"}]
+ [safe2/lifetime
+  {:id "SAFE2-LIFETIME",
+   :rule :SAFE2,
+   :operation :borrow,
+   :missing-fact :lifetime-proof,
+   :message "reference may outlive its storage"}]
+ [safe2/escape
+  {:id "SAFE2-ESCAPE",
+   :rule :SAFE2,
+   :operation :escape,
+   :missing-fact :escape-proof,
+   :message "memory escapes its valid scope"}]
+ [safe2/alias
+  {:id "SAFE2-ALIAS",
+   :rule :SAFE2,
+   :operation :mutable-access,
+   :missing-fact :alias-proof,
+   :message "mutation uses invalid aliases"}]
+ [safe2/alloc-failure
+  {:id "SAFE2-ALLOC-FAILURE",
+   :rule :SAFE2,
+   :operation :allocation,
+   :missing-fact :allocation-failure-behavior,
+   :message "allocation failure behavior is undeclared"}]
+ [safe2/allocator
+  {:id "SAFE2-ALLOCATOR",
+   :rule :SAFE2,
+   :operation :release,
+   :missing-fact :allocator-identity,
+   :message "release uses an incompatible allocator"}]
+ [safe2/use-after-release
+  {:id "SAFE2-USE-AFTER-RELEASE",
+   :rule :SAFE2,
+   :operation :memory/load,
+   :missing-fact :release-state,
+   :message "memory may be accessed after release"}]
+ [safe2/double-release
+  {:id "SAFE2-DOUBLE-RELEASE",
+   :rule :SAFE2,
+   :operation :release,
+   :missing-fact :single-release-proof,
+   :message "memory may be released more than once"}]
+ [safe2/raw
+  {:id "SAFE2-RAW",
+   :rule :SAFE2,
+   :operation :raw-memory,
+   :missing-fact :unsafe-island,
+   :message "raw memory is used outside unsafe policy"}]
+ [safe2/check-erase
+  {:id "SAFE2-CHECK-ERASE",
+   :rule :SAFE2,
+   :operation :optimization,
+   :missing-fact :check-erasure-proof,
+   :message "memory check is erased without proof"}]
+ [safe2/profile
+  {:id "SAFE2-PROFILE",
+   :rule :SAFE2,
+   :operation :memory-regime,
+   :missing-fact :profile-memory-support,
+   :message "memory regime is unavailable in the active profile"}]]

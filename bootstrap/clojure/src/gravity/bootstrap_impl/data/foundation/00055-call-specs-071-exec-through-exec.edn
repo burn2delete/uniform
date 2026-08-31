@@ -1,0 +1,4 @@
+[[shell/exec
+  {:return-type "ProcessResult",
+   :effects #{:shell/exec},
+   :capabilities #{:shell/exec}}]]

@@ -1,0 +1,4 @@
+[[host/managed-object
+  {:return-type "HostManaged[Object]",
+   :memory-regime :host-managed,
+   :runtime-assumption :host-managed}]]

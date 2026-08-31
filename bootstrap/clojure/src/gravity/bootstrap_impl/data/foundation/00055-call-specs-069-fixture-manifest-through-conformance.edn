@@ -1,0 +1,30 @@
+[[safe16/fixture-manifest
+  {:return-type "Safe16FixtureManifest",
+   :safety-conformance-kind :safe16-fixture-manifest}]
+ [safe16/expected-outcome
+  {:return-type "Safe16ExpectedOutcomeManifest",
+   :safety-conformance-kind :safe16-expected-outcome}]
+ [safe16/diagnostic-match
+  {:return-type "Safe16DiagnosticMatchRecord",
+   :safety-conformance-kind :safe16-diagnostic-match}]
+ [safe16/runtime-check-inspection
+  {:return-type "Safe16RuntimeCheckInspection",
+   :safety-conformance-kind :safe16-runtime-check-inspection}]
+ [safe16/unsafe-audit-inspection
+  {:return-type "Safe16UnsafeAuditInspection",
+   :safety-conformance-kind :safe16-unsafe-audit-inspection}]
+ [safe16/certificate-inspection
+  {:return-type "Safe16CertificateInspection",
+   :safety-conformance-kind :safe16-certificate-inspection}]
+ [safe16/profile-matrix
+  {:return-type "Safe16ProfileMatrixReport",
+   :safety-conformance-kind :safe16-profile-matrix}]
+ [safe16/backend-preservation
+  {:return-type "Safe16BackendPreservationReport",
+   :safety-conformance-kind :safe16-backend-preservation}]
+ [safe16/conformance-report
+  {:return-type "Safe16ConformanceReport",
+   :safety-conformance-kind :safe16-conformance-report}]
+ [safe16/conformance
+  {:return-type "Safe16ConformanceRecord",
+   :safety-conformance-kind :safe16-conformance}]]

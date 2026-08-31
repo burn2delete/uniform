@@ -1,0 +1,7 @@
+[[memory/gc-alloc
+  {:return-type "GcManaged[Object]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :gc-backed,
+   :allocation-kind :gc-managed,
+   :runtime-assumption :managed-runtime}]]

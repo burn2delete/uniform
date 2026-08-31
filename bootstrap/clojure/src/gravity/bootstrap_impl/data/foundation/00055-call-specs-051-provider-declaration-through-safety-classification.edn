@@ -1,0 +1,41 @@
+[[altmem/provider-declaration
+  {:return-type "AlternativeMemoryProviderDeclaration",
+   :alternative-memory-kind :provider}]
+ [altmem/allocation-strategy
+  {:return-type "AlternativeMemoryAllocationStrategy",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :alternative-memory-kind :allocation-strategy}]
+ [altmem/lifetime-facts
+  {:return-type "AlternativeMemoryLifetimeFacts",
+   :alternative-memory-kind :lifetime-facts}]
+ [altmem/unsafe-boundary-audit
+  {:return-type "AlternativeMemoryUnsafeBoundaryAudit",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :alternative-memory-kind :unsafe-boundary-audit}]
+ [altmem/layout-metadata
+  {:return-type "AlternativeMemoryLayoutMetadata",
+   :alternative-memory-kind :layout-metadata}]
+ [altmem/runtime-check
+  {:return-type "AlternativeMemoryRuntimeCheck",
+   :alternative-memory-kind :runtime-check}]
+ [altmem/release-evidence
+  {:return-type "AlternativeMemoryReleaseEvidence",
+   :alternative-memory-kind :release-evidence}]
+ [altmem/device-map
+  {:return-type "AlternativeMemoryDeviceMap",
+   :effects #{:memory/mmio},
+   :capabilities #{:hardware/mmio},
+   :alternative-memory-kind :device-map}]
+ [altmem/ffi-allocator
+  {:return-type "AlternativeMemoryFfiAllocator",
+   :effects #{:ffi/call},
+   :capabilities #{:ffi/call},
+   :alternative-memory-kind :ffi-allocator}]
+ [altmem/conformance-report
+  {:return-type "AlternativeMemoryConformanceReport",
+   :alternative-memory-kind :conformance-report}]
+ [altmem/safety-classification
+  {:return-type "AlternativeMemorySafetyClassification",
+   :alternative-memory-kind :safety-classification}]]

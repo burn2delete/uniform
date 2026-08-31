@@ -1,0 +1,5 @@
+[[static/ref
+  {:return-type "Static[Buffer]",
+   :memory-regime :static-allocation,
+   :allocation-kind :static,
+   :runtime-assumption :static-storage}]]

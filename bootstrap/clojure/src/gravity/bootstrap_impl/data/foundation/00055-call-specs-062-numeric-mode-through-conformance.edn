@@ -1,0 +1,25 @@
+[[safe9/numeric-mode
+  {:return-type "Safe9NumericModeRecord", :safe-boundary-kind :safe9-numeric-mode}]
+ [safe9/runtime-check
+  {:return-type "Safe9RuntimeNumericCheck",
+   :effects #{:safety/check-failure},
+   :safe-boundary-kind :safe9-runtime-check}]
+ [safe9/range-proof
+  {:return-type "Safe9RangeProofRecord", :safe-boundary-kind :safe9-range-proof}]
+ [safe9/floating-mode
+  {:return-type "Safe9FloatingPointModeRecord",
+   :safe-boundary-kind :safe9-floating-mode}]
+ [safe9/elementary-approximation
+  {:return-type "Safe9ElementaryApproximationRecord",
+   :safe-boundary-kind :safe9-elementary-approximation}]
+ [safe9/relaxed-approval
+  {:return-type "Safe9RelaxedModeApproval",
+   :safe-boundary-kind :safe9-relaxed-approval}]
+ [safe9/optimization-proof
+  {:return-type "Safe9OptimizationProof",
+   :safe-boundary-kind :safe9-optimization-proof}]
+ [safe9/backend-lowering
+  {:return-type "Safe9BackendNumericLowering",
+   :safe-boundary-kind :safe9-backend-lowering}]
+ [safe9/conformance
+  {:return-type "Safe9ConformanceRecord", :safe-boundary-kind :safe9-conformance}]]

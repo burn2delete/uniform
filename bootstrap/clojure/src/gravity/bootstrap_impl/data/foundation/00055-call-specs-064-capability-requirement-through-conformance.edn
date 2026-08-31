@@ -1,0 +1,26 @@
+[[safe10/capability-requirement
+  {:return-type "Safe10CapabilityRequirementRecord",
+   :safe-capability-kind :safe10-capability-requirement}]
+ [safe10/grant-intersection
+  {:return-type "Safe10GrantIntersectionRecord",
+   :safe-capability-kind :safe10-grant-intersection}]
+ [safe10/provider-selection
+  {:return-type "Safe10ProviderSelectionRecord",
+   :safe-capability-kind :safe10-provider-selection}]
+ [safe10/scope-check
+  {:return-type "Safe10ScopeCheckRecord", :safe-capability-kind :safe10-scope-check}]
+ [safe10/attenuation-record
+  {:return-type "Safe10AttenuationRecord", :safe-capability-kind :safe10-attenuation}]
+ [safe10/revocation-record
+  {:return-type "Safe10RevocationRecord", :safe-capability-kind :safe10-revocation}]
+ [safe10/secret-redaction
+  {:return-type "Safe10SecretRedactionRecord",
+   :safe-capability-kind :safe10-secret-redaction}]
+ [safe10/runtime-check
+  {:return-type "Safe10RuntimeCapabilityCheckRecord",
+   :safe-capability-kind :safe10-runtime-check}]
+ [safe10/usage-summary
+  {:return-type "Safe10CapabilityUsageSummary",
+   :safe-capability-kind :safe10-usage-summary}]
+ [safe10/conformance
+  {:return-type "Safe10ConformanceRecord", :safe-capability-kind :safe10-conformance}]]

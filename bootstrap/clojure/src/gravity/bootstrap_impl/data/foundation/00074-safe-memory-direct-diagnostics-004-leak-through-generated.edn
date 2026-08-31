@@ -1,0 +1,60 @@
+[[safe5/leak
+  {:id "SAFE5-LEAK",
+   :rule :SAFE5,
+   :operation :linear-resource,
+   :missing-fact :terminal-operation,
+   :message "linear resource may lack a terminal operation"}]
+ [safe5/double-close
+  {:id "SAFE5-DOUBLE-CLOSE",
+   :rule :SAFE5,
+   :operation :linear-resource,
+   :missing-fact :single-terminal-operation,
+   :message "linear resource may be closed more than once"}]
+ [safe5/use-after-close
+  {:id "SAFE5-USE-AFTER-CLOSE",
+   :rule :SAFE5,
+   :operation :linear-resource,
+   :missing-fact :open-resource-state,
+   :message "linear resource is used after terminal state"}]
+ [safe5/branch
+  {:id "SAFE5-BRANCH",
+   :rule :SAFE5,
+   :operation :control-flow,
+   :missing-fact :all-paths-cleanup,
+   :message "cleanup occurs only on some control paths"}]
+ [safe5/transfer
+  {:id "SAFE5-TRANSFER",
+   :rule :SAFE5,
+   :operation :transfer,
+   :missing-fact :destination-cleanup-contract,
+   :message "linear transfer has invalid source or destination"}]
+ [safe5/capture
+  {:id "SAFE5-CAPTURE",
+   :rule :SAFE5,
+   :operation :capture,
+   :missing-fact :bounded-owner-lifetime,
+   :message "linear resource capture may outlive its owner"}]
+ [safe5/wrong-provider
+  {:id "SAFE5-WRONG-PROVIDER",
+   :rule :SAFE5,
+   :operation :release,
+   :missing-fact :provider-match,
+   :message "resource is released through an incompatible provider"}]
+ [safe5/cleanup-failure
+  {:id "SAFE5-CLEANUP-FAILURE",
+   :rule :SAFE5,
+   :operation :terminal-operation,
+   :missing-fact :cleanup-failure-behavior,
+   :message "terminal operation failure behavior is undeclared"}]
+ [safe5/cancel
+  {:id "SAFE5-CANCEL",
+   :rule :SAFE5,
+   :operation :cancellation,
+   :missing-fact :cancellation-cleanup,
+   :message "cancellation path lacks cleanup"}]
+ [safe5/generated
+  {:id "SAFE5-GENERATED",
+   :rule :SAFE5,
+   :operation :generated-code,
+   :missing-fact :generated-linear-flow,
+   :message "generated code duplicates or loses a linear value"}]]

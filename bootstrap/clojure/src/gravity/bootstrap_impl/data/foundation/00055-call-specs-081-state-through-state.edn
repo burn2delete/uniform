@@ -1,0 +1,1 @@
+[[hardware/state {:return-type "HardwareState", :concurrency-family :hardware-state}]]

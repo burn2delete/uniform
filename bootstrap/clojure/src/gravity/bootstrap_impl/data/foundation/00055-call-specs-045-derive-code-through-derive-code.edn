@@ -1,0 +1,6 @@
+[[derive-code
+  {:return-type "GeneratedFormArtifact",
+   :effects #{:build/write-artifact},
+   :compile-time-kind :generated-code,
+   :generated-form? true,
+   :build-grant-diagnostic "L12-BUILD-GRANT"}]]

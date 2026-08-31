@@ -1,0 +1,27 @@
+
+
+(def b14-public-check-basenames
+  #{"backend-test-matrix.gravity"
+    "backend-test-matrix.qst"
+    "backend-conformance-test-plan.gravity"
+    "backend-conformance-test-plan.qst"
+    "backend-matrix-b14-coverage.gravity"
+    "backend-matrix-b14-coverage.qst"
+    "backend-matrix-b14-target.gravity"
+    "backend-matrix-b14-target.qst"
+    "backend-matrix-b14-positive.gravity"
+    "backend-matrix-b14-positive.qst"
+    "backend-matrix-b14-negative.gravity"
+    "backend-matrix-b14-negative.qst"
+    "backend-matrix-b14-differential.gravity"
+    "backend-matrix-b14-differential.qst"
+    "backend-matrix-b14-metadata.gravity"
+    "backend-matrix-b14-metadata.qst"
+    "backend-matrix-b14-artifact.gravity"
+    "backend-matrix-b14-artifact.qst"
+    "backend-matrix-b14-nondeterminism.gravity"
+    "backend-matrix-b14-nondeterminism.qst"
+    "backend-matrix-b14-skip.gravity"
+    "backend-matrix-b14-skip.qst"
+    "backend-matrix-b14-evidence.gravity"
+    "backend-matrix-b14-evidence.qst"})

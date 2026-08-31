@@ -1,0 +1,60 @@
+[[p11/host-effect
+  {:id "P11-HOST-EFFECT",
+   :rule :P11,
+   :operation :gpu/host-effect,
+   :effect :io/write,
+   :message "GPU kernels reject host-only effects"}]
+ [p11/device-memory
+  {:id "P11-DEVICE-MEMORY",
+   :rule :P11,
+   :operation :gpu/device-memory,
+   :missing-fact :device-memory-lifetime,
+   :message "GPU profile requires device memory facts"}]
+ [p11/transfer
+  {:id "P11-TRANSFER",
+   :rule :P11,
+   :operation :gpu/transfer,
+   :missing-fact :transfer-record,
+   :message "GPU profile requires transfer records"}]
+ [p11/sync
+  {:id "P11-SYNC",
+   :rule :P11,
+   :operation :gpu/synchronization,
+   :missing-fact :synchronization-edge,
+   :message "GPU profile requires synchronization evidence"}]
+ [p11/alias
+  {:id "P11-ALIAS",
+   :rule :P11,
+   :operation :gpu/device-alias,
+   :missing-fact :aliasing-proof,
+   :message "GPU profile rejects unchecked device aliasing"}]
+ [p11/target-feature
+  {:id "P11-TARGET-FEATURE",
+   :rule :P11,
+   :operation :gpu/target-feature,
+   :missing-fact :accelerator-feature,
+   :message "GPU profile requires target feature evidence"}]
+ [p11/launch
+  {:id "P11-LAUNCH",
+   :rule :P11,
+   :operation :gpu/launch,
+   :missing-fact :launch-configuration,
+   :message "GPU launch configuration is invalid"}]
+ [p11/math
+  {:id "P11-MATH",
+   :rule :P11,
+   :operation :gpu/math,
+   :missing-fact :math-certificate,
+   :message "GPU profile requires numeric mode and math certificate evidence"}]
+ [p11/raw
+  {:id "P11-RAW",
+   :rule :P11,
+   :operation :gpu/raw-device-pointer,
+   :missing-fact :unsafe-device-pointer-audit,
+   :message "GPU raw device pointer behavior is unsafe"}]
+ [p11/boundary
+  {:id "P11-BOUNDARY",
+   :rule :P11,
+   :operation :gpu/host-device-boundary,
+   :missing-fact :host-device-boundary,
+   :message "GPU profile requires host/device boundary metadata"}]]

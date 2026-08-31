@@ -1,0 +1,1 @@
+[[effect/pure {:return-type "Nil", :effects #{}}]]

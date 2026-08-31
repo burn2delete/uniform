@@ -1,0 +1,235 @@
+
+
+(def stage0-compiled-runtime-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-selection.gravity"
+    :diagnostic "R1-SELECTION"
+    :rejected-behavior :compiled_runtime_family_not_explicit}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-forbidden-service.gravity"
+    :diagnostic "R1-FORBIDDEN"
+    :rejected-behavior :hidden_runtime_service_dependency}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-managed-manifest.gravity"
+    :diagnostic "R4-MANIFEST"
+    :rejected-behavior :incomplete_managed_runtime_manifest}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-managed-null.gravity"
+    :diagnostic "R4-NULL"
+    :rejected-behavior :unchecked_managed_host_null}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-capability-grant.gravity"
+    :diagnostic "R11-GRANT"
+    :rejected-behavior :runtime_action_without_matching_grant}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-runtime-observability-sink.gravity"
+    :diagnostic "R12-SINK"
+    :rejected-behavior :observability_sink_without_capability}])
+
+(def stage0-compiled-domain-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-manifest.gravity"
+    :diagnostic "P09-MANIFEST"
+    :rejected-behavior :incomplete_compiled_domain_slice_manifest}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-broad-claim.gravity"
+    :diagnostic "P09-CLAIM"
+    :rejected-behavior :platform_wide_replacement_claim}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-accepted-fixture.gravity"
+    :diagnostic "P09-ACCEPTED"
+    :rejected-behavior :domain_claim_without_accepted_fixture}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-rejected-fixture.gravity"
+    :diagnostic "P09-REJECTED"
+    :rejected-behavior :domain_claim_without_rejected_fixture}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-conformance.gravity"
+    :diagnostic "P09-CONFORMANCE"
+    :rejected-behavior :domain_claim_without_conformance_evidence}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-domain-metadata-loss.gravity"
+    :diagnostic "DOM17-METADATA"
+    :rejected-behavior :compiler_tooling_domain_metadata_loss}])
+
+(def stage0-compiled-schema-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-projection.gravity"
+    :diagnostic "S1-PROJECTION"
+    :rejected-behavior :compiled_schema_projection_weakens_source_schema}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-taint.gravity"
+    :diagnostic "S2-TAINT"
+    :rejected-behavior :compiled_serializer_drops_external_taint}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-hash.gravity"
+    :diagnostic "S3-HASH"
+    :rejected-behavior :compiled_canonical_hash_omits_schema_hash}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-resolver.gravity"
+    :diagnostic "S4-RESOLVER"
+    :rejected-behavior :compiled_graphql_resolver_without_capability_check}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-openapi.gravity"
+    :diagnostic "S5-SCHEMA"
+    :rejected-behavior :compiled_openapi_route_without_error_schema}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-data-loss.gravity"
+    :diagnostic "S6-DATA-LOSS"
+    :rejected-behavior :compiled_database_mapping_allows_data_loss}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-pointer.gravity"
+    :diagnostic "S7-POINTER"
+    :rejected-behavior :compiled_binary_abi_contains_raw_pointer}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-secret.gravity"
+    :diagnostic "S8-SECRET"
+    :rejected-behavior :compiled_typed_config_exposes_secret}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-schema-evidence.gravity"
+    :diagnostic "S9-EVIDENCE"
+    :rejected-behavior :compiled_artifact_schema_missing_evidence}])
+
+(def stage0-compiled-ai-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-tool-authority.gravity"
+    :diagnostic "AI004"
+    :rejected-behavior :compiled_ai_tool_authority_without_human_review}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-provider-capability.gravity"
+    :diagnostic "A2001"
+    :rejected-behavior :compiled_ai_provider_without_capability}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-prompt-authority.gravity"
+    :diagnostic "A3003"
+    :rejected-behavior :compiled_prompt_authority_partition_loss}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-tool-human-review.gravity"
+    :diagnostic "A4005"
+    :rejected-behavior :compiled_write_tool_without_human_review}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-agent-eval.gravity"
+    :diagnostic "A5005"
+    :rejected-behavior :compiled_agent_without_eval_gate}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-workflow-replay.gravity"
+    :diagnostic "A6001"
+    :rejected-behavior :compiled_workflow_without_replay_mode}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-memory-tenant.gravity"
+    :diagnostic "A7004"
+    :rejected-behavior :compiled_memory_cross_tenant_access}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-policy-taint.gravity"
+    :diagnostic "A8004"
+    :rejected-behavior :compiled_policy_trusts_unvalidated_ai_output}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-eval-gate.gravity"
+    :diagnostic "A9001"
+    :rejected-behavior :compiled_ai_release_without_eval_gate}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-review-payload.gravity"
+    :diagnostic "A10005"
+    :rejected-behavior :compiled_human_review_payload_hash_mismatch}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-ai-tool-escalation.gravity"
+    :diagnostic "A11002"
+    :rejected-behavior :compiled_prompt_injection_tool_escalation}])
+
+(def stage0-compiled-package-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-lockfile.gravity"
+    :diagnostic "PKG1006"
+    :rejected-behavior :compiled_project_release_without_lockfile}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-build-effect.gravity"
+    :diagnostic "PKG2001"
+    :rejected-behavior :compiled_build_node_with_undeclared_effect}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-evidence.gravity"
+    :diagnostic "PKG3005"
+    :rejected-behavior :compiled_artifact_manifest_missing_evidence_link}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-download.gravity"
+    :diagnostic "PKG4001"
+    :rejected-behavior :compiled_package_operation_unverified_download}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-capability.gravity"
+    :diagnostic "PKG5002"
+    :rejected-behavior :compiled_dependency_resolution_capability_mismatch}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-denied-authority.gravity"
+    :diagnostic "PKG6004"
+    :rejected-behavior :compiled_package_requests_denied_authority}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-network.gravity"
+    :diagnostic "PKG7003"
+    :rejected-behavior :compiled_reproducible_build_uncontrolled_network}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-unsafe-audit.gravity"
+    :diagnostic "PKG8001"
+    :rejected-behavior :compiled_package_safety_missing_unsafe_audit}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-private-registry.gravity"
+    :diagnostic "PKG9001"
+    :rejected-behavior :compiled_private_registry_without_grant}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-provenance.gravity"
+    :diagnostic "PKG10001"
+    :rejected-behavior :compiled_release_artifact_without_provenance}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-target.gravity"
+    :diagnostic "PKG11002"
+    :rejected-behavior :compiled_target_matrix_uses_implicit_host_target}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-package-signature.gravity"
+    :diagnostic "PKG12002"
+    :rejected-behavior :compiled_signature_uses_noncanonical_payload}])
+
+(def stage0-compiled-tooling-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-cli-authority.gravity"
+    :diagnostic "T1003"
+    :rejected-behavior :compiled_cli_hides_authority_denial}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-repl-capability.gravity"
+    :diagnostic "T2002"
+    :rejected-behavior :compiled_repl_effect_without_capability_grant}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-formatter-roundtrip.gravity"
+    :diagnostic "T3002"
+    :rejected-behavior :compiled_formatter_changes_reader_output}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-linter-autofix.gravity"
+    :diagnostic "T4003"
+    :rejected-behavior :compiled_linter_applies_unsafe_autofix}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-lsp-diagnostic.gravity"
+    :diagnostic "T5001"
+    :rejected-behavior :compiled_lsp_diagnostic_diverges_from_compiler}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-debug-redaction.gravity"
+    :diagnostic "T6004"
+    :rejected-behavior :compiled_debugger_exposes_redacted_value}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-docs-stale.gravity"
+    :diagnostic "T7001"
+    :rejected-behavior :compiled_docs_stale_against_source}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-dev-hot-reload.gravity"
+    :diagnostic "T8003"
+    :rejected-behavior :compiled_dev_server_unsafe_hot_reload}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-registry-capability-diff.gravity"
+    :diagnostic "T9001"
+    :rejected-behavior :compiled_registry_ux_hides_capability_diff}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-ir-origin.gravity"
+    :diagnostic "T10002"
+    :rejected-behavior :compiled_ir_inspector_loses_source_origin}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-profiler-elision.gravity"
+    :diagnostic "T11003"
+    :rejected-behavior :compiled_profiler_check_elision_without_evidence}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-safety-unsafe-island.gravity"
+    :diagnostic "T12001"
+    :rejected-behavior :compiled_safety_audit_omits_unsafe_island_evidence}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-tooling-ai-generated-source.gravity"
+    :diagnostic "T13002"
+    :rejected-behavior :compiled_ai_tooling_uses_unchecked_generated_source}])
+
+(def stage0-compiled-conformance-rejected-fixtures
+  [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-fixture-metadata.gravity"
+    :diagnostic "TEST1001"
+    :rejected-behavior :compiled_conformance_fixture_missing_metadata}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-preservation.gravity"
+    :diagnostic "TEST2002"
+    :rejected-behavior :compiled_conformance_missing_preservation_report}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-runtime-capability.gravity"
+    :diagnostic "TEST3002"
+    :rejected-behavior :compiled_runtime_conformance_without_capability_decision}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-profile-target.gravity"
+    :diagnostic "TEST4001"
+    :rejected-behavior :compiled_profile_conformance_missing_profile_target}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-safety-audit.gravity"
+    :diagnostic "TEST5002"
+    :rejected-behavior :compiled_safety_conformance_missing_unsafe_audit}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-backend-artifact.gravity"
+    :diagnostic "TEST6004"
+    :rejected-behavior :compiled_backend_conformance_missing_artifact_manifest}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-stdlib-api.gravity"
+    :diagnostic "TEST7001"
+    :rejected-behavior :compiled_standard_library_conformance_untested_api}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-ai-replay.gravity"
+    :diagnostic "TEST8003"
+    :rejected-behavior :compiled_ai_workflow_conformance_missing_replay}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-fuzz-seed.gravity"
+    :diagnostic "TEST9001"
+    :rejected-behavior :compiled_fuzz_conformance_missing_seed}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-differential-divergence.gravity"
+    :diagnostic "TEST10002"
+    :rejected-behavior :compiled_differential_conformance_unexplained_divergence}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-formal-proof.gravity"
+    :diagnostic "TEST11003"
+    :rejected-behavior :compiled_formal_conformance_uncheckable_proof}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-performance-gate.gravity"
+    :diagnostic "TEST12003"
+    :rejected-behavior :compiled_performance_conformance_missing_semantic_gate}
+   {:fixture "bootstrap/clojure/fixtures/rejected/core-app-conformance-bootstrap-provenance.gravity"
+    :diagnostic "TEST13002"
+    :rejected-behavior :compiled_bootstrap_conformance_missing_provenance}])
+
+(def stage0-safe1-outcomes
+  #{:proven-safe :runtime-checked :rejected :unsafe-island})
+
+(def stage0-unsafe-required-metadata
+  #{:reason :operation :owner :profiles :target :effects :capabilities
+    :invariants :safe-boundary :review})
+
+(declare eval-expr compile-source compile-stage0-expr
+         execute-stage0-instruction execute-stage0-compiled-function)

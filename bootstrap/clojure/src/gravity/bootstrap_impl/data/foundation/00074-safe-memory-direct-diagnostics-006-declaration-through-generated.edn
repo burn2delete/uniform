@@ -1,0 +1,63 @@
+[[safe7/declaration
+  {:id "SAFE7-DECLARATION",
+   :rule :SAFE7,
+   :operation :foreign-declaration,
+   :missing-fact :required-ffi-metadata,
+   :message
+   "foreign declaration omits required ABI, type, ownership, error, threading, profile, effect, or capability metadata"}]
+ [safe7/raw-call
+  {:id "SAFE7-RAW-CALL",
+   :rule :SAFE7,
+   :operation :ffi-call,
+   :missing-fact :safe-wrapper,
+   :message
+   "safe code calls raw foreign code without a proven or checked safe wrapper"}]
+ [safe7/type-map
+  {:id "SAFE7-TYPE-MAP",
+   :rule :SAFE7,
+   :operation :ffi-type-map,
+   :missing-fact :complete-type-mapping,
+   :message "foreign type mapping is missing, lossy, or representation-unsafe"}]
+ [safe7/ownership
+  {:id "SAFE7-OWNERSHIP",
+   :rule :SAFE7,
+   :operation :ffi-ownership,
+   :missing-fact :ownership-and-allocator-identity,
+   :message "foreign ownership or allocator identity is missing"}]
+ [safe7/lifetime
+  {:id "SAFE7-LIFETIME",
+   :rule :SAFE7,
+   :operation :ffi-lifetime,
+   :missing-fact :foreign-lifetime-proof,
+   :message "foreign value may outlive valid storage"}]
+ [safe7/error-map
+  {:id "SAFE7-ERROR-MAP",
+   :rule :SAFE7,
+   :operation :ffi-error,
+   :missing-fact :error-translation,
+   :message "foreign failure behavior is untranslated"}]
+ [safe7/callback
+  {:id "SAFE7-CALLBACK",
+   :rule :SAFE7,
+   :operation :ffi-callback,
+   :missing-fact :callback-capture-lifetime-reentrancy-release,
+   :message
+   "callback capture, lifetime, reentrancy, error, or release behavior is invalid"}]
+ [safe7/capability
+  {:id "SAFE7-CAPABILITY",
+   :rule :SAFE7,
+   :operation :ffi-authority,
+   :missing-fact :provider-capability,
+   :message "foreign call lacks provider authority"}]
+ [safe7/host-profile
+  {:id "SAFE7-HOST-PROFILE",
+   :rule :SAFE7,
+   :operation :host-bridge,
+   :missing-fact :supported-host-profile,
+   :message "host interop leaks into an unsupported profile"}]
+ [safe7/generated
+  {:id "SAFE7-GENERATED",
+   :rule :SAFE7,
+   :operation :generated-binding,
+   :missing-fact :generated-binding-provenance-and-audit,
+   :message "generated FFI binding lacks provenance or audit records"}]]

@@ -1,0 +1,19 @@
+[[safe1/outcome
+  {:return-type "SafetyClassificationRecord", :safe1-kind :classification}]
+ [safe1/runtime-check
+  {:return-type "RuntimeCheckRecord",
+   :effects #{:safety/check-failure},
+   :safe1-kind :runtime-check}]
+ [safe1/unsafe-island
+  {:return-type "UnsafeIslandAuditRecord",
+   :effects #{:memory/raw},
+   :capabilities #{:memory/raw},
+   :safe1-kind :unsafe-island}]
+ [safe1/generated-provenance
+  {:return-type "GeneratedCodeSafetyProvenance", :safe1-kind :generated-provenance}]
+ [safe1/optimization-erasure
+  {:return-type "OptimizationCheckErasureJustification",
+   :safe1-kind :optimization-erasure}]
+ [safe1/dependency-mode
+  {:return-type "DependencySafetyModeRecord", :safe1-kind :dependency-mode}]
+ [safe1/conformance {:return-type "Safe1ConformanceRecord", :safe1-kind :conformance}]]

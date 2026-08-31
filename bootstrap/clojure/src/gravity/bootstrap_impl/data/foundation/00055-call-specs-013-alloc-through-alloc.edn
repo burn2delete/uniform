@@ -1,0 +1,7 @@
+[[arena/alloc
+  {:return-type "Arena[Buffer]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :arena-memory,
+   :allocation-kind :arena,
+   :runtime-assumption :bulk-release}]]

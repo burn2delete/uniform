@@ -1,0 +1,1 @@
+[[ownership/move {:return-type "Owned[Buffer]", :memory-regime :ownership-backed}]]

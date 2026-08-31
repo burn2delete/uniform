@@ -1,0 +1,22 @@
+[[dispatch/direct
+  {:return-type "DispatchResult",
+   :effects #{:resource/close},
+   :capabilities #{:resource/file}}]
+ [dispatch/dictionary
+  {:return-type "DispatchResult",
+   :effects #{:resource/close},
+   :capabilities #{:resource/file}}]
+ [dispatch/vtable
+  {:return-type "DispatchResult",
+   :effects #{:resource/close},
+   :capabilities #{:resource/file}}]
+ [dispatch/dynamic
+  {:return-type "DispatchResult",
+   :effects #{:resource/close},
+   :capabilities #{:resource/file}}]
+ [dispatch/multimethod {:return-type "DispatchResult"}]
+ [dispatch/host-normalized {:return-type "HostDispatchResult"}]
+ [dispatch/tool
+  {:return-type "ToolDispatchResult",
+   :effects #{:ai/tool-call},
+   :capabilities #{:ai/tool}}]]

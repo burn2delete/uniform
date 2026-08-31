@@ -1,0 +1,60 @@
+[[p6/gc
+  {:id "P6-GC",
+   :rule :P6,
+   :operation :firmware/gc,
+   :memory-regime :managed-runtime,
+   :message "firmware profile rejects GC or managed runtime assumptions"}]
+ [p6/alloc
+  {:id "P6-ALLOC",
+   :rule :P6,
+   :operation :firmware/allocation,
+   :memory-regime :unbounded-heap,
+   :message "firmware profile rejects unbounded or hidden allocation"}]
+ [p6/stack
+  {:id "P6-STACK",
+   :rule :P6,
+   :operation :firmware/stack-budget,
+   :missing-fact :stack-budget,
+   :message "firmware profile requires stack budget evidence"}]
+ [p6/static
+  {:id "P6-STATIC",
+   :rule :P6,
+   :operation :firmware/static-budget,
+   :missing-fact :static-memory-budget,
+   :message "firmware profile requires static memory budget evidence"}]
+ [p6/mmio
+  {:id "P6-MMIO",
+   :rule :P6,
+   :operation :firmware/mmio,
+   :requested-capability :hardware/mmio,
+   :message "firmware MMIO requires a typed device map and authority"}]
+ [p6/interrupt
+  {:id "P6-INTERRUPT",
+   :rule :P6,
+   :operation :firmware/interrupt,
+   :requested-capability :hardware/interrupt,
+   :message "firmware interrupt handler metadata is invalid"}]
+ [p6/latency
+  {:id "P6-LATENCY",
+   :rule :P6,
+   :operation :firmware/latency,
+   :missing-fact :loop-or-latency-bound,
+   :message "firmware realtime code lacks loop, timeout, or latency evidence"}]
+ [p6/host
+  {:id "P6-HOST",
+   :rule :P6,
+   :operation :firmware/host-service,
+   :effect :io/write,
+   :message "firmware profile rejects host services"}]
+ [p6/exception
+  {:id "P6-EXCEPTION",
+   :rule :P6,
+   :operation :firmware/exception,
+   :missing-fact :bounded-exception-behavior,
+   :message "firmware profile rejects unbounded exception behavior"}]
+ [p6/capability
+  {:id "P6-CAPABILITY",
+   :rule :P6,
+   :operation :firmware/device-authority,
+   :requested-capability :hardware/mmio,
+   :message "firmware device access lacks capability authority"}]]

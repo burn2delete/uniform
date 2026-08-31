@@ -1,0 +1,15 @@
+[[safe5/linear-flow
+  {:return-type "LinearResourceFlowRecord", :safe-memory-kind :linear-flow}]
+ [safe5/terminal-operation
+  {:return-type "TerminalOperationRecord",
+   :effects #{:resource/close},
+   :safe-memory-kind :terminal-operation}]
+ [safe5/exceptional-cleanup
+  {:return-type "ExceptionalCleanupRecord",
+   :effects #{:resource/close},
+   :safe-memory-kind :exceptional-cleanup}]
+ [safe5/structured-lowering
+  {:return-type "StructuredResourceLoweringRecord",
+   :safe-memory-kind :structured-lowering}]
+ [safe5/generated-flow
+  {:return-type "GeneratedLinearFlowRecord", :safe-memory-kind :generated-flow}]]

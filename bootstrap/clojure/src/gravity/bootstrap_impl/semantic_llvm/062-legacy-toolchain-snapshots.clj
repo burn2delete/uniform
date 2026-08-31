@@ -1,0 +1,147 @@
+(defn-
+ semantic-llvm-legacy-toolchain-snapshots!
+ [candidate
+  source-path
+  lowering
+  publication-intent?
+  workspace
+  ir-path
+  object-path
+  executable-path
+  target
+  primary-failure
+  state]
+ (let
+  [{:keys [ir-canonical object-canonical executable-canonical]}
+   state
+   workspace-inventory
+   (p15-s23-b3-llvm-capped-directory-inventory!
+    candidate
+    workspace
+    source-path
+    3)
+   _
+   (when-not
+    (and
+     (= #{"program.ll" "program.o" "program"} workspace-inventory)
+     (=
+      p15-s23-b3-llvm-private-directory-permissions
+      (set
+       (java.nio.file.Files/getPosixFilePermissions
+        workspace
+        (into-array
+         java.nio.file.LinkOption
+         [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
+     (=
+      p15-s23-b3-llvm-nonexecutable-permissions
+      (set
+       (java.nio.file.Files/getPosixFilePermissions
+        ir-path
+        (into-array
+         java.nio.file.LinkOption
+         [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
+     (=
+      p15-s23-b3-llvm-nonexecutable-permissions
+      (set
+       (java.nio.file.Files/getPosixFilePermissions
+        object-path
+        (into-array
+         java.nio.file.LinkOption
+         [java.nio.file.LinkOption/NOFOLLOW_LINKS]))))
+     (=
+      p15-s23-b3-llvm-executable-permissions
+      (set
+       (java.nio.file.Files/getPosixFilePermissions
+        executable-path
+        (into-array
+         java.nio.file.LinkOption
+         [java.nio.file.LinkOption/NOFOLLOW_LINKS])))))
+    (p15-s23-b3-llvm-fail!
+     "B3-MANIFEST"
+     source-path
+     {}
+     {:missing-fact
+      :exact-private-toolchain-workspace-inventory-and-modes}))
+   ir-final
+   (p15-s23-b3-llvm-file-snapshot!
+    candidate
+    workspace
+    ir-path
+    source-path
+    :post-verification-llvm-ir
+    p15-s23-b3-llvm-max-emitted-file-bytes)
+   object-final
+   (p15-s23-b3-llvm-file-snapshot!
+    candidate
+    workspace
+    object-path
+    source-path
+    :post-verification-object
+    p15-s23-b3-llvm-max-emitted-file-bytes)
+   executable-final
+   (p15-s23-b3-llvm-file-snapshot!
+    candidate
+    workspace
+    executable-path
+    source-path
+    :post-verification-executable
+    p15-s23-b3-llvm-max-emitted-file-bytes)
+   exact-snapshot?
+   (fn
+    [before after]
+    (and
+     (=
+      (select-keys before [:byte-count :content-hash :file-key-hash])
+      (select-keys after [:byte-count :content-hash :file-key-hash]))
+     (java.util.Arrays/equals (:bytes before) (:bytes after))))
+   _
+   (when-not
+    (and
+     (exact-snapshot? ir-canonical ir-final)
+     (exact-snapshot? object-canonical object-final)
+     (exact-snapshot? executable-canonical executable-final))
+    (p15-s23-b3-llvm-fail!
+     "B13-HASH"
+     source-path
+     {}
+     {:missing-fact
+      :pre-and-post-verification-artifact-content-parity}))
+   ir-artifact
+   (assoc
+    (p15-s23-b3-llvm-snapshot-content ir-canonical)
+    :artifact-kind
+    :llvm-ir
+    :mode
+    "0644")
+   object-artifact
+   (assoc
+    (p15-s23-b3-llvm-snapshot-content object-canonical)
+    :artifact-kind
+    :mach-o-object
+    :mode
+    "0644")
+   executable-artifact
+   (assoc
+    (p15-s23-b3-llvm-snapshot-content executable-canonical)
+    :artifact-kind
+    :mach-o-executable
+    :mode
+    "0755")]
+  (assoc
+   state
+   :workspace-inventory
+   workspace-inventory
+   :ir-final
+   ir-final
+   :object-final
+   object-final
+   :executable-final
+   executable-final
+   :exact-snapshot?
+   exact-snapshot?
+   :ir-artifact
+   ir-artifact
+   :object-artifact
+   object-artifact
+   :executable-artifact
+   executable-artifact)))

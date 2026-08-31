@@ -1,0 +1,66 @@
+[[safe3/use-after-move
+  {:id "SAFE3-USE-AFTER-MOVE",
+   :rule :SAFE3,
+   :operation :ownership/use,
+   :missing-fact :valid-owner,
+   :message "moved binding is used again"}]
+ [safe3/use-after-consume
+  {:id "SAFE3-USE-AFTER-CONSUME",
+   :rule :SAFE3,
+   :operation :ownership/use,
+   :missing-fact :valid-resource-owner,
+   :message "consumed binding is used again"}]
+ [safe3/borrow-escape
+  {:id "SAFE3-BORROW-ESCAPE",
+   :rule :SAFE3,
+   :operation :borrow,
+   :missing-fact :non-escaping-borrow,
+   :message "borrow escapes its valid lifetime"}]
+ [safe3/mut-alias
+  {:id "SAFE3-MUT-ALIAS",
+   :rule :SAFE3,
+   :operation :mutable-borrow,
+   :missing-fact :exclusive-borrow,
+   :message "mutable access occurs while aliases exist"}]
+ [safe3/move-while-borrowed
+  {:id "SAFE3-MOVE-WHILE-BORROWED",
+   :rule :SAFE3,
+   :operation :move,
+   :missing-fact :borrow-ended,
+   :message "owner is moved during an active borrow"}]
+ [safe3/consume-while-borrowed
+  {:id "SAFE3-CONSUME-WHILE-BORROWED",
+   :rule :SAFE3,
+   :operation :consume,
+   :missing-fact :borrow-ended,
+   :message "owner is consumed during an active borrow"}]
+ [safe3/lifetime
+  {:id "SAFE3-LIFETIME",
+   :rule :SAFE3,
+   :operation :lifetime,
+   :missing-fact :lifetime-relation,
+   :message "lifetime relation is unsatisfied"}]
+ [safe3/task-capture
+  {:id "SAFE3-TASK-CAPTURE",
+   :rule :SAFE3,
+   :operation :task-capture,
+   :missing-fact :structured-lifetime-proof,
+   :message "detached task captures a non-static borrow"}]
+ [safe3/ffi-ownership
+  {:id "SAFE3-FFI-OWNERSHIP",
+   :rule :SAFE3,
+   :operation :ffi-boundary,
+   :missing-fact :foreign-ownership-declaration,
+   :message "foreign boundary lacks ownership transfer declaration"}]
+ [safe3/runtime-check
+  {:id "SAFE3-RUNTIME-CHECK",
+   :rule :SAFE3,
+   :operation :borrow-check,
+   :missing-fact :profile-runtime-borrow-check,
+   :message "runtime borrow check is unavailable in the active profile"}]
+ [safe3/unsafe-alias
+  {:id "SAFE3-UNSAFE-ALIAS",
+   :rule :SAFE3,
+   :operation :alias-recovery,
+   :missing-fact :unsafe-policy,
+   :message "unsafe alias recovery appears outside unsafe policy"}]]

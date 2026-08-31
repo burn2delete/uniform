@@ -1,0 +1,60 @@
+[[p5/alloc
+  {:id "P5-ALLOC",
+   :rule :P5,
+   :operation :native/allocation,
+   :memory-regime :hidden-heap,
+   :message "native profile rejects hidden or illegal allocation"}]
+ [p5/memory-provider
+  {:id "P5-MEMORY-PROVIDER",
+   :rule :P5,
+   :operation :native/memory-provider,
+   :provider nil,
+   :message "native profile memory provider is missing or unsupported"}]
+ [p5/ffi
+  {:id "P5-FFI",
+   :rule :P5,
+   :operation :native/ffi,
+   :missing-fact :safe-wrapper,
+   :message "native profile FFI boundary is incomplete or unsafe"}]
+ [p5/raw-memory
+  {:id "P5-RAW-MEMORY",
+   :rule :P5,
+   :operation :native/raw-memory,
+   :effect :memory/raw,
+   :message "native profile rejects raw memory outside unsafe policy"}]
+ [p5/thread
+  {:id "P5-THREAD",
+   :rule :P5,
+   :operation :native/thread,
+   :missing-fact :scheduler-provider,
+   :message "native profile thread or scheduler assumption is invalid"}]
+ [p5/atomic
+  {:id "P5-ATOMIC",
+   :rule :P5,
+   :operation :native/atomic,
+   :missing-fact :target-memory-order,
+   :message "native profile atomic memory order lacks target support"}]
+ [p5/simd
+  {:id "P5-SIMD",
+   :rule :P5,
+   :operation :native/simd,
+   :missing-fact :target-feature,
+   :message "native profile intrinsic lacks target feature evidence"}]
+ [p5/numeric
+  {:id "P5-NUMERIC",
+   :rule :P5,
+   :operation :native/numeric,
+   :missing-fact :safe9-numeric-mode,
+   :message "native profile numeric behavior violates SAFE9"}]
+ [p5/optimization
+  {:id "P5-OPTIMIZATION",
+   :rule :P5,
+   :operation :native/optimization,
+   :missing-fact :optimization-certificate,
+   :message "native profile check erasure lacks certificates"}]
+ [p5/runtime
+  {:id "P5-RUNTIME",
+   :rule :P5,
+   :operation :native/runtime,
+   :missing-fact :selected-runtime-service,
+   :message "native profile assumes runtime services not selected"}]]

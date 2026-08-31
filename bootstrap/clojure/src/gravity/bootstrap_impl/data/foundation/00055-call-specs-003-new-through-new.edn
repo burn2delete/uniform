@@ -1,0 +1,5 @@
+[[buffer/new
+  {:return-type "Owned[Buffer]",
+   :effects #{:memory/allocate},
+   :capabilities #{:memory/allocator},
+   :memory-regime :ownership-backed}]]

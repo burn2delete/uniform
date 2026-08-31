@@ -1,0 +1,39 @@
+; Semantic decomposition of HEAD reader line 3650.
+; Loaded into gravity.bootstrap; intentionally no ns form.
+
+(def
+ semantic-early-checker-alternatives-keys
+ [:alternative-macro-build-effect-traces
+  :alternative-macro-cache-decisions
+  :alternative-macro-equivalence-reports
+  :alternative-macro-expansion-traces
+  :alternative-macro-explicit-capture-records
+  :alternative-macro-facet-dispatch-records
+  :alternative-macro-generated-validation-records
+  :alternative-macro-hygiene-records
+  :alternative-macro-provider-declarations
+  :alternative-macro-syntax-serializations
+  :alternative-memory-allocation-strategies
+  :alternative-memory-conformance-reports
+  :alternative-memory-device-maps
+  :alternative-memory-ffi-allocator-records
+  :alternative-memory-layout-metadata
+  :alternative-memory-lifetime-facts
+  :alternative-memory-provider-declarations
+  :alternative-memory-release-evidence
+  :alternative-memory-runtime-checks
+  :alternative-memory-safety-classifications
+  :alternative-memory-unsafe-boundary-audits
+  :alternative-type-compatibility-reports
+  :alternative-type-diagnostic-mapping-records
+  :alternative-type-domain-facts
+  :alternative-type-effect-capability-records
+  :alternative-type-fact-export-schemas
+  :alternative-type-gradual-boundaries
+  :alternative-type-lowering-rules
+  :alternative-type-optimization-proofs
+  :alternative-type-ownership-facts
+  :alternative-type-profile-soundness-evidence
+  :alternative-type-proof-artifacts
+  :alternative-type-provider-declarations
+  :alternative-type-runtime-check-records])

@@ -1,0 +1,81 @@
+[{:owned-surface :platform-module-manifest,
+  :rejected-diagnostic "STD16002",
+  :rejected-fixture "standard-library-std16-target-host.gravity",
+  :file
+  "docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md",
+  :title "Platform and OS Library Specification",
+  :module :platform-os-library,
+  :accepted-behavior :target_host_separated_platform_capabilities,
+  :document "STD16",
+  :check-key :target-host-separation,
+  :sequence 226,
+  :artifact-keys [:library-module-manifest :safe-wrapper-audit],
+  :profiles
+  [:core :hosted :native :firmware :kernel :hardware :distributed :ai :meta :formal],
+  :namespace :gravity.platform,
+  :dependencies #{"R12" "D9" "STD18" "D6" "SAFE10" "R1" "STD6"}}
+ {:owned-surface :hardware-module-manifest,
+  :rejected-diagnostic "STD17001",
+  :rejected-fixture "standard-library-std17-hardware-capability.gravity",
+  :file
+  "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+  :title "Hardware and Firmware Library Specification",
+  :module :hardware-firmware-library,
+  :accepted-behavior :capability_gated_register_mmio_interrupt_dma_artifacts,
+  :document "STD17",
+  :check-key :hardware-capability,
+  :sequence 227,
+  :artifact-keys [:library-module-manifest :safe-wrapper-audit],
+  :profiles [:hosted :native :firmware :kernel :hardware :meta :formal],
+  :namespace :gravity.hardware,
+  :dependencies #{"P6" "B9" "P8" "P7" "B2" "STD16" "STD7" "STD6"}}
+ {:owned-surface :crypto-module-manifest,
+  :rejected-diagnostic "STD18001",
+  :rejected-fixture "standard-library-std18-algorithm.gravity",
+  :file
+  "docs/phase-16-standard-library/228-std18-cryptography-library-specification.md",
+  :diagnostic-count 13,
+  :title "Cryptography Library Specification",
+  :module :cryptography-library,
+  :accepted-behavior :policy_checked_crypto_and_crypto_agility,
+  :document "STD18",
+  :check-key :crypto-algorithm-policy,
+  :sequence 228,
+  :artifact-keys
+  [:library-module-manifest :safe-wrapper-audit :library-conformance-fixture],
+  :profiles [:core :hosted :native :firmware :kernel :distributed :ai :meta :formal],
+  :namespace :gravity.crypto,
+  :dependencies #{"GOV9" "SAFE2" "SAFE7" "SAFE11" "STD10" "GOV4" "STD16"}}
+ {:owned-surface :ui-module-manifest,
+  :rejected-diagnostic "STD19001",
+  :rejected-fixture "standard-library-std19-component-metadata.gravity",
+  :file
+  "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+  :title "UI and Application Library Specification",
+  :module :ui-application-library,
+  :accepted-behavior :component_state_event_and_adapter_artifacts,
+  :document "STD19",
+  :check-key :component-metadata,
+  :sequence 229,
+  :artifact-keys [:library-module-manifest :library-conformance-fixture],
+  :profiles
+  [:core :hosted :native :firmware :kernel :hardware :distributed :ai :meta :formal],
+  :namespace :gravity.ui,
+  :dependencies #{"STD14" "T8" "SAFE11" "STD10" "STD13" "STD4" "L12"}}
+ {:owned-surface :api-stability-record,
+  :rejected-diagnostic "STD20001",
+  :rejected-fixture "standard-library-std20-stability.gravity",
+  :file
+  "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+  :title "Standard Library Stability Policy",
+  :module :standard-library-stability-policy,
+  :accepted-behavior :compatibility_and_stability_release_policy,
+  :document "STD20",
+  :check-key :stability-level,
+  :sequence 230,
+  :artifact-keys [:api-stability-record :compatibility-report],
+  :profiles
+  [:core :hosted :native :firmware :kernel :hardware :distributed :ai :meta :formal],
+  :namespace :gravity.std.stability,
+  :dependencies
+  #{"D9" "PKG12" "GOV1" "D6" "GOV10" "P13" "SAFE15" "SAFE1" "TEST13" "D8" "P1"}}]

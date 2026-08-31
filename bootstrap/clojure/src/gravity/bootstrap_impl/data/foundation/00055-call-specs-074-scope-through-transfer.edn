@@ -1,0 +1,14 @@
+[[task/scope
+  {:return-type "TaskScopeResult", :concurrency-family :structured-task-scope}]
+ [task/spawn
+  {:return-type "TaskHandle",
+   :effects #{:thread/spawn :time/schedule},
+   :capabilities #{:scheduler/task},
+   :concurrency-family :structured-task}]
+ [task/await
+  {:return-type "AwaitedTask",
+   :effects #{:async/await},
+   :capabilities #{:scheduler/task},
+   :concurrency-family :async-await}]
+ [task/transfer
+  {:return-type "TransferredOwnership", :concurrency-family :ownership-transfer}]]

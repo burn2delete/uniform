@@ -1,0 +1,54 @@
+[[p3/build-effect
+  {:id "P3-BUILD-EFFECT",
+   :rule :P3,
+   :operation :meta/build-effect,
+   :effect :build/read-file,
+   :message "meta profile build effect is undeclared or ungranted"}]
+ [p3/hermetic
+  {:id "P3-HERMETIC",
+   :rule :P3,
+   :operation :meta/hermetic,
+   :effect :build/network,
+   :message "meta profile rejects non-replayable hermetic build authority"}]
+ [p3/compiler-capability
+  {:id "P3-COMPILER-CAPABILITY",
+   :rule :P3,
+   :operation :meta/compiler-ir-access,
+   :requested-capability :compiler/ir,
+   :message "meta profile compiler artifact access lacks authority"}]
+ [p3/pass-contract
+  {:id "P3-PASS-CONTRACT",
+   :rule :P3,
+   :operation :meta/pass-contract,
+   :missing-fact :input-output-preservation,
+   :message "compiler pass declaration is missing required contract facts"}]
+ [p3/fact-invalidation
+  {:id "P3-FACT-INVALIDATION",
+   :rule :P3,
+   :operation :meta/pass-output,
+   :invalidated-assumption :range-proof,
+   :message "compiler pass drops or misreports preserved facts"}]
+ [p3/generated-profile
+  {:id "P3-GENERATED-PROFILE",
+   :rule :P3,
+   :operation :meta/generated-code,
+   :generated-form (ffi/call),
+   :message "generated code is illegal in the target profile"}]
+ [p3/generated-safety
+  {:id "P3-GENERATED-SAFETY",
+   :rule :P3,
+   :operation :meta/generated-safety,
+   :missing-fact :generated-safety-provenance,
+   :message "generated code lacks safety provenance"}]
+ [p3/phase
+  {:id "P3-PHASE",
+   :rule :P3,
+   :operation :meta/phase-capture,
+   :phase :compile-time,
+   :message "runtime value is captured into compile-time execution"}]
+ [p3/source-map
+  {:id "P3-SOURCE-MAP",
+   :rule :P3,
+   :operation :meta/source-map,
+   :missing-fact :generated-origin,
+   :message "meta output lacks source or generated-origin mapping"}]]

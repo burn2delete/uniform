@@ -1,0 +1,1 @@
+[[println {:return-type "Nil", :effects #{:io/write}, :capabilities #{:io/stdout}}]]

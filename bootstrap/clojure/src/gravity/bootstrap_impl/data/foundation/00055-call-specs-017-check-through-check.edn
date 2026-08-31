@@ -1,0 +1,4 @@
+[[bounds/check
+  {:return-type "BoundsChecked",
+   :runtime-check :bounds,
+   :memory-regime :bounds-checked}]]

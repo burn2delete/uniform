@@ -1,0 +1,30 @@
+[[safe7/foreign-declaration
+  {:return-type "Safe7ForeignDeclarationRecord",
+   :safe-boundary-kind :safe7-foreign-declaration}]
+ [safe7/abi-record
+  {:return-type "Safe7AbiProtocolRecord", :safe-boundary-kind :safe7-abi-record}]
+ [safe7/type-mapping
+  {:return-type "Safe7TypeMappingRecord", :safe-boundary-kind :safe7-type-mapping}]
+ [safe7/ownership-lifetime
+  {:return-type "Safe7OwnershipLifetimeMap",
+   :safe-boundary-kind :safe7-ownership-lifetime}]
+ [safe7/safe-wrapper
+  {:return-type "Safe7SafeWrapperAudit",
+   :effects #{:ffi/call},
+   :capabilities #{:ffi/call},
+   :safe-boundary-kind :safe7-safe-wrapper}]
+ [safe7/error-translation
+  {:return-type "Safe7ErrorTranslationMap",
+   :effects #{:ffi/error},
+   :capabilities #{:ffi/call},
+   :safe-boundary-kind :safe7-error-translation}]
+ [safe7/callback-safety
+  {:return-type "Safe7CallbackSafetyRecord",
+   :safe-boundary-kind :safe7-callback-safety}]
+ [safe7/host-bridge
+  {:return-type "Safe7HostBridgeRecord", :safe-boundary-kind :safe7-host-bridge}]
+ [safe7/generated-binding
+  {:return-type "Safe7GeneratedBindingProvenance",
+   :safe-boundary-kind :safe7-generated-binding}]
+ [safe7/conformance
+  {:return-type "Safe7ConformanceRecord", :safe-boundary-kind :safe7-conformance}]]

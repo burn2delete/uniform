@@ -1,0 +1,60 @@
+[[safe6/unsafe-forbidden
+  {:id "SAFE6-UNSAFE-FORBIDDEN",
+   :rule :SAFE6,
+   :operation :unsafe-island,
+   :missing-fact :policy-permission,
+   :message "policy forbids unsafe code"}]
+ [safe6/missing-metadata
+  {:id "SAFE6-MISSING-METADATA",
+   :rule :SAFE6,
+   :operation :unsafe-island,
+   :missing-fact :unsafe-metadata,
+   :message "unsafe island lacks required metadata"}]
+ [safe6/missing-owner
+  {:id "SAFE6-MISSING-OWNER",
+   :rule :SAFE6,
+   :operation :unsafe-island,
+   :missing-fact :owner,
+   :message "unsafe island lacks an accountable owner"}]
+ [safe6/missing-invariant
+  {:id "SAFE6-MISSING-INVARIANT",
+   :rule :SAFE6,
+   :operation :unsafe-island,
+   :missing-fact :invariant,
+   :message "unsafe island lacks a safety invariant"}]
+ [safe6/missing-boundary
+  {:id "SAFE6-MISSING-BOUNDARY",
+   :rule :SAFE6,
+   :operation :safe-wrapper,
+   :missing-fact :safe-boundary,
+   :message "unsafe internals are reachable without a safe boundary"}]
+ [safe6/review-required
+  {:id "SAFE6-REVIEW-REQUIRED",
+   :rule :SAFE6,
+   :operation :review,
+   :missing-fact :review-approval,
+   :message "unsafe review is missing or expired"}]
+ [safe6/generated-unsafe
+  {:id "SAFE6-GENERATED-UNSAFE",
+   :rule :SAFE6,
+   :operation :generated-unsafe,
+   :missing-fact :generated-unsafe-provenance,
+   :message "generated unsafe code lacks provenance"}]
+ [safe6/capability
+  {:id "SAFE6-CAPABILITY",
+   :rule :SAFE6,
+   :operation :unsafe-authority,
+   :missing-fact :declared-capability,
+   :message "unsafe code uses undeclared authority"}]
+ [safe6/dependency
+  {:id "SAFE6-DEPENDENCY",
+   :rule :SAFE6,
+   :operation :dependency-unsafe,
+   :missing-fact :dependency-policy-approval,
+   :message "dependency unsafe posture violates caller policy"}]
+ [safe6/certificate
+  {:id "SAFE6-CERTIFICATE",
+   :rule :SAFE6,
+   :operation :certificate,
+   :missing-fact :safety-certificate,
+   :message "required proof or certificate is absent"}]]

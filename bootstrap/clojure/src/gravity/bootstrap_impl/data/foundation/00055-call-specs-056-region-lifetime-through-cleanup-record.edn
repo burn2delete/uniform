@@ -1,0 +1,10 @@
+[[safe4/region-lifetime
+  {:return-type "RegionLifetimeRecord", :safe-memory-kind :region-lifetime}]
+ [safe4/arena-generation
+  {:return-type "ArenaGenerationRecord", :safe-memory-kind :arena-generation}]
+ [safe4/reset-invalidation
+  {:return-type "ResetInvalidationRecord", :safe-memory-kind :reset-invalidation}]
+ [safe4/provider-record
+  {:return-type "RegionArenaProviderRecord", :safe-memory-kind :provider}]
+ [safe4/cleanup-record
+  {:return-type "RegionCleanupRecord", :safe-memory-kind :cleanup-record}]]

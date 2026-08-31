@@ -1,0 +1,2 @@
+[[lock/with
+  {:return-type "LockResult", :effects #{:sync/block}, :concurrency-family :lock}]]

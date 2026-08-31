@@ -1,0 +1,42 @@
+; Semantic decomposition of HEAD reader line 3650.
+; Loaded into gravity.bootstrap; intentionally no ns form.
+
+(def
+ semantic-early-checker-safety-early-keys
+ [:safe1-conformance-records
+  :safe1-dependency-safety-mode-records
+  :safe1-generated-code-safety-provenance
+  :safe1-optimization-check-erasure-justifications
+  :safe1-runtime-check-records
+  :safe1-safety-classification-records
+  :safe1-unsafe-island-audit-records
+  :safe6-conformance-records
+  :safe6-dependency-unsafe-summaries
+  :safe6-generated-unsafe-provenance
+  :safe6-invariant-proof-links
+  :safe6-operation-inventories
+  :safe6-policy-decision-records
+  :safe6-release-audit-reports
+  :safe6-review-status-records
+  :safe6-safe-wrapper-records
+  :safe6-unsafe-island-records
+  :safe7-abi-protocol-records
+  :safe7-callback-safety-records
+  :safe7-conformance-records
+  :safe7-error-translation-maps
+  :safe7-foreign-declaration-records
+  :safe7-generated-binding-provenance
+  :safe7-host-bridge-records
+  :safe7-ownership-lifetime-maps
+  :safe7-safe-wrapper-audits
+  :safe7-type-mapping-records
+  :safe8-atomic-memory-order-records
+  :safe8-backend-preservation-records
+  :safe8-blocking-cancellation-records
+  :safe8-concurrency-graphs
+  :safe8-conformance-records
+  :safe8-ownership-transfer-records
+  :safe8-race-analysis-reports
+  :safe8-shared-state-access-records
+  :safe8-synchronization-proof-records
+  :safe8-task-capture-records])

@@ -1,0 +1,80 @@
+(ns gravity.cli.commands.bootstrap
+  "Bootstrap and release command ownership descriptors.")
+
+(def path-commands
+  {"bootstrap-self-hosting" 'bootstrap-self-hosting-file-artifact
+   "stage1-bootstrap-source" 'stage1-bootstrap-source-file-artifact
+   "stage1-reader-execute" 'stage1-reader-execution-file-artifact
+   "stage1-reader-algorithm" 'stage1-reader-algorithm-file-artifact
+   "stage1-reader-pipeline" 'stage1-reader-pipeline-file-artifact
+   "stage1-reader-character-pipeline" 'stage1-reader-character-pipeline-file-artifact
+   "stage1-reader-token-classifier-pipeline" 'stage1-reader-token-classifier-pipeline-file-artifact
+   "stage1-reader-token-realizer-pipeline" 'stage1-reader-token-realizer-pipeline-file-artifact
+   "stage1-reader-token-automaton-pipeline" 'stage1-reader-token-automaton-pipeline-file-artifact
+   "stage1-reader-form-builder-pipeline" 'stage1-reader-form-builder-pipeline-file-artifact
+   "stage1-reader-executor-pipeline" 'stage1-reader-executor-pipeline-file-artifact
+   "stage1-reader-runtime-pipeline" 'stage1-reader-runtime-pipeline-file-artifact
+   "stage1-reader-compiled-pipeline" 'stage1-reader-compiled-pipeline-file-artifact
+   "stage1-reader-binary-pipeline" 'stage1-reader-binary-pipeline-file-artifact
+   "stage1-reader-self-hosted-runtime" 'stage1-reader-self-hosted-runtime-file-artifact
+   "stage1-reader-core-bootstrap" 'stage1-reader-core-bootstrap-file-artifact
+   "stage1-reader-compiler-driver" 'stage1-reader-compiler-driver-file-artifact
+   "stage1-reader-runtime-entrypoint" 'stage1-reader-runtime-entrypoint-file-artifact
+   "stage1-reader-runtime-image" 'stage1-reader-runtime-image-file-artifact
+   "stage1-reader-verified-boot-chain" 'stage1-reader-verified-boot-chain-file-artifact
+   "stage1-reader-diverse-bootstrap-verification" 'stage1-reader-diverse-bootstrap-verification-file-artifact
+   "stage1-reader-release-attestation-seed-retirement" 'stage1-reader-release-attestation-seed-retirement-file-artifact
+   "stage1-reader-formal-release-governance-seed-retirement" 'stage1-reader-formal-release-governance-seed-retirement-file-artifact
+   "p15-s23-whole-language-self-hosting-gate" 'p15-s23-whole-language-self-hosting-gate-file-artifact
+   "p15-s23-compiler-source-inventory" 'p15-s23-compiler-source-inventory-file-artifact
+   "p15-s23-compiler-pipeline-manifest" 'p15-s23-compiler-pipeline-manifest-file-artifact
+   "p15-s23-source-syntax-serialization-proof" 'p15-s23-source-syntax-serialization-proof-file-artifact
+   "p15-s23-core-lowering-diagnostic-preservation" 'p15-s23-core-lowering-diagnostic-preservation-file-artifact
+   "p15-s23-runtime-manifest-capability-enforcement" 'p15-s23-runtime-manifest-capability-enforcement-file-artifact
+   "p15-s23-accepted-app-execution" 'p15-s23-accepted-app-execution-file-artifact
+   "p15-s23-rejected-app-diagnostic" 'p15-s23-rejected-app-diagnostic-file-artifact
+   "p15-s23-reproducible-rebuild-log" 'p15-s23-reproducible-rebuild-log-file-artifact
+   "p15-s23-stage-comparison-report" 'p15-s23-stage-comparison-report-file-artifact
+   "p15-s23-self-hosting-conformance-report" 'p15-s23-self-hosting-conformance-report-file-artifact
+   "p15-s23-provenance-attestation" 'p15-s23-provenance-attestation-file-artifact
+   "p15-s23-tcb-delta-record" 'p15-s23-tcb-delta-record-file-artifact
+   "p15-s23-unsafe-audit-report" 'p15-s23-unsafe-audit-report-file-artifact
+   "p15-s23-whole-language-compiler-artifact" 'p15-s23-whole-language-compiler-artifact-file-artifact
+   "p15-s23-governance-and-package-release-record" 'p15-s23-governance-and-package-release-record-file-artifact
+   "p15-s23-stage2-compiler-nucleus" 'p15-s23-stage2-compiler-nucleus-file-artifact
+   "p15-s23-stage2-plan-emitter" 'p15-s23-stage2-plan-emitter-file-artifact
+   "p15-s23-stage2-runtime-kernel" 'p15-s23-stage2-runtime-kernel-file-artifact
+   "p15-s23-stage2-runtime-executor" 'p15-s23-stage2-runtime-executor-file-artifact
+   "p15-s23-stage2-front-end-executor" 'p15-s23-stage2-front-end-executor-file-artifact
+   "p15-s23-stage2-source-front-end" 'p15-s23-stage2-source-front-end-file-artifact
+   "p15-s23-stage2-compiler-driver" 'p15-s23-stage2-compiler-driver-file-artifact
+   "p15-s23-stage2-whole-language-compiler" 'p15-s23-stage2-whole-language-compiler-file-artifact
+   "p15-s23-stage3-seedless-compiler-candidate" 'p15-s23-stage3-seedless-compiler-candidate-file-artifact
+   "p15-s23-stage3-equivalence-bundle" 'p15-s23-stage3-equivalence-bundle-file-artifact
+   "p15-s23-stage3-self-hosted-application" 'p15-s23-stage3-self-hosted-application-file-artifact
+   "p15-s23-final-seed-retirement-proof" 'p15-s23-final-seed-retirement-file-artifact})
+
+(def optional-path-commands
+  {"p15-s23-write-current-candidate-artifacts"
+   ['p15-s23-write-current-candidate-artifacts! 'p15-s23-compiler-source-path]
+   "p18-t03-self-hosted-release-artifact"
+   ['p18-t03-self-hosted-release-artifact! 'p18-t03-compiler-source]
+   "p18-t03-write-self-hosted-release-artifacts"
+   ['p18-t03-write-self-hosted-release-artifacts! 'p18-t03-compiler-source]})
+
+(def no-argument-commands
+  {"p18-t01-thin-cli-wrapper" 'p18-t01-thin-cli-wrapper-artifact
+   "p18-t02-packaged-jvm-cli" 'p18-t02-packaged-jvm-cli-artifact!
+   "p18-t02-write-packaged-jvm-cli-artifacts" 'p18-t02-write-packaged-jvm-cli-artifacts!
+   "p18-t04-executable-command-contract" 'p18-t04-executable-command-contract-artifact!
+   "p18-t04-write-executable-command-artifacts" 'p18-t04-write-executable-command-artifacts!
+   "p18-t04-public-test-command" 'p18-t04-public-test-command-artifact!
+   "p18-t04-write-public-test-command-artifacts" 'p18-t04-write-public-test-command-artifacts!
+   "p18-t04-public-self-host-verify-command" 'p18-t04-public-self-host-verify-command-artifact!
+   "p18-t04-write-public-self-host-verify-command-artifacts" 'p18-t04-write-public-self-host-verify-command-artifacts!
+   "p18-t05-seedless-release-boundary" 'p18-t05-seedless-release-boundary-artifact!
+   "p18-t05-write-seedless-release-artifacts" 'p18-t05-write-seedless-release-artifacts!
+   "p18-t06-final-release" 'p18-t06-final-release-artifact!
+   "p18-t06-write-final-release-artifacts" 'p18-t06-write-final-release-artifacts!
+   "p18-t00-co-canonical-source-extensions" 'p18-t00-co-canonical-source-extensions-artifact!
+   "p18-t00-write-co-canonical-source-extension-artifacts" 'p18-t00-write-co-canonical-source-extension-artifacts!})

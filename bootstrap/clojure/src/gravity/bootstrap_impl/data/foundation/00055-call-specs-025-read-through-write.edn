@@ -1,0 +1,6 @@
+[[db/read
+  {:return-type "DbRows", :effects #{:database/read}, :capabilities #{:database/read}}]
+ [db/write
+  {:return-type "DbWriteResult",
+   :effects #{:database/write},
+   :capabilities #{:database/write}}]]

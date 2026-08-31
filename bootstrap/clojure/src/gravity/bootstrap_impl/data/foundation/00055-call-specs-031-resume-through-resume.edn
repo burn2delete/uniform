@@ -1,0 +1,1 @@
+[[error/resume {:return-type "ResumeToken", :effects #{:error/resume}}]]
