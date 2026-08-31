@@ -386,7 +386,7 @@
                    (into {} (map (fn [[key item]]
                                    [(copy-value key) (copy-value item)]) value)))
     (vector? value) (if (empty? value)
-                      (subvec [nil] 0 0)
+                      (with-meta [] {})
                       (mapv copy-value value))
     (set? value) (if (empty? value)
                    (with-meta #{} {})
@@ -488,7 +488,7 @@
            product (bind-product carrier request)
            resolved (resolve-digests request (:digest-requests product))
            product (apply-resolved-digests product resolved)
-           artifact (assemble-artifact sh06 request product)
+           artifact (copy-value (assemble-artifact sh06 request product))
            supplied (verify-supplied-product
                      carrier snapshot sh06 verification request artifact seams)]
        (when-not (= :passed (:status supplied))

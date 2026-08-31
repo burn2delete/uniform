@@ -43,7 +43,8 @@
               :provenance {:actual-source-path path}
               :provenance-binding-preimage provenance-preimage
               :provenance-binding-id (second resolved)
-              :lineage (:lineage request)}
+              :lineage (:lineage request)
+              :empty-vector [] :empty-map {} :empty-set #{}}
         run {:raw-template-result
              {:core-template {:provenance {:actual-source-path path}
                               :provenance-binding-preimage provenance-preimage
