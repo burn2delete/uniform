@@ -184,7 +184,8 @@
         current (String.
                  ^bytes (:bytes (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))
                  java.nio.charset.StandardCharsets/UTF_8)
-        altered (str current "\n; altered")
+        altered (str (if (= \space (first current)) \; \space)
+                     (subs current 1))
         core-builds (atom 0)]
     (try
       (java.nio.file.Files/write

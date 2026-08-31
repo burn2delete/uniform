@@ -33,6 +33,33 @@
 
 (declare sha256)
 
+(defn- sha256-bytes [^bytes bytes]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
+    (.update digest bytes)
+    (apply str
+           (map #(format "%02x" (bit-and % 0xff))
+                (.digest digest)))))
+
+(defn- read-bounded-bytes [path]
+  (with-open [channel
+              (java.nio.channels.FileChannel/open
+               path
+               (into-array java.nio.file.OpenOption
+                           [java.nio.file.StandardOpenOption/READ
+                            java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+              output (java.io.ByteArrayOutputStream.)]
+    (let [buffer (java.nio.ByteBuffer/allocate 8192)]
+      (loop [total 0]
+        (.clear buffer)
+        (let [read (.read channel buffer)]
+          (if (neg? read)
+            (.toByteArray output)
+            (let [next-total (+ total read)]
+              (when (> next-total (* 16 1024 1024))
+                (throw (ex-info "C10 source snapshot exceeded bound" {})))
+              (.write output (.array buffer) 0 read)
+              (recur next-total))))))))
+
 (defn- repository-root []
   (let [resource (io/resource
                   "gravity/self_hosting/sh07_iteration_cache_runner.clj")]
@@ -55,16 +82,15 @@
         (let [before (java.nio.file.Files/readAttributes
                       path java.nio.file.attribute.BasicFileAttributes options)]
           (when (<= (.size before) (* 16 1024 1024))
-            (let [bytes (java.nio.file.Files/readAllBytes path)
+            (let [bytes (read-bounded-bytes path)
                   after (java.nio.file.Files/readAttributes
                          path java.nio.file.attribute.BasicFileAttributes options)]
               (when (and (<= (alength bytes) (* 16 1024 1024))
                          (= (.size before) (.size after))
                          (= (.lastModifiedTime before) (.lastModifiedTime after))
                          (= (.fileKey before) (.fileKey after)))
-                (let [source (String. bytes java.nio.charset.StandardCharsets/UTF_8)]
-                  {:bytes bytes :byte-count (alength bytes)
-                   :sha256 (str "sha256:" (sha256 source))})))))))))
+                {:bytes bytes :byte-count (alength bytes)
+                 :sha256 (str "sha256:" (sha256-bytes bytes))}))))))))
 
 (defn- c10-source-plan-eligible? [canonical source resolution]
   (let [source-bytes (when (string? source)
@@ -108,13 +134,8 @@
 
 (defn- sha256
   [value]
-  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
-    (.update digest
-             (.getBytes (str value)
-                        java.nio.charset.StandardCharsets/UTF_8))
-    (apply str
-           (map #(format "%02x" (bit-and % 0xff))
-                (.digest digest)))))
+  (sha256-bytes
+   (.getBytes (str value) java.nio.charset.StandardCharsets/UTF_8)))
 
 (defn- cache-context
   []
