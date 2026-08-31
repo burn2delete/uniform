@@ -9911,7 +9911,7 @@
     "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
     "owner": "sh-core-architecture",
     "author": "sh07-b51-v18-architecture",
-    "state": "frozen",
+    "state": "review-pending",
     "dependencies": [
       "sh07-b51-vector-destructuring-architecture-v18-attempt-17"
     ],
@@ -10043,9 +10043,15 @@
         "at": "2026-08-31T06:03:12Z",
         "actor": "sh07-b51-v18-architecture-coordinator",
         "reason": "freeze authoritative main base 57914082a4e6ef523778b4b24e4a2f93363b7fac and immutable architecture-only Attempt-18 candidate 6d179d440386b9b4f6bd7078e167df2ddada2e94, tree 016da13629588fff46692108c6d7461bf84bc5b4, report SHA-256 0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386 after documentation, roadmap, governance, language-boundary, exact range diff, JSON, ASCII, ownership, and EOF checks; report content and candidate identity remain byte-identical"
+      },
+      {
+        "state": "review-pending",
+        "at": "2026-08-31T06:04:07Z",
+        "actor": "sh07-b51-v18-architecture-coordinator",
+        "reason": "request fresh independent exact review by /root/attempt17_runtime_review of immutable Attempt-18 candidate 6d179d440386b9b4f6bd7078e167df2ddada2e94, tree 016da13629588fff46692108c6d7461bf84bc5b4, report SHA-256 0b85308ea51b7cbdd75f03a039d9e7e57f7f75b2ee2213b1ff95caea7934c386: authenticated C2 semantic-key authority, unique canonical scientific spelling and exact reread proof, 261-byte derivation, deferred/host-range behavior, independent producer/oracle/Root6 algorithms, preserved Attempt-17/G13 authority, evidence, governance, and nonclaims"
       }
     ],
-    "disposition": "FROZEN architecture-only Attempt-18 candidate awaiting fresh independent exact review. It closes the missing canonical decimal readable-spelling prerequisite without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
+    "disposition": "REVIEW-PENDING architecture-only Attempt-18 candidate routed to fresh independent exact review. It closes the missing canonical decimal readable-spelling prerequisite without implementation, test, fixture, pin, acceptance, integration, or product-completion authority."
   }
 ]
 }
