@@ -8,7 +8,7 @@
     "host-wide-development-resource-broker-v1",
     "incremental-development-loop-runner-wiring-v1"
   ],
-  "disposition": "Accepted for integration as a bounded, successful-only, authenticated, path-neutral SH-07 C10 development semantic cache. This grants no authoritative SH-07, proof, performance, roadmap, release, self-hosting, or seed-retirement credit.",
+  "disposition": "Integrated a bounded, successful-only, authenticated, path-neutral SH-07 C10 development semantic cache. This grants no authoritative SH-07, proof, performance, roadmap, release, self-hosting, or seed-retirement credit.",
   "evidence": {
     "accepted_fixtures": [
       "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_run_product_carrier_test.clj#construct-bind-and-cache-key-coverage",
@@ -124,6 +124,12 @@
       "at": "2026-08-31T20:02:37Z",
       "reason": "exact reconciled identities, clean worktree, focused gates, two independent acceptances, residual host boundaries, and nonclaims verified",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-08-31T20:05:00Z",
+      "reason": "admit the exact accepted semantic-cache reconciliation to the authoritative lineage and close its active reservation",
+      "state": "integrated"
     }
   ],
   "id": "sh07-c10-development-artifact-reuse-attempt-2",
@@ -162,6 +168,6 @@
       "reviewer": "rereview_sh07_c10_routing"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 C10 development semantic artifact reuse candidate attempt 2"
 }
