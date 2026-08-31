@@ -222,7 +222,7 @@
         (is (zero? inspect-code))
         (is (true? (get-in inspect-document [:preconditions :candidate-identities-match])))))))
 
-(deftest registered-worktrees-are-inventory-only
+(deftest candidate-focused-default-omits-peer-inventory
   (with-repository
     (fn [{:keys [root base]}]
       (git! root "branch" "auxiliary" base)
@@ -234,11 +234,75 @@
           (spit (str (.resolve auxiliary "tracked.txt")) "auxiliary dirty\n")
           (let [[document exit-code]
                 (run-preflight root (expected-options root "origin/main" base))
+                records (:worktrees document)
+                root-path (str (.toRealPath root (make-array java.nio.file.LinkOption 0)))
+                auxiliary-path (str (.toRealPath auxiliary (make-array java.nio.file.LinkOption 0)))]
+            (is (zero? exit-code))
+            (is (= "candidate" (:worktree-scan document)))
+            (is (= {:mode "candidate"
+                    :complete? false
+                    :candidate-focused? true
+                    :count 1}
+                   (:worktree-inventory document)))
+            (is (= [root-path] (mapv :path records)))
+            (is (not (some #(= auxiliary-path (:path %)) records)))
+            (is (= "clean" (:state (first records)))))
+          (finally
+            (git! root "worktree" "remove" "--force" (str auxiliary))
+            (delete-tree! parent)))))))
+
+(deftest worktree-scan-mode-is-closed
+  (with-repository
+    (fn [{:keys [root]}]
+      (let [[document exit-code]
+            (run-preflight root {:worktree-scan "peer-scan"})]
+        (is (= 1 exit-code))
+        (is (= "WORKTREE-SCAN-INVALID"
+               (-> document :diagnostics first :code)))))))
+
+(deftest registered-worktrees-are-inventory-only
+  (with-repository
+    (fn [{:keys [root base]}]
+      (git! root "branch" "auxiliary" base)
+      (let [parent (Files/createTempDirectory "gravity-worktree-preflight-aux-"
+                                              (make-array java.nio.file.attribute.FileAttribute 0))
+            auxiliary (.resolve parent "auxiliary-worktree")]
+        (try
+          (git! root "worktree" "add" "-q" (str auxiliary) "auxiliary")
+          (spit (str (.resolve auxiliary "tracked.txt")) "auxiliary dirty\n")
+          (let [[document exit-code]
+                (run-preflight root (assoc (expected-options root "origin/main" base)
+                                           :worktree-scan "all"))
                 records (into {} (map (juxt :path identity) (:worktrees document)))]
             (is (zero? exit-code))
+            (is (= "all" (:worktree-scan document)))
+            (is (true? (get-in document [:worktree-inventory :complete?])))
             (is (= "clean" (get-in records [(str (.toRealPath root (make-array java.nio.file.LinkOption 0))) :state])))
             (is (= "dirty" (get-in records [(str (.toRealPath auxiliary (make-array java.nio.file.LinkOption 0))) :state])))
             (is (contains? records (str (.toRealPath auxiliary (make-array java.nio.file.LinkOption 0))))))
+          (finally
+            (git! root "worktree" "remove" "--force" (str auxiliary))
+            (delete-tree! parent)))))))
+
+(deftest full-inventory-is-safely-bounded
+  (with-repository
+    (fn [{:keys [root base]}]
+      (git! root "branch" "auxiliary" base)
+      (let [parent (Files/createTempDirectory "gravity-worktree-preflight-aux-"
+                                              (make-array java.nio.file.attribute.FileAttribute 0))
+            auxiliary (.resolve parent "auxiliary-worktree")]
+        (try
+          (git! root "worktree" "add" "-q" (str auxiliary) "auxiliary")
+          (let [options (assoc (expected-options root "origin/main" base)
+                               :worktree-scan "all")
+                limit-var (ns-resolve preflight-ns 'max-worktree-inventory)
+                [document exit-code]
+                (with-redefs-fn {limit-var 1}
+                  #(run-preflight root options))]
+            (is (= 1 exit-code))
+            (is (some #(= "WORKTREE-INVENTORY-BOUND" (:code %))
+                      (:diagnostics document)))
+            (is (false? (get-in document [:worktree-inventory :complete?]))))
           (finally
             (git! root "worktree" "remove" "--force" (str auxiliary))
             (delete-tree! parent)))))))

@@ -11,6 +11,7 @@ clojure -M tools/validate_full_language_roadmap.clj
 clojure -M tools/validate_full_language_roadmap.clj --self-test
 clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
+# Add --worktree-scan all (or --full-inventory) for an explicit peer inventory.
 clojure -M tools/verify_integration_candidate.clj --help
 ```
 

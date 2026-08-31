@@ -12,6 +12,9 @@
 
 (def schema "gravity/worktree-preflight-v1")
 (def default-base-ref "origin/main")
+(def default-worktree-scan "candidate")
+(def worktree-scan-modes #{"candidate" "all"})
+(def max-worktree-inventory 256)
 (def max-output-exclusions 32)
 (def max-output-path-length 4096)
 (def ^:private oid-pattern (Pattern/compile "^[0-9a-fA-F]{40,64}$"))
@@ -216,12 +219,30 @@
     (flush!)
     @records))
 
+(defn- candidate-worktree [root branch candidate tree]
+  "Return the already-observed candidate worktree without enumerating peers.
+
+  `working-tree` has already inspected this path, so candidate mode must not
+  invoke `git worktree list` or repeat a status scan for the same path."
+  [{:path (str root)
+    :head (:commit candidate)
+    :branch-ref (:ref branch)
+    :detached (:detached branch)
+    :state (:state tree)
+    :candidate true}])
+
 (defn- worktrees [root exclusions]
   (let [arguments ["worktree" "list" "--porcelain"]
         result (git-result root arguments)]
     (if-not (zero? (:exit result))
       (throw (git-failure result arguments))
-      (->> (parse-worktree-list (:stdout result))
+      (let [records (parse-worktree-list (:stdout result))]
+        (when (> (count records) max-worktree-inventory)
+          (throw (failure "WORKTREE-INVENTORY-BOUND"
+                          (str "full worktree inventory exceeds the bounded limit of "
+                               max-worktree-inventory " records")
+                          {:count (count records) :limit max-worktree-inventory})))
+        (->> records
            (map (fn [record]
                   (let [path (canonical-path (:path record))
                         state (cond
@@ -233,7 +254,7 @@
                                         (catch clojure.lang.ExceptionInfo _ "unavailable")))]
                     (assoc record :path (str path) :state state))))
            (sort-by :path)
-           vec))))
+           vec)))))
 
 (defn- ancestor? [root ancestor descendant]
   (let [result (git-result root ["merge-base" "--is-ancestor" ancestor descendant])]
@@ -275,9 +296,19 @@
 (defn- diagnostic [code message details]
   {:code code :message message :details details})
 
+(defn- normalize-worktree-scan [value]
+  (let [scan (str (or value default-worktree-scan))]
+    (when-not (contains? worktree-scan-modes scan)
+      (throw (failure "WORKTREE-SCAN-INVALID"
+                      "worktree scan must be candidate or all"
+                      {:scan scan :allowed (sort worktree-scan-modes)})))
+    scan))
+
 (defn- preflight-document [repository options]
-  (let [{:keys [mode base-ref candidate-base candidate-commit candidate-tree allow-output]
+  (let [{:keys [mode base-ref candidate-base candidate-commit candidate-tree allow-output
+                worktree-scan]
          :or {mode "integration" base-ref default-base-ref}} options
+        worktree-scan (normalize-worktree-scan worktree-scan)
         exclusions (normalize-exclusions allow-output)
         diagnostics (atom [])
         root (try
@@ -360,8 +391,13 @@
             (swap! diagnostics conj (diagnostic "WORKTREE-CANDIDATE-TREE-MISMATCH"
                                                  "candidate tree identity does not match HEAD"
                                                  {:expected candidate-tree :actual (:tree candidate)})))
+        inventory-complete? (atom false)
         worktree-inventory (if root
-                             (try (worktrees root exclusions)
+                             (try (if (= "all" worktree-scan)
+                                    (let [inventory (worktrees root exclusions)]
+                                      (reset! inventory-complete? true)
+                                      inventory)
+                                    (candidate-worktree root branch candidate tree))
                                   (catch clojure.lang.ExceptionInfo error
                                     (swap! diagnostics conj (diagnostic (error-code error) (ex-message error)
                                                                          (error-details error)))
@@ -379,6 +415,11 @@
      :candidate {:commit (:commit candidate) :tree (:tree candidate)}
      :reconciliation reconciliation
      :working-tree tree
+     :worktree-scan worktree-scan
+     :worktree-inventory {:mode worktree-scan
+                          :complete? @inventory-complete?
+                          :candidate-focused? (= "candidate" worktree-scan)
+                          :count (count worktree-inventory)}
      :worktrees worktree-inventory
      :preconditions {:base-resolved (:resolved base)
                      :candidate-identities-match candidate-identities-match
@@ -400,9 +441,11 @@
 
   Options are `:mode` (`\"integration\"` or `\"inspect\"`), `:base-ref`,
   `:candidate-base`, `:candidate-commit`, `:candidate-tree`, and repeated
-  `:allow-output` repository-relative paths.  Integration requires all three
-  expected identities and a truly clean worktree; inspect is discovery-only
-  and returns zero for a report even when integration gates fail."
+  `:allow-output` repository-relative paths.  `:worktree-scan` defaults to
+  `\"candidate\"`; use `\"all\"` only when a full peer inventory is needed.
+  Integration requires all three expected identities and a truly clean
+  candidate worktree; inspect is discovery-only and returns zero for a report
+  even when integration gates fail."
   ([repository] (run-preflight repository {}))
   ([repository options]
    (let [options (assoc options :mode (if (= "inspect" (:mode options))
@@ -413,24 +456,30 @@
          [document (if (or (= "inspect" (:mode document))
                           (get-in document [:preconditions :all-pass])) 0 1)])
        (catch clojure.lang.ExceptionInfo error
-         [{:schema schema :read-only true :mode (:mode options)
-           :repository {:path (str repository) :resolved false}
-           :base {:ref (or (:base-ref options) default-base-ref) :resolved false}
-           :candidate {:commit nil :tree nil}
-           :reconciliation {:relation "unavailable" :base-is-ancestor nil
-                            :candidate-is-ancestor nil :tree-equivalent false
-                            :recommendation "resolve_base_and_candidate_identities"}
-           :working-tree {:state "unavailable" :entries [] :allowed-entries []
-                          :blocked-entries [] :tracked-changes [] :untracked-changes []
-                          :exclusions []}
-           :worktrees []
-           :preconditions {:base-resolved false :candidate-identities-match false
-                           :clean-worktree false :named-branch false
-                           :reconciliation-allowed false :all-pass false}
-           :recommendations []
-           :diagnostics [(diagnostic (error-code error) (ex-message error)
-                                     (error-details error))]}
-          1])))))
+         (let [worktree-scan (or (:worktree-scan options) default-worktree-scan)]
+           [{:schema schema :read-only true :mode (:mode options)
+             :repository {:path (str repository) :resolved false}
+             :base {:ref (or (:base-ref options) default-base-ref) :resolved false}
+             :candidate {:commit nil :tree nil}
+             :reconciliation {:relation "unavailable" :base-is-ancestor nil
+                              :candidate-is-ancestor nil :tree-equivalent false
+                              :recommendation "resolve_base_and_candidate_identities"}
+             :working-tree {:state "unavailable" :entries [] :allowed-entries []
+                            :blocked-entries [] :tracked-changes [] :untracked-changes []
+                            :exclusions []}
+             :worktree-scan worktree-scan
+             :worktree-inventory {:mode worktree-scan
+                                  :complete? (= "all" worktree-scan)
+                                  :candidate-focused? (= "candidate" worktree-scan)
+                                  :count 0}
+             :worktrees []
+             :preconditions {:base-resolved false :candidate-identities-match false
+                             :clean-worktree false :named-branch false
+                             :reconciliation-allowed false :all-pass false}
+             :recommendations []
+             :diagnostics [(diagnostic (error-code error) (ex-message error)
+                                       (error-details error))]}
+            1]))))))
 
 (defn- json-key [key]
   (cond (keyword? key) (name key)
@@ -473,7 +522,8 @@
 
 (defn- parse-args [arguments]
   (loop [arguments (seq arguments)
-         options {:repo "." :mode "integration" :base-ref default-base-ref :allow-output []}]
+         options {:repo "." :mode "integration" :base-ref default-base-ref
+                  :worktree-scan default-worktree-scan :allow-output []}]
     (if-not arguments
       options
       (let [option (first arguments)
@@ -492,6 +542,13 @@
                                         {:mode mode})))
                       (recur (next remainder) (assoc options :mode mode)))
           "--base-ref" (recur (next remainder) (assoc options :base-ref (value option)))
+          "--worktree-scan" (let [scan (value option)]
+                               (when-not (contains? worktree-scan-modes scan)
+                                 (throw (failure "WORKTREE-CLI-ARGUMENT"
+                                                 "--worktree-scan must be candidate or all"
+                                                 {:scan scan})))
+                               (recur (next remainder) (assoc options :worktree-scan scan)))
+          "--full-inventory" (recur remainder (assoc options :worktree-scan "all"))
           "--candidate-base" (recur (next remainder) (assoc options :candidate-base (value option)))
           "--expected-base" (recur (next remainder) (assoc options :candidate-base (value option)))
           "--candidate-commit" (recur (next remainder) (assoc options :candidate-commit (value option)))
@@ -512,6 +569,8 @@
         (do
           (println "Usage: clojure -M tools/check_worktree_preflight.clj [options]")
           (println "  --repo PATH --mode inspect|integration --base-ref REF")
+          (println "  --worktree-scan candidate|all (default: candidate; all is explicit full inventory)")
+          (println "  --full-inventory (alias for --worktree-scan all)")
           (println "  integration requires --candidate-base OID --candidate-commit OID --candidate-tree OID")
           (println "  --allow-output RELATIVE-PATH (inspection classification only; repeatable)")
           0)

@@ -501,6 +501,10 @@ clojure -M tools/validate_workstream_governance.clj
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
 ```
 
+Inspection is candidate-focused by default. It reports the current candidate
+worktree without enumerating registered peers; use `--worktree-scan all` only
+for an explicit, bounded repository-wide inventory.
+
 The preflight is read-only. Integration mode requires the exact recorded base,
 candidate commit, candidate tree, named branch, and clean worktree. A passing
 development command never substitutes for independent acceptance or grants
