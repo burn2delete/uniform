@@ -17,8 +17,9 @@
      :lineage {:source-revision-id (:sha256 canonical)
                :sh06-semantic-projection-id "projection"
                :authenticated-sh06-artifact-id (:artifact-id resolution)}
-     :module {:namespace 'gravity.compiler.c10-safety-analysis-pipeline
-              :profile :meta :target :jvm
+        :module {:namespace 'gravity.compiler.c10-safety-analysis-pipeline
+                 :source-revision-id (:sha256 canonical)
+                 :profile :meta :target :jvm
               :safety :safe :effects [] :capabilities [] :exports []}
      :provenance {:actual-source-path path}
      :scope :sh07-b15-keyword-map-lookup}))
@@ -49,14 +50,22 @@
               :lineage (:lineage request)
               :empty-vector [] :empty-map {} :empty-set #{}}
         run {:raw-template-result
-             {:core-template {:provenance {:actual-source-path path}
+             {:artifact :gravity/sh07-core-template-result
+              :schema-version 16 :status :accepted
+              :core-template {:provenance {:actual-source-path path}
                               :provenance-binding-preimage provenance-preimage
                               :lineage (:lineage request)}
+              :diagnostics [] :bounds {} :containment {}
+              :execution-boundary {}
               :digest-requests requests}
              :canonical-core-artifact core :digest-requests requests
              :resolved-digests resolved
-             :template-verification {:status :passed}
-             :resolved-verification {:status :passed}}]
+             :template-verification
+             {:artifact :gravity/sh07-core-template-verification
+              :schema-version 16 :status :passed :rule nil :reason nil :details {}}
+             :resolved-verification
+             {:artifact :gravity/sh07-core-resolved-verification
+              :schema-version 16 :status :passed :rule nil}}]
     {:kind :gravity/sh07-core-artifact :status :accepted
      :artifact-id (:artifact-id core) :sh06-resolution-artifact resolution
      :gravity-core-boundary run :provenance {:source-path path}}))
@@ -106,17 +115,23 @@
           [bootstrap/sh06-resolution-source-artifact
            (fn [path _source]
              {:kind :gravity/sh06-resolution-artifact :status :accepted
-              :artifact-id "sh06" :provenance {:source-path path}
+              :artifact-id "sh06"
+              :provenance
+              {:source-path path
+               :source-revision-id
+               (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}
               :gravity-resolution-boundary
-              {:plan-binding
-               {:source-byte-count (alength (.getBytes ^String source java.nio.charset.StandardCharsets/UTF_8))
-                :source-bytes-sha256
-                (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}
+              {:plan-binding {:unrelated-sh06-pin true}
+               :authenticated-resolution-request
+               {:module
+                {:source-revision-id
+                 (:sha256 (#'gravity.self-hosting.sh07-iteration-cache-runner/current-c10-source-snapshot))}}
                :resolved-analysis {:semantic-projection-id "projection"}}})
            bootstrap/sh06-resolution-artifact-verification
-           (fn [_]
+           (fn [resolution]
              {:artifact :gravity/sh06-resolution-artifact-verification
-              :status :passed :failed-checks []})
+              :status :passed :checks {:synthetic true} :failed-checks []
+              :source-path (get-in resolution [:provenance :source-path])})
            bootstrap/sh07-core-authenticated-request synthetic-semantic-request
            bootstrap/sh07-core-from-resolution-artifact
            (fn [resolution]
@@ -160,9 +175,10 @@
                     [left right])))]
             (is (= 2 @core-builds) (:cache result))
             (is (= 1 @verification-reports) (:cache result))
-            (is (= [:sh07-core-artifact-id
-                    :sh07-core-provenance-binding-id]
-                   @resolver-leaves))
+            (is (= 6 (count @resolver-leaves)))
+            (is (= {:sh07-core-artifact-id 3
+                    :sh07-core-provenance-binding-id 3}
+                   (frequencies @resolver-leaves)))
             (is (= 1 (get-in result [:cache :semantic-misses])))
             (is (= 1 (get-in result [:cache :semantic-hits])))
             (is (= [(str left) (str right)]
@@ -243,20 +259,24 @@
               "sh07-c10-pin-" ".gravity"
               (make-array java.nio.file.attribute.FileAttribute 0))
         base-resolution
-        {:artifact-id "sh06" :provenance {:source-path (str path)}
+        {:kind :gravity/sh06-resolution-artifact :status :accepted
+         :artifact-id "sh06"
+         :provenance {:source-path (str path)
+                      :source-revision-id (:sha256 canonical)}
          :gravity-resolution-boundary
-         {:plan-binding {:source-byte-count (:byte-count canonical)
-                         :source-bytes-sha256 (:sha256 canonical)}
+         {:plan-binding {:unrelated-sh06-pin true}
+          :authenticated-resolution-request
+          {:module {:source-revision-id (:sha256 canonical)}}
           :resolved-analysis {:semantic-projection-id "projection"}}}
         base-request (synthetic-semantic-request base-resolution)
         cases
-        [[:plan-count
-          (update-in base-resolution
-                     [:gravity-resolution-boundary :plan-binding :source-byte-count] inc)
+        [[:resolution-revision
+          (assoc-in base-resolution [:provenance :source-revision-id] "sha256:bad")
           base-request]
-         [:plan-hash
+         [:resolution-request-revision
           (assoc-in base-resolution
-                    [:gravity-resolution-boundary :plan-binding :source-bytes-sha256]
+                    [:gravity-resolution-boundary :authenticated-resolution-request
+                     :module :source-revision-id]
                     "sha256:bad")
           base-request]
          [:request-revision base-resolution
@@ -318,6 +338,8 @@
        (make-array java.nio.file.attribute.FileAttribute 0))
       (is (= :source-missing (reason missing "")))
       (is (= :source-symlink (reason link "ok")))
+      (is (= :source-invalid-path
+             (reason (str "invalid" (char 0) ".gravity") "ok")))
       (java.nio.file.Files/write
        target (byte-array [(byte 0)])
        (make-array java.nio.file.OpenOption 0))
