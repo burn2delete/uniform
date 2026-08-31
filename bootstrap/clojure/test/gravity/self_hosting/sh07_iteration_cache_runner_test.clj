@@ -30,13 +30,6 @@
   ([key] (semantic-test-value key 1))
   ([key weight] {:key key :weight weight}))
 
-(defn- b8-fixture-var
-  [name]
-  (require 'gravity.self-hosting.sh07-try-catch-test)
-  (or (ns-resolve 'gravity.self-hosting.sh07-try-catch-test name)
-      (throw (ex-info "Required SH-07-B8 fixture helper is absent"
-                      {:name name}))))
-
 (deftest semantic-cache-same-key-joins-and-different-key-progresses
   (let [counters (semantic-counters)
         cache (semantic-test-cache 4 100 counters)
@@ -86,51 +79,6 @@
             (finally
               (.countDown release-a)
               (deref producer 3000 nil))))))))
-
-(deftest sh07-b8-fixture-contract-parity-is-bounded
-  ;; This is deliberately a fixture-level guard.  The ordinary SH-07
-  ;; artifact/status and diagnostic parity clause requires a bounded frozen
-  ;; artifact source; invoking `file-artifact` here would redo the full
-  ;; lowering and turn this focused test into the long SH-07 run it protects.
-  ;; Keep the distinction explicit rather than treating source inventory as
-  ;; ordinary artifact evidence.
-  (let [fixture-path (b8-fixture-var 'fixture-path)
-        source-bytes (b8-fixture-var 'source-bytes)
-        pair (fn [family basename]
-               (mapv (fn [extension]
-                       (let [path (fixture-path family basename extension)
-                             bytes (source-bytes path)]
-                         {:extension extension
-                          :path path
-                          :source (String. ^bytes bytes
-                                            java.nio.charset.StandardCharsets/UTF_8)
-                          :bytes bytes}))
-                     [".gravity" ".qst"]))
-        accepted (pair "accepted" "top-level-typed-catch")
-        rejected (pair "rejected" "missing-catch")
-        same-bytes? (fn [items]
-                      (= (seq (:bytes (first items)))
-                         (seq (:bytes (second items)))))]
-    (testing "accepted B8 source pair declares the accepted shape"
-      (is (same-bytes? accepted))
-      (is (every? #(= :accepted (:fixture-status %))
-                  (map #(assoc % :fixture-status :accepted) accepted)))
-      (is (every? #(.contains ^String (:source %) "(catch Exception error")
-                  accepted))
-      (is (every? #(.contains ^String (:source %) ":slice :SH-07-B8")
-                  accepted)))
-    (testing "rejected B8 source pair carries the same diagnostic oracle"
-      (is (same-bytes? rejected))
-      (is (every? #(= :rejected (:fixture-status %))
-                  (map #(assoc % :fixture-status :rejected) rejected)))
-      (is (every? #(.contains ^String (:source %) ":expected-rule \"C6-CORE-SHAPE\"")
-                  rejected))
-      (is (every? #(.contains ^String (:source %) ":expected-reason :try-catch-required")
-                  rejected))
-      (is (every? #(.contains ^String (:source %) ":expected-severity :error")
-                  rejected))
-      (is (every? #(not (.contains ^String (:source %) "(catch ") )
-                  rejected)))))
 
 (deftest semantic-cache-producer-failure-clears-flight-and-allows-retry
   (let [counters (semantic-counters)
@@ -238,7 +186,36 @@
         (finally
           (.countDown release)
           (.interrupt producer)
-          (.join producer 3000))))))
+            (.join producer 3000))))))
+
+(deftest semantic-cache-cancellation-clears-flight-and-allows-retry
+  (let [counters (semantic-counters)
+        cache (semantic-test-cache 1 100 counters)
+        started (CountDownLatch. 1)
+        release (CountDownLatch. 1)
+        producer
+        (future
+          (cache :cancelled (constantly true)
+                 (fn []
+                   (.countDown started)
+                   (.await release 10 TimeUnit/SECONDS)
+                   (semantic-test-value :cancelled))))]
+    (with-redefs [semantic-carrier/carrier-byte-count
+                  (fn [value] (:weight value))]
+      (try
+        (is (.await started 1 TimeUnit/SECONDS))
+        (is (future-cancel producer))
+        (is (await-condition
+             #(= 1 (:semantic-failed-producers @counters)) 2000))
+        (is (zero? (:semantic-published @counters)))
+        (is (= (semantic-test-value :cancelled)
+               (cache :cancelled (constantly true)
+                      #(semantic-test-value :cancelled))))
+        (is (= 2 (:semantic-misses @counters)))
+        (is (= 1 (:semantic-published @counters)))
+        (finally
+          (.countDown release)
+          (future-cancel producer))))))
 
 (deftest semantic-cache-reentry-fails-and-retry-is-fresh
   (let [counters (semantic-counters)
@@ -391,21 +368,33 @@
                                      (get-in request [:lineage :source-revision-id])
                                      :sh06-semantic-projection-id "projection"
                                      :authenticated-sh06-artifact-id sh06-id}}
-        provenance-preimage {:actual-source-path path}
+        provenance-preimage
+        {:actual-source-path path
+         :core-artifact-id-request
+         {:artifact :gravity/sh07-internal-digest-reference
+          :schema-version 1 :ordinal 0 :authority :sh07-digest-resolver}}
         requests [{:ordinal 0 :purpose :sh07-core-artifact-id
                    :preimage identity-preimage}
                   {:ordinal 1 :purpose :sh07-core-provenance-binding-id
                    :preimage provenance-preimage}]
-        digest (fn [purpose preimage]
+        digest (fn [purpose preimage resolved-digests]
                  (let [resolved-preimage
-                       (if (= :sh07-core-artifact-id purpose)
+                       (case purpose
+                         :sh07-core-artifact-id
                          (bootstrap/sh07-core-semantic-identity-preimage
                           preimage)
+                         :sh07-core-provenance-binding-id
+                         (assoc preimage :core-artifact-id-request
+                                (first resolved-digests))
                          preimage)]
                    (bootstrap/reader-canonical-hash
                     {:domain :gravity/sh07-declared-digest-v1
                      :purpose purpose :preimage resolved-preimage})))
-        resolved (mapv #(digest (:purpose %) (:preimage %)) requests)
+        artifact-digest (digest :sh07-core-artifact-id identity-preimage [])
+        provenance-digest
+        (digest :sh07-core-provenance-binding-id provenance-preimage
+                [artifact-digest])
+        resolved [artifact-digest provenance-digest]
         core {:artifact-id (first resolved)
               :identity-preimage identity-preimage
               :provenance {:actual-source-path path}
@@ -519,7 +508,11 @@
            (fn [_ function arguments]
              (when (= :hit @phase)
                (swap! plan-leaves conj function))
-             {:status :accepted :value (first arguments)})
+             {:status :accepted
+              :value (if (= 'sh07-resolve-provenance-preimage function)
+                       (assoc (first arguments) :core-artifact-id-request
+                              (first (second arguments)))
+                       (first arguments))})
            bootstrap/sh07-core-verification-checks
            (fn [_ _ _] {:synthetic-check true})
            bootstrap/sh07-core-proof-from-checks
@@ -751,6 +744,42 @@
         (java.nio.file.Files/deleteIfExists link)
         (java.nio.file.Files/deleteIfExists target)
         (java.nio.file.Files/deleteIfExists directory)))))
+
+(deftest semantic-source-snapshot-detects-mutation-during-bounded-read
+  (let [path (java.nio.file.Files/createTempFile
+              "sh07-semantic-mutating-" ".gravity"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        source "same-length-source"
+        changed "same-length-change"
+        resolution {:gravity-resolution-boundary
+                    {:resolved-analysis {:semantic-projection-id "projection"}}}
+        original @#'runner/read-bounded-bytes]
+    (try
+      (java.nio.file.Files/write
+       path (.getBytes source java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (let [data
+            (with-redefs-fn
+              {#'runner/read-bounded-bytes
+               (fn [resolved source-path]
+                 (let [bytes (original resolved source-path)]
+                   (java.nio.file.Files/write
+                    resolved
+                    (.getBytes changed java.nio.charset.StandardCharsets/UTF_8)
+                    (make-array java.nio.file.OpenOption 0))
+                   (java.nio.file.Files/setLastModifiedTime
+                    resolved
+                    (java.nio.file.attribute.FileTime/fromMillis
+                     (+ (System/currentTimeMillis) 5000)))
+                   bytes))}
+              #(ex-data
+                (try
+                  (#'runner/strict-source-snapshot
+                   (str path) source resolution)
+                  (catch clojure.lang.ExceptionInfo error error))))]
+        (is (= :source-mutated (:reason data))))
+      (finally
+        (java.nio.file.Files/deleteIfExists path)))))
 
 (deftest semantic-source-snapshot-rejects-not-regular-invalid-extension-and-mutation
   (let [directory (java.nio.file.Files/createTempDirectory

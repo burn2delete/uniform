@@ -364,25 +364,7 @@
                   resolved java.nio.file.attribute.BasicFileAttributes options)
           _ (when (> (.size before) (* 16 1024 1024))
               (semantic-diagnostic! :source-too-large path))
-          bytes
-          (with-open [channel
-                      (java.nio.channels.FileChannel/open
-                       resolved
-                       (into-array java.nio.file.OpenOption
-                                   [java.nio.file.StandardOpenOption/READ
-                                    java.nio.file.LinkOption/NOFOLLOW_LINKS]))
-                      output (java.io.ByteArrayOutputStream.)]
-            (let [buffer (java.nio.ByteBuffer/allocate 8192)]
-              (loop [total 0]
-                (.clear buffer)
-                (let [read (.read channel buffer)]
-                  (if (neg? read)
-                    (.toByteArray output)
-                    (let [next-total (+ total read)]
-                      (when (> next-total (* 16 1024 1024))
-                        (semantic-diagnostic! :source-too-large path))
-                      (.write output (.array buffer) 0 read)
-                      (recur next-total)))))))
+          bytes (read-bounded-bytes resolved path)
           after (java.nio.file.Files/readAttributes
                  resolved java.nio.file.attribute.BasicFileAttributes options)
           supplied (.getBytes ^String source java.nio.charset.StandardCharsets/UTF_8)
@@ -455,6 +437,42 @@
     {:purpose purpose :preimage preimage
      :resolved-preimage resolved-preimage :digest digest}))
 
+(defn- binding-digest-receipt
+  [carrier purpose preimage resolved ordinal]
+  (case purpose
+    :sh07-core-artifact-id
+    (let [digest (get-in carrier [:run-product :resolved-digests ordinal])]
+      (when-not (and (string? digest)
+                     (re-matches #"sha256:[0-9a-f]{64}" digest))
+        (semantic-diagnostic! :digest-purpose-mismatch nil))
+      {:purpose purpose :preimage preimage
+       :resolved-preimage ::carrier-semantic-identity :digest digest})
+
+    :sh07-core-provenance-binding-id
+    (let [reference (:core-artifact-id-request preimage)
+          reference-ordinal (:ordinal reference)
+          artifact-id (when (and (integer? reference-ordinal)
+                                 (<= 0 reference-ordinal)
+                                 (< reference-ordinal (count resolved)))
+                        (get resolved reference-ordinal))
+          resolved-preimage (when (and (= :gravity/sh07-internal-digest-reference
+                                           (:artifact reference))
+                                       (= 1 (:schema-version reference))
+                                       (= :sh07-digest-resolver (:authority reference))
+                                       (string? artifact-id)
+                                       (re-matches #"sha256:[0-9a-f]{64}"
+                                                   artifact-id))
+                              (assoc preimage :core-artifact-id-request
+                                     artifact-id))]
+      (when-not resolved-preimage
+        (semantic-diagnostic! :digest-purpose-mismatch nil))
+      {:purpose purpose :preimage preimage :resolved-preimage resolved-preimage
+       :digest (bootstrap/reader-canonical-hash
+                {:domain :gravity/sh07-declared-digest-v1
+                 :purpose purpose :preimage resolved-preimage})})
+
+    (exact-digest-receipt nil purpose preimage resolved)))
+
 (defn- digest-index
   [product purpose]
   (let [indexes (keep-indexed #(when (= purpose (:purpose %2)) %1)
@@ -486,17 +504,15 @@
 
 (defn- semantic-seams
   [source-path carrier expected-resolution expected-upstream]
-  (let [resolution-receipt (atom nil)]
-    {:resolve-digests
+  {:resolve-digests
      (fn [_ requests]
        (let [receipts
              (reduce (fn [items request]
                        (conj items
-                             (exact-digest-receipt
-                              source-path (:purpose request) (:preimage request)
-                              (mapv :digest items))))
+                             (binding-digest-receipt
+                              carrier (:purpose request) (:preimage request)
+                              (mapv :digest items) (:ordinal request))))
                      [] requests)]
-         (reset! resolution-receipt receipts)
          (mapv :digest receipts)))
      :assemble-artifact
      (fn [resolution request product]
@@ -513,7 +529,13 @@
            resolution request product expected-upstream)))
      :digest-rebinding?
      (fn [_ product]
-       (let [receipts @resolution-receipt]
+       (let [receipts
+             (reduce (fn [items request]
+                       (conj items
+                             (exact-digest-receipt
+                              source-path (:purpose request) (:preimage request)
+                              (mapv :digest items))))
+                     [] (:digest-requests product))]
          (and (= (count receipts) (count (:digest-requests product)))
               (= (:resolved-digests product) (mapv :digest receipts))
               (every?
@@ -563,7 +585,7 @@
                                    :authenticated-core-request])))))
      :no-alias?
      (fn [stored bound]
-       (aggregate-identities-disjoint? (:run-product stored) bound))}))
+       (aggregate-identities-disjoint? (:run-product stored) bound))})
 
 (defn- current-sh07-plan-binding
   []

@@ -788,6 +788,8 @@
      (when-not (and (snapshot-matches-request? snapshot request)
                     (request-envelope-valid? request))
        (diagnostic! :source-mutated path))
+     (when-not (= (get-in carrier [:semantic-key :pins]) (live-pins))
+       (diagnostic! :stale-pin path))
      (when-not (= (:semantic-key carrier) (semantic-key snapshot))
        (diagnostic! :source-mutated path))
      (when-not

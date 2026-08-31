@@ -514,6 +514,21 @@ telemetry only. Every result remains non-authoritative and requires a fresh
 authoritative run; reuse grants no timing, benchmark, proof, roadmap, release,
 self-hosting, or seed-retirement authority.
 
+The authentic accepted/rejected B8 carrier oracle is intentionally outside the
+fast development lane because it performs ordinary full SH-07 construction.
+Run that exact evidence only when admission review requires it:
+
+```bash
+GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1 \
+  clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' \
+  -M -e "(require 'clojure.test 'gravity.self-hosting.sh07-try-catch-test) (binding [clojure.test/*report-counters* (ref clojure.test/*initial-report-counters*)] (clojure.test/test-vars [#'gravity.self-hosting.sh07-try-catch-test/sh07-b8-semantic-carrier-authentic-acceptance-evidence]) (let [r @clojure.test/*report-counters*] (prn r) (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1))))"
+```
+
+Without the environment variable, the added carrier evidence variable skips
+the expensive construction while the ordinary B8 namespace behavior is
+unchanged. The carrier and iteration-cache unit namespaces remain the bounded
+default checks.
+
 For a bounded exact SH-07 development selection, use the dedicated process
 runner:
 

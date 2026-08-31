@@ -247,7 +247,7 @@
                                    request (seams))))
         (with-redefs [carrier/live-pins (constantly {:stale true})]
           (is (thrown-with-msg?
-               clojure.lang.ExceptionInfo #"source-mutated"
+               clojure.lang.ExceptionInfo #"stale-pin"
                (carrier/bind-carrier built (snapshot "left.gravity") (sh06)
                                      (verification) request (seams)))))))))
 

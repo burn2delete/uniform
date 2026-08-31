@@ -449,6 +449,11 @@ cache. A bypass is not a cache miss and publishes nothing.
 
 ## Required acceptance evidence
 
+The authentic full-build oracle is isolated from the bounded development lane
+and is enabled only with `GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1` in
+`sh07-b8-semantic-carrier-authentic-acceptance-evidence`. The default focused
+carrier and iteration-cache checks must not execute that oracle.
+
 The implementation is admissible only with focused positive and negative tests
 that prove all clauses above, including: same bytes at two regular paths in two
 temporary roots; equal semantic identity but distinct exact provenance; no
