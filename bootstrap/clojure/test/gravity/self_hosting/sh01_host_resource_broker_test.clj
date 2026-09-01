@@ -631,3 +631,56 @@
         (stop-helper! normal)
         (stop-helper! heavy)
         (delete-tree! root)))))
+
+(deftest live-lease-validator-is-fail-closed-and-bounded
+  (let [root (private-root)
+        invalid
+        (try
+          (broker/validate-live-lease! {} root :normal)
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            error))]
+    (try
+      (is (= "SH01-BROKER-LEASE-INVALID" (:id (ex-data invalid))))
+      (is (keyword? (:reason (ex-data invalid))))
+      (let [options {:coordination-root root :timeout-ms 1000}
+            lease (broker/acquire! options :normal)]
+        (try
+          (is (identical? lease
+                          (broker/validate-live-lease! lease root :normal)))
+          (is (= #{:schema :resource-class :coordination-root
+                   :owner-thread-id :slots :receipt :telemetry :released?
+                   :options}
+                 (set (keys lease))))
+          (is (= :admitted (get-in lease [:receipt :outcome])))
+          (is (= :admitted (get-in lease [:telemetry :outcome])))
+          (is (= root (:coordination-root options)))
+          (is (= 1 (count (:slots lease))))
+          (is (contains? #{"slot-normal-00.lock" "slot-normal-01.lock"}
+                         (get-in lease [:slots 0 :file-name])))
+          (testing "root, options, and slot bindings cannot be forged"
+            (doseq [forged [(assoc lease :coordination-root (str root "/other"))
+                            (assoc-in lease [:options :timeout-ms] 0)
+                            (update lease :slots #(conj % (first %)))]]
+              (let [error
+                    (try
+                      (broker/validate-live-lease! forged root :normal)
+                      nil
+                      (catch clojure.lang.ExceptionInfo thrown
+                        thrown))]
+                (is (= "SH01-BROKER-LEASE-INVALID"
+                       (:id (ex-data error)))))))
+          (finally
+            (is (= :released (:outcome (broker/release! lease)))))))
+      (let [lease (broker/acquire! {:coordination-root root :timeout-ms 1000}
+                                   :exclusive)]
+        (try
+          (is (identical? lease
+                          (broker/validate-live-lease! lease root :exclusive)))
+          (is (= (set ["slot-normal-00.lock" "slot-normal-01.lock"
+                       "slot-memory-heavy-00.lock" "slot-exclusive-00.lock"])
+                 (set (map :file-name (:slots lease)))))
+          (finally
+            (is (= :released (:outcome (broker/release! lease)))))))
+      (finally
+        (delete-tree! root)))))

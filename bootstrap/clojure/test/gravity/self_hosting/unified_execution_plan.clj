@@ -32,7 +32,7 @@
   #{:id :kind :authority :authoritative? :incremental? :bounded? :warm?
     :reproducible? :cache-policy :execution-mode :receipt-policy :nonclaims})
 (def ^:private lane-cache-keys
-  #{:mode :authoritative? :fresh-replay-required?})
+  #{:mode :authoritative? :fresh-replayable-required?})
 (def ^:private lane-receipt-keys
   #{:schema :required? :authority-ceiling})
 (def ^:private resource-keys
@@ -73,7 +73,7 @@
 (def ^:private allowed-selection-kinds #{:exact-vars :proof-contract-module-catalog})
 (def ^:private executor-keys #{:adapter :bounded? :fresh-capable? :authority})
 (def ^:private allowed-executors
-  #{:current-jvm-exact-vars :authoritative-proof-runner})
+  #{:exact-tree-warm-worker :authoritative-proof-runner})
 (def ^:private required-cache-key-inputs
   #{:dependency-closure :source-bytes :tool :policy})
 (def ^:private maximum-resource-timeout-ms (* 4 60 60 1000))
@@ -149,9 +149,9 @@
   (boolean! (get-in lane [:cache-policy :authoritative?])
             "UEP-CATALOG-LANE-CACHE-BOOLEAN"
             [:lanes lane-id :cache-policy :authoritative?])
-  (boolean! (get-in lane [:cache-policy :fresh-replay-required?])
+  (boolean! (get-in lane [:cache-policy :fresh-replayable-required?])
             "UEP-CATALOG-LANE-CACHE-BOOLEAN"
-            [:lanes lane-id :cache-policy :fresh-replay-required?])
+            [:lanes lane-id :cache-policy :fresh-replayable-required?])
   (exact-keys! (:receipt-policy lane) lane-receipt-keys
                "UEP-CATALOG-LANE-RECEIPT-KEYS" [:lanes lane-id :receipt-policy])
   (ensure! (= receipt-schema (get-in lane [:receipt-policy :schema]))
@@ -421,7 +421,7 @@
         (ensure! (and (= :non-authoritative (:authority-ceiling route))
                       (= :warm-bounded-process route-mode)
                       (= :eligible cache-mode)
-                      (= :current-jvm-exact-vars
+                      (= :exact-tree-warm-worker
                          (get-in route [:executor :adapter]))
                       (true? (get-in route [:executor :bounded?]))
                       (false? (get-in route [:executor :fresh-capable?]))
@@ -573,7 +573,9 @@
     (non-empty-vector! (:fresh-acceptance-requires (:evidence-policy value))
                        "UEP-CATALOG-EVIDENCE"
                        [:evidence-policy :fresh-acceptance-requires]))
-  (when-let [conformance (:conformance value)]
+  (let [conformance (:conformance value)]
+    (ensure! (map? conformance) "UEP-CATALOG-CONFORMANCE"
+             "Verification catalog must include a reviewed conformance table" {})
     (exact-keys! conformance conformance-keys "UEP-CATALOG-CONFORMANCE-KEYS"
                  [:conformance])
     (ensure! (= :gravity/sh07-conformance-table-v1 (:schema conformance))
@@ -623,7 +625,14 @@
                 "Verification catalog exceeds the bounded input size"
                 {:path (str path) :bytes (alength bytes)})
        (try
-         (edn/read-string (String. bytes StandardCharsets/UTF_8))
+         (with-open [reader (java.io.PushbackReader.
+                             (java.io.StringReader. (String. bytes StandardCharsets/UTF_8)))]
+           (let [eof (Object.) value (edn/read {:eof eof} reader)
+                 trailing (edn/read {:eof eof} reader)]
+             (ensure! (and (not (identical? eof value)) (identical? eof trailing))
+                      "UEP-CATALOG-PARSE" "Verification catalog must contain exactly one EDN form"
+                      {:path (str path)})
+             value))
          (catch Throwable error
            (fail! "UEP-CATALOG-PARSE" "Verification catalog EDN is malformed"
                   {:path (str path) :class (.getName (class error))})))))))
@@ -972,84 +981,33 @@
     (let [entries (vec (sort-by :path (:entries @state)))]
       {:entries entries :identity (identity-of entries)})))
 
-(defn- run-current-jvm-exact-vars
-  "Run a fast-lane exact-var route in the current JVM.
-
-  This adapter is explicitly non-authoritative. It performs no process
-  isolation and therefore cannot satisfy the fresh acceptance lane. The
-  existing warm worker may replace this substrate after exact parity review."
-  [plan-value]
-  (ensure! (= :fast (:lane plan-value)) "UEP-EXECUTOR-LANE"
-           "The current-JVM adapter is restricted to the fast lane" {})
-  (ensure! (= :current-jvm-exact-vars (get-in plan-value [:executor :adapter]))
-           "UEP-EXECUTOR-ADAPTER" "Unexpected current-JVM adapter request" {})
-  (if-not (some? *resource-lease*)
-    {:status :blocked
-     :diagnostics [{:id "UEP-RESOURCE-LEASE-REQUIRED"
-                    :message "Current-JVM execution requires an explicit resource lease"}]
-     :evidence []
-     :mutation-detected? false
-     :fresh-replay? false
-     :provenance-checked? false
-     :source-authenticated? false
-     :closure-verified? false
-     :cache-decision :disabled}
-    (if-not (and (map? *resource-lease*)
-                 (= true (:bounded-executor? *resource-lease*))
-                 (= true (:timeout-enforced? *resource-lease*))
-                 (integer? (:deadline-ns *resource-lease*))
-                 (> (long (:deadline-ns *resource-lease*)) (System/nanoTime)))
-      {:status :blocked
-       :diagnostics [{:id "UEP-RESOURCE-BOUNDED-CONTEXT-REQUIRED"
-                      :message "Current-JVM execution requires a reviewed bounded executor context"}]
-       :evidence [] :mutation-detected? false :fresh-replay? false
-       :provenance-checked? false :source-authenticated? false
-       :closure-verified? false :cache-decision :disabled}
-      (let [selection (:selection plan-value)
-            namespace (:namespace selection)
-            selectors (:selectors selection)]
-    (ensure! (<= (count selectors)
-                 (long (get-in plan-value [:resource-policy :max-test-vars])))
-             "UEP-EXECUTOR-BOUND" "Selector count exceeds the reviewed resource bound"
-             {:count (count selectors)
-              :maximum (get-in plan-value [:resource-policy :max-test-vars])})
-    ;; Snapshot before loading the namespace: require may execute top-level code.
-    (let [before (closure-snapshot plan-value)]
-      (require (symbol namespace))
-      (let [
-          vars (mapv #(exact-var-symbol namespace %) selectors)
-          counters (ref test/*initial-report-counters*)]
-      (binding [test/*report-counters* counters]
-        (test/test-vars vars))
-      (let [after (closure-snapshot plan-value)
-            unchanged? (= before after)
-            {:keys [test pass fail error]} @counters]
-        {:status (if (and unchanged? (zero? fail) (zero? error)) :passed :failed)
-         :test-count test
-         :pass pass
-         :fail fail
-         :error error
-         :diagnostics (if unchanged? [] [{:id "UEP-SNAPSHOT-MUTATED"
-                                          :message "Dependency closure changed during execution"}])
-         :evidence (:required-evidence plan-value)
-         :mutation-detected? (not unchanged?)
-         :fresh-replay? false
-         :provenance-checked? unchanged?
-         :source-authenticated? unchanged?
-         :closure-verified? unchanged?
-         :cache-decision :miss})))))))
-
 (defn- invoke-closed-executor
   [plan-value]
   (case (get-in plan-value [:executor :adapter])
-    :current-jvm-exact-vars (run-current-jvm-exact-vars plan-value)
+    :exact-tree-warm-worker
+    ;; Resolve the concrete two-lane adapter lazily to avoid a namespace cycle.
+    ;; Absence is a closed-executor failure, never permission to fall back to
+    ;; an uncoordinated current-JVM mechanism.
+    (if-let [adapter (try (requiring-resolve
+                           'gravity.self-hosting.execution-lanes/run-fast!)
+                          (catch Throwable _ nil))]
+      (adapter plan-value)
+      (fail! "UEP-FAST-ADAPTER-BOUNDARY"
+             "Fast execution requires the brokered lane adapter"
+             {:route-id (:route-id plan-value)
+              :required-execution-mode (:execution-mode plan-value)
+              :required-adapter :exact-tree-warm-worker}))
     :authoritative-proof-runner
-    (fail! "UEP-FRESH-ADAPTER-BOUNDARY"
-           "Fresh acceptance requires the isolated authoritative proof runner"
-           {:route-id (:route-id plan-value)
-            :required-execution-mode (:execution-mode plan-value)
-            :required-adapter :authoritative-proof-runner
-            :migration-gate :isolated-proof-runner-integration})
+    (if-let [adapter (try (requiring-resolve
+                           'gravity.self-hosting.execution-lanes/run-fresh!)
+                          (catch Throwable _ nil))]
+      (adapter plan-value)
+      (fail! "UEP-FRESH-ADAPTER-BOUNDARY"
+             "Fresh acceptance requires the isolated authoritative proof runner"
+             {:route-id (:route-id plan-value)
+              :required-execution-mode (:execution-mode plan-value)
+              :required-adapter :authoritative-proof-runner
+              :migration-gate :isolated-proof-runner-integration}))
     (fail! "UEP-EXECUTOR-ADAPTER" "No closed executor adapter is registered"
            {:adapter (get-in plan-value [:executor :adapter])})))
 
@@ -1122,7 +1080,7 @@
   [plan-value result]
   (ensure! (map? result) "UEP-RESULT-SHAPE" "Execution result must be a map" {})
   (let [allowed #{:status :test-count :pass :fail :error :diagnostics :evidence
-                 :artifacts :mutation-detected? :fresh-replay?
+                 :artifacts :mutation-detected? :fresh-replayable?
                  :provenance-checked? :source-authenticated?
                  :closure-verified? :cache-decision}]
     (let [unknown (set/difference (set (keys result)) allowed)]
@@ -1145,7 +1103,7 @@
   (when (contains? result :evidence)
     (ensure! (vector? (:evidence result)) "UEP-RESULT-EVIDENCE"
              "Execution evidence must be a vector" {}))
-  (doseq [key [:mutation-detected? :fresh-replay? :provenance-checked?
+  (doseq [key [:mutation-detected? :fresh-replayable? :provenance-checked?
                :source-authenticated? :closure-verified?]]
     (when (contains? result key)
       (boolean! (get result key) "UEP-RESULT-GUARD" [:result key])))
@@ -1170,8 +1128,9 @@
                "UEP-RESULT-EVIDENCE"
                "A passing result omits required evidence" {})
       (when fresh?
-        (ensure! (true? (:fresh-replay? result)) "UEP-RESULT-FRESH-REPLAY"
-                 "A passing fresh result must report independent replay" {})
+        (ensure! (true? (:fresh-replayable? result))
+                 "UEP-RESULT-FRESH-REPLAYABLE"
+                 "A passing fresh result must remain independently replayable" {})
         (ensure! (contains? #{:disabled :forbidden}
                             (or (:cache-decision result) :forbidden))
                  "UEP-RESULT-FRESH-CACHE"
@@ -1179,7 +1138,7 @@
   (merge {:test-count 0 :pass 0 :fail 0 :error 0
           :diagnostics [] :evidence []
           :mutation-detected? false
-          :fresh-replay? false
+          :fresh-replayable? false
           :provenance-checked? false
           :source-authenticated? false
           :closure-verified? false
@@ -1247,7 +1206,7 @@
                       :dependency-closure-verified? (:closure-verified? result)
                       :provenance-checked? (:provenance-checked? result)
                       :mutation-detected? (:mutation-detected? result)}
-          :fresh-replay? (:fresh-replay? result)
+          :fresh-replayable? (:fresh-replayable? result)
           :required-evidence (:required-evidence plan-value)
           :nonclaims (:nonclaims plan-value)
           :fresh-authoritative-gate-required?

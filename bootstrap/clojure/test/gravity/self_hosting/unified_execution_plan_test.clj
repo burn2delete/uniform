@@ -8,7 +8,7 @@
 (defn- passing-result []
   {:status :passed :test-count 1 :pass 1 :fail 0 :error 0
    :diagnostics [] :evidence [:selected-tests :dependency-closure :diagnostics :receipt]
-   :mutation-detected? false :fresh-replay? true
+   :mutation-detected? false :fresh-replayable? true
    :provenance-checked? true :source-authenticated? true
    :closure-verified? true :cache-decision :miss})
 
@@ -169,14 +169,12 @@
       (finally (java.nio.file.Files/deleteIfExists path)
                (java.nio.file.Files/deleteIfExists root)))))
 
-(deftest fresh-executor-remains-an-isolated-migration-gate
+(deftest fresh-executor-requires-explicit-admission-before-isolated-run
   (let [p (plan/plan {:route-id "sh07-authoritative" :lane :fresh})
         receipt (plan/execute-plan p)]
-    (is (= :failed (:status receipt)))
-    (is (= "UEP-FRESH-ADAPTER-BOUNDARY"
+    (is (= :blocked (:status receipt)))
+    (is (= "UEP-RESOURCE-LEASE-REQUIRED"
            (get-in receipt [:diagnostics 0 :id])))
-    (is (= :isolated-proof-runner-integration
-           (get-in receipt [:diagnostics 0 :data :migration-gate])))
     (is (= :forbidden (get-in receipt [:cache :decision])))
     (is (false? (:authoritative? receipt)))))
 
