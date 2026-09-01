@@ -18,7 +18,7 @@
    :reproducible? false
    :cache-policy {:mode :eligible
                   :authoritative? false
-                  :fresh-replay-required? true}
+                  :fresh-replayable-required? true}
    :execution-mode :warm-bounded-process
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required? true
@@ -36,7 +36,7 @@
    :reproducible? true
    :cache-policy {:mode :forbidden
                   :authoritative? false
-                  :fresh-replay-required? true}
+                  :fresh-replayable-required? true}
    :execution-mode :fresh-isolated-process
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required? true
@@ -100,7 +100,7 @@
                                :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
@@ -160,7 +160,7 @@
                                :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
@@ -201,7 +201,7 @@
                                :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
@@ -243,7 +243,7 @@
                                :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
@@ -294,7 +294,7 @@
                                :test-bytes :contract-bytes :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
@@ -317,12 +317,23 @@
    :lanes [:fresh]
    :selection {:kind :proof-contract-module-catalog
                :namespace "gravity.self-hosting.sh07-authoritative-runner"
-               :selectors ["sh07_proof_contract.edn"]}
+               ;; The selector is the authoritative runner's reviewed module
+               ;; catalog key.  The proof contract remains an explicit closure
+               ;; input; no route-id dispatch is needed by the fresh adapter.
+               :selectors ["c6-core"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+                        ;; The proof runner is a Clojure module graph rather
+                        ;; than one source file.  Keep the complete reviewed
+                        ;; source/test/contract roots in the closure so a
+                        ;; fresh export cannot claim completeness from only
+                        ;; six entry points while resolving ambient files.
+                        :paths ["bootstrap/gravity/src"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/src"
+                                "bootstrap/clojure/test"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+                                "contracts"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
                         :complete? true
@@ -342,8 +353,8 @@
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority
-                                      :fresh-replay]}
-   :required-evidence [:proof-contract :fresh-replay :selected-tests
+                                      :fresh-replayable]}
+   :required-evidence [:proof-contract :fresh-replayable :selected-tests
                        :diagnostics :receipt]
    :authority-ceiling :acceptance-only
    :nonclaims [:integration :release :self-hosting
