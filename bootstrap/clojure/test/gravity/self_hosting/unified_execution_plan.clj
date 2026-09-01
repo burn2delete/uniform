@@ -10,7 +10,8 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.digest :as digest])
+            [gravity.digest :as digest]
+            [gravity.self-hosting.sh07-conformance-table :as conformance])
   (:import (java.nio.charset StandardCharsets)
            (java.nio ByteBuffer)
            (java.nio.file Files LinkOption Paths StandardOpenOption)
@@ -57,6 +58,10 @@
 (def ^:private coverage-keys
   #{:owner :completeness :exhaustive? :replacement-authority
     :unmigrated-responsibilities :source-of-truth :route-ids :accounting})
+(def ^:private coverage-accounting-keys
+  #{:route-count :module-count :suite-count :selected-test-count
+    :fixture-suite-count :accepted-fixture-count :rejected-fixture-count
+    :fixture-pair-count})
 (def ^:private evidence-policy-keys
   #{:required :authority-ceilings :fresh-acceptance-requires})
 (def ^:private plan-keys
@@ -79,6 +84,8 @@
 (def ^:private maximum-resource-timeout-ms (* 4 60 60 1000))
 (def ^:private maximum-resource-output-bytes (* 256 1024))
 (def ^:private maximum-resource-test-vars 4096)
+(def ^:private maximum-repository-relative-path-length 4096)
+(def ^:private drive-path-pattern #"(?i)^[a-z]:.*")
 
 (defn- fail!
   [id message data]
@@ -113,6 +120,13 @@
            {:path path :value value})
   (long value))
 
+(defn- non-negative-integer!
+  [value id path]
+  (ensure! (and (integer? value) (not (neg? (long value))))
+           id "Verification count must be a non-negative integer"
+           {:path path :value value})
+  (long value))
+
 (defn- boolean!
   [value id path]
   (ensure! (boolean? value) id "Verification policy value must be boolean"
@@ -125,6 +139,26 @@
            id "Verification value must be a non-empty vector"
            {:path path :value value})
   value)
+
+(defn- normalized-repository-relative-path?
+  [value]
+  (and (string? value)
+       (not (str/blank? value))
+       (<= (count value) maximum-repository-relative-path-length)
+       (not (str/starts-with? value "/"))
+       (not (str/starts-with? value "~"))
+       (not (str/includes? value "\\"))
+       (not (re-matches drive-path-pattern value))
+       (every? (fn [character]
+                 (let [code (int character)]
+                   (<= 32 code 126)))
+               value)
+       (let [segments (str/split value #"/" -1)]
+         (and (every? #(and (not (str/blank? %))
+                             (not= "." %)
+                             (not= ".." %))
+                       segments)
+              (= value (str/join "/" segments))))))
 
 (defn- validate-lane!
   [lane-id lane]
@@ -224,15 +258,7 @@
            "UEP-CATALOG-MODULE-SOURCES"
            "Module source paths must be unique" {:module module-id})
   (doseq [path (:source-paths module)]
-    (ensure! (and (not (str/blank? path))
-                  (not (str/starts-with? path "/"))
-                  (not (str/includes? path "\\"))
-                  (let [segments (str/split path #"/" -1)]
-                    (and (every? #(and (not (str/blank? %))
-                                       (not= "." %)
-                                       (not= ".." %))
-                                 segments)
-                         (= path (str/join "/" segments)))))
+    (ensure! (normalized-repository-relative-path? path)
              "UEP-CATALOG-MODULE-SOURCES"
              "Module source path is not a normalized repository-relative path"
              {:module module-id :path path}))
@@ -302,15 +328,7 @@
            "Dependency closure paths must be unique"
            {:route route-id})
   (doseq [path (:paths closure)]
-    (ensure! (and (not (str/blank? path))
-                  (not (str/starts-with? path "/"))
-                  (not (str/includes? path "\\"))
-                  (let [segments (str/split path #"/" -1)]
-                    (and (every? #(and (not (str/blank? %))
-                                       (not= "." %)
-                                       (not= ".." %))
-                                 segments)
-                         (= path (str/join "/" segments)))))
+    (ensure! (normalized-repository-relative-path? path)
              "UEP-CATALOG-CLOSURE-PATHS"
              "Dependency closure path is not a normalized repository-relative path"
              {:route route-id :path path}))
@@ -615,6 +633,9 @@
                        "UEP-CATALOG-COVERAGE" [:coverage :unmigrated-responsibilities])
     (ensure! (= :routes (:source-of-truth (:coverage value)))
              "UEP-CATALOG-COVERAGE" "Coverage source must be route data" {})
+    (ensure! (vector? (:route-ids (:coverage value)))
+             "UEP-CATALOG-COVERAGE"
+             "Coverage route accounting must be an ordered vector" {})
     (ensure! (= route-ids (set (:route-ids (:coverage value))))
              "UEP-CATALOG-COVERAGE" "Coverage route accounting is not exact"
              {:expected route-ids :actual (:route-ids (:coverage value))})
@@ -623,6 +644,12 @@
              "UEP-CATALOG-COVERAGE"
              "Coverage route accounting contains duplicate route ids"
              {:route-ids (:route-ids (:coverage value))})
+    (exact-keys! (:accounting (:coverage value)) coverage-accounting-keys
+                 "UEP-CATALOG-COVERAGE-ACCOUNTING" [:coverage :accounting])
+    (doseq [key coverage-accounting-keys]
+      (non-negative-integer! (get-in value [:coverage :accounting key])
+                             "UEP-CATALOG-COVERAGE-ACCOUNTING"
+                             [:coverage :accounting key]))
     (exact-keys! (:evidence-policy value) evidence-policy-keys
                  "UEP-CATALOG-EVIDENCE-KEYS" [:evidence-policy])
     (non-empty-vector! (:required (:evidence-policy value))
@@ -651,6 +678,7 @@
               [:conformance :complete?])
     (ensure! (false? (:complete? conformance)) "UEP-CATALOG-CONFORMANCE"
              "Conformance table cannot claim complete migration" {})
+    (conformance/validate-table conformance)
     (non-empty-vector! (:suites conformance) "UEP-CATALOG-CONFORMANCE"
                        [:conformance :suites])
     (non-empty-vector! (:suite-order conformance) "UEP-CATALOG-CONFORMANCE"
@@ -852,6 +880,7 @@
          accounting (coverage-accounting manifest)
          route-ids (set (keys routes))
          declared-route-ids (vec (get-in manifest [:coverage :route-ids]))
+         declared-accounting (get-in manifest [:coverage :accounting])
          suite-route-ids (vec (mapcat :route-ids (:suites manifest)))
          conformance (:conformance manifest)
          conformance-suites (vec (:suites conformance))
@@ -877,6 +906,11 @@
               "UEP-MANIFEST-COVERAGE-COUNT"
               "Generated route count is inconsistent"
               {:accounting accounting})
+     (ensure! (= declared-accounting
+                 (select-keys accounting coverage-accounting-keys))
+              "UEP-MANIFEST-COVERAGE-ACCOUNTING"
+              "Declared coverage accounting is stale"
+              {:declared declared-accounting :generated accounting})
      (when (map? declared-conformance)
        (ensure! (= (:suite-count declared-conformance)
                    (:fixture-suite-count accounting))

@@ -229,10 +229,48 @@
                                    conj "sh07-authoritative")
         duplicate-suite-route (update-in plan/catalog
                                          [:suites 0 :route-ids]
-                                         conj "sh07-b8-regression")]
-    (is (= "UEP-MANIFEST-CONFORMANCE-COUNT"
+                                         conj "sh07-b8-regression")
+        stale-accounting (assoc-in plan/catalog
+                                   [:coverage :accounting :selected-test-count]
+                                   39)]
+    (is (= "SH07-CONFORMANCE-COVERAGE"
            (error-id #(plan/validate-manifest-projections! stale-accepted))))
     (is (= "UEP-CATALOG-COVERAGE"
            (error-id #(plan/validate-manifest-projections! duplicate-route))))
     (is (= "UEP-CATALOG-SUITE-ROUTES"
-           (error-id #(plan/validate-manifest-projections! duplicate-suite-route))))))
+           (error-id #(plan/validate-manifest-projections! duplicate-suite-route))))
+    (is (= "UEP-MANIFEST-COVERAGE-ACCOUNTING"
+           (error-id #(plan/validate-manifest-projections! stale-accounting))))))
+
+(deftest manifest-paths-and-coverage-shapes-fail-closed
+  (doseq [unsafe ["C:bootstrap/gravity/src/gravity/checked_core.gravity"
+                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0000"
+                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0001"]]
+    (let [route-ids (keys (:routes plan/catalog))
+          changed (reduce (fn [catalog route-id]
+                            (update-in catalog [:routes route-id
+                                                :dependency-closure :paths]
+                                       (fn [paths]
+                                         (mapv #(if (= "bootstrap/gravity/src/gravity/checked_core.gravity" %)
+                                                  unsafe
+                                                  %)
+                                               paths))))
+                          (assoc-in plan/catalog
+                                    [:modules "sh07-checked-core" :source-paths]
+                                    [unsafe])
+                          route-ids)]
+      (is (= "UEP-CATALOG-MODULE-SOURCES"
+             (error-id #(plan/validate-catalog changed))))))
+  (doseq [route-ids [(set (get-in plan/catalog [:coverage :route-ids]))
+                     (seq (get-in plan/catalog [:coverage :route-ids]))]]
+    (is (= "UEP-CATALOG-COVERAGE"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog [:coverage :route-ids]
+                                 route-ids)))))))
+
+(deftest canonical-conformance-validation-is-required
+  (is (= "SH07-CONFORMANCE-BASENAME"
+         (error-id #(plan/validate-catalog
+                     (assoc-in plan/catalog
+                               [:conformance :suites 0 :accepted 0 :basename]
+                               "../not-reviewed"))))))

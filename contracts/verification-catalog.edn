@@ -427,7 +427,14 @@
               "sh07-b11-contract" "sh07-b13-accepted"
               "sh07-conformance-table" "sh07-conformance-parity"
               "sh07-authoritative"]
-  :accounting :exact-selected-test-and-fixture-identity}
+  :accounting {:route-count 7
+               :module-count 1
+               :suite-count 2
+               :selected-test-count 40
+               :fixture-suite-count 14
+               :accepted-fixture-count 68
+               :rejected-fixture-count 79
+               :fixture-pair-count 147}}
 
  :evidence-policy
  {:required [:selected-tests :dependency-closure :diagnostics :receipt]
