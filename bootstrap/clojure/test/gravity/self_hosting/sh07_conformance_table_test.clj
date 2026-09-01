@@ -166,3 +166,26 @@
              (error-id #(census (fixture-parent root) "accepted" "probe-census"))))
       (finally
         (delete-tree! root)))))
+
+(deftest fixture-pair-validation-is-byte-bounded
+  (let [root (java.nio.file.Files/createTempDirectory
+              "sh07-conformance-bound-probe"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        family (.resolve (fixture-parent root) "probe/accepted")
+        validate-pair (private-fn 'validate-pair!)
+        oversized (byte-array (inc table/maximum-fixture-peer-bytes))
+        suite {:id "probe"
+               :fixture-root "bootstrap/clojure/fixtures/self-hosting/probe"}
+        row {:id "probe/oversized" :basename "oversized"
+             :gravity "oversized.gravity" :qst "oversized.qst"}]
+    (try
+      (java.nio.file.Files/createDirectories
+       family (make-array java.nio.file.attribute.FileAttribute 0))
+      (doseq [name ["oversized.gravity" "oversized.qst"]]
+        (java.nio.file.Files/write (.resolve family name) oversized
+                                   (make-array java.nio.file.OpenOption 0)))
+      (with-probe-root root
+        #(is (= "SH07-CONFORMANCE-FIXTURE-BOUND"
+                (error-id (fn [] (validate-pair suite :accepted row))))))
+      (finally
+        (delete-tree! root)))))

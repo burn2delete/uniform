@@ -11,8 +11,10 @@
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str])
-  (:import (java.nio.charset StandardCharsets)
-           (java.nio.file Files LinkOption Path Paths)))
+  (:import (java.nio ByteBuffer)
+           (java.nio.channels FileChannel)
+           (java.nio.charset StandardCharsets)
+           (java.nio.file Files LinkOption Path Paths StandardOpenOption)))
 
 (def catalog-path "contracts/verification-catalog.edn")
 (def table-schema :gravity/sh07-conformance-table-v1)
@@ -21,6 +23,7 @@
    "sh07-b7" "sh07-b8" "sh07-b9" "sh07-b10" "sh07-b11" "sh07-b12"
    "sh07-b13" "sh07-b15"])
 (def expected-module-id "sh07-checked-core")
+(def maximum-fixture-peer-bytes (* 256 1024))
 
 (def ^:private table-keys
   #{:schema :version :authority :authoritative? :complete? :source-of-truth
@@ -108,13 +111,40 @@
            (merge context {:path (str path)}))
   path)
 
+(defn- read-bounded-bytes
+  [path maximum id message data]
+  (let [buffer (ByteBuffer/allocate (inc maximum))]
+    (with-open [channel
+                (FileChannel/open
+                 path
+                 (into-array java.nio.file.OpenOption
+                             [StandardOpenOption/READ LinkOption/NOFOLLOW_LINKS]))]
+      (loop []
+        (when (.hasRemaining buffer)
+          (let [read-count (.read channel buffer)]
+            (cond
+              (= -1 read-count) nil
+              (pos? read-count) (recur)
+              :else
+              (fail! id "Bounded input read made no progress" data))))))
+    (let [count (.position buffer)]
+      (ensure! (<= count maximum) id message
+               (assoc data :bytes count :maximum maximum))
+      (java.util.Arrays/copyOf (.array buffer) count))))
+
+(defn- read-bounded-fixture-bytes
+  [path row-id extension]
+  (read-bounded-bytes path maximum-fixture-peer-bytes
+                      "SH07-CONFORMANCE-FIXTURE-BOUND"
+                      "Fixture peer exceeds the reviewed byte bound"
+                      {:row-id row-id :extension extension}))
+
 (defn- read-bounded-edn
   [path id]
   (let [path (regular-file-path! path id {})
-        bytes (Files/readAllBytes path)]
-    (ensure! (<= (alength bytes) (* 4 1024 1024)) id
-             "Conformance input exceeds its bounded size"
-             {:path (str path) :bytes (alength bytes)})
+        bytes (read-bounded-bytes path (* 4 1024 1024) id
+                                  "Conformance input exceeds its bounded size"
+                                  {:path (str path)})]
     (try
       (edn/read-string (String. bytes StandardCharsets/UTF_8))
       (catch Throwable error
@@ -388,8 +418,8 @@
         qst (regular-file-path! (.resolve family-path (:qst row))
                                 "SH07-CONFORMANCE-FIXTURE-MISSING"
                                 {:row-id (:id row) :extension ".qst"})
-        gravity-bytes (Files/readAllBytes gravity)
-        qst-bytes (Files/readAllBytes qst)]
+        gravity-bytes (read-bounded-fixture-bytes gravity (:id row) ".gravity")
+        qst-bytes (read-bounded-fixture-bytes qst (:id row) ".qst")]
     (ensure! (java.util.Arrays/equals gravity-bytes qst-bytes)
              "SH07-CONFORMANCE-PAIR-BYTES"
              "Gravity and QST fixture peers are not byte-identical"

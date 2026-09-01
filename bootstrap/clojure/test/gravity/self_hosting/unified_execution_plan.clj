@@ -10,9 +10,11 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.digest :as digest])
+            [gravity.digest :as digest]
+            [gravity.self-hosting.sh07-conformance-table :as conformance])
   (:import (java.nio.charset StandardCharsets)
            (java.nio ByteBuffer)
+           (java.nio.channels FileChannel)
            (java.nio.file Files LinkOption Paths StandardOpenOption)
            (java.security MessageDigest)))
 
@@ -57,6 +59,11 @@
 (def ^:private coverage-keys
   #{:owner :completeness :exhaustive? :replacement-authority
     :unmigrated-responsibilities :source-of-truth :route-ids :accounting})
+(def ^:private coverage-accounting-keys
+  #{:route-count :module-count :suite-count :selector-count
+    :exact-var-selector-count :proof-contract-selector-count
+    :fixture-suite-count :accepted-fixture-count :rejected-fixture-count
+    :fixture-pair-count})
 (def ^:private evidence-policy-keys
   #{:required :authority-ceilings :fresh-acceptance-requires})
 (def ^:private plan-keys
@@ -79,6 +86,8 @@
 (def ^:private maximum-resource-timeout-ms (* 4 60 60 1000))
 (def ^:private maximum-resource-output-bytes (* 256 1024))
 (def ^:private maximum-resource-test-vars 4096)
+(def ^:private maximum-repository-relative-path-length 4096)
+(def ^:private drive-path-pattern #"(?i)^[a-z]:.*")
 
 (defn- fail!
   [id message data]
@@ -113,6 +122,13 @@
            {:path path :value value})
   (long value))
 
+(defn- non-negative-integer!
+  [value id path]
+  (ensure! (and (integer? value) (not (neg? (long value))))
+           id "Verification count must be a non-negative integer"
+           {:path path :value value})
+  (long value))
+
 (defn- boolean!
   [value id path]
   (ensure! (boolean? value) id "Verification policy value must be boolean"
@@ -125,6 +141,26 @@
            id "Verification value must be a non-empty vector"
            {:path path :value value})
   value)
+
+(defn- normalized-repository-relative-path?
+  [value]
+  (and (string? value)
+       (not (str/blank? value))
+       (<= (count value) maximum-repository-relative-path-length)
+       (not (str/starts-with? value "/"))
+       (not (str/starts-with? value "~"))
+       (not (str/includes? value "\\"))
+       (not (re-matches drive-path-pattern value))
+       (every? (fn [character]
+                 (let [code (int character)]
+                   (<= 32 code 126)))
+               value)
+       (let [segments (str/split value #"/" -1)]
+         (and (every? #(and (not (str/blank? %))
+                             (not= "." %)
+                             (not= ".." %))
+                       segments)
+              (= value (str/join "/" segments))))))
 
 (defn- validate-lane!
   [lane-id lane]
@@ -219,6 +255,15 @@
                      [:modules module-id :source-paths])
   (ensure! (every? string? (:source-paths module)) "UEP-CATALOG-MODULE-SOURCES"
            "Module source paths must be strings" {:module module-id})
+  (ensure! (= (count (:source-paths module))
+              (count (distinct (:source-paths module))))
+           "UEP-CATALOG-MODULE-SOURCES"
+           "Module source paths must be unique" {:module module-id})
+  (doseq [path (:source-paths module)]
+    (ensure! (normalized-repository-relative-path? path)
+             "UEP-CATALOG-MODULE-SOURCES"
+             "Module source path is not a normalized repository-relative path"
+             {:module module-id :path path}))
   (ensure! (= :checked-core (:artifact-request module))
            "UEP-CATALOG-MODULE-ARTIFACT"
            "Only the checked-core artifact request is supported in this phase"
@@ -279,6 +324,16 @@
                      [:routes route-id :dependency-closure :paths])
   (ensure! (every? string? (:paths closure)) "UEP-CATALOG-CLOSURE-PATHS"
            "Dependency closure paths must be strings" {:route route-id})
+  (ensure! (= (count (:paths closure))
+              (count (distinct (:paths closure))))
+           "UEP-CATALOG-CLOSURE-PATHS"
+           "Dependency closure paths must be unique"
+           {:route route-id})
+  (doseq [path (:paths closure)]
+    (ensure! (normalized-repository-relative-path? path)
+             "UEP-CATALOG-CLOSURE-PATHS"
+             "Dependency closure path is not a normalized repository-relative path"
+             {:route route-id :path path}))
   (boolean! (:complete? closure) "UEP-CATALOG-CLOSURE-COMPLETE"
             [:routes route-id :dependency-closure :complete?])
   (ensure! (:complete? closure) "UEP-CATALOG-CLOSURE-INCOMPLETE"
@@ -310,13 +365,14 @@
                  (get-in route [:dependency-closure :module-ids]))
            "UEP-CATALOG-ROUTE-CLOSURE" "Route closure omits its owning module"
            {:route route-id :module-id (:module-id route)})
-  (let [closure-paths (set (get-in route [:dependency-closure :paths]))
-        source-paths (get-in modules [(:module-id route) :source-paths])]
-    (ensure! (every? closure-paths source-paths)
-             "UEP-CATALOG-ROUTE-CLOSURE"
-             "Route closure omits an owning module source path"
-             {:route route-id :module-id (:module-id route)
-              :missing (sorted-values (remove closure-paths source-paths))}))
+  (let [closure-paths (set (get-in route [:dependency-closure :paths]))]
+    (doseq [module-id (get-in route [:dependency-closure :module-ids])
+            :let [source-paths (get-in modules [module-id :source-paths])]]
+      (ensure! (every? closure-paths source-paths)
+               "UEP-CATALOG-ROUTE-CLOSURE"
+               "Route closure omits a referenced module source path"
+               {:route route-id :module-id module-id
+                :missing (sorted-values (remove closure-paths source-paths))})))
   (let [namespace (:namespace (:selection route))
         test-relative (-> namespace
                           (str/replace "." "/")
@@ -398,7 +454,10 @@
   (non-empty-vector! (:nonclaims route) "UEP-CATALOG-ROUTE-NONCLAIMS"
                      [:routes route-id :nonclaims])
   (ensure! (and (vector? (:replacement-for route))
-                (every? keyword? (:replacement-for route)))
+                (seq (:replacement-for route))
+                (every? keyword? (:replacement-for route))
+                (= (count (:replacement-for route))
+                   (count (distinct (:replacement-for route)))))
            "UEP-CATALOG-ROUTE-MIGRATION" "Route legacy mechanisms must be keywords"
            {:route route-id})
   (ensure! (= :compatibility-projection (:migration-status route))
@@ -453,13 +512,18 @@
            "Suite owner must be a keyword" {:suite (:id suite)})
   (non-empty-vector! (:route-ids suite) "UEP-CATALOG-SUITE-ROUTES"
                      [:suites index :route-ids])
+  (ensure! (= (count (:route-ids suite))
+              (count (distinct (:route-ids suite))))
+           "UEP-CATALOG-SUITE-ROUTES"
+           "Suite route ids must be unique"
+           {:suite (:id suite)})
   (ensure! (every? #(contains? route-ids %) (:route-ids suite))
            "UEP-CATALOG-SUITE-ROUTES" "Suite references an unknown route"
            {:suite (:id suite) :route-ids (:route-ids suite)})
   suite)
 
 (defn- validate-conformance-closure!
-  [route-id closure conformance]
+  [route-id route-module-id closure conformance]
   (when-let [suite-ids (:fixture-suite-ids closure)]
     (ensure! (map? conformance) "UEP-CATALOG-CLOSURE-FIXTURES"
              "Fixture suite references require the conformance table" {:route route-id})
@@ -470,6 +534,12 @@
         (fail! "UEP-CATALOG-CLOSURE-FIXTURES"
                "Dependency closure references an unknown fixture suite"
                {:route route-id :unknown (sorted-values unknown)}))
+      (doseq [suite (filter #(contains? (set suite-ids) (:id %)) suites)]
+        (ensure! (= route-module-id (:module-id suite))
+                 "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+                 "Fixture suite module ownership differs from its route"
+                 {:route route-id :route-module-id route-module-id
+                  :suite (:id suite) :suite-module-id (:module-id suite)}))
       (doseq [suite (filter #(contains? (set suite-ids) (:id %)) suites)
               row (concat (:accepted suite) (:rejected suite))]
         (doseq [key [:gravity :qst]]
@@ -537,12 +607,25 @@
              "Route keys must be strings" {:route id})
     (validate-route! id route (:modules value) (:resource-classes value)
                      (:lanes value))
-    (validate-conformance-closure! id (:dependency-closure route)
+    (validate-conformance-closure! id (:module-id route) (:dependency-closure route)
                                    (:conformance value)))
   (let [route-ids (set (keys (:routes value)))]
     (non-empty-vector! (:suites value) "UEP-CATALOG-SUITES" [:suites])
+    (ensure! (= (count (:suites value))
+                (count (distinct (map :id (:suites value)))))
+             "UEP-CATALOG-SUITES"
+             "Suite ids must be unique" {})
     (doseq [[index suite] (map-indexed vector (:suites value))]
       (validate-suite! suite index route-ids))
+    (let [suite-route-ids (vec (mapcat :route-ids (:suites value)))]
+      (ensure! (= (count suite-route-ids)
+                  (count (distinct suite-route-ids)))
+               "UEP-CATALOG-SUITES"
+               "A route may be assigned to only one generated suite"
+               {:duplicates (->> suite-route-ids frequencies
+                                 (keep (fn [[route-id count]]
+                                         (when (> count 1) route-id)))
+                                 sorted-values)}))
     (exact-keys! (:coverage value) coverage-keys "UEP-CATALOG-COVERAGE-KEYS"
                  [:coverage])
     (ensure! (= :compatibility-phase (:completeness (:coverage value)))
@@ -559,9 +642,28 @@
                        "UEP-CATALOG-COVERAGE" [:coverage :unmigrated-responsibilities])
     (ensure! (= :routes (:source-of-truth (:coverage value)))
              "UEP-CATALOG-COVERAGE" "Coverage source must be route data" {})
+    (ensure! (vector? (:route-ids (:coverage value)))
+             "UEP-CATALOG-COVERAGE"
+             "Coverage route accounting must be an ordered vector" {})
+    (ensure! (= (vec (sort route-ids)) (:route-ids (:coverage value)))
+             "UEP-CATALOG-COVERAGE"
+             "Coverage route accounting must use deterministic route order"
+             {:expected (vec (sort route-ids))
+              :actual (:route-ids (:coverage value))})
     (ensure! (= route-ids (set (:route-ids (:coverage value))))
              "UEP-CATALOG-COVERAGE" "Coverage route accounting is not exact"
              {:expected route-ids :actual (:route-ids (:coverage value))})
+    (ensure! (= (count (:route-ids (:coverage value)))
+                (count route-ids))
+             "UEP-CATALOG-COVERAGE"
+             "Coverage route accounting contains duplicate route ids"
+             {:route-ids (:route-ids (:coverage value))})
+    (exact-keys! (:accounting (:coverage value)) coverage-accounting-keys
+                 "UEP-CATALOG-COVERAGE-ACCOUNTING" [:coverage :accounting])
+    (doseq [key coverage-accounting-keys]
+      (non-negative-integer! (get-in value [:coverage :accounting key])
+                             "UEP-CATALOG-COVERAGE-ACCOUNTING"
+                             [:coverage :accounting key]))
     (exact-keys! (:evidence-policy value) evidence-policy-keys
                  "UEP-CATALOG-EVIDENCE-KEYS" [:evidence-policy])
     (non-empty-vector! (:required (:evidence-policy value))
@@ -592,6 +694,12 @@
               [:conformance :complete?])
     (ensure! (false? (:complete? conformance)) "UEP-CATALOG-CONFORMANCE"
              "Conformance table cannot claim complete migration" {})
+    (doseq [suite (:suites conformance)]
+      (ensure! (contains? (:modules value) (:module-id suite))
+               "UEP-CATALOG-CONFORMANCE-MODULE"
+               "Conformance suite references an unowned manifest module"
+               {:suite-id (:id suite) :module-id (:module-id suite)}))
+    (conformance/validate-table conformance)
     (non-empty-vector! (:suites conformance) "UEP-CATALOG-CONFORMANCE"
                        [:conformance :suites])
     (non-empty-vector! (:suite-order conformance) "UEP-CATALOG-CONFORMANCE"
@@ -618,12 +726,33 @@
          file (if (.isAbsolute file)
                 file
                 (io/file (or (some-> (repository-root) str) ".") (str path)))]
-     (ensure! (.isFile file) "UEP-CATALOG-READ"
+     (ensure! (and (Files/isRegularFile (.toPath file)
+                                        (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+                   (not (Files/isSymbolicLink (.toPath file))))
+              "UEP-CATALOG-READ"
               "Verification catalog file is missing" {:path (str path)})
-     (let [bytes (Files/readAllBytes (.toPath file))]
-       (ensure! (<= (alength bytes) (* 1024 1024)) "UEP-CATALOG-READ"
-                "Verification catalog exceeds the bounded input size"
-                {:path (str path) :bytes (alength bytes)})
+     (let [maximum (* 1024 1024)
+           buffer (ByteBuffer/allocate (inc maximum))
+           _ (with-open [channel
+                         (FileChannel/open
+                          (.toPath file)
+                          (into-array java.nio.file.OpenOption
+                                      [StandardOpenOption/READ
+                                       LinkOption/NOFOLLOW_LINKS]))]
+               (loop []
+                 (when (.hasRemaining buffer)
+                   (let [read-count (.read channel buffer)]
+                     (cond
+                       (= -1 read-count) nil
+                       (pos? read-count) (recur)
+                       :else (fail! "UEP-CATALOG-READ"
+                                    "Verification catalog read made no progress"
+                                    {:path (str path)}))))))
+           byte-count (.position buffer)
+           _ (ensure! (<= byte-count maximum) "UEP-CATALOG-READ"
+                      "Verification catalog exceeds the bounded input size"
+                      {:path (str path) :bytes byte-count :maximum maximum})
+           bytes (java.util.Arrays/copyOf (.array buffer) byte-count)]
        (try
          (with-open [reader (java.io.PushbackReader.
                              (java.io.StringReader. (String. bytes StandardCharsets/UTF_8)))]
@@ -673,6 +802,229 @@
 (defn- identity-of
   [value]
   (str "sha256:" (digest/sha256-hex (pr-str (canonicalize value)))))
+
+(defn manifest-id
+  "Return the content identity of a validated verification manifest.
+
+  This is deliberately derived from the manifest value rather than from a
+  hand-maintained version string.  Callers that receive a manifest from an
+  untrusted source must still invoke `validate-catalog` (or
+  `validate-manifest-projections!`) before using the identity for routing or
+  cache keys."
+  ([ ] (manifest-id catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (identity-of manifest)))
+
+(defn- route-catalog-value [manifest]
+  (into (sorted-map) (:routes manifest)))
+
+(defn- legacy-route-catalog-value [manifest]
+  (->> (:routes manifest)
+       (mapcat (fn [[route-id route]]
+                 (map (fn [legacy] [legacy route-id])
+                      (:replacement-for route))))
+       (group-by first)
+       (map (fn [[legacy pairs]]
+              [legacy (vec (sort (map second pairs)))]))
+       (into (sorted-map))))
+
+(defn- module-ownership-index-value [manifest]
+  (into (sorted-map)
+        (mapcat
+         (fn [[module-id module]]
+           (map (fn [path]
+                  [path {:module-id module-id :owner (:owner module)}])
+                (:source-paths module)))
+         (:modules manifest))))
+
+(defn- route-dependency-closures-value [manifest]
+  (into (sorted-map)
+        (map (fn [[route-id route]]
+               [route-id (:dependency-closure route)]))
+        (:routes manifest)))
+
+(defn- coverage-accounting-value [manifest]
+  (let [routes (:routes manifest)
+        modules (:modules manifest)
+        suites (:suites manifest)
+        conformance-suites (vec (get-in manifest [:conformance :suites]))
+        accepted-count (reduce + 0 (map #(count (:accepted %)) conformance-suites))
+        rejected-count (reduce + 0 (map #(count (:rejected %)) conformance-suites))]
+    {:source-of-truth :verification-catalog
+     :route-ids (vec (sort (keys routes)))
+     :route-count (count routes)
+     :module-ids (vec (sort (keys modules)))
+     :module-count (count modules)
+     :suite-ids (vec (sort (map :id suites)))
+     :suite-count (count suites)
+     :selector-count
+     (reduce + 0 (map #(count (get-in % [:selection :selectors])) (vals routes)))
+     :exact-var-selector-count
+     (reduce + 0 (map #(if (= :exact-vars (get-in % [:selection :kind]))
+                         (count (get-in % [:selection :selectors])) 0)
+                       (vals routes)))
+     :proof-contract-selector-count
+     (reduce + 0 (map #(if (= :proof-contract-module-catalog
+                               (get-in % [:selection :kind]))
+                         (count (get-in % [:selection :selectors])) 0)
+                       (vals routes)))
+     :fixture-suite-count (count conformance-suites)
+     :accepted-fixture-count accepted-count
+     :rejected-fixture-count rejected-count
+     :fixture-pair-count (+ accepted-count rejected-count)}))
+
+(defn route-catalog
+  "Generate the closed route projection owned by the verification manifest.
+
+  The result is a deterministic sorted map whose values are the reviewed
+  route records.  No route metadata is copied into a second hand-maintained
+  catalog; compatibility runners can consume this projection while their
+  legacy selectors remain under parity review."
+  ([ ] (route-catalog catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (route-catalog-value manifest)))
+
+(defn legacy-route-catalog
+  "Generate a legacy-mechanism-to-route projection from the manifest.
+
+  Legacy names are labels for compatibility and migration accounting only;
+  they do not become executable authorities.  A mechanism can map to several
+  declarative routes, so the value is a deterministic vector of route ids."
+  ([ ] (legacy-route-catalog catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (legacy-route-catalog-value manifest)))
+
+(defn module-ownership-index
+  "Generate a path-to-owner projection from the reviewed module manifest.
+
+  Every source path has exactly one owner because catalog validation rejects
+  duplicate ownership.  Values retain both module identity and owner so
+  downstream planners do not need to infer ownership from filenames."
+  ([ ] (module-ownership-index catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (module-ownership-index-value manifest)))
+
+(defn route-dependency-closures
+  "Generate the route-to-closure projection from the reviewed manifest."
+  ([ ] (route-dependency-closures catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (route-dependency-closures-value manifest)))
+
+(defn coverage-accounting
+  "Compute deterministic coverage accounting from manifest-owned records.
+
+  Declared coverage is checked against this projection by
+  `validate-manifest-projections!`; callers must not treat these counts as
+  SH roadmap or authoritative proof evidence."
+  ([ ] (coverage-accounting catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (coverage-accounting-value manifest)))
+
+(defn validate-manifest-projections!
+  "Validate all generated manifest projections and return them.
+
+  This is the admission point for consumers that need ownership, routing,
+  dependency closure, or coverage accounting.  It intentionally reports a
+  non-authoritative projection: the manifest and its generated views do not
+  confer SH roadmap, proof, release, safety, performance, or integration
+  authority.  Unknown routes, omitted suite assignments, duplicate ownership,
+  and stale declared counts fail closed with stable diagnostics."
+  ([ ] (validate-manifest-projections! catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (let [routes (route-catalog-value manifest)
+         legacy-routes (legacy-route-catalog-value manifest)
+         ownership (module-ownership-index-value manifest)
+         closures (route-dependency-closures-value manifest)
+         accounting (coverage-accounting-value manifest)
+         route-ids (set (keys routes))
+         declared-route-ids (vec (get-in manifest [:coverage :route-ids]))
+         declared-accounting (get-in manifest [:coverage :accounting])
+         suite-route-ids (vec (mapcat :route-ids (:suites manifest)))
+         conformance (:conformance manifest)
+         conformance-suites (vec (:suites conformance))
+         declared-conformance (get-in conformance [:coverage])]
+     (ensure! (= route-ids (set declared-route-ids))
+              "UEP-MANIFEST-COVERAGE-ROUTES"
+              "Manifest coverage route ids disagree with generated routes"
+              {:declared declared-route-ids :generated (:route-ids accounting)})
+     (ensure! (= (count declared-route-ids) (count route-ids))
+              "UEP-MANIFEST-COVERAGE-ROUTES"
+              "Manifest coverage route ids contain duplicates"
+              {:declared declared-route-ids})
+     (ensure! (= route-ids (set suite-route-ids))
+              "UEP-MANIFEST-SUITE-ROUTES"
+              "Manifest suites do not account for every generated route"
+              {:routes (sorted-values route-ids)
+               :suite-routes suite-route-ids})
+     (ensure! (= (count suite-route-ids) (count route-ids))
+              "UEP-MANIFEST-SUITE-ROUTES"
+              "Manifest suite route assignments contain duplicates"
+              {:suite-routes suite-route-ids})
+     (ensure! (= (:route-count accounting) (count (:routes manifest)))
+              "UEP-MANIFEST-COVERAGE-COUNT"
+              "Generated route count is inconsistent"
+              {:accounting accounting})
+     (ensure! (= declared-accounting
+                 (select-keys accounting coverage-accounting-keys))
+              "UEP-MANIFEST-COVERAGE-ACCOUNTING"
+              "Declared coverage accounting is stale"
+              {:declared declared-accounting :generated accounting})
+     (when (map? declared-conformance)
+       (ensure! (= (:suite-count declared-conformance)
+                   (:fixture-suite-count accounting))
+                "UEP-MANIFEST-CONFORMANCE-COUNT"
+                "Declared conformance suite count is stale"
+                {:declared declared-conformance :generated accounting})
+       (ensure! (= (:accepted-count declared-conformance)
+                   (:accepted-fixture-count accounting))
+                "UEP-MANIFEST-CONFORMANCE-COUNT"
+                "Declared accepted fixture count is stale"
+                {:declared declared-conformance :generated accounting})
+       (ensure! (= (:rejected-count declared-conformance)
+                   (:rejected-fixture-count accounting))
+                "UEP-MANIFEST-CONFORMANCE-COUNT"
+                "Declared rejected fixture count is stale"
+                {:declared declared-conformance :generated accounting})
+       (ensure! (= (:pair-count declared-conformance)
+                   (:fixture-pair-count accounting))
+                "UEP-MANIFEST-CONFORMANCE-COUNT"
+                "Declared fixture pair count is stale"
+                {:declared declared-conformance :generated accounting}))
+     (doseq [[route-id route] routes]
+       (let [module-id (:module-id route)
+             module (get-in manifest [:modules module-id])
+             closure (get closures route-id)]
+         (ensure! (= route (get-in manifest [:routes route-id]))
+                  "UEP-MANIFEST-ROUTE-PROJECTION"
+                  "Generated route projection changed its reviewed route"
+                  {:route route-id})
+         (ensure! (= (:dependency-closure route) closure)
+                  "UEP-MANIFEST-CLOSURE-PROJECTION"
+                  "Generated dependency closure projection is stale"
+                  {:route route-id})
+         (ensure! (every? #(= {:module-id module-id
+                               :owner (:owner module)}
+                              (get ownership %))
+                          (:source-paths module))
+                  "UEP-MANIFEST-OWNERSHIP-PROJECTION"
+                  "Generated ownership projection is stale"
+                  {:route route-id :module-id module-id})))
+     {:schema :gravity/verification-manifest-projection-v1
+      :authority :non-authoritative
+      :authoritative? false
+      :manifest-id (identity-of manifest)
+      :routes routes
+      :legacy-routes legacy-routes
+      :module-ownership ownership
+      :dependency-closures closures
+      :coverage accounting})))
 
 (defn- request-keys!
   [request]

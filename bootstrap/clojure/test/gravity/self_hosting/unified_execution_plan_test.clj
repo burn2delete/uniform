@@ -185,3 +185,139 @@
         (is (= route-id (:id route)))
         (is (seq (get-in route [:selection :selectors])))
         (is (seq (:required-evidence route)))))))
+
+(deftest manifest-projections-are-derived-and-complete
+  (let [projection (plan/validate-manifest-projections!)
+        accounting (:coverage projection)]
+    (is (= :gravity/verification-manifest-projection-v1
+           (:schema projection)))
+    (is (= :non-authoritative (:authority projection)))
+    (is (false? (:authoritative? projection)))
+    (is (= (plan/manifest-id) (:manifest-id projection)))
+    ;; The route projection is a generated view, not a second catalog owner.
+    (is (= (:routes plan/catalog) (:routes projection)))
+    (is (= (:routes plan/catalog)
+           (plan/route-catalog plan/catalog)))
+    (is (= ["sh07-b8-regression"]
+           (get-in projection [:legacy-routes :impact-test-planner])))
+    (is (= ["sh07-b13-accepted" "sh07-conformance-table"]
+           (get-in projection [:legacy-routes :iteration-cache-runner])))
+    (is (= (set (mapcat :replacement-for (vals (:routes plan/catalog))))
+           (set (keys (:legacy-routes projection)))))
+    (is (= {:module-id "sh07-checked-core" :owner :gravity}
+           (get-in projection [:module-ownership
+                               "bootstrap/gravity/src/gravity/checked_core.gravity"])))
+    (is (= (set (keys (:routes plan/catalog)))
+           (set (keys (:dependency-closures projection)))))
+    (is (= 7 (:route-count accounting)))
+    (is (= 1 (:module-count accounting)))
+    (is (= 2 (:suite-count accounting)))
+    (is (= 40 (:selector-count accounting)))
+    (is (= 39 (:exact-var-selector-count accounting)))
+    (is (= 1 (:proof-contract-selector-count accounting)))
+    (is (= 14 (:fixture-suite-count accounting)))
+    (is (= 68 (:accepted-fixture-count accounting)))
+    (is (= 79 (:rejected-fixture-count accounting)))
+    (is (= 147 (:fixture-pair-count accounting)))))
+
+(deftest manifest-projection-validation-rejects-stale-declarations
+  (let [stale-accepted (assoc-in plan/catalog
+                                 [:conformance :coverage :accepted-count]
+                                 67)
+        duplicate-route (update-in plan/catalog
+                                   [:coverage :route-ids]
+                                   conj "sh07-authoritative")
+        duplicate-suite-route (update-in plan/catalog
+                                         [:suites 0 :route-ids]
+                                         conj "sh07-b8-regression")
+        stale-accounting (assoc-in plan/catalog
+                                   [:coverage :accounting :selector-count]
+                                   39)]
+    (is (= "SH07-CONFORMANCE-COVERAGE"
+           (error-id #(plan/validate-manifest-projections! stale-accepted))))
+    (is (= "UEP-CATALOG-COVERAGE"
+           (error-id #(plan/validate-manifest-projections! duplicate-route))))
+    (is (= "UEP-CATALOG-SUITE-ROUTES"
+           (error-id #(plan/validate-manifest-projections! duplicate-suite-route))))
+    (is (= "UEP-MANIFEST-COVERAGE-ACCOUNTING"
+           (error-id #(plan/validate-manifest-projections! stale-accounting))))))
+
+(deftest manifest-paths-and-coverage-shapes-fail-closed
+  (doseq [unsafe ["C:bootstrap/gravity/src/gravity/checked_core.gravity"
+                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0000"
+                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0001"]]
+    (let [route-ids (keys (:routes plan/catalog))
+          changed (reduce (fn [catalog route-id]
+                            (update-in catalog [:routes route-id
+                                                :dependency-closure :paths]
+                                       (fn [paths]
+                                         (mapv #(if (= "bootstrap/gravity/src/gravity/checked_core.gravity" %)
+                                                  unsafe
+                                                  %)
+                                               paths))))
+                          (assoc-in plan/catalog
+                                    [:modules "sh07-checked-core" :source-paths]
+                                    [unsafe])
+                          route-ids)]
+      (is (= "UEP-CATALOG-MODULE-SOURCES"
+             (error-id #(plan/validate-catalog changed))))))
+  (doseq [route-ids [(set (get-in plan/catalog [:coverage :route-ids]))
+                     (seq (get-in plan/catalog [:coverage :route-ids]))]]
+    (is (= "UEP-CATALOG-COVERAGE"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog [:coverage :route-ids]
+                                 route-ids))))))
+  (is (= "UEP-CATALOG-COVERAGE"
+         (error-id #(plan/validate-catalog
+                     (update-in plan/catalog [:coverage :route-ids]
+                                (comp vec reverse)))))))
+
+(deftest canonical-conformance-validation-is-required
+  (is (= "SH07-CONFORMANCE-BASENAME"
+         (error-id #(plan/validate-catalog
+                     (assoc-in plan/catalog
+                               [:conformance :suites 0 :accepted 0 :basename]
+                               "../not-reviewed"))))))
+
+(deftest conformance-suites-bind-to-manifest-module-ownership
+  (let [renamed-module (get-in plan/catalog [:modules "sh07-checked-core"])
+        route-ids (keys (:routes plan/catalog))
+        changed (reduce (fn [catalog route-id]
+                          (-> catalog
+                              (assoc-in [:routes route-id :module-id]
+                                        "other-module")
+                              (assoc-in [:routes route-id :dependency-closure
+                                         :module-ids]
+                                        ["other-module"])))
+                        (-> plan/catalog
+                            (update :modules dissoc "sh07-checked-core")
+                            (assoc-in [:modules "other-module"]
+                                      (assoc renamed-module :id "other-module")))
+                        route-ids)]
+    (is (= "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+           (error-id #(plan/validate-manifest-projections! changed))))))
+
+(deftest route-closures-bind-every-module-and-fixture-suite-owner
+  (let [other {:id "other-module" :owner :gravity
+               :source-paths ["bootstrap/gravity/src/gravity/other.gravity"]
+               :artifact-request :checked-core :ownership-scope :sh07
+               :required-evidence [:source-identity]}
+        with-other (assoc-in plan/catalog [:modules "other-module"] other)
+        missing-source
+        (update-in with-other
+                   [:routes "sh07-b8-regression" :dependency-closure :module-ids]
+                   conj "other-module")
+        wrong-fixture-owner
+        (-> with-other
+            (assoc-in [:routes "sh07-conformance-table" :module-id]
+                      "other-module")
+            (assoc-in [:routes "sh07-conformance-table" :dependency-closure
+                       :module-ids]
+                      ["other-module"])
+            (update-in [:routes "sh07-conformance-table" :dependency-closure
+                        :paths]
+                       conj "bootstrap/gravity/src/gravity/other.gravity"))]
+    (is (= "UEP-CATALOG-ROUTE-CLOSURE"
+           (error-id #(plan/validate-catalog missing-source))))
+    (is (= "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+           (error-id #(plan/validate-catalog wrong-fixture-owner))))))
