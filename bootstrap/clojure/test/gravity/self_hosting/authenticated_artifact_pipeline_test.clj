@@ -317,10 +317,10 @@
                       (= symbol 'compiler-c3-syntax-source-artifact)
                       {:kind :syntax :artifact-id (:syntax ids)
                        :c2-reader-artifact {:artifact-id (:reader ids)}}
-                      (= symbol 'sh05-macro-source-artifact)
+                      (= symbol 'sh05-macro-artifact-from-c3-artifact)
                       {:kind :macro :artifact-id (:macro ids)
                        :sh04-syntax-artifact {:artifact-id (:syntax ids)}}
-                      (= symbol 'sh06-resolution-source-artifact)
+                      (= symbol 'sh06-resolution-artifact-from-sh05-artifact)
                       {:kind :resolution :artifact-id (:resolution ids)
                        :sh05-macro-artifact {:artifact-id (:macro ids)}}
                       (= symbol 'sh07-core-from-resolution-artifact)
