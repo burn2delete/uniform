@@ -6,7 +6,10 @@
   result in a small authenticated envelope.  The envelope makes the stage
   graph, source identity, policy, provenance, cache decision, and receipt
   explicit.  Fast reuse is process-local and non-authoritative; fresh requests
-  never consult the store and execute the same entrypoints again.
+  never consult the store and execute the same entrypoints again.  Each stage
+  consumes the immediately preceding authenticated artifact; transitive
+  lineage remains embedded in that owner artifact and is not relabeled as a
+  direct edge.
 
   No envelope produced here grants SH, proof, integration, release,
   self-hosting, seed-retirement, safety, or performance authority."
@@ -673,15 +676,10 @@
                             :source :none
                             :reader :authenticated-source-identity
                             :syntax :authenticated-parent
-                            ;; The existing SH-05/SH-06 entrypoints accept a
-                            ;; source path/text, not a prior artifact.  Keep
-                            ;; that boundary explicit instead of claiming
-                            ;; direct intermediate reuse.
-                            :macroexpansion :source-recomputed
-                            :resolution :source-recomputed
+                            :macroexpansion :authenticated-immediate-parent
+                            :resolution :authenticated-immediate-parent
                             :checked-core :authenticated-parent)
-        recomputation-boundary? (contains? #{:macroexpansion :resolution}
-                                            stage)
+        recomputation-boundary? false
         base {:artifact :gravity/authenticated-compiler-artifact
               :schema-version pipeline-schema-version
               :pipeline pipeline-id
@@ -703,8 +701,8 @@
                               :source :source-bytes
                               :reader :authenticated-source-identity
                               :syntax :authenticated-parent
-                              :macroexpansion :source-recomputed
-                              :resolution :source-recomputed
+                              :macroexpansion :authenticated-immediate-parent
+                              :resolution :authenticated-immediate-parent
                               :checked-core :authenticated-parent)
                      :output stage
                      :parent-consumption parent-consumption
@@ -844,10 +842,13 @@
              'compiler-c3-syntax-source-artifact
              source-path source-text context (:payload (last previous))
              (var-get (bootstrap-var 'sh03-reader-internal-product-authority)))
-    :macroexpansion (bootstrap-call 'sh05-macro-source-artifact
-                                    source-path source-text)
-    :resolution (bootstrap-call 'sh06-resolution-source-artifact
-                                source-path source-text)
+    ;; SH-05 and SH-06 consume only their immediate authenticated parent.
+    ;; Their historical source entrypoints remain compatibility wrappers, but
+    ;; the unified pipeline must not rebuild an already-authenticated prefix.
+    :macroexpansion (bootstrap-call 'sh05-macro-artifact-from-c3-artifact
+                                    source-path (:payload (last previous)))
+    :resolution (bootstrap-call 'sh06-resolution-artifact-from-sh05-artifact
+                                source-path (:payload (last previous)))
     :checked-core (bootstrap-call 'sh07-core-from-resolution-artifact
                                  (:payload (last previous)))))
 
