@@ -187,3 +187,52 @@
         (is (= route-id (:id route)))
         (is (seq (get-in route [:selection :selectors])))
         (is (seq (:required-evidence route)))))))
+
+(deftest manifest-projections-are-derived-and-complete
+  (let [projection (plan/validate-manifest-projections!)
+        accounting (:coverage projection)]
+    (is (= :gravity/verification-manifest-projection-v1
+           (:schema projection)))
+    (is (= :non-authoritative (:authority projection)))
+    (is (false? (:authoritative? projection)))
+    (is (= (plan/manifest-id) (:manifest-id projection)))
+    ;; The route projection is a generated view, not a second catalog owner.
+    (is (= (:routes plan/catalog) (:routes projection)))
+    (is (= (:routes plan/catalog)
+           (plan/route-catalog plan/catalog)))
+    (is (= ["sh07-b8-regression"]
+           (get-in projection [:legacy-routes :impact-test-planner])))
+    (is (= ["sh07-b13-accepted" "sh07-conformance-table"]
+           (get-in projection [:legacy-routes :iteration-cache-runner])))
+    (is (= (set (mapcat :replacement-for (vals (:routes plan/catalog))))
+           (set (keys (:legacy-routes projection)))))
+    (is (= {:module-id "sh07-checked-core" :owner :gravity}
+           (get-in projection [:module-ownership
+                               "bootstrap/gravity/src/gravity/checked_core.gravity"])))
+    (is (= (set (keys (:routes plan/catalog)))
+           (set (keys (:dependency-closures projection)))))
+    (is (= 7 (:route-count accounting)))
+    (is (= 1 (:module-count accounting)))
+    (is (= 2 (:suite-count accounting)))
+    (is (= 40 (:selected-test-count accounting)))
+    (is (= 14 (:fixture-suite-count accounting)))
+    (is (= 68 (:accepted-fixture-count accounting)))
+    (is (= 79 (:rejected-fixture-count accounting)))
+    (is (= 147 (:fixture-pair-count accounting)))))
+
+(deftest manifest-projection-validation-rejects-stale-declarations
+  (let [stale-accepted (assoc-in plan/catalog
+                                 [:conformance :coverage :accepted-count]
+                                 67)
+        duplicate-route (update-in plan/catalog
+                                   [:coverage :route-ids]
+                                   conj "sh07-authoritative")
+        duplicate-suite-route (update-in plan/catalog
+                                         [:suites 0 :route-ids]
+                                         conj "sh07-b8-regression")]
+    (is (= "UEP-MANIFEST-CONFORMANCE-COUNT"
+           (error-id #(plan/validate-manifest-projections! stale-accepted))))
+    (is (= "UEP-CATALOG-COVERAGE"
+           (error-id #(plan/validate-manifest-projections! duplicate-route))))
+    (is (= "UEP-CATALOG-SUITE-ROUTES"
+           (error-id #(plan/validate-manifest-projections! duplicate-suite-route))))))
