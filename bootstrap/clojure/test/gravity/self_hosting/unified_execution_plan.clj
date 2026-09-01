@@ -14,6 +14,7 @@
             [gravity.self-hosting.sh07-conformance-table :as conformance])
   (:import (java.nio.charset StandardCharsets)
            (java.nio ByteBuffer)
+           (java.nio.channels FileChannel)
            (java.nio.file Files LinkOption Paths StandardOpenOption)
            (java.security MessageDigest)))
 
@@ -59,7 +60,8 @@
   #{:owner :completeness :exhaustive? :replacement-authority
     :unmigrated-responsibilities :source-of-truth :route-ids :accounting})
 (def ^:private coverage-accounting-keys
-  #{:route-count :module-count :suite-count :selected-test-count
+  #{:route-count :module-count :suite-count :selector-count
+    :exact-var-selector-count :proof-contract-selector-count
     :fixture-suite-count :accepted-fixture-count :rejected-fixture-count
     :fixture-pair-count})
 (def ^:private evidence-policy-keys
@@ -363,13 +365,14 @@
                  (get-in route [:dependency-closure :module-ids]))
            "UEP-CATALOG-ROUTE-CLOSURE" "Route closure omits its owning module"
            {:route route-id :module-id (:module-id route)})
-  (let [closure-paths (set (get-in route [:dependency-closure :paths]))
-        source-paths (get-in modules [(:module-id route) :source-paths])]
-    (ensure! (every? closure-paths source-paths)
-             "UEP-CATALOG-ROUTE-CLOSURE"
-             "Route closure omits an owning module source path"
-             {:route route-id :module-id (:module-id route)
-              :missing (sorted-values (remove closure-paths source-paths))}))
+  (let [closure-paths (set (get-in route [:dependency-closure :paths]))]
+    (doseq [module-id (get-in route [:dependency-closure :module-ids])
+            :let [source-paths (get-in modules [module-id :source-paths])]]
+      (ensure! (every? closure-paths source-paths)
+               "UEP-CATALOG-ROUTE-CLOSURE"
+               "Route closure omits a referenced module source path"
+               {:route route-id :module-id module-id
+                :missing (sorted-values (remove closure-paths source-paths))})))
   (let [namespace (:namespace (:selection route))
         test-relative (-> namespace
                           (str/replace "." "/")
@@ -520,7 +523,7 @@
   suite)
 
 (defn- validate-conformance-closure!
-  [route-id closure conformance]
+  [route-id route-module-id closure conformance]
   (when-let [suite-ids (:fixture-suite-ids closure)]
     (ensure! (map? conformance) "UEP-CATALOG-CLOSURE-FIXTURES"
              "Fixture suite references require the conformance table" {:route route-id})
@@ -531,6 +534,12 @@
         (fail! "UEP-CATALOG-CLOSURE-FIXTURES"
                "Dependency closure references an unknown fixture suite"
                {:route route-id :unknown (sorted-values unknown)}))
+      (doseq [suite (filter #(contains? (set suite-ids) (:id %)) suites)]
+        (ensure! (= route-module-id (:module-id suite))
+                 "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+                 "Fixture suite module ownership differs from its route"
+                 {:route route-id :route-module-id route-module-id
+                  :suite (:id suite) :suite-module-id (:module-id suite)}))
       (doseq [suite (filter #(contains? (set suite-ids) (:id %)) suites)
               row (concat (:accepted suite) (:rejected suite))]
         (doseq [key [:gravity :qst]]
@@ -598,7 +607,7 @@
              "Route keys must be strings" {:route id})
     (validate-route! id route (:modules value) (:resource-classes value)
                      (:lanes value))
-    (validate-conformance-closure! id (:dependency-closure route)
+    (validate-conformance-closure! id (:module-id route) (:dependency-closure route)
                                    (:conformance value)))
   (let [route-ids (set (keys (:routes value)))]
     (non-empty-vector! (:suites value) "UEP-CATALOG-SUITES" [:suites])
@@ -636,6 +645,11 @@
     (ensure! (vector? (:route-ids (:coverage value)))
              "UEP-CATALOG-COVERAGE"
              "Coverage route accounting must be an ordered vector" {})
+    (ensure! (= (vec (sort route-ids)) (:route-ids (:coverage value)))
+             "UEP-CATALOG-COVERAGE"
+             "Coverage route accounting must use deterministic route order"
+             {:expected (vec (sort route-ids))
+              :actual (:route-ids (:coverage value))})
     (ensure! (= route-ids (set (:route-ids (:coverage value))))
              "UEP-CATALOG-COVERAGE" "Coverage route accounting is not exact"
              {:expected route-ids :actual (:route-ids (:coverage value))})
@@ -678,6 +692,11 @@
               [:conformance :complete?])
     (ensure! (false? (:complete? conformance)) "UEP-CATALOG-CONFORMANCE"
              "Conformance table cannot claim complete migration" {})
+    (doseq [suite (:suites conformance)]
+      (ensure! (contains? (:modules value) (:module-id suite))
+               "UEP-CATALOG-CONFORMANCE-MODULE"
+               "Conformance suite references an unowned manifest module"
+               {:suite-id (:id suite) :module-id (:module-id suite)}))
     (conformance/validate-table conformance)
     (non-empty-vector! (:suites conformance) "UEP-CATALOG-CONFORMANCE"
                        [:conformance :suites])
@@ -705,12 +724,33 @@
          file (if (.isAbsolute file)
                 file
                 (io/file (or (some-> (repository-root) str) ".") (str path)))]
-     (ensure! (.isFile file) "UEP-CATALOG-READ"
+     (ensure! (and (Files/isRegularFile (.toPath file)
+                                        (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+                   (not (Files/isSymbolicLink (.toPath file))))
+              "UEP-CATALOG-READ"
               "Verification catalog file is missing" {:path (str path)})
-     (let [bytes (Files/readAllBytes (.toPath file))]
-       (ensure! (<= (alength bytes) (* 1024 1024)) "UEP-CATALOG-READ"
-                "Verification catalog exceeds the bounded input size"
-                {:path (str path) :bytes (alength bytes)})
+     (let [maximum (* 1024 1024)
+           buffer (ByteBuffer/allocate (inc maximum))
+           _ (with-open [channel
+                         (FileChannel/open
+                          (.toPath file)
+                          (into-array java.nio.file.OpenOption
+                                      [StandardOpenOption/READ
+                                       LinkOption/NOFOLLOW_LINKS]))]
+               (loop []
+                 (when (.hasRemaining buffer)
+                   (let [read-count (.read channel buffer)]
+                     (cond
+                       (= -1 read-count) nil
+                       (pos? read-count) (recur)
+                       :else (fail! "UEP-CATALOG-READ"
+                                    "Verification catalog read made no progress"
+                                    {:path (str path)}))))))
+           byte-count (.position buffer)
+           _ (ensure! (<= byte-count maximum) "UEP-CATALOG-READ"
+                      "Verification catalog exceeds the bounded input size"
+                      {:path (str path) :bytes byte-count :maximum maximum})
+           bytes (java.util.Arrays/copyOf (.array buffer) byte-count)]
        (try
          (edn/read-string (String. bytes StandardCharsets/UTF_8))
          (catch Throwable error
@@ -767,6 +807,64 @@
    (validate-catalog manifest)
    (identity-of manifest)))
 
+(defn- route-catalog-value [manifest]
+  (into (sorted-map) (:routes manifest)))
+
+(defn- legacy-route-catalog-value [manifest]
+  (->> (:routes manifest)
+       (mapcat (fn [[route-id route]]
+                 (map (fn [legacy] [legacy route-id])
+                      (:replacement-for route))))
+       (group-by first)
+       (map (fn [[legacy pairs]]
+              [legacy (vec (sort (map second pairs)))]))
+       (into (sorted-map))))
+
+(defn- module-ownership-index-value [manifest]
+  (into (sorted-map)
+        (mapcat
+         (fn [[module-id module]]
+           (map (fn [path]
+                  [path {:module-id module-id :owner (:owner module)}])
+                (:source-paths module)))
+         (:modules manifest))))
+
+(defn- route-dependency-closures-value [manifest]
+  (into (sorted-map)
+        (map (fn [[route-id route]]
+               [route-id (:dependency-closure route)]))
+        (:routes manifest)))
+
+(defn- coverage-accounting-value [manifest]
+  (let [routes (:routes manifest)
+        modules (:modules manifest)
+        suites (:suites manifest)
+        conformance-suites (vec (get-in manifest [:conformance :suites]))
+        accepted-count (reduce + 0 (map #(count (:accepted %)) conformance-suites))
+        rejected-count (reduce + 0 (map #(count (:rejected %)) conformance-suites))]
+    {:source-of-truth :verification-catalog
+     :route-ids (vec (sort (keys routes)))
+     :route-count (count routes)
+     :module-ids (vec (sort (keys modules)))
+     :module-count (count modules)
+     :suite-ids (vec (sort (map :id suites)))
+     :suite-count (count suites)
+     :selector-count
+     (reduce + 0 (map #(count (get-in % [:selection :selectors])) (vals routes)))
+     :exact-var-selector-count
+     (reduce + 0 (map #(if (= :exact-vars (get-in % [:selection :kind]))
+                         (count (get-in % [:selection :selectors])) 0)
+                       (vals routes)))
+     :proof-contract-selector-count
+     (reduce + 0 (map #(if (= :proof-contract-module-catalog
+                               (get-in % [:selection :kind]))
+                         (count (get-in % [:selection :selectors])) 0)
+                       (vals routes)))
+     :fixture-suite-count (count conformance-suites)
+     :accepted-fixture-count accepted-count
+     :rejected-fixture-count rejected-count
+     :fixture-pair-count (+ accepted-count rejected-count)}))
+
 (defn route-catalog
   "Generate the closed route projection owned by the verification manifest.
 
@@ -777,9 +875,7 @@
   ([ ] (route-catalog catalog))
   ([manifest]
    (validate-catalog manifest)
-   (into (sorted-map)
-         (map (fn [[route-id route]] [route-id route]))
-         (:routes manifest))))
+   (route-catalog-value manifest)))
 
 (defn legacy-route-catalog
   "Generate a legacy-mechanism-to-route projection from the manifest.
@@ -790,14 +886,7 @@
   ([ ] (legacy-route-catalog catalog))
   ([manifest]
    (validate-catalog manifest)
-   (->> (:routes manifest)
-        (mapcat (fn [[route-id route]]
-                  (map (fn [legacy] [legacy route-id])
-                       (:replacement-for route))))
-        (group-by first)
-        (map (fn [[legacy pairs]]
-               [legacy (vec (sort (map second pairs)))]))
-        (into (sorted-map)))))
+   (legacy-route-catalog-value manifest)))
 
 (defn module-ownership-index
   "Generate a path-to-owner projection from the reviewed module manifest.
@@ -808,23 +897,14 @@
   ([ ] (module-ownership-index catalog))
   ([manifest]
    (validate-catalog manifest)
-   (into (sorted-map)
-         (mapcat
-          (fn [[module-id module]]
-            (map (fn [path]
-                   [path {:module-id module-id :owner (:owner module)}])
-                 (:source-paths module)))
-          (:modules manifest)))))
+   (module-ownership-index-value manifest)))
 
 (defn route-dependency-closures
   "Generate the route-to-closure projection from the reviewed manifest."
   ([ ] (route-dependency-closures catalog))
   ([manifest]
    (validate-catalog manifest)
-   (into (sorted-map)
-         (map (fn [[route-id route]]
-                [route-id (:dependency-closure route)]))
-         (:routes manifest))))
+   (route-dependency-closures-value manifest)))
 
 (defn coverage-accounting
   "Compute deterministic coverage accounting from manifest-owned records.
@@ -835,31 +915,7 @@
   ([ ] (coverage-accounting catalog))
   ([manifest]
    (validate-catalog manifest)
-   (let [routes (:routes manifest)
-         modules (:modules manifest)
-         suites (:suites manifest)
-         conformance (:conformance manifest)
-         conformance-suites (vec (:suites conformance))
-         accepted-count (reduce + 0 (map #(count (:accepted %)) conformance-suites))
-         rejected-count (reduce + 0 (map #(count (:rejected %)) conformance-suites))
-         route-ids (vec (sort (keys routes)))
-         module-ids (vec (sort (keys modules)))
-         suite-ids (vec (sort (map :id suites)))
-         selected-test-count
-         (reduce + 0 (map #(count (get-in % [:selection :selectors]))
-                           (vals routes)))]
-     {:source-of-truth :verification-catalog
-      :route-ids route-ids
-      :route-count (count route-ids)
-      :module-ids module-ids
-      :module-count (count module-ids)
-      :suite-ids suite-ids
-      :suite-count (count suite-ids)
-      :selected-test-count selected-test-count
-      :fixture-suite-count (count conformance-suites)
-      :accepted-fixture-count accepted-count
-      :rejected-fixture-count rejected-count
-      :fixture-pair-count (+ accepted-count rejected-count)})))
+   (coverage-accounting-value manifest)))
 
 (defn validate-manifest-projections!
   "Validate all generated manifest projections and return them.
@@ -873,11 +929,11 @@
   ([ ] (validate-manifest-projections! catalog))
   ([manifest]
    (validate-catalog manifest)
-   (let [routes (route-catalog manifest)
-         legacy-routes (legacy-route-catalog manifest)
-         ownership (module-ownership-index manifest)
-         closures (route-dependency-closures manifest)
-         accounting (coverage-accounting manifest)
+   (let [routes (route-catalog-value manifest)
+         legacy-routes (legacy-route-catalog-value manifest)
+         ownership (module-ownership-index-value manifest)
+         closures (route-dependency-closures-value manifest)
+         accounting (coverage-accounting-value manifest)
          route-ids (set (keys routes))
          declared-route-ids (vec (get-in manifest [:coverage :route-ids]))
          declared-accounting (get-in manifest [:coverage :accounting])

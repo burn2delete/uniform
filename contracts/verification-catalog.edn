@@ -423,14 +423,15 @@
   :unmigrated-responsibilities [:all-unlisted-routes :legacy-runner-catalogs
                                 :stage3-batch-catalog]
   :source-of-truth :routes
-  :route-ids ["sh07-b8-regression" "sh07-b10-regression"
-              "sh07-b11-contract" "sh07-b13-accepted"
-              "sh07-conformance-table" "sh07-conformance-parity"
-              "sh07-authoritative"]
+  :route-ids ["sh07-authoritative" "sh07-b10-regression"
+              "sh07-b11-contract" "sh07-b13-accepted" "sh07-b8-regression"
+              "sh07-conformance-parity" "sh07-conformance-table"]
   :accounting {:route-count 7
                :module-count 1
                :suite-count 2
-               :selected-test-count 40
+               :selector-count 40
+               :exact-var-selector-count 39
+               :proof-contract-selector-count 1
                :fixture-suite-count 14
                :accepted-fixture-count 68
                :rejected-fixture-count 79

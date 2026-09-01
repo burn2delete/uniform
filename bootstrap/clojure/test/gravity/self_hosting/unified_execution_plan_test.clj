@@ -214,7 +214,9 @@
     (is (= 7 (:route-count accounting)))
     (is (= 1 (:module-count accounting)))
     (is (= 2 (:suite-count accounting)))
-    (is (= 40 (:selected-test-count accounting)))
+    (is (= 40 (:selector-count accounting)))
+    (is (= 39 (:exact-var-selector-count accounting)))
+    (is (= 1 (:proof-contract-selector-count accounting)))
     (is (= 14 (:fixture-suite-count accounting)))
     (is (= 68 (:accepted-fixture-count accounting)))
     (is (= 79 (:rejected-fixture-count accounting)))
@@ -231,7 +233,7 @@
                                          [:suites 0 :route-ids]
                                          conj "sh07-b8-regression")
         stale-accounting (assoc-in plan/catalog
-                                   [:coverage :accounting :selected-test-count]
+                                   [:coverage :accounting :selector-count]
                                    39)]
     (is (= "SH07-CONFORMANCE-COVERAGE"
            (error-id #(plan/validate-manifest-projections! stale-accepted))))
@@ -266,7 +268,11 @@
     (is (= "UEP-CATALOG-COVERAGE"
            (error-id #(plan/validate-catalog
                        (assoc-in plan/catalog [:coverage :route-ids]
-                                 route-ids)))))))
+                                 route-ids))))))
+  (is (= "UEP-CATALOG-COVERAGE"
+         (error-id #(plan/validate-catalog
+                     (update-in plan/catalog [:coverage :route-ids]
+                                (comp vec reverse)))))))
 
 (deftest canonical-conformance-validation-is-required
   (is (= "SH07-CONFORMANCE-BASENAME"
@@ -274,3 +280,46 @@
                      (assoc-in plan/catalog
                                [:conformance :suites 0 :accepted 0 :basename]
                                "../not-reviewed"))))))
+
+(deftest conformance-suites-bind-to-manifest-module-ownership
+  (let [renamed-module (get-in plan/catalog [:modules "sh07-checked-core"])
+        route-ids (keys (:routes plan/catalog))
+        changed (reduce (fn [catalog route-id]
+                          (-> catalog
+                              (assoc-in [:routes route-id :module-id]
+                                        "other-module")
+                              (assoc-in [:routes route-id :dependency-closure
+                                         :module-ids]
+                                        ["other-module"])))
+                        (-> plan/catalog
+                            (update :modules dissoc "sh07-checked-core")
+                            (assoc-in [:modules "other-module"]
+                                      (assoc renamed-module :id "other-module")))
+                        route-ids)]
+    (is (= "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+           (error-id #(plan/validate-manifest-projections! changed))))))
+
+(deftest route-closures-bind-every-module-and-fixture-suite-owner
+  (let [other {:id "other-module" :owner :gravity
+               :source-paths ["bootstrap/gravity/src/gravity/other.gravity"]
+               :artifact-request :checked-core :ownership-scope :sh07
+               :required-evidence [:source-identity]}
+        with-other (assoc-in plan/catalog [:modules "other-module"] other)
+        missing-source
+        (update-in with-other
+                   [:routes "sh07-b8-regression" :dependency-closure :module-ids]
+                   conj "other-module")
+        wrong-fixture-owner
+        (-> with-other
+            (assoc-in [:routes "sh07-conformance-table" :module-id]
+                      "other-module")
+            (assoc-in [:routes "sh07-conformance-table" :dependency-closure
+                       :module-ids]
+                      ["other-module"])
+            (update-in [:routes "sh07-conformance-table" :dependency-closure
+                        :paths]
+                       conj "bootstrap/gravity/src/gravity/other.gravity"))]
+    (is (= "UEP-CATALOG-ROUTE-CLOSURE"
+           (error-id #(plan/validate-catalog missing-source))))
+    (is (= "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
+           (error-id #(plan/validate-catalog wrong-fixture-owner))))))
