@@ -54,6 +54,29 @@
         (finally
           (lanes/reset-warm-sessions!))))))
 
+(defn- request-runner-result
+  [request outcome]
+  (let [namespace (second
+                   (drop-while #(not= "--namespace" %)
+                               (:args request)))
+        selectors (->> (partition-all 2 (:args request))
+                       (keep (fn [[option value]]
+                               (when (= "--exact" option) value)))
+                       vec)
+        passed? (= :passed outcome)]
+    {:schema :gravity/development-test-result-v1
+     :authority :non-authoritative
+     :authoritative? false
+     :selection {:namespaces [namespace]
+                 :test-vars (mapv #(str namespace "/" %) selectors)
+                 :fail-fast? true}
+     :summary {:test (count selectors)
+               :pass (if passed? (count selectors) 0)
+               :fail (if passed? 0 1)
+               :error 0}
+     :outcome (if passed? :passed :failed)
+     :exit-code (if passed? 0 1)}))
+
 (defn- fake-warm-start
   [starts responses]
   (fn [{:keys [candidate-commit candidate-tree] :as request}]
@@ -72,7 +95,7 @@
        :write-line! (fn [line]
                       (let [request (edn/read-string line)
                             outcome (response-for (swap! calls inc))
-                            response {:schema :gravity/exact-tree-warm-worker-response-v1
+                            response {:schema :gravity/exact-tree-warm-worker-response-v2
                                       :authority :non-authoritative
                                       :authoritative? false
                                       :request-id (:request-id request)
@@ -84,7 +107,9 @@
                                       :request-count @calls
                                       :stdout ""
                                       :stderr ""
-                                      :output-truncated? false}]
+                                      :output-truncated? false
+                                      :runner-result
+                                      (request-runner-result request outcome)}]
                         (.offer records (str "WARM_DEV " (pr-str response)))))
        :process-alive? (fn [] (not @closed?))
        :close! (fn [] (reset! closed? true))})))
@@ -294,7 +319,9 @@
     (is (= "clojure" (get-in @starts [0 :command 0])))
     (is (= test-commit (get-in @starts [0 :candidate-commit])))
     (is (= test-tree (get-in @starts [0 :candidate-tree])))
-    (is (= :miss (:cache-decision (first result))))))
+    (is (= :miss (:cache-decision (first result))))
+    (is (= {:test-count 2 :pass 2 :fail 0 :error 0}
+           (select-keys (first result) [:test-count :pass :fail :error])))))
 
 (deftest fast-adapter-blocks-without-coordination-root
   (let [result
@@ -322,7 +349,20 @@
            (some->> (:diagnostics result)
                     (map :id)
                     (some #{"UEP-WARM-TEST-FAILED"}))))
-    (is (= 1 (count @starts)))))
+    (is (= 1 (count @starts)))
+    (is (= {:test-count 2 :pass 0 :fail 1 :error 0}
+           (select-keys result [:test-count :pass :fail :error])))))
+
+(deftest warm-preexecution-failure-keeps-closed-counters
+  (let [plan-value (fast-plan)
+        result ((private-lane-fn 'warm-request-result)
+                plan-value (:selection plan-value)
+                {:runner-result nil :outcome :failed :exit-code 2
+                 :output-truncated? false}
+                true)]
+    (is (= {:test-count 2 :pass 0 :fail 0 :error 1}
+           (select-keys result [:test-count :pass :fail :error])))
+    (is (some #(= "UEP-WARM-TEST-FAILED" (:id %)) (:diagnostics result)))))
 
 (deftest fast-adapter-evicts-and-releases-after-worker-failure
   (let [released (atom 0)
@@ -384,6 +424,35 @@
     (is (= 1 (count @starts)))
     (Thread/sleep 100)
     (is (= 1 @released))))
+
+(deftest warm-response-v1-is-rejected
+  (let [p (fast-plan)
+        s (:selection p)
+        response {:schema :gravity/exact-tree-warm-worker-response-v1
+                  :authority :non-authoritative :authoritative? false
+                  :request-id "one" :candidate-commit test-commit
+                  :candidate-tree test-tree :outcome :failed :exit-code 2
+                  :elapsed-ns 1 :request-count 1 :stdout "" :stderr ""
+                  :output-truncated? false :runner-result nil}]
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"authenticated closed-shape"
+         ((private-lane-fn 'validate-warm-response!)
+          response {:candidate-commit test-commit :candidate-tree test-tree}
+          "one" 1 s)))))
+
+(deftest warm-runner-rejects-complete-zero-failure-failures
+  (let [p (fast-plan)
+        s (:selection p)
+        result {:schema :gravity/development-test-result-v1
+                :authority :non-authoritative :authoritative? false
+                :selection {:namespaces [(:namespace s)]
+                            :test-vars (mapv #(str (:namespace s) "/" %) (:selectors s))
+                            :fail-fast? true}
+                :summary {:test (count (:selectors s)) :pass 0 :fail 0 :error 0}
+                :outcome :failed :exit-code 1}]
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"exact closed-plan checks"
+         ((private-lane-fn 'validate-warm-runner-result!) result s)))))
 
 (deftest fast-adapter-times-out-and-releases-worker
   (let [released (atom 0)
@@ -606,7 +675,7 @@
                  (.offer records
                          (str "WARM_DEV "
                               (pr-str
-                               {:schema :gravity/exact-tree-warm-worker-response-v1
+                               {:schema :gravity/exact-tree-warm-worker-response-v2
                                 :authority :non-authoritative
                                 :authoritative? false
                                 :request-id (:request-id request)
@@ -614,7 +683,9 @@
                                 :candidate-tree candidate-tree
                                 :outcome :passed :exit-code 0 :elapsed-ns 1
                                 :request-count 1 :stdout "" :stderr ""
-                                :output-truncated? false})))))
+                                :output-truncated? false
+                                :runner-result
+                                (request-runner-result request :passed)})))))
              :process-alive? #(boolean @alive?)
              :close! #(reset! alive? false)}))
         results

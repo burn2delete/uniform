@@ -13,7 +13,7 @@
            (java.util.concurrent TimeUnit)))
 
 (def request-schema :gravity/exact-tree-warm-worker-request-v1)
-(def response-schema :gravity/exact-tree-warm-worker-response-v1)
+(def response-schema :gravity/exact-tree-warm-worker-response-v2)
 (def ready-schema :gravity/exact-tree-warm-worker-ready-v1)
 (def ^:private response-prefix "WARM_DEV ")
 (def ^:private maximum-line-length 65536)
@@ -192,7 +192,8 @@
           :candidate-commit (:candidate-commit request)
           :candidate-tree (:candidate-tree request)
           :outcome outcome :exit-code exit-code :elapsed-ns elapsed-ns
-          :request-count request-count}
+          :request-count request-count
+          :runner-result (:runner-result result)}
          (let [{out-text :text out-cut :truncated?} (bounded-text (:out result))
                {err-text :text err-cut :truncated?} (bounded-text (:err result))]
            {:stdout out-text :stderr err-text
@@ -203,16 +204,29 @@
 (defn- invoke-runner [args]
   (let [out-capture (bounded-writer) err-capture (bounded-writer)
         out (:writer out-capture) err (:writer err-capture)
+        result-called? (atom false)
+        machine-result (atom nil)
         started (System/nanoTime)]
     (try
-      (let [exit (binding [*out* out *err* err test/*test-out* out]
-                   (runner/run-cli! args))
-            out-result (bounded-writer-result out-capture)
-            err-result (bounded-writer-result err-capture)]
-        {:exit exit :elapsed-ns (- (System/nanoTime) started)
-         :out (:text out-result) :err (:text err-result)
-         :out-truncated? (:truncated? out-result)
-         :err-truncated? (:truncated? err-result)})
+      (let [exit (binding [*out* out *err* err test/*test-out* out
+                           runner/*machine-result-sink*
+                           (fn [result]
+                             (when-not (compare-and-set! result-called? false true)
+                               (fail! "WARM-RUNNER-RESULT"
+                                     "runner emitted more than one machine result"
+                                     {}))
+                             (reset! machine-result result))]
+                   (runner/run-cli! args))]
+        (when (and (contains? #{0 1} exit) (not @result-called?))
+          (fail! "WARM-RUNNER-RESULT"
+                 "runner completed without one machine result" {}))
+        (let [out-result (bounded-writer-result out-capture)
+              err-result (bounded-writer-result err-capture)]
+          {:exit exit :elapsed-ns (- (System/nanoTime) started)
+           :out (:text out-result) :err (:text err-result)
+           :runner-result @machine-result
+           :out-truncated? (:truncated? out-result)
+           :err-truncated? (:truncated? err-result)}))
       (catch Throwable error
         (cond
           (instance? InterruptedException error)
@@ -221,12 +235,17 @@
           (fatal-cause error)
           (throw (fatal-cause error))
 
+          @result-called?
+          ;; A result followed by an exception is not an honest completion.
+          (throw error)
+
           :else
           (let [out-result (bounded-writer-result out-capture)
                 err-result (bounded-writer-result err-capture)]
             {:exit 2 :elapsed-ns (- (System/nanoTime) started)
              :out (:text out-result)
              :err (str (:text err-result) (.getName (class error)) ": " (.getMessage error))
+             :runner-result nil
              :out-truncated? (:truncated? out-result)
              :err-truncated? (:truncated? err-result)}))))))
 
@@ -245,7 +264,9 @@
           (fail! "WARM-TREE-DRIFT" "worker checkout changed after startup"
                  {:expected expected :actual live-before}))
         (if (= :shutdown (:operation request))
-          (do (emit! (response request :shutdown 0 0 {:out "" :err ""} request-count)) 0)
+          (do (emit! (response request :shutdown 0 0 {:out "" :err ""
+                                                      :runner-result nil}
+                               request-count)) 0)
           (let [result (execute! (:args request))
                 next-count (inc request-count)
                 live-after (observe!)

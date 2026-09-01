@@ -9,6 +9,15 @@
 
 (def ^:private runner-loaded-at-epoch-ms (System/currentTimeMillis))
 (def ^:dynamic *timing-events* nil)
+(def ^:dynamic *machine-result-sink*
+  "Optional sink for one closed, non-authoritative execution result.
+
+  The normal CLI remains an integer-returning human-facing API.  The bounded
+  warm worker binds this sink so it can transport the counters produced by
+  `clojure.test` instead of inferring them from captured text or selectors."
+  nil)
+
+(def machine-result-schema :gravity/development-test-result-v1)
 
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
@@ -422,11 +431,26 @@
                   (write-timing-receipt! path options namespace-records
                                          selected-records @timing-events summary
                                          elapsed-ns))
-                (if (and (zero? (:fail summary))
-                         (zero? (:error summary))
-                         (= (:test summary) (count selected-records)))
-                  0
-                  1)))))))))
+                (let [passed? (and (zero? (:fail summary))
+                                   (zero? (:error summary))
+                                   (= (:test summary) (count selected-records)))
+                      exit-code (if passed? 0 1)
+                      result {:schema machine-result-schema
+                              :authority :non-authoritative
+                              :authoritative? false
+                              :selection {:namespaces
+                                          (mapv (comp str :namespace)
+                                                namespace-records)
+                                          :test-vars
+                                          (mapv :qualified-name selected-records)
+                                          :fail-fast? (:fail-fast? options)}
+                              :summary (select-keys summary
+                                                    [:test :pass :fail :error])
+                              :outcome (if passed? :passed :failed)
+                              :exit-code exit-code}]
+                  (when *machine-result-sink*
+                    (*machine-result-sink* result))
+                  exit-code)))))))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]
