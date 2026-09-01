@@ -1,0 +1,387 @@
+{:schema :gravity/verification-catalog-v1
+ :version 1
+ :authority :non-authoritative
+ :authoritative? false
+ :phase :compatibility
+ :complete? false
+ :description "Closed reviewed catalog for development and fresh verification plans."
+
+ :lanes
+ {:fast
+  {:id :fast
+   :kind :fast-development
+   :authority :non-authoritative
+   :authoritative? false
+   :incremental? true
+   :bounded? true
+   :warm? true
+   :reproducible? false
+   :cache-policy {:mode :eligible
+                  :authoritative? false
+                  :fresh-replay-required? true}
+   :execution-mode :warm-bounded-process
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required? true
+                    :authority-ceiling :non-authoritative}
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+  :fresh
+  {:id :fresh
+   :kind :fresh-acceptance
+   :authority :authoritative
+   :authoritative? true
+   :incremental? false
+   :bounded? true
+   :warm? false
+   :reproducible? true
+   :cache-policy {:mode :forbidden
+                  :authoritative? false
+                  :fresh-replay-required? true}
+   :execution-mode :fresh-isolated-process
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required? true
+                    :authority-ceiling :acceptance-only}
+   :nonclaims [:integration :release :self-hosting
+               :seed-retirement :safety :performance]}}
+
+ :resource-classes
+ {:normal {:id :normal
+           :max-concurrency 2
+           :timeout-ms 900000
+           :max-output-bytes 262144
+           :max-test-vars 128}
+  :memory-heavy {:id :memory-heavy
+                 :max-concurrency 1
+                 :timeout-ms 3600000
+                 :max-output-bytes 262144
+                 :max-test-vars 64}
+  :exclusive {:id :exclusive
+              :max-concurrency 1
+              :timeout-ms 3600000
+              :max-output-bytes 262144
+              :max-test-vars 64}}
+
+ :modules
+ {"sh07-checked-core"
+  {:id "sh07-checked-core"
+   :owner :gravity
+   :source-paths ["bootstrap/gravity/src/gravity/checked_core.gravity"]
+   :artifact-request :checked-core
+   :ownership-scope :sh07
+   :required-evidence [:source-identity :diagnostics :receipt]}}
+
+ :routes
+ {"sh07-b8-regression"
+  {:id "sh07-b8-regression"
+   :module-id "sh07-checked-core"
+   :replacement-for [:bounded-development-runner :impact-test-planner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+   :namespace "gravity.self-hosting.sh07-try-catch-test"
+               :selectors ["sh07-b8-authenticated-input-substitution-fails-before-lowering"
+                           "sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :test-bytes :contract-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 2}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :test-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :dependency-closure :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-b10-regression"
+  {:id "sh07-b10-regression"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-match-lowering-test"
+               :selectors ["sh07-b10-fixtures-are-paired-byte-identical-and-cover-the-foundation"
+                           "sh07-b10-direct-and-public-routing-use-v12"
+                           "sh07-b10-match-nodes-record-exact-order-and-pending-facts"
+                           "sh07-b10-pattern-families-and-binding-scopes-are-explicit"
+                           "sh07-b10-sibling-bindings-are-branch-local"
+                           "sh07-b10-nested-matches-have-distinct-groups-and-global-order"
+                           "sh07-b10-scrutinee-is-once-and-branches-are-conditional"
+                           "sh07-b10-scrutinee-and-branch-error-transfers-have-exact-regions"
+                           "sh07-b10-match-branches-preserve-enclosing-tail-recur-targets"
+                           "sh07-b10-match-scrutinee-does-not-inherit-tail-position"
+                           "sh07-b10-identities-are-deterministic-path-neutral-and-provenanced"
+                           "sh07-b10-records-bind-to-the-authenticated-sh06-lineage"
+                           "sh07-b10-rejections-are-structured-and-oracle-bound"
+                           "sh07-b10-fixed-vector-fixture-is-promoted-by-b11"
+                           "sh07-b10-branch-binding-escape-fails-at-name-resolution"
+                           "sh07-b10-substituted-and-stale-inputs-fail-closed"
+                           "sh07-b10-match-product-alterations-fail-replay"
+                           "sh07-b10-public-proof-is-bounded-and-honest"
+                           "sh07-b10-match-branch-resolver-rejects-over-limit-vectors"
+                           "sh07-b10-match-decision-resolver-rejects-over-limit-vectors"
+                           "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-b11-contract"
+  {:id "sh07-b11-contract"
+   :module-id "sh07-checked-core"
+   :replacement-for [:contract-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-vector-pattern-test"
+               :selectors ["sh07-b11-fixtures-are-paired-byte-identical-and-bounded-in-scope"
+                           "sh07-b11-gravity-contract-names-l7"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :normal
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 2}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-b13-accepted"
+  {:id "sh07-b13-accepted"
+   :module-id "sh07-checked-core"
+   :replacement-for [:cached-shard-runner :iteration-cache-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-module-fragment-test"
+               :selectors ["sh07-b13-direct-and-public-routing-use-v14"
+                           "sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive"
+                           "sh07-b13-fragment-coverage-is-exact-ordered-and-complete"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 3}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-conformance-table"
+  {:id "sh07-conformance-table"
+   :module-id "sh07-checked-core"
+   :replacement-for [:source-coverage-runner :bounded-development-runner
+                     :parallel-shard-runner :contract-shard-runner
+                     :cached-shard-runner :iteration-cache-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-conformance-table-test"
+               :selectors ["reviewed-table-has-exact-scope"
+                           "authenticated-pairs-match-census"
+                           "manifest-coverage-is-derived-from-rows"
+                           "static-validation-fails-closed"
+                           "preserved-bespoke-boundaries-remain-nonauthoritative"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["contracts/verification-catalog.edn"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table_test.clj"]
+                        :fixture-suite-ids ["sh07-b1" "sh07-b2" "sh07-b3"
+                                            "sh07-b4" "sh07-b5" "sh07-b6"
+                                            "sh07-b7" "sh07-b8" "sh07-b9"
+                                            "sh07-b10" "sh07-b11" "sh07-b12"
+                                            "sh07-b13" "sh07-b15"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :contract-bytes :classpath :runtime :policy]}
+   :resource-class :normal
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 5}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :test-bytes :contract-bytes :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :dependency-closure
+                       :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-authoritative"
+  {:id "sh07-authoritative"
+   :module-id "sh07-checked-core"
+   :replacement-for [:authoritative-runner :stage3-verification-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fresh]
+   :selection {:kind :proof-contract-module-catalog
+               :namespace "gravity.self-hosting.sh07-authoritative-runner"
+               :selectors ["sh07_proof_contract.edn"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :contract-bytes :test-bytes
+                                          :classpath :runtime :tool :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :forbidden
+                  :key-inputs [:dependency-closure :source-bytes :contract-bytes
+                               :test-bytes :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :fresh-isolated-process
+   :executor {:adapter :authoritative-proof-runner
+              :bounded? true
+              :fresh-capable? true
+              :authority :acceptance-capable}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority
+                                      :fresh-replay]}
+   :required-evidence [:proof-contract :fresh-replay :selected-tests
+                       :diagnostics :receipt]
+   :authority-ceiling :acceptance-only
+   :nonclaims [:integration :release :self-hosting
+               :seed-retirement :safety :performance]}}
+
+ :suites
+ [{:id "sh07-source-coverage"
+   :owner :gravity
+   :route-ids ["sh07-b8-regression" "sh07-b10-regression"
+               "sh07-b11-contract" "sh07-b13-accepted"
+               "sh07-conformance-table"]
+   :fixture-policy :paired-reviewed-fixtures
+   :conformance-kind :accepted-rejected-table-candidate}
+  {:id "sh07-fresh-acceptance"
+   :owner :gravity
+   :route-ids ["sh07-authoritative"]
+   :fixture-policy :proof-contract
+   :conformance-kind :bespoke-authoritative}]
+
+ :coverage
+ {:owner :gravity
+  :completeness :compatibility-phase
+  :exhaustive? false
+  :replacement-authority :none
+  :unmigrated-responsibilities [:all-unlisted-routes :legacy-runner-catalogs
+                                :stage3-batch-catalog]
+  :source-of-truth :routes
+  :route-ids ["sh07-b8-regression" "sh07-b10-regression"
+              "sh07-b11-contract" "sh07-b13-accepted"
+              "sh07-conformance-table" "sh07-authoritative"]
+  :accounting :exact-selected-test-and-fixture-identity}
+
+ :evidence-policy
+ {:required [:selected-tests :dependency-closure :diagnostics :receipt]
+  :authority-ceilings #{:non-authoritative :acceptance-only}
+  :fresh-acceptance-requires [:cache-disabled :fresh-process :replayable
+                              :mutation-check :provenance]}
+
+ :conformance
+{:source-of-truth :reviewed-fixture-rows, :schema :gravity/sh07-conformance-table-v1, :authoritative? false, :suites [{:id "sh07-b1", :slice :SH-07-B1, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_control_flow_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-basenames", :oracle-declaration "rejected-reasons", :directory-parity? false, :excluded {:accepted ["latent-function-order" "macro-def-fn-literals" "quoted-carrier-payloads"], :rejected ["core-shape" "lowering-gap" "missing-origin" "unauthenticated-projection"]}}, :accepted [{:id "sh07-b1/control-flow-order", :basename "control-flow-order", :gravity "control-flow-order.gravity", :qst "control-flow-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b1/control-flow-truthiness", :basename "control-flow-truthiness", :gravity "control-flow-truthiness.gravity", :qst "control-flow-truthiness.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b1/empty-do", :basename "empty-do", :gravity "empty-do.gravity", :qst "empty-do.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.", :reason :do-empty-body}} {:id "sh07-b1/if-extra-branch", :basename "if-extra-branch", :gravity "if-extra-branch.gravity", :qst "if-extra-branch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.", :reason :if-arity}} {:id "sh07-b1/if-missing-branch", :basename "if-missing-branch", :gravity "if-missing-branch.gravity", :qst "if-missing-branch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.", :reason :if-arity}} {:id "sh07-b1/nested-def", :basename "nested-def", :gravity "nested-def.gravity", :qst "nested-def.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.", :reason :def-top-level-only}}], :bespoke-boundaries [:evaluation-order :control-flow]} {:id "sh07-b2", :slice :SH-07-B2, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b2", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_references_calls_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b2/call-evaluation-order", :basename "call-evaluation-order", :gravity "call-evaluation-order.gravity", :qst "call-evaluation-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/direct-symbol-call", :basename "direct-symbol-call", :gravity "direct-symbol-call.gravity", :qst "direct-symbol-call.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/higher-order-lexical-call", :basename "higher-order-lexical-call", :gravity "higher-order-lexical-call.gravity", :qst "higher-order-lexical-call.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/keyword-headed-call", :basename "keyword-headed-call", :gravity "keyword-headed-call.gravity", :qst "keyword-headed-call.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/operator-argument-same-symbol", :basename "operator-argument-same-symbol", :gravity "operator-argument-same-symbol.gravity", :qst "operator-argument-same-symbol.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/parameter-and-namespace-references", :basename "parameter-and-namespace-references", :gravity "parameter-and-namespace-references.gravity", :qst "parameter-and-namespace-references.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b2/qualified-symbol-call", :basename "qualified-symbol-call", :gravity "qualified-symbol-call.gravity", :qst "qualified-symbol-call.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b2/empty-call", :basename "empty-call", :gravity "empty-call.gravity", :qst "empty-call.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :call-operator-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}], :bespoke-boundaries [:resolution-order :call-evaluation]} {:id "sh07-b3", :slice :SH-07-B3, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b3", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_lexical_binding_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b3/let-in-call-control", :basename "let-in-call-control", :gravity "let-in-call-control.gravity", :qst "let-in-call-control.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b3/one-binding-let", :basename "one-binding-let", :gravity "one-binding-let.gravity", :qst "one-binding-let.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b3/ordered-multi-form-body", :basename "ordered-multi-form-body", :gravity "ordered-multi-form-body.gravity", :qst "ordered-multi-form-body.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b3/sequential-binding-visibility", :basename "sequential-binding-visibility", :gravity "sequential-binding-visibility.gravity", :qst "sequential-binding-visibility.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b3/shadowed-binding", :basename "shadowed-binding", :gravity "shadowed-binding.gravity", :qst "shadowed-binding.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b3/zero-binding-let", :basename "zero-binding-let", :gravity "zero-binding-let.gravity", :qst "zero-binding-let.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b3/empty-let-body", :basename "empty-let-body", :gravity "empty-let-body.gravity", :qst "empty-let-body.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :let-body-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b3/let-destructuring", :basename "let-destructuring", :gravity "let-destructuring.gravity", :qst "let-destructuring.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :let-destructuring-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}} {:id "sh07-b3/non-symbol-let-binding", :basename "non-symbol-let-binding", :gravity "non-symbol-let-binding.gravity", :qst "non-symbol-let-binding.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :let-binding-symbol-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b3/odd-let-bindings", :basename "odd-let-bindings", :gravity "odd-let-bindings.gravity", :qst "odd-let-bindings.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :let-bindings-even-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}], :bespoke-boundaries [:binding-scope :shadowing]} {:id "sh07-b4", :slice :SH-07-B4, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b4", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_loop_recur_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b4/fixed-arity-function-recur", :basename "fixed-arity-function-recur", :gravity "fixed-arity-function-recur.gravity", :qst "fixed-arity-function-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/loop-no-recur", :basename "loop-no-recur", :gravity "loop-no-recur.gravity", :qst "loop-no-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/loop-overrides-function-target", :basename "loop-overrides-function-target", :gravity "loop-overrides-function-target.gravity", :qst "loop-overrides-function-target.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/multi-argument-recur-order", :basename "multi-argument-recur-order", :gravity "multi-argument-recur-order.gravity", :qst "multi-argument-recur-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/nearest-nested-loop-target", :basename "nearest-nested-loop-target", :gravity "nearest-nested-loop-target.gravity", :qst "nearest-nested-loop-target.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/sequential-loop-bindings", :basename "sequential-loop-bindings", :gravity "sequential-loop-bindings.gravity", :qst "sequential-loop-bindings.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/tail-context-recur", :basename "tail-context-recur", :gravity "tail-context-recur.gravity", :qst "tail-context-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b4/zero-arity-loop-recur", :basename "zero-arity-loop-recur", :gravity "zero-arity-loop-recur.gravity", :qst "zero-arity-loop-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b4/empty-loop-body", :basename "empty-loop-body", :gravity "empty-loop-body.gravity", :qst "empty-loop-body.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :loop-body-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b4/function-recur-arity-mismatch", :basename "function-recur-arity-mismatch", :gravity "function-recur-arity-mismatch.gravity", :qst "function-recur-arity-mismatch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-arity-mismatch, :semantic-rule "L2-RECUR-TARGET", :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity.", :facts {:target-kind :function, :expected-arity 1, :actual-arity 2}}} {:id "sh07-b4/loop-binding-vector-required", :basename "loop-binding-vector-required", :gravity "loop-binding-vector-required.gravity", :qst "loop-binding-vector-required.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :loop-binding-vector-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b4/loop-destructuring", :basename "loop-destructuring", :gravity "loop-destructuring.gravity", :qst "loop-destructuring.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :loop-destructuring-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}} {:id "sh07-b4/loop-recur-arity-mismatch", :basename "loop-recur-arity-mismatch", :gravity "loop-recur-arity-mismatch.gravity", :qst "loop-recur-arity-mismatch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-arity-mismatch, :semantic-rule "L2-RECUR-TARGET", :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity.", :facts {:target-kind :loop, :expected-arity 1, :actual-arity 2}}} {:id "sh07-b4/non-symbol-loop-binding", :basename "non-symbol-loop-binding", :gravity "non-symbol-loop-binding.gravity", :qst "non-symbol-loop-binding.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :loop-binding-symbol-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b4/odd-loop-bindings", :basename "odd-loop-bindings", :gravity "odd-loop-bindings.gravity", :qst "odd-loop-bindings.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :loop-bindings-even-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b4/outer-loop-hidden-by-function", :basename "outer-loop-hidden-by-function", :gravity "outer-loop-hidden-by-function.gravity", :qst "outer-loop-hidden-by-function.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-arity-mismatch, :semantic-rule "L2-RECUR-TARGET", :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity.", :facts {:target-kind :function, :expected-arity 0, :actual-arity 1}}} {:id "sh07-b4/recur-not-tail", :basename "recur-not-tail", :gravity "recur-not-tail.gravity", :qst "recur-not-tail.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-tail-position-required, :semantic-rule "L2-RECUR-TARGET", :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}} {:id "sh07-b4/recur-without-target", :basename "recur-without-target", :gravity "recur-without-target.gravity", :qst "recur-without-target.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-target-required, :semantic-rule "L2-RECUR-TARGET", :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}} {:id "sh07-b4/variadic-function-recur", :basename "variadic-function-recur", :gravity "variadic-function-recur.gravity", :qst "variadic-function-recur.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :variadic-function-recur-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}], :bespoke-boundaries [:recursion-targets :tail-position]} {:id "sh07-b5", :slice :SH-07-B5, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b5", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b5/ordered-var-objects", :basename "ordered-var-objects", :gravity "ordered-var-objects.gravity", :qst "ordered-var-objects.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b5/same-namespace-var-object", :basename "same-namespace-var-object", :gravity "same-namespace-var-object.gravity", :qst "same-namespace-var-object.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b5/extra-var-operand", :basename "extra-var-operand", :gravity "extra-var-operand.gravity", :qst "extra-var-operand.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :var-arity, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b5/lexical-var-target", :basename "lexical-var-target", :gravity "lexical-var-target.gravity", :qst "lexical-var-target.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :var-top-level-namespace-binding-required, :remediation "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."}} {:id "sh07-b5/missing-var-operand", :basename "missing-var-operand", :gravity "missing-var-operand.gravity", :qst "missing-var-operand.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :var-arity, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b5/non-symbol-var-operand", :basename "non-symbol-var-operand", :gravity "non-symbol-var-operand.gravity", :qst "non-symbol-var-operand.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :var-symbol-required, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b5/qualified-var-reference", :basename "qualified-var-reference", :gravity "qualified-var-reference.gravity", :qst "qualified-var-reference.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :qualified-var-reference-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}}], :bespoke-boundaries [:var-identity :resolution]} {:id "sh07-b6", :slice :SH-07-B6, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b6", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b6/conditional-mutations", :basename "conditional-mutations", :gravity "conditional-mutations.gravity", :qst "conditional-mutations.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b6/function-var-mutation", :basename "function-var-mutation", :gravity "function-var-mutation.gravity", :qst "function-var-mutation.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b6/nested-value-mutation", :basename "nested-value-mutation", :gravity "nested-value-mutation.gravity", :qst "nested-value-mutation.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b6/ordered-top-level-mutations", :basename "ordered-top-level-mutations", :gravity "ordered-top-level-mutations.gravity", :qst "ordered-top-level-mutations.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b6/lexical-set-target", :basename "lexical-set-target", :gravity "lexical-set-target.gravity", :qst "lexical-set-target.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :lexical-set-target-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}} {:id "sh07-b6/non-symbol-set-target", :basename "non-symbol-set-target", :gravity "non-symbol-set-target.gravity", :qst "non-symbol-set-target.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :non-symbol-set-target-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}} {:id "sh07-b6/qualified-set-target", :basename "qualified-set-target", :gravity "qualified-set-target.gravity", :qst "qualified-set-target.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :qualified-set-target-deferred, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices."}} {:id "sh07-b6/recur-in-set-value", :basename "recur-in-set-value", :gravity "recur-in-set-value.gravity", :qst "recur-in-set-value.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-tail-position-required, :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}} {:id "sh07-b6/set-arity", :basename "set-arity", :gravity "set-arity.gravity", :qst "set-arity.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :set-arity, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}}], :bespoke-boundaries [:mutation :state-transition]} {:id "sh07-b7", :slice :SH-07-B7, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b7", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_throw_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b7/conditional-throws", :basename "conditional-throws", :gravity "conditional-throws.gravity", :qst "conditional-throws.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b7/function-throw", :basename "function-throw", :gravity "function-throw.gravity", :qst "function-throw.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b7/nested-throw-value", :basename "nested-throw-value", :gravity "nested-throw-value.gravity", :qst "nested-throw-value.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b7/top-level-throw", :basename "top-level-throw", :gravity "top-level-throw.gravity", :qst "top-level-throw.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b7/recur-in-throw-value", :basename "recur-in-throw-value", :gravity "recur-in-throw-value.gravity", :qst "recur-in-throw-value.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :recur-tail-position-required, :remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}} {:id "sh07-b7/throw-many-arity", :basename "throw-many-arity", :gravity "throw-many-arity.gravity", :qst "throw-many-arity.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :throw-arity, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b7/throw-zero-arity", :basename "throw-zero-arity", :gravity "throw-zero-arity.gravity", :qst "throw-zero-arity.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :throw-arity, :remediation "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape."}} {:id "sh07-b7/try-remains-deferred", :basename "try-remains-deferred", :gravity "try-remains-deferred.gravity", :qst "try-remains-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-catch-required, :remediation "Provide exactly one protected expression followed by exactly one typed catch clause."}}], :bespoke-boundaries [:throw-transfer :recursion]} {:id "sh07-b8", :slice :SH-07-B8, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b8", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-oracles", :oracle-declaration "rejected-oracles", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b8/conditional-protected", :basename "conditional-protected", :gravity "conditional-protected.gravity", :qst "conditional-protected.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b8/function-typed-catch", :basename "function-typed-catch", :gravity "function-typed-catch.gravity", :qst "function-typed-catch.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b8/nested-typed-catches", :basename "nested-typed-catches", :gravity "nested-typed-catches.gravity", :qst "nested-typed-catches.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b8/top-level-typed-catch", :basename "top-level-typed-catch", :gravity "top-level-typed-catch.gravity", :qst "top-level-typed-catch.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b8/empty-handler-expression", :basename "empty-handler-expression", :gravity "empty-handler-expression.gravity", :qst "empty-handler-expression.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-handler-expression-required, :remediation "Provide exactly one handler expression after the catch-local binding."}} {:id "sh07-b8/empty-protected-expression", :basename "empty-protected-expression", :gravity "empty-protected-expression.gravity", :qst "empty-protected-expression.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-protected-expression-required, :remediation "Provide exactly one protected expression before the typed catch clauses."}} {:id "sh07-b8/finally-remains-deferred", :basename "finally-remains-deferred", :gravity "finally-remains-deferred.gravity", :qst "finally-remains-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :finally-clause-deferred, :remediation "Omit finally in SH-07-B11; defer cleanup lowering to its owning slice."}} {:id "sh07-b8/handler-sequencing-deferred", :basename "handler-sequencing-deferred", :gravity "handler-sequencing-deferred.gravity", :qst "handler-sequencing-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :catch-handler-sequencing-deferred, :remediation "Wrap handler sequencing in an explicit do form; SH-07-B11 accepts one handler expression per catch clause."}} {:id "sh07-b8/missing-catch", :basename "missing-catch", :gravity "missing-catch.gravity", :qst "missing-catch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-catch-required, :remediation "Provide exactly one protected expression followed by one or more typed catch clauses."}} {:id "sh07-b8/non-symbol-catch-binding", :basename "non-symbol-catch-binding", :gravity "non-symbol-catch-binding.gravity", :qst "non-symbol-catch-binding.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-binding-symbol-required, :remediation "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."}} {:id "sh07-b8/non-symbol-error-type", :basename "non-symbol-error-type", :gravity "non-symbol-error-type.gravity", :qst "non-symbol-error-type.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-type-symbol-required, :remediation "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."}} {:id "sh07-b8/protected-sequencing-deferred", :basename "protected-sequencing-deferred", :gravity "protected-sequencing-deferred.gravity", :qst "protected-sequencing-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :try-protected-sequencing-deferred, :remediation "Wrap protected sequencing in an explicit do form; SH-07-B11 accepts one protected expression."}}], :bespoke-boundaries [:exception-handlers :effect-legality]} {:id "sh07-b9", :slice :SH-07-B9, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b9", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_multiple_catch_test.clj", :accepted-declaration "accepted-basenames", :rejected-declaration "rejected-reasons", :oracle-declaration "rejected-reasons", :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b9/duplicate-types-remain-pending", :basename "duplicate-types-remain-pending", :gravity "duplicate-types-remain-pending.gravity", :qst "duplicate-types-remain-pending.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b9/nested-handler-chains", :basename "nested-handler-chains", :gravity "nested-handler-chains.gravity", :qst "nested-handler-chains.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b9/shared-protected-candidates", :basename "shared-protected-candidates", :gravity "shared-protected-candidates.gravity", :qst "shared-protected-candidates.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b9/sibling-binding-isolation", :basename "sibling-binding-isolation", :gravity "sibling-binding-isolation.gravity", :qst "sibling-binding-isolation.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b9/three-catches-source-order", :basename "three-catches-source-order", :gravity "three-catches-source-order.gravity", :qst "three-catches-source-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b9/two-catches-source-order", :basename "two-catches-source-order", :gravity "two-catches-source-order.gravity", :qst "two-catches-source-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b9/catch-before-protected", :basename "catch-before-protected", :gravity "catch-before-protected.gravity", :qst "catch-before-protected.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-protected-expression-required, :remediation "Provide exactly one protected expression before the typed catch clauses."}} {:id "sh07-b9/expression-after-catches", :basename "expression-after-catches", :gravity "expression-after-catches.gravity", :qst "expression-after-catches.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-handler-chain-contiguity-required, :remediation "Place exactly one protected expression before a contiguous source-ordered sequence of typed catch clauses."}} {:id "sh07-b9/expression-between-catches", :basename "expression-between-catches", :gravity "expression-between-catches.gravity", :qst "expression-between-catches.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-handler-chain-contiguity-required, :remediation "Place exactly one protected expression before a contiguous source-ordered sequence of typed catch clauses."}} {:id "sh07-b9/finally-remains-deferred", :basename "finally-remains-deferred", :gravity "finally-remains-deferred.gravity", :qst "finally-remains-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :finally-clause-deferred, :remediation "Omit finally in SH-07-B11; defer cleanup lowering to its owning slice."}} {:id "sh07-b9/later-catch-empty-handler", :basename "later-catch-empty-handler", :gravity "later-catch-empty-handler.gravity", :qst "later-catch-empty-handler.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-handler-expression-required, :remediation "Provide exactly one handler expression after the catch-local binding."}} {:id "sh07-b9/later-catch-handler-sequencing-deferred", :basename "later-catch-handler-sequencing-deferred", :gravity "later-catch-handler-sequencing-deferred.gravity", :qst "later-catch-handler-sequencing-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :catch-handler-sequencing-deferred, :remediation "Wrap handler sequencing in an explicit do form; SH-07-B11 accepts one handler expression per catch clause."}} {:id "sh07-b9/later-catch-non-symbol-binding", :basename "later-catch-non-symbol-binding", :gravity "later-catch-non-symbol-binding.gravity", :qst "later-catch-non-symbol-binding.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-binding-symbol-required, :remediation "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."}} {:id "sh07-b9/later-catch-non-symbol-type", :basename "later-catch-non-symbol-type", :gravity "later-catch-non-symbol-type.gravity", :qst "later-catch-non-symbol-type.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :catch-type-symbol-required, :remediation "Use a resolved type symbol, one catch-local binding symbol, and exactly one handler expression."}} {:id "sh07-b9/missing-catch", :basename "missing-catch", :gravity "missing-catch.gravity", :qst "missing-catch.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :try-catch-required, :remediation "Provide exactly one protected expression followed by one or more typed catch clauses."}} {:id "sh07-b9/protected-sequencing-deferred", :basename "protected-sequencing-deferred", :gravity "protected-sequencing-deferred.gravity", :qst "protected-sequencing-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :try-protected-sequencing-deferred, :remediation "Wrap protected sequencing in an explicit do form; SH-07-B11 accepts one protected expression."}}], :bespoke-boundaries [:handler-order :candidate-selection]} {:id "sh07-b10", :slice :SH-07-B10, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b10", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj", :accepted-declaration "accepted-fixtures", :rejected-declaration "rejected-fixtures", :oracle-declaration nil, :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b10/branch-local-binding", :basename "branch-local-binding", :gravity "branch-local-binding.gravity", :qst "branch-local-binding.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/function-tail-recur", :basename "function-tail-recur", :gravity "function-tail-recur.gravity", :qst "function-tail-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/literal-clauses-wildcard", :basename "literal-clauses-wildcard", :gravity "literal-clauses-wildcard.gravity", :qst "literal-clauses-wildcard.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/loop-tail-recur", :basename "loop-tail-recur", :gravity "loop-tail-recur.gravity", :qst "loop-tail-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/macro-origin-match", :basename "macro-origin-match", :gravity "macro-origin-match.gravity", :qst "macro-origin-match.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/nested-match-scope-isolation", :basename "nested-match-scope-isolation", :gravity "nested-match-scope-isolation.gravity", :qst "nested-match-scope-isolation.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/repeated-literal-occurrences", :basename "repeated-literal-occurrences", :gravity "repeated-literal-occurrences.gravity", :qst "repeated-literal-occurrences.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/scrutinee-branch-effects", :basename "scrutinee-branch-effects", :gravity "scrutinee-branch-effects.gravity", :qst "scrutinee-branch-effects.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b10/sibling-binding-isolation", :basename "sibling-binding-isolation", :gravity "sibling-binding-isolation.gravity", :qst "sibling-binding-isolation.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b10/composite-pattern-deferred", :basename "composite-pattern-deferred", :gravity "composite-pattern-deferred.gravity", :qst "composite-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :composite-pattern-deferred, :remediation "Use wildcard, a supported scalar literal, or one symbol binding in SH-07-B10; defer composite patterns to their owning pattern slice."}} {:id "sh07-b10/guard-pattern-deferred", :basename "guard-pattern-deferred", :gravity "guard-pattern-deferred.gravity", :qst "guard-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :guard-pattern-deferred, :remediation "Remove :when from the pattern in SH-07-B11; defer guarded patterns to their owning pattern slice."}} {:id "sh07-b10/missing-scrutinee", :basename "missing-scrutinee", :gravity "missing-scrutinee.gravity", :qst "missing-scrutinee.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :match-scrutinee-required, :remediation "Provide exactly one scrutinee expression before match clause pairs."}} {:id "sh07-b10/no-clauses", :basename "no-clauses", :gravity "no-clauses.gravity", :qst "no-clauses.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :match-clause-required, :remediation "Provide at least one pattern/expression clause pair after the scrutinee."}} {:id "sh07-b10/odd-pattern-body-tail", :basename "odd-pattern-body-tail", :gravity "odd-pattern-body-tail.gravity", :qst "odd-pattern-body-tail.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :match-pattern-expression-pairs-required, :remediation "Provide complete pattern/expression clause pairs after the scrutinee."}} {:id "sh07-b10/outside-branch-binding-use", :basename "outside-branch-binding-use", :gravity "outside-branch-binding-use.gravity", :qst "outside-branch-binding-use.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-UNRESOLVED", :stage :name-resolution, :severity :error, :remediation :declare-or-import-binding}} {:id "sh07-b10/sibling-branch-binding-use", :basename "sibling-branch-binding-use", :gravity "sibling-branch-binding-use.gravity", :qst "sibling-branch-binding-use.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-UNRESOLVED", :stage :name-resolution, :severity :error, :remediation :declare-or-import-binding}}], :bespoke-boundaries [:pattern-resolution :branch-scope]} {:id "sh07-b11", :slice :SH-07-B11, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b11", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj", :accepted-declaration "accepted-fixtures", :rejected-declaration "rejected-fixtures", :oracle-declaration nil, :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b11/nested-vector-patterns", :basename "nested-vector-patterns", :gravity "nested-vector-patterns.gravity", :qst "nested-vector-patterns.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b11/vector-branch-local-binding", :basename "vector-branch-local-binding", :gravity "vector-branch-local-binding.gravity", :qst "vector-branch-local-binding.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b11/vector-leaf-patterns", :basename "vector-leaf-patterns", :gravity "vector-leaf-patterns.gravity", :qst "vector-leaf-patterns.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b11/vector-scrutinee-once", :basename "vector-scrutinee-once", :gravity "vector-scrutinee-once.gravity", :qst "vector-scrutinee-once.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b11/vector-tail-recur", :basename "vector-tail-recur", :gravity "vector-tail-recur.gravity", :qst "vector-tail-recur.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b11/guard-pattern-deferred", :basename "guard-pattern-deferred", :gravity "guard-pattern-deferred.gravity", :qst "guard-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :guard-pattern-deferred, :remediation "Remove :when from the pattern in SH-07-B11; defer guarded patterns to their owning pattern slice."}} {:id "sh07-b11/list-pattern-deferred", :basename "list-pattern-deferred", :gravity "list-pattern-deferred.gravity", :qst "list-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :composite-pattern-deferred, :remediation "Use a fixed-width vector, wildcard, supported scalar literal, or one symbol binding in SH-07-B11; defer other composite patterns to their owning slices."}} {:id "sh07-b11/map-pattern-deferred", :basename "map-pattern-deferred", :gravity "map-pattern-deferred.gravity", :qst "map-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :composite-pattern-deferred, :remediation "Use a fixed-width vector, wildcard, supported scalar literal, or one symbol binding in SH-07-B11; defer other composite patterns to their owning slices."}} {:id "sh07-b11/nested-map-in-vector", :basename "nested-map-in-vector", :gravity "nested-map-in-vector.gravity", :qst "nested-map-in-vector.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :unsupported-vector-pattern-leaf, :remediation "Use only nested fixed-width vectors, wildcards, scalar literals, or unique symbol bindings in SH-07-B11."}} {:id "sh07-b11/set-pattern-deferred", :basename "set-pattern-deferred", :gravity "set-pattern-deferred.gravity", :qst "set-pattern-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :composite-pattern-deferred, :remediation "Use a fixed-width vector, wildcard, supported scalar literal, or one symbol binding in SH-07-B11; defer other composite patterns to their owning slices."}} {:id "sh07-b11/vector-pattern-over-width", :basename "vector-pattern-over-width", :gravity "vector-pattern-over-width.gravity", :qst "vector-pattern-over-width.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :vector-pattern-width-bound, :remediation "Reduce vector-pattern width to the declared SH-07-B11 bound."}} {:id "sh07-b11/vector-rest-extra-tail", :basename "vector-rest-extra-tail", :gravity "vector-rest-extra-tail.gravity", :qst "vector-rest-extra-tail.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :variable-width-vector-pattern-deferred, :remediation "Use a fixed-width vector pattern without rest markers in SH-07-B11."}} {:id "sh07-b11/vector-rest-missing-tail", :basename "vector-rest-missing-tail", :gravity "vector-rest-missing-tail.gravity", :qst "vector-rest-missing-tail.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :variable-width-vector-pattern-deferred, :remediation "Use a fixed-width vector pattern without rest markers in SH-07-B11."}} {:id "sh07-b11/vector-rest-tail", :basename "vector-rest-tail", :gravity "vector-rest-tail.gravity", :qst "vector-rest-tail.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :variable-width-vector-pattern-deferred, :remediation "Use a fixed-width vector pattern without rest markers in SH-07-B11."}}], :bespoke-boundaries [:vector-patterns :bounds]} {:id "sh07-b12", :slice :SH-07-B12, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b12", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj", :accepted-declaration nil, :rejected-declaration nil, :oracle-declaration nil, :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b12/alias-call-order", :basename "alias-call-order", :gravity "alias-call-order.gravity", :qst "alias-call-order.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b12/alias-cross-module-control", :basename "alias-cross-module-control", :gravity "alias-cross-module-control.gravity", :qst "alias-cross-module-control.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b12/alias-multitarget-binding", :basename "alias-multitarget-binding", :gravity "alias-multitarget-binding.gravity", :qst "alias-multitarget-binding.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b12/alias-qualified-operator-call", :basename "alias-qualified-operator-call", :gravity "alias-qualified-operator-call.gravity", :qst "alias-qualified-operator-call.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b12/alias-qualified-value-reference", :basename "alias-qualified-value-reference", :gravity "alias-qualified-value-reference.gravity", :qst "alias-qualified-value-reference.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b12/cross-profile-alias", :basename "cross-profile-alias", :gravity "cross-profile-alias.gravity", :qst "cross-profile-alias.qst", :status :rejected, :profile :kernel, :target :jvm, :oracle {:rule "C5-CROSS-PROFILE", :stage :name-resolution, :severity :error, :reason :cross-profile-boundary-rejected, :remediation "Use a pure core, facade, schema, FFI-like, or generated-artifact boundary."}} {:id "sh07-b12/duplicate-alias", :basename "duplicate-alias", :gravity "duplicate-alias.gravity", :qst "duplicate-alias.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-ALIAS", :stage :name-resolution, :severity :error, :reason :duplicate-namespace-alias, :remediation "Declare one unique alias and use only declared qualifiers."}} {:id "sh07-b12/missing-alias-capability", :basename "missing-alias-capability", :gravity "missing-alias-capability.gravity", :qst "missing-alias-capability.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-CAPABILITY", :stage :name-resolution, :severity :error, :reason :missing-import-capability, :remediation "Grant every imported capability through package and namespace policy."}} {:id "sh07-b12/private-binding", :basename "private-binding", :gravity "private-binding.gravity", :qst "private-binding.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-PRIVATE", :stage :name-resolution, :severity :error, :reason :private-binding-access, :remediation "Export the binding or keep its use inside the defining namespace."}} {:id "sh07-b12/target-incompatible-alias", :basename "target-incompatible-alias", :gravity "target-incompatible-alias.gravity", :qst "target-incompatible-alias.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-TARGET", :stage :name-resolution, :severity :error, :reason :target-incompatible-import, :remediation "Select an import whose declared target set includes the active target."}} {:id "sh07-b12/unknown-alias", :basename "unknown-alias", :gravity "unknown-alias.gravity", :qst "unknown-alias.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C5-ALIAS", :stage :name-resolution, :severity :error, :reason :unknown-namespace-alias, :remediation "Declare one unique alias and use only declared qualifiers."}}], :bespoke-boundaries [:alias-resolution :capability-boundary]} {:id "sh07-b13", :slice :SH-07-B13, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b13", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj", :accepted-declaration nil, :rejected-declaration nil, :oracle-declaration nil, :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b13/alias-root-aligned-fragments", :basename "alias-root-aligned-fragments", :gravity "alias-root-aligned-fragments.gravity", :qst "alias-root-aligned-fragments.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b13/cross-fragment-reference", :basename "cross-fragment-reference", :gravity "cross-fragment-reference.gravity", :qst "cross-fragment-reference.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b13/deterministic-top-level-fragments", :basename "deterministic-top-level-fragments", :gravity "deterministic-top-level-fragments.gravity", :qst "deterministic-top-level-fragments.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b13/fragment-root-form-bound", :basename "fragment-root-form-bound", :gravity "fragment-root-form-bound.gravity", :qst "fragment-root-form-bound.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-VERIFY", :stage :core-lowering, :severity :error, :reason :fragment-root-form-bound, :remediation "Split the top-level definition into supported bounded helper definitions.", :fail-closed? true}} {:id "sh07-b13/unsupported-core-form", :basename "unsupported-core-form", :gravity "unsupported-core-form.gravity", :qst "unsupported-core-form.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-LOWERING-GAP", :stage :core-lowering, :severity :error, :reason :unsupported-call-operator-kind, :remediation "Use only the declared bounded SH-07 core subset; defer unsupported lowering families to their owning slices.", :fail-closed? true}}], :bespoke-boundaries [:fragment-assembly :provenance]} {:id "sh07-b15", :slice :SH-07-B15, :module-id "sh07-checked-core", :fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-07-b15", :legacy {:source-path "bootstrap/clojure/test/gravity/self_hosting/sh07_keyword_map_lookup_test.clj", :accepted-declaration "accepted-fixtures", :rejected-declaration "rejected-fixtures", :oracle-declaration nil, :directory-parity? true, :excluded {}}, :accepted [{:id "sh07-b15/basic-keyword-map-lookup", :basename "basic-keyword-map-lookup", :gravity "basic-keyword-map-lookup.gravity", :qst "basic-keyword-map-lookup.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b15/multiple-source-ordered-keyword-lookups", :basename "multiple-source-ordered-keyword-lookups", :gravity "multiple-source-ordered-keyword-lookups.gravity", :qst "multiple-source-ordered-keyword-lookups.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil} {:id "sh07-b15/nested-keyword-map-lookup", :basename "nested-keyword-map-lookup", :gravity "nested-keyword-map-lookup.gravity", :qst "nested-keyword-map-lookup.qst", :status :accepted, :profile :meta, :target :jvm, :oracle nil}], :rejected [{:id "sh07-b15/keyword-lookup-default-value-deferred", :basename "keyword-lookup-default-value-deferred", :gravity "keyword-lookup-default-value-deferred.gravity", :qst "keyword-lookup-default-value-deferred.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :keyword-map-lookup-arity, :remediation "Provide exactly one map operand to a keyword lookup.", :fail-closed? true, :facts {:actual-operand-count 2, :required-operand-count 1}}} {:id "sh07-b15/keyword-lookup-over-arity", :basename "keyword-lookup-over-arity", :gravity "keyword-lookup-over-arity.gravity", :qst "keyword-lookup-over-arity.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :keyword-map-lookup-arity, :remediation "Provide exactly one map operand to a keyword lookup.", :fail-closed? true, :facts {:actual-operand-count 3, :required-operand-count 1}}} {:id "sh07-b15/keyword-lookup-zero-arity", :basename "keyword-lookup-zero-arity", :gravity "keyword-lookup-zero-arity.gravity", :qst "keyword-lookup-zero-arity.qst", :status :rejected, :profile :meta, :target :jvm, :oracle {:rule "C6-CORE-SHAPE", :stage :core-lowering, :severity :error, :reason :keyword-map-lookup-arity, :remediation "Provide exactly one map operand to a keyword lookup.", :fail-closed? true, :facts {:actual-operand-count 0, :required-operand-count 1}}}], :bespoke-boundaries [:lookup-order :map-key-semantics]}], :nonclaims [:authority :integration :proof :release :self-hosting :seed-retirement :safety :performance], :authority :non-authoritative, :suite-order ["sh07-b1" "sh07-b2" "sh07-b3" "sh07-b4" "sh07-b5" "sh07-b6" "sh07-b7" "sh07-b8" "sh07-b9" "sh07-b10" "sh07-b11" "sh07-b12" "sh07-b13" "sh07-b15"], :coverage {:suite-count 14, :accepted-count 68, :rejected-count 79, :pair-count 147, :source-of-truth :rows}, :preserved-bespoke [:concurrency :mutation :cancellation :cleanup :security-boundaries :state-transitions :recursion :evaluation-order :receipt-transactions], :complete? false, :version 1}
+}
