@@ -371,6 +371,44 @@
     (is (= :gravity.development-test-runner/invalid-selector
            (:type (exception-data #(parse-args ["--timing-receipt"])))))))
 
+(deftest machine-result-sink-reports-the-executed-selection
+  (let [records [{:name "first-test"
+                  :qualified-name "gravity.bootstrap-test/first-test"
+                  :namespace 'gravity.bootstrap-test}
+                 {:name "second-test"
+                  :qualified-name "gravity.bootstrap-test/second-test"
+                  :namespace 'gravity.bootstrap-test}]
+        summary {:test 2 :pass 5 :fail 0 :error 0}
+        results (atom [])
+        exit
+        (with-redefs-fn
+          {#'gravity.development-test-runner/load-selected-namespaces!
+           (fn [_] nil)
+           #'gravity.development-test-runner/test-var-records
+           (fn [_] records)
+           #'gravity.development-test-runner/run-selected-tests
+           (fn [_ _ _] summary)}
+          #(binding [runner/*machine-result-sink* (fn [result]
+                                                    (swap! results conj result))]
+             (runner/run-cli!
+              ["--namespace" "gravity.bootstrap-test"
+               "--exact" "first-test"
+               "--exact" "second-test"])))
+        result (first @results)]
+    (is (= 0 exit))
+    (is (= 1 (count @results)))
+    (is (= #{:schema :authority :authoritative? :selection :summary
+             :outcome :exit-code}
+           (set (keys result))))
+    (is (= {:namespaces ["gravity.bootstrap-test"]
+            :test-vars ["gravity.bootstrap-test/first-test"
+                        "gravity.bootstrap-test/second-test"]
+            :fail-fast? false}
+           (:selection result)))
+    (is (= summary (:summary result)))
+    (is (= :passed (:outcome result)))
+    (is (= 0 (:exit-code result)))))
+
 (deftest c2-compatibility-vars-moved-exactly-out-of-central-test
   (let [central (slurp "bootstrap/clojure/test/gravity/bootstrap_test.clj")
         compatibility

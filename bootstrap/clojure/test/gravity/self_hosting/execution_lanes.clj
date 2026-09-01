@@ -75,7 +75,7 @@
 (def ^:private warm-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :outcome :exit-code :elapsed-ns :request-count
-    :stdout :stderr :output-truncated?})
+    :stdout :stderr :output-truncated? :runner-result})
 (def ^:private warm-outcomes
   #{:passed :failed :tree-drift :catalog-drift :shutdown :rejected})
 (def ^:private process-result-keys
@@ -545,7 +545,7 @@
   []
   {:worker-namespace warm-worker-namespace
    :worker-request-schema "gravity/exact-tree-warm-worker-request-v1"
-   :worker-response-schema "gravity/exact-tree-warm-worker-response-v1"
+   :worker-response-schema "gravity/exact-tree-warm-worker-response-v2"
    :worker-ready-schema "gravity/exact-tree-warm-worker-ready-v1"
    :max-requests warm-worker-max-requests
    :argv-shape [:clojure :srepro :sforce :sdeps :paths :worker-namespace
@@ -704,11 +704,61 @@
               {:line line})
      (parse-one-edn (subs line (count "WARM_DEV "))))))
 
+(defn- validate-warm-runner-result!
+  "Authenticate one non-authoritative result against the exact warm plan."
+  [result selection]
+  (let [actual-selection (:selection result)
+        summary (:summary result)
+        expected-vars (->> (:selectors selection)
+                           (map #(if (str/includes? % "/") %
+                                     (str (:namespace selection) "/" %)))
+                           sort vec)
+        expected-test-count (count expected-vars)
+        valid-names? (fn [values]
+                       (and (vector? values) (seq values) (<= (count values) 64)
+                            (= (count values) (count (distinct values)))
+                            (every? #(and (string? %) (not (str/blank? %))
+                                          (<= (count %) 1024)) values)))
+        valid-counts? (fn [value]
+                        (and (integer? value) (not (neg? value))
+                             (<= value 1048576)))]
+    (ensure! (and (map? result)
+                  (= #{:schema :authority :authoritative? :selection :summary
+                       :outcome :exit-code} (set (keys result)))
+                  (= :gravity/development-test-result-v1 (:schema result))
+                  (= :non-authoritative (:authority result))
+                  (false? (:authoritative? result))
+                  (map? actual-selection)
+                  (= #{:namespaces :test-vars :fail-fast?}
+                     (set (keys actual-selection)))
+                  (= [(:namespace selection)] (:namespaces actual-selection))
+                  (= expected-vars (:test-vars actual-selection))
+                  (true? (:fail-fast? actual-selection))
+                  (valid-names? (:namespaces actual-selection))
+                  (valid-names? (:test-vars actual-selection))
+                  (map? summary)
+                  (= #{:test :pass :fail :error} (set (keys summary)))
+                  (every? #(valid-counts? (get summary %))
+                          [:test :pass :fail :error])
+                  (contains? #{0 1} (:exit-code result))
+                  (= (:outcome result) ({0 :passed 1 :failed} (:exit-code result)))
+                  (<= (:test summary) expected-test-count)
+                  (or (and (= :passed (:outcome result))
+                           (= (:test summary) expected-test-count)
+                           (zero? (:fail summary)) (zero? (:error summary)))
+                      (and (= :failed (:outcome result))
+                           (or (< (:test summary) expected-test-count)
+                               (pos? (+ (:fail summary) (:error summary)))))))
+             "UEP-WARM-RUNNER-RESULT"
+             "Warm worker result failed its exact closed-plan checks"
+             {:selection selection :result result})
+    result))
+
 (defn- validate-warm-response!
-  [response expected request-id expected-count]
+  [response expected request-id expected-count selection]
   (ensure! (and (map? response)
                 (= warm-response-keys (set (keys response)))
-                (= :gravity/exact-tree-warm-worker-response-v1 (:schema response))
+                (= :gravity/exact-tree-warm-worker-response-v2 (:schema response))
                 (= :non-authoritative (:authority response))
                 (false? (:authoritative? response))
                 (= request-id (:request-id response))
@@ -731,6 +781,28 @@
            "UEP-WARM-RESPONSE"
            "Warm worker response failed its authenticated closed-shape checks"
            {:response response :request-id request-id})
+  (if (= :shutdown (:outcome response))
+    (ensure! (nil? (:runner-result response))
+             "UEP-WARM-RESPONSE"
+             "Shutdown response carried an execution result" {})
+    (if (nil? (:runner-result response))
+      (ensure! (and (= 2 (:exit-code response))
+                    (contains? #{:failed :tree-drift :catalog-drift}
+                               (:outcome response)))
+               "UEP-WARM-RUNNER-RESULT"
+               "Missing runner result is admissible only for an explicit failed response"
+               {:response response})
+      (do
+        (validate-warm-runner-result! (:runner-result response) selection)
+        (let [runner-exit (get-in response [:runner-result :exit-code])
+              runner-outcome (get-in response [:runner-result :outcome])]
+          (ensure! (if (contains? #{:tree-drift :catalog-drift} (:outcome response))
+                      (= 2 (:exit-code response))
+                      (and (= runner-outcome (:outcome response))
+                           (= runner-exit (:exit-code response))))
+                   "UEP-WARM-RUNNER-EXIT"
+                   "Warm response exit code disagrees with runner result"
+                   {:response response :runner-result (:runner-result response)})))))
   response)
 
 (defn- request-error
@@ -773,15 +845,19 @@
 
 (defn- warm-request-result
   [plan-value selection response stable?]
-  (let [passed? (and stable?
+  (let [runner-result (:runner-result response)
+        summary (or (:summary runner-result)
+                    {:test 0 :pass 0 :fail 0 :error 1})
+        passed? (and stable?
                      (= :passed (:outcome response))
+                     (= :passed (:outcome runner-result))
                      (zero? (long (:exit-code response)))
                      (false? (:output-truncated? response)))]
     {:status (if passed? :passed :failed)
      :test-count (count (:selectors selection))
-     :pass (if passed? (count (:selectors selection)) 0)
-     :fail 0
-     :error (if passed? 0 1)
+     :pass (:pass summary)
+     :fail (:fail summary)
+     :error (:error summary)
      :diagnostics
      (cond-> []
        (not stable?)
@@ -871,7 +947,8 @@
                                          "UEP-WARM-TIMEOUT")
                                         (:repository session)
                                         (:request-id task)
-                                        next-count)]
+                                        next-count
+                                        (:selection task))]
                                    {:response response
                                     :continue?
                                     (and (= :passed (:outcome response))
@@ -1015,6 +1092,7 @@
           deadline-ns (+ (System/nanoTime)
                          (.toNanos TimeUnit/MILLISECONDS timeout-ms))
           task {:request-id request-id
+                :selection selection
                 :line (warm-request-line session request)
                 :promise (promise)
                 :deadline-ns deadline-ns}

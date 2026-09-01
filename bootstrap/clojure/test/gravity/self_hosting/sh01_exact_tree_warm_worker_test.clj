@@ -19,6 +19,23 @@
   ["--namespace" "gravity.c2-pass-cache-test"
    "--exact" "canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"])
 
+(defn- machine-result
+  ([outcome exit-code]
+   (machine-result outcome exit-code
+                   {:test 1 :pass (if (= :passed outcome) 1 0)
+                    :fail (if (= :failed outcome) 1 0) :error 0}))
+  ([outcome exit-code summary]
+   {:schema runner/machine-result-schema
+    :authority :non-authoritative
+    :authoritative? false
+    :selection {:namespaces ["gravity.c2-pass-cache-test"]
+                :test-vars
+                ["gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"]
+                :fail-fast? false}
+    :summary summary
+    :outcome outcome
+    :exit-code exit-code}))
+
 (deftest requests-are-closed-exact-and-tree-bound
   (is (map? (worker/validate-request! (request "one" exact-args) expected)))
   (doseq [bad [(assoc (request "one" exact-args) :extra true)
@@ -38,7 +55,8 @@
                 #(assoc expected :clean? true)
                 (fn [args]
                   (swap! calls conj args)
-                  {:exit 0 :elapsed-ns 10 :out "ok" :err ""})
+                  {:exit 0 :elapsed-ns 10 :out "ok" :err ""
+                   :runner-result (machine-result :passed 0)})
                 8)))
     (is (= [exact-args exact-args] @calls))
     (is (= [:passed :passed] (mapv :outcome @emitted)))
@@ -62,7 +80,8 @@
       (is (= 1 (worker/run-session! lines #(swap! emitted conj %) expected
                                   #(assoc expected :clean? true)
                                   (fn [_] (swap! calls inc)
-                                    {:exit 1 :elapsed-ns 1 :out "" :err "failed"}) 8)))
+                                    {:exit 1 :elapsed-ns 1 :out "" :err "failed"
+                                     :runner-result (machine-result :failed 1)}) 8)))
       (is (= 1 @calls))
       (is (= [:failed] (mapv :outcome @emitted)))))
   (testing "drift after execution rejects the result and terminates"
@@ -73,7 +92,8 @@
                       (assoc expected :clean? false)))]
       (is (= 2 (worker/run-session! [(pr-str (request "drift" exact-args))]
                                     #(swap! emitted conj %) expected observe
-                                    (fn [_] {:exit 0 :elapsed-ns 1 :out "" :err ""}) 8)))
+                                    (fn [_] {:exit 0 :elapsed-ns 1 :out "" :err ""
+                                             :runner-result (machine-result :passed 0)}) 8)))
       (is (= :tree-drift (:outcome (first @emitted))))
       (is (= 2 (:exit-code (first @emitted)))))))
 
@@ -92,6 +112,8 @@
                                (fn [_]
                                  (test/do-report {:type :summary :test 1 :pass 1
                                                   :fail 0 :error 0})
+                                 (runner/*machine-result-sink*
+                                  (machine-result :passed 0))
                                  (print large)
                                  0)]
                    (#'worker/invoke-runner exact-args))]
@@ -101,6 +123,28 @@
       (is (true? (:out-truncated? result)))
       (is (re-find #"Ran 1 tests" (:out result))))))
 
+(deftest machine-result-is-required-and-emitted-once
+  (testing "a missing runner result cannot claim a passed execution"
+    (let [result (with-redefs [runner/run-cli! (fn [_] 0)]
+                   (#'worker/invoke-runner exact-args))]
+      (is (= 2 (:exit result)))
+      (is (nil? (:runner-result result)))))
+  (testing "a pre-execution runner error carries no fabricated test evidence"
+    (let [result (with-redefs [runner/run-cli!
+                               (fn [_] (throw (ex-info "load failed" {})))]
+                   (#'worker/invoke-runner exact-args))]
+      (is (= 2 (:exit result)))
+      (is (nil? (:runner-result result)))))
+  (testing "a runner cannot overwrite an earlier machine result"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"more than one machine result"
+         (with-redefs [runner/run-cli!
+                       (fn [_]
+                         (runner/*machine-result-sink* (machine-result :passed 0))
+                         (runner/*machine-result-sink* (machine-result :passed 0))
+                         0)]
+           (#'worker/invoke-runner exact-args))))))
+
 (deftest bounded-response-and-fatal-cancellation
   (testing "a response marks already-capped output as truncated"
     (let [emitted (atom [])
@@ -109,7 +153,8 @@
                   [(pr-str (request "large" exact-args))]
                   #(swap! emitted conj %) expected
                   #(assoc expected :clean? true)
-                  (fn [_] {:exit 0 :elapsed-ns 1 :out oversized :err ""}) 1)))
+                  (fn [_] {:exit 0 :elapsed-ns 1 :out oversized :err ""
+                            :runner-result (machine-result :passed 0)}) 1)))
       (is (= (* 256 1024) (count (:stdout (first @emitted)))))
       (is (true? (:output-truncated? (first @emitted))))))
   (testing "causally wrapped linkage errors are never converted into test failures"
