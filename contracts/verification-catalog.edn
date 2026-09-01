@@ -288,6 +288,58 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :contract-bytes :classpath :runtime :policy]}
    :resource-class :normal
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 6}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :test-bytes :contract-bytes :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :current-jvm-exact-vars
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :dependency-closure
+                       :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-conformance-parity"
+  {:id "sh07-conformance-parity"
+   :module-id "sh07-checked-core"
+   :replacement-for [:source-coverage-runner :sh07-conformance-table]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-conformance-parity-test"
+               :selectors ["reviewed-row-addresses-stable-fixture"
+                           "all-reviewed-rows-split-into-bounded-suite-batches"
+                           "representative-accepted-rejected-parity-is-exact"
+                           "parity-mismatch-is-reported-without-authority"
+                           "real-legacy-oracle-without-lease-is-blocked"
+                           "diagnostic-normalization-retains-order-and-path-neutrality"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["contracts/verification-catalog.edn"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_parity.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_parity_test.clj"]
+                        :fixture-suite-ids ["sh07-b1" "sh07-b2" "sh07-b3"
+                                            "sh07-b4" "sh07-b5" "sh07-b6"
+                                            "sh07-b7" "sh07-b8" "sh07-b9"
+                                            "sh07-b10" "sh07-b11" "sh07-b12"
+                                            "sh07-b13" "sh07-b15"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :contract-bytes :classpath :runtime :policy]}
+   :resource-class :normal
    :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 5}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
@@ -354,7 +406,7 @@
    :owner :gravity
    :route-ids ["sh07-b8-regression" "sh07-b10-regression"
                "sh07-b11-contract" "sh07-b13-accepted"
-               "sh07-conformance-table"]
+               "sh07-conformance-table" "sh07-conformance-parity"]
    :fixture-policy :paired-reviewed-fixtures
    :conformance-kind :accepted-rejected-table-candidate}
   {:id "sh07-fresh-acceptance"
@@ -373,7 +425,8 @@
   :source-of-truth :routes
   :route-ids ["sh07-b8-regression" "sh07-b10-regression"
               "sh07-b11-contract" "sh07-b13-accepted"
-              "sh07-conformance-table" "sh07-authoritative"]
+              "sh07-conformance-table" "sh07-conformance-parity"
+              "sh07-authoritative"]
   :accounting :exact-selected-test-and-fixture-identity}
 
  :evidence-policy
