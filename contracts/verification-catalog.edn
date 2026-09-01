@@ -294,7 +294,7 @@
                                :test-bytes :contract-bytes :runtime :tool :policy]
                   :authoritative? false}
    :execution-mode :warm-bounded-process
-   :executor {:adapter :current-jvm-exact-vars
+   :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
               :authority :non-authoritative}
