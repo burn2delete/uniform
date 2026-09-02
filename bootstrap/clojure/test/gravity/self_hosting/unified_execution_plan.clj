@@ -115,6 +115,11 @@
 (def ^:private maximum-resource-timeout-ms (* 4 60 60 1000))
 (def ^:private maximum-resource-output-bytes (* 256 1024))
 (def ^:private maximum-resource-test-vars 4096)
+;; Validate arbitrary-precision input before narrowing to the machine integer
+;; representation retained by the existing plan shape.  Calling `long` on an
+;; untrusted BigInt before this comparison can throw a host exception (or
+;; silently narrow on some runtimes), bypassing the stable UEP diagnostic.
+(def ^:private maximum-safe-long (bigint Long/MAX_VALUE))
 (def ^:private maximum-repository-relative-path-length 4096)
 (def ^:private drive-path-pattern #"(?i)^[a-z]:.*")
 
@@ -146,14 +151,18 @@
 
 (defn- positive-integer!
   [value id path]
-  (ensure! (and (integer? value) (pos? (long value)))
+  (ensure! (and (integer? value)
+                (pos? value)
+                (<= value maximum-safe-long))
            id "Verification bound must be a positive integer"
            {:path path :value value})
   (long value))
 
 (defn- non-negative-integer!
   [value id path]
-  (ensure! (and (integer? value) (not (neg? (long value))))
+  (ensure! (and (integer? value)
+                (not (neg? value))
+                (<= value maximum-safe-long))
            id "Verification count must be a non-negative integer"
            {:path path :value value})
   (long value))
@@ -475,8 +484,8 @@
       (positive-integer! (get-in route [:bounds key])
                          "UEP-CATALOG-ROUTE-BOUNDS"
                          [:routes route-id :bounds key])
-      (ensure! (<= (long (get-in route [:bounds key]))
-                   (long (get resource key)))
+      (ensure! (<= (get-in route [:bounds key])
+                   (get resource key))
                "UEP-CATALOG-ROUTE-BOUNDS"
                "Route bound exceeds its resource-class ceiling"
                {:route route-id :bound key
@@ -1180,7 +1189,7 @@
       (doseq [key [:timeout-ms :max-output-bytes]]
         (positive-integer! (get policy key) "UEP-REQUEST-RESOURCE"
                            [:request :resource-policy key])
-        (ensure! (<= (long (get policy key)) (long (get-in route [:bounds key])))
+        (ensure! (<= (get policy key) (get-in route [:bounds key]))
                  "UEP-REQUEST-RESOURCE" "Resource override exceeds route bound"
                  {:route (:route-id request) :key key}))))
   (when (contains? request :cache-policy)
@@ -1287,8 +1296,8 @@
     (doseq [key [:timeout-ms :max-output-bytes :max-test-vars]]
       (positive-integer! (get-in plan-value [:resource-policy key])
                          "UEP-PLAN-RESOURCE" [:plan :resource-policy key])
-      (ensure! (<= (long (get-in plan-value [:resource-policy key]))
-                   (long (get-in route-value [:bounds key])))
+      (ensure! (<= (get-in plan-value [:resource-policy key])
+                   (get-in route-value [:bounds key]))
                "UEP-PLAN-RESOURCE" "Execution plan resource bound was widened"
                {:key key}))
     (ensure! (= (dissoc (:cache-policy route-value) :mode)
@@ -1744,7 +1753,9 @@
            {:status (:status result)})
   (doseq [key [:test-count :pass :fail :error]]
     (when (contains? result key)
-      (ensure! (and (integer? (get result key)) (not (neg? (long (get result key)))))
+      (ensure! (and (integer? (get result key))
+                    (not (neg? (get result key)))
+                    (<= (get result key) maximum-safe-long))
                "UEP-RESULT-COUNT" "Execution result count is invalid"
                {:key key :value (get result key)})))
   ;; `:test-count` counts test vars while pass/fail/error count assertion

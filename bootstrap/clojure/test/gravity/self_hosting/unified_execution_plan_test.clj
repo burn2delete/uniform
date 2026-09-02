@@ -5,6 +5,9 @@
 (defn- error-id [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo e (:id (ex-data e)))))
 
+(defn- error-data [f]
+  (try (f) nil (catch clojure.lang.ExceptionInfo e (ex-data e))))
+
 (defn- passing-result []
   {:status :passed :test-count 1 :pass 1 :fail 0 :error 0
    :diagnostics [] :evidence [:selected-tests :dependency-closure :diagnostics :receipt]
@@ -95,6 +98,12 @@
    "sh07-cached-verification"
    {:operation :cached-shard :shard "verification"
     :result-contract-id :gravity/sh07-cached-shard-result-v1}})
+
+(def ^:private invalid-positive-bound-values
+  [0 -1 1.5 (inc (bigint Long/MAX_VALUE))])
+
+(def ^:private invalid-non-negative-count-values
+  [-1 1.5 (inc (bigint Long/MAX_VALUE))])
 
 (deftest catalog-is-closed-and-compatibility-scoped
   (is (= :gravity/verification-catalog-v1 (:schema plan/catalog)))
@@ -219,14 +228,77 @@
     (is (= "UEP-CATALOG-ROUTE-CACHE"
            (error-id #(plan/validate-catalog cache))))))
 
-(deftest plan-rejects-nonpositive-recomputed-resource-bounds
+(deftest catalog-resource-bounds-reject-invalid-numeric-values
+  (doseq [key [:max-concurrency :timeout-ms :max-output-bytes :max-test-vars]
+          value invalid-positive-bound-values]
+    (is (= "UEP-CATALOG-RESOURCE-BOUND"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:resource-classes :normal key] value))))
+        (str "catalog resource bound " key "=" value))))
+
+(deftest request-resource-overrides-reject-invalid-numeric-values
+  (let [base-policy {:resource-class :memory-heavy
+                     :timeout-ms 1000
+                     :max-output-bytes 65536}]
+    (doseq [key [:timeout-ms :max-output-bytes]
+            value invalid-positive-bound-values]
+      (is (= "UEP-REQUEST-RESOURCE"
+             (error-id #(plan/plan
+                         {:route-id "sh07-b8-regression"
+                          :lane :fast
+                          :resource-policy (assoc base-policy key value)})))
+          (str "request resource override " key "=" value)))))
+
+(deftest catalog-coverage-counts-reject-invalid-numeric-values
+  (doseq [value invalid-non-negative-count-values]
+    (is (= "UEP-CATALOG-COVERAGE-ACCOUNTING"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:coverage :accounting :route-count]
+                                 value))))
+        (str "catalog coverage route-count=" value))))
+
+(deftest numeric-bound-diagnostics-retain-path-and-value
+  (let [value (inc (bigint Long/MAX_VALUE))
+        catalog-error (error-data #(plan/validate-catalog
+                                    (assoc-in plan/catalog
+                                              [:resource-classes :normal :timeout-ms]
+                                              value)))
+        coverage-error (error-data #(plan/validate-catalog
+                                     (assoc-in plan/catalog
+                                               [:coverage :accounting :route-count]
+                                               value)))
+        request-error (error-data #(plan/plan
+                                    {:route-id "sh07-b8-regression"
+                                     :lane :fast
+                                     :resource-policy
+                                     {:resource-class :memory-heavy
+                                      :timeout-ms value
+                                      :max-output-bytes 65536}}))]
+    (is (= {:id "UEP-CATALOG-RESOURCE-BOUND"
+            :path [:resource-classes :normal :timeout-ms]
+            :value value}
+           (select-keys catalog-error [:id :path :value])))
+    (is (= {:id "UEP-CATALOG-COVERAGE-ACCOUNTING"
+            :path [:coverage :accounting :route-count]
+            :value value}
+           (select-keys coverage-error [:id :path :value])))
+    (is (= {:id "UEP-REQUEST-RESOURCE"
+            :path [:request :resource-policy :timeout-ms]
+            :value value}
+           (select-keys request-error [:id :path :value])))))
+
+(deftest plan-rejects-invalid-recomputed-resource-bounds
   (let [identity-of (deref (var gravity.self-hosting.unified-execution-plan/identity-of))
         p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
-    (doseq [k [:timeout-ms :max-output-bytes :max-test-vars]]
-      (let [altered (assoc-in p [:resource-policy k] 0)
+    (doseq [k [:timeout-ms :max-output-bytes :max-test-vars]
+            value invalid-positive-bound-values]
+      (let [altered (assoc-in p [:resource-policy k] value)
             altered (assoc altered :plan-id (identity-of (dissoc altered :plan-id)))]
         (is (= "UEP-PLAN-RESOURCE"
-               (error-id #(plan/validate-plan altered))) k)))))
+               (error-id #(plan/validate-plan altered)))
+            (str "plan resource bound " k "=" value))))))
 
 (deftest receipt-generation-preserves-integrity-and-authority-ceiling
   (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
@@ -301,12 +373,14 @@
                        p (constantly (assoc valid :cache-observation
                                              (assoc (:cache-observation valid)
                                                     :extra true)))))))
-    (is (= "UEP-RESULT-CACHE-OBSERVATION-COUNTER"
-           (error-id #(plan/execute-plan
-                       p (constantly
-                          (assoc-in valid
-                                    [:cache-observation :counters :core-hits]
-                                    100000000000000000000000000N))))))
+    (doseq [value invalid-non-negative-count-values]
+      (is (= "UEP-RESULT-CACHE-OBSERVATION-COUNTER"
+             (error-id #(plan/execute-plan
+                         p (constantly
+                            (assoc-in valid
+                                      [:cache-observation :counters :core-hits]
+                                      value)))))
+          (str "cache observation counter core-hits=" value)))
     (is (= "UEP-RESULT-CACHE-OBSERVATION-CONTEXT-KEYS"
            (error-id #(plan/execute-plan
                        p (constantly
@@ -399,7 +473,16 @@
            (error-id #(plan/execute-plan p
                                          (fn [_]
                                            (assoc (passing-result)
-                                                  :mutation-detected? true))))))))
+                                          :mutation-detected? true))))))))
+
+(deftest result-counts-reject-invalid-numeric-values
+  (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
+    (doseq [key [:test-count :pass :fail :error]
+            value invalid-non-negative-count-values]
+      (is (= "UEP-RESULT-COUNT"
+             (error-id #(plan/execute-plan
+                         p (constantly (assoc (passing-result) key value)))))
+          (str "result count " key "=" value)))))
 
 (deftest passing-result-must-list-required-evidence
   (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
