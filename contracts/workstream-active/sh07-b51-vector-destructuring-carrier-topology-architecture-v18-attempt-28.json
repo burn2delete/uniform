@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27"
   ],
-  "disposition": "Draft architecture-only Attempt-28 correction to Attempt 27's pre-carrier frozen census. It binds the final source snapshot cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 and independently accepted non-authoritative census receipt 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 while preserving all linked-carrier schemas and laws. No implementation acceptance, freeze, review request, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "disposition": "Frozen exact architecture-only Attempt-28 report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6. The immutable tuple corrects Attempt 27's pre-carrier census contradiction while preserving all linked-carrier schemas and laws. No review result, implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
@@ -75,6 +75,12 @@
       "at": "2026-09-02T08:42:32Z",
       "reason": "register exact architecture-only Attempt-28 report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6, base 7bf4296fd48bdbec459a357c4c937373d2946dff: correct Attempt27's pre-carrier census contradiction with exact final source/evidence identities and independently accepted sizing/ordering receipt; no freeze or architecture review is requested",
       "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T08:47:10Z",
+      "reason": "freeze exact immutable architecture-only Attempt-28 candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6, source cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 tree 641358871ea217f53e29bc5bff2eac49ab9cefe8, and evidence 21b39d89edf647a2c588629206042aa4676f0844 tree 3c8d54e3d1109866f600a955e316d061dda92acb after exact receipt review acceptance and strict governance, ledger, authority, language, documentation, roadmap, and diff checks; report and artifact bytes remain immutable",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -97,6 +103,6 @@
     "Attempt28 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 final linked-carrier snapshot erratum v18 attempt 28"
 }
