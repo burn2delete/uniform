@@ -643,7 +643,10 @@
                          :authority {:authoritative? false}
                          :execution-boundary {:isolation :same-jvm}
                          :stage-artifacts
-                         (array-map :source {:artifact-id id :input-artifact-ids []
+                         (array-map :source {:artifact :gravity/authenticated-compiler-artifact
+                                             :status :accepted :stage :source :mode :fast
+                                             :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                                             :artifact-id id :input-artifact-ids []
                                              :source-identity {:byte-count (alength bytes)
                                                                :bytes-hash hash}
                                              :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
@@ -652,7 +655,10 @@
                                              :cache-policy {:observed-hit? false}
                                              :diagnostics []}
                                              )
-                         :artifact {:artifact-id id :input-artifact-ids []
+                         :artifact {:artifact :gravity/authenticated-compiler-artifact
+                                    :status :accepted :stage :source :mode :fast
+                                    :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                                    :artifact-id id :input-artifact-ids []
                                     :source-identity {:byte-count (alength bytes)
                                                       :bytes-hash hash}
                                     :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
@@ -662,11 +668,28 @@
                                     :diagnostics []}}]
         (with-redefs [worker/repository-root (constantly root)
                       worker/artifact-plan-for-request (constantly plan-binding)]
-          (binding [worker/*artifact-pipeline-runner* (constantly fake-result)]
+          (binding [worker/*artifact-pipeline-runner*
+                    (fn [_]
+                      (print "pipeline-out")
+                      (binding [*out* *err*]
+                        (print "pipeline-err"))
+                      fake-result)]
             (let [result (#'worker/invoke-artifact-runner request fixture-binding)]
               (is (= :source (get-in result [:projection :requested-stage])))
               (is (= hash (get-in result [:projection :source-content-hash])))
-              (is (false? (get-in result [:projection :authority :authoritative?]))))
+              (is (false? (get-in result [:projection :authority :authoritative?])))
+              (is (= "pipeline-out" (:out result)))
+              (is (= "pipeline-err" (:err result)))
+              (is (false? (:out-truncated? result)))
+              (is (false? (:err-truncated? result))))
+            (let [noisy (fn [_]
+                          (print (apply str (repeat 300000 "x")))
+                          fake-result)]
+              (with-redefs [worker/repository-root (constantly root)
+                            worker/artifact-plan-for-request (constantly plan-binding)]
+                (binding [worker/*artifact-pipeline-runner* noisy]
+                  (let [result (#'worker/invoke-artifact-runner request fixture-binding)]
+                    (is (true? (:out-truncated? result)))))))
             (let [error (try
                           (binding [worker/*artifact-pipeline-runner*
                                     (constantly (assoc fake-result :status :failed))]

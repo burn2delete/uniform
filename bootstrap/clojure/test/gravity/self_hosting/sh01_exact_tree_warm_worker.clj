@@ -729,11 +729,11 @@
     (validate-artifact-projection! projection request binding)))
 
 (defn- invoke-artifact-runner
-  [request binding]
+  [request fixture-binding]
   (let [root (repository-root)
-        before (artifact-pair-snapshot root binding)
-        _ (ensure! (and (= (:pair-sha256 before) (:fixture-sha256 binding))
-                        (= (:pair-bytes before) (:fixture-bytes binding)))
+        before (artifact-pair-snapshot root fixture-binding)
+        _ (ensure! (and (= (:pair-sha256 before) (:fixture-sha256 fixture-binding))
+                        (= (:pair-bytes before) (:fixture-bytes fixture-binding)))
                    "WARM-ARTIFACT-BINDING"
                    "Fixture binding bytes do not match the request" {})
         result
@@ -743,23 +743,43 @@
           (ensure! (if (var? runner) (ifn? (var-get runner)) (ifn? runner))
                    "WARM-ARTIFACT-PIPELINE" "Artifact pipeline runner is unavailable" {})
           (let [started (System/nanoTime)
-                result ((if (var? runner) (var-get runner) runner)
-                        {:source-path (:gravity-path binding)
-                         :target-stage (:stage request)
-                         :mode :fast})]
+                out-capture (bounded-writer)
+                err-capture (bounded-writer)
+                result (binding [clojure.core/*out* (:writer out-capture)
+                                 clojure.core/*err* (:writer err-capture)
+                                 test/*test-out* (:writer out-capture)]
+                         ((if (var? runner) (var-get runner) runner)
+                           {:source-path (:gravity-path fixture-binding)
+                           :target-stage (:stage request)
+                           :mode :fast}))
+                out-result (bounded-writer-result out-capture)
+                err-result (bounded-writer-result err-capture)]
             (ensure! (and (map? result)
                           (= :gravity/authenticated-artifact-pipeline-result (:kind result))
                           (or (not (contains? result :status))
                               (contains? #{:accepted :passed} (:status result)))
                           (= :fast (:mode result))
                           (= (:stage request) (:requested-stage result))
+                          (let [stage-map (:stage-artifacts result)
+                                stages (vec (keys stage-map))]
+                            (and (seq stages)
+                                 (= (:artifact result) (get stage-map (last stages)))
+                                 (every? (fn [[stage envelope]]
+                                           (and (= stage (:stage envelope))
+                                                (= :accepted (:status envelope))
+                                                (= :gravity/authenticated-compiler-artifact-pipeline-v1
+                                                   (:pipeline envelope))
+                                                (= :fast (:mode envelope))))
+                                         stage-map)))
                           (false? (get-in result [:authority :authoritative?]))
                           (= :same-jvm (get-in result [:execution-boundary :isolation])))
                      "WARM-ARTIFACT-PIPELINE" "Pipeline result failed its fast contract"
                      {})
             {:exit 0 :elapsed-ns (- (System/nanoTime) started)
-             :projection (artifact-projection request binding result)
-             :out "" :err "" :out-truncated? false :err-truncated? false}))
+             :projection (artifact-projection request fixture-binding result)
+             :out (:text out-result) :err (:text err-result)
+             :out-truncated? (:truncated? out-result)
+             :err-truncated? (:truncated? err-result)}))
         after-binding (artifact-plan-for-request request)
         after (artifact-pair-snapshot root (:binding after-binding))]
         (ensure! (and (= (:pair-sha256 before) (:pair-sha256 after))
@@ -773,8 +793,8 @@
              "WARM-ARTIFACT-MUTATED" "Fixture closure changed during artifact execution"
              {:before (select-keys before [:pair-sha256 :pair-bytes])
               :after (select-keys after [:pair-sha256 :pair-bytes])})
-    (ensure! (and (= (:fixture-sha256 binding) (:pair-sha256 after))
-                  (= (:fixture-bytes binding) (:pair-bytes after)))
+    (ensure! (and (= (:fixture-sha256 fixture-binding) (:pair-sha256 after))
+                  (= (:fixture-bytes fixture-binding) (:pair-bytes after)))
              "WARM-ARTIFACT-BINDING" "Fixture binding bytes changed"
              {})
     result))
