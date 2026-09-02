@@ -5,7 +5,7 @@
   "candidate_commit": "54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "Draft architecture-only Attempt-29 correction to Attempt 28's infeasible per-invocation exhaustive census replay. It relocates negative-space completeness to two independent D9 census certificates bound by an acyclic M3-v2 and immutable host pins while preserving distinct Gravity Root-1 and Root-6 compact verification and the unchanged runtime ceilings. No implementation acceptance, freeze, review request, pin, integration eligibility, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "disposition": "Frozen architecture-only Attempt-29 correction to Attempt 28's infeasible per-invocation exhaustive census replay. It relocates negative-space completeness to two independent D9 census certificates bound by an acyclic M3-v2 and immutable host pins while preserving distinct Gravity Root-1 and Root-6 compact verification and the unchanged runtime ceilings. No implementation acceptance, review result, pin, integration eligibility, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -31,7 +31,10 @@
     "stable_diagnostics": ["AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008", "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"],
     "validation_commands": [
       {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
-      {"command": "git diff --check fd43aef695c8b4ed494c305f98ef298af56e8cd8..54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8", "exit_code": 0, "result": "passed"}
+      {"command": "git diff --check fd43aef695c8b4ed494c305f98ef298af56e8cd8..54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-29.md", "exit_code": 0, "result": "passed"}
     ]
   },
   "governing_contracts": [
@@ -49,6 +52,12 @@
       "at": "2026-09-02T17:40:00Z",
       "reason": "register exact architecture-only Attempt-29 report candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1, base fd43aef695c8b4ed494c305f98ef298af56e8cd8: replace infeasible repeated census replay with dual independently produced M3-bound compact certificate authority under unchanged runtime ceilings; no freeze or architecture review is requested",
       "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:48:00Z",
+      "reason": "freeze immutable architecture-only Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1 after documentation, roadmap, strict authority, governance, exact diff, JSON, ASCII, and negative sizing evidence checks; no implementation is authorized",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-29",
@@ -63,6 +72,6 @@
     "Attempt29 grants no implementation, checker, certificate, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 dual census certificate architecture v18 attempt 29"
 }
