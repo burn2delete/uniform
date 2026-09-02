@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.unified-execution-plan-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh07-conformance-table :as conformance]
             [gravity.self-hosting.unified-execution-plan :as plan]))
 
@@ -906,3 +907,219 @@
            (error-id #(plan/validate-catalog missing-source))))
     (is (= "UEP-CATALOG-CLOSURE-FIXTURE-OWNER"
            (error-id #(plan/validate-catalog wrong-fixture-owner))))))
+
+(defn- artifact-id [digit]
+  (str "sha256:" (apply str (repeat 64 digit))))
+
+(defn- fake-artifact-result
+  [artifact-plan-value overrides]
+  (let [invocation (:artifact-invocation artifact-plan-value)
+        binding (:binding invocation)
+        stages [:source :reader :syntax :macroexpansion :resolution :checked-core]
+        ids (mapv artifact-id ["1" "2" "3" "4" "5" "6"])
+        entries (mapv (fn [index stage]
+                        [stage (nth ids index) (vec (take index ids))])
+                      (range (count stages)) stages)
+        provenance {:actual-path (str "/private/tmp/fixture.gravity")
+                    :project-root-path "/private/tmp"
+                    :project-relative-path (:gravity-path binding)
+                    :byte-count (:fixture-bytes binding)
+                    :content-hash (:fixture-sha256 binding)}
+        authority {:authoritative? false
+                   :ceiling :non-authoritative
+                   :development-only? true
+                   :nonclaims [:integration :proof :release :self-hosting
+                               :seed-retirement :safety :performance]}
+        boundary {:mode :fast :isolation :same-jvm :isolated? false
+                  :acceptance-authority? false
+                  :fresh-authoritative-run-required? true}
+        projection-base
+        {:schema :gravity/authenticated-artifact-fast-projection-v1
+         :binding-id (:binding-id binding)
+         :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+         :result-id (artifact-id "7")
+         :requested-stage (:stage invocation)
+         :selected-artifact-id (last ids)
+         :stage-artifact-ids entries
+         :source-content-hash (:fixture-sha256 binding)
+         :source-provenance-id (bootstrap/reader-canonical-hash provenance)
+         :source-provenance provenance
+         :source-relative-path (:gravity-path binding)
+         :cache-decision :miss
+         :execution-boundary boundary
+         :authority authority
+         :mutation-detected? false
+         :provenance-checked? true
+         :source-authenticated? true
+         :closure-verified? true
+         :fresh-replayable? false
+         :diagnostics []}
+        semantic-keys (deref (var gravity.self-hosting.unified-execution-plan/artifact-projection-semantic-keys))
+        projection (assoc projection-base :projection-id
+                           (bootstrap/reader-canonical-hash
+                            (select-keys projection-base semantic-keys)))]
+    (merge {:status :passed
+            :projection projection
+            :authority authority
+            :execution-boundary boundary
+            :diagnostics []
+            :mutation-detected? false
+            :provenance-checked? true
+            :source-authenticated? true
+            :closure-verified? true
+            :fresh-replayable? false
+            :cache-decision :miss}
+           overrides)))
+
+(defn- reidentify-artifact-projection
+  [projection changes]
+  (let [changed (merge projection changes)
+        semantic-keys (deref (var gravity.self-hosting.unified-execution-plan/artifact-projection-semantic-keys))]
+    (assoc changed :projection-id
+           (bootstrap/reader-canonical-hash
+            (select-keys changed semantic-keys)))))
+
+(deftest artifact-operation-plan-is-closed-and-keeps-ordinary-plan-identity
+  (let [request {:route-id "sh07-conformance-table"
+                 :lane :fast
+                 :artifact-invocation
+                 {:row-id "sh07-b15/keyword-lookup-zero-arity"
+                  :stage :checked-core}}
+        ordinary (plan/plan (select-keys request [:route-id :lane]))
+        artifact (plan/artifact-plan request)]
+    (is (= :gravity/unified-artifact-execution-plan-v1 (:schema artifact)))
+    (is (= :run-fast-artifact (:operation artifact)))
+    (is (= ordinary (:base-plan artifact)))
+    (is (not= (:plan-id ordinary) (:plan-id artifact)))
+    (is (= :fast (:lane artifact)))
+    (is (false? (:authoritative? artifact)))
+    (is (= [:integration :proof :release :self-hosting
+            :seed-retirement :safety :performance]
+           (:nonclaims artifact)))
+    (is (true? (:fresh-authoritative-gate-required? artifact)))
+    (is (= #{:row-id :stage :binding-id :binding :schema :version :operation}
+           (set (keys (:artifact-invocation artifact)))))
+    (is (= (:plan-id ordinary)
+           (get-in artifact [:artifact-invocation :binding :plan-id])))))
+
+(deftest artifact-operation-rejects-unbound-or-tampered-input
+  (let [request {:route-id "sh07-conformance-table"
+                 :lane :fast
+                 :artifact-invocation
+                 {:row-id "sh07-b15/keyword-lookup-zero-arity"
+                  :stage :checked-core}}]
+    (is (= "UEP-ARTIFACT-REQUEST-INVOCATION-KEYS"
+           (error-id #(plan/artifact-plan
+                       (assoc-in request [:artifact-invocation :extra] true)))))
+    (is (= "UEP-ARTIFACT-ROW"
+           (error-id #(plan/artifact-plan
+                       (assoc-in request [:artifact-invocation :row-id]
+                                 (apply str (repeat 257 "x")))))))
+    (is (= "UEP-ARTIFACT-STAGE"
+           (error-id #(plan/artifact-plan
+                       (assoc-in request [:artifact-invocation :stage] :emission)))))
+    (let [artifact (plan/artifact-plan request)
+          altered (assoc-in artifact
+                            [:artifact-invocation :binding :fixture-sha256]
+                            (artifact-id "0"))
+          identity-of (deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+          altered (assoc altered :plan-id
+                          (identity-of (dissoc altered :plan-id)))]
+      (is (= "UEP-ARTIFACT-BINDING"
+             (error-id #(plan/validate-artifact-plan altered)))))))
+
+(deftest artifact-operation-receipt-binds-projection-and-preserves-child-diagnostics
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation
+                   {:row-id "sh07-b15/keyword-lookup-zero-arity"
+                    :stage :checked-core}})
+        seen (atom nil)
+        adapter (fn [value]
+                  (reset! seen value)
+                  (fake-artifact-result value {}))
+        receipt (plan/execute-plan artifact adapter)
+        changed (plan/execute-plan
+                 artifact
+                 (fn [value]
+                   (let [projection (:projection (fake-artifact-result value {}))]
+                     (fake-artifact-result
+                      value
+                      {:projection (reidentify-artifact-projection
+                                    projection {:result-id (artifact-id "8")})}))))]
+    (is (= artifact @seen))
+    (is (= :passed (:status receipt)))
+    (is (= :run-fast-artifact (:operation receipt)))
+    (is (= (:plan-id artifact) (:plan-id receipt)))
+    (is (= (:plan-id (:base-plan artifact)) (:base-plan-id receipt)))
+    (is (= #{:artifact-source-authentication :artifact-dependency-closure
+             :artifact-provenance :artifact-stage :artifact-receipt}
+           (set (:evidence receipt))))
+    (is (= (:projection (fake-artifact-result artifact {}))
+           (:artifact-projection receipt)))
+    (is (not= (:receipt-id receipt) (:receipt-id changed)))
+    (is (= :passed (:status changed)))
+    (is (= (artifact-id "8")
+           (get-in changed [:artifact-projection :result-id])))
+    (let [child-diagnostic
+          (plan/execute-artifact-plan
+           artifact
+           (fn [_]
+             (merge (fake-artifact-result artifact {})
+                    {:status :failed
+                     :projection nil
+                     :evidence []
+                     :diagnostics [{:id "CHILD-DIAGNOSTIC"
+                                    :message "child rejected the artifact"}]
+                     :provenance-checked? false
+                     :source-authenticated? false
+                     :closure-verified? false
+                     :cache-decision :disabled})))]
+      (is (= :failed (:status child-diagnostic)))
+      (is (not= (:receipt-id receipt) (:receipt-id child-diagnostic)))
+      (is (= [{:id "CHILD-DIAGNOSTIC"
+               :message "child rejected the artifact"}]
+             (:diagnostics child-diagnostic))))))
+
+(deftest artifact-operation-validates-authority-ancestry-and-provenance-tampering
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation
+                   {:row-id "sh07-b15/keyword-lookup-zero-arity"
+                    :stage :checked-core}})
+        projection (:projection (fake-artifact-result artifact {}))
+        tampered [[{:authority (assoc (:authority projection)
+                                      :authoritative? true)}
+                    "UEP-ARTIFACT-AUTHORITY"]
+                   [{:stage-artifact-ids
+                     (update (:stage-artifact-ids projection) 5
+                             update 2 conj (artifact-id "0"))}
+                    "UEP-ARTIFACT-ANCESTRY"]
+                   [{:source-relative-path "other.gravity"}
+                    "UEP-ARTIFACT-PROVENANCE"]]]
+    (doseq [[changes expected-id] tampered]
+      (let [receipt (plan/execute-plan
+                     artifact
+                     (fn [_]
+                       (fake-artifact-result
+                        artifact
+                        {:projection (reidentify-artifact-projection
+                                      projection changes)})))]
+        (is (= :failed (:status receipt)))
+        (is (= expected-id (get-in receipt [:diagnostics 0 :id])))))))
+
+(deftest generic-receipt-identity-remains-unchanged-by-artifact-operation
+  (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+        receipt (plan/execute-plan p (constantly (passing-result)))]
+    (is (= "sha256:"
+           (subs (:receipt-id receipt) 0 7)))
+    (is (= "sha256:560657c66294ae325a97af63d627844c5496ab47f813081bb2a24ed54674f5f6"
+           (:receipt-id receipt)))
+    (is (= #{:schema :version :plan-id :route-id :lane :authority
+             :authoritative? :authority-ceiling :summary :selection
+             :closure-identity :cache :execution :status :diagnostics :evidence
+             :integrity :fresh-replayable? :required-evidence :nonclaims
+             :fresh-authoritative-gate-required? :receipt-id}
+           (set (keys receipt))))))
