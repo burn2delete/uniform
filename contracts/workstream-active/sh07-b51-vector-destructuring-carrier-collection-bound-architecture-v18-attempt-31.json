@@ -1,0 +1,64 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-collection-bound-erratum-v18-attempt-31.md",
+  "author": "sh07-b51-carrier-bound-architecture",
+  "base_commit": "1670f94a4e34de2f86f32813a1456fcc50cba409",
+  "candidate_commit": "6a7877f418f41ef55aa5375dc7ebdcde2417ea00",
+  "clean_worktree": true,
+  "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
+  "disposition": "Draft registration of exact report-only Attempt-31 candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066. Independent pre-freeze audit passed. No freeze, architecture acceptance, implementation, or integration authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
+      "authoritative architecture base:1670f94a4e34de2f86f32813a1456fcc50cba409",
+      "report candidate:6a7877f418f41ef55aa5375dc7ebdcde2417ea00 tree:25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf report-sha256:a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066",
+      "unaccepted diagnostic prototype:619f4223709d0103b710d95e57700927ea907974 tree:a79469ab335c2ce768cafe205feb5d2804826c42",
+      "authentic diagnostic profile:nodes1475999 depth67 width5150 collections303173 scalar114",
+      "exact eight bucket counts:34007,48748,43070,44173,41843,39643,40340,11349; sum303173; each <=65536",
+      "prospective compositional derivation:8*65536=524288",
+      "independent pre-freeze audit:/root/attempt31_bound_analysis PASS"
+    ],
+    "rejected_fixtures": [
+      "retain total carrier collection ceiling 65536",
+      "infer headroom from one observed carrier without compositional buckets",
+      "apply raised nested-carrier collection bound to the outer request",
+      "read module-plan-carriers before whole nested value preflight",
+      "identity-deduplicate repeated collection occurrences",
+      "replace complete M2 products with ids, compressed bytes, lookup handles, or DAG references",
+      "raise runtime transition, frame, or external-call ceilings",
+      "treat the unaccepted diagnostic prototype as implementation authority"
+    ],
+    "stable_diagnostics": ["AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008", "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"],
+    "validation_commands": [
+      {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+      {"command": "git diff --check 1670f94a4e34de2f86f32813a1456fcc50cba409..6a7877f418f41ef55aa5375dc7ebdcde2417ea00", "exit_code": 0, "result": "passed"}
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L1", "L2", "C5", "C6", "C11", "BOOT7", "BOOT8", "TEST10", "TEST11", "TEST13",
+    "docs/self-hosting-slice-backlog.md", "docs/self-hosting-slice-ownership.edn", "docs/workstream-governance.md", "docs/workstream-ledger-v2.md", "contracts/workstream-governance.json", "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-30.md"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T19:25:49Z",
+      "reason": "register exact architecture-only Attempt-31 report candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066 after independent mutable-draft audit passed; no freeze or architecture review is yet requested",
+      "state": "draft"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-31",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+  "owned_paths": ["docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-collection-bound-erratum-v18-attempt-31.md"],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain bounded preflight, source-reader, checker-host, canonical encoder and SHA-256, immutable-pin, runtime-machine, and observer boundaries",
+    "the eight-bucket collection bound is a prospective resource contract and does not establish runtime completion",
+    "Attempt31 retains complete current-emitter M2 transport and all Attempt30 certificate, ownership, external-edge, and root laws",
+    "Attempt31 grants no implementation, checker, certificate, pin, runtime-result, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "SH-07 B51 compositional carrier collection bound v18 attempt 31"
+}
