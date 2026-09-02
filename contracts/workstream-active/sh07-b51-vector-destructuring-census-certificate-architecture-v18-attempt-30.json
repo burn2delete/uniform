@@ -5,7 +5,7 @@
   "candidate_commit": "141a07863c13c49a64a469573b6c1e394a3c6e41",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "Draft registration of exact report-only Attempt-30 candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47. Independent pre-freeze audit passed. No freeze, architecture acceptance, implementation, or integration authority is conferred.",
+  "disposition": "Frozen exact report-only Attempt-30 candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47 after independent pre-freeze audit and strict local validation. No architecture acceptance, implementation, or integration authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -49,6 +49,12 @@
       "at": "2026-09-02T17:21:21Z",
       "reason": "register exact architecture-only Attempt-30 report candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47, base 5295fed116fac4db951234875bf49cf0e6fccdca after independent mutable-draft audit passed; no freeze or architecture review is yet requested",
       "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:23:20Z",
+      "reason": "freeze immutable architecture-only Attempt-30 candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47 after independent mutable-draft audit plus documentation, roadmap, strict authority, governance, exact diff, JSON, ASCII, and bounds checks; no implementation is authorized",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -63,6 +69,6 @@
     "Attempt30 grants no implementation, checker, certificate, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 closed dual census certificate architecture v18 attempt 30"
 }
