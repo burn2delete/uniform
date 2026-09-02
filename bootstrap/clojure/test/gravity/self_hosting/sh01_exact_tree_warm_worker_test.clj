@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-exact-tree-warm-worker-test
   (:require [clojure.test :as test :refer [deftest is testing]]
             [gravity.development-test-runner :as runner]
+            [gravity.digest]
             [gravity.self-hosting.unified-execution-plan :as execution-plan]
             [gravity.self-hosting.sh01-exact-tree-warm-worker :as worker]))
 
@@ -534,3 +535,172 @@
     (is (= ["accepted"] @calls))
     (is (= [:tree-drift] (mapv :outcome @emitted)))
     (is (= 2 (:exit-code (first @emitted))))))
+
+(deftest artifact-request-is-closed-and-never-carries-a-source-path
+  (let [artifact {:schema worker/artifact-request-schema
+                  :request-id "artifact-1" :operation :run-fast-artifact
+                  :candidate-commit commit :candidate-tree tree
+                  :lane :fast :route-id "route" :plan-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  :catalog-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                  :closure-identity "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                  :binding-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+                  :row-id "row" :stage :reader}]
+    (let [error (try (worker/validate-request!
+                      (assoc artifact :source-path "/tmp/escape") expected)
+                     nil
+                     (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "WARM-REQUEST-SHAPE" (:id (ex-data error)))))))
+
+(deftest artifact-request-rejects-malformed-row-and-stage-before-planning
+  (let [base {:schema worker/artifact-request-schema :request-id "a"
+              :operation :run-fast-artifact :candidate-commit commit
+              :candidate-tree tree :lane :fast :route-id "route"
+              :plan-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              :catalog-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              :closure-identity "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              :binding-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+              :stage :source}]
+    (doseq [[row stage expected-id]
+            [["" :source "WARM-ARTIFACT-ROW"]
+             [(apply str (repeat 257 "x")) :source "WARM-ARTIFACT-ROW"]
+             ["row" :unknown "WARM-ARTIFACT-STAGE"]]]
+      (let [error (try (worker/validate-request!
+                        (assoc base :row-id row :stage stage) expected)
+                       nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+        (is (= expected-id (:id (ex-data error))))))))
+
+(deftest artifact-path-snapshot-binds-both-peer-bytes-and-rejects-symlinks
+  (let [root (java.nio.file.Files/createTempDirectory
+              "warm-artifact-" (make-array java.nio.file.attribute.FileAttribute 0))
+        family (.resolve root "fixtures/accepted")
+        gravity (.resolve family "sample.gravity")
+        qst (.resolve family "sample.qst")]
+    (try
+      (java.nio.file.Files/createDirectories family
+                                             (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/write gravity (.getBytes "(ns sample)\n")
+                                (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/write qst (.getBytes "(ns sample)\n")
+                                (make-array java.nio.file.OpenOption 0))
+      (let [snapshot (#'worker/artifact-pair-snapshot
+                      root {:gravity-path "fixtures/accepted/sample.gravity"
+                            :qst-path "fixtures/accepted/sample.qst"})]
+        (is (= (:pair-bytes snapshot) (:bytes-count (:gravity snapshot))))
+        (is (= (:pair-sha256 snapshot) (:bytes-sha256 (:gravity snapshot))))
+        (java.nio.file.Files/write qst (.getBytes "(ns changed)\n")
+                                  (make-array java.nio.file.OpenOption 0))
+        (let [error (try (#'worker/artifact-pair-snapshot
+                          root {:gravity-path "fixtures/accepted/sample.gravity"
+                                :qst-path "fixtures/accepted/sample.qst"})
+                         nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+          (is (= "WARM-ARTIFACT-PAIR" (:id (ex-data error))))))
+      (let [outside (.resolve root "outside")
+            link-parent (.resolve root "fixtures-link")]
+        (java.nio.file.Files/createDirectories outside
+                                               (make-array java.nio.file.attribute.FileAttribute 0))
+        (java.nio.file.Files/createSymbolicLink link-parent outside
+                                                (make-array java.nio.file.attribute.FileAttribute 0))
+        (let [error (try (#'worker/artifact-pair-snapshot
+                          root {:gravity-path "fixtures-link/sample.gravity"
+                                :qst-path "fixtures-link/sample.qst"})
+                         nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+          (is (= "WARM-ARTIFACT-SYMLINK" (:id (ex-data error))))))
+      (finally
+        (with-open [paths (java.nio.file.Files/walk root
+                                                  (make-array java.nio.file.FileVisitOption 0))]
+          (.forEach (.sorted paths (java.util.Comparator/reverseOrder))
+                    (reify java.util.function.Consumer
+                      (accept [_ path]
+                        (java.nio.file.Files/deleteIfExists path)))))))))
+
+(deftest artifact-runner-uses-derived-path-and-returns-compact-fast-projection
+  (let [root (java.nio.file.Files/createTempDirectory
+              "warm-artifact-runner-" (make-array java.nio.file.attribute.FileAttribute 0))
+        family (.resolve root "fixtures/accepted")
+        gravity (.resolve family "sample.gravity")
+        qst (.resolve family "sample.qst")
+        bytes (.getBytes "(ns sample)\n")
+        hash (str "sha256:" (gravity.digest/sha256-bytes-hex bytes))
+        fixture-binding {:gravity-path "fixtures/accepted/sample.gravity"
+                 :qst-path "fixtures/accepted/sample.qst"
+                 :fixture-sha256 hash :fixture-bytes (alength bytes)
+                 :binding-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+        request {:stage :source}
+        plan-binding {:plan {} :binding fixture-binding}]
+    (try
+      (java.nio.file.Files/createDirectories family
+                                             (make-array java.nio.file.attribute.FileAttribute 0))
+      (java.nio.file.Files/write gravity bytes (make-array java.nio.file.OpenOption 0))
+      (java.nio.file.Files/write qst bytes (make-array java.nio.file.OpenOption 0))
+      (let [id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            fake-result {:kind :gravity/authenticated-artifact-pipeline-result
+                         :mode :fast :requested-stage :source
+                         :result-id id :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                         :source-content-hash hash
+                         :authority {:authoritative? false}
+                         :execution-boundary {:isolation :same-jvm}
+                         :stage-artifacts
+                         (array-map :source {:artifact :gravity/authenticated-compiler-artifact
+                                             :status :accepted :stage :source :mode :fast
+                                             :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                                             :artifact-id id :input-artifact-ids []
+                                             :source-identity {:byte-count (alength bytes)
+                                                               :bytes-hash hash}
+                                             :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
+                                                          :project-root-path (str (.toRealPath root (make-array java.nio.file.LinkOption 0)))
+                                                          :project-relative-path (:gravity-path fixture-binding)}
+                                             :cache-policy {:observed-hit? false}
+                                             :diagnostics []}
+                                             )
+                         :artifact {:artifact :gravity/authenticated-compiler-artifact
+                                    :status :accepted :stage :source :mode :fast
+                                    :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                                    :artifact-id id :input-artifact-ids []
+                                    :source-identity {:byte-count (alength bytes)
+                                                      :bytes-hash hash}
+                                    :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
+                                                 :project-root-path (str (.toRealPath root (make-array java.nio.file.LinkOption 0)))
+                                                 :project-relative-path (:gravity-path fixture-binding)}
+                                    :cache-policy {:observed-hit? false}
+                                    :diagnostics []}}]
+        (with-redefs [worker/repository-root (constantly root)
+                      worker/artifact-plan-for-request (constantly plan-binding)]
+          (binding [worker/*artifact-pipeline-runner*
+                    (fn [_]
+                      (print "pipeline-out")
+                      (binding [*out* *err*]
+                        (print "pipeline-err"))
+                      fake-result)]
+            (let [result (#'worker/invoke-artifact-runner request fixture-binding)]
+              (is (= :source (get-in result [:projection :requested-stage])))
+              (is (= hash (get-in result [:projection :source-content-hash])))
+              (is (false? (get-in result [:projection :authority :authoritative?])))
+              (is (= "pipeline-out" (:out result)))
+              (is (= "pipeline-err" (:err result)))
+              (is (false? (:out-truncated? result)))
+              (is (false? (:err-truncated? result))))
+            (let [noisy (fn [_]
+                          (print (apply str (repeat 300000 "x")))
+                          fake-result)]
+              (with-redefs [worker/repository-root (constantly root)
+                            worker/artifact-plan-for-request (constantly plan-binding)]
+                (binding [worker/*artifact-pipeline-runner* noisy]
+                  (let [result (#'worker/invoke-artifact-runner request fixture-binding)]
+                    (is (true? (:out-truncated? result)))))))
+            (let [error (try
+                          (binding [worker/*artifact-pipeline-runner*
+                                    (constantly (assoc fake-result :status :failed))]
+                            (#'worker/invoke-artifact-runner request fixture-binding))
+                          nil
+                          (catch clojure.lang.ExceptionInfo error error))]
+              (is (= "WARM-ARTIFACT-PIPELINE" (:id (ex-data error))))))))
+      (finally
+        (with-open [paths (java.nio.file.Files/walk root
+                                                  (make-array java.nio.file.FileVisitOption 0))]
+          (.forEach (.sorted paths (java.util.Comparator/reverseOrder))
+                    (reify java.util.function.Consumer
+                      (accept [_ path]
+                        (java.nio.file.Files/deleteIfExists path)))))))))

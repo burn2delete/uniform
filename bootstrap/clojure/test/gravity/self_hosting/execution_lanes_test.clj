@@ -430,11 +430,234 @@
 (defn- private-lane-fn [symbol]
   (deref (ns-resolve 'gravity.self-hosting.execution-lanes symbol)))
 
+(def ^:private artifact-row-id
+  "sh07-b15/keyword-lookup-zero-arity")
+
+(defn- artifact-test-plan []
+  (plan/plan {:route-id "sh07-conformance-table" :lane :fast}))
+
+(defn- artifact-test-binding [plan-value]
+  (plan/fixture-source-binding plan-value artifact-row-id :source))
+
+(defn- artifact-projection-for
+  [plan-value binding options]
+  (let [stage-id (or (:selected-artifact-id options) (sha "a"))
+        provenance {:actual-path
+                    (str (.toRealPath
+                          (.resolve ((private-lane-fn 'repository-root))
+                                    ^String (:gravity-path binding))
+                          (make-array java.nio.file.LinkOption 0)))
+                    :project-root-path (str ((private-lane-fn 'repository-root)))
+                    :project-relative-path (:gravity-path binding)
+                    :byte-count (:fixture-bytes binding)
+                    :content-hash (:fixture-sha256 binding)}
+        projection (merge
+                    {:schema :gravity/authenticated-artifact-fast-projection-v1
+                     :binding-id (:binding-id binding)
+                     :pipeline :gravity/authenticated-compiler-artifact-pipeline-v1
+                     :result-id (sha "d")
+                     :requested-stage :source
+                     :selected-artifact-id stage-id
+                     :stage-artifact-ids [[:source stage-id []]]
+                     :source-content-hash (:fixture-sha256 binding)
+                     :source-provenance-id nil
+                     :source-provenance provenance
+                     :source-relative-path (:gravity-path binding)
+                     :cache-decision :miss
+                     :execution-boundary {:mode :fast :isolation :same-jvm
+                                          :isolated? false
+                                          :acceptance-authority? false
+                                          :fresh-authoritative-run-required? true}
+                     :authority {:authoritative? false
+                                 :ceiling :non-authoritative
+                                 :development-only? true
+                                 :nonclaims (:nonclaims plan-value)}
+                     :mutation-detected? false
+                     :provenance-checked? true
+                     :source-authenticated? true
+                     :closure-verified? true
+                     :fresh-replayable? false
+                     :diagnostics []}
+                    (select-keys options [:selected-artifact-id :projection-id
+                                          :stage-artifact-ids]))
+        projection (assoc projection :source-provenance-id
+                           (bootstrap/reader-canonical-hash
+                            (:source-provenance projection)))]
+    (assoc projection :projection-id
+           (or (:projection-id options)
+               (bootstrap/reader-canonical-hash
+                (select-keys projection
+                             [:schema :binding-id :pipeline :result-id :requested-stage
+                              :selected-artifact-id :stage-artifact-ids :source-content-hash
+                              :source-provenance-id :source-provenance :execution-boundary
+                              :authority :mutation-detected? :provenance-checked?
+                              :source-authenticated? :closure-verified? :fresh-replayable?
+                              :diagnostics]))))))
+
+(defn- fake-artifact-warm-start
+  [starts requests response-options]
+  (fn [{:keys [candidate-commit candidate-tree] :as start-request}]
+    (swap! starts conj start-request)
+    (let [records (java.util.concurrent.ArrayBlockingQueue. 16)
+          calls (atom 0)
+          closed? (atom false)]
+      (.offer records
+              (str "WARM_DEV "
+                   (pr-str {:schema :gravity/exact-tree-warm-worker-ready-v1
+                            :candidate-commit candidate-commit
+                            :candidate-tree candidate-tree
+                            :authority :non-authoritative})))
+      {:read-line! (fn [] (.poll records 2 java.util.concurrent.TimeUnit/SECONDS))
+       :write-line! (fn [line]
+                      (let [request (edn/read-string line)
+                            call (swap! calls inc)
+                            p (artifact-test-plan)
+                            b (artifact-test-binding p)
+                            options (merge (if (fn? response-options)
+                                             (response-options request call)
+                                             response-options)
+                                           {})
+                            projection (artifact-projection-for p b options)
+                            response (merge
+                                      {:schema :gravity/exact-tree-warm-worker-artifact-response-v1
+                                       :authority :non-authoritative
+                                       :authoritative? false
+                                       :request-id (:request-id request)
+                                       :candidate-commit candidate-commit
+                                       :candidate-tree candidate-tree
+                                       :lane :fast
+                                       :route-id (:route-id request)
+                                       :plan-id (:plan-id request)
+                                       :catalog-id (:catalog-id request)
+                                       :closure-identity (:closure-identity request)
+                                       :binding-id (:binding-id request)
+                                       :row-id (:row-id request)
+                                       :stage (:stage request)
+                                       :outcome :passed :exit-code 0
+                                       :elapsed-ns 1 :request-count call
+                                       :projection projection
+                                       :stdout "" :stderr ""
+                                       :output-truncated? false}
+                                      (select-keys options
+                                                   [:outcome :exit-code :stdout :stderr
+                                                    :output-truncated? :plan-id :catalog-id
+                                                    :closure-identity :binding-id :row-id
+                                                    :stage]))]
+                        (swap! requests conj request)
+                        (.offer records (str "WARM_DEV " (pr-str response)))))
+       :process-alive? (fn [] (not @closed?))
+       :close! (fn [] (reset! closed? true))})))
+
 (defn- git-ignored? [path]
   (let [process (.start (ProcessBuilder. ^java.util.List
                                          ["git" "check-ignore" "--quiet"
                                           (str path)]))]
     (zero? (.waitFor process))))
+
+(deftest run-fast-artifact-direct-transport-is-closed-and-non-authoritative
+  (let [starts (atom [])
+        requests (atom [])
+        result
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*repository-identity* (constantly
+                                               {:candidate-commit test-commit
+                                                :candidate-tree test-tree
+                                                :clean? true})
+                  lanes/*warm-session-start!*
+                  (fake-artifact-warm-start starts requests {})
+                  lanes/*closure-snapshot* (constantly {:identity :stable})]
+          (lanes/run-fast-artifact! (artifact-test-plan)
+                                    artifact-row-id :source))]
+    (is (= :passed (:status result)))
+    (is (= 1 (count @starts)))
+    (is (= 1 (count @requests)))
+    (is (= :run-fast-artifact (:operation (first @requests))))
+    (is (not (contains? (first @requests) :source-path)))
+    (is (not (contains? (first @requests) :args)))
+    (is (= #{:authoritative? :ceiling :development-only? :nonclaims}
+           (set (keys (:authority result)))))
+    (is (false? (get-in result [:authority :authoritative?])))
+    (is (= :non-authoritative (get-in result [:authority :ceiling])))
+    (is (= [:integration :proof :release :self-hosting :seed-retirement :safety :performance]
+           (get-in result [:authority :nonclaims])))
+    (is (= #{:mode :isolation :isolated? :acceptance-authority?
+             :fresh-authoritative-run-required?}
+           (set (keys (:execution-boundary result)))))
+    (is (true? (get-in result [:execution-boundary :fresh-authoritative-run-required?])))
+    (is (#{:hit :miss} (:cache-decision result)))
+    (is (= :source (get-in result [:projection :requested-stage])))
+    (is (true? (get-in result [:projection :provenance-checked?])))))
+
+(deftest run-fast-artifact-rejects-tampered-projection-and-identity
+  (doseq [[label options expected]
+           [["projection-id" {:projection-id (sha "z")} "UEP-WARM-ARTIFACT-PROJECTION"]
+           ["stage-ancestry" {:stage-artifact-ids [[:source (sha "b") []]]}
+            "UEP-WARM-ARTIFACT-PROJECTION"]
+           ["plan-id" {:plan-id (sha "z")} "UEP-WARM-ARTIFACT-RESPONSE"]
+           ["truncated" {:output-truncated? true} "UEP-WARM-ARTIFACT-RESPONSE"]
+           ["failed-with-projection" {:outcome :failed :exit-code 2}
+            "UEP-WARM-ARTIFACT-RESULT"]]]
+    (testing label
+      (let [starts (atom [])
+            requests (atom [])
+            result
+            (binding [lanes/*coordination-root* @coordination-root
+                      lanes/*repository-identity* (constantly
+                                                   {:candidate-commit test-commit
+                                                    :candidate-tree test-tree
+                                                    :clean? true})
+                      lanes/*warm-session-start!*
+                      (fake-artifact-warm-start starts requests options)
+                      lanes/*closure-snapshot* (constantly {:identity :stable})]
+              (lanes/run-fast-artifact! (artifact-test-plan)
+                                        artifact-row-id :source))]
+        (lanes/reset-warm-sessions!)
+        (is (= :failed (:status result)))
+        (is (some #(= expected (:id %)) (:diagnostics result)))))))
+
+(deftest run-fast-artifact-fails-closed-for-lane-cache-and-resource-policy
+  (testing "fresh lane is not accepted by the fast artifact transport"
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"fast lane"
+         (lanes/run-fast-artifact!
+          (plan/plan {:route-id "sh07-authoritative" :lane :fresh})
+          artifact-row-id :source))))
+  (testing "cache-disabled plans are rejected"
+    (let [p (artifact-test-plan)
+          altered (assoc-in p [:cache-policy :mode] :disabled)
+          identity-of (deref (ns-resolve 'gravity.self-hosting.unified-execution-plan
+                                         'identity-of))
+          altered (assoc altered :plan-id
+                         (identity-of (dissoc altered :plan-id)))]
+      (is (thrown-with-msg?
+           clojure.lang.ExceptionInfo #"cache eligibility"
+           (lanes/run-fast-artifact! altered artifact-row-id :source)))))
+  (testing "invalid explicit resource context blocks before startup"
+    (let [starts (atom [])
+          p (artifact-test-plan)]
+      (with-redefs [plan/*resource-lease* {:bounded-executor? false
+                                           :timeout-enforced? false
+                                           :deadline-ns 0}]
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-artifact-warm-start starts (atom []) {})]
+          (let [result (lanes/run-fast-artifact! p artifact-row-id :source)]
+            (is (= :blocked (:status result)))
+            (is (= "UEP-RESOURCE-BOUNDED-CONTEXT-REQUIRED"
+                   (-> result :diagnostics first :id)))
+            (is (empty? @starts))))))))
+
+(deftest run-fast-artifact-validates-row-and-stage-before-plan-or-binding
+  (let [p (artifact-test-plan)]
+    (doseq [[row stage expected]
+            [["" :source "UEP-ARTIFACT-ROW"]
+             [(apply str (repeat 257 "x")) :source "UEP-ARTIFACT-ROW"]
+             [artifact-row-id :unknown "UEP-ARTIFACT-STAGE"]]]
+      (testing expected
+        (let [error (try (lanes/run-fast-artifact! p row stage)
+                         nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+          (is (= expected (:id (ex-data error)))))))))
 
 (deftest fast-adapter-acquires-and-releases-broker-lease
   (let [acquired (atom [])
