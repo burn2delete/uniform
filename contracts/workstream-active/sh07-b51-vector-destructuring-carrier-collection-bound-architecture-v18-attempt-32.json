@@ -5,7 +5,7 @@
   "candidate_commit": "202d92d12fa6c4f6a74571eb4769587c02c0963c",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
-  "disposition": "Frozen exact report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after independent pre-freeze semantic audit and all architecture gates passed. No architecture acceptance, implementation, or integration authority is conferred.",
+  "disposition": "Independent exact-tuple review requested for frozen report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db. No architecture acceptance, implementation, or integration authority is conferred unless the reviewer issues ACCEPT.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -54,6 +54,12 @@
       "at": "2026-09-02T19:55:23Z",
       "reason": "freeze exact architecture-only Attempt-32 tuple at candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, and report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after documentation, roadmap, diff, governance, architecture-authority, arithmetic, identity-scope, and preflight-order checks passed",
       "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T19:56:22Z",
+      "reason": "request fresh independent high-reasoning review of the exact frozen Attempt-32 report tuple, including reproduction of structural evidence, checkout-local scalar scoping, eight-bucket arithmetic, prospective bounds, preflight order, retained laws, identity cascade, base and dependency authority, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
@@ -68,6 +74,6 @@
     "Attempt32 grants no implementation, checker, certificate, pin, runtime-result, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 reproducible compositional carrier collection bound v18 attempt 32"
 }
