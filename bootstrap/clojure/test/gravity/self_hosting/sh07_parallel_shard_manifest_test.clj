@@ -83,6 +83,101 @@
                 "sh07-b10-match-decision-resolver-rejects-over-limit-vectors"
                 "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}})
 
+;; Keep route order and non-selection metadata frozen independently of the
+;; generated manifest projection.  This is deliberately a reviewed parity
+;; oracle: replacing it with a projection of `plan/route-catalog` would make
+;; drift self-justifying.
+(def ^:private expected-shard-order
+  ["accepted"
+   "b12-contract-accepted"
+   "b12-identity-verification"
+   "b12-rejected-regression"
+   "identity-lineage"
+   "regression-a"
+   "regression-b"
+   "rejected"
+   "verification"])
+
+(def ^:private expected-route-fields
+  {:lanes [:fast]
+   :execution-mode :warm-bounded-process
+   :nonclaims [:integration :proof :release :self-hosting :seed-retirement
+               :safety :performance]
+   :migration-status :compatibility-projection
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :replacement-for [:parallel-shard-runner]
+   :replaces? false
+   :exhaustive? false
+   :bounds {:timeout-ms 3600000
+            :max-output-bytes 262144
+            :max-test-vars 64}
+   :resource-class :memory-heavy
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :module-id "sh07-checked-core"})
+
+(def ^:private vector-pattern-closure
+  {:module-ids ["sh07-checked-core"]
+   :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+           "bootstrap/gravity/src/gravity/checked_core.gravity"
+           "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+           "contracts/stage0-incremental-test-dependencies.edn"
+           "deps.edn"]
+   :fixture-suite-ids ["sh07-b10" "sh07-b11"]
+   :complete? true
+   :identity-inputs [:source-bytes :fixture-bytes :test-bytes :classpath
+                     :runtime :policy]})
+
+(def ^:private alias-reference-closure
+  {:module-ids ["sh07-checked-core"]
+   :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+           "bootstrap/gravity/src/gravity/checked_core.gravity"
+           "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
+           "contracts/stage0-incremental-test-dependencies.edn"
+           "deps.edn"]
+   :fixture-suite-ids ["sh07-b10" "sh07-b11" "sh07-b12"]
+   :complete? true
+   :identity-inputs [:source-bytes :fixture-bytes :test-bytes :classpath
+                     :runtime :policy]})
+
+(def ^:private match-lowering-closure
+  {:module-ids ["sh07-checked-core"]
+   :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+           "bootstrap/gravity/src/gravity/checked_core.gravity"
+           "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
+           "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+           "contracts/stage0-incremental-test-dependencies.edn"
+           "deps.edn"]
+   :fixture-suite-ids ["sh07-b10"]
+   :complete? true
+   :identity-inputs [:source-bytes :fixture-bytes :test-bytes :classpath
+                     :runtime :policy]})
+
+(def ^:private expected-closures
+  (merge
+   (zipmap ["accepted" "identity-lineage" "rejected" "verification"]
+           (repeat vector-pattern-closure))
+   (zipmap ["b12-contract-accepted" "b12-identity-verification"
+            "b12-rejected-regression"]
+           (repeat alias-reference-closure))
+   (zipmap ["regression-a" "regression-b"]
+           (repeat match-lowering-closure))))
+
 (defn- route-id
   [shard-name]
   (str route-prefix shard-name))
@@ -94,6 +189,13 @@
     nil
     (catch clojure.lang.ExceptionInfo error
       (:id (ex-data error)))))
+
+(defn- expected-route
+  [shard-name]
+  (merge expected-route-fields
+         {:id (route-id shard-name)
+          :selection (assoc (get expected-shards shard-name) :kind :exact-vars)
+          :dependency-closure (get expected-closures shard-name)}))
 
 (def ^:private required-transitive-fixture-suites
   {"gravity.self-hosting.sh07-vector-pattern-test"
@@ -107,6 +209,19 @@
   [suite-id]
   (str "bootstrap/clojure/fixtures/self-hosting/"
        (str/replace suite-id #"^sh07-" "sh-07-")))
+
+(deftest manifest-parallel-routes-match-frozen-projection
+  (let [expected-route-ids (mapv route-id expected-shard-order)
+        actual-route-ids (->> (plan/route-names)
+                              (filter #(str/starts-with? % route-prefix))
+                              vec)]
+    (is (= expected-route-ids actual-route-ids))
+    (doseq [shard-name expected-shard-order]
+      (testing shard-name
+        ;; Compare the complete route record.  The expected record is frozen
+        ;; above and is not obtained from any generated manifest projection.
+        (is (= (expected-route shard-name)
+               (plan/route (route-id shard-name))))))))
 
 (deftest manifest-routes-preserve-the-nine-shard-names
   (let [expected-names (vec (sort (keys expected-shards)))
