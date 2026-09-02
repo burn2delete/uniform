@@ -8,7 +8,7 @@
     "sh07-cached-operation-manifest-v1",
     "sh07-warm-worker-cached-protocol-v1"
   ],
-  "disposition": "Independently accepted and integration eligible after whole-candidate reconciliation onto the exact latest canonical local-main lineage. This binds cached worker requests and responses to locally validated route, plan, catalog, closure, shard, and result-contract identities while preserving lazy generic worker loading and exact/shutdown compatibility. It wires no parent lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
+  "disposition": "Integrated the exact independently accepted reconciled whole candidate onto canonical local main at merge commit e1fae42d6452a91a88976b408d8444b97d98ddb5. This binds cached worker requests and responses to locally validated route, plan, catalog, closure, shard, and result-contract identities while preserving lazy generic worker loading and exact/shutdown compatibility. It wires no parent lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
   "evidence": {
     "accepted_fixtures": [
       "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj",
@@ -57,6 +57,11 @@
       },
       {
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-commit 51942552433fe89feacc7486c792f626f1e198fa --candidate-tree 3bd25369978f63823d09486a6c95388cf251d32c",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "focused post-merge worker and language-boundary namespaces; governance; diff check; reconciled candidate ancestry",
         "exit_code": 0,
         "result": "passed"
       }
@@ -118,6 +123,12 @@
       "at": "2026-09-02T03:56:00Z",
       "reason": "advance the exact independently accepted reconciled candidate after clean latest-main integration preflight",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:58:00Z",
+      "reason": "integrate the exact accepted reconciled whole candidate onto canonical local main at merge commit e1fae42d6452a91a88976b408d8444b97d98ddb5 and repeat focused verification",
+      "state": "integrated"
     }
   ],
   "id": "sh07-cached-worker-identity-v1",
@@ -150,6 +161,6 @@
       "reviewer": "exact_conformance_migration_analysis"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 cached worker plan identity protocol version 1"
 }
