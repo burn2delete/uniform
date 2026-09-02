@@ -3,39 +3,42 @@
 
   Cache results are acceleration only and are never authoritative evidence.
   Use sh07-authoritative-runner for the fresh-process gate."
-  (:require [clojure.test :as test]
-            [gravity.bootstrap :as bootstrap]))
+  (:require [clojure.string :as str]
+            [clojure.test :as test]
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.unified-execution-plan :as execution-plan]))
 
-(def ^:private test-namespace
-  'gravity.self-hosting.sh07-module-fragment-test)
+(def ^:private cached-route-prefix
+  "sh07-cached-")
 
-(def ^:private shards
-  (sorted-map
-   "contract"
-   '[sh07-b13-fixtures-are-dynamically-discovered-paired-and-bounded
-     sh07-b13-claim-boundary-remains-honest]
-   "accepted"
-   '[sh07-b13-direct-and-public-routing-use-v14
-     sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive
-     sh07-b13-fragment-coverage-is-exact-ordered-and-complete
-     sh07-b13-module-assembly-manifest-is-exact-and-bound
-     sh07-b13-cross-fragment-definitions-and-references-bind
-     sh07-b13-b12-alias-value-and-call-survive-fragment-assembly]
-   "identity"
-   '[sh07-b13-identities-are-deterministic-path-neutral-and-provenanced
-     sh07-b13-stale-sh06-and-alias-binding-resolution-fail-closed]
-   "verification"
-   '[sh07-b13-fragment-request-alterations-fail-closed
-     sh07-b13-gravity-validates-fragment-plan-and-module-anchors
-     sh07-b13-module-resolvers-use-module-aggregate-bounds
-     sh07-b13-fragment-module-and-coverage-products-fail-replay]
-   "rejected"
-   '[sh07-b13-rejected-fixtures-follow-declared-oracles
-     sh07-b13-rejected-corpus-covers-size-and-form-boundaries]))
+(defn- cached-route-ids
+  []
+  (->> (keys (execution-plan/route-catalog))
+       (filter #(and (string? %)
+                     (str/starts-with? % cached-route-prefix)))
+       sort
+       vec))
 
 (defn shard-names
   []
-  (vec (keys shards)))
+  (mapv #(subs % (count cached-route-prefix))
+        (cached-route-ids)))
+
+(defn- unknown-shard!
+  [shard-name]
+  (throw
+   (ex-info "Unknown cached SH-07 shard"
+            {:id "SH07-CACHED-SHARD"
+             :shard shard-name
+             :available (shard-names)})))
+
+(defn- route-for-shard
+  [shard-name]
+  (let [route-id (when (string? shard-name)
+                   (str cached-route-prefix shard-name))]
+    (if (some #{route-id} (cached-route-ids))
+      (execution-plan/route route-id)
+      (unknown-shard! shard-name))))
 
 (defn- sha256
   [value]
@@ -48,13 +51,10 @@
 
 (defn- resolve-tests
   [shard-name]
-  (let [symbols (get shards shard-name)]
-    (when-not symbols
-      (throw
-       (ex-info "Unknown cached SH-07 shard"
-                {:id "SH07-CACHED-SHARD"
-                 :shard shard-name
-                 :available (shard-names)})))
+  (let [route (route-for-shard shard-name)
+        selection (:selection route)
+        test-namespace (symbol (:namespace selection))
+        symbols (mapv symbol (:selectors selection))]
     (require test-namespace)
     (mapv
      (fn [symbol]
