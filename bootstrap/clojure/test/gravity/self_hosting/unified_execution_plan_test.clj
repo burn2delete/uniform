@@ -608,6 +608,87 @@
     (is (= 79 (:rejected-fixture-count accounting)))
     (is (= 147 (:fixture-pair-count accounting)))))
 
+(def ^:private expected-parallel-route-ids
+  ["sh07-parallel-accepted"
+   "sh07-parallel-b12-contract-accepted"
+   "sh07-parallel-b12-identity-verification"
+   "sh07-parallel-b12-rejected-regression"
+   "sh07-parallel-identity-lineage"
+   "sh07-parallel-regression-a"
+   "sh07-parallel-regression-b"
+   "sh07-parallel-rejected"
+   "sh07-parallel-verification"])
+
+(deftest legacy-mechanism-projection-is-manifest-owned
+  (let [projection (plan/legacy-mechanism-projection :parallel-shard-runner)]
+    (is (= expected-parallel-route-ids (:route-ids projection)))
+    (is (= ["accepted" "b12-contract-accepted"
+            "b12-identity-verification" "b12-rejected-regression"
+            "identity-lineage" "regression-a" "regression-b"
+            "rejected" "verification"]
+           (:labels projection)))
+    (is (= {:kind :strip-prefix :prefix "sh07-parallel-"}
+           (:label-policy projection)))
+    (is (= expected-parallel-route-ids
+           (get (plan/legacy-route-catalog) :parallel-shard-runner)))))
+
+(deftest legacy-mechanism-declaration-fails-closed
+  (let [declaration (get-in plan/catalog
+                            [:legacy-mechanisms :parallel-shard-runner])]
+    (is (= "UEP-CATALOG-LEGACY-MECHANISMS"
+           (error-id #(plan/validate-catalog
+                       (update plan/catalog :legacy-mechanisms
+                               assoc :unknown declaration)))))
+    (is (= "UEP-CATALOG-LEGACY-MECHANISM-KEYS"
+           (error-id #(plan/validate-catalog
+                       (update-in plan/catalog
+                                  [:legacy-mechanisms :parallel-shard-runner]
+                                  assoc :extra true)))))
+    (is (= "UEP-CATALOG-LEGACY-LABEL-KEYS"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:legacy-mechanisms :parallel-shard-runner
+                                  :label-policy :extra]
+                                 true)))))
+    (is (= "UEP-CATALOG-LEGACY-ROUTES"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:legacy-mechanisms :parallel-shard-runner
+                                  :route-ids]
+                                 (conj expected-parallel-route-ids
+                                       "sh07-parallel-verification"))))))
+    (is (= "UEP-CATALOG-LEGACY-ROUTE"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:legacy-mechanisms :parallel-shard-runner
+                                  :route-ids]
+                                 (conj (vec (butlast expected-parallel-route-ids))
+                                       "sh07-parallel-unknown"))))))
+    (is (= "UEP-CATALOG-LEGACY-ROUTE"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:routes "sh07-parallel-accepted"
+                                  :replacement-for]
+                                 [:cached-shard-runner])))))
+    (is (= "UEP-CATALOG-ROUTE-MIGRATION"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:routes "sh07-parallel-accepted"
+                                  :migration-status]
+                                 :retired)))))
+    (is (= "UEP-CATALOG-ROUTE-FAST-POLICY"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:routes "sh07-parallel-accepted"
+                                  :cache-policy :authoritative?]
+                                 true)))))
+    (is (= "UEP-CATALOG-LEGACY-POLICY"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:routes "sh07-parallel-accepted"
+                                  :selection :kind]
+                                 :proof-contract-module-catalog)))))))
+
 (deftest manifest-projection-validation-rejects-stale-declarations
   (let [stale-accepted (assoc-in plan/catalog
                                  [:conformance :coverage :accepted-count]

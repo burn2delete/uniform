@@ -3,34 +3,31 @@
 
   Use `--list` to print shard names, `--check` to resolve every routed test
   without running it, or pass one shard name to run that shard."
-  (:require [clojure.string :as str]
-            [clojure.test :as test]
+  (:require [clojure.test :as test]
             [gravity.self-hosting.unified-execution-plan :as execution-plan]))
 
-(def ^:private shard-route-prefix
-  "sh07-parallel-")
+(def ^:private legacy-mechanism :parallel-shard-runner)
 
-(defn- parallel-route-ids
+(defn- parallel-projection
   []
-  (->> (execution-plan/route-names)
-       (filter #(str/starts-with? % shard-route-prefix))
-       vec))
+  (execution-plan/legacy-mechanism-projection legacy-mechanism))
 
 (defn- route-id
   [shard-name]
   (when (string? shard-name)
-    (str shard-route-prefix shard-name)))
+    (let [{:keys [route-ids labels]} (parallel-projection)]
+      (some (fn [[route-id label]]
+              (when (= shard-name label) route-id))
+            (map vector route-ids labels)))))
 
 (defn shard-names
   []
-  (mapv #(subs % (count shard-route-prefix))
-        (parallel-route-ids)))
+  (:labels (parallel-projection)))
 
 (defn- resolve-shard
   [shard-name]
-  (let [parallel-routes (set (parallel-route-ids))
-        route (when (contains? parallel-routes (route-id shard-name))
-                (execution-plan/route (route-id shard-name)))]
+  (let [route-id (route-id shard-name)
+        route (when route-id (execution-plan/route route-id))]
     (when-not route
       (throw
        (ex-info

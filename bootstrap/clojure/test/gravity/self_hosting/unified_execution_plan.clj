@@ -26,7 +26,7 @@
 (def ^:private catalog-keys
   #{:schema :version :authority :authoritative? :phase :complete?
     :description :lanes :resource-classes :modules :routes :suites
-    :coverage :evidence-policy :conformance})
+    :legacy-mechanisms :coverage :evidence-policy :conformance})
 (def ^:private conformance-keys
   #{:source-of-truth :schema :authoritative? :suites :nonclaims :authority
     :suite-order :coverage :preserved-bespoke :complete? :version})
@@ -58,6 +58,11 @@
 (def ^:private bounds-keys #{:timeout-ms :max-output-bytes :max-test-vars})
 (def ^:private route-cache-keys #{:mode :key-inputs :authoritative?})
 (def ^:private route-receipt-keys #{:schema :required-fields})
+(def ^:private legacy-mechanism-keys #{:route-ids :label-policy})
+(def ^:private legacy-label-policy-keys #{:kind :prefix})
+(def ^:private allowed-legacy-mechanisms #{:parallel-shard-runner})
+(def ^:private maximum-legacy-routes 64)
+(def ^:private allowed-legacy-label-kinds #{:strip-prefix})
 (def ^:private route-keys
   #{:id :module-id :replacement-for :migration-status :replaces? :exhaustive?
     :lanes :selection :dependency-closure :resource-class :bounds
@@ -621,6 +626,107 @@
                  {:route route-id}))))
   route)
 
+(defn- validate-legacy-mechanism!
+  [mechanism declaration routes]
+  (ensure! (contains? allowed-legacy-mechanisms mechanism)
+           "UEP-CATALOG-LEGACY-MECHANISM"
+           "Legacy mechanism is not reviewed"
+           {:mechanism mechanism})
+  (exact-keys! declaration legacy-mechanism-keys
+               "UEP-CATALOG-LEGACY-MECHANISM-KEYS"
+               [:legacy-mechanisms mechanism])
+  (let [route-ids (:route-ids declaration)
+        label-policy (:label-policy declaration)]
+    (non-empty-vector! route-ids "UEP-CATALOG-LEGACY-ROUTES"
+                       [:legacy-mechanisms mechanism :route-ids])
+    (ensure! (<= (count route-ids) maximum-legacy-routes)
+             "UEP-CATALOG-LEGACY-ROUTES"
+             "Legacy mechanism route count exceeds its bound"
+             {:mechanism mechanism :count (count route-ids)
+              :maximum maximum-legacy-routes})
+    (ensure! (and (every? string? route-ids)
+                  (= (count route-ids) (count (distinct route-ids)))
+                  (= route-ids (vec (sort route-ids))))
+             "UEP-CATALOG-LEGACY-ROUTES"
+             "Legacy mechanism routes must be distinct strings in sorted order"
+             {:mechanism mechanism :route-ids route-ids})
+    (exact-keys! label-policy legacy-label-policy-keys
+                 "UEP-CATALOG-LEGACY-LABEL-KEYS"
+                 [:legacy-mechanisms mechanism :label-policy])
+    (ensure! (contains? allowed-legacy-label-kinds (:kind label-policy))
+             "UEP-CATALOG-LEGACY-LABEL"
+             "Legacy mechanism label policy is unknown"
+             {:mechanism mechanism :kind (:kind label-policy)})
+    (let [prefix (:prefix label-policy)]
+      (ensure! (and (string? prefix)
+                    (not (str/blank? prefix))
+                    (<= (count prefix) maximum-repository-relative-path-length)
+                    (not (str/includes? prefix "\u0000")))
+               "UEP-CATALOG-LEGACY-LABEL"
+               "Legacy mechanism label prefix is outside its bound"
+               {:mechanism mechanism :prefix prefix})
+      (doseq [route-id route-ids]
+        (let [route (get routes route-id)]
+          (ensure! (map? route)
+                   "UEP-CATALOG-LEGACY-ROUTE"
+                   "Legacy mechanism references an unknown route"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (some #{mechanism} (:replacement-for route))
+                   "UEP-CATALOG-LEGACY-ROUTE"
+                   "Legacy mechanism route does not declare its replacement"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :compatibility-projection
+                      (:migration-status route))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route is not a compatibility projection"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (and (false? (:replaces? route))
+                        (false? (:exhaustive? route)))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route cannot replace an authoritative route"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= [:fast] (:lanes route))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route must remain fast-only"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :warm-bounded-process (:execution-mode route))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route must remain warm and bounded"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :exact-tree-warm-worker
+                      (get-in route [:executor :adapter]))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route executor is not the reviewed worker"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (false? (get-in route [:executor :fresh-capable?]))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route cannot be fresh-capable"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :non-authoritative
+                      (get-in route [:executor :authority]))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route executor cannot confer authority"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :non-authoritative (:authority-ceiling route))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route authority ceiling is too high"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (and (= :eligible (get-in route [:cache-policy :mode]))
+                        (false? (get-in route [:cache-policy :authoritative?])))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route cache policy is not fast-only"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (= :exact-vars (get-in route [:selection :kind]))
+                   "UEP-CATALOG-LEGACY-POLICY"
+                   "Legacy mechanism route must select exact test vars"
+                   {:mechanism mechanism :route-id route-id})
+          (ensure! (and (str/starts-with? route-id prefix)
+                        (pos? (- (count route-id) (count prefix))))
+                   "UEP-CATALOG-LEGACY-LABEL"
+                   "Legacy mechanism route cannot produce a non-empty label"
+                   {:mechanism mechanism :route-id route-id
+                    :prefix prefix}))))))
+
 (defn- validate-suite!
   [suite index route-ids]
   (exact-keys! suite suite-keys "UEP-CATALOG-SUITE-KEYS" [:suites index])
@@ -727,6 +833,11 @@
                      (:lanes value))
     (validate-conformance-closure! id (:module-id route) (:dependency-closure route)
                                    (:conformance value)))
+  (exact-keys! (:legacy-mechanisms value) allowed-legacy-mechanisms
+               "UEP-CATALOG-LEGACY-MECHANISMS"
+               [:legacy-mechanisms])
+  (doseq [[mechanism declaration] (:legacy-mechanisms value)]
+    (validate-legacy-mechanism! mechanism declaration (:routes value)))
   (let [request-shards
         (->> (:routes value)
              (keep (fn [[_ route]]
@@ -947,14 +1058,27 @@
   (into (sorted-map) (:routes manifest)))
 
 (defn- legacy-route-catalog-value [manifest]
-  (->> (:routes manifest)
-       (mapcat (fn [[route-id route]]
-                 (map (fn [legacy] [legacy route-id])
-                      (:replacement-for route))))
-       (group-by first)
-       (map (fn [[legacy pairs]]
-              [legacy (vec (sort (map second pairs)))]))
-       (into (sorted-map))))
+ (let [generated
+       (->> (:routes manifest)
+            (mapcat (fn [[route-id route]]
+                      (map (fn [legacy] [legacy route-id])
+                           (:replacement-for route))))
+            (group-by first)
+            (map (fn [[legacy pairs]]
+                   [legacy (vec (sort (map second pairs)))]))
+            (into (sorted-map)))]
+   ;; The reviewed mechanism declaration narrows compatibility membership
+   ;; where legacy discovery historically exposed only a stable subset.  Other
+   ;; mechanisms retain their generated replacement projection unchanged.
+   (reduce-kv (fn [catalog mechanism declaration]
+                (assoc catalog mechanism (:route-ids declaration)))
+              generated
+              (:legacy-mechanisms manifest))))
+
+(defn- legacy-route-label-value
+  [declaration route-id]
+  (let [prefix (get-in declaration [:label-policy :prefix])]
+    (subs route-id (count prefix))))
 
 (defn- module-ownership-index-value [manifest]
   (into (sorted-map)
@@ -1023,6 +1147,26 @@
   ([manifest]
    (validate-catalog manifest)
    (legacy-route-catalog-value manifest)))
+
+(defn legacy-mechanism-projection
+  "Return one reviewed legacy mechanism and its presentation labels.
+
+  Route membership and label policy come from the authenticated catalog; the
+  returned labels are a compatibility serialization only and confer no
+  execution or acceptance authority."
+  ([mechanism] (legacy-mechanism-projection catalog mechanism))
+  ([manifest mechanism]
+   (validate-catalog manifest)
+   (let [declaration (get-in manifest [:legacy-mechanisms mechanism])]
+     (ensure! (map? declaration)
+              "UEP-LEGACY-MECHANISM"
+              "Legacy mechanism is not present in the reviewed catalog"
+              {:mechanism mechanism})
+     {:mechanism mechanism
+      :route-ids (:route-ids declaration)
+      :labels (mapv #(legacy-route-label-value declaration %)
+                    (:route-ids declaration))
+      :label-policy (:label-policy declaration)})))
 
 (defn module-ownership-index
   "Generate a path-to-owner projection from the reviewed module manifest.

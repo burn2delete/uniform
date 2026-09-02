@@ -23,6 +23,8 @@
                               "--timeout-ms" :timeout-ms
                               "--max-output-bytes" :max-output-bytes
                               "--cache-mode" :cache-mode})
+(def ^:private legacy-mechanism-option "--legacy-mechanism")
+(def ^:private legacy-operation-options {"--list" :list "--check" :check})
 (def ^:private cache-modes #{"eligible" "disabled" "forbidden"})
 (def ^:dynamic *plan-fn* execution-plan/plan)
 (def ^:dynamic *executor-fn*
@@ -30,6 +32,9 @@
   nil)
 (def ^:dynamic *route-fn* execution-plan/route)
 (def ^:dynamic *route-names-fn* execution-plan/route-names)
+(def ^:dynamic *legacy-mechanism-projection-fn*
+  "Test-only seam for the reviewed legacy mechanism projection."
+  execution-plan/legacy-mechanism-projection)
 (defn- fail! [id message data]
   (throw (ex-info message (assoc data :id id))))
 (defn- text! [value id option]
@@ -83,6 +88,60 @@
     (fail! "UEP-CLI-DUPLICATE" "CLI option may be supplied only once"
            {:option option}))
   options)
+
+(defn- legacy-mechanism-value [value]
+  (let [value (text! value "UEP-CLI-LEGACY-MECHANISM" legacy-mechanism-option)]
+    (when-not (re-matches #"[a-z][a-z0-9-]*" value)
+      (fail! "UEP-CLI-LEGACY-MECHANISM"
+             "Legacy mechanism must be a closed identifier"
+             {:option legacy-mechanism-option :value value}))
+    (keyword value)))
+
+(defn- parse-legacy-args
+  [arguments]
+  (let [options
+        (loop [remaining arguments options {}]
+          (if-not (seq remaining)
+            options
+            (let [option (first remaining) tail (next remaining)]
+              (cond
+                (= option legacy-mechanism-option)
+                (let [value (first tail)]
+                  (when (or (nil? value) (str/starts-with? value "--"))
+                    (fail! "UEP-CLI-VALUE" "CLI option requires a value"
+                           {:option option}))
+                  (duplicate! options :mechanism option)
+                  (recur (next tail)
+                         (assoc options :mechanism
+                                (legacy-mechanism-value value))))
+
+                (contains? legacy-operation-options option)
+                (do
+                  (when (contains? options :operation)
+                    (fail! "UEP-CLI-DUPLICATE"
+                           "Legacy compatibility operation may be supplied only once"
+                           {:option option}))
+                  (recur tail (assoc options :operation
+                                      (legacy-operation-options option))))
+
+                (str/starts-with? option "--")
+                (fail! "UEP-CLI-UNKNOWN" "CLI option is not recognized"
+                       {:option option})
+
+                :else
+                (fail! "UEP-CLI-POSITIONAL"
+                       "Positional arguments are not accepted"
+                       {:argument option})))))]
+    (when-not (contains? options :mechanism)
+      (fail! "UEP-CLI-LEGACY-MECHANISM"
+             "Legacy compatibility mode requires a mechanism"
+             {:option legacy-mechanism-option}))
+    (when-not (contains? options :operation)
+      (fail! "UEP-CLI-LEGACY-USAGE"
+             "Legacy compatibility mode requires --list or --check"
+             {:mechanism (:mechanism options)}))
+    (assoc options :mode :legacy)))
+
 (defn parse-args
   "Parse only the closed CLI surface; route semantics remain in the catalog."
   [arguments]
@@ -102,7 +161,9 @@
                  {:arguments arguments}))
         (if (= "--help" (first arguments)) {:mode :help}
             {:mode :list-routes}))
-      (let [options
+      (if (= legacy-mechanism-option (first arguments))
+        (parse-legacy-args arguments)
+        (let [options
             (loop [remaining arguments options {}]
               (if-not (seq remaining)
                 options
@@ -130,16 +191,82 @@
           (when-not (contains? options key)
             (fail! "UEP-CLI-REQUIRED" "Required CLI option is missing"
                    {:option (if (= key :route-id) "--route" "--lane")})))
-        (assoc options :mode :run)))))
+        (assoc options :mode :run))))))
 (defn help-value []
   {:schema :gravity/unified-execution-cli-help-v1 :status :help
    :required ["--route ID" "--lane fast|fresh"]
    :optional ["--coordination-root ABSOLUTE" "--timeout-ms N"
               "--max-output-bytes N" "--cache-mode eligible|disabled|forbidden"
-              "--plan-only"] :standalone ["--help" "--list-routes"]})
+              "--plan-only"]
+   :standalone ["--help" "--list-routes"]
+   :legacy ["--legacy-mechanism MECHANISM --list|--check"]})
 (defn list-value []
   {:schema :gravity/unified-execution-cli-routes-v1 :status :listed
    :routes (vec (*route-names-fn*))})
+
+(defn- legacy-projection [mechanism]
+  (*legacy-mechanism-projection-fn* mechanism))
+
+(defn- legacy-shard-route
+  [mechanism shard-name]
+  (let [{:keys [route-ids labels]} (legacy-projection mechanism)
+        route-id (when (string? shard-name)
+                   (some (fn [[route-id label]]
+                           (when (= shard-name label) route-id))
+                         (map vector route-ids labels)))]
+    (when-not route-id
+      (fail! "SH07-PARALLEL-SHARD"
+             "Unknown SH-07 parallel test shard"
+             {:shard shard-name :available labels}))
+    route-id))
+
+(defn- resolve-legacy-shard
+  [mechanism shard-name]
+  (let [route-id (legacy-shard-route mechanism shard-name)
+        route (*route-fn* route-id)
+        selection (:selection route)
+        namespace-value (:namespace selection)
+        selectors (:selectors selection)]
+    (when-not (and (= :exact-vars (:kind selection))
+                   (string? namespace-value)
+                   (vector? selectors)
+                   (every? string? selectors))
+      (fail! "UEP-CLI-LEGACY-ROUTE"
+             "Legacy compatibility route selection is not exact-vars"
+             {:mechanism mechanism :route-id route-id
+              :selection selection}))
+    (let [namespace-symbol (symbol namespace-value)
+          test-symbols (mapv symbol selectors)]
+      (require namespace-symbol)
+      {:route-id route-id
+       :shard shard-name
+       :namespace namespace-symbol
+       :test-vars
+       (mapv
+        (fn [test-symbol]
+          (let [test-var (ns-resolve namespace-symbol test-symbol)]
+            (when-not (and (var? test-var) (:test (meta test-var)))
+              (fail! "SH07-PARALLEL-SHARD-TEST"
+                     "SH-07 parallel shard references an absent test"
+                     {:shard shard-name
+                      :namespace namespace-symbol
+                      :test test-symbol}))
+            test-var))
+        test-symbols)})))
+
+(defn- legacy-list-text [mechanism]
+  (str (str/join "\n" (:labels (legacy-projection mechanism))) "\n"))
+
+(defn- legacy-check-text [mechanism]
+  (let [{:keys [labels]} (legacy-projection mechanism)]
+    (str (pr-str
+          (into (sorted-map)
+                (map (fn [shard-name]
+                       [shard-name
+                        (count (:test-vars
+                                (resolve-legacy-shard mechanism shard-name)))])
+                     labels)))
+         "\n")))
 (defn- request-for
   [{:keys [route-id lane timeout-ms max-output-bytes cache-mode]}]
   (let [requested (cond-> {}
@@ -236,6 +363,12 @@
               (output-fail! "CLI output is not one strict EDN value")))
           (binding [*out* writer] (print text) (flush))))))
 (defn- print-one! [value] (bounded-print! *out* value))
+(defn- print-legacy-text! [text]
+  (let [bytes (.getBytes ^String text StandardCharsets/UTF_8)]
+    (when (> (alength bytes) maximum-output-bytes)
+      (output-fail! "Legacy compatibility output exceeds its byte bound"))
+    (print text)
+    (flush)))
 (defn- safe-error-id [value]
   (cond
     (string? value) (if (<= (count value) maximum-text-length)
@@ -284,6 +417,13 @@
         (case (:mode parsed)
           :help (do (print-one! (help-value)) 0)
           :list-routes (do (print-one! (list-value)) 0)
+          :legacy (case (:operation parsed)
+                    :list (do (print-legacy-text!
+                               (legacy-list-text (:mechanism parsed)))
+                              0)
+                    :check (do (print-legacy-text!
+                                (legacy-check-text (:mechanism parsed)))
+                                0))
           :run (let [request (request-for parsed) built (*plan-fn* request)]
                  (execution-plan/validate-plan built)
                  (if (:plan-only parsed)
