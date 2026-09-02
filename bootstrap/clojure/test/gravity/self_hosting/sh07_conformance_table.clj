@@ -14,7 +14,8 @@
   (:import (java.nio ByteBuffer)
            (java.nio.channels FileChannel)
            (java.nio.charset StandardCharsets)
-           (java.nio.file Files LinkOption Path Paths StandardOpenOption)))
+           (java.nio.file Files LinkOption Path Paths StandardOpenOption)
+           (java.security MessageDigest)))
 
 (def catalog-path "contracts/verification-catalog.edn")
 (def table-schema :gravity/sh07-conformance-table-v1)
@@ -36,6 +37,10 @@
     :oracle-declaration :directory-parity? :excluded})
 (def ^:private row-keys
   #{:id :basename :gravity :qst :status :profile :target :oracle})
+(def ^:private fixture-pair-binding-keys
+  #{:schema :suite-id :row-id :status :sha256 :bytes :authenticated?})
+(def fixture-pair-binding-schema
+  :gravity/sh07-fixture-pair-binding-v1)
 (def ^:private oracle-keys
   #{:rule :stage :severity :reason :semantic-rule :facts :remediation
     :fail-closed?})
@@ -138,6 +143,13 @@
                       "SH07-CONFORMANCE-FIXTURE-BOUND"
                       "Fixture peer exceeds the reviewed byte bound"
                       {:row-id row-id :extension extension}))
+
+(defn- sha256-id
+  [bytes]
+  (let [digest (MessageDigest/getInstance "SHA-256")]
+    (.update digest ^bytes bytes)
+    (str "sha256:" (apply str (map #(format "%02x" (bit-and % 0xff))
+                                   (.digest digest))))))
 
 (defn- read-bounded-edn
   [path id]
@@ -435,7 +447,9 @@
                "Fixture target is not the reviewed declaration"
                {:row-id (:id row) :expected (:target declaration)
                 :actual (:target row)}))
-    row))
+    (assoc row :fixture-pair-binding
+           {:sha256 (sha256-id gravity-bytes)
+            :bytes (alength gravity-bytes)})))
 
 (defn- validate-legacy!
   [suite]
@@ -638,6 +652,46 @@
        :pairs (mapv #(assoc (select-keys % [:id :basename :status])
                             :authenticated? true)
                     (concat (:accepted suite) (:rejected suite)))})))
+
+(defn fixture-pair-binding
+  "Return a bounded content binding for one reviewed fixture row.
+
+  The table is validated before the row is selected, so the existing
+  no-follow, pair-presence, byte-bound, declaration, and byte-identity checks
+  remain the sole file-authentication implementation.  The selected pair is
+  then read once more to expose its content hash to a downstream plan
+  projection; this helper performs no compilation or execution.
+  "
+  [table-value row-id]
+  (ensure! (string? row-id) "SH07-CONFORMANCE-FIXTURE-ROW"
+           "Fixture pair binding row id must be a string" {:row-id row-id})
+  (let [table-value (validate-table table-value)
+        matches (vec
+                 (keep (fn [suite]
+                         (when-let [row (some #(when (= row-id (:id %)) %)
+                                              (concat (:accepted suite)
+                                                      (:rejected suite)))]
+                           [suite row]))
+                       (:suites table-value)))]
+    (ensure! (= 1 (count matches))
+             "SH07-CONFORMANCE-FIXTURE-ROW"
+             "Fixture pair binding row is not uniquely reviewed"
+             {:row-id row-id
+              :matches (mapv (comp :id first) matches)})
+    (let [[suite row] (first matches)
+          checked (validate-pair! suite (:status row) row)
+          pair (:fixture-pair-binding checked)
+          binding {:schema fixture-pair-binding-schema
+                   :suite-id (:id suite)
+                   :row-id (:id row)
+                   :status (:status row)
+                   :sha256 (:sha256 pair)
+                   :bytes (:bytes pair)
+                   :authenticated? true}]
+      (exact-keys! binding fixture-pair-binding-keys
+                   "SH07-CONFORMANCE-FIXTURE-BINDING-KEYS"
+                   [:fixture-pair-binding])
+      binding)))
 
 (defn run-row
   "Expose an optional non-semantic callback boundary.
