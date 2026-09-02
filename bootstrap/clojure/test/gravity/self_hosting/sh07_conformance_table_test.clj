@@ -80,7 +80,22 @@
                 all-rows))
     (is (every? #(and (keyword? (:profile %))
                        (keyword? (:target %)))
-                all-rows))))
+                       all-rows))))
+
+(deftest fixture-pair-binding-exposes-bounded-content-identity
+  (let [binding (table/fixture-pair-binding
+                 (table/table) "sh07-b15/keyword-lookup-zero-arity")]
+    (is (= #{:schema :suite-id :row-id :status :sha256 :bytes :authenticated?}
+           (set (keys binding))))
+    (is (= "sh07-b15" (:suite-id binding)))
+    (is (= "sh07-b15/keyword-lookup-zero-arity" (:row-id binding)))
+    (is (= :rejected (:status binding)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:sha256 binding)))
+    (is (<= 1 (:bytes binding) table/maximum-fixture-peer-bytes))
+    (is (true? (:authenticated? binding)))
+    (is (= "SH07-CONFORMANCE-FIXTURE-ROW"
+           (error-id #(table/fixture-pair-binding
+                       (table/table) "sh07-b15/not-reviewed"))))))
 
 (deftest b13-static-fixture-census-is-table-driven
   (let [census (table/fixture-census "sh07-b13")

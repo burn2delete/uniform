@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.unified-execution-plan-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.self-hosting.sh07-conformance-table :as conformance]
             [gravity.self-hosting.unified-execution-plan :as plan]))
 
 (defn- error-id [f]
@@ -178,6 +179,84 @@
                        (identity-of (dissoc altered :plan-id)))]
     (is (= "UEP-PLAN-ARTIFACT"
            (error-id #(plan/validate-plan altered))))))
+
+(deftest fixture-source-binding-is-closed-and-plan-bound
+  (let [p (plan/plan {:route-id "sh07-conformance-table" :lane :fast})
+        row-id "sh07-b15/keyword-lookup-zero-arity"
+        binding (plan/fixture-source-binding p row-id :checked-core)
+        source-binding (plan/fixture-source-binding p row-id :source)]
+    (is (= #{:schema :plan-id :catalog-id :route-id :suite-id :row-id :status
+             :module-id :module-owner :stage :gravity-path :qst-path
+             :fixture-sha256 :fixture-bytes :authenticated? :binding-id}
+           (set (keys binding))))
+    (is (= :gravity/fixture-source-binding-v1 (:schema binding)))
+    (is (= (:plan-id p) (:plan-id binding)))
+    (is (= (:catalog-id p) (:catalog-id binding)))
+    (is (= "sh07-conformance-table" (:route-id binding)))
+    (is (= "sh07-b15" (:suite-id binding)))
+    (is (= row-id (:row-id binding)))
+    (is (= :rejected (:status binding)))
+    (is (= "sh07-checked-core" (:module-id binding)))
+    (is (= :gravity (:module-owner binding)))
+    (is (= :checked-core (:stage binding)))
+    (is (= "bootstrap/clojure/fixtures/self-hosting/sh-07-b15/rejected/keyword-lookup-zero-arity.gravity"
+           (:gravity-path binding)))
+    (is (= "bootstrap/clojure/fixtures/self-hosting/sh-07-b15/rejected/keyword-lookup-zero-arity.qst"
+           (:qst-path binding)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:fixture-sha256 binding)))
+    (is (pos? (:fixture-bytes binding)))
+    (is (<= (:fixture-bytes binding) conformance/maximum-fixture-peer-bytes))
+    (is (true? (:authenticated? binding)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:binding-id binding)))
+    ;; The plan identity is part of the binding preimage, while an earlier
+    ;; requested stage receives a distinct authenticated identity.
+    (is (not= (:binding-id binding) (:binding-id source-binding)))
+    (is (= :source (:stage source-binding)))
+    (is (= binding (plan/fixture-source-binding p row-id :checked-core)))))
+
+(deftest fixture-source-binding-rejects-unknown-rows-and-stages
+  (let [all-fixtures (plan/plan {:route-id "sh07-conformance-table" :lane :fast})
+        partial (plan/plan {:route-id "sh07-parallel-regression-b" :lane :fast})]
+    (is (= "UEP-FIXTURE-BINDING-ROW"
+           (error-id #(plan/fixture-source-binding
+                       all-fixtures "sh07-b15/not-reviewed" :source))))
+    (is (= "UEP-FIXTURE-BINDING-ROW"
+           (error-id #(plan/fixture-source-binding
+                       partial "sh07-b15/keyword-lookup-zero-arity" :source))))
+    (is (= "UEP-FIXTURE-BINDING-STAGE"
+           (error-id #(plan/fixture-source-binding
+                       all-fixtures "sh07-b15/keyword-lookup-zero-arity" :emission))))
+    (is (= "UEP-FIXTURE-BINDING-ROW"
+           (error-id #(plan/fixture-source-binding
+                       all-fixtures nil :source))))))
+
+(deftest fixture-source-binding-revalidates-canonical-conformance-table
+  (let [p (plan/plan {:route-id "sh07-conformance-table" :lane :fast})
+        calls (atom 0)
+        original conformance/validate-table]
+    (with-redefs [conformance/validate-table
+                  (fn [table]
+                    (swap! calls inc)
+                    (original table))]
+      (plan/fixture-source-binding
+       p "sh07-b15/keyword-lookup-zero-arity" :checked-core))
+    ;; One validation occurs while validating the plan's catalog and one at
+    ;; the binding boundary immediately before downstream artifact use.
+    (is (= 2 @calls))))
+
+(deftest fixture-source-binding-id-includes-pair-content-identity
+  (let [p (plan/plan {:route-id "sh07-conformance-table" :lane :fast})
+        row-id "sh07-b15/keyword-lookup-zero-arity"
+        baseline (plan/fixture-source-binding p row-id :checked-core)
+        original conformance/fixture-pair-binding
+        replacement (str "sha256:" (apply str (repeat 64 "0")))
+        changed (with-redefs [conformance/fixture-pair-binding
+                              (fn [table id]
+                                (assoc (original table id) :sha256 replacement))]
+                  (plan/fixture-source-binding p row-id :checked-core))]
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:fixture-sha256 baseline)))
+    (is (= replacement (:fixture-sha256 changed)))
+    (is (not= (:binding-id baseline) (:binding-id changed)))))
 
 (deftest plans-are-deterministic-and-declarative
   (let [request {:route-id "sh07-b8-regression" :lane :fast}
