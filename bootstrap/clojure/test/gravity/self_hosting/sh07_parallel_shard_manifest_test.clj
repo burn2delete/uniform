@@ -95,6 +95,19 @@
     (catch clojure.lang.ExceptionInfo error
       (:id (ex-data error)))))
 
+(def ^:private required-transitive-fixture-suites
+  {"gravity.self-hosting.sh07-vector-pattern-test"
+   ["sh07-b10" "sh07-b11"]
+   "gravity.self-hosting.sh07-alias-qualified-reference-test"
+   ["sh07-b10" "sh07-b11" "sh07-b12"]
+   "gravity.self-hosting.sh07-match-lowering-test"
+   ["sh07-b10"]})
+
+(defn- fixture-suite-path
+  [suite-id]
+  (str "bootstrap/clojure/fixtures/self-hosting/"
+       (str/replace suite-id #"^sh07-" "sh-07-")))
+
 (deftest manifest-routes-preserve-the-nine-shard-names
   (let [expected-names (vec (sort (keys expected-shards)))
         actual-route-ids (->> (plan/route-names)
@@ -121,7 +134,10 @@
             fixture-path (str "bootstrap/clojure/fixtures/self-hosting/"
                               (str/replace fixture-suite
                                            #"^sh07-"
-                                           "sh-07-"))]
+                                           "sh-07-"))
+            required-suites (get required-transitive-fixture-suites namespace)
+            closure-paths (set (:paths closure))
+            closure-suites (set (:fixture-suite-ids closure))]
         (is (= {:kind :exact-vars
                 :namespace namespace
                 :selectors selectors}
@@ -136,8 +152,11 @@
         (is (= :non-authoritative (:authority-ceiling route)))
         (is (true? (:complete? closure)))
         (is (= ["sh07-checked-core"] (:module-ids closure)))
-        (is (contains? (set (:paths closure)) test-path))
-        (is (contains? (set (:paths closure)) fixture-path))))))
+        (is (contains? closure-paths test-path))
+        (is (contains? closure-paths fixture-path))
+        (is (= (set required-suites) closure-suites))
+        (doseq [suite-id required-suites]
+          (is (contains? closure-paths (fixture-suite-path suite-id))))))))
 
 (deftest check-output-preserves-selector-counts-and-unknown-diagnostic
   ;; Resolution is bounded and does not execute any selected test var.
@@ -154,7 +173,11 @@
     (is (= (str (pr-str expected) "\n")
            (with-out-str (runner/-main "--check")))))
   (is (= "SH07-PARALLEL-SHARD"
-         (error-id #(runner/run-shard "not-a-reviewed-shard")))))
+         (error-id #(runner/run-shard "not-a-reviewed-shard"))))
+  (is (= "SH07-PARALLEL-SHARD"
+         (error-id #(runner/run-shard 'accepted))))
+  (is (= "SH07-PARALLEL-SHARD"
+         (error-id #(runner/run-shard :accepted)))))
 
 (deftest list-output-preserves-shard-order-and-newline
   (is (= (str (str/join "\n" (runner/shard-names)) "\n")

@@ -383,10 +383,11 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b11"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -425,10 +426,11 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b11"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -466,10 +468,11 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b11"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -510,10 +513,11 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b11"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -558,10 +562,12 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b12"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11" "sh07-b12"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -604,10 +610,12 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b12"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11" "sh07-b12"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
@@ -647,10 +655,12 @@
                         :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
-                        :fixture-suite-ids ["sh07-b12"]
+                        :fixture-suite-ids ["sh07-b10" "sh07-b11" "sh07-b12"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}

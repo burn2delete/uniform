@@ -18,7 +18,8 @@
 
 (defn- route-id
   [shard-name]
-  (str shard-route-prefix shard-name))
+  (when (string? shard-name)
+    (str shard-route-prefix shard-name)))
 
 (defn shard-names
   []
