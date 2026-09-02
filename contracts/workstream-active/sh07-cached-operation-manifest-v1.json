@@ -1,0 +1,144 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "45635b1698034f0fdc7e4c3edbe408abe2190f84",
+  "candidate_commit": "7ea6552badb178d6d5c5f9d4c296dc738f128e14",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-cached-shard-manifest-v1",
+    "sh07-warm-worker-cached-protocol-v1"
+  ],
+  "disposition": "Independently accepted and integration eligible on the exact canonical local-main lineage. This records the cached-shard operation, shard, and result contract as closed executor-request data on exactly five compatibility routes and expands their authenticated implementation closure without changing execution. It invokes no cached lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan_test.clj",
+      "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner_test.clj",
+      "exact five-route operation, shard, selector-order, and closure oracle"
+    ],
+    "rejected_fixtures": [
+      "unknown executor request key or operation",
+      "blank or duplicate cached shard",
+      "wrong cached result contract",
+      "fresh or authoritative cached request policy",
+      "overlapping parent and child closure paths"
+    ],
+    "stable_diagnostics": [
+      "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST-KEYS",
+      "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST",
+      "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST-POLICY",
+      "UEP-CATALOG-CACHED-EXECUTOR-REQUEST"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure focused gravity.self-hosting.unified-execution-plan-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure focused gravity.self-hosting.sh07-cached-shard-runner-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure focused gravity.self-hosting.sh01-language-boundary-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 45635b1698034f0fdc7e4c3edbe408abe2190f84..7ea6552badb178d6d5c5f9d4c296dc738f128e14",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 45635b1698034f0fdc7e4c3edbe408abe2190f84 --candidate-commit 7ea6552badb178d6d5c5f9d4c296dc738f128e14 --candidate-tree 8bd5b3515f46c7ccafc9125f418cce17ea76b117",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "BOOT7",
+    "BOOT8",
+    "TEST13",
+    "contracts/verification-catalog.edn",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:05:00Z",
+      "reason": "start the smallest declarative cached-operation and authenticated-closure prerequisite",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:18:00Z",
+      "reason": "freeze exact base 45635b1698034f0fdc7e4c3edbe408abe2190f84, candidate 7ea6552badb178d6d5c5f9d4c296dc738f128e14, tree 8bd5b3515f46c7ccafc9125f418cce17ea76b117, and four owned paths",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:19:00Z",
+      "reason": "request independent review of manifest-only classification, exact five-route parity, closure completeness, bounds, and execution nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "parallel_manifest_review",
+      "at": "2026-09-02T03:23:00Z",
+      "reason": "accept the exact manifest-only operation projection, unique shards, preserved selector parity, complete non-overlapping bounded closure, unchanged generic and fresh shapes, and no-invocation nonclaim",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:24:00Z",
+      "reason": "advance the exact independently accepted candidate after clean canonical local-main integration preflight",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-cached-operation-manifest-v1",
+  "invariant_family": "tooling/sh07-unified-execution-cache-transport",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner_test.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan_test.clj",
+    "contracts/verification-catalog.edn"
+  ],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary catalog, closure, and cached execution boundary",
+    "the manifest declares a cached operation but execution_lanes still invokes the generic exact worker path and no cached lane invocation is claimed",
+    "the later lane adapter must map the declarative cached-shard operation to the closed run-cached-shard wire operation and bind route, plan, catalog, closure, and result-contract identities",
+    "the cached result context, six counters, hit or miss decision, and observational elapsed time are not yet transported into a unified receipt",
+    "fresh authoritative acceptance remains cache-free and independently replayable and was not changed or run",
+    "no real cached shard, cache execution, broad B13 namespace, or authoritative SH-07 suite was run",
+    "no runner or helper is retired; exact execution, receipt, diagnostic, fixture, mutation, and cache-context parity remains required",
+    "tooling simplification grants no SH roadmap credit and does not change recorded SH-07 slice counts"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "parallel_manifest_review"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 declarative cached operation and authenticated closure version 1"
+}
