@@ -42,13 +42,25 @@
 (def ^:private module-keys
   #{:id :owner :source-paths :artifact-request :ownership-scope
     :required-evidence})
-(def ^:private artifact-stages
+(def ^:private artifact-stage-order
   "The closed compiler-artifact stages that a module may request.
 
   A module's request names the earliest artifact needed by a route.  The
   source path and owner are projected into each plan so downstream adapters do
   not infer provenance from a filename or route id."
-  #{:source :reader :syntax :macroexpansion :resolution :checked-core})
+  [:source :reader :syntax :macroexpansion :resolution :checked-core])
+(def ^:private artifact-stages (set artifact-stage-order))
+(def ^:private artifact-stage-rank
+  (zipmap artifact-stage-order (range)))
+(def ^:private fixture-source-binding-schema
+  :gravity/fixture-source-binding-v1)
+(def ^:private fixture-source-binding-keys
+  #{:schema :plan-id :catalog-id :route-id :suite-id :row-id :status
+    :module-id :module-owner :stage :gravity-path :qst-path
+    :fixture-sha256 :fixture-bytes :authenticated? :binding-id})
+;; A policy ceiling, not a duplicate census.  The reviewed table's exact
+;; coverage count remains owned by conformance/validate-table.
+(def ^:private maximum-fixture-source-bindings 256)
 (def ^:private artifact-request-keys
   #{:module-id :module-owner :stage :source-path})
 (def ^:private selection-keys #{:kind :namespace :selectors})
@@ -1719,6 +1731,168 @@
       (assoc base :plan-id (identity-of base)))))
 
 (def build-plan plan)
+
+(defn- fixture-source-row
+  [table fixture-suite-ids row-id]
+  (ensure! (and (vector? fixture-suite-ids) (seq fixture-suite-ids))
+           "UEP-FIXTURE-BINDING-CLOSURE"
+           "Fixture source binding requires a non-empty fixture-suite closure"
+           {:row-id row-id :fixture-suite-ids fixture-suite-ids})
+  (let [table-suites (:suites table)
+        known-suite-ids (set (map :id table-suites))
+        unknown-suite-ids (set/difference (set fixture-suite-ids)
+                                          known-suite-ids)]
+    (ensure! (empty? unknown-suite-ids)
+             "UEP-FIXTURE-BINDING-CLOSURE"
+             "Fixture source binding closure references an unknown suite"
+             {:row-id row-id :unknown (sorted-values unknown-suite-ids)})
+    (let [rows (vec
+                (mapcat (fn [suite]
+                          (concat (:accepted suite) (:rejected suite)))
+                        (filter #(contains? (set fixture-suite-ids) (:id %))
+                                table-suites)))]
+      ;; This bounds the amount of reviewed row data traversed by the request
+      ;; projection even when a future route names every conformance suite.
+      (ensure! (<= (count rows) maximum-fixture-source-bindings)
+               "UEP-FIXTURE-BINDING-BOUND"
+               "Fixture source binding closure exceeds the reviewed row bound"
+               {:row-id row-id :count (count rows)
+                :maximum maximum-fixture-source-bindings})
+      (let [matches (vec (keep (fn [suite]
+                                 (when-let [row (some #(when (= row-id (:id %)) %)
+                                                      (concat (:accepted suite)
+                                                              (:rejected suite)))]
+                                   [suite row]))
+                               (filter #(contains? (set fixture-suite-ids) (:id %))
+                                       table-suites)))]
+        (ensure! (= 1 (count matches))
+                 "UEP-FIXTURE-BINDING-ROW"
+                 "Fixture row is not uniquely contained by the execution closure"
+                 {:row-id row-id
+                  :matches (mapv (comp :id first) matches)
+                  :fixture-suite-ids fixture-suite-ids})
+        (first matches)))))
+
+(defn- fixture-source-binding-path
+  [suite row key]
+  (let [path (str (:fixture-root suite) "/" (name (:status row)) "/" (get row key))]
+    (ensure! (normalized-repository-relative-path? path)
+             "UEP-FIXTURE-BINDING-PATH"
+             "Fixture source binding path is not normalized and repository-relative"
+             {:row-id (:id row) :key key :path path})
+    path))
+
+(defn fixture-source-binding
+  "Derive one authenticated, static fixture-source binding from a closed plan.
+
+  The caller supplies only the reviewed row id and the earliest requested
+  compiler-artifact stage.  The plan is validated against the canonical route
+  and closure first; the canonical conformance table then revalidates fixture
+  ownership, pair presence, no-follow path handling, bounded peer bytes, and
+  byte identity.  The returned binding id includes the plan id, row, stage,
+  and all derived binding fields.  This projection performs no compilation,
+  execution, cache access, or authority admission.
+  "
+  [plan-value row-id requested-stage]
+  (validate-plan plan-value)
+  (ensure! (string? row-id)
+           "UEP-FIXTURE-BINDING-ROW"
+           "Fixture source binding row id must be a string"
+           {:row-id row-id})
+  (let [requested-rank (get artifact-stage-rank requested-stage)
+        declared-stage (get-in plan-value [:artifact-request :stage])
+        declared-rank (get artifact-stage-rank declared-stage)]
+    (ensure! (some? requested-rank)
+             "UEP-FIXTURE-BINDING-STAGE"
+             "Fixture source binding stage is not recognized"
+             {:row-id row-id :stage requested-stage})
+    (ensure! (and (some? declared-rank) (<= requested-rank declared-rank))
+             "UEP-FIXTURE-BINDING-STAGE"
+             "Fixture source binding stage is later than the module artifact request"
+             {:row-id row-id :requested-stage requested-stage
+              :declared-stage declared-stage})
+    ;; `fixture-pair-binding` validates the canonical table and rechecks the
+    ;; selected pair through its existing bounded no-follow reader before this
+    ;; projection can expose content identity to a downstream request.
+    (let [table (:conformance catalog)
+          fixture-suite-ids (get-in plan-value
+                                    [:dependency-closure :fixture-suite-ids])
+          [suite row] (fixture-source-row table fixture-suite-ids row-id)
+          pair (conformance/fixture-pair-binding table row-id)
+          ;; `validate-plan` has already authenticated this route; avoid a
+          ;; second full catalog/conformance walk while projecting its owner.
+          route-value (get-in catalog [:routes (:route-id plan-value)])
+          module-id (:module-id route-value)
+          artifact-request (:artifact-request plan-value)
+          module (get-in catalog [:modules module-id])
+          gravity-path (fixture-source-binding-path suite row :gravity)
+          qst-path (fixture-source-binding-path suite row :qst)]
+      (ensure! (= module-id (:module-id artifact-request))
+               "UEP-FIXTURE-BINDING-OWNER"
+               "Fixture source binding module does not match the plan"
+               {:row-id row-id :module-id module-id
+                :artifact-module-id (:module-id artifact-request)})
+      (ensure! (= module-id (:module-id suite))
+               "UEP-FIXTURE-BINDING-OWNER"
+               "Fixture source binding suite is not owned by the plan module"
+               {:row-id row-id :suite-id (:id suite)
+                :module-id module-id :suite-module-id (:module-id suite)})
+      (ensure! (= (:module-owner artifact-request) (:owner module))
+               "UEP-FIXTURE-BINDING-OWNER"
+               "Fixture source binding owner is stale"
+               {:row-id row-id :module-id module-id})
+      (ensure! (and (= (:id suite) (:suite-id pair))
+                    (= (:id row) (:row-id pair))
+                    (= (:status row) (:status pair)))
+               "UEP-FIXTURE-BINDING-PAIR"
+               "Fixture source binding pair identity is stale"
+               {:row-id row-id :suite-id (:id suite)
+                :pair-suite-id (:suite-id pair)})
+      (ensure! (= #{:schema :suite-id :row-id :status :sha256 :bytes :authenticated?}
+                  (set (keys pair)))
+               "UEP-FIXTURE-BINDING-PAIR"
+               "Fixture source binding pair contract is not closed"
+               {:row-id row-id :pair pair})
+      (ensure! (and (= conformance/fixture-pair-binding-schema (:schema pair))
+                    (true? (:authenticated? pair))
+                    (string? (:sha256 pair))
+                    (re-matches #"sha256:[0-9a-f]{64}" (:sha256 pair))
+                    (integer? (:bytes pair))
+                    (pos? (:bytes pair))
+                    (<= (:bytes pair) conformance/maximum-fixture-peer-bytes))
+               "UEP-FIXTURE-BINDING-PAIR"
+               "Fixture source binding pair content identity is malformed"
+               {:row-id row-id :pair pair})
+      (let [binding-fields {:suite-id (:id suite)
+                            :row-id (:id row)
+                            :status (:status row)
+                            :module-id module-id
+                            :module-owner (:module-owner artifact-request)
+                            :stage requested-stage
+                            :gravity-path gravity-path
+                            :qst-path qst-path
+                            :fixture-sha256 (:sha256 pair)
+                            :fixture-bytes (:bytes pair)}
+            binding-id (identity-of {:plan-id (:plan-id plan-value)
+                                     :row-id row-id
+                                     :stage requested-stage
+                                     :binding binding-fields})
+            binding (merge {:schema fixture-source-binding-schema
+                            :plan-id (:plan-id plan-value)
+                            :catalog-id (:catalog-id plan-value)
+                            :route-id (:route-id plan-value)
+                            :authenticated? true
+                            :binding-id binding-id}
+                           binding-fields)]
+        (exact-keys! binding
+                     fixture-source-binding-keys
+                     "UEP-FIXTURE-BINDING-KEYS"
+                     [:fixture-source-binding])
+        (ensure! (re-matches #"sha256:[0-9a-f]{64}" binding-id)
+                 "UEP-FIXTURE-BINDING-ID"
+                 "Fixture source binding identity is not a SHA-256 id"
+                 {:row-id row-id :binding-id binding-id})
+        binding))))
 
 (defn- bounded-exact-integer?
   "Check a bounded integer without coercing BigInt through a machine long."
