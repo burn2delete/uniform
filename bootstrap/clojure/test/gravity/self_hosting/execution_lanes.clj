@@ -105,6 +105,8 @@
     :result-contract-id :shard})
 (def ^:private warm-cached-max-count 1000000)
 (def ^:private warm-cached-max-elapsed-ms (* 24 60 60 1000))
+(def ^:private warm-cached-max-elapsed-ns
+  (* warm-cached-max-elapsed-ms 1000000))
 (def ^:private warm-outcomes
   #{:passed :failed :tree-drift :catalog-drift :shutdown :rejected})
 (def ^:private process-result-keys
@@ -261,7 +263,9 @@
       (catch LinkageError error (throw error))
       (catch java.lang.Exception error
         (rethrow-lane-control! error)
-        nil))))
+        (fail! "UEP-WARM-CACHED-PLAN"
+               "Canonical cached plan reconstruction failed"
+               {:cause-class (.getName (class error))})))))
 
 (defn- cached-plan-admitted?
   "Return true only for the exact eligible canonical cached plan.
@@ -913,12 +917,12 @@
 (defn- cached-bounded-count?
   [value]
   (and (integer? value)
-       (<= 0 (long value) warm-cached-max-count)))
+       (<= 0 value warm-cached-max-count)))
 
 (defn- cached-bounded-elapsed?
   [value]
   (and (integer? value)
-       (<= 0 (long value) warm-cached-max-elapsed-ms)))
+       (<= 0 value warm-cached-max-elapsed-ms)))
 
 (defn- validate-warm-cached-result!
   "Authenticate the raw cached-shard result before projecting it into a lane
@@ -930,7 +934,7 @@
            "UEP-WARM-CACHED-RESULT"
            "Cached runner result failed its authenticated closed-shape checks"
            {:result result :shard shard})
-  (doseq [field warm-cached-result-counter-keys]
+  (doseq [field (sort-by name warm-cached-result-counter-keys)]
     (ensure! (cached-bounded-count? (get result field))
              "UEP-WARM-CACHED-COUNTER"
              "Cached runner result counter is outside its bound"
@@ -1010,10 +1014,10 @@
                   (integer? (:exit-code response))
                   (contains? #{0 1 2} (:exit-code response))
                   (integer? (:elapsed-ns response))
-                  (<= 0 (long (:elapsed-ns response)))
+                  (<= 0 (:elapsed-ns response) warm-cached-max-elapsed-ns)
                   (= expected-count (:request-count response))
                   (pos? (long (:request-count response)))
-                  (<= (long (:request-count response)) warm-worker-max-requests)
+                  (<= (:request-count response) warm-worker-max-requests)
                   (string? (:stdout response))
                   (string? (:stderr response))
                   (<= (alength (.getBytes ^String (:stdout response)

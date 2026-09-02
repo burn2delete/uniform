@@ -553,6 +553,8 @@
              [:result-contract-id :wrong "UEP-WARM-CACHED-RESPONSE"]
              [:shard "wrong" "UEP-WARM-CACHED-RESPONSE"]
              [:authoritative? true "UEP-WARM-CACHED-RESPONSE"]
+             [:elapsed-ns 100000000000000000000000000N
+              "UEP-WARM-CACHED-RESPONSE"]
              [:output-truncated? true "UEP-WARM-CACHED-RESPONSE"]]]
       (let [error (try
                     (validate (assoc valid field value)
@@ -566,6 +568,8 @@
             [[:cache-authoritative? true "UEP-WARM-CACHED-AUTHORITY"]
              [:fresh-authoritative-run-required? false "UEP-WARM-CACHED-AUTHORITY"]
              [:test-vars 1 "UEP-WARM-CACHED-COUNTER"]
+             [:elapsed-ms 100000000000000000000000000N
+              "UEP-WARM-CACHED-RESULT"]
              [:artifact :other "UEP-WARM-CACHED-RESULT"]]]
       (let [error (try
                     (validate (assoc valid :runner-result (assoc raw field value))
@@ -617,17 +621,18 @@
         (is (re-matches #"UEP-WARM-CACHED-(RESULT|COUNTER|CACHE|CONTEXT)"
                         (:id (ex-data error))))))
     (doseq [field [:sh06-hits :sh06-misses :core-hits :core-misses
-                   :verification-hits :verification-misses]]
+                   :verification-hits :verification-misses]
+            value [-1 1000001 100000000000000000000000000N]]
       (let [error (try
                     (validate (assoc valid :runner-result
-                                     (assoc-in raw [:cache field] 1000001))
+                                     (assoc-in raw [:cache field] value))
                               {:candidate-commit test-commit
                                :candidate-tree test-tree}
                               "cached" 1 (:selection p) p)
                     nil
                     (catch clojure.lang.ExceptionInfo error error))]
         (is (= "UEP-WARM-CACHED-CACHE" (:id (ex-data error)))
-            (str "bounded cache counter " field))))
+            (str "bounded cache counter " field " value " value))))
     (let [large (apply str (repeat (inc (* 256 1024)) "x"))
           error (try
                   (validate (assoc valid :stdout large)
@@ -661,6 +666,15 @@
         (is false "expected linkage error")
         (catch LinkageError error
           (is (= "fatal" (.getMessage error))))))
+    (testing "ordinary canonical reconstruction errors fail with a stable id"
+      (let [error (try
+                    (with-redefs [clojure.core/requiring-resolve
+                                  (fn [_]
+                                    (throw (IllegalStateException. "missing")))]
+                      (canonical p))
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "UEP-WARM-CACHED-PLAN" (:id (ex-data error))))))
     (testing "run-fast keeps causal cancellation outside failed result"
       (try
         (with-redefs [gravity.self-hosting.execution-lanes/cached-plan-admitted?
