@@ -131,6 +131,14 @@
               (assoc-in request [:plan-binding :source-path] "examples/other.gravity"))
              nil
              (catch clojure.lang.ExceptionInfo error
+               (:id (ex-data error))))))
+    (is (= "ARTIFACT-PLAN-BINDING-CLOSURE"
+           (try
+             (pipeline/run-pipeline
+              (assoc-in request [:plan-binding :closure-paths]
+                        ["examples/other.gravity"]))
+             nil
+             (catch clojure.lang.ExceptionInfo error
                (:id (ex-data error))))))))
 
 (deftest plan-binding-partitions-fast-reuse
