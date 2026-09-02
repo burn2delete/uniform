@@ -5,7 +5,7 @@
   "candidate_commit": "f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Independent exact-tuple review requested for frozen report-only C2 pass-cache capacity-withholding candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after preserving concurrent main through ca05356877691a8bb3c257d8214ba69a46f20729. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred unless a fresh independent reviewer accepts this exact tuple.",
+  "disposition": "Independent reviewer c2-cache-architecture-reviewer-v1, canonical review task /root/c2_cache_arch_review, rejected exact candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991. The workstream is reopened as draft to resolve the four recorded blockers. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -119,6 +119,12 @@
       "at": "2026-09-02T21:17:34Z",
       "reason": "request fresh independent review of exact frozen candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991, including the post-validation order, closed node/depth/byte outcome, exact-artifact return, zero disk candidates, diagnostic partition, direct-store rejection, authentic SH03 gate, duplication audit, residual boundaries, Attempt32 nondependency, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:35:54Z",
+      "reason": "reopen exact rejected tuple f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after independent reviewer c2-cache-architecture-reviewer-v1 at canonical review task /root/c2_cache_arch_review returned REJECT: specify the generic lookup failure-taxonomy seam preserving IO and ClosedByInterruptException; specify exactly-once semantic validator ownership and a prevalidated carrier; close typed capacity ExceptionInfo transport and both public evidence schemas; and bind standalone provisional provenance evidence for the real SH03 failure",
+      "state": "draft"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -140,7 +146,13 @@
     "integrated SH07 Attempt32 is not a dependency and this workstream grants no SH07 authority",
     "this report grants no implementation acceptance, integration eligibility, roadmap completion, SH03 completion, self-hosting, release, performance, safety, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "c2-cache-architecture-reviewer-v1"
+    }
+  ],
+  "state": "draft",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
