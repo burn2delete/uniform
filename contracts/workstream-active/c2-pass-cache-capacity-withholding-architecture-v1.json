@@ -1,0 +1,229 @@
+{
+  "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+  "author": "c2-pass-cache-capacity-architecture",
+  "base_commit": "0565b642d46fc2504412177bbd55b8e970804c4f",
+  "candidate_commit": "4874d95d7cb2780568e45cf0a3e0445847da1c80",
+  "clean_worktree": true,
+  "dependencies": [],
+  "disposition": "Integration-eligible architecture-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after independent ACCEPT by c2-cache-architecture-reviewer-v3 at /root/c2_cache_arch_review3 and exact clean named-branch preflight against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 returned integrate_candidate. No merge, terminal publication, implementation, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
+            "second revised report candidate:4874d95d7cb2780568e45cf0a3e0445847da1c80 tree:99cbd21789cab83c9e7af31cd6f48cf8761d35ff report-sha256:70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42",
+            "provisional SH03 provenance:docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md sha256:d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006",
+            "rejected prior tuple reviewer:c2-cache-architecture-reviewer-v1 task:/root/c2_cache_arch_review candidate:f4da2ea6018ba01c8c9bc77a86c7a43b7475768a tree:a96cef7a205fa3b4fc55ec827167d7da926d31eb report-sha256:a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
+            "existing generic lookup,recovery,retention-scan,and path-policy containment preserved",
+            "requested-artifact exactly-once semantic validation excludes distinct recovery artifacts",
+            "closed token-bound ExceptionInfo handoff preserves clean-miss versus rejected-entry lookup provenance",
+            "exact integration preflight:base ca05356877691a8bb3c257d8214ba69a46f20729 candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80 tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff recommendation integrate_candidate",
+      "closed fresh-envelope dimensions:nodes,depth,bytes",
+      "exact fresh validated C2 artifact returned without envelope round-trip",
+      "contained local C16-POLICY evidence with cache publication withheld",
+      "zero candidate blob,receipt,entry,staging,or on-disk capacity evidence",
+      "authentic SH03 paired-input and current C2 validator acceptance gate",
+      "integrated SH07 Attempt32 is nondependency governance precedent only"
+    ],
+        "rejected_fixtures": [
+            "prior architecture tuple f4da2ea6018ba01c8c9bc77a86c7a43b7475768a/a96cef7a205fa3b4fc55ec827167d7da926d31eb/a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
+            "prior revised architecture tuple 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8/4aacf4ff94feab1b44ecafee2f2a45be8d432591/c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea",
+      "convert semantic-key overflow from C16-KEY",
+      "convert retained-entry malformed or overflow outcomes from C16-ENTRY",
+      "withhold direct store capacity rejection",
+      "swallow validator,unsupported-type,IO,interruption,or fatal failures",
+      "match capacity by exception message,class,or generic diagnostic id",
+      "publish a partial blob,receipt,entry,staging file,or capacity record",
+      "return a digest,summary,truncation,handle,or decoded replacement artifact",
+      "raise global cache bounds or weaken other cache clients",
+      "claim SH03,SH07,C2,C16,cache,release,proof,equivalence,or self-hosting authority"
+    ],
+    "stable_diagnostics": [
+      "C16-POLICY",
+      "C16-KEY",
+      "C16-ENTRY",
+      "C16-STALE",
+      "C2-HASH",
+      "C2-ENCODING",
+      "C2-DELIMITER",
+      "C2-STRING",
+      "C2-NUMERIC",
+      "C2-IDENTIFIER",
+      "C2-NS-SHAPE",
+      "C2-MAP",
+      "C2-SET",
+      "C2-METADATA",
+      "C2-ABBREV",
+      "C2-EXTENSION"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..4874d95d7cb2780568e45cf0a3e0445847da1c80",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:dev-test --namespace gravity.c2-pass-cache-test --fail-fast",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --repo /private/tmp/gravity-c2-capacity-preflight.wufd82 --mode integration --base-ref main --candidate-base ca05356877691a8bb3c257d8214ba69a46f20729 --candidate-commit 4874d95d7cb2780568e45cf0a3e0445847da1c80 --candidate-tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C2",
+    "C16",
+    "BOOT7",
+    "BOOT8",
+    "GOV6",
+    "docs/phase-06-compiler-architecture/README.md",
+    "docs/self-hosting-slice-backlog.md",
+    "bootstrap/clojure/fixtures/self-hosting/sh-03/README.md",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj"
+  ],
+  "history": [
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:13:05Z",
+      "reason": "register exact architecture-only C2 pass-cache capacity-withholding report candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 from clean authoritative base 0565b642d46fc2504412177bbd55b8e970804c4f; no freeze or architecture review is yet requested",
+      "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:16:51Z",
+      "reason": "freeze exact architecture-only report tuple at candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after clean governance, architecture-authority, documentation, roadmap, language-boundary, diff, and inspect-preflight checks passed and concurrent main through ca05356877691a8bb3c257d8214ba69a46f20729 was preserved; no architecture review is yet requested",
+      "state": "frozen"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:17:34Z",
+      "reason": "request fresh independent review of exact frozen candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991, including the post-validation order, closed node/depth/byte outcome, exact-artifact return, zero disk candidates, diagnostic partition, direct-store rejection, authentic SH03 gate, duplication audit, residual boundaries, Attempt32 nondependency, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:35:54Z",
+      "reason": "reopen exact rejected tuple f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after independent reviewer c2-cache-architecture-reviewer-v1 at canonical review task /root/c2_cache_arch_review returned REJECT: specify the generic lookup failure-taxonomy seam preserving IO and ClosedByInterruptException; specify exactly-once semantic validator ownership and a prevalidated carrier; close typed capacity ExceptionInfo transport and both public evidence schemas; and bind standalone provisional provenance evidence for the real SH03 failure",
+      "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:46:58Z",
+      "reason": "freeze revised exact report-only tuple candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after governance, authority, documentation, roadmap, language-boundary, C2 cache, and diff validations passed; this revision closes the prior independent review blockers without implementation or acceptance",
+      "state": "frozen"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:47:54Z",
+      "reason": "request fresh independent review of frozen revised candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006, including all four prior rejection blockers, the provenance limits, authentic SH03 criteria, duplication audit, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:00:27Z",
+      "reason": "reopen exact rejected tuple 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea after independent reviewer c2-cache-architecture-rereviewer-v2 at canonical review task /root/c2_cache_arch_rereview returned REJECT: scope semantic call counts to the requested artifact and exclude recovery; preserve existing generic recovery/read IO containment while ensuring new capacity catches do not translate unrelated errors; preserve current oversized retained-file rejection behavior without contradictory decoded-corruption rules; and define a closed token-bound cross-layer capacity handoff that cannot lose clean-miss versus rejected-entry provenance",
+      "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:06:46Z",
+      "reason": "freeze second revised exact report-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after governance, authority, documentation, roadmap, language-boundary, C2 cache, and diff validations passed; this narrower revision preserves recovery and historical generic containment and adds only a token-bound producer handoff without implementation or acceptance",
+      "state": "frozen"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:07:23Z",
+      "reason": "request fresh independent review of frozen second revised candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006, including requested-artifact validation scope, unchanged recovery and retained-file containment, exact token-bound cross-layer handoff, authentic SH03 criteria, duplication audit, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:19:54Z",
+      "reason": "record independent ACCEPT from c2-cache-architecture-reviewer-v3 at canonical task /root/c2_cache_arch_review3 for exact candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006; prior rejections remain historical and no integration or implementation is performed",
+      "state": "accepted"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:21:12Z",
+      "reason": "advance accepted exact architecture tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 to integration-eligible after exact read-only preflight in a clean named temporary branch against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 passed every precondition with descendant relation and integrate_candidate recommendation; no merge, integration, terminal publication, or implementation occurred",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "c2-pass-cache-capacity-withholding-architecture-v1",
+  "invariant_family": "architecture/compiler-c2-pass-cache-capacity-withholding-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+        "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md"
+  ],
+  "owner": "compiler-c2-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary source-byte loader, SH03/C2 adapter, validator host, canonical encoder, digest implementation, local filesystem and locking host, and test observer",
+    "the local filesystem provider and same-user mutation exclusions remain those of the existing pass-cache contract",
+    "the capacity outcome governs optional local envelope publication only and establishes no C2 artifact, C16 cache, proof, equivalence, or release authority",
+    "integrated SH07 Attempt32 is not a dependency and this workstream grants no SH07 authority",
+    "this report grants no implementation acceptance, integration eligibility, roadmap completion, SH03 completion, self-hosting, release, performance, safety, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "c2-cache-architecture-reviewer-v1"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "c2-cache-architecture-rereviewer-v2"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "c2-cache-architecture-reviewer-v3"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
+}
