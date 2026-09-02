@@ -1,0 +1,182 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-26.md",
+  "author": "sh07-b51-carrier-architecture",
+  "base_commit": "df2de3e36dc03dbb2b072897b85a4aed63b2544e",
+  "candidate_commit": "1ee0fe113330da4822da168c8454711e24c686e4",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
+  ],
+  "disposition": "REJECTED by independent reviewer attempt26-independent-review for immutable Attempt-26 candidate 1ee0fe113330da4822da168c8454711e24c686e4, tree c90022b76b3a6d02610b30a775ae6270e180665a, report SHA-256 477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce. Blocker one: external semantic rows preserve sparse physical M1 :edge-ordinal values while the report rejects sparse ordinals and defines no separate dense semantic ordinal. Blocker two: prospective reader-canonical digest admission omits canonical-reader byte ceilings, complete row depth/width/scalar ceilings, compact-root ceilings, and their plus-one mutations. Blocker three: P26 :module-censuses has no frozen closed row schema, order, or exact per-module values, so exact rebuild and unknown-key rejection are undefined. No implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
+      "terminal history:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-25 rejected",
+      "authoritative base:df2de3e36dc03dbb2b072897b85a4aed63b2544e",
+      "report candidate:1ee0fe113330da4822da168c8454711e24c686e4 tree:c90022b76b3a6d02610b30a775ae6270e180665a report-sha256:477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce",
+      "read-only census source:02e9b55928d5409d27be315b6a10b21bc6eca98c tree:3bed2a7cc05c342d3217843a11acc704ca214994",
+      "semantic census:30370 rows, 1901 leaves, 135 mandatory folds, 2037 digest operations",
+      "physical versus reachable census:1392/1339 definitions, 1347/1287 external edges, 24250/23487 builtin occurrences",
+      "resource maxima:row 37/2/7/73/893/943; leaf 609/4/16/73/14151/14977; fold 163/3/16/73/2539/2758; root 174/4/16/73/3953/4150",
+      "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger"
+    ],
+    "rejected_fixtures": [
+      "Attempt25 wide :functions vector or any complete category is sent through C11 or used as one digest preimage",
+      "the eleven-key raw request is claimed to preserve nine fields rather than exactly eight after changing artifact, schema version, and executable descriptor type",
+      "the 53 unreachable definitions, 60 unreachable M1 edges, or 763 unreachable builtin occurrences are added to S26 without a public-root path or omitted from full P26 physical authentication",
+      "a one-leaf category omits its mandatory level-1 root fold or any row, leaf, fold, category, count, order, domain, or bound differs from the report",
+      "checked_core, B47/f473, Attempt24 placement, M0-M3 schemas, 2440 occupancy, Root1/Root8 law, R6 independence, or source-binding/link separation changes",
+      "coherent rehashing around an unpinned plan, public sealer, caller authority, nil expected pin, synthetic merged carrier, or dynamic lookup grants authority",
+      "independent-review#external-row-preserves-sparse-physical-M1-edge-ordinal-but-report-rejects-sparse-ordinals-and-defines-no-dense-semantic-ordinal",
+      "independent-review#reader-canonical-prospective-bounds-omit-canonical-byte-row-depth-width-scalar-and-compact-root-ceilings-plus-one-mutations",
+      "independent-review#P26-module-censuses-lacks-frozen-closed-row-schema-order-and-exact-per-module-values"
+    ],
+    "stable_diagnostics": [
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA005",
+      "AA006",
+      "AA007",
+      "AA008",
+      "C6-VERIFY",
+      "L2-UNKNOWN-CORE-FORM",
+      "L2-FUNCTION-ARITY",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR"
+    ],
+    "validation_commands": [
+      {
+        "command": "read-only exact Attempt26 root-reachable and physical-inventory census at 02e9b55928d5409d27be315b6a10b21bc6eca98c",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-26.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-sharding-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-transaction-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-architecture-authority-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check df2de3e36dc03dbb2b072897b85a4aed63b2544e..1ee0fe113330da4822da168c8454711e24c686e4",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C5",
+    "C6",
+    "C11",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-5.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-15.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-24.md",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_b16_binding_bound_test.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-architecture",
+      "at": "2026-09-02T03:12:19Z",
+      "reason": "register exact architecture-only Attempt-26 report candidate 1ee0fe113330da4822da168c8454711e24c686e4, tree c90022b76b3a6d02610b30a775ae6270e180665a, report SHA-256 477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce, base df2de3e36dc03dbb2b072897b85a4aed63b2544e: correct rejected Attempt25 with a bounded reader-canonical leaf/fold schedule, exact root-reachable versus physical census, unchanged B47 and Attempt24 M0-M3 authority, and exactly eight unchanged raw fields; no freeze or review is requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T03:14:05Z",
+      "reason": "freeze exact immutable architecture-only Attempt-26 candidate 1ee0fe113330da4822da168c8454711e24c686e4, tree c90022b76b3a6d02610b30a775ae6270e180665a, report SHA-256 477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce, base df2de3e36dc03dbb2b072897b85a4aed63b2544e after independently matching the 30370-row semantic census, 1901 leaves, 135 folds, 2037 digest operations, physical-versus-reachable inventory, exact resource maxima, strict authority, governance, sharding, transaction, documentation, roadmap, and diff checks; report content and candidate identity remain byte-identical",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T03:14:55Z",
+      "reason": "request fresh independent exact architecture review of immutable Attempt-26 candidate 1ee0fe113330da4822da168c8454711e24c686e4, tree c90022b76b3a6d02610b30a775ae6270e180665a, report SHA-256 477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce, base df2de3e36dc03dbb2b072897b85a4aed63b2544e: verify Attempt24 authority and Attempt25 rejection history, immutable B47/f473, root-reachable 30370-row S26 versus complete physical inventory, exact seven category schemas and order, 1901 leaves, 135 mandatory folds, 2037 reader-canonical digest operations, actual and hostile-input bounds, compact S26/P26 joins, exactly eight unchanged raw fields, builtin V2 boolean joins, Root1/Root8 law, independent R6, source/link separation, mutations, pin cascade, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "attempt26-independent-review",
+      "at": "2026-09-02T03:29:28Z",
+      "reason": "REJECT exact immutable architecture-only Attempt-26 candidate 1ee0fe113330da4822da168c8454711e24c686e4, tree c90022b76b3a6d02610b30a775ae6270e180665a, report SHA-256 477d3ab531e0c90624ad709ee4a63b167e35a74d1f18f752506c47bf06c8a6ce. Blocker one: external semantic rows preserve sparse physical M1 :edge-ordinal values while the report rejects sparse ordinals and defines no separate dense semantic ordinal. Blocker two: prospective reader-canonical digest admission omits canonical-reader byte ceilings, complete row depth/width/scalar ceilings, compact-root ceilings, and plus-one mutation coverage. Blocker three: P26 :module-censuses lacks a frozen closed row schema, order, and exact per-module values, leaving exact rebuild and unknown-key rejection undefined. The bounded digest topology and corrected eight-field raw-request statement do not cure these blockers; no implementation or integration authority is conferred.",
+      "state": "rejected"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-26",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-26.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain source readers, SH06/B16 census hosts, Stage2 compiler/runtime substrates, digest transport, and observers, not B51 semantic or carrier authority",
+    "the host coordinator may load only independently pinned P26/M3 authority, validate closed joins, select exact roots, and route exact edge ordinals; it may not merge plans, interpret results, manufacture closure rows, select source ownership, or fabricate resolutions",
+    "C11 may be used only as an independently bounded census on one compact row, leaf, fold, or root; it is never the linked semantic digest function and never receives a complete category or P26",
+    "Attempt26 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "attempt26-independent-review"
+    }
+  ],
+  "state": "rejected",
+  "title": "SH-07 B51 bounded linked-closure executable carrier erratum v18 attempt 26"
+}
