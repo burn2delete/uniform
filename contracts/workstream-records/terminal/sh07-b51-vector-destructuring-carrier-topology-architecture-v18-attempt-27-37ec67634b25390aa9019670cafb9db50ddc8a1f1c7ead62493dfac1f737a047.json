@@ -1,0 +1,208 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-27.md",
+  "author": "sh07-b51-carrier-architecture",
+  "base_commit": "41d55e94c1e01acbe4cea401eb6b70209a512a59",
+  "candidate_commit": "643d2eae692a30a432df4339bf836c8b1ef959b9",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
+  ],
+  "disposition": "INTEGRATED architecture-only Attempt-27 immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, from reconciled integration-eligible lifecycle head 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e, over authoritative main 1b410fda852067d41e68511604faf78d825b174b. This integrates the carrier architecture only and grants authority for separately governed implementation work to consume it. It grants no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement consequence.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
+      "terminal history:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-25 rejected",
+      "terminal history:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-26 rejected",
+      "authoritative architecture base:41d55e94c1e01acbe4cea401eb6b70209a512a59",
+      "report candidate:643d2eae692a30a432df4339bf836c8b1ef959b9 tree:d7f9a1d9e64e9a5988ef40cad22f0e6289874461 report-sha256:bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea",
+      "read-only census source:02e9b55928d5409d27be315b6a10b21bc6eca98c tree:3bed2a7cc05c342d3217843a11acc704ca214994",
+      "semantic census:30370 rows, 1901 leaves, 135 mandatory folds, 2037 digest operations",
+      "physical versus reachable census:1392/1339 definitions, 3020/2903 local edges, 1347/1287 external edges, 24250/23487 builtin occurrences",
+      "external ordinal census:1287 dense semantic rows preserve ascending sparse physical M1 ordinals with exactly 60 physical gaps",
+      "resource maxima:row 39/2/8/73/924/975; leaf 641/4/16/73/14647/15489; fold 163/3/16/73/2539/2758; commitment 11/1/5/73/182/195; root 212/4/35/73/4571/4787",
+      "physical census:closed 10-key P27, 14-key physical census, seven ordered exact 20-key module rows",
+      "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger",
+      "independent architecture ACCEPT by attempt27-independent-review for exact immutable candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea from review-pending tip 5ef84a51174835f9586563e0eb018782a341a6d1, tree 454b86d7e5ab879789291532947367a7d6c86211; reviewer independently reproduced all seven category counts, 30370 rows, 1901 leaves, 135 folds, 2037 digest operations, seven exact 20-key module rows, dense semantic and sparse M1 ordinals with exactly 60 gaps, all actual and prospective maxima including corrected root 4571/4787, closed P27 schemas, immutable M0-M3/B47/f473, root, mutation, pin, nonclaim, and governance laws; no implementation acceptance conferred",
+      "integration preflight PASS for accepted lifecycle HEAD 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, over frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59; relation descendant; clean named branch; exact identities; recommendation integrate_candidate",
+      "reconciled integration-eligible lifecycle head:513a9110faca7a54af513202137bdbef01fabf97 tree:8e90636bc3a5063facf444fe4ab0c8c6a1168b3e over authoritative main:1b410fda852067d41e68511604faf78d825b174b preserving all prior ledger entries and immutable report SHA-256",
+      "final integration preflight PASS for reconciled integration-eligible lifecycle HEAD 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e, over exact authoritative main 1b410fda852067d41e68511604faf78d825b174b; clean descendant; recommendation integrate_candidate"
+    ],
+    "rejected_fixtures": [
+      "Attempt26 conflates sparse physical M1 edge ordinal with dense semantic edge ordinal or fails to preserve exactly 60 physical gaps",
+      "any digest or optional C11 input lacks exact node, depth, width, scalar UTF-8, C11 UTF-8, or canonical-reader UTF-8 admission and plus-one rejection",
+      "P27 physical census, any module census row, schema key order, exact per-module value, physical total, reachable total, or binding occupancy differs",
+      "P27 or a complete category, M1 vector, seven-plan carrier, or physical function map is serialized or hashed whole",
+      "checked_core, B47/f473, Attempt24 placement, M0-M3 schemas, 2440 occupancy, Root1/Root8 law, R6 independence, or source-binding/link separation changes",
+      "coherent rehashing around an unpinned plan, public sealer, caller authority, nil expected pin, synthetic merged carrier, or dynamic lookup grants authority"
+    ],
+    "stable_diagnostics": [
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA005",
+      "AA006",
+      "AA007",
+      "AA008",
+      "C6-VERIFY",
+      "L2-UNKNOWN-CORE-FORM",
+      "L2-FUNCTION-ARITY",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR"
+    ],
+    "validation_commands": [
+      {
+        "command": "read-only exact Attempt27 root-reachable and physical-inventory census at 02e9b55928d5409d27be315b6a10b21bc6eca98c",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-27.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-sharding-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-transaction-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-architecture-authority-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 41d55e94c1e01acbe4cea401eb6b70209a512a59..643d2eae692a30a432df4339bf836c8b1ef959b9",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-base 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-commit 587bcb40428ec5c7abcc7377ae218e30da5f01e0 --candidate-tree cfe32175b5c38756aa68935505c45d4788b09ccd",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 1b410fda852067d41e68511604faf78d825b174b --candidate-base 1b410fda852067d41e68511604faf78d825b174b --candidate-commit 513a9110faca7a54af513202137bdbef01fabf97 --candidate-tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C5",
+    "C6",
+    "C11",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-5.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-15.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-24.md",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_b16_binding_bound_test.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-architecture",
+      "at": "2026-09-02T04:04:47Z",
+      "reason": "register exact architecture-only Attempt-27 report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, base 41d55e94c1e01acbe4cea401eb6b70209a512a59: correct rejected Attempt26 with dense semantic plus sparse physical external ordinals, exact complete six-dimensional bounds, and a closed exact P27 physical census; no freeze or review is requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T04:06:29Z",
+      "reason": "freeze exact immutable architecture-only Attempt-27 candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, base 41d55e94c1e01acbe4cea401eb6b70209a512a59 after authentic reproduction of the 30370-row semantic census, exact 7-module physical census, 1901 leaves, 135 folds, 2037 digest operations, dense/sparse external ordinals, six-dimensional bounds, and strict authority, governance, sharding, transaction, documentation, roadmap, and diff checks; report content and candidate identity remain byte-identical",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T04:07:34Z",
+      "reason": "request fresh independent exact architecture review of immutable Attempt-27 candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, base 41d55e94c1e01acbe4cea401eb6b70209a512a59: verify Attempt24 authority and rejected Attempt25/26 history, immutable B47/f473, exact dense semantic versus sparse physical external ordinals with 60 gaps, 30370-row S27 versus complete physical inventory, exact closed 10/14/20 P27 schemas and seven rows, 1901 leaves, 135 mandatory folds, 2037 reader-canonical digest operations, all six actual/prospective bounds and plus-one mutations, compact S27/P27 joins, exactly eight unchanged raw fields, builtin V2 boolean joins, Root1/Root8 law, independent R6, source/link separation, pin cascade, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "attempt27-independent-review",
+      "at": "2026-09-02T04:17:45Z",
+      "reason": "ACCEPT exact immutable architecture-only Attempt-27 candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, base 41d55e94c1e01acbe4cea401eb6b70209a512a59 from review-pending tip 5ef84a51174835f9586563e0eb018782a341a6d1, tree 454b86d7e5ab879789291532947367a7d6c86211 after independently reproducing all category counts, 30370 rows, 1901 leaves, 135 folds, 2037 digest operations, seven exact 20-key module rows, dense semantic and sparse M1 ordinals with exactly 60 gaps, all actual and prospective maxima including corrected root 4571/4787, closed P27 schemas, immutable M0-M3/B47/f473, Root1/Root8 and independent R6 laws, mutations, pin cascade, nonclaims, and governance; this is architecture-only and grants no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority",
+      "state": "accepted"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T04:18:52Z",
+      "reason": "exact accepted lifecycle HEAD 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, preserving immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, passed strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, language-boundary, diff-hygiene, and exact integration preflight against frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59; preflight was a clean named-branch descendant with matching identities, no diagnostics, and integrate_candidate recommendation; eligibility is architecture-only and grants no implementation, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T04:21:46Z",
+      "reason": "integrate accepted architecture-only Attempt-27 immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea from exact reconciled integration-eligible lifecycle head 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e after strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, language-boundary, diff-hygiene, and clean descendant integration preflight against authoritative main 1b410fda852067d41e68511604faf78d825b174b; integration is architecture-only and grants no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-27.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain source readers, SH06/B16 census hosts, Stage2 compiler/runtime substrates, digest transport, and observers, not B51 semantic or carrier authority",
+    "the host coordinator may load only independently pinned P27/M3 authority, validate closed joins, select exact roots, and route exact physical edge ordinals; it may not merge plans, interpret results, manufacture closure rows, select source ownership, or fabricate resolutions",
+    "C11 may be used only as an independently bounded optional census on one compact row, leaf, fold, commitment, root, or module-census row; it is never the linked semantic digest function and never receives a complete category or P27",
+    "Attempt27 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "attempt27-independent-review"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-07 B51 closed bounded linked-carrier erratum v18 attempt 27"
+}
