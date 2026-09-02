@@ -41,6 +41,55 @@
         :diagnostic-id-request (str "sha256:" (apply str (repeat 64 "b")))
         :facts facts}})))
 
+(defn- private-var
+  "Resolve a parity helper without widening its production visibility."
+  [name]
+  (or (ns-resolve 'gravity.self-hosting.sh07-conformance-parity name)
+      (throw (ex-info "Focused parity helper is absent" {:name name}))))
+
+(defn- b15-enriched-diagnostic
+  "Construct one producer-shaped B15 diagnostic for contract-only tests.
+
+  This is a bounded injected value; it does not invoke the SH-07 compiler or
+  either co-canonical fixture.  The extra lineage facts mirror the producer's
+  enriched payload while the row oracle remains intentionally compact."
+  []
+  (let [oracle (:oracle (parity/reviewed-row
+                         "sh07-b15/keyword-lookup-zero-arity"))]
+    (parity/normalize-diagnostic
+     {:artifact :gravity/sh07-core-diagnostic
+      :rule (:rule oracle)
+      :stage (:stage oracle)
+      :severity (:severity oracle)
+      :lowering-rule :sh07-b47-function-call-recursion-products
+      :syntax-id
+      "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      :form-id
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      ;; B15 rejects before a core node is allocated; C6 still requires the
+      ;; key so the nil is an explicit producer decision rather than omission.
+      :core-node-id nil
+      :source-span {:source "/tmp/sh07-b15/keyword-lookup-zero-arity.gravity"
+                    :line-start 24
+                    :column-start 1}
+      :generated-origin-chain []
+      :namespace 'self-hosting.sh07-b15.reject.keyword-lookup-zero-arity
+      :profile :meta
+      :target :jvm
+      :facts {:reason (:reason oracle)
+              :semantic-rule nil
+              :rule-specific (merge (:facts oracle)
+                                    {:reason (:reason oracle)
+                                     :operator :missing-map})
+              :source-revision-id
+              "sha256:rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+              :sh06-artifact-id
+              "sha256:ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+              :fail-closed true}
+      :remediation (:remediation oracle)
+      :diagnostic-id-request
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"})))
+
 (deftest reviewed-row-addresses-stable-fixture
   (let [row (parity/reviewed-row "sh07-b1/control-flow-order")]
     (is (= "sh07-b1/control-flow-order" (:id row)))
@@ -120,3 +169,66 @@
     (is (= #{:artifact :rule :stage :severity :source-span :facts :remediation
              :diagnostic-id-request :reason :fail-closed?}
            (set (keys value))))))
+
+(deftest b15-compact-oracle-accepts-complete-enriched-diagnostic
+  (let [row (parity/reviewed-row "sh07-b15/keyword-lookup-zero-arity")
+        outcome {:status :rejected
+                 :diagnostics [(b15-enriched-diagnostic)]}
+        table-parity (private-var 'table-parity)
+        contract-complete (private-var 'diagnostic-contract-complete?)
+        diagnostic (first (:diagnostics outcome))
+        oracle (:oracle row)
+        result (table-parity row outcome)]
+    (is (true? (:status? result)) result)
+    (is (true? (:diagnostics? result)) result)
+    (is (true? (:declared-contract-match? result)) result)
+    (is (true? (:diagnostic-contract-complete? result)) result)
+    (is (true? (:exact? result)) result)
+    ;; Keep the compact oracle compact, but preserve conditional exactness if
+    ;; a future reviewed row elects to carry its own diagnostic identity.
+    (is (true? (contract-complete
+                (assoc oracle :diagnostic-id-request
+                       (:diagnostic-id-request diagnostic))
+                diagnostic)))
+    (is (false? (contract-complete
+                 (assoc oracle :diagnostic-id-request
+                        "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+                 diagnostic)))))
+
+(deftest b15-diagnostic-contract-rejects-missing-or-invalid-fields
+  (let [row (parity/reviewed-row "sh07-b15/keyword-lookup-zero-arity")
+        complete (b15-enriched-diagnostic)
+        table-parity (private-var 'table-parity)
+        tamperings
+        {"missing namespace" #(dissoc % :namespace)
+         "missing syntax id" #(dissoc % :syntax-id)
+         "missing form id" #(dissoc % :form-id)
+         "missing core node id" #(dissoc % :core-node-id)
+         "nil syntax id" #(assoc % :syntax-id nil)
+         "nil form id" #(assoc % :form-id nil)
+         "syntax id is not a string" #(assoc % :syntax-id 1)
+         "form id is not a string" #(assoc % :form-id 1)
+         "core node id has invalid type" #(assoc % :core-node-id 1)
+         "missing lowering rule" #(dissoc % :lowering-rule)
+         "missing diagnostic id" #(dissoc % :diagnostic-id-request)
+         "invalid diagnostic id" #(assoc % :diagnostic-id-request "not-a-sha256-id")
+         "malformed source span" #(assoc % :source-span [:not-a-span])
+         "source span source is not a string"
+         #(assoc-in % [:source-span :source] 7)
+         "malformed generated origin chain"
+         #(assoc % :generated-origin-chain {:not "a-vector"})
+         "generated origin entry is not a map"
+         #(assoc % :generated-origin-chain [:not-a-map])
+         "malformed facts" #(assoc % :facts [:not-a-facts-map])
+         "nil lowering rule" #(assoc % :lowering-rule nil)
+         "wrong lowering rule"
+         #(assoc % :lowering-rule :sh07-b46-public-routing)
+         "mismatched arity fact"
+         #(assoc-in % [:facts :rule-specific :actual-operand-count] 1)}]
+    (doseq [[label tamper] tamperings]
+      (testing label
+        (let [diagnostic (tamper complete)
+              result (table-parity row {:status :rejected
+                                         :diagnostics [diagnostic]})]
+          (is (false? (:diagnostic-contract-complete? result)) result)
+          (is (false? (:exact? result)) result))))))
