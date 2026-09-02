@@ -5,7 +5,7 @@
   "candidate_commit": "4874d95d7cb2780568e45cf0a3e0445847da1c80",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Integration-eligible architecture-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after independent ACCEPT by c2-cache-architecture-reviewer-v3 at /root/c2_cache_arch_review3 and exact clean named-branch preflight against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 returned integrate_candidate. No merge, terminal publication, implementation, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "disposition": "Integrated architecture-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 through authoritative main merge f05f821d971aa3483173dac7ecc0b7fbe70a6657, tree 8e647b0b7405f40c8ea06d21caed63436906c19c. Exact candidate ancestry and clean main were verified. This integrates only the accepted architecture report and governance; it does not implement cache behavior or confer cache, release, proof, equivalence, or self-hosting authority.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -185,6 +185,12 @@
       "at": "2026-09-02T22:21:12Z",
       "reason": "advance accepted exact architecture tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 to integration-eligible after exact read-only preflight in a clean named temporary branch against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 passed every precondition with descendant relation and integrate_candidate recommendation; no merge, integration, terminal publication, or implementation occurred",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:22:52Z",
+      "reason": "record integration of the exact accepted architecture tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 through authoritative main merge f05f821d971aa3483173dac7ecc0b7fbe70a6657 with parents ca05356877691a8bb3c257d8214ba69a46f20729 and eaf8c7851ca47580802f219051fdd1c37cd233b9 and tree 8e647b0b7405f40c8ea06d21caed63436906c19c; clean main and candidate ancestry verified, with no implementation source change or broader authority claim",
+      "state": "integrated"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -224,6 +230,6 @@
       "reviewer": "c2-cache-architecture-reviewer-v3"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
