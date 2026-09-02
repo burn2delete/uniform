@@ -83,6 +83,21 @@
   #{:operation :shard :result-contract-id})
 (def ^:private cached-result-contract-id
   :gravity/sh07-cached-shard-result-v1)
+(def ^:private cache-observation-schema
+  :gravity/unified-cache-observation-v1)
+(def ^:private cache-observation-keys
+  #{:schema :result-contract-id :artifact :shard :context :counters
+    :elapsed-ms :cache-authoritative? :fresh-authoritative-run-required?})
+(def ^:private cache-observation-context-keys
+  #{:request-schema-version :adapter :checked-core-source-content-hash
+    :checked-core-plan-semantic-hash :java-runtime-version :clojure-version})
+(def ^:private cache-observation-counter-keys
+  #{:sh06-hits :sh06-misses :core-hits :core-misses
+    :verification-hits :verification-misses})
+(def ^:private cache-observation-max-count 1000000)
+(def ^:private cache-observation-max-elapsed-ms (* 24 60 60 1000))
+(def ^:private cache-observation-max-text-length 1024)
+(def ^:private cached-artifact :gravity/sh07-cached-shard-result)
 (def ^:private allowed-executors
   #{:exact-tree-warm-worker :authoritative-proof-runner})
 (def ^:private required-cache-key-inputs
@@ -1472,17 +1487,184 @@
 
 (def build-plan plan)
 
+(defn- bounded-exact-integer?
+  "Check a bounded integer without coercing BigInt through a machine long."
+  [value minimum maximum]
+  (and (integer? value)
+       (<= minimum value maximum)))
+
+(defn- bounded-observation-text?
+  [value]
+  (and (string? value)
+       (not (str/blank? value))
+       (<= (count value) cache-observation-max-text-length)))
+
+(defn- canonical-cached-shard-plan?
+  "Return true only for the validated fast cached-shard executor shape.
+
+  This intentionally inspects declarative plan data rather than requiring the
+  lane adapter, avoiding a namespace cycle and preventing generic/fresh plans
+  from accepting cache observations merely because they carry an artifact."
+  [plan-value]
+  (let [request (get-in plan-value [:executor :request])
+        route-value (get-in catalog [:routes (:route-id plan-value)])
+        canonical-resource-policy
+        (when route-value
+          (merge {:resource-class (:resource-class route-value)}
+                 (:bounds route-value)))]
+    (and (= :fast (:lane plan-value))
+         (= :eligible (get-in plan-value [:cache-policy :mode]))
+         (= :warm-bounded-process (:execution-mode plan-value))
+         (= :exact-tree-warm-worker (get-in plan-value [:executor :adapter]))
+         (= :non-authoritative (:authority plan-value))
+         (= :non-authoritative (:authority-ceiling plan-value))
+         (false? (:authoritative? plan-value))
+         (= canonical-resource-policy (:resource-policy plan-value))
+         (map? request)
+         (= #{:operation :shard :result-contract-id} (set (keys request)))
+         (= :cached-shard (:operation request))
+         (= cached-result-contract-id (:result-contract-id request))
+         (string? (:shard request))
+         (not (str/blank? (:shard request))))))
+
+(defn- cached-artifact?
+  [value]
+  (and (map? value) (= cached-artifact (:artifact value))))
+
+(defn- cached-artifacts
+  [result]
+  (let [artifacts (:artifacts result)]
+    ;; Results from the lane use a bounded vector.  Do not realize arbitrary
+    ;; lazy sequences supplied by an injected callback while checking for a
+    ;; cached artifact; a direct raw map is checked without realization too.
+    (cond
+      (vector? artifacts) (vec (filter cached-artifact? artifacts))
+      (cached-artifact? artifacts) [artifacts]
+      :else [])))
+
+(defn- validate-cache-observation!
+  [plan-value observation raw-artifacts]
+  (exact-keys! observation cache-observation-keys
+               "UEP-RESULT-CACHE-OBSERVATION-KEYS"
+               [:result :cache-observation])
+  (ensure! (= cache-observation-schema (:schema observation))
+           "UEP-RESULT-CACHE-OBSERVATION"
+           "Cache observation schema is not recognized"
+           {:schema (:schema observation)})
+  (let [request (get-in plan-value [:executor :request])]
+    (ensure! (= cached-result-contract-id
+                (:result-contract-id observation)
+                (:result-contract-id request))
+             "UEP-RESULT-CACHE-OBSERVATION"
+             "Cache observation result contract is not recognized"
+             {:expected cached-result-contract-id
+              :actual (:result-contract-id observation)})
+    (ensure! (= cached-artifact (:artifact observation))
+             "UEP-RESULT-CACHE-OBSERVATION"
+             "Cache observation artifact is not recognized"
+             {:artifact (:artifact observation)})
+    (ensure! (= (:shard request) (:shard observation))
+             "UEP-RESULT-CACHE-OBSERVATION"
+             "Cache observation shard does not match its plan"
+             {:expected (:shard request) :actual (:shard observation)}))
+  (let [context (:context observation)]
+    (exact-keys! context cache-observation-context-keys
+                 "UEP-RESULT-CACHE-OBSERVATION-CONTEXT-KEYS"
+                 [:result :cache-observation :context])
+    (ensure! (bounded-exact-integer? (:request-schema-version context)
+                                     1 1000)
+             "UEP-RESULT-CACHE-OBSERVATION-CONTEXT"
+             "Cache observation request schema version is outside its bound"
+             {:value (:request-schema-version context)})
+    (ensure! (keyword? (:adapter context))
+             "UEP-RESULT-CACHE-OBSERVATION-CONTEXT"
+             "Cache observation adapter identity must be a keyword"
+             {:value (:adapter context)})
+    (doseq [key [:checked-core-source-content-hash
+                 :checked-core-plan-semantic-hash
+                 :java-runtime-version
+                 :clojure-version]]
+      (ensure! (bounded-observation-text? (get context key))
+               "UEP-RESULT-CACHE-OBSERVATION-CONTEXT"
+               "Cache observation context text is outside its bound"
+               {:key key :value (get context key)})))
+  (let [counters (:counters observation)]
+    (exact-keys! counters cache-observation-counter-keys
+                 "UEP-RESULT-CACHE-OBSERVATION-COUNTER-KEYS"
+                 [:result :cache-observation :counters])
+    (doseq [key (sort-by name cache-observation-counter-keys)]
+      (ensure! (bounded-exact-integer? (get counters key)
+                                       0 cache-observation-max-count)
+               "UEP-RESULT-CACHE-OBSERVATION-COUNTER"
+               "Cache observation counter is outside its bound"
+               {:key key :value (get counters key)})))
+  (ensure! (bounded-exact-integer? (:elapsed-ms observation)
+                                   0 cache-observation-max-elapsed-ms)
+           "UEP-RESULT-CACHE-OBSERVATION"
+           "Cache observation elapsed time is outside its bound"
+           {:elapsed-ms (:elapsed-ms observation)})
+  (ensure! (false? (:cache-authoritative? observation))
+           "UEP-RESULT-CACHE-OBSERVATION-AUTHORITY"
+           "Cache observation cannot provide authoritative evidence" {})
+  (ensure! (true? (:fresh-authoritative-run-required? observation))
+           "UEP-RESULT-CACHE-OBSERVATION-AUTHORITY"
+           "Cache observation must require a fresh authoritative run" {})
+  (when-let [raw (first raw-artifacts)]
+    (let [expected {:schema cache-observation-schema
+                    :result-contract-id
+                    (get-in plan-value [:executor :request :result-contract-id])
+                    :artifact (:artifact raw)
+                    :shard (:shard raw)
+                    :context (:cache-context raw)
+                    :counters (:cache raw)
+                    :elapsed-ms (:elapsed-ms raw)
+                    :cache-authoritative? (:cache-authoritative? raw)
+                    :fresh-authoritative-run-required?
+                    (:fresh-authoritative-run-required? raw)}]
+      (ensure! (= expected observation)
+               "UEP-RESULT-CACHE-OBSERVATION-MISMATCH"
+               "Cache observation does not match its authenticated raw artifact"
+               {:expected expected :actual observation})))
+  observation)
+
 (defn- validate-result
   [plan-value result]
   (ensure! (map? result) "UEP-RESULT-SHAPE" "Execution result must be a map" {})
   (let [allowed #{:status :test-count :pass :fail :error :diagnostics :evidence
                  :artifacts :mutation-detected? :fresh-replayable?
                  :provenance-checked? :source-authenticated?
-                 :closure-verified? :cache-decision}]
+                 :closure-verified? :cache-decision :cache-observation}]
     (let [unknown (set/difference (set (keys result)) allowed)]
       (when (seq unknown)
         (fail! "UEP-RESULT-KEYS" "Execution result has unknown keys"
                {:unknown (sorted-values unknown)}))))
+  (let [cached-plan? (canonical-cached-shard-plan? plan-value)
+        raw-artifacts (cached-artifacts result)
+        observation-present? (contains? result :cache-observation)]
+    (when-not cached-plan?
+      (ensure! (not observation-present?)
+               "UEP-RESULT-CACHE-OBSERVATION"
+               "Cache observations are admitted only for canonical cached-shard plans"
+               {:route-id (:route-id plan-value) :lane (:lane plan-value)}))
+    (when cached-plan?
+      (when observation-present?
+        (ensure! (= 1 (count raw-artifacts))
+                 "UEP-RESULT-CACHE-OBSERVATION"
+                 "A cache observation requires one raw cached artifact"
+                 {:count (count raw-artifacts)}))
+      (when (seq raw-artifacts)
+        (ensure! observation-present?
+                 "UEP-RESULT-CACHE-OBSERVATION-REQUIRED"
+                 "A cached raw artifact requires its cache observation"
+                 {:route-id (:route-id plan-value)}))
+      (when (= :passed (:status result))
+        (ensure! (and observation-present? (= 1 (count raw-artifacts)))
+                 "UEP-RESULT-CACHE-OBSERVATION-REQUIRED"
+                 "A passing cached result requires one raw artifact and observation"
+                 {:route-id (:route-id plan-value)}))
+      (when observation-present?
+        (validate-cache-observation! plan-value (:cache-observation result)
+                                     raw-artifacts))))
   (ensure! (contains? #{:passed :failed :blocked} (:status result))
            "UEP-RESULT-STATUS" "Execution result status is unknown"
            {:status (:status result)})
@@ -1577,6 +1759,12 @@
          result (validate-result plan-value result)
          cache-mode (get-in plan-value [:cache-policy :mode])
          cache-decision (:cache-decision result)
+         cache-base {:mode cache-mode
+                     :decision cache-decision
+                     :authoritative? false}
+         cache-value (if (contains? result :cache-observation)
+                       (assoc cache-base :observation (:cache-observation result))
+                       cache-base)
          receipt-base
          {:schema receipt-schema
           :version 1
@@ -1590,9 +1778,7 @@
           :summary (select-keys result [:test-count :pass :fail :error])
           :selection (:selection plan-value)
           :closure-identity (:closure-identity plan-value)
-          :cache {:mode cache-mode
-                  :decision cache-decision
-                  :authoritative? false}
+          :cache cache-value
           :execution {:mode (:execution-mode plan-value)
                       :resource-policy (:resource-policy plan-value)
                       :elapsed-ms (long (/ (- (System/nanoTime) started) 1000000))}
@@ -1607,7 +1793,15 @@
           :nonclaims (:nonclaims plan-value)
           :fresh-authoritative-gate-required?
           (:fresh-authoritative-gate-required? plan-value)}
-         receipt-id (identity-of (dissoc receipt-base :execution))]
+         ;; Cache counters and elapsed time are observations of this run, not
+         ;; identity inputs.  Provenance (schema, contract, artifact, shard,
+         ;; context, and authority flags) remains in the receipt identity so
+         ;; observations cannot be rebound to a different cached product.
+         receipt-identity (cond-> (dissoc receipt-base :execution)
+                            (contains? result :cache-observation)
+                            (update-in [:cache :observation]
+                                       #(dissoc % :counters :elapsed-ms)))
+         receipt-id (identity-of receipt-identity)]
      (assoc receipt-base :receipt-id receipt-id))))
 
 (def run-plan execute-plan)

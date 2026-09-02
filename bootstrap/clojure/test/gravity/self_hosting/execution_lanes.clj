@@ -97,6 +97,8 @@
 (def ^:private warm-cached-counter-keys
   #{:sh06-hits :sh06-misses :core-hits :core-misses
     :verification-hits :verification-misses})
+(def ^:private warm-cached-observation-schema
+  :gravity/unified-cache-observation-v1)
 (def ^:private warm-cached-result-counter-keys
   #{:test :pass :fail :error})
 (def ^:private warm-cached-request-keys
@@ -982,6 +984,26 @@
            {:elapsed-ms (:elapsed-ms result)})
   result)
 
+(defn- warm-cached-observation
+  "Project an authenticated raw cached result into the closed UEP result shape.
+
+  The raw result remains in `:artifacts`; this map is intentionally a shallow
+  observation carrying only the provenance and bounded counters needed by the
+  coordinator.  It never conveys authority, and its counters/time are
+  observational rather than receipt identity inputs."
+  [plan-value result]
+  {:schema warm-cached-observation-schema
+   :result-contract-id
+   (get-in plan-value [:executor :request :result-contract-id])
+   :artifact (:artifact result)
+   :shard (:shard result)
+   :context (:cache-context result)
+   :counters (:cache result)
+   :elapsed-ms (:elapsed-ms result)
+   :cache-authoritative? (:cache-authoritative? result)
+   :fresh-authoritative-run-required?
+   (:fresh-authoritative-run-required? result)})
+
 (defn- validate-warm-cached-response!
   "Validate the operation-specific cached response and its raw result.
 
@@ -1197,7 +1219,10 @@
         ;; A cached result remains non-authoritative; only its three hit
         ;; counters influence the observed acceleration decision.
         :cache-decision (if cache-hit? :hit :miss)}
-       cached? (assoc :artifacts (if (map? runner-result) [runner-result] []))))))
+       cached? (assoc :artifacts (if (map? runner-result) [runner-result] []))
+       (and cached? (map? runner-result))
+       (assoc :cache-observation
+              (warm-cached-observation plan-value runner-result))))))
 
 (defn- warm-owner-loop
   [session]

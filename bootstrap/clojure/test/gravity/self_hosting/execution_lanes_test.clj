@@ -505,6 +505,35 @@
     (is (every? #(= :miss (:cache-decision %)) results))
     (is (every? #(= 1 (count (:artifacts %)))
                 (take 2 results)))
+    (is (every? #(= #{:schema :result-contract-id :artifact :shard :context
+                      :counters :elapsed-ms :cache-authoritative?
+                      :fresh-authoritative-run-required?}
+                    (set (keys (:cache-observation %))))
+                results))
+    (is (every? #(= (get-in % [:artifacts 0 :cache-context])
+                    (get-in % [:cache-observation :context]))
+                results))
+    (is (every? #(= (get-in % [:artifacts 0 :cache])
+                    (get-in % [:cache-observation :counters]))
+                results))
+    (is (every? #(= (get-in % [:artifacts 0 :artifact])
+                    (get-in % [:cache-observation :artifact]))
+                results))
+    (is (every? #(= (get-in % [:artifacts 0 :shard])
+                    (get-in % [:cache-observation :shard]))
+                results))
+    (is (every? #(= (get-in % [:artifacts 0 :elapsed-ms])
+                    (get-in % [:cache-observation :elapsed-ms]))
+                results))
+    (is (every? #(= :gravity/sh07-cached-shard-result-v1
+                    (get-in % [:cache-observation :result-contract-id]))
+                results))
+    (is (every? #(false? (get-in % [:cache-observation :cache-authoritative?]))
+                results))
+    (is (every? #(true? (get-in %
+                              [:cache-observation
+                               :fresh-authoritative-run-required?]))
+                results))
     (is (= [6 2 2 2 4] (mapv :test-count results)))
     (is (= #{:test :pass :fail :error :artifact :shard :test-vars
              :cache-authoritative? :fresh-authoritative-run-required?
@@ -790,6 +819,18 @@
     (is (= {:test-count 2 :pass 0 :fail 0 :error 1}
            (select-keys result [:test-count :pass :fail :error])))
     (is (some #(= "UEP-WARM-TEST-FAILED" (:id %)) (:diagnostics result)))))
+
+(deftest cached-preexecution-failure-carries-no-raw-or-observation
+  (let [plan-value (cached-plan "sh07-cached-accepted")
+        result ((private-lane-fn 'warm-request-result)
+                plan-value (:selection plan-value)
+                {:runner-result nil :outcome :failed :exit-code 2
+                 :output-truncated? false}
+                true true)]
+    (is (= [] (:artifacts result)))
+    (is (not (contains? result :cache-observation)))
+    (is (= {:test-count 6 :pass 0 :fail 0 :error 1}
+           (select-keys result [:test-count :pass :fail :error])))))
 
 (deftest fast-adapter-evicts-and-releases-after-worker-failure
   (let [released (atom 0)
