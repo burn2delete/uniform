@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27"
   ],
-  "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-28 exact immutable report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 after independent architecture acceptance and clean exact descendant preflight. Reconciliation with current authoritative main remains required before integration. No implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred; fresh implementation, pin-cascade, authentic public-route, mutation, bounded-runtime, and independent Root6 evidence remain required.",
+  "disposition": "INTEGRATED architecture-only Attempt-28 exact immutable report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 from exact integration-eligible lifecycle head 5934f54c4457dcdc9824ae7b062c72b532071a1f, tree e87ad9b004967a01aaa7660fea632c1c06d45b1e, over unchanged authoritative main 7bf4296fd48bdbec459a357c4c937373d2946dff. This integrates the corrected carrier architecture only and grants authority for separately governed implementation work to consume it. No implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred; fresh implementation, pin-cascade, authentic public-route, mutation, bounded-runtime, and independent Root6 evidence remain required.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
@@ -19,7 +19,9 @@
       "semantic census:32433 rows, 2029 leaves, 143 folds, 2173 digest operations, root sha256:a710c35a9e7977ca48141b478022840e494e736e4f20dbdb45022707bdfd978c",
       "physical versus reachable census:1451/1392 definitions, 3126/3003 local edges, 1423/1356 external edges, 26127/25275 builtin occurrences",
       "external ordering:1423 physical M1 rows, 1356 dense semantic rows, exactly 67 physical gaps",
-      "lifecycle identity audit:immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger"
+      "lifecycle identity audit:immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger",
+      "reconciliation result:no synthetic reconciliation commit required because authoritative main remained exact 7bf4296fd48bdbec459a357c4c937373d2946dff tree 0fcc35051426125e9dc24a9f3e900312a9022f55 and is the direct ancestor of integration-eligible head 5934f54c4457dcdc9824ae7b062c72b532071a1f tree e87ad9b004967a01aaa7660fea632c1c06d45b1e",
+      "final integration preflight PASS for exact integration-eligible lifecycle head 5934f54c4457dcdc9824ae7b062c72b532071a1f tree e87ad9b004967a01aaa7660fea632c1c06d45b1e over authoritative main 7bf4296fd48bdbec459a357c4c937373d2946dff; clean named descendant; recommendation integrate_candidate"
     ],
     "rejected_fixtures": [
       "Attempt27 pre-carrier census identities are treated as final implementation identities",
@@ -55,6 +57,11 @@
       },
       {
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 7bf4296fd48bdbec459a357c4c937373d2946dff --candidate-base 7bf4296fd48bdbec459a357c4c937373d2946dff --candidate-commit 7950f47d6bffc7279a2c5872f60f186987d3b1ac --candidate-tree 478177ee4903a0510852ff11d0b0e5c8e97152fd",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 7bf4296fd48bdbec459a357c4c937373d2946dff --candidate-base 7bf4296fd48bdbec459a357c4c937373d2946dff --candidate-commit 5934f54c4457dcdc9824ae7b062c72b532071a1f --candidate-tree e87ad9b004967a01aaa7660fea632c1c06d45b1e",
         "exit_code": 0,
         "result": "passed"
       }
@@ -104,6 +111,12 @@
       "at": "2026-09-02T09:06:37Z",
       "reason": "advance exact independently accepted Attempt-28 architecture to integration eligibility at accepted lifecycle HEAD 7950f47d6bffc7279a2c5872f60f186987d3b1ac, tree 478177ee4903a0510852ff11d0b0e5c8e97152fd, preserving report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6, and complete independent review evidence after strict gates and clean descendant integration preflight against base 7bf4296fd48bdbec459a357c4c937373d2946dff tree 0fcc35051426125e9dc24a9f3e900312a9022f55; reconciliation with then-current authoritative main is still required and no implementation authority is granted",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T09:11:39Z",
+      "reason": "integrate exact independently accepted architecture-only Attempt-28 report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 from exact integration-eligible lifecycle head 5934f54c4457dcdc9824ae7b062c72b532071a1f, tree e87ad9b004967a01aaa7660fea632c1c06d45b1e, after strict gates and clean descendant integration preflight against unchanged authoritative main 7bf4296fd48bdbec459a357c4c937373d2946dff tree 0fcc35051426125e9dc24a9f3e900312a9022f55; no synthetic reconciliation commit was required, integration is architecture-only, and no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is granted",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -132,6 +145,6 @@
       "reviewer": "attempt28-independent-review"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 final linked-carrier snapshot erratum v18 attempt 28"
 }
