@@ -13,7 +13,9 @@
            (java.util.concurrent TimeUnit)))
 
 (def request-schema :gravity/exact-tree-warm-worker-request-v1)
+(def cached-request-schema :gravity/exact-tree-warm-worker-cached-request-v1)
 (def response-schema :gravity/exact-tree-warm-worker-response-v2)
+(def cached-response-schema :gravity/exact-tree-warm-worker-cached-response-v1)
 (def ready-schema :gravity/exact-tree-warm-worker-ready-v1)
 (def ^:private response-prefix "WARM_DEV ")
 (def ^:private maximum-line-length 65536)
@@ -22,6 +24,7 @@
 (def ^:private maximum-cached-count 1000000)
 (def ^:private maximum-cached-elapsed-ms (* 24 60 60 1000))
 (def ^:private oid-pattern #"[0-9a-f]{40,64}")
+(def ^:private identity-pattern #"sha256:[0-9a-f]{64}")
 (def ^:private namespace-catalog-snapshot runner/namespace-catalog)
 (def ^:private namespace-authority
   (set (map (comp str :namespace) namespace-catalog-snapshot)))
@@ -30,9 +33,15 @@
 (def ^:private shutdown-request-keys
   #{:schema :request-id :operation :candidate-commit :candidate-tree})
 (def ^:private cached-request-keys
-  #{:schema :request-id :operation :candidate-commit :candidate-tree :shard})
-(def ^:private cached-shard-allowlist
-  #{"accepted" "contract" "identity" "rejected" "verification"})
+  #{:schema :request-id :operation :candidate-commit :candidate-tree
+    :lane :route-id :plan-id :catalog-id :closure-identity
+    :result-contract-id :shard})
+(def ^:private cached-response-keys
+  #{:schema :authority :authoritative? :request-id :candidate-commit
+    :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
+    :result-contract-id :shard :outcome :exit-code :elapsed-ns :request-count
+    :runner-result :stdout :stderr :output-truncated?})
+(def cached-result-contract-id :gravity/sh07-cached-shard-result-v1)
 (def ^:private cached-result-keys
   #{:test :pass :fail :error :artifact :shard :test-vars
     :cache-authoritative? :fresh-authoritative-run-required?
@@ -118,6 +127,22 @@
           (instance? VirtualMachineError cause)
           (instance? LinkageError cause)) cause
       :else (recur (.getCause ^Throwable cause)))))
+
+(defn- interrupted-cause
+  [throwable]
+  (loop [cause throwable]
+    (cond
+      (nil? cause) nil
+      (instance? InterruptedException cause) cause
+      :else (recur (.getCause ^Throwable cause)))))
+
+(defn- rethrow-control!
+  [throwable]
+  (when-let [interrupted (interrupted-cause throwable)]
+    (.interrupt (Thread/currentThread))
+    (throw interrupted))
+  (when-let [fatal (fatal-cause throwable)]
+    (throw fatal)))
 
 (defn- exact-runner-args! [args]
   (when-not (and (vector? args) (<= 4 (count args) 64)
@@ -219,7 +244,7 @@
     (fail! "WARM-CACHED-RESULT" "cached runner artifact is unsupported"
            {:shard shard :artifact (:artifact result)}))
   (when-not (and (string? (:shard result))
-                 (contains? cached-shard-allowlist (:shard result))
+                 (<= 1 (count (:shard result)) 128)
                  (= shard (:shard result)))
     (fail! "WARM-CACHED-RESULT-SHARD"
            "cached runner result shard does not match the request"
@@ -260,37 +285,136 @@
            {:shard shard :field :elapsed-ms :value (:elapsed-ms result)}))
   result)
 
-(defn validate-request! [request expected]
-  (when-not (map? request)
-    (fail! "WARM-REQUEST-SHAPE" "request must be a map" {}))
-  (let [operation (:operation request)
-        allowed (case operation
-                  :shutdown shutdown-request-keys
-                  :run-cached-shard cached-request-keys
-                  exact-request-keys)]
-    (when-not (= allowed (set (keys request)))
-      (fail! "WARM-REQUEST-SHAPE" "request keys are not closed"
-             {:keys (vec (sort (map str (keys request))))}))
-    (when-not (= request-schema (:schema request))
-      (fail! "WARM-REQUEST-SCHEMA" "request schema is unsupported" {}))
-    (when-not (and (string? (:request-id request))
-                   (<= 1 (count (:request-id request)) 160))
-      (fail! "WARM-REQUEST-ID" "request id must be bounded text" {}))
-    (when-not (contains? #{:run-exact :run-cached-shard :shutdown} operation)
-      (fail! "WARM-REQUEST-OPERATION" "operation is unsupported" {}))
-    (doseq [field [:candidate-commit :candidate-tree]]
-      (when-not (= (field expected) (field request))
-        (fail! "WARM-TREE-MISMATCH" "request identity differs from worker identity"
-               {:field field :expected (field expected) :actual (field request)})))
-    (cond
-      (= :run-exact operation) (exact-runner-args! (:args request))
-      (= :run-cached-shard operation)
-      (when-not (and (string? (:shard request))
-                     (contains? cached-shard-allowlist (:shard request)))
-        (fail! "WARM-CACHED-SHARD" "cached shard is outside the closed allowlist"
-               {:shard (:shard request)
-                :available (vec (sort cached-shard-allowlist))})))
-    request))
+(defn- identity-text?
+  [value]
+  (and (string? value) (re-matches identity-pattern value)))
+
+(defn- cached-plan-for-route
+  "Build and validate the fast plan that declares a cached request.
+
+  The worker deliberately derives the shard and all plan identities from this
+  reviewed route.  It has no independent shard inventory or route-prefix
+  classifier, so a route can be admitted only when the UEP itself declares a
+  closed cached executor request."
+  [route-id]
+  (when-not (and (string? route-id)
+                 (<= 1 (count route-id) 256))
+    (fail! "WARM-CACHED-REQUEST-IDENTITY"
+           "cached request route id must be bounded text"
+           {:route-id route-id}))
+  (try
+    (let [plan-fn (or (requiring-resolve
+                       'gravity.self-hosting.unified-execution-plan/plan)
+                      (fail! "WARM-CACHED-CATALOG"
+                             "cached plan builder is unavailable" {}))
+          validate-fn (or (requiring-resolve
+                           'gravity.self-hosting.unified-execution-plan/validate-plan)
+                          (fail! "WARM-CACHED-CATALOG"
+                                 "cached plan validator is unavailable" {}))
+          plan (plan-fn {:route-id route-id :lane :fast})]
+      (validate-fn plan)
+      plan)
+    (catch clojure.lang.ExceptionInfo error
+      (rethrow-control! error)
+      (fail! "WARM-CACHED-CATALOG"
+             "cached route does not resolve to a validated fast execution plan"
+             {:route-id route-id
+              :cause-id (:id (ex-data error))}))
+    (catch Throwable error
+      (rethrow-control! error)
+      (fail! "WARM-CACHED-CATALOG"
+             "cached route plan construction failed"
+             {:route-id route-id
+              :class (.getName (class error))}))))
+
+(defn- cached-plan-for-request
+  "Validate every cached request identity against its declarative UEP plan."
+  [request]
+  (let [plan (cached-plan-for-route (:route-id request))
+        executor-request (get-in plan [:executor :request])]
+    (when-not (and (map? executor-request)
+                   (= #{:operation :shard :result-contract-id}
+                      (set (keys executor-request))))
+      (fail! "WARM-CACHED-CATALOG"
+             "cached route has no closed executor request"
+             {:route-id (:route-id request)}))
+    (when-not (= :fast (:lane request))
+      (fail! "WARM-CACHED-REQUEST-IDENTITY"
+             "cached requests are admitted only in the fast lane"
+             {:lane (:lane request)}))
+    (doseq [[field value]
+            [[:plan-id (:plan-id plan)]
+             [:catalog-id (:catalog-id plan)]
+             [:closure-identity (:closure-identity plan)]]]
+      (when-not (identity-text? (get request field))
+        (fail! "WARM-CACHED-REQUEST-IDENTITY"
+               "cached request identity must be a sha256 content identity"
+               {:field field :value (get request field)}))
+      (when-not (= value (get request field))
+        (fail! "WARM-CACHED-REQUEST-IDENTITY"
+               "cached request identity differs from the validated plan"
+               {:field field :expected value :actual (get request field)})))
+    (when-not (and (string? (:shard request))
+                   (<= 1 (count (:shard request)) 128))
+      (fail! "WARM-CACHED-REQUEST-IDENTITY"
+             "cached request shard must be bounded text"
+             {:shard (:shard request)}))
+    (doseq [[field expected]
+            [[:route-id (:route-id plan)]
+             [:lane :fast]
+             [:result-contract-id (:result-contract-id executor-request)]
+             [:shard (:shard executor-request)]]]
+      (when-not (= expected (get request field))
+        (fail! "WARM-CACHED-REQUEST-IDENTITY"
+               "cached request does not equal its declarative executor request"
+               {:field field :expected expected :actual (get request field)
+                :route-id (:route-id request)})))
+    (when-not (= :cached-shard (:operation executor-request))
+      (fail! "WARM-CACHED-CATALOG"
+             "cached route executor operation is not closed"
+             {:route-id (:route-id request)
+              :operation (:operation executor-request)}))
+    (when-not (= cached-result-contract-id (:result-contract-id request))
+      (fail! "WARM-CACHED-REQUEST-IDENTITY"
+             "cached request result contract is unsupported"
+             {:expected cached-result-contract-id
+              :actual (:result-contract-id request)}))
+    plan))
+
+(defn validate-request!
+  ([request expected]
+   (validate-request! request expected nil))
+  ([request expected cached-plan-holder]
+   (when-not (map? request)
+     (fail! "WARM-REQUEST-SHAPE" "request must be a map" {}))
+   (let [operation (:operation request)
+         allowed (case operation
+                   :shutdown shutdown-request-keys
+                   :run-cached-shard cached-request-keys
+                   exact-request-keys)]
+     (when-not (= allowed (set (keys request)))
+       (fail! "WARM-REQUEST-SHAPE" "request keys are not closed"
+              {:keys (vec (sort (map str (keys request))))}))
+     (when-not (= (if (= :run-cached-shard operation)
+                    cached-request-schema
+                    request-schema)
+                  (:schema request))
+       (fail! "WARM-REQUEST-SCHEMA" "request schema is unsupported" {}))
+     (when-not (and (string? (:request-id request))
+                    (<= 1 (count (:request-id request)) 160))
+       (fail! "WARM-REQUEST-ID" "request id must be bounded text" {}))
+     (when-not (contains? #{:run-exact :run-cached-shard :shutdown} operation)
+       (fail! "WARM-REQUEST-OPERATION" "operation is unsupported" {}))
+     (doseq [field [:candidate-commit :candidate-tree]]
+       (when-not (= (field expected) (field request))
+         (fail! "WARM-TREE-MISMATCH" "request identity differs from worker identity"
+                {:field field :expected (field expected) :actual (field request)})))
+     (cond
+       (= :run-exact operation) (exact-runner-args! (:args request))
+       (= :run-cached-shard operation)
+       (let [plan (cached-plan-for-request request)]
+         (when cached-plan-holder (reset! cached-plan-holder plan))))
+     request)))
 
 (defn- bounded-process-output [process]
   (let [stream (.getInputStream process)
@@ -342,6 +466,33 @@
           :candidate-commit (:candidate-commit request)
           :candidate-tree (:candidate-tree request)
           :outcome outcome :exit-code exit-code :elapsed-ns elapsed-ns
+          :request-count request-count
+          :runner-result (:runner-result result)}
+         (let [{out-text :text out-cut :truncated?} (bounded-text (:out result))
+               {err-text :text err-cut :truncated?} (bounded-text (:err result))]
+           {:stdout out-text :stderr err-text
+            :output-truncated? (boolean (or out-cut err-cut
+                                            (:out-truncated? result)
+                                            (:err-truncated? result)))})))
+
+(defn- cached-response
+  [request outcome exit-code elapsed-ns result request-count]
+  (merge {:schema cached-response-schema
+          :authority :non-authoritative
+          :authoritative? false
+          :request-id (:request-id request)
+          :candidate-commit (:candidate-commit request)
+          :candidate-tree (:candidate-tree request)
+          :lane (:lane request)
+          :route-id (:route-id request)
+          :plan-id (:plan-id request)
+          :catalog-id (:catalog-id request)
+          :closure-identity (:closure-identity request)
+          :result-contract-id (:result-contract-id request)
+          :shard (:shard request)
+          :outcome outcome
+          :exit-code exit-code
+          :elapsed-ns elapsed-ns
           :request-count request-count
           :runner-result (:runner-result result)}
          (let [{out-text :text out-cut :truncated?} (bounded-text (:out result))
@@ -432,13 +583,8 @@
              :out-truncated? (:truncated? out-result)
              :err-truncated? (:truncated? err-result)})))
       (catch Throwable error
+        (rethrow-control! error)
         (cond
-          (instance? InterruptedException error)
-          (do (.interrupt (Thread/currentThread)) (throw error))
-
-          (fatal-cause error)
-          (throw (fatal-cause error))
-
           :else
           (let [out-result (bounded-writer-result out-capture)
                 err-result (bounded-writer-result err-capture)
@@ -453,6 +599,36 @@
              :out-truncated? (:truncated? out-result)
              :err-truncated? (:truncated? err-result)}))))))
 
+(defn- cached-plan-identity
+  [plan]
+  (select-keys plan [:route-id :lane :plan-id :catalog-id :closure-identity
+                     :executor]))
+
+(defn- cached-plan-after-execution
+  [request before]
+  (try
+    (let [after (cached-plan-for-request request)]
+      (if (= (cached-plan-identity before)
+             (cached-plan-identity after))
+        {:plan after}
+        {:drift? true}))
+    (catch clojure.lang.ExceptionInfo error
+      (rethrow-control! error)
+      {:drift? true :error error})
+    (catch Throwable error
+      (rethrow-control! error)
+      {:drift? true :error error})))
+
+(defn- cached-catalog-drift-result
+  [result]
+  {:exit 2
+   :elapsed-ns (:elapsed-ns result)
+   :out ""
+   :err "WARM-CACHED-CATALOG: cached route plan or catalog identity changed during execution"
+   :runner-result nil
+   :out-truncated? false
+   :err-truncated? false})
+
 (defn run-session!
   ([lines emit! expected observe! execute! max-count]
    (run-session! lines emit! expected observe! execute!
@@ -463,7 +639,11 @@
        (do
          (when (> (count line) maximum-line-length)
            (fail! "WARM-REQUEST-BOUNDS" "request line exceeds bound" {}))
-         (let [request (validate-request! (strict-edn line) expected)
+         (let [cached-plan-holder (atom nil)
+               request (validate-request! (strict-edn line) expected
+                                          cached-plan-holder)
+               cached? (= :run-cached-shard (:operation request))
+               cached-plan-before (when cached? @cached-plan-holder)
                live-before (observe!)]
            (when-not (= namespace-catalog-snapshot runner/namespace-catalog)
              (fail! "WARM-CATALOG-DRIFT" "development namespace catalog changed" {}))
@@ -474,22 +654,33 @@
              (do (emit! (response request :shutdown 0 0 {:out "" :err ""
                                                          :runner-result nil}
                                   request-count)) 0)
-             (let [result (if (= :run-cached-shard (:operation request))
+             (let [result (if cached?
                             (cached-execute! (:shard request))
                             (execute! (:args request)))
+                   cached-plan-check (when cached?
+                                       (cached-plan-after-execution
+                                        request cached-plan-before))
+                   cached-drift? (and cached? (:drift? cached-plan-check))
+                   result (if cached-drift?
+                            (cached-catalog-drift-result result)
+                            result)
                    next-count (inc request-count)
                    live-after (observe!)
                    catalog-drift?
                    (not= namespace-catalog-snapshot runner/namespace-catalog)
                    drift? (or catalog-drift?
                               (not= (assoc expected :clean? true) live-after))
-                   exit (if drift? 2 (:exit result))
-                   outcome (cond catalog-drift? :catalog-drift
+                   exit (if (or cached-drift? drift?) 2 (:exit result))
+                   outcome (cond cached-drift? :catalog-drift
+                                 catalog-drift? :catalog-drift
                                  drift? :tree-drift
                                  (zero? exit) :passed
                                  :else :failed)]
-               (emit! (response request outcome exit (:elapsed-ns result)
-                                result next-count))
+               (emit! (if cached?
+                        (cached-response request outcome exit (:elapsed-ns result)
+                                         result next-count)
+                        (response request outcome exit (:elapsed-ns result)
+                                  result next-count)))
                (cond
                  (not (zero? exit)) exit
                  (< next-count max-count) (recur (next remaining) next-count)

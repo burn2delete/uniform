@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-exact-tree-warm-worker-test
   (:require [clojure.test :as test :refer [deftest is testing]]
             [gravity.development-test-runner :as runner]
+            [gravity.self-hosting.unified-execution-plan :as execution-plan]
             [gravity.self-hosting.sh01-exact-tree-warm-worker :as worker]))
 
 (def commit "1111111111111111111111111111111111111111")
@@ -19,12 +20,26 @@
   ["--namespace" "gravity.c2-pass-cache-test"
    "--exact" "canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"])
 
-(def cached-shards ["accepted" "contract" "identity" "rejected" "verification"])
+(def cached-route-ids
+  ["sh07-cached-accepted" "sh07-cached-contract" "sh07-cached-identity"
+   "sh07-cached-rejected" "sh07-cached-verification"])
+
+(defn cached-plan
+  [route-id]
+  (execution-plan/plan {:route-id route-id :lane :fast}))
 
 (defn cached-request
-  [id shard]
-  {:schema worker/request-schema :request-id id :operation :run-cached-shard
-   :candidate-commit commit :candidate-tree tree :shard shard})
+  [id route-id]
+  (let [plan (cached-plan route-id)
+        executor-request (get-in plan [:executor :request])]
+    {:schema worker/cached-request-schema :request-id id
+     :operation :run-cached-shard
+     :candidate-commit commit :candidate-tree tree
+     :lane :fast :route-id route-id :plan-id (:plan-id plan)
+     :catalog-id (:catalog-id plan)
+     :closure-identity (:closure-identity plan)
+     :result-contract-id (:result-contract-id executor-request)
+     :shard (:shard executor-request)}))
 
 (def cached-context
   {:request-schema-version 15
@@ -207,28 +222,46 @@
         (is interrupted?))
       (finally (Thread/interrupted)))))
 
-(deftest cached-requests-are-closed-and-allowlisted
-  (doseq [shard cached-shards]
-    (is (= shard
-           (:shard (worker/validate-request!
-                    (cached-request "cached" shard) expected)))))
+(deftest cached-requests-are-closed-and-plan-derived
+  (doseq [route-id cached-route-ids]
+    (let [request (cached-request "cached" route-id)
+          plan (cached-plan route-id)
+          executor-request (get-in plan [:executor :request])]
+      (is (= request (worker/validate-request! request expected)))
+      (is (= #{:schema :request-id :operation :candidate-commit :candidate-tree
+               :lane :route-id :plan-id :catalog-id :closure-identity
+               :result-contract-id :shard}
+             (set (keys request))))
+      (is (= (:shard executor-request) (:shard request)))
+      (is (= (:result-contract-id executor-request)
+             (:result-contract-id request)))
+      (is (= (:plan-id plan) (:plan-id request)))
+      (is (= (:catalog-id plan) (:catalog-id request)))
+      (is (= (:closure-identity plan) (:closure-identity request)))))
   (testing "cached requests use an operation-specific closed key set"
-    (doseq [request [(assoc (cached-request "extra" "accepted") :args [])
-                     (dissoc (cached-request "missing" "accepted") :shard)]]
+    (doseq [request [(assoc (cached-request "extra" "sh07-cached-accepted") :args [])
+                     (dissoc (cached-request "missing" "sh07-cached-accepted") :shard)]]
       (let [error (try
                     (worker/validate-request! request expected)
                     nil
                     (catch clojure.lang.ExceptionInfo error error))]
         (is (= "WARM-REQUEST-SHAPE" (:id (ex-data error)))))))
-  (testing "unknown and non-string shard values fail closed"
-    (doseq [shard ["missing" :accepted]]
+  (testing "unknown routes and non-string shard values fail closed"
+    (let [unknown (assoc (cached-request "bad-route" "sh07-cached-accepted")
+                         :route-id "sh07-cached-missing")
+          non-string (assoc (cached-request "bad-shard" "sh07-cached-accepted")
+                            :shard :accepted)]
       (let [error (try
-                    (worker/validate-request!
-                     (cached-request "bad-shard" shard) expected)
+                    (worker/validate-request! unknown expected)
                     nil
                     (catch clojure.lang.ExceptionInfo error error))]
-        (is (= "WARM-CACHED-SHARD" (:id (ex-data error))))
-        (is (= shard (:shard (ex-data error))))))))
+        (is (= "WARM-CACHED-CATALOG" (:id (ex-data error)))))
+      (let [error (try
+                    (worker/validate-request!
+                     non-string expected)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "WARM-CACHED-REQUEST-IDENTITY" (:id (ex-data error))))))))
 
 (deftest cached-request-identity-remains-tree-bound
   (doseq [[field actual]
@@ -236,7 +269,7 @@
            [:candidate-tree commit]]]
     (let [error (try
                   (worker/validate-request!
-                   (assoc (cached-request "identity" "accepted") field actual)
+                   (assoc (cached-request "identity" "sh07-cached-accepted") field actual)
                    expected)
                   nil
                   (catch clojure.lang.ExceptionInfo error error))]
@@ -244,9 +277,117 @@
       (is (= field (:field (ex-data error))))
       (is (= actual (:actual (ex-data error)))))))
 
+(deftest cached-request-plan-identity-mismatches-fail-before-dispatch
+  (let [base (cached-request "identity" "sh07-cached-accepted")]
+    (doseq [[field value expected-id]
+            [[:schema worker/request-schema "WARM-REQUEST-SCHEMA"]
+             [:lane :fresh "WARM-CACHED-REQUEST-IDENTITY"]
+             [:plan-id (:catalog-id base) "WARM-CACHED-REQUEST-IDENTITY"]
+             [:catalog-id (:plan-id base) "WARM-CACHED-REQUEST-IDENTITY"]
+             [:closure-identity (:catalog-id base) "WARM-CACHED-REQUEST-IDENTITY"]
+             [:result-contract-id :wrong-contract "WARM-CACHED-REQUEST-IDENTITY"]
+             [:shard "not-the-declared-shard" "WARM-CACHED-REQUEST-IDENTITY"]]]
+      (let [error (try
+                    (worker/validate-request! (assoc base field value) expected)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (some? error) (str "expected rejection for " field))
+        (is (= expected-id (:id (ex-data error))) (str "diagnostic for " field))))
+    (let [calls (atom 0)
+          invalid (assoc base :shard "not-the-declared-shard")
+          error (try
+                  (worker/run-session!
+                   [(pr-str invalid)] (fn [_] nil) expected
+                   #(assoc expected :clean? true)
+                   (fn [_] (throw (AssertionError. "exact must not execute")))
+                   (fn [_] (swap! calls inc)
+                     {:exit 0 :elapsed-ns 1 :out "" :err ""
+                      :runner-result (cached-result "accepted")})
+                   8)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "WARM-CACHED-REQUEST-IDENTITY" (:id (ex-data error))))
+      (is (zero? @calls)))))
+
+(deftest cached-plan-drift-fails-closed-after-injected-execution
+  (let [request (cached-request "drift" "sh07-cached-accepted")
+        emitted (atom [])
+        calls (atom [])
+        plan-calls (atom 0)
+        original-plan execution-plan/plan
+        drifting-plan
+        (fn [request]
+          (let [plan (original-plan request)]
+            (if (= 2 (swap! plan-calls inc))
+              (assoc plan :plan-id
+                     "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+              plan)))]
+    (with-redefs [execution-plan/plan drifting-plan]
+      (is (= 2 (worker/run-session!
+                [(pr-str request)] #(swap! emitted conj %) expected
+                #(assoc expected :clean? true)
+                (fn [_] (throw (AssertionError. "exact path must not execute")))
+                (fn [shard]
+                  (swap! calls conj shard)
+                  {:exit 0 :elapsed-ns 3 :out "cached" :err ""
+                   :runner-result (cached-result shard)})
+                8))))
+    (is (= 2 @plan-calls))
+    (is (= ["accepted"] @calls))
+    (is (= 1 (count @emitted)))
+    (is (= worker/cached-response-schema (:schema (first @emitted))))
+    (is (= :catalog-drift (:outcome (first @emitted))))
+    (is (= 2 (:exit-code (first @emitted))))
+    (is (nil? (:runner-result (first @emitted))))
+    (is (re-find #"WARM-CACHED-CATALOG" (:stderr (first @emitted))))))
+
+(deftest cached-plan-control-failures-are-not-converted
+  (let [request (cached-request "control" "sh07-cached-accepted")
+        before (cached-plan "sh07-cached-accepted")]
+    (testing "plan construction interruption is restored and rethrown"
+      (try
+        (with-redefs [requiring-resolve
+                      (fn [_] (throw (InterruptedException. "stop")))]
+          (#'worker/cached-plan-for-route "sh07-cached-accepted"))
+        (is false "expected interruption")
+        (catch InterruptedException _
+          (is (Thread/interrupted)))))
+    (testing "wrapped plan interruption is restored and rethrown"
+      (try
+        (with-redefs [requiring-resolve
+                      (fn [_]
+                        (throw (ex-info "wrapped" {}
+                                        (InterruptedException. "stop"))))]
+          (#'worker/cached-plan-for-route "sh07-cached-accepted"))
+        (is false "expected wrapped interruption")
+        (catch InterruptedException _
+          (is (Thread/interrupted)))))
+    (testing "wrapped plan linkage errors remain fatal"
+      (is (thrown? LinkageError
+                   (with-redefs [requiring-resolve
+                                 (fn [_]
+                                   (throw (ex-info "wrapped" {}
+                                                   (LinkageError. "fatal"))))]
+                     (#'worker/cached-plan-for-route "sh07-cached-accepted")))))
+    (testing "post-execution interruption is restored and rethrown"
+      (try
+        (with-redefs [execution-plan/plan
+                      (fn [_] (throw (InterruptedException. "stop")))]
+          (#'worker/cached-plan-after-execution request before))
+        (is false "expected interruption")
+        (catch InterruptedException _
+          (is (Thread/interrupted)))))
+    (testing "wrapped post-execution plan linkage errors remain fatal"
+      (is (thrown? LinkageError
+                   (with-redefs [execution-plan/plan
+                                 (fn [_]
+                                   (throw (ex-info "wrapped" {}
+                                                   (LinkageError. "fatal"))))]
+                     (#'worker/cached-plan-after-execution request before)))))))
+
 (deftest cached-dispatch-preserves-raw-result-and-response-shape
   (let [emitted (atom []) exact-calls (atom []) cached-calls (atom [])
-        line (pr-str (cached-request "cached" "accepted"))
+        line (pr-str (cached-request "cached" "sh07-cached-accepted"))
         raw (cached-result "accepted")]
     (is (zero? (worker/run-session!
                 [line] #(swap! emitted conj %) expected
@@ -263,6 +404,22 @@
     (is (= [] @exact-calls))
     (is (= ["accepted"] @cached-calls))
     (is (= [:passed] (mapv :outcome @emitted)))
+    (is (= worker/cached-response-schema (:schema (first @emitted))))
+    (is (= #{:schema :authority :authoritative? :request-id :candidate-commit
+             :candidate-tree :lane :route-id :plan-id :catalog-id
+             :closure-identity :result-contract-id :shard :outcome :exit-code
+             :elapsed-ns :request-count :runner-result :stdout :stderr
+             :output-truncated?}
+           (set (keys (first @emitted)))))
+    (is (= "sh07-cached-accepted" (:route-id (first @emitted))))
+    (is (= :fast (:lane (first @emitted))))
+    (is (= (:plan-id (cached-request "cached" "sh07-cached-accepted"))
+           (:plan-id (first @emitted))))
+    (is (= (:catalog-id (cached-request "cached" "sh07-cached-accepted"))
+           (:catalog-id (first @emitted))))
+    (is (= (:closure-identity (cached-request "cached" "sh07-cached-accepted"))
+           (:closure-identity (first @emitted))))
+    (is (= worker/cached-result-contract-id (:result-contract-id (first @emitted))))
     (is (= 1 (:request-count (first @emitted))))
     (is (= raw (:runner-result (first @emitted))))
     (is (false? (:authoritative? (first @emitted))))
@@ -360,8 +517,8 @@
 
 (deftest cached-drift-terminates-session-before-reuse
   (let [emitted (atom []) calls (atom []) observations (atom 0)
-        lines [(pr-str (cached-request "first" "accepted"))
-               (pr-str (cached-request "never" "contract"))]
+        lines [(pr-str (cached-request "first" "sh07-cached-accepted"))
+               (pr-str (cached-request "never" "sh07-cached-contract"))]
         observe (fn []
                   (if (= 2 (swap! observations inc))
                     (assoc expected :clean? false)
