@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
   ],
-  "disposition": "INTEGRATION-ELIGIBLE architecture-only Attempt-27 immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea. Accepted lifecycle head 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, passed exact clean-descendant integration preflight over frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59. Eligibility applies only to architecture reconciliation and grants no implementation, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority.",
+  "disposition": "INTEGRATED architecture-only Attempt-27 immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, from reconciled integration-eligible lifecycle head 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e, over authoritative main 1b410fda852067d41e68511604faf78d825b174b. This integrates the carrier architecture only and grants authority for separately governed implementation work to consume it. It grants no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement consequence.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
@@ -23,7 +23,9 @@
       "physical census:closed 10-key P27, 14-key physical census, seven ordered exact 20-key module rows",
       "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger",
       "independent architecture ACCEPT by attempt27-independent-review for exact immutable candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea from review-pending tip 5ef84a51174835f9586563e0eb018782a341a6d1, tree 454b86d7e5ab879789291532947367a7d6c86211; reviewer independently reproduced all seven category counts, 30370 rows, 1901 leaves, 135 folds, 2037 digest operations, seven exact 20-key module rows, dense semantic and sparse M1 ordinals with exactly 60 gaps, all actual and prospective maxima including corrected root 4571/4787, closed P27 schemas, immutable M0-M3/B47/f473, root, mutation, pin, nonclaim, and governance laws; no implementation acceptance conferred",
-      "integration preflight PASS for accepted lifecycle HEAD 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, over frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59; relation descendant; clean named branch; exact identities; recommendation integrate_candidate"
+      "integration preflight PASS for accepted lifecycle HEAD 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, over frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59; relation descendant; clean named branch; exact identities; recommendation integrate_candidate",
+      "reconciled integration-eligible lifecycle head:513a9110faca7a54af513202137bdbef01fabf97 tree:8e90636bc3a5063facf444fe4ab0c8c6a1168b3e over authoritative main:1b410fda852067d41e68511604faf78d825b174b preserving all prior ledger entries and immutable report SHA-256",
+      "final integration preflight PASS for reconciled integration-eligible lifecycle HEAD 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e, over exact authoritative main 1b410fda852067d41e68511604faf78d825b174b; clean descendant; recommendation integrate_candidate"
     ],
     "rejected_fixtures": [
       "Attempt26 conflates sparse physical M1 edge ordinal with dense semantic edge ordinal or fails to preserve exactly 60 physical gaps",
@@ -98,6 +100,11 @@
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-base 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-commit 587bcb40428ec5c7abcc7377ae218e30da5f01e0 --candidate-tree cfe32175b5c38756aa68935505c45d4788b09ccd",
         "exit_code": 0,
         "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 1b410fda852067d41e68511604faf78d825b174b --candidate-base 1b410fda852067d41e68511604faf78d825b174b --candidate-commit 513a9110faca7a54af513202137bdbef01fabf97 --candidate-tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e",
+        "exit_code": 0,
+        "result": "passed"
       }
     ]
   },
@@ -163,6 +170,12 @@
       "at": "2026-09-02T04:18:52Z",
       "reason": "exact accepted lifecycle HEAD 587bcb40428ec5c7abcc7377ae218e30da5f01e0, tree cfe32175b5c38756aa68935505c45d4788b09ccd, preserving immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea, passed strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, language-boundary, diff-hygiene, and exact integration preflight against frozen architecture base 41d55e94c1e01acbe4cea401eb6b70209a512a59; preflight was a clean named-branch descendant with matching identities, no diagnostics, and integrate_candidate recommendation; eligibility is architecture-only and grants no implementation, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T04:21:46Z",
+      "reason": "integrate accepted architecture-only Attempt-27 immutable report candidate 643d2eae692a30a432df4339bf836c8b1ef959b9, tree d7f9a1d9e64e9a5988ef40cad22f0e6289874461, report SHA-256 bb2cb5bdea0cfce4bc58e6f4982b88ddc609f29c8dcbaf3991a217768d34b5ea from exact reconciled integration-eligible lifecycle head 513a9110faca7a54af513202137bdbef01fabf97, tree 8e90636bc3a5063facf444fe4ab0c8c6a1168b3e after strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, language-boundary, diff-hygiene, and clean descendant integration preflight against authoritative main 1b410fda852067d41e68511604faf78d825b174b; integration is architecture-only and grants no implementation acceptance, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
@@ -190,6 +203,6 @@
       "reviewer": "attempt27-independent-review"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 closed bounded linked-carrier erratum v18 attempt 27"
 }
