@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh07-cached-shard-runner-test
-  (:require [clojure.test :as test :refer [deftest is]]
+  (:require [clojure.string :as str]
+            [clojure.test :as test :refer [deftest is]]
             [gravity.self-hosting.sh07-cached-shard-runner :as runner]
             [gravity.self-hosting.unified-execution-plan :as execution-plan]))
 
@@ -31,8 +32,13 @@
     "sh07-b13-fragment-module-and-coverage-products-fail-replay"]))
 
 (def ^:private b13-closure-paths
-  #{"bootstrap/clojure/src/gravity/digest.clj"
+  #{"bootstrap/clojure/src/gravity"
     "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
+    "bootstrap/clojure/test/gravity/development_test_runner.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
     "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
     "bootstrap/gravity/src/gravity/checked_core.gravity"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
@@ -41,6 +47,14 @@
     "contracts/verification-catalog.edn"
     "contracts/stage0-incremental-test-dependencies.edn"
     "deps.edn"})
+
+(defn- parent-child-overlaps
+  [paths]
+  (for [parent paths
+        child paths
+        :when (and (not= parent child)
+                   (str/starts-with? child (str parent "/")))]
+    [parent child]))
 
 (defn- exception-details
   [operation]
@@ -60,6 +74,10 @@
               :namespace legacy-namespace
               :selectors selectors}
              (:selection route)))
+      (is (= {:operation :cached-shard
+              :shard shard-name
+              :result-contract-id :gravity/sh07-cached-shard-result-v1}
+             (get-in route [:executor :request])))
       (is (= b13-closure-paths
              (set (get-in route [:dependency-closure :paths]))))
       (is (= [:fast] (:lanes route)))
@@ -73,6 +91,12 @@
              (:cache-policy route)))
       (is (= (count selectors)
              (get-in route [:bounds :max-test-vars]))))))
+
+(deftest cached-route-closure-has-no-parent-child-overlap
+  (is (= []
+         (vec (parent-child-overlaps
+               (set (get-in (execution-plan/route "sh07-cached-accepted")
+                            [:dependency-closure :paths])))))))
 
 (deftest cached-runner-uses-routes-without-changing-raw-result
   (let [calls (atom [])

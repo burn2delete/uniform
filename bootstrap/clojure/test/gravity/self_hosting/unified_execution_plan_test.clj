@@ -12,6 +12,23 @@
    :provenance-checked? true :source-authenticated? true
    :closure-verified? true :cache-decision :miss})
 
+(def ^:private cached-request-oracle
+  {"sh07-cached-accepted"
+   {:operation :cached-shard :shard "accepted"
+    :result-contract-id :gravity/sh07-cached-shard-result-v1}
+   "sh07-cached-contract"
+   {:operation :cached-shard :shard "contract"
+    :result-contract-id :gravity/sh07-cached-shard-result-v1}
+   "sh07-cached-identity"
+   {:operation :cached-shard :shard "identity"
+    :result-contract-id :gravity/sh07-cached-shard-result-v1}
+   "sh07-cached-rejected"
+   {:operation :cached-shard :shard "rejected"
+    :result-contract-id :gravity/sh07-cached-shard-result-v1}
+   "sh07-cached-verification"
+   {:operation :cached-shard :shard "verification"
+    :result-contract-id :gravity/sh07-cached-shard-result-v1}})
+
 (deftest catalog-is-closed-and-compatibility-scoped
   (is (= :gravity/verification-catalog-v1 (:schema plan/catalog)))
   (is (= false (:complete? plan/catalog)))
@@ -21,6 +38,44 @@
   (is (every? #(false? (:replaces? %)) (vals (:routes plan/catalog))))
   (is (= (set (keys (:routes plan/catalog)))
          (set (get-in plan/catalog [:coverage :route-ids])))))
+
+(deftest cached-executor-requests-are-closed-manifest-data
+  (let [actual
+        (into {}
+              (keep (fn [[route-id route]]
+                      (when-let [request (get-in route [:executor :request])]
+                        [route-id request])))
+              (:routes plan/catalog))]
+    (is (= cached-request-oracle actual))
+    (is (= 5 (count actual)))
+    (is (= 5 (count (set (map :shard (vals actual))))))
+    (is (= #{:adapter :bounded? :fresh-capable? :authority :request}
+           (set (keys (get-in plan/catalog
+                              [:routes "sh07-cached-accepted" :executor])))))
+    (is (= #{:adapter :bounded? :fresh-capable? :authority}
+           (set (keys (get-in plan/catalog
+                              [:routes "sh07-b11-contract" :executor])))))
+    (is (= #{:adapter :bounded? :fresh-capable? :authority}
+           (set (keys (get-in plan/catalog
+                              [:routes "sh07-authoritative" :executor])))))))
+
+(deftest cached-executor-request-shape-and-shard-identity-fail-closed
+  (let [extra (assoc-in plan/catalog
+                        [:routes "sh07-cached-accepted" :executor :request
+                         :extra]
+                        true)
+        blank (assoc-in plan/catalog
+                        [:routes "sh07-cached-accepted" :executor :request :shard]
+                        "")
+        duplicate (assoc-in plan/catalog
+                            [:routes "sh07-cached-contract" :executor :request :shard]
+                            "accepted")]
+    (is (= "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST-KEYS"
+           (error-id #(plan/validate-catalog extra))))
+    (is (= "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST"
+           (error-id #(plan/validate-catalog blank))))
+    (is (= "UEP-CATALOG-CACHED-EXECUTOR-REQUEST"
+           (error-id #(plan/validate-catalog duplicate))))))
 
 (deftest plans-are-deterministic-and-declarative
   (let [request {:route-id "sh07-b8-regression" :lane :fast}
