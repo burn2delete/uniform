@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
   ],
-  "disposition": "FROZEN exact architecture-only Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d. The report and tuple are immutable carrier-architecture authority only; fresh independent architecture review is required. No acceptance, implementation, pin, SH-07 completion, integration eligibility, self-hosting, release, performance, or seed-retirement consequence exists.",
+  "disposition": "REVIEW-PENDING exact immutable architecture-only Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d. Fresh independent carrier-architecture review is requested. No acceptance, implementation, pin, SH-07 completion, integration eligibility, self-hosting, release, performance, or seed-retirement consequence exists.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
@@ -134,6 +134,12 @@
       "at": "2026-09-02T02:36:48Z",
       "reason": "freeze exact immutable architecture-only Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d after strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, JSON, ASCII, candidate-diff, shard-hash, aggregate-digest, ownership, and EOF checks; report content and candidate identity remain byte-identical; the old monolithic carrier/raw domain must reject and no implementation or pin acceptance is inferred",
       "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T02:37:44Z",
+      "reason": "request fresh independent exact carrier-architecture review of immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d: verify exact Attempt24 dependency, immutable B47/f473, seven M0-M3 plans and 2440 bound, qualified S25/h25/P25 joins, distinct raw domain and old-domain rejection, logical fourteen-symbol surface without a false module contract, Root1/Root8 law, independent R6, source/link authority separation, bounded routing, mutation matrix, pin cascade, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-25",
@@ -155,6 +161,6 @@
     "Attempt25 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 linked-bundle executable carrier topology erratum v18 attempt 25"
 }
