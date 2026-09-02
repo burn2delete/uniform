@@ -1,0 +1,140 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "88aa5833b34063fb69854f67ef9f737346141295",
+  "candidate_commit": "2f053e64d1ab378ac7cae09f79439b437b5ec71a",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-cached-shard-manifest-v1",
+    "sh07-honest-warm-counter-protocol-v1"
+  ],
+  "disposition": "Independently accepted and integration eligible on the exact canonical local-main lineage. This adds only a closed, bounded, non-authoritative cached-shard operation to the existing warm worker. It preserves the generic exact and shutdown protocols, executes the five manifest-projected shard names directly in legacy selector order, rejects malformed or authoritative cache results and truncated output, and retires no runner. It grants no SH roadmap credit or acceptance authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj",
+      "closed five-shard cached request protocol",
+      "bounded non-authoritative raw cached result"
+    ],
+    "rejected_fixtures": [
+      "unknown or non-string cached shard",
+      "cached request key drift or tree identity drift",
+      "authoritative, malformed, or mismatched cached result",
+      "cached output truncation",
+      "fatal, interrupted, or post-execution drifted cached session"
+    ],
+    "stable_diagnostics": [
+      "WARM-CACHED-SHARD",
+      "WARM-CACHED-RESULT",
+      "WARM-CACHED-RESULT-KEYS",
+      "WARM-CACHED-AUTHORITY",
+      "WARM-CACHED-CONTEXT",
+      "WARM-CACHED-CACHE",
+      "WARM-CACHED-OUTPUT"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure focused gravity.self-hosting.sh01-exact-tree-warm-worker-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure focused gravity.self-hosting.sh01-language-boundary-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 88aa5833b34063fb69854f67ef9f737346141295..2f053e64d1ab378ac7cae09f79439b437b5ec71a",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 88aa5833b34063fb69854f67ef9f737346141295 --candidate-commit 2f053e64d1ab378ac7cae09f79439b437b5ec71a --candidate-tree da60b2ed7882d0b6005bd7ac90517460b889c26e",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "BOOT7",
+    "BOOT8",
+    "TEST13",
+    "contracts/verification-catalog.edn",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T02:35:00Z",
+      "reason": "start the smallest warm-worker cached protocol prerequisite without lane or receipt wiring",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T02:45:00Z",
+      "reason": "freeze exact base 88aa5833b34063fb69854f67ef9f737346141295, candidate 2f053e64d1ab378ac7cae09f79439b437b5ec71a, tree da60b2ed7882d0b6005bd7ac90517460b889c26e, and two owned paths",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T02:46:00Z",
+      "reason": "request bounded independent review of the exact cached protocol, authority, output, fatal, interruption, and compatibility invariants",
+      "state": "review-pending"
+    },
+    {
+      "actor": "exact_conformance_migration_analysis",
+      "at": "2026-09-02T02:52:00Z",
+      "reason": "accept the exact closed worker protocol, five-shard direct dispatch, raw result authentication, truncation rejection, fatal and interruption semantics, compatibility, and explicit lane-wiring nonclaims",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T02:53:00Z",
+      "reason": "advance the exact independently accepted candidate after clean canonical local-main integration preflight",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-warm-worker-cached-protocol-v1",
+  "invariant_family": "tooling/sh07-unified-execution-cache-transport",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj"
+  ],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary cached protocol and execution boundary",
+    "the worker operation is a prerequisite only and does not yet bind route, execution-plan, verification-catalog, closure, result-contract, lease, or receipt identities",
+    "the later lane adapter must authenticate bootstrap pins before dispatch, include the worker, cached runner, bootstrap, and unified-plan implementation in the reviewed closure, and evict a session on any identity or closure drift",
+    "the warm cached operation remains non-authoritative and cannot confer integration, proof, release, self-hosting, seed-retirement, safety, or performance authority",
+    "fresh authoritative acceptance remains cache-free and independently replayable and was not changed or run",
+    "no real cached shard, cache execution, broad B13 namespace, or authoritative SH-07 suite was run",
+    "no runner or helper is retired; retirement requires later exact execution, diagnostic, fixture, mutation, cache-context, and receipt parity",
+    "tooling simplification grants no SH roadmap credit and does not change recorded SH-07 slice counts"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "exact_conformance_migration_analysis"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 warm-worker cached protocol prerequisite version 1"
+}
