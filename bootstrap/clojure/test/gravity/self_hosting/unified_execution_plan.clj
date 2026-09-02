@@ -79,6 +79,10 @@
 (def ^:private allowed-authority-ceilings #{:non-authoritative :acceptance-only})
 (def ^:private allowed-selection-kinds #{:exact-vars :proof-contract-module-catalog})
 (def ^:private executor-keys #{:adapter :bounded? :fresh-capable? :authority})
+(def ^:private executor-request-keys
+  #{:operation :shard :result-contract-id})
+(def ^:private cached-result-contract-id
+  :gravity/sh07-cached-shard-result-v1)
 (def ^:private allowed-executors
   #{:exact-tree-warm-worker :authoritative-proof-runner})
 (def ^:private required-cache-key-inputs
@@ -426,8 +430,39 @@
   (ensure! (contains? allowed-execution-modes (:execution-mode route))
            "UEP-CATALOG-ROUTE-MODE" "Route execution mode is unknown"
            {:route route-id})
-  (exact-keys! (:executor route) executor-keys "UEP-CATALOG-ROUTE-EXECUTOR-KEYS"
-               [:routes route-id :executor])
+  (let [executor (:executor route)
+        allowed-keys (if (and (map? executor) (contains? executor :request))
+                       (conj executor-keys :request)
+                       executor-keys)]
+    (exact-keys! executor allowed-keys "UEP-CATALOG-ROUTE-EXECUTOR-KEYS"
+                 [:routes route-id :executor])
+    (when (and (map? executor) (contains? executor :request))
+      (let [request (:request executor)]
+        (exact-keys! request executor-request-keys
+                     "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST-KEYS"
+                     [:routes route-id :executor :request])
+        (ensure! (= :cached-shard (:operation request))
+                 "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST"
+                 "Executor request operation is not the cached-shard operation"
+                 {:route route-id :operation (:operation request)})
+        (ensure! (and (string? (:shard request))
+                      (not (str/blank? (:shard request)))
+                      (<= 1 (count (:shard request)) 128))
+                 "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST"
+                 "Executor cached shard must be bounded nonempty text"
+                 {:route route-id :shard (:shard request)})
+        (ensure! (= cached-result-contract-id (:result-contract-id request))
+                 "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST"
+                 "Executor cached result contract is not recognized"
+                 {:route route-id
+                  :result-contract-id (:result-contract-id request)})
+        (ensure! (and (= [:fast] (:lanes route))
+                      (= :warm-bounded-process (:execution-mode route))
+                      (= :eligible (get-in route [:cache-policy :mode]))
+                      (= :non-authoritative (:authority-ceiling route)))
+                 "UEP-CATALOG-ROUTE-EXECUTOR-REQUEST-POLICY"
+                 "Cached executor requests require fast eligible non-authoritative execution"
+                 {:route route-id}))))
   (ensure! (contains? allowed-executors (get-in route [:executor :adapter]))
            "UEP-CATALOG-ROUTE-EXECUTOR" "Route executor adapter is unknown"
            {:route route-id :adapter (get-in route [:executor :adapter])})
@@ -609,6 +644,15 @@
                      (:lanes value))
     (validate-conformance-closure! id (:module-id route) (:dependency-closure route)
                                    (:conformance value)))
+  (let [request-shards
+        (->> (:routes value)
+             (keep (fn [[_ route]]
+                     (get-in route [:executor :request :shard])))
+             vec)]
+    (ensure! (= (count request-shards) (count (distinct request-shards)))
+             "UEP-CATALOG-CACHED-EXECUTOR-REQUEST"
+             "Cached executor request shards must be unique"
+             {:shards (vec request-shards)}))
   (let [route-ids (set (keys (:routes value)))]
     (non-empty-vector! (:suites value) "UEP-CATALOG-SUITES" [:suites])
     (ensure! (= (count (:suites value))

@@ -278,7 +278,12 @@
                            "sh07-b13-cross-fragment-definitions-and-references-bind"
                            "sh07-b13-b12-alias-value-and-call-survive-fragment-assembly"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                        :paths ["bootstrap/clojure/src/gravity"
+                                "bootstrap/clojure/test/gravity/development_test_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
@@ -301,7 +306,10 @@
    :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
-              :authority :non-authoritative}
+              :authority :non-authoritative
+              :request {:operation :cached-shard
+                        :shard "accepted"
+                        :result-contract-id :gravity/sh07-cached-shard-result-v1}}
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority]}
@@ -323,7 +331,12 @@
                :selectors ["sh07-b13-fixtures-are-dynamically-discovered-paired-and-bounded"
                            "sh07-b13-claim-boundary-remains-honest"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                        :paths ["bootstrap/clojure/src/gravity"
+                                "bootstrap/clojure/test/gravity/development_test_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
@@ -346,7 +359,10 @@
    :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
-              :authority :non-authoritative}
+              :authority :non-authoritative
+              :request {:operation :cached-shard
+                        :shard "contract"
+                        :result-contract-id :gravity/sh07-cached-shard-result-v1}}
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority]}
@@ -368,7 +384,12 @@
                :selectors ["sh07-b13-identities-are-deterministic-path-neutral-and-provenanced"
                            "sh07-b13-stale-sh06-and-alias-binding-resolution-fail-closed"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                        :paths ["bootstrap/clojure/src/gravity"
+                                "bootstrap/clojure/test/gravity/development_test_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
@@ -391,7 +412,10 @@
    :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
-              :authority :non-authoritative}
+              :authority :non-authoritative
+              :request {:operation :cached-shard
+                        :shard "identity"
+                        :result-contract-id :gravity/sh07-cached-shard-result-v1}}
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority]}
@@ -413,7 +437,12 @@
                :selectors ["sh07-b13-rejected-fixtures-follow-declared-oracles"
                            "sh07-b13-rejected-corpus-covers-size-and-form-boundaries"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                        :paths ["bootstrap/clojure/src/gravity"
+                                "bootstrap/clojure/test/gravity/development_test_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
@@ -436,7 +465,10 @@
    :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
-              :authority :non-authoritative}
+              :authority :non-authoritative
+              :request {:operation :cached-shard
+                        :shard "rejected"
+                        :result-contract-id :gravity/sh07-cached-shard-result-v1}}
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority]}
@@ -460,7 +492,12 @@
                            "sh07-b13-module-resolvers-use-module-aggregate-bounds"
                            "sh07-b13-fragment-module-and-coverage-products-fail-replay"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                        :paths ["bootstrap/clojure/src/gravity"
+                                "bootstrap/clojure/test/gravity/development_test_runner.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
@@ -483,7 +520,10 @@
    :executor {:adapter :exact-tree-warm-worker
               :bounded? true
               :fresh-capable? false
-              :authority :non-authoritative}
+              :authority :non-authoritative
+              :request {:operation :cached-shard
+                        :shard "verification"
+                        :result-contract-id :gravity/sh07-cached-shard-result-v1}}
    :receipt-policy {:schema :gravity/unified-execution-receipt-v1
                     :required-fields [:plan-id :selection :closure-identity
                                       :status :diagnostics :cache :authority]}
