@@ -359,6 +359,419 @@
    :nonclaims [:integration :proof :release :self-hosting
                :seed-retirement :safety :performance]}
 
+  "sh07-parallel-accepted"
+  {:id "sh07-parallel-accepted"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-vector-pattern-test"
+               :selectors ["sh07-b11-direct-and-public-routing-use-v12"
+                           "sh07-b11-preserves-b10-scalar-pattern-products"
+                           "sh07-b11-pattern-records-are-preorder-bounded-and-parent-linked"
+                           "sh07-b11-nested-vector-records-preserve-source-order-and-kinds"
+                           "sh07-b11-vector-bindings-are-unique-branch-local-and-use-linked"
+                           "sh07-b11-scrutinee-is-once-and-vector-branches-are-conditional"
+                           "sh07-b11-vector-branch-preserves-tail-recur-target"
+                           "sh07-b11-public-proof-is-bounded-and-honest"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b11"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-identity-lineage"
+  {:id "sh07-parallel-identity-lineage"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-vector-pattern-test"
+               :selectors ["sh07-b11-identities-are-deterministic-path-neutral-and-provenanced"
+                           "sh07-b11-pattern-products-bind-to-the-authenticated-sh06-lineage"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b11"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-rejected"
+  {:id "sh07-parallel-rejected"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-vector-pattern-test"
+               :selectors ["sh07-b11-rejections-are-structured-and-oracle-bound"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b11"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-verification"
+  {:id "sh07-parallel-verification"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-vector-pattern-test"
+               :selectors ["sh07-b11-pattern-product-alterations-fail-replay"
+                           "sh07-b11-pattern-resolvers-enforce-record-depth-width-and-count-bounds"
+                           "sh07-b11-pattern-resolver-rejects-invalid-parent-graphs"
+                           "sh07-b11-pattern-graph-completeness-rejects-structural-alterations"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b11"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-b12-contract-accepted"
+  {:id "sh07-parallel-b12-contract-accepted"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-alias-qualified-reference-test"
+               :selectors ["sh07-b12-fixtures-are-dynamically-discovered-paired-and-bounded"
+                           "sh07-b12-direct-and-public-routing-use-v13"
+                           "sh07-b12-declared-alias-table-is-exact-bounded-and-projected"
+                           "sh07-b12-alias-qualified-value-and-operator-references-bind-exactly"
+                           "sh07-b12-alias-targets-may-be-a-binding-target-subset"
+                           "sh07-b12-reference-and-call-record-contract-remains-b11-compatible"
+                           "sh07-b12-alias-call-evaluates-operator-before-arguments"
+                           "sh07-b12-alias-fully-qualified-and-core-controls-remain-distinct"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b12"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-b12-identity-verification"
+  {:id "sh07-parallel-b12-identity-verification"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-alias-qualified-reference-test"
+               :selectors ["sh07-b12-identities-are-deterministic-path-neutral-and-provenanced"
+                           "sh07-b12-alias-products-retain-authenticated-sh06-lineage"
+                           "sh07-b12-alias-table-alterations-fail-closed"
+                           "sh07-b12-declared-alias-product-alterations-fail-replay"
+                           "sh07-b12-resolution-order-and-binding-alterations-fail-closed"
+                           "sh07-b12-public-replay-and-capability-proof-pass"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b12"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-b12-rejected-regression"
+  {:id "sh07-parallel-b12-rejected-regression"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-alias-qualified-reference-test"
+               :selectors ["sh07-b12-rejected-fixtures-follow-their-declared-oracles"
+                           "sh07-b12-preserves-b11-vector-pattern-products"
+                           "sh07-b12-claim-boundary-remains-honest"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b12"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b12"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-regression-a"
+  {:id "sh07-parallel-regression-a"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-match-lowering-test"
+               :selectors ["sh07-b10-fixtures-are-paired-byte-identical-and-cover-the-foundation"
+                           "sh07-b10-direct-and-public-routing-use-v12"
+                           "sh07-b10-match-nodes-record-exact-order-and-pending-facts"
+                           "sh07-b10-pattern-families-and-binding-scopes-are-explicit"
+                           "sh07-b10-sibling-bindings-are-branch-local"
+                           "sh07-b10-nested-matches-have-distinct-groups-and-global-order"
+                           "sh07-b10-scrutinee-is-once-and-branches-are-conditional"
+                           "sh07-b10-scrutinee-and-branch-error-transfers-have-exact-regions"
+                           "sh07-b10-match-branches-preserve-enclosing-tail-recur-targets"
+                           "sh07-b10-match-scrutinee-does-not-inherit-tail-position"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b10"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
+  "sh07-parallel-regression-b"
+  {:id "sh07-parallel-regression-b"
+   :module-id "sh07-checked-core"
+   :replacement-for [:parallel-shard-runner]
+   :migration-status :compatibility-projection
+   :replaces? false
+   :exhaustive? false
+   :lanes [:fast]
+   :selection {:kind :exact-vars
+               :namespace "gravity.self-hosting.sh07-match-lowering-test"
+               :selectors ["sh07-b10-identities-are-deterministic-path-neutral-and-provenanced"
+                           "sh07-b10-records-bind-to-the-authenticated-sh06-lineage"
+                           "sh07-b10-rejections-are-structured-and-oracle-bound"
+                           "sh07-b10-fixed-vector-fixture-is-promoted-by-b11"
+                           "sh07-b10-branch-binding-escape-fails-at-name-resolution"
+                           "sh07-b10-substituted-and-stale-inputs-fail-closed"
+                           "sh07-b10-match-product-alterations-fail-replay"
+                           "sh07-b10-public-proof-is-bounded-and-honest"
+                           "sh07-b10-match-branch-resolver-rejects-over-limit-vectors"
+                           "sh07-b10-match-decision-resolver-rejects-over-limit-vectors"
+                           "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
+   :dependency-closure {:module-ids ["sh07-checked-core"]
+                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
+                                "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
+                                "contracts/stage0-incremental-test-dependencies.edn"
+                                "deps.edn"]
+                        :fixture-suite-ids ["sh07-b10"]
+                        :complete? true
+                        :identity-inputs [:source-bytes :fixture-bytes :test-bytes
+                                          :classpath :runtime :policy]}
+   :resource-class :memory-heavy
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :cache-policy {:mode :eligible
+                  :key-inputs [:dependency-closure :source-bytes :fixture-bytes
+                               :runtime :tool :policy]
+                  :authoritative? false}
+   :execution-mode :warm-bounded-process
+   :executor {:adapter :exact-tree-warm-worker
+              :bounded? true
+              :fresh-capable? false
+              :authority :non-authoritative}
+   :receipt-policy {:schema :gravity/unified-execution-receipt-v1
+                    :required-fields [:plan-id :selection :closure-identity
+                                      :status :diagnostics :cache :authority]}
+   :required-evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+   :authority-ceiling :non-authoritative
+   :nonclaims [:integration :proof :release :self-hosting
+               :seed-retirement :safety :performance]}
+
   "sh07-authoritative"
   {:id "sh07-authoritative"
    :module-id "sh07-checked-core"
@@ -417,7 +830,13 @@
    :owner :gravity
    :route-ids ["sh07-b8-regression" "sh07-b10-regression"
                "sh07-b11-contract" "sh07-b13-accepted"
-               "sh07-conformance-table" "sh07-conformance-parity"]
+               "sh07-conformance-table" "sh07-conformance-parity"
+               "sh07-parallel-accepted" "sh07-parallel-identity-lineage"
+               "sh07-parallel-rejected" "sh07-parallel-verification"
+               "sh07-parallel-b12-contract-accepted"
+               "sh07-parallel-b12-identity-verification"
+               "sh07-parallel-b12-rejected-regression"
+               "sh07-parallel-regression-a" "sh07-parallel-regression-b"]
    :fixture-policy :paired-reviewed-fixtures
    :conformance-kind :accepted-rejected-table-candidate}
   {:id "sh07-fresh-acceptance"
@@ -436,12 +855,18 @@
   :source-of-truth :routes
   :route-ids ["sh07-authoritative" "sh07-b10-regression"
               "sh07-b11-contract" "sh07-b13-accepted" "sh07-b8-regression"
-              "sh07-conformance-parity" "sh07-conformance-table"]
-  :accounting {:route-count 7
+              "sh07-conformance-parity" "sh07-conformance-table"
+              "sh07-parallel-accepted" "sh07-parallel-b12-contract-accepted"
+              "sh07-parallel-b12-identity-verification"
+              "sh07-parallel-b12-rejected-regression"
+              "sh07-parallel-identity-lineage" "sh07-parallel-regression-a"
+              "sh07-parallel-regression-b" "sh07-parallel-rejected"
+              "sh07-parallel-verification"]
+  :accounting {:route-count 16
                :module-count 1
                :suite-count 2
-               :selector-count 40
-               :exact-var-selector-count 39
+               :selector-count 93
+               :exact-var-selector-count 92
                :proof-contract-selector-count 1
                :fixture-suite-count 14
                :accepted-fixture-count 68
