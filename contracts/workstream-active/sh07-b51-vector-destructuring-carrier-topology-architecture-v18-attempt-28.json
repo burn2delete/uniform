@@ -1,0 +1,102 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-28.md",
+  "author": "sh07-b51-carrier-architecture",
+  "base_commit": "7bf4296fd48bdbec459a357c4c937373d2946dff",
+  "candidate_commit": "676db5d97b9a7e97994bb8c4388eb3436d48837a",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27"
+  ],
+  "disposition": "Draft architecture-only Attempt-28 correction to Attempt 27's pre-carrier frozen census. It binds the final source snapshot cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 and independently accepted non-authoritative census receipt 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 while preserving all linked-carrier schemas and laws. No implementation acceptance, freeze, review request, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
+      "authoritative architecture base:7bf4296fd48bdbec459a357c4c937373d2946dff tree:0fcc35051426125e9dc24a9f3e900312a9022f55",
+      "report candidate:676db5d97b9a7e97994bb8c4388eb3436d48837a tree:5646e7d136e2bfd8e76c28baf20929ad9e54b9b7 report-sha256:163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f",
+      "implementation source:cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 tree:641358871ea217f53e29bc5bff2eac49ab9cefe8",
+      "census evidence:21b39d89edf647a2c588629206042aa4676f0844 tree:3c8d54e3d1109866f600a955e316d061dda92acb artifact-sha256:758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6",
+      "independent receipt ACCEPT:exact evidence commit 21b39d89edf647a2c588629206042aa4676f0844 and artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6",
+      "semantic census:32433 rows, 2029 leaves, 143 folds, 2173 digest operations, root sha256:a710c35a9e7977ca48141b478022840e494e736e4f20dbdb45022707bdfd978c",
+      "physical versus reachable census:1451/1392 definitions, 3126/3003 local edges, 1423/1356 external edges, 26127/25275 builtin occurrences",
+      "external ordering:1423 physical M1 rows, 1356 dense semantic rows, exactly 67 physical gaps",
+      "lifecycle identity audit:immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger"
+    ],
+    "rejected_fixtures": [
+      "Attempt27 pre-carrier census identities are treated as final implementation identities",
+      "source snapshot, receipt commit, receipt bytes, M0-M3 identity, physical census, semantic row, digest schedule, or compact root differs",
+      "M1 is not exactly 1423 source-derived rows in governed physical order or semantic reachability does not preserve exactly 67 gaps",
+      "checked_core, B47/f473, closed M0-M3/P28/S28 schemas, 2440 occupancy, Root1/Root8 law, R6 independence, V2 provenance, or source-binding/link separation changes",
+      "the sizing receipt is treated as implementation acceptance, pin authority, SH-07 completion, self-hosting, release, performance, or seed-retirement evidence"
+    ],
+    "stable_diagnostics": [
+      "AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008",
+      "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"
+    ],
+    "validation_commands": [
+      {
+        "command": "exact receipt identity and report binding checks for source cfbe36fc, evidence 21b39d89, M1, M3, 32433 rows, producer-B source, and compact root",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 7bf4296fd48bdbec459a357c4c937373d2946dff..676db5d97b9a7e97994bb8c4388eb3436d48837a",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L1", "L2", "C5", "C6", "C11", "BOOT7", "BOOT8", "TEST10", "TEST11", "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-24.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-27.md",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_b16_binding_bound_test.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-architecture",
+      "at": "2026-09-02T08:42:32Z",
+      "reason": "register exact architecture-only Attempt-28 report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6, base 7bf4296fd48bdbec459a357c4c937373d2946dff: correct Attempt27's pre-carrier census contradiction with exact final source/evidence identities and independently accepted sizing/ordering receipt; no freeze or architecture review is requested",
+      "state": "draft"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-28.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-snapshot-census-v18-attempt-28.json"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain source readers, SH06/B16 census hosts, Stage2 compiler/runtime substrates, digest transport, and observers, not B51 semantic or carrier authority",
+    "the host coordinator may load only independently pinned P28/M3 authority, validate closed joins, select exact roots, and route exact physical edge ordinals; it may not merge plans, interpret results, manufacture closure rows, select source ownership, or fabricate resolutions",
+    "the census receipt supplies sizing and ordering evidence only and cannot confer implementation acceptance or authority",
+    "Attempt28 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "SH-07 B51 final linked-carrier snapshot erratum v18 attempt 28"
+}
