@@ -51,8 +51,6 @@
   #{:source :reader :syntax :macroexpansion :resolution :checked-core})
 (def ^:private artifact-request-keys
   #{:module-id :module-owner :stage :source-path})
-(def ^:private pipeline-identity-keys
-  #{:compiler-binding :tool-binding :runtime-binding :contract-binding})
 (def ^:private selection-keys #{:kind :namespace :selectors})
 (def ^:private closure-keys
   #{:module-ids :paths :complete? :identity-inputs})
@@ -1562,40 +1560,6 @@
       (assoc base :plan-id (identity-of base)))))
 
 (def build-plan plan)
-
-(defn artifact-pipeline-binding
-  "Project a validated UEP plan into the pipeline's closed identity binding.
-
-  UEP owns every route, catalog, closure, module, stage, and policy field in
-  this projection.  The pipeline supplies only its current compiler/tool/
-  runtime/contract identities through `pipeline-identities`; callers cannot
-  substitute labels for a plan identity without first passing `validate-plan`.
-  This projection remains non-authoritative and does not execute a route."
-  [plan-value pipeline-identities]
-  (validate-plan plan-value)
-  (exact-keys! pipeline-identities pipeline-identity-keys
-               "UEP-PIPELINE-BINDING-IDENTITIES"
-               [:pipeline-identities])
-  (let [artifact (:artifact-request plan-value)
-        closure (:dependency-closure plan-value)]
-    {:route-id (:route-id plan-value)
-     :plan-id (:plan-id plan-value)
-     :catalog-id (:catalog-id plan-value)
-     :lane (:lane plan-value)
-     :closure-identity (:closure-identity plan-value)
-     :closure-paths (:paths closure)
-     :module-id (:module-id artifact)
-     :module-owner (:module-owner artifact)
-     :artifact-stage (:stage artifact)
-     :target-artifact (:stage artifact)
-     :source-path (:source-path artifact)
-     :resource-policy (:resource-policy plan-value)
-     :cache-policy (:cache-policy plan-value)
-     :execution-mode (:execution-mode plan-value)
-     :compiler-binding (:compiler-binding pipeline-identities)
-     :tool-binding (:tool-binding pipeline-identities)
-     :runtime-binding (:runtime-binding pipeline-identities)
-     :contract-binding (:contract-binding pipeline-identities)}))
 
 (defn- bounded-exact-integer?
   "Check a bounded integer without coercing BigInt through a machine long."
