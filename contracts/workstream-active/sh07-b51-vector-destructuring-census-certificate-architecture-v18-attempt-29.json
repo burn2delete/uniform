@@ -5,7 +5,7 @@
   "candidate_commit": "54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "Frozen architecture-only Attempt-29 correction to Attempt 28's infeasible per-invocation exhaustive census replay. It relocates negative-space completeness to two independent D9 census certificates bound by an acyclic M3-v2 and immutable host pins while preserving distinct Gravity Root-1 and Root-6 compact verification and the unchanged runtime ceilings. No implementation acceptance, review result, pin, integration eligibility, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "disposition": "Review-pending architecture-only Attempt-29 correction to Attempt 28's infeasible per-invocation exhaustive census replay. Independent review is requested for the exact immutable report candidate and its dual-certificate authority relocation. No review result, implementation acceptance, pin, integration eligibility, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -58,6 +58,12 @@
       "at": "2026-09-02T17:48:00Z",
       "reason": "freeze immutable architecture-only Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1 after documentation, roadmap, strict authority, governance, exact diff, JSON, ASCII, and negative sizing evidence checks; no implementation is authorized",
       "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:50:00Z",
+      "reason": "request fresh independent review of exact immutable Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1: infeasibility evidence, unseen-node attack, D9 authority relocation, acyclic bundle-core/certificate/M3/S29/root chain, checker independence, bounded preflight, unchanged runtime ceilings, mutations, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-29",
@@ -72,6 +78,6 @@
     "Attempt29 grants no implementation, checker, certificate, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 dual census certificate architecture v18 attempt 29"
 }
