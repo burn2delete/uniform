@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27"
   ],
-  "disposition": "Review pending for exact immutable architecture-only Attempt-28 report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6. Independent architecture review is requested for the exact source/evidence/census correction and preserved Attempt-27 laws. No review result, implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "disposition": "ACCEPTED architecture-only Attempt-28 exact immutable report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, and census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6 after independent full regeneration of the 37,512-byte receipt and review of the preserved linked-carrier laws. No implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred; fresh implementation, pin-cascade, authentic public-route, mutation, bounded-runtime, and independent Root6 evidence remain required.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-27",
@@ -87,6 +87,12 @@
       "at": "2026-09-02T08:49:30Z",
       "reason": "request fresh independent architecture review of exact immutable Attempt-28 candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a, tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7, report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f, census artifact SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6, source cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 tree 641358871ea217f53e29bc5bff2eac49ab9cefe8, and evidence 21b39d89edf647a2c588629206042aa4676f0844 tree 3c8d54e3d1109866f600a955e316d061dda92acb: verify the final exact census and identities, 1423-row physical M1 ordering, M0/M2 builtin occurrence bijection with M0 semantic order, V2 provenance, P28/S28 bounds and schemas, immutable B47/f473, Root1/Root8 law, independent Root6 replay, mutations, pin consequences, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "attempt28-independent-review",
+      "at": "2026-09-02T09:04:21Z",
+      "reason": "ACCEPT exact immutable architecture-only Attempt-28 tuple from review-pending tip fdb17473d25cc104fead9dfd91fe76d52eaa6370, tree 403d98e290d45cb6ba6ac896bfe5c5ed6473394c: report candidate 676db5d97b9a7e97994bb8c4388eb3436d48837a tree 5646e7d136e2bfd8e76c28baf20929ad9e54b9b7 report SHA-256 163d5de591846b766a3fbfbd1878d1bd361736405b8bd5e179dbb8a8559c0c4f; census SHA-256 758d89914bb3d848e2302fe52acc9533cc669163d8d9275d9b27c812a2a75bf6; source cfbe36fcb9333e1145c4b3fdd31c834e87a3a388 tree 641358871ea217f53e29bc5bff2eac49ab9cefe8; evidence 21b39d89edf647a2c588629206042aa4676f0844 tree 3c8d54e3d1109866f600a955e316d061dda92acb; main 7bf4296fd48bdbec459a357c4c937373d2946dff tree 0fcc35051426125e9dc24a9f3e900312a9022f55. Full receipt regeneration was byte-identical at 37,512 bytes, all architecture laws and exact counts/identities reproduced, and no architecture blocker remains. Acceptance is architecture-only; implementation acceptance, current pin cascade, authentic public Root1/Root8 evidence, full mutations, bounded deep runtime, no-authority-bypass evidence, and independent Root6 evidence remain required",
+      "state": "accepted"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -108,7 +114,13 @@
     "the census receipt supplies sizing and ordering evidence only and cannot confer implementation acceptance or authority",
     "Attempt28 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "attempt28-independent-review"
+    }
+  ],
+  "state": "accepted",
   "title": "SH-07 B51 final linked-carrier snapshot erratum v18 attempt 28"
 }
