@@ -185,11 +185,15 @@
                :selectors ["sh07-b11-fixtures-are-paired-byte-identical-and-bounded-in-scope"
                            "sh07-b11-gravity-contract-names-l7"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                        :paths ["bootstrap/clojure/src/gravity/digest.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
+                                "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
+                                "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
+                                "contracts/verification-catalog.edn"
                                 "deps.edn"]
                         :complete? true
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
