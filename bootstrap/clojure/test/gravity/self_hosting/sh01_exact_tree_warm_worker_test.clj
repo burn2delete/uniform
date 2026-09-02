@@ -551,6 +551,25 @@
                      (catch clojure.lang.ExceptionInfo error error))]
       (is (= "WARM-REQUEST-SHAPE" (:id (ex-data error)))))))
 
+(deftest artifact-request-rejects-malformed-row-and-stage-before-planning
+  (let [base {:schema worker/artifact-request-schema :request-id "a"
+              :operation :run-fast-artifact :candidate-commit commit
+              :candidate-tree tree :lane :fast :route-id "route"
+              :plan-id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              :catalog-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              :closure-identity "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              :binding-id "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+              :stage :source}]
+    (doseq [[row stage expected-id]
+            [["" :source "WARM-ARTIFACT-ROW"]
+             [(apply str (repeat 257 "x")) :source "WARM-ARTIFACT-ROW"]
+             ["row" :unknown "WARM-ARTIFACT-STAGE"]]]
+      (let [error (try (worker/validate-request!
+                        (assoc base :row-id row :stage stage) expected)
+                       nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+        (is (= expected-id (:id (ex-data error))))))))
+
 (deftest artifact-path-snapshot-binds-both-peer-bytes-and-rejects-symlinks
   (let [root (java.nio.file.Files/createTempDirectory
               "warm-artifact-" (make-array java.nio.file.attribute.FileAttribute 0))
@@ -625,12 +644,20 @@
                          :execution-boundary {:isolation :same-jvm}
                          :stage-artifacts
                          (array-map :source {:artifact-id id :input-artifact-ids []
-                                             :provenance {:actual-path "fixtures/accepted/sample.gravity"}
+                                             :source-identity {:byte-count (alength bytes)
+                                                               :bytes-hash hash}
+                                             :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
+                                                          :project-root-path (str (.toRealPath root (make-array java.nio.file.LinkOption 0)))
+                                                          :project-relative-path (:gravity-path fixture-binding)}
                                              :cache-policy {:observed-hit? false}
                                              :diagnostics []}
                                              )
                          :artifact {:artifact-id id :input-artifact-ids []
-                                    :provenance {:actual-path "fixtures/accepted/sample.gravity"}
+                                    :source-identity {:byte-count (alength bytes)
+                                                      :bytes-hash hash}
+                                    :provenance {:actual-path (str (.toRealPath gravity (make-array java.nio.file.LinkOption 0)))
+                                                 :project-root-path (str (.toRealPath root (make-array java.nio.file.LinkOption 0)))
+                                                 :project-relative-path (:gravity-path fixture-binding)}
                                     :cache-policy {:observed-hit? false}
                                     :diagnostics []}}]
         (with-redefs [worker/repository-root (constantly root)
@@ -639,7 +666,14 @@
             (let [result (#'worker/invoke-artifact-runner request fixture-binding)]
               (is (= :source (get-in result [:projection :requested-stage])))
               (is (= hash (get-in result [:projection :source-content-hash])))
-              (is (false? (get-in result [:projection :authority :authoritative?])))))))
+              (is (false? (get-in result [:projection :authority :authoritative?]))))
+            (let [error (try
+                          (binding [worker/*artifact-pipeline-runner*
+                                    (constantly (assoc fake-result :status :failed))]
+                            (#'worker/invoke-artifact-runner request fixture-binding))
+                          nil
+                          (catch clojure.lang.ExceptionInfo error error))]
+              (is (= "WARM-ARTIFACT-PIPELINE" (:id (ex-data error))))))))
       (finally
         (with-open [paths (java.nio.file.Files/walk root
                                                   (make-array java.nio.file.FileVisitOption 0))]

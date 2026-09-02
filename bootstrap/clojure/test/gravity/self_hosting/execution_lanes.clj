@@ -96,9 +96,21 @@
 (def ^:private warm-artifact-projection-semantic-keys
   [:schema :binding-id :pipeline :result-id :requested-stage
    :selected-artifact-id :stage-artifact-ids :source-content-hash
-   :source-provenance-id :execution-boundary :authority :mutation-detected?
+   :source-provenance-id :source-provenance :execution-boundary :authority :mutation-detected?
    :provenance-checked? :source-authenticated? :closure-verified?
    :fresh-replayable? :diagnostics])
+(def ^:private artifact-row-id-max-length 256)
+(def ^:private artifact-stages
+  #{:source :reader :syntax :macroexpansion :resolution :checked-core})
+(def ^:private warm-artifact-authority-keys
+  #{:authoritative? :ceiling :development-only? :nonclaims})
+(def ^:private warm-artifact-boundary-keys
+  #{:mode :isolation :isolated? :acceptance-authority?
+    :fresh-authoritative-run-required?})
+(def ^:private warm-artifact-provenance-keys
+  #{:actual-path :project-root-path :project-relative-path
+    :byte-count :content-hash})
+(def ^:private warm-artifact-diagnostic-keys #{:id :message})
 (def ^:private warm-cached-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
@@ -1140,7 +1152,15 @@
                   (integer? (:elapsed-ns response))
                   (<= 0 (:elapsed-ns response) warm-cached-max-elapsed-ns)
                   (= expected-count (:request-count response))
+                  (pos? (long (:request-count response)))
+                  (<= (:request-count response) warm-worker-max-requests)
                   (string? (:stdout response)) (string? (:stderr response))
+                  (<= (alength (.getBytes ^String (:stdout response)
+                                          StandardCharsets/UTF_8))
+                      maximum-output-bytes)
+                  (<= (alength (.getBytes ^String (:stderr response)
+                                          StandardCharsets/UTF_8))
+                      maximum-output-bytes)
                   (false? (:output-truncated? response)))
              "UEP-WARM-ARTIFACT-RESPONSE"
              "Artifact worker response failed its closed-shape checks"
@@ -1150,7 +1170,7 @@
                     (= warm-artifact-projection-schema (:schema projection))
                     (= #{:schema :binding-id :projection-id :pipeline :result-id :requested-stage
                          :selected-artifact-id :stage-artifact-ids :source-content-hash
-                         :source-provenance-id :source-relative-path :cache-decision
+                         :source-provenance-id :source-provenance :source-relative-path :cache-decision
                          :execution-boundary :authority :mutation-detected?
                          :provenance-checked? :source-authenticated? :closure-verified?
                          :fresh-replayable? :diagnostics}
@@ -1163,14 +1183,45 @@
                     (re-matches #"sha256:[0-9a-f]{64}" (:result-id projection))
                     (re-matches #"sha256:[0-9a-f]{64}" (:selected-artifact-id projection))
                     (re-matches #"sha256:[0-9a-f]{64}" (:projection-id projection))
-                    (= (:selected-artifact-id projection)
-                       (second (last (:stage-artifact-ids projection))))
+                    (#{:hit :miss} (:cache-decision projection))
+                    (re-matches #"sha256:[0-9a-f]{64}" (:source-provenance-id projection))
+                    (= (:source-provenance-id projection)
+                       (bootstrap/reader-canonical-hash
+                        (:source-provenance projection)))
+                    (= warm-artifact-authority-keys
+                       (set (keys (:authority projection))))
+                    (false? (get-in projection [:authority :authoritative?]))
+                    (= :non-authoritative (get-in projection [:authority :ceiling]))
+                    (true? (get-in projection [:authority :development-only?]))
+                    (= (:nonclaims plan-value)
+                       (get-in projection [:authority :nonclaims]))
+                    (= warm-artifact-boundary-keys
+                       (set (keys (:execution-boundary projection))))
                     (= :fast (get-in projection [:execution-boundary :mode]))
                     (= :same-jvm (get-in projection [:execution-boundary :isolation]))
                     (false? (get-in projection [:execution-boundary :isolated?]))
                     (false? (get-in projection [:execution-boundary :acceptance-authority?]))
-                    (false? (get-in projection [:authority :authoritative?]))
-                    (= :non-authoritative (get-in projection [:authority :ceiling]))
+                    (true? (get-in projection [:execution-boundary :fresh-authoritative-run-required?]))
+                    (= warm-artifact-provenance-keys
+                       (set (keys (:source-provenance projection))))
+                    (= (:source-relative-path projection)
+                       (get-in projection [:source-provenance :project-relative-path]))
+                    (= (:source-content-hash projection)
+                       (get-in projection [:source-provenance :content-hash]))
+                    (= (:fixture-bytes artifact-binding)
+                       (get-in projection [:source-provenance :byte-count]))
+                    (integer? (get-in projection [:source-provenance :byte-count]))
+                    (re-matches #"sha256:[0-9a-f]{64}"
+                                (get-in projection [:source-provenance :content-hash]))
+                    (= (:source-content-hash projection)
+                       (get-in projection [:source-provenance :content-hash]))
+                    (= (str (repository-root))
+                       (get-in projection [:source-provenance :project-root-path]))
+                    (= (str (.toRealPath
+                             (.resolve (repository-root)
+                                       ^String (:gravity-path artifact-binding))
+                             (make-array LinkOption 0)))
+                       (get-in projection [:source-provenance :actual-path]))
                     (true? (:provenance-checked? projection))
                     (true? (:source-authenticated? projection))
                     (true? (:closure-verified? projection))
@@ -1179,17 +1230,34 @@
                     (<= 1 (count (:stage-artifact-ids projection)) 6)
                     (vector? (:diagnostics projection))
                     (<= (count (:diagnostics projection)) 64)
+                    (every? (fn [diagnostic]
+                              (and (map? diagnostic)
+                                   (= warm-artifact-diagnostic-keys
+                                      (set (keys diagnostic)))
+                                   (string? (:id diagnostic))
+                                   (<= 1 (count (:id diagnostic)) 128)
+                                   (string? (:message diagnostic))
+                                   (<= 1 (count (:message diagnostic)) 4096)))
+                            (:diagnostics projection))
                     (= (:projection-id projection)
                        (bootstrap/reader-canonical-hash
                         (select-keys projection warm-artifact-projection-semantic-keys))))
                "UEP-WARM-ARTIFACT-PROJECTION"
-               "Passed artifact response lacks a projection" {})
-      (ensure! (= 2 (:exit-code response))
+               "Passed artifact response lacks a projection"
+               {:binding-id (:binding-id request)
+                :request-id (:request-id response)})
+      (ensure! (and (nil? projection) (= 2 (:exit-code response)))
                "UEP-WARM-ARTIFACT-RESULT"
-               "Rejected artifact response must exit 2" {}))
+               "Rejected artifact response must carry no projection and exit 2" {}))
     (when (and (= :passed (:outcome response)) (map? projection))
-      (let [entries (:stage-artifact-ids projection)
-            stages (mapv first entries)
+      (let [entries (:stage-artifact-ids projection)]
+        (ensure! (and (vector? entries)
+                      (every? (fn [entry]
+                                (and (vector? entry) (= 3 (count entry))))
+                              entries))
+                 "UEP-WARM-ARTIFACT-PROJECTION"
+                 "Artifact stage tuples are malformed" {})
+        (let [stages (mapv first entries)
             ids (mapv second entries)
             expected (vec (take (count entries)
                                 [:source :reader :syntax :macroexpansion
@@ -1204,7 +1272,11 @@
                         (every? #(re-matches #"sha256:[0-9a-f]{64}" %) (nth entry 2))
                         (= (vec (take index ids)) (nth entry 2)))
                    "UEP-WARM-ARTIFACT-PROJECTION"
-                   "Artifact stage tuple or ancestry is invalid" {:index index}))))
+                   "Artifact stage tuple or ancestry is invalid" {:index index})))
+        (ensure! (= (:selected-artifact-id projection)
+                    (second (last entries)))
+                 "UEP-WARM-ARTIFACT-PROJECTION"
+                 "Selected artifact does not match the requested stage" {})))
     response))
 
 (defn- validate-warm-worker-response!
@@ -1755,6 +1827,14 @@
   This is a transport foundation only: it returns a non-authoritative compact
   projection and deliberately does not publish receipts or acceptance evidence."
   [plan-value row-id requested-stage]
+  (ensure! (and (string? row-id) (not (str/blank? row-id))
+                (<= (count row-id) artifact-row-id-max-length))
+           "UEP-ARTIFACT-ROW" "Artifact fixture row id is invalid or oversized"
+           {:row-id row-id :maximum artifact-row-id-max-length})
+  (ensure! (and (keyword? requested-stage)
+                (contains? artifact-stages requested-stage))
+           "UEP-ARTIFACT-STAGE" "Artifact stage is outside the closed pipeline"
+           {:stage requested-stage})
   (validate-plan-boundary! plan-value)
   (ensure! (= :fast (:lane plan-value)) "UEP-ARTIFACT-LANE"
            "Fast artifact transport requires the fast lane" {})
@@ -1772,10 +1852,18 @@
         selection (plan-selection plan-value)
         policy (:resource-policy plan-value)
         timeout-ms (bounded-int (:timeout-ms policy) "UEP-ARTIFACT-TIMEOUT"
-                                :timeout-ms (* 4 60 60 1000))]
-    (if (str/blank? (str *coordination-root*))
+                                :timeout-ms (* 4 60 60 1000))
+        context (explicit-resource-context)]
+    (cond
+      (and context (not (valid-explicit-context? context)))
+      (blocked "UEP-RESOURCE-BOUNDED-CONTEXT-REQUIRED"
+               "Fast artifact execution requires a reviewed bounded executor context")
+
+      (str/blank? (str *coordination-root*))
       (blocked "UEP-RESOURCE-LEASE-REQUIRED"
                "Fast artifact execution requires an explicit SH-01 coordination root")
+
+      :else
       (try
         (let [root (repository-root)
               repository (exact-repository-identity root)
@@ -1795,12 +1883,23 @@
               before (closure-snapshot plan-value)
               response (warm-session-request! session plan-value selection timeout-ms
                                               false artifact-request binding)
-              after (closure-snapshot plan-value)]
-          (ensure! (= before after) "UEP-ARTIFACT-SNAPSHOT"
+              after (closure-snapshot plan-value)
+              stable? (= before after)]
+          (when-not stable?
+            (stop-warm-session! session :closure-drift))
+          (ensure! stable? "UEP-ARTIFACT-SNAPSHOT"
                    "Execution closure changed during artifact execution" {})
           {:status (if (and (= :passed (:outcome response))
                             (map? (:projection response))) :passed :failed)
            :projection (:projection response)
+           :authority {:authoritative? false
+                       :ceiling :non-authoritative
+                       :development-only? true
+                       :nonclaims (:nonclaims plan-value)}
+           :execution-boundary {:mode :fast :isolation :same-jvm
+                                :isolated? false
+                                :acceptance-authority? false
+                                :fresh-authoritative-run-required? true}
            :diagnostics (if (= :passed (:outcome response)) []
                             [{:id "UEP-ARTIFACT-FAILED"
                               :message "Fast artifact child rejected the request"
@@ -1810,7 +1909,8 @@
            :source-authenticated? (= :passed (:outcome response))
            :closure-verified? (= before after)
            :fresh-replayable? false
-           :cache-decision :eligible})
+           :cache-decision (or (get-in response [:projection :cache-decision])
+                               :miss)})
         (catch InterruptedException error
           (.interrupt (Thread/currentThread))
           (throw error))

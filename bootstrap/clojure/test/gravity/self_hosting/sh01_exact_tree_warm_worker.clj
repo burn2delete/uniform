@@ -5,14 +5,14 @@
             [clojure.test :as test]
             [gravity.development-test-runner :as runner]
             [gravity.digest :as digest]
-            [gravity.bootstrap :as bootstrap])
+            [gravity.bootstrap :as bootstrap]
+            [gravity.c2-pass-cache :as c2-pass-cache])
   (:import (java.io BufferedReader ByteArrayOutputStream InputStreamReader
                     OutputStream OutputStreamWriter PushbackReader StringReader)
            (java.nio ByteBuffer)
            (java.nio.charset CodingErrorAction)
            (java.nio.charset StandardCharsets)
            (java.nio.file Files LinkOption Path Paths)
-           (java.nio ByteBuffer)
            (java.nio.file.attribute BasicFileAttributes)
            (java.util.concurrent TimeUnit)))
 
@@ -55,19 +55,31 @@
 (def ^:private artifact-projection-keys
   #{:schema :binding-id :projection-id :pipeline :result-id :requested-stage
     :selected-artifact-id :stage-artifact-ids :source-content-hash
-    :source-provenance-id :source-relative-path :cache-decision
+    :source-provenance-id :source-provenance :source-relative-path :cache-decision
     :execution-boundary :authority :mutation-detected?
     :provenance-checked? :source-authenticated? :closure-verified?
     :fresh-replayable? :diagnostics})
 (def ^:private artifact-projection-semantic-keys
   [:schema :binding-id :pipeline :result-id :requested-stage
    :selected-artifact-id :stage-artifact-ids :source-content-hash
-   :source-provenance-id :execution-boundary :authority :mutation-detected?
+   :source-provenance-id :source-provenance :execution-boundary :authority :mutation-detected?
    :provenance-checked? :source-authenticated? :closure-verified?
    :fresh-replayable? :diagnostics])
+(def ^:private artifact-authority-keys
+  #{:authoritative? :ceiling :development-only? :nonclaims})
+(def ^:private artifact-boundary-keys
+  #{:mode :isolation :isolated? :acceptance-authority?
+    :fresh-authoritative-run-required?})
+(def ^:private artifact-provenance-keys
+  #{:actual-path :project-root-path :project-relative-path
+    :byte-count :content-hash})
+(def ^:private artifact-diagnostic-keys #{:id :message})
+(def ^:private artifact-nonclaims
+  [:integration :proof :release :self-hosting :seed-retirement :safety :performance])
 (def ^:private artifact-max-stage-rank
   (zipmap [:source :reader :syntax :macroexpansion :resolution :checked-core]
           (range)))
+(def ^:private artifact-max-row-id-length 256)
 (def ^:private artifact-max-bytes (* 256 1024))
 (def ^:private cached-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
@@ -156,42 +168,28 @@
      :size (.size attrs)
      :modified-ms (.toMillis (.lastModifiedTime attrs))}))
 
-(defn- bounded-file-bytes
-  [^Path path]
-  (with-open [channel (Files/newByteChannel
-                       path
-                       (into-array java.nio.file.OpenOption
-                                   [java.nio.file.StandardOpenOption/READ
-                                    LinkOption/NOFOLLOW_LINKS]))]
-    (let [out (ByteArrayOutputStream.)
-          buffer (ByteBuffer/allocate 16384)]
-      (loop []
-        (.clear buffer)
-        (let [read (.read channel buffer)]
-          (when (pos? read)
-            (ensure! (<= (+ (.size out) read) artifact-max-bytes)
-                     "WARM-ARTIFACT-BYTES" "Artifact fixture exceeds its bound"
-                     {:path (str path) :bytes (+ (.size out) read)})
-            (.write out (.array buffer) 0 read)
-            (recur))))
-      (.toByteArray out))))
-
 (defn- artifact-path-snapshot
   [^Path root relative]
   (let [{:keys [paths file]} (artifact-path-parts root relative)
-        attrs (mapv (fn [^Path path] [(str (.relativize root path))
-                                      (file-attributes path)]) paths)
-        file-attrs (last attrs)]
+        attrs-before (mapv (fn [^Path path] [(str (.relativize root path))
+                                             (file-attributes path)]) paths)
+        file-attrs (last attrs-before)]
     (ensure! (and (true? (get-in file-attrs [1 :regular?]))
                   (false? (get-in file-attrs [1 :symbolic-link?])))
              "WARM-ARTIFACT-FILE" "Artifact binding target is not a regular file"
              {:path relative})
-    (let [bytes (bounded-file-bytes file)]
-    {:relative relative
-     :paths attrs
-     :bytes-count (alength bytes)
-     :bytes-sha256 (str "sha256:" (digest/sha256-bytes-hex bytes))
-     :bytes bytes})))
+    (let [snapshot (c2-pass-cache/bounded-source-snapshot! file artifact-max-bytes)
+          attrs-after (mapv (fn [^Path path] [(str (.relativize root path))
+                                              (file-attributes path)]) paths)]
+      (ensure! (= attrs-before attrs-after)
+               "WARM-ARTIFACT-PATH-MUTATION"
+               "Artifact binding ancestors changed during snapshot"
+               {:path relative})
+      {:relative relative
+       :paths attrs-after
+       :bytes-count (:byte-count snapshot)
+       :bytes-sha256 (:bytes-hash snapshot)
+       :bytes (:bytes snapshot)})))
 
 (defn- artifact-pair-snapshot
   [^Path root binding]
@@ -531,6 +529,15 @@
   The request carries no source path or compiler arguments.  Paths are derived
   only after this route, closure, and row binding have been authenticated."
   [request]
+  (ensure! (and (string? (:row-id request))
+                (not (clojure.string/blank? (:row-id request)))
+                (<= (count (:row-id request)) artifact-max-row-id-length))
+           "WARM-ARTIFACT-ROW" "Artifact fixture row id is invalid or oversized"
+           {:row-id (:row-id request) :maximum artifact-max-row-id-length})
+  (ensure! (and (keyword? (:stage request))
+                (contains? artifact-max-stage-rank (:stage request)))
+           "WARM-ARTIFACT-STAGE" "Artifact stage is outside the closed pipeline"
+           {:stage (:stage request)})
   (let [plan-fn (or (requiring-resolve
                      'gravity.self-hosting.unified-execution-plan/plan)
                     (fail! "WARM-ARTIFACT-PLAN" "UEP planner is unavailable" {}))
@@ -562,12 +569,16 @@
 
 (defn- validate-artifact-projection!
   [projection request binding]
-  (let [entries (:stage-artifact-ids projection)
-        stages (mapv first entries)
-        ids (mapv second entries)
-        expected-stages (vec (take (count entries)
-                                   [:source :reader :syntax :macroexpansion
-                                    :resolution :checked-core]))]
+  (let [entries (:stage-artifact-ids projection)]
+    (ensure! (and (vector? entries)
+                  (every? #(and (vector? %) (= 3 (count %))) entries))
+             "WARM-ARTIFACT-PROJECTION"
+             "Artifact stage tuples are malformed" {})
+    (let [stages (mapv first entries)
+          ids (mapv second entries)
+          expected-stages (vec (take (count entries)
+                                     [:source :reader :syntax :macroexpansion
+                                      :resolution :checked-core]))]
     (ensure! (and (map? projection)
                 (= artifact-projection-keys (set (keys projection)))
                 (= artifact-projection-schema (:schema projection))
@@ -582,8 +593,14 @@
                 (= :same-jvm (get-in projection [:execution-boundary :isolation]))
                 (false? (get-in projection [:execution-boundary :isolated?]))
                 (false? (get-in projection [:execution-boundary :acceptance-authority?]))
+                (true? (get-in projection [:execution-boundary :fresh-authoritative-run-required?]))
+                (= artifact-boundary-keys
+                   (set (keys (:execution-boundary projection))))
                 (= :non-authoritative (get-in projection [:authority :ceiling]))
+                (= artifact-authority-keys (set (keys (:authority projection))))
                 (false? (get-in projection [:authority :authoritative?]))
+                (true? (get-in projection [:authority :development-only?]))
+                (= artifact-nonclaims (get-in projection [:authority :nonclaims]))
                 (false? (:mutation-detected? projection))
                 (true? (:provenance-checked? projection))
                 (true? (:source-authenticated? projection))
@@ -604,13 +621,42 @@
                         (range (count entries)))
                 (vector? (:diagnostics projection))
                 (<= (count (:diagnostics projection)) 64)
-                (every? map? (:diagnostics projection))
+                (every? (fn [diagnostic]
+                          (and (map? diagnostic)
+                               (= artifact-diagnostic-keys
+                                  (set (keys diagnostic)))
+                               (string? (:id diagnostic))
+                               (<= 1 (count (:id diagnostic)) 128)
+                               (string? (:message diagnostic))
+                               (<= 1 (count (:message diagnostic)) 4096)))
+                        (:diagnostics projection))
+                (#{:hit :miss} (:cache-decision projection))
+                (re-matches identity-pattern (:source-provenance-id projection))
+                (= (:source-provenance-id projection)
+                   (bootstrap/reader-canonical-hash
+                    (:source-provenance projection)))
+                (= artifact-provenance-keys
+                   (set (keys (:source-provenance projection))))
+                (= (:source-relative-path projection)
+                   (get-in projection [:source-provenance :project-relative-path]))
+                (= (:source-content-hash projection)
+                   (get-in projection [:source-provenance :content-hash]))
+                (re-matches identity-pattern
+                             (get-in projection [:source-provenance :content-hash]))
+                (integer? (get-in projection [:source-provenance :byte-count]))
+                (pos? (get-in projection [:source-provenance :byte-count]))
+                (string? (get-in projection [:source-provenance :actual-path]))
+                (string? (get-in projection [:source-provenance :project-root-path]))
                 (= (:projection-id projection)
                    (bootstrap/reader-canonical-hash
                     (select-keys projection artifact-projection-semantic-keys))))
            "WARM-ARTIFACT-PROJECTION" "Artifact projection is not closed"
            {:projection projection :request request})
-    projection))
+      (ensure! (= (:selected-artifact-id projection)
+                  (second (last entries)))
+               "WARM-ARTIFACT-PROJECTION"
+               "Selected artifact does not match the requested stage" {})
+      projection)))
 
 (defn- artifact-projection
   [request binding result]
@@ -618,6 +664,33 @@
         stages (vec (keys stage-map))
         selected (:artifact result)
         provenance (:provenance selected)
+        source-identity (:source-identity selected)
+        root (repository-root)
+        expected-path (str (.toRealPath (.resolve root ^String (:gravity-path binding))
+                                       (make-array LinkOption 0)))
+        source-provenance {:actual-path (:actual-path provenance)
+                           :project-root-path (:project-root-path provenance)
+                           :project-relative-path (:project-relative-path provenance)
+                           :byte-count (:byte-count source-identity)
+                           :content-hash (:bytes-hash source-identity)}
+        _ (ensure! (and (= (:source-content-hash result)
+                           (:fixture-sha256 binding))
+                          (= (:bytes-hash source-identity)
+                             (:fixture-sha256 binding))
+                          (= (:byte-count source-identity)
+                             (:fixture-bytes binding))
+                          (= expected-path (:actual-path provenance))
+                          (= (:gravity-path binding)
+                             (:project-relative-path provenance))
+                          (= (str (.toRealPath root (make-array LinkOption 0)))
+                             (:project-root-path provenance)))
+                   "WARM-ARTIFACT-PROVENANCE"
+                   "Pipeline result provenance does not match the bound fixture"
+                   {:binding binding
+                    :provenance provenance
+                    :source-identity source-identity
+                    :expected-path expected-path
+                    :root (str root)})
         projection {:schema artifact-projection-schema
                     :binding-id (:binding-id binding)
                     :pipeline (:pipeline result)
@@ -631,14 +704,19 @@
                           stages)
                     :source-content-hash (:source-content-hash result)
                     :source-provenance-id
-                    (str "sha256:" (digest/sha256-hex (pr-str provenance)))
+                    (bootstrap/reader-canonical-hash source-provenance)
+                    :source-provenance source-provenance
                     :source-relative-path (:gravity-path binding)
                     :cache-decision (if (true? (get-in selected [:cache-policy :observed-hit?]))
                                       :hit :miss)
                     :execution-boundary {:mode :fast :isolation :same-jvm
                                          :isolated? false
-                                         :acceptance-authority? false}
-                    :authority {:authoritative? false :ceiling :non-authoritative}
+                                         :acceptance-authority? false
+                                         :fresh-authoritative-run-required? true}
+                    :authority {:authoritative? false
+                                :ceiling :non-authoritative
+                                :development-only? true
+                                :nonclaims artifact-nonclaims}
                     :mutation-detected? false
                     :provenance-checked? true
                     :source-authenticated? true
@@ -671,6 +749,8 @@
                          :mode :fast})]
             (ensure! (and (map? result)
                           (= :gravity/authenticated-artifact-pipeline-result (:kind result))
+                          (or (not (contains? result :status))
+                              (contains? #{:accepted :passed} (:status result)))
                           (= :fast (:mode result))
                           (= (:stage request) (:requested-stage result))
                           (false? (get-in result [:authority :authoritative?]))
