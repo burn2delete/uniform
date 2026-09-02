@@ -1,0 +1,97 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-collection-bound-erratum-v18-attempt-32.md",
+  "author": "sh07-b51-carrier-bound-architecture",
+  "base_commit": "903ddfb4aaaf67000f437c6c462ab828e29c6f4e",
+  "candidate_commit": "202d92d12fa6c4f6a74571eb4769587c02c0963c",
+  "clean_worktree": true,
+  "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
+  "disposition": "The independently accepted exact report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db is integration-eligible. Exact-candidate preflight passed against its immutable base; reconciliation with latest main must preserve the exact report and regenerate the sharded ledger merge. This remains architecture-only authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
+      "authoritative architecture base:903ddfb4aaaf67000f437c6c462ab828e29c6f4e",
+      "report candidate:202d92d12fa6c4f6a74571eb4769587c02c0963c tree:9067b033fd9e2d6b07622f148deb6e6763b29d81 report-sha256:b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db",
+      "unaccepted diagnostic prototype:619f4223709d0103b710d95e57700927ea907974 tree:a79469ab335c2ce768cafe205feb5d2804826c42",
+      "location-invariant authentic profile:nodes1475999 depth67 width5150 collections303173",
+      "checkout-local scalar observations:author114 reviewer112; each <=65536; neither grants cross-worktree identity",
+      "exact eight bucket counts:34007,48748,43070,44173,41843,39643,40340,11349; sum303173; each <=65536",
+      "prospective compositional derivation:8*65536=524288",
+      "independent pre-freeze semantic audit:/root/attempt32_pre_audit PASS"
+    ],
+    "rejected_fixtures": [
+      "retain total carrier collection ceiling 65536",
+      "treat checkout-local absolute-path scalar length as a cross-worktree invariant",
+      "make semantic identities, pins, or authority depend on an absolute worktree path",
+      "infer headroom from one observed carrier without compositional buckets",
+      "apply raised nested-carrier collection bound to the outer request",
+      "read module-plan-carriers before whole nested value preflight",
+      "identity-deduplicate repeated collection occurrences",
+      "replace complete M2 products with ids, compressed bytes, lookup handles, or DAG references",
+      "raise runtime transition, frame, or external-call ceilings",
+      "treat the unaccepted diagnostic prototype or rejected Attempt31 as implementation authority"
+    ],
+    "stable_diagnostics": ["AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008", "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"],
+    "validation_commands": [
+      {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+      {"command": "git diff --check 903ddfb4aaaf67000f437c6c462ab828e29c6f4e..202d92d12fa6c4f6a74571eb4769587c02c0963c", "exit_code": 0, "result": "passed"}
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L1", "L2", "C5", "C6", "C11", "BOOT7", "BOOT8", "TEST10", "TEST11", "TEST13",
+    "docs/self-hosting-slice-backlog.md", "docs/self-hosting-slice-ownership.edn", "docs/workstream-governance.md", "docs/workstream-ledger-v2.md", "contracts/workstream-governance.json", "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-30.md"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T19:53:25Z",
+      "reason": "register exact architecture-only Attempt-32 report candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after independent mutable-draft semantic audit passed and the branch was reconciled to clean authoritative main 903ddfb4aaaf67000f437c6c462ab828e29c6f4e; no freeze or architecture review is yet requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T19:55:23Z",
+      "reason": "freeze exact architecture-only Attempt-32 tuple at candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, and report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after documentation, roadmap, diff, governance, architecture-authority, arithmetic, identity-scope, and preflight-order checks passed",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T19:56:22Z",
+      "reason": "request fresh independent high-reasoning review of the exact frozen Attempt-32 report tuple, including reproduction of structural evidence, checkout-local scalar scoping, eight-bucket arithmetic, prospective bounds, preflight order, retained laws, identity cascade, base and dependency authority, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "attempt32_arch_review",
+      "at": "2026-09-02T20:07:01Z",
+      "reason": "ACCEPT exact candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after clean diagnostic replay reproduced every structural and bucket count and independent audit found the scalar scoping, 17-key bounds, preflight order, identity cascade, retained Attempt30 laws, limits, authority, and nonclaims coherent with no blockers",
+      "state": "accepted"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T20:09:14Z",
+      "reason": "advance the independently accepted exact report candidate after clean named-branch preflight against immutable base 903ddfb4aaaf67000f437c6c462ab828e29c6f4e recommended integrate_candidate; authoritative main later advanced to 7be57282e345dec95caba74d294a9cbefcd27243 with unrelated UEP lifecycle work, so final reconciliation must preserve the exact report bytes and regenerate only the conflicting sharded ledger aggregate",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+  "owned_paths": ["docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-collection-bound-erratum-v18-attempt-32.md"],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain bounded preflight, source-reader, checker-host, canonical encoder and SHA-256, immutable-pin, runtime-machine, and observer boundaries",
+    "the eight-bucket collection bound is a prospective resource contract and does not establish runtime completion",
+    "Attempt32 retains complete current-emitter M2 transport and all Attempt30 certificate, ownership, external-edge, and root laws",
+    "Attempt32 grants no implementation, checker, certificate, pin, runtime-result, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "attempt32_arch_review"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 B51 reproducible compositional carrier collection bound v18 attempt 32"
+}
