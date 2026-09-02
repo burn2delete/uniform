@@ -5,7 +5,7 @@
   "candidate_commit": "54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "Review-pending architecture-only Attempt-29 correction to Attempt 28's infeasible per-invocation exhaustive census replay. Independent review is requested for the exact immutable report candidate and its dual-certificate authority relocation. No review result, implementation acceptance, pin, integration eligibility, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "disposition": "REJECTED by independent reviewer /root/attempt29_arch_review for exact immutable report candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1. Three blockers: undefined/cyclic P29 certificate transport under the retained closed Attempt-28 carrier; missing D9 assumptions and result fields; and contradictory complete-carrier equality ordering around bounded preflight. No implementation or integration authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -27,6 +27,9 @@
       "certificate, expected M3, expected certificate id, expected root, sealer, runtime token, ownership, route, or external-link authority is caller supplied",
       "whole-value carrier equality occurs before bounded iterative shape/size preflight",
       "certificate transport selects request-specific success/rejection or replaces Gravity-owned Root1/Root6 compact verification"
+      ,"independent-review:undefined-or-cyclic-P29-and-no-admitted-certificate-value-location"
+      ,"independent-review:D9-certificate-lacks-named-assumptions-and-result"
+      ,"independent-review:carrier-equality-order-contradicts-bounded-preflight"
     ],
     "stable_diagnostics": ["AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008", "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"],
     "validation_commands": [
@@ -64,6 +67,12 @@
       "at": "2026-09-02T17:50:00Z",
       "reason": "request fresh independent review of exact immutable Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1: infeasibility evidence, unseen-node attack, D9 authority relocation, acyclic bundle-core/certificate/M3/S29/root chain, checker independence, bounded preflight, unchanged runtime ceilings, mutations, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "/root/attempt29_arch_review",
+      "at": "2026-09-02T18:02:00Z",
+      "reason": "REJECT exact Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1: the retained closed Attempt-28 carrier has no defined certificate-value location and undefined P29 is cyclic or unconstructible; the closed D9 certificate omits named assumptions and result; and complete-carrier equality is required both before and after bounded preflight. All other reviewed architecture properties passed.",
+      "state": "rejected"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-29",
@@ -77,7 +86,9 @@
     "Root1 and Root6 validate role-distinct compact certificates and rebuild S29/root separately; neither runtime root claims to re-derive full negative-space completeness",
     "Attempt29 grants no implementation, checker, certificate, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {"kind": "independent", "result": "rejected", "reviewer": "/root/attempt29_arch_review"}
+  ],
+  "state": "rejected",
   "title": "SH-07 B51 dual census certificate architecture v18 attempt 29"
 }
