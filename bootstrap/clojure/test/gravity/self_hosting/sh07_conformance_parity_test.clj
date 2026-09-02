@@ -62,6 +62,13 @@
       :stage (:stage oracle)
       :severity (:severity oracle)
       :lowering-rule :sh07-b47-function-call-recursion-products
+      :syntax-id
+      "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      :form-id
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      ;; B15 rejects before a core node is allocated; C6 still requires the
+      ;; key so the nil is an explicit producer decision rather than omission.
+      :core-node-id nil
       :source-span {:source "/tmp/sh07-b15/keyword-lookup-zero-arity.gravity"
                     :line-start 24
                     :column-start 1}
@@ -168,12 +175,25 @@
         outcome {:status :rejected
                  :diagnostics [(b15-enriched-diagnostic)]}
         table-parity (private-var 'table-parity)
+        contract-complete (private-var 'diagnostic-contract-complete?)
+        diagnostic (first (:diagnostics outcome))
+        oracle (:oracle row)
         result (table-parity row outcome)]
     (is (true? (:status? result)) result)
     (is (true? (:diagnostics? result)) result)
     (is (true? (:declared-contract-match? result)) result)
     (is (true? (:diagnostic-contract-complete? result)) result)
-    (is (true? (:exact? result)) result)))
+    (is (true? (:exact? result)) result)
+    ;; Keep the compact oracle compact, but preserve conditional exactness if
+    ;; a future reviewed row elects to carry its own diagnostic identity.
+    (is (true? (contract-complete
+                (assoc oracle :diagnostic-id-request
+                       (:diagnostic-id-request diagnostic))
+                diagnostic)))
+    (is (false? (contract-complete
+                 (assoc oracle :diagnostic-id-request
+                        "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+                 diagnostic)))))
 
 (deftest b15-diagnostic-contract-rejects-missing-or-invalid-fields
   (let [row (parity/reviewed-row "sh07-b15/keyword-lookup-zero-arity")
@@ -181,9 +201,28 @@
         table-parity (private-var 'table-parity)
         tamperings
         {"missing namespace" #(dissoc % :namespace)
+         "missing syntax id" #(dissoc % :syntax-id)
+         "missing form id" #(dissoc % :form-id)
+         "missing core node id" #(dissoc % :core-node-id)
+         "nil syntax id" #(assoc % :syntax-id nil)
+         "nil form id" #(assoc % :form-id nil)
+         "syntax id is not a string" #(assoc % :syntax-id 1)
+         "form id is not a string" #(assoc % :form-id 1)
+         "core node id has invalid type" #(assoc % :core-node-id 1)
          "missing lowering rule" #(dissoc % :lowering-rule)
          "missing diagnostic id" #(dissoc % :diagnostic-id-request)
          "invalid diagnostic id" #(assoc % :diagnostic-id-request "not-a-sha256-id")
+         "malformed source span" #(assoc % :source-span [:not-a-span])
+         "source span source is not a string"
+         #(assoc-in % [:source-span :source] 7)
+         "malformed generated origin chain"
+         #(assoc % :generated-origin-chain {:not "a-vector"})
+         "generated origin entry is not a map"
+         #(assoc % :generated-origin-chain [:not-a-map])
+         "malformed facts" #(assoc % :facts [:not-a-facts-map])
+         "nil lowering rule" #(assoc % :lowering-rule nil)
+         "wrong lowering rule"
+         #(assoc % :lowering-rule :sh07-b46-public-routing)
          "mismatched arity fact"
          #(assoc-in % [:facts :rule-specific :actual-operand-count] 1)}]
     (doseq [[label tamper] tamperings]

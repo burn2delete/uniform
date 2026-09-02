@@ -341,19 +341,87 @@
                 (select-keys rule-specific (keys (:facts oracle))))))))
 
 (def ^:private complete-diagnostic-fields
-  #{:artifact :rule :stage :severity :source-span :generated-origin-chain
+  "The flat SH-07 C6 envelope is richer than a row oracle.
+
+  Table rows intentionally retain only the reviewed semantic subset, while a
+  producer diagnostic must retain every provenance-bearing field.  The ID
+  fields are listed here (rather than inferred from values) so a producer
+  cannot silently omit an explicit nil `:core-node-id` rule."
+  #{:artifact :rule :stage :severity
+    :syntax-id :form-id :core-node-id
+    :source-span :generated-origin-chain
     :facts :remediation :namespace :profile :target :lowering-rule})
+
+(def ^:private sh07-c6-lowering-rule
+  ;; B15 diagnostics are emitted by the checked-core producer.  A different
+  ;; lowering rule is a different contract, even when the compact row facts
+  ;; happen to agree.
+  :sh07-b47-function-call-recursion-products)
+
+(defn- nonblank-string?
+  [value]
+  (and (string? value) (not (str/blank? value))))
+
+(defn- source-span-complete?
+  [span]
+  ;; The path is normalized before this check, but must remain a string in the
+  ;; authenticated envelope.  Additional coordinate/span keys are producer
+  ;; data and are intentionally preserved without imposing a second schema.
+  (and (map? span)
+       (nonblank-string? (:source span))))
+
+(defn- generated-origin-chain-complete?
+  [chain]
+  (and (vector? chain)
+       (every? map? chain)))
+
+(defn- diagnostic-id-match?
+  [oracle actual-id]
+  (let [expected-id-keys (filter #(contains? oracle %)
+                                [:diagnostic-id-request :id])]
+    ;; The compact table normally has no diagnostic identity.  If a reviewed
+    ;; oracle later supplies one, retain exact equality while still accepting
+    ;; only one producer ID key and a canonical hash-shaped value.
+    (or (empty? expected-id-keys)
+        (and (= 1 (count expected-id-keys))
+             (= actual-id (get oracle (first expected-id-keys)))))))
 
 (defn- diagnostic-contract-complete?
   [oracle diagnostic]
-  (let [ids (filter #(contains? diagnostic %) [:diagnostic-id-request :id])
-        id (some #(get diagnostic %) ids)]
+  (let [ids (when (map? diagnostic)
+              (filter #(contains? diagnostic %)
+                      [:diagnostic-id-request :id]))
+        id (some #(get diagnostic %) ids)
+        source-span (:source-span diagnostic)
+        generated-origin-chain (:generated-origin-chain diagnostic)
+        facts (:facts diagnostic)]
     (and (map? oracle)
          (map? diagnostic)
          (= 1 (count ids))
-         (string? id)
+         (nonblank-string? id)
          (boolean (re-matches #"sha256:[0-9a-f]{64}" id))
          (set/subset? complete-diagnostic-fields (set (keys diagnostic)))
+         (= :gravity/sh07-core-diagnostic (:artifact diagnostic))
+         (nonblank-string? (:rule diagnostic))
+         (keyword? (:stage diagnostic))
+         (keyword? (:severity diagnostic))
+         ;; C6 carries syntax/form identity for a lowered form.  The B15
+         ;; producer has no core node at rejection time, so nil is an explicit
+         ;; and permitted value for that field (the key itself is mandatory).
+         (nonblank-string? (:syntax-id diagnostic))
+         (nonblank-string? (:form-id diagnostic))
+         (or (nil? (:core-node-id diagnostic))
+             (nonblank-string? (:core-node-id diagnostic)))
+         (source-span-complete? source-span)
+         (generated-origin-chain-complete? generated-origin-chain)
+         (map? facts)
+         (or (symbol? (:namespace diagnostic))
+             (nonblank-string? (:namespace diagnostic)))
+         (keyword? (:profile diagnostic))
+         (keyword? (:target diagnostic))
+         (= sh07-c6-lowering-rule (:lowering-rule diagnostic))
+         (some? (:remediation diagnostic))
+         (diagnostic-id-match? oracle id)
          (expected-diagnostic-match? oracle diagnostic))))
 
 (defn- table-parity
