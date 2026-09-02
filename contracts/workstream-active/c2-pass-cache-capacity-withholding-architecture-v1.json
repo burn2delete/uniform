@@ -2,14 +2,19 @@
   "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
   "author": "c2-pass-cache-capacity-architecture",
   "base_commit": "0565b642d46fc2504412177bbd55b8e970804c4f",
-  "candidate_commit": "f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
+  "candidate_commit": "7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Independent reviewer c2-cache-architecture-reviewer-v1, canonical review task /root/c2_cache_arch_review, rejected exact candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991. The workstream is reopened as draft to resolve the four recorded blockers. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "disposition": "Revised draft report-only candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 address all four blockers returned by reviewer c2-cache-architecture-reviewer-v1 at /root/c2_cache_arch_review on the prior exact tuple. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
-      "report candidate:f4da2ea6018ba01c8c9bc77a86c7a43b7475768a tree:a96cef7a205fa3b4fc55ec827167d7da926d31eb report-sha256:a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
+            "revised report candidate:7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8 tree:4aacf4ff94feab1b44ecafee2f2a45be8d432591 report-sha256:c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea",
+            "provisional SH03 provenance:docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md sha256:d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006",
+            "rejected prior tuple reviewer:c2-cache-architecture-reviewer-v1 task:/root/c2_cache_arch_review candidate:f4da2ea6018ba01c8c9bc77a86c7a43b7475768a tree:a96cef7a205fa3b4fc55ec827167d7da926d31eb report-sha256:a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
+            "closed generic lookup taxonomy preserves IO and closed-by-interrupt",
+            "exactly-once semantic validation with in-memory prevalidated carrier",
+            "closed typed ExceptionInfo capacity transport and public evidence schemas",
       "closed fresh-envelope dimensions:nodes,depth,bytes",
       "exact fresh validated C2 artifact returned without envelope round-trip",
       "contained local C16-POLICY evidence with cache publication withheld",
@@ -17,7 +22,8 @@
       "authentic SH03 paired-input and current C2 validator acceptance gate",
       "integrated SH07 Attempt32 is nondependency governance precedent only"
     ],
-    "rejected_fixtures": [
+        "rejected_fixtures": [
+            "prior architecture tuple f4da2ea6018ba01c8c9bc77a86c7a43b7475768a/a96cef7a205fa3b4fc55ec827167d7da926d31eb/a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
       "convert semantic-key overflow from C16-KEY",
       "convert retained-entry malformed or overflow outcomes from C16-ENTRY",
       "withhold direct store capacity rejection",
@@ -136,7 +142,8 @@
     "self_hosting": false
   },
   "owned_paths": [
-    "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md"
+        "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md"
   ],
   "owner": "compiler-c2-architecture",
   "residual_host_boundaries": [
