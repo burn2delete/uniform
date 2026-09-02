@@ -76,6 +76,35 @@
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :outcome :exit-code :elapsed-ns :request-count
     :stdout :stderr :output-truncated? :runner-result})
+(def ^:private warm-cached-request-schema
+  :gravity/exact-tree-warm-worker-cached-request-v1)
+(def ^:private warm-cached-response-schema
+  :gravity/exact-tree-warm-worker-cached-response-v1)
+(def ^:private warm-cached-result-contract-id
+  :gravity/sh07-cached-shard-result-v1)
+(def ^:private warm-cached-response-keys
+  #{:schema :authority :authoritative? :request-id :candidate-commit
+    :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
+    :result-contract-id :shard :outcome :exit-code :elapsed-ns
+    :request-count :runner-result :stdout :stderr :output-truncated?})
+(def ^:private warm-cached-result-keys
+  #{:test :pass :fail :error :artifact :shard :test-vars
+    :cache-authoritative? :fresh-authoritative-run-required?
+    :cache-context :elapsed-ms :cache})
+(def ^:private warm-cached-context-keys
+  #{:request-schema-version :adapter :checked-core-source-content-hash
+    :checked-core-plan-semantic-hash :java-runtime-version :clojure-version})
+(def ^:private warm-cached-counter-keys
+  #{:sh06-hits :sh06-misses :core-hits :core-misses
+    :verification-hits :verification-misses})
+(def ^:private warm-cached-result-counter-keys
+  #{:test :pass :fail :error})
+(def ^:private warm-cached-request-keys
+  #{:schema :request-id :operation :candidate-commit :candidate-tree
+    :lane :route-id :plan-id :catalog-id :closure-identity
+    :result-contract-id :shard})
+(def ^:private warm-cached-max-count 1000000)
+(def ^:private warm-cached-max-elapsed-ms (* 24 60 60 1000))
 (def ^:private warm-outcomes
   #{:passed :failed :tree-drift :catalog-drift :shutdown :rejected})
 (def ^:private process-result-keys
@@ -187,6 +216,63 @@
                           (catch Throwable _ nil))]
     ((var-get validator) plan-value)
     (fail! "UEP-LANE-PLAN" "Unified execution-plan validator is unavailable" {})))
+
+(defn- control-cause
+  [throwable predicate]
+  (loop [cause throwable]
+    (cond
+      (nil? cause) nil
+      (predicate cause) cause
+      :else (recur (.getCause ^Throwable cause)))))
+
+(defn- rethrow-lane-control!
+  [throwable]
+  (when-let [interrupted (control-cause throwable #(instance? InterruptedException %))]
+    (.interrupt (Thread/currentThread))
+    (throw interrupted))
+  (when-let [fatal (control-cause throwable #(or (instance? ThreadDeath %)
+                                                (instance? VirtualMachineError %)
+                                                (instance? LinkageError %)))]
+    (throw fatal)))
+
+(defn- canonical-plan-for
+  "Resolve the reviewed route/lane plan without making generic warm startup
+  depend on the UEP namespace.  A cached request is admitted only when this
+  freshly constructed plan is exactly equal to the caller's plan."
+  [plan-value]
+  (when (and (= :fast (:lane plan-value))
+             (= :eligible (get-in plan-value [:cache-policy :mode]))
+             (= :cached-shard
+                (get-in plan-value [:executor :request :operation])))
+    (try
+      (let [plan-fn (requiring-resolve
+                     'gravity.self-hosting.unified-execution-plan/plan)
+            validator (requiring-resolve
+                       'gravity.self-hosting.unified-execution-plan/validate-plan)
+            canonical ((var-get plan-fn)
+                       {:route-id (:route-id plan-value) :lane :fast})]
+        ((var-get validator) canonical)
+        canonical)
+      (catch InterruptedException error
+        (.interrupt (Thread/currentThread))
+        (throw error))
+      (catch VirtualMachineError error (throw error))
+      (catch ThreadDeath error (throw error))
+      (catch LinkageError error (throw error))
+      (catch java.lang.Exception error
+        (rethrow-lane-control! error)
+        nil))))
+
+(defn- cached-plan-admitted?
+  "Return true only for the exact eligible canonical cached plan.
+
+  The executor operation is the sole dispatch discriminator.  Route names,
+  shard prefixes, and independent shard inventories never select this path;
+  a cache-disabled or otherwise tightened plan therefore remains generic
+  exact execution even when its route declares a cached executor request."
+  [plan-value]
+  (when-let [canonical (canonical-plan-for plan-value)]
+    (= canonical plan-value)))
 
 (defn- explicit-resource-context
   "Read the legacy dynamic context only to keep old callers fail-closed.
@@ -559,7 +645,14 @@
          :coordination-root (str coordination-root)
          :candidate-commit (:candidate-commit repository)
          :candidate-tree (:candidate-tree repository)
+         :route-id (:route-id plan-value)
+         :plan-id (:plan-id plan-value)
+         :catalog-id (:catalog-id plan-value)
          :closure-identity (:closure-identity plan-value)
+         :executor-request (get-in plan-value [:executor :request])
+         :executor-operation (get-in plan-value [:executor :request :operation])
+         :result-contract-id
+         (get-in plan-value [:executor :request :result-contract-id])
          :resource-class resource-class
          :request-timeout-ms timeout-ms
          :runtime-identity (warm-runtime-identity)
@@ -572,7 +665,8 @@
   ;; Environment is fixed when a session starts.  Runtime cache controls are
   ;; explicit and no ambient resume state crosses the warm-worker boundary.
   (cond-> {"GRAVITY_UNIFIED_LANE" "fast"
-           "GRAVITY_UNIFIED_CACHE" "eligible"
+           "GRAVITY_UNIFIED_CACHE"
+           (name (get-in plan-value [:cache-policy :mode]))
            "GRAVITY_UNIFIED_NO_RESUME" "1"
            "GRAVITY_UNIFIED_CLOSURE_ID" (str (:closure-identity plan-value))}
     (System/getenv "PATH") (assoc "PATH" (System/getenv "PATH"))
@@ -805,6 +899,184 @@
                    {:response response :runner-result (:runner-result response)})))))
   response)
 
+(defn- warm-cached-context
+  []
+  {:request-schema-version 15
+   :adapter bootstrap/sh07-core-adapter-contract
+   :checked-core-source-content-hash
+   bootstrap/sh07-core-expected-source-content-hash
+   :checked-core-plan-semantic-hash
+   bootstrap/sh07-core-expected-plan-semantic-hash
+   :java-runtime-version (System/getProperty "java.runtime.version")
+   :clojure-version (clojure-version)})
+
+(defn- cached-bounded-count?
+  [value]
+  (and (integer? value)
+       (<= 0 (long value) warm-cached-max-count)))
+
+(defn- cached-bounded-elapsed?
+  [value]
+  (and (integer? value)
+       (<= 0 (long value) warm-cached-max-elapsed-ms)))
+
+(defn- validate-warm-cached-result!
+  "Authenticate the raw cached-shard result before projecting it into a lane
+  result.  This deliberately keeps the complete raw map intact for callers;
+  no cache counter or context field is collapsed at this boundary."
+  [result selection shard]
+  (ensure! (and (map? result)
+                (= warm-cached-result-keys (set (keys result))))
+           "UEP-WARM-CACHED-RESULT"
+           "Cached runner result failed its authenticated closed-shape checks"
+           {:result result :shard shard})
+  (doseq [field warm-cached-result-counter-keys]
+    (ensure! (cached-bounded-count? (get result field))
+             "UEP-WARM-CACHED-COUNTER"
+             "Cached runner result counter is outside its bound"
+             {:field field :value (get result field) :shard shard}))
+  (ensure! (and (pos? (long (:test result)))
+                (= (:test-vars result) (count (:selectors selection)))
+                (pos? (long (:test-vars result)))
+                (<= (long (:test-vars result)) warm-cached-max-count))
+           "UEP-WARM-CACHED-COUNTER"
+           "Cached runner test-var count does not equal the requested selectors"
+           {:test (:test result) :test-vars (:test-vars result)
+            :expected (count (:selectors selection)) :shard shard})
+  (ensure! (= :gravity/sh07-cached-shard-result (:artifact result))
+           "UEP-WARM-CACHED-RESULT"
+           "Cached runner artifact is unsupported"
+           {:artifact (:artifact result) :shard shard})
+  (ensure! (= shard (:shard result))
+           "UEP-WARM-CACHED-RESULT-SHARD"
+           "Cached runner result shard does not match the request"
+           {:expected shard :actual (:shard result)})
+  (ensure! (false? (:cache-authoritative? result))
+           "UEP-WARM-CACHED-AUTHORITY"
+           "Cached runner cannot provide authoritative evidence" {})
+  (ensure! (true? (:fresh-authoritative-run-required? result))
+           "UEP-WARM-CACHED-AUTHORITY"
+           "Cached runner must require a fresh authoritative run" {})
+  (let [context (:cache-context result)]
+    (ensure! (and (map? context)
+                  (= warm-cached-context-keys (set (keys context)))
+                  (= (warm-cached-context) context))
+             "UEP-WARM-CACHED-CONTEXT"
+             "Cached result context does not match the authenticated runtime"
+             {:context context :expected (warm-cached-context)}))
+  (let [cache (:cache result)]
+    (ensure! (and (map? cache)
+                  (= warm-cached-counter-keys (set (keys cache)))
+                  (every? #(cached-bounded-count? (get cache %))
+                          warm-cached-counter-keys))
+             "UEP-WARM-CACHED-CACHE"
+             "Cached result counters are not a bounded closed map"
+             {:cache cache}))
+  (ensure! (cached-bounded-elapsed? (:elapsed-ms result))
+           "UEP-WARM-CACHED-RESULT"
+           "Cached runner elapsed time is outside its bound"
+           {:elapsed-ms (:elapsed-ms result)})
+  result)
+
+(defn- validate-warm-cached-response!
+  "Validate the operation-specific cached response and its raw result.
+
+  This parent-side validator is intentionally separate from the generic
+  response-v2 validator so exact/shutdown compatibility remains byte- and
+  shape-stable."
+  [response expected request-id expected-count selection plan-value]
+  (let [executor-request (get-in plan-value [:executor :request])]
+    (ensure! (and (map? response)
+                  (= warm-cached-response-keys (set (keys response)))
+                  (= warm-cached-response-schema (:schema response))
+                  (= :non-authoritative (:authority response))
+                  (false? (:authoritative? response))
+                  (= request-id (:request-id response))
+                  (= (:candidate-commit expected) (:candidate-commit response))
+                  (= (:candidate-tree expected) (:candidate-tree response))
+                  (= :fast (:lane response))
+                  (= (:route-id plan-value) (:route-id response))
+                  (= (:plan-id plan-value) (:plan-id response))
+                  (= (:catalog-id plan-value) (:catalog-id response))
+                  (= (:closure-identity plan-value)
+                     (:closure-identity response))
+                  (= (:result-contract-id executor-request)
+                     (:result-contract-id response))
+                  (= (:shard executor-request) (:shard response))
+                  (= warm-cached-result-contract-id
+                     (:result-contract-id response))
+                  (contains? warm-outcomes (:outcome response))
+                  (not= :shutdown (:outcome response))
+                  (integer? (:exit-code response))
+                  (contains? #{0 1 2} (:exit-code response))
+                  (integer? (:elapsed-ns response))
+                  (<= 0 (long (:elapsed-ns response)))
+                  (= expected-count (:request-count response))
+                  (pos? (long (:request-count response)))
+                  (<= (long (:request-count response)) warm-worker-max-requests)
+                  (string? (:stdout response))
+                  (string? (:stderr response))
+                  (<= (alength (.getBytes ^String (:stdout response)
+                                          StandardCharsets/UTF_8))
+                      maximum-output-bytes)
+                  (<= (alength (.getBytes ^String (:stderr response)
+                                          StandardCharsets/UTF_8))
+                      maximum-output-bytes)
+                  (false? (:output-truncated? response)))
+             "UEP-WARM-CACHED-RESPONSE"
+             "Cached worker response failed its authenticated closed-shape checks"
+             {:response response :request-id request-id})
+    (let [raw (:runner-result response)
+          outcome (:outcome response)
+          exit-code (:exit-code response)]
+      ;; A cached response may carry a raw result for repository tree drift,
+      ;; because the worker observed the drift after executing it. Catalog
+      ;; identity drift and pre-execution failures must carry no raw evidence.
+      (when (and (nil? raw) (= :passed outcome))
+        (fail! "UEP-WARM-CACHED-RESULT"
+               "A passed cached response must carry its raw result" {}))
+      (when raw
+        (validate-warm-cached-result! raw selection (:shard executor-request)))
+      (cond
+        (= :passed outcome)
+        (ensure! (and raw (zero? exit-code)
+                      (zero? (long (:fail raw)))
+                      (zero? (long (:error raw))))
+                 "UEP-WARM-CACHED-RESULT"
+                 "Cached success does not match raw result counters"
+                 {:response response :result raw})
+
+        (= :failed outcome)
+        (if raw
+          (ensure! (and (= 1 exit-code)
+                        (pos? (+ (long (:fail raw)) (long (:error raw)))))
+                   "UEP-WARM-CACHED-RESULT"
+                   "Cached failure does not match raw result counters"
+                   {:response response :result raw})
+          (ensure! (= 2 exit-code)
+                   "UEP-WARM-CACHED-RESULT"
+                   "A cached pre-execution failure must exit 2"
+                   {:response response}))
+
+        (contains? #{:tree-drift :catalog-drift} outcome)
+        (ensure! (and (= 2 exit-code)
+                      (or (= :tree-drift outcome) (nil? raw)))
+                 "UEP-WARM-CACHED-RESULT"
+                 "Cached drift response has an invalid raw-result shape"
+                 {:response response})
+
+        :else
+        (fail! "UEP-WARM-CACHED-RESULT"
+               "Cached response outcome is not admissible" {:response response})))
+    response))
+
+(defn- validate-warm-worker-response!
+  [response expected request-id expected-count selection plan-value cached?]
+  (if cached?
+    (validate-warm-cached-response! response expected request-id expected-count
+                                    selection plan-value)
+    (validate-warm-response! response expected request-id expected-count selection)))
+
 (defn- request-error
   [id message]
   (ex-info message {:id id}))
@@ -838,56 +1110,90 @@
 
 (defn- warm-request-line
   [session request]
-  (pr-str (assoc request
-                :schema :gravity/exact-tree-warm-worker-request-v1
-                :candidate-commit (:candidate-commit (:repository session))
-                :candidate-tree (:candidate-tree (:repository session)))))
+  ;; Generic requests historically omitted :schema at construction and got
+  ;; it added here.  Keep that exact projection, while cached requests carry
+  ;; their operation-specific schema and closed identity fields already.
+  (if (= :run-exact (:operation request))
+    (pr-str (assoc request
+                  :schema :gravity/exact-tree-warm-worker-request-v1
+                  :candidate-commit (:candidate-commit (:repository session))
+                  :candidate-tree (:candidate-tree (:repository session))))
+    (pr-str (assoc request
+                  :candidate-commit (:candidate-commit (:repository session))
+                  :candidate-tree (:candidate-tree (:repository session))))))
 
 (defn- warm-request-result
-  [plan-value selection response stable?]
-  (let [runner-result (:runner-result response)
-        summary (or (:summary runner-result)
-                    {:test 0 :pass 0 :fail 0 :error 1})
-        passed? (and stable?
-                     (= :passed (:outcome response))
-                     (= :passed (:outcome runner-result))
-                     (zero? (long (:exit-code response)))
-                     (false? (:output-truncated? response)))]
-    {:status (if passed? :passed :failed)
-     :test-count (count (:selectors selection))
-     :pass (:pass summary)
-     :fail (:fail summary)
-     :error (:error summary)
-     :diagnostics
-     (cond-> []
-       (not stable?)
-       (conj {:id "UEP-SNAPSHOT-MUTATED"
-              :message "Dependency closure changed during warm execution"})
-       (= :tree-drift (:outcome response))
-       (conj {:id "UEP-WARM-TREE-DRIFT"
-              :message "Warm worker observed repository identity drift"})
-       (= :catalog-drift (:outcome response))
-       (conj {:id "UEP-WARM-CATALOG-DRIFT"
-              :message "Warm worker observed development catalog drift"})
-       (and (not= :passed (:outcome response))
-            (not (contains? #{:tree-drift :catalog-drift} (:outcome response))))
-       (conj {:id "UEP-WARM-TEST-FAILED"
-              :message "Warm worker reported a failed or rejected exact selection"
-              :outcome (:outcome response)
-              :exit-code (:exit-code response)})
-       (:output-truncated? response)
-       (conj {:id "UEP-WARM-OUTPUT-BOUND"
-              :message "Warm worker output exceeded its bound"}))
-     :evidence (if passed? (:required-evidence plan-value) [])
-     :mutation-detected? (not stable?)
-     :fresh-replayable? false
-     :provenance-checked? stable?
-     :source-authenticated? stable?
-     :closure-verified? stable?
-     ;; A warm session is a process cache, not a cached test result.  Keep the
-     ;; decision at :miss until the reviewed persistent result-cache adapter is
-     ;; proven to accept this complete request identity.
-     :cache-decision :miss}))
+  ([plan-value selection response stable?]
+   (warm-request-result plan-value selection response stable? false))
+  ([plan-value selection response stable? cached?]
+   (let [runner-result (:runner-result response)
+         summary (if cached?
+                   (if (map? runner-result)
+                     (select-keys runner-result [:test :pass :fail :error])
+                     {:test 0 :pass 0 :fail 0 :error 1})
+                   (or (:summary runner-result)
+                       {:test 0 :pass 0 :fail 0 :error 1}))
+         cached-pass? (and cached?
+                           (map? runner-result)
+                           (zero? (long (:fail runner-result)))
+                           (zero? (long (:error runner-result))))
+         passed? (if cached?
+                   (and stable?
+                        (= :passed (:outcome response))
+                        cached-pass?
+                        (zero? (long (:exit-code response)))
+                        (false? (:output-truncated? response)))
+                   (and stable?
+                        (= :passed (:outcome response))
+                        (= :passed (:outcome runner-result))
+                        (zero? (long (:exit-code response)))
+                        (false? (:output-truncated? response))))
+         cache-counters (when (map? runner-result) (:cache runner-result))
+         cache-hit? (and cached?
+                         (map? cache-counters)
+                         (some #(pos? (long (get cache-counters % 0)))
+                               [:sh06-hits :core-hits :verification-hits]))]
+     (cond->
+       {:status (if passed? :passed :failed)
+        ;; Cached :test-vars is authenticated to equal this selection count;
+        ;; generic exact results retain their historical selector projection.
+        :test-count (if cached?
+                      (long (or (:test-vars runner-result)
+                                (count (:selectors selection))))
+                      (count (:selectors selection)))
+        :pass (:pass summary)
+        :fail (:fail summary)
+        :error (:error summary)
+        :diagnostics
+        (cond-> []
+          (not stable?)
+          (conj {:id "UEP-SNAPSHOT-MUTATED"
+                 :message "Dependency closure changed during warm execution"})
+          (= :tree-drift (:outcome response))
+          (conj {:id "UEP-WARM-TREE-DRIFT"
+                 :message "Warm worker observed repository identity drift"})
+          (= :catalog-drift (:outcome response))
+          (conj {:id "UEP-WARM-CATALOG-DRIFT"
+                 :message "Warm worker observed development catalog drift"})
+          (and (not= :passed (:outcome response))
+               (not (contains? #{:tree-drift :catalog-drift} (:outcome response))))
+          (conj {:id "UEP-WARM-TEST-FAILED"
+                 :message "Warm worker reported a failed or rejected exact selection"
+                 :outcome (:outcome response)
+                 :exit-code (:exit-code response)})
+          (:output-truncated? response)
+          (conj {:id "UEP-WARM-OUTPUT-BOUND"
+                 :message "Warm worker output exceeded its bound"}))
+        :evidence (if passed? (:required-evidence plan-value) [])
+        :mutation-detected? (not stable?)
+        :fresh-replayable? false
+        :provenance-checked? stable?
+        :source-authenticated? stable?
+        :closure-verified? stable?
+        ;; A cached result remains non-authoritative; only its three hit
+        ;; counters influence the observed acceleration decision.
+        :cache-decision (if cache-hit? :hit :miss)}
+       cached? (assoc :artifacts (if (map? runner-result) [runner-result] []))))))
 
 (defn- warm-owner-loop
   [session]
@@ -938,7 +1244,7 @@
                                            "Warm request expired before dispatch")))
                                  ((:write-line! started) (:line task))
                                  (let [response
-                                       (validate-warm-response!
+                                       (validate-warm-worker-response!
                                         (read-warm-record!
                                          started
                                          (max 1 (quot (+ remaining-ns 999999)
@@ -948,7 +1254,9 @@
                                         (:repository session)
                                         (:request-id task)
                                         next-count
-                                        (:selection task))]
+                                        (:selection task)
+                                        (:plan-value task)
+                                        (:cached? task))]
                                    {:response response
                                     :continue?
                                     (and (= :passed (:outcome response))
@@ -1069,9 +1377,11 @@
             created))))))
 
 (defn- warm-session-request!
-  [session plan-value selection timeout-ms]
-  (let [startup (deref (:startup session) (:startup-timeout-ms session)
-                       ::warm-startup-timeout)]
+  ([session plan-value selection timeout-ms]
+   (warm-session-request! session plan-value selection timeout-ms false))
+  ([session plan-value selection timeout-ms cached?]
+   (let [startup (deref (:startup session) (:startup-timeout-ms session)
+                        ::warm-startup-timeout)]
     (when (= ::warm-startup-timeout startup)
       (stop-warm-session! session :startup-timeout)
       (throw (request-error "UEP-WARM-STARTUP-TIMEOUT"
@@ -1084,15 +1394,47 @@
              "Warm worker session is not ready" {:state @(:state session)})
     (let [sequence (.incrementAndGet ^AtomicLong (:request-sequence session))
           request-id (str (subs (:identity-id session) 7 23) "-" sequence)
-          request {:operation :run-exact
-                   :request-id request-id
-                   :args (vec (concat ["--namespace" (:namespace selection)]
-                                      (mapcat #(list "--exact" %) (:selectors selection))
-                                      ["--fail-fast"]))}
+          executor-request (get-in plan-value [:executor :request])
+          request
+          (if cached?
+            (do
+              (ensure! (and (map? executor-request)
+                            (= #{:operation :shard :result-contract-id}
+                               (set (keys executor-request)))
+                            (= :cached-shard (:operation executor-request))
+                            (= warm-cached-result-contract-id
+                               (:result-contract-id executor-request))
+                            (string? (:shard executor-request))
+                            (<= 1 (count (:shard executor-request)) 128))
+                       "UEP-WARM-CACHED-REQUEST"
+                       "Canonical cached executor request is not closed" {})
+              {:schema warm-cached-request-schema
+               :request-id request-id
+               :operation :run-cached-shard
+               :candidate-commit (:candidate-commit (:repository session))
+               :candidate-tree (:candidate-tree (:repository session))
+               :lane :fast
+               :route-id (:route-id plan-value)
+               :plan-id (:plan-id plan-value)
+               :catalog-id (:catalog-id plan-value)
+               :closure-identity (:closure-identity plan-value)
+               :result-contract-id (:result-contract-id executor-request)
+               :shard (:shard executor-request)})
+            {:operation :run-exact
+             :request-id request-id
+             :args (vec (concat ["--namespace" (:namespace selection)]
+                                (mapcat #(list "--exact" %) (:selectors selection))
+                                ["--fail-fast"]))})
+          _ (when cached?
+              (ensure! (= warm-cached-request-keys (set (keys request)))
+                       "UEP-WARM-CACHED-REQUEST"
+                       "Cached worker request keys are not closed" {}))
           deadline-ns (+ (System/nanoTime)
                          (.toNanos TimeUnit/MILLISECONDS timeout-ms))
           task {:request-id request-id
                 :selection selection
+                :plan-value plan-value
+                :cached? cached?
                 :line (warm-request-line session request)
                 :promise (promise)
                 :deadline-ns deadline-ns}
@@ -1113,7 +1455,7 @@
           (do
             (stop-warm-session! session :request-failed)
             (throw error))
-          (:response result))))))
+          (:response result)))))))
 
 (defn reset-warm-sessions!
   "Stop all development warm sessions.
@@ -1168,12 +1510,17 @@
   A session owns one authenticated broker lease on its owner thread and is
   reused only when the canonical repository, clean HEAD identities, closure,
   resource class, runtime, and worker identities all match.  This lane is
-  deliberately non-authoritative; the session cache is not a test-result
-  cache and therefore reports :miss until a reviewed result-cache request is
-  supplied."
+  deliberately non-authoritative. Cached-shard routes may project an
+  authenticated raw result and honest hit/miss counters, but neither the
+  warm process nor that projection confers acceptance authority."
   [plan-value]
   (validate-plan-boundary! plan-value)
   (let [selection (plan-selection plan-value)
+        cached? (try
+                  (cached-plan-admitted? plan-value)
+                  (catch Throwable error
+                    (rethrow-lane-control! error)
+                    (throw error)))
         policy (:resource-policy plan-value)
         resource-class (:resource-class policy)
         timeout-ms (bounded-int (:timeout-ms policy) "UEP-FAST-TIMEOUT"
@@ -1215,21 +1562,23 @@
               session (warm-session-for (merge session-key config))
               before (closure-snapshot plan-value)
               response (warm-session-request!
-                        session plan-value selection timeout-ms)
+                        session plan-value selection timeout-ms cached?)
               after (closure-snapshot plan-value)
               stable? (= before after)]
           ;; A closure drift invalidates the process identity.  Evict the
           ;; session before returning so no later request can reuse it.
           (when-not stable?
             (stop-warm-session! session :closure-drift))
-          (warm-request-result plan-value selection response stable?))
+          (warm-request-result plan-value selection response stable? cached?))
         (catch InterruptedException error
           (.interrupt (Thread/currentThread))
           (throw error))
         (catch clojure.lang.ExceptionInfo error
+          (rethrow-lane-control! error)
           (failed (or (:id (ex-data error)) "UEP-WARM-EXECUTION")
                   (or (ex-message error) "Fast warm execution failed")))
         (catch Throwable error
+          (rethrow-lane-control! error)
           (failed "UEP-WARM-EXECUTION"
                   (or (ex-message error) "Fast warm execution failed")))))))
 

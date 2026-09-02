@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.execution-lanes-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing use-fixtures]]
+            [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.execution-lanes :as lanes]
             [gravity.self-hosting.sh01-host-resource-broker :as broker]
             [gravity.self-hosting.sh07-authoritative-runner :as authoritative]
@@ -62,6 +63,7 @@
         selectors (->> (partition-all 2 (:args request))
                        (keep (fn [[option value]]
                                (when (= "--exact" option) value)))
+                       sort
                        vec)
         passed? (= :passed outcome)]
     {:schema :gravity/development-test-result-v1
@@ -110,6 +112,157 @@
                                       :output-truncated? false
                                       :runner-result
                                       (request-runner-result request outcome)}]
+                        (.offer records (str "WARM_DEV " (pr-str response)))))
+       :process-alive? (fn [] (not @closed?))
+       :close! (fn [] (reset! closed? true))})))
+
+(def ^:private cached-route-ids
+  ["sh07-cached-accepted" "sh07-cached-contract" "sh07-cached-identity"
+   "sh07-cached-rejected" "sh07-cached-verification"])
+
+(defn- cached-plan
+  [route-id]
+  (plan/plan {:route-id route-id :lane :fast}))
+
+(defn- cached-context
+  []
+  {:request-schema-version 15
+   :adapter bootstrap/sh07-core-adapter-contract
+   :checked-core-source-content-hash
+   bootstrap/sh07-core-expected-source-content-hash
+   :checked-core-plan-semantic-hash
+   bootstrap/sh07-core-expected-plan-semantic-hash
+   :java-runtime-version (System/getProperty "java.runtime.version")
+   :clojure-version (clojure-version)})
+
+(defn- cached-result
+  [plan-value options]
+  (let [shard (get-in plan-value [:executor :request :shard])
+        test-vars (count (get-in plan-value [:selection :selectors]))
+        options (merge {:test test-vars :pass test-vars :fail 0 :error 0
+                        :cache {:sh06-hits 0 :sh06-misses 1
+                                :core-hits 0 :core-misses 1
+                                :verification-hits 0 :verification-misses 1}}
+                       options)]
+    {:test (:test options)
+     :pass (:pass options)
+     :fail (:fail options)
+     :error (:error options)
+     :artifact :gravity/sh07-cached-shard-result
+     :shard shard
+     :test-vars test-vars
+     :cache-authoritative? false
+     :fresh-authoritative-run-required? true
+     :cache-context (cached-context)
+     :elapsed-ms 7
+     :cache (:cache options)}))
+
+(defn- cached-response
+  [plan-value raw options]
+  (let [request-id (or (:request-id options) "cached")
+        outcome (or (:outcome options) :passed)
+        exit-code (or (:exit-code options) (if (= :passed outcome) 0 2))
+        request (get-in plan-value [:executor :request])]
+    {:schema :gravity/exact-tree-warm-worker-cached-response-v1
+     :authority :non-authoritative
+     :authoritative? false
+     :request-id request-id
+     :candidate-commit test-commit
+     :candidate-tree test-tree
+     :lane :fast
+     :route-id (:route-id plan-value)
+     :plan-id (:plan-id plan-value)
+     :catalog-id (:catalog-id plan-value)
+     :closure-identity (:closure-identity plan-value)
+     :result-contract-id (:result-contract-id request)
+     :shard (:shard request)
+     :outcome outcome
+     :exit-code exit-code
+     :elapsed-ns 1
+     :request-count 1
+     :runner-result raw
+     :stdout (or (:stdout options) "")
+     :stderr (or (:stderr options) "")
+     :output-truncated? (boolean (:output-truncated? options))}))
+
+(defn- fake-cached-warm-start
+  "A bounded duplex seam for cached-lane tests.
+
+  It never invokes a runner or cache. Responses are synthesized from the
+  request's declarative route and shard so tests exercise only dispatch,
+  authentication, projection, and lifecycle behavior."
+  [starts requests response-options]
+  (fn [{:keys [candidate-commit candidate-tree] :as start-request}]
+    (swap! starts conj start-request)
+    (let [records (java.util.concurrent.ArrayBlockingQueue. 16)
+          calls (atom 0)
+          closed? (atom false)
+          response-for (or response-options (fn [_ _] {}))]
+      (.offer records
+              (str "WARM_DEV "
+                   (pr-str {:schema :gravity/exact-tree-warm-worker-ready-v1
+                            :candidate-commit candidate-commit
+                            :candidate-tree candidate-tree
+                            :authority :non-authoritative})))
+      {:read-line! (fn [] (.poll records 2 java.util.concurrent.TimeUnit/SECONDS))
+       :write-line! (fn [line]
+                      (let [request (edn/read-string line)
+                            call (swap! calls inc)
+                            options (let [value (response-for request call)]
+                                      (if (map? value) value {:outcome value}))
+                            cached? (= :run-cached-shard (:operation request))
+                            p (when cached? (cached-plan (:route-id request)))
+                            raw (cond
+                                  (contains? options :runner-result)
+                                  (:runner-result options)
+                                  cached?
+                                  (cached-result p (or (:raw-options options) {}))
+                                  :else nil)
+                            outcome (or (:outcome options)
+                                         (if cached?
+                                           (if (and raw (zero? (+ (:fail raw)
+                                                                  (:error raw))))
+                                             :passed
+                                             :failed)
+                                           :passed))
+                            exit-code (or (:exit-code options)
+                                          (case outcome
+                                            :passed 0
+                                            :failed (if raw 1 2)
+                                            2))
+                            response (if cached?
+                                       {:schema :gravity/exact-tree-warm-worker-cached-response-v1
+                                        :authority :non-authoritative
+                                        :authoritative? false
+                                        :request-id (:request-id request)
+                                        :candidate-commit candidate-commit
+                                        :candidate-tree candidate-tree
+                                        :lane (:lane request)
+                                        :route-id (:route-id request)
+                                        :plan-id (:plan-id request)
+                                        :catalog-id (:catalog-id request)
+                                        :closure-identity (:closure-identity request)
+                                        :result-contract-id (:result-contract-id request)
+                                        :shard (:shard request)
+                                        :outcome outcome :exit-code exit-code
+                                        :elapsed-ns 1 :request-count call
+                                        :runner-result raw
+                                        :stdout (or (:stdout options) "")
+                                        :stderr (or (:stderr options) "")
+                                        :output-truncated? (boolean (:output-truncated? options))}
+                                       {:schema :gravity/exact-tree-warm-worker-response-v2
+                                        :authority :non-authoritative
+                                        :authoritative? false
+                                        :request-id (:request-id request)
+                                        :candidate-commit candidate-commit
+                                        :candidate-tree candidate-tree
+                                        :outcome outcome :exit-code exit-code
+                                        :elapsed-ns 1 :request-count call
+                                        :stdout (or (:stdout options) "")
+                                        :stderr (or (:stderr options) "")
+                                        :output-truncated? (boolean (:output-truncated? options))
+                                        :runner-result (request-runner-result request outcome)})]
+                        (swap! requests conj request)
                         (.offer records (str "WARM_DEV " (pr-str response)))))
        :process-alive? (fn [] (not @closed?))
        :close! (fn [] (reset! closed? true))})))
@@ -322,6 +475,266 @@
     (is (= :miss (:cache-decision (first result))))
     (is (= {:test-count 2 :pass 2 :fail 0 :error 0}
            (select-keys (first result) [:test-count :pass :fail :error])))))
+
+(deftest cached-routes-dispatch-from-declarative-plan-and-preserve-raw-result
+  (let [starts (atom [])
+        requests (atom [])
+        results
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-cached-warm-start starts requests nil)
+                  lanes/*closure-snapshot* (constantly {:identity :stable})]
+          (mapv #(lanes/run-fast! (cached-plan %)) cached-route-ids))]
+    (is (= (repeat 5 :passed) (map :status results)))
+    (is (= 5 (count @starts)))
+    (is (= cached-route-ids (mapv :route-id @requests)))
+    (is (every? #(= #{:schema :request-id :operation :candidate-commit
+                      :candidate-tree :lane :route-id :plan-id :catalog-id
+                      :closure-identity :result-contract-id :shard}
+                    (set (keys %)))
+                @requests))
+    (is (every? #(= {:schema :gravity/exact-tree-warm-worker-cached-request-v1
+                     :operation :run-cached-shard
+                     :lane :fast
+                     :result-contract-id :gravity/sh07-cached-shard-result-v1}
+                    (select-keys % [:schema :operation :lane
+                                    :result-contract-id]))
+                @requests))
+    (is (= ["accepted" "contract" "identity" "rejected" "verification"]
+           (mapv :shard @requests)))
+    (is (every? #(= :miss (:cache-decision %)) results))
+    (is (every? #(= 1 (count (:artifacts %)))
+                (take 2 results)))
+    (is (= [6 2 2 2 4] (mapv :test-count results)))
+    (is (= #{:test :pass :fail :error :artifact :shard :test-vars
+             :cache-authoritative? :fresh-authoritative-run-required?
+             :cache-context :elapsed-ms :cache}
+           (set (keys (get-in (first results) [:artifacts 0])))))))
+
+(deftest cached-hit-and-miss-decisions-project-authenticated-counters
+  (let [starts (atom []) requests (atom [])
+        results
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-cached-warm-start
+                   starts requests
+                   (fn [request _]
+                     (if (= "accepted" (:shard request))
+                       {:raw-options {:cache {:sh06-hits 1 :sh06-misses 0
+                                               :core-hits 0 :core-misses 1
+                                               :verification-hits 0
+                                               :verification-misses 1}}}
+                       {:raw-options {:cache {:sh06-hits 0 :sh06-misses 1
+                                               :core-hits 0 :core-misses 1
+                                               :verification-hits 0
+                                               :verification-misses 1}}})))
+                  lanes/*closure-snapshot* (constantly {:identity :stable})]
+          [(lanes/run-fast! (cached-plan "sh07-cached-accepted"))
+           (lanes/run-fast! (cached-plan "sh07-cached-contract"))])]
+    (is (= [:hit :miss] (mapv :cache-decision results)))
+    (is (= 2 (count @requests)))
+    (is (= 1 (count (:artifacts (first results)))))
+    (is (= {:test-count 6 :pass 6 :fail 0 :error 0}
+           (select-keys (first results) [:test-count :pass :fail :error])))))
+
+(deftest cached-response-and-raw-contracts-reject-identity-authority-and-bounds
+  (let [p (cached-plan "sh07-cached-accepted")
+        raw (cached-result p {})
+        valid (cached-response p raw {})
+        validate (private-lane-fn 'validate-warm-cached-response!)]
+    (is (= valid (validate valid {:candidate-commit test-commit
+                                  :candidate-tree test-tree}
+                                "cached" 1 (:selection p) p)))
+    (doseq [[field value expected-id]
+            [[:route-id "sh07-cached-contract" "UEP-WARM-CACHED-RESPONSE"]
+             [:plan-id (:catalog-id p) "UEP-WARM-CACHED-RESPONSE"]
+             [:catalog-id (:plan-id p) "UEP-WARM-CACHED-RESPONSE"]
+             [:closure-identity (:catalog-id p) "UEP-WARM-CACHED-RESPONSE"]
+             [:result-contract-id :wrong "UEP-WARM-CACHED-RESPONSE"]
+             [:shard "wrong" "UEP-WARM-CACHED-RESPONSE"]
+             [:authoritative? true "UEP-WARM-CACHED-RESPONSE"]
+             [:output-truncated? true "UEP-WARM-CACHED-RESPONSE"]]]
+      (let [error (try
+                    (validate (assoc valid field value)
+                              {:candidate-commit test-commit
+                               :candidate-tree test-tree}
+                              "cached" 1 (:selection p) p)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (= expected-id (:id (ex-data error))) (str "rejected " field))))
+    (doseq [[field value expected-id]
+            [[:cache-authoritative? true "UEP-WARM-CACHED-AUTHORITY"]
+             [:fresh-authoritative-run-required? false "UEP-WARM-CACHED-AUTHORITY"]
+             [:test-vars 1 "UEP-WARM-CACHED-COUNTER"]
+             [:artifact :other "UEP-WARM-CACHED-RESULT"]]]
+      (let [error (try
+                    (validate (assoc valid :runner-result (assoc raw field value))
+                              {:candidate-commit test-commit
+                               :candidate-tree test-tree}
+                              "cached" 1 (:selection p) p)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (= expected-id (:id (ex-data error))) (str "rejected raw " field))))
+    (let [error (try
+                  (validate (assoc valid :runner-result
+                                   (assoc raw :cache-context
+                                          (assoc (cached-context)
+                                                 :adapter :wrong)))
+                            {:candidate-commit test-commit
+                             :candidate-tree test-tree}
+                            "cached" 1 (:selection p) p)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "UEP-WARM-CACHED-CONTEXT" (:id (ex-data error)))))))
+
+(deftest cached-response-closed-shapes-and-counter-bounds-fail-closed
+  (let [p (cached-plan "sh07-cached-contract")
+        raw (cached-result p {})
+        valid (cached-response p raw {})
+        validate (private-lane-fn 'validate-warm-cached-response!)]
+    (doseq [response [(assoc valid :extra true)
+                      (dissoc valid :shard)
+                      (assoc valid :candidate-commit test-tree)]]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"authenticated closed-shape"
+                            (validate response
+                                      {:candidate-commit test-commit
+                                       :candidate-tree test-tree}
+                                      "cached" 1 (:selection p) p))))
+    (doseq [result [(assoc raw :extra true)
+                    (dissoc raw :cache)
+                    (assoc-in raw [:cache-context]
+                              (assoc (cached-context)
+                                     :checked-core-plan-semantic-hash "wrong"))]]
+      (let [error (try
+                    (validate (assoc valid :runner-result result)
+                              {:candidate-commit test-commit
+                               :candidate-tree test-tree}
+                              "cached" 1 (:selection p) p)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (some? error))
+        (is (re-matches #"UEP-WARM-CACHED-(RESULT|COUNTER|CACHE|CONTEXT)"
+                        (:id (ex-data error))))))
+    (doseq [field [:sh06-hits :sh06-misses :core-hits :core-misses
+                   :verification-hits :verification-misses]]
+      (let [error (try
+                    (validate (assoc valid :runner-result
+                                     (assoc-in raw [:cache field] 1000001))
+                              {:candidate-commit test-commit
+                               :candidate-tree test-tree}
+                              "cached" 1 (:selection p) p)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "UEP-WARM-CACHED-CACHE" (:id (ex-data error)))
+            (str "bounded cache counter " field))))
+    (let [large (apply str (repeat (inc (* 256 1024)) "x"))
+          error (try
+                  (validate (assoc valid :stdout large)
+                            {:candidate-commit test-commit
+                             :candidate-tree test-tree}
+                            "cached" 1 (:selection p) p)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "UEP-WARM-CACHED-RESPONSE" (:id (ex-data error)))))))
+
+(deftest cached-plan-control-failures-propagate-through-fast-admission
+  (let [p (cached-plan "sh07-cached-accepted")
+        canonical (private-lane-fn 'canonical-plan-for)]
+    (testing "causally wrapped interruption restores status and rethrows"
+      (try
+        (with-redefs [clojure.core/requiring-resolve
+                      (fn [_]
+                        (throw (ex-info "wrapped" {}
+                                        (InterruptedException. "stop"))))]
+          (canonical p))
+        (is false "expected interruption")
+        (catch InterruptedException _
+          (is (Thread/interrupted)))))
+    (testing "causally wrapped linkage error is never converted"
+      (try
+        (with-redefs [clojure.core/requiring-resolve
+                      (fn [_]
+                        (throw (ex-info "wrapped" {}
+                                        (LinkageError. "fatal"))))]
+          (canonical p))
+        (is false "expected linkage error")
+        (catch LinkageError error
+          (is (= "fatal" (.getMessage error))))))
+    (testing "run-fast keeps causal cancellation outside failed result"
+      (try
+        (with-redefs [gravity.self-hosting.execution-lanes/cached-plan-admitted?
+                      (fn [_]
+                        (throw (ex-info "wrapped" {}
+                                        (InterruptedException. "stop"))))]
+          (binding [lanes/*coordination-root* @coordination-root]
+            (lanes/run-fast! p)))
+        (is false "expected interruption")
+        (catch InterruptedException _
+          (is (Thread/interrupted)))))))
+
+(deftest cached-route-policy-tightening-falls-back-to-generic-exact
+  (let [starts (atom []) requests (atom [])
+        disabled (plan/plan {:route-id "sh07-cached-accepted"
+                             :lane :fast
+                             :cache-policy {:mode :disabled}})
+        tightened (plan/plan {:route-id "sh07-cached-contract"
+                              :lane :fast
+                              :resource-policy {:resource-class :memory-heavy
+                                                :timeout-ms 1000
+                                                :max-output-bytes 262144}})
+        results
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-cached-warm-start starts requests nil)
+                  lanes/*closure-snapshot* (constantly {:identity :stable})]
+          [(lanes/run-fast! disabled) (lanes/run-fast! tightened)])]
+    (is (= [:passed :passed] (mapv :status results)))
+    (is (= [:run-exact :run-exact] (mapv :operation @requests)))
+    (is (every? #(= :gravity/exact-tree-warm-worker-request-v1 (:schema %))
+                @requests))
+    (is (every? #(not (contains? % :lane)) @requests))
+    (is (every? #(= :miss (:cache-decision %)) results))))
+
+(deftest cached-closure-drift-evicts-session-and-releases-lease
+  (let [released (atom 0)
+        starts (atom [])
+        snapshots (atom 0)
+        result
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-cached-warm-start starts (atom []) nil)
+                  lanes/*broker-release!*
+                  (fn [lease]
+                    (broker/release! lease)
+                    (swap! released inc))
+                  lanes/*closure-snapshot*
+                  (fn [_]
+                    (if (= 1 (swap! snapshots inc))
+                      {:identity :before}
+                      {:identity :after}))]
+          (lanes/run-fast! (cached-plan "sh07-cached-accepted")))]
+    (is (= :failed (:status result)))
+    (is (= "UEP-SNAPSHOT-MUTATED"
+           (get-in result [:diagnostics 0 :id])))
+    (is (= 1 (count @starts)))
+    (Thread/sleep 100)
+    (is (= 1 @released))))
+
+(deftest cached-fast-never-enters-fresh-exporter
+  (let [called? (atom false)
+        result
+        (binding [lanes/*coordination-root* @coordination-root
+                  lanes/*warm-session-start!*
+                  (fake-cached-warm-start (atom []) (atom []) nil)
+                  lanes/*closure-snapshot* (constantly {:identity :stable})
+                  lanes/*fresh-exporter*
+                  (fn [_]
+                    (reset! called? true)
+                    (throw (AssertionError. "fresh lane must remain unreachable")))]
+          (lanes/run-fast! (cached-plan "sh07-cached-accepted")))]
+    (is (= :passed (:status result)))
+    (is (false? @called?))))
 
 (deftest fast-adapter-blocks-without-coordination-root
   (let [result
