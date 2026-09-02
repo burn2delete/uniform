@@ -1,0 +1,1022 @@
+{
+  "artifact": "gravity/sh07-b51-vector-destructuring-carrier-snapshot-census-v18-attempt-28",
+  "authority": {
+    "architecture-acceptance": false,
+    "implementation-acceptance": false,
+    "integration-eligibility": false,
+    "nonclaims": [
+      "This receipt does not accept Attempt 28 architecture.",
+      "This receipt does not accept or admit the SH-07 implementation.",
+      "This receipt does not claim SH-07 completion, release, self-hosting, or seed retirement."
+    ],
+    "roadmap-credit": false,
+    "status": ":non-authoritative-implementation-snapshot-evidence"
+  },
+  "compiler-emitter": {
+    "semantic-hash": "sha256:866309d5e875149882648e3ed2126a6590c1ffc4ac6b2f6a60018b15203813e2",
+    "source-content-hash": "sha256:b79945124e095079763c23c7316ec7b0a84b91d9fd2d01c45002a24c01d5c1d9",
+    "source-path": "bootstrap/gravity/p15_s23/emitter.gravity"
+  },
+  "digest-schedule": {
+    "actual-six-dimensional-maxima": {
+      "commitment": {
+        "c11-utf8": 182,
+        "canonical-reader-utf8": 195,
+        "depth": 1,
+        "nodes": 11,
+        "scalar-utf8": 73,
+        "width": 5
+      },
+      "fold": {
+        "c11-utf8": 2539,
+        "canonical-reader-utf8": 2758,
+        "depth": 3,
+        "nodes": 163,
+        "scalar-utf8": 73,
+        "width": 16
+      },
+      "leaf": {
+        "c11-utf8": 14668,
+        "canonical-reader-utf8": 15510,
+        "depth": 4,
+        "nodes": 641,
+        "scalar-utf8": 73,
+        "width": 16
+      },
+      "module-census": {
+        "c11-utf8": 926,
+        "canonical-reader-utf8": 954,
+        "depth": 1,
+        "nodes": 41,
+        "scalar-utf8": 73,
+        "width": 20
+      },
+      "root": {
+        "c11-utf8": 4571,
+        "canonical-reader-utf8": 4787,
+        "depth": 4,
+        "nodes": 212,
+        "scalar-utf8": 73,
+        "width": 35
+      },
+      "row": {
+        "c11-utf8": 924,
+        "canonical-reader-utf8": 975,
+        "depth": 2,
+        "nodes": 39,
+        "scalar-utf8": 73,
+        "width": 8
+      }
+    },
+    "category-commitments": [
+      {
+        "category": ":roots",
+        "fold-level-count": 1,
+        "leaf-count": 1,
+        "root-digest": "sha256:236854cce4d969e45b37b4a000d0e2f1eb7c5e8af519f023c9d125a46af1fc1d",
+        "row-count": 8
+      },
+      {
+        "category": ":members",
+        "fold-level-count": 2,
+        "leaf-count": 87,
+        "root-digest": "sha256:ecd5e79b8dab585b18b909d3bc0b060771e830b4bf497d6955b55a57e998ef50",
+        "row-count": 1392
+      },
+      {
+        "category": ":functions",
+        "fold-level-count": 2,
+        "leaf-count": 87,
+        "root-digest": "sha256:95b92f7f67affc33e3917ec488cb7ae1761870d183952e841763f9f6e9750a0b",
+        "row-count": 1392
+      },
+      {
+        "category": ":local-runtime-call-edges",
+        "fold-level-count": 2,
+        "leaf-count": 188,
+        "root-digest": "sha256:fc62c7287db30c99566b9c76fce293964f63f21c56fba8c2a875909960fba911",
+        "row-count": 3003
+      },
+      {
+        "category": ":external-runtime-call-edges",
+        "fold-level-count": 2,
+        "leaf-count": 85,
+        "root-digest": "sha256:86214d4624b74c5052c7a48a6881d71fbc871093ab963bc2793cd7e463dcc179",
+        "row-count": 1356
+      },
+      {
+        "category": ":referenced-builtins",
+        "fold-level-count": 3,
+        "leaf-count": 1580,
+        "root-digest": "sha256:5631a24d800a796f1c66a5a705915d880d84f0ae92182362f9019374bac7c2f1",
+        "row-count": 25275
+      },
+      {
+        "category": ":module-contracts",
+        "fold-level-count": 1,
+        "leaf-count": 1,
+        "root-digest": "sha256:36f32de99f61b7344f2c55801ef6dd1188e0acf0b9d53897736cdd1bf10a0ab5",
+        "row-count": 7
+      }
+    ],
+    "observed-compact-root-count": 1,
+    "observed-digest-operation-count": 2173,
+    "observed-fold-count": 143,
+    "observed-leaf-count": 2029,
+    "semantic-root-hash": "sha256:a710c35a9e7977ca48141b478022840e494e736e4f20dbdb45022707bdfd978c"
+  },
+  "full-current-replay-equality": {
+    "host-carrier-authorized": true,
+    "independent-root6": {
+      "authentic": true,
+      "digest-operation-counts": {
+        "fold": 143,
+        "leaf": 2029,
+        "root": 1
+      },
+      "physical-census-equal": true,
+      "semantic-manifest-equal": true,
+      "semantic-root-equal": true,
+      "semantic-rows-equal": true
+    },
+    "producer-root1": {
+      "digest-operation-counts": {
+        "fold": 143,
+        "leaf": 2029,
+        "root": 1
+      },
+      "physical-census-equal": true,
+      "semantic-manifest-equal": true,
+      "semantic-root-equal": true,
+      "semantic-rows-equal": true,
+      "status": ":accepted"
+    },
+    "three-way-equality": true
+  },
+  "generator": {
+    "command": "clojure -M -m gravity.tools.sh07-b51-attempt28-snapshot-census",
+    "focused-test-command": "clojure -M:test --namespace gravity.self-hosting.sh07-b51-attempt28-snapshot-census-test",
+    "receipts": {
+      "focused-census-test": "3 tests, 68 assertions, 0 failures, 0 errors",
+      "focused-host-test": "6 tests, 47 assertions, 0 failures, 0 errors",
+      "focused-producer-test": "6 tests, 35 assertions, 0 failures, 0 errors",
+      "focused-root6-test": "6 tests, 39 assertions, 0 failures, 0 errors",
+      "generation-run": "exit 0; host = producer/Root1 = independent Root6",
+      "language-boundary-test": "6 tests, 11 assertions, 0 failures, 0 errors"
+    },
+    "replay-test-commands": [
+      "clojure -M:test --namespace gravity.self-hosting.sh07-b51-attempt28-linked-carrier-host-test",
+      "clojure -M:test --namespace gravity.self-hosting.sh07-b51-attempt28-producer-replay-test",
+      "clojure -M:test --namespace gravity.self-hosting.sh07-b51-attempt28-root6-independent-replay-test"
+    ]
+  },
+  "modules": [
+    {
+      "aggregate-binding-count": 2112,
+      "core-binding-count": 262,
+      "definition-gap": 10,
+      "external-binding-count": 1,
+      "external-runtime-callsite-gap": 0,
+      "lexical-binding-count": 1555,
+      "local-runtime-callsite-gap": 17,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity",
+      "m0-id": "sha256:4143139122767094198fcdcd0f4a884a40c20124f3a09ead1ba5808ee247b265",
+      "m2-id": "sha256:f56bd3585064867248f3e0cd3b06ff8551b60c95f434bec5c70cd542a3a7059c",
+      "module": "gravity.sh07-b51.producer-a",
+      "module-ordinal": 0,
+      "module-source-id": "sha256:4143139122767094198fcdcd0f4a884a40c20124f3a09ead1ba5808ee247b265",
+      "owner": ":r1-producer",
+      "physical-definition-count": 294,
+      "physical-external-runtime-callsite-count": 1,
+      "physical-local-runtime-callsite-count": 820,
+      "physical-referenced-builtin-occurrence-count": 4539,
+      "plan-id": "sha256:f56bd3585064867248f3e0cd3b06ff8551b60c95f434bec5c70cd542a3a7059c",
+      "reachable-definition-count": 284,
+      "reachable-external-runtime-callsite-count": 1,
+      "reachable-local-runtime-callsite-count": 803,
+      "reachable-referenced-builtin-occurrence-count": 4468,
+      "referenced-builtin-occurrence-gap": 71,
+      "source-byte-count": 396328,
+      "source-sha256": "sha256:213d9222ebe33037ebd96c80bc9dc8d2f27ad6cda69a9762e528f76702834869"
+    },
+    {
+      "aggregate-binding-count": 2398,
+      "core-binding-count": 262,
+      "definition-gap": 21,
+      "external-binding-count": 57,
+      "external-runtime-callsite-gap": 36,
+      "lexical-binding-count": 1825,
+      "local-runtime-callsite-gap": 40,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity",
+      "m0-id": "sha256:f0c18a313e2afd7a1e7e109e26d2c657febb509f6a1a8b5d29f1dac92fd66ae3",
+      "m2-id": "sha256:7995eabad2ce176151a00311eaec7b2b3104ed5201f1502ca7f598041964f807",
+      "module": "gravity.sh07-b51.producer-b",
+      "module-ordinal": 1,
+      "module-source-id": "sha256:f0c18a313e2afd7a1e7e109e26d2c657febb509f6a1a8b5d29f1dac92fd66ae3",
+      "owner": ":r1-producer",
+      "physical-definition-count": 254,
+      "physical-external-runtime-callsite-count": 337,
+      "physical-local-runtime-callsite-count": 388,
+      "physical-referenced-builtin-occurrence-count": 4389,
+      "plan-id": "sha256:7995eabad2ce176151a00311eaec7b2b3104ed5201f1502ca7f598041964f807",
+      "reachable-definition-count": 233,
+      "reachable-external-runtime-callsite-count": 301,
+      "reachable-local-runtime-callsite-count": 348,
+      "reachable-referenced-builtin-occurrence-count": 4047,
+      "referenced-builtin-occurrence-gap": 342,
+      "source-byte-count": 335877,
+      "source-sha256": "sha256:1385ecc26d44050d6ce274b59637362ad83018433ddbaece9257e4a9fde24540"
+    },
+    {
+      "aggregate-binding-count": 2365,
+      "core-binding-count": 262,
+      "definition-gap": 3,
+      "external-binding-count": 103,
+      "external-runtime-callsite-gap": 15,
+      "lexical-binding-count": 1718,
+      "local-runtime-callsite-gap": 12,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity",
+      "m0-id": "sha256:c339657a980011cbdff40b9d2e5927d1a0eb66c05cc40c3fa77fcc3e594b1173",
+      "m2-id": "sha256:b4ba56138e210d1ca1583561a4c15febe4bdec9f18756a8c4ae84e6608438971",
+      "module": "gravity.sh07-b51.producer-c",
+      "module-ordinal": 2,
+      "module-source-id": "sha256:c339657a980011cbdff40b9d2e5927d1a0eb66c05cc40c3fa77fcc3e594b1173",
+      "owner": ":r1-producer",
+      "physical-definition-count": 282,
+      "physical-external-runtime-callsite-count": 429,
+      "physical-local-runtime-callsite-count": 563,
+      "physical-referenced-builtin-occurrence-count": 4228,
+      "plan-id": "sha256:b4ba56138e210d1ca1583561a4c15febe4bdec9f18756a8c4ae84e6608438971",
+      "reachable-definition-count": 279,
+      "reachable-external-runtime-callsite-count": 414,
+      "reachable-local-runtime-callsite-count": 551,
+      "reachable-referenced-builtin-occurrence-count": 4180,
+      "referenced-builtin-occurrence-gap": 48,
+      "source-byte-count": 370365,
+      "source-sha256": "sha256:0eaa33234918eceba581026cdd5197466e3d244a040986715e0fd6e642a536e3"
+    },
+    {
+      "aggregate-binding-count": 2295,
+      "core-binding-count": 262,
+      "definition-gap": 7,
+      "external-binding-count": 126,
+      "external-runtime-callsite-gap": 8,
+      "lexical-binding-count": 1692,
+      "local-runtime-callsite-gap": 3,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity",
+      "m0-id": "sha256:79531dff8586cf46aa5d4ec485628cc55d46220eb9cce5f4eeea32c8338ab63e",
+      "m2-id": "sha256:70ce4849bc9e1880797de29b461d81965434c71e6d8eb1efbee21c72f994584b",
+      "module": "gravity.sh07-b51.producer-d",
+      "module-ordinal": 3,
+      "module-source-id": "sha256:79531dff8586cf46aa5d4ec485628cc55d46220eb9cce5f4eeea32c8338ab63e",
+      "owner": ":r1-producer",
+      "physical-definition-count": 215,
+      "physical-external-runtime-callsite-count": 408,
+      "physical-local-runtime-callsite-count": 374,
+      "physical-referenced-builtin-occurrence-count": 4160,
+      "plan-id": "sha256:70ce4849bc9e1880797de29b461d81965434c71e6d8eb1efbee21c72f994584b",
+      "reachable-definition-count": 208,
+      "reachable-external-runtime-callsite-count": 400,
+      "reachable-local-runtime-callsite-count": 371,
+      "reachable-referenced-builtin-occurrence-count": 4083,
+      "referenced-builtin-occurrence-gap": 77,
+      "source-byte-count": 340979,
+      "source-sha256": "sha256:252f9bf3cf2c0812d7089b1be01f59485a2522075ebe69a43819d54b8fb39746"
+    },
+    {
+      "aggregate-binding-count": 1981,
+      "core-binding-count": 262,
+      "definition-gap": 5,
+      "external-binding-count": 3,
+      "external-runtime-callsite-gap": 0,
+      "lexical-binding-count": 1535,
+      "local-runtime-callsite-gap": 26,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity",
+      "m0-id": "sha256:e938a9892facbd6bf57281b7c430e06e527dbfa3bc802017e3a2f47092c3d136",
+      "m2-id": "sha256:a4a448c916f6d7b3ed3e34fcbfd9c6b4f43011ec7e24993ad159afb9e01971c2",
+      "module": "gravity.sh07-b51.root6-a",
+      "module-ordinal": 4,
+      "module-source-id": "sha256:e938a9892facbd6bf57281b7c430e06e527dbfa3bc802017e3a2f47092c3d136",
+      "owner": ":r6-independent-verifier",
+      "physical-definition-count": 181,
+      "physical-external-runtime-callsite-count": 7,
+      "physical-local-runtime-callsite-count": 444,
+      "physical-referenced-builtin-occurrence-count": 3718,
+      "plan-id": "sha256:a4a448c916f6d7b3ed3e34fcbfd9c6b4f43011ec7e24993ad159afb9e01971c2",
+      "reachable-definition-count": 176,
+      "reachable-external-runtime-callsite-count": 7,
+      "reachable-local-runtime-callsite-count": 418,
+      "reachable-referenced-builtin-occurrence-count": 3614,
+      "referenced-builtin-occurrence-gap": 104,
+      "source-byte-count": 257559,
+      "source-sha256": "sha256:c44358d71faaceabbdcb44d3f9502751c1f970f5ab2fd4cc353a554ed23237bc"
+    },
+    {
+      "aggregate-binding-count": 2020,
+      "core-binding-count": 262,
+      "definition-gap": 9,
+      "external-binding-count": 52,
+      "external-runtime-callsite-gap": 8,
+      "lexical-binding-count": 1542,
+      "local-runtime-callsite-gap": 8,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity",
+      "m0-id": "sha256:8221c5fab294d5e8870b24411f3877c756040f0763e2d394bc31e2ab3b21e989",
+      "m2-id": "sha256:d0c18806810b91d30c9d8e1f149dac20cab6f8cd7500bc6742107a9c15234675",
+      "module": "gravity.sh07-b51.root6-b",
+      "module-ordinal": 5,
+      "module-source-id": "sha256:8221c5fab294d5e8870b24411f3877c756040f0763e2d394bc31e2ab3b21e989",
+      "owner": ":r6-independent-verifier",
+      "physical-definition-count": 164,
+      "physical-external-runtime-callsite-count": 219,
+      "physical-local-runtime-callsite-count": 368,
+      "physical-referenced-builtin-occurrence-count": 4010,
+      "plan-id": "sha256:d0c18806810b91d30c9d8e1f149dac20cab6f8cd7500bc6742107a9c15234675",
+      "reachable-definition-count": 155,
+      "reachable-external-runtime-callsite-count": 211,
+      "reachable-local-runtime-callsite-count": 360,
+      "reachable-referenced-builtin-occurrence-count": 3895,
+      "referenced-builtin-occurrence-gap": 115,
+      "source-byte-count": 298529,
+      "source-sha256": "sha256:9c2e920fe35d2b00935a850666d7eb42f3b9bc6291781b04a98ed9e0e3fb609f"
+    },
+    {
+      "aggregate-binding-count": 816,
+      "core-binding-count": 262,
+      "definition-gap": 4,
+      "external-binding-count": 12,
+      "external-runtime-callsite-gap": 0,
+      "lexical-binding-count": 481,
+      "local-runtime-callsite-gap": 17,
+      "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity",
+      "m0-id": "sha256:4bff528087ca563fe3d650fe3846434364211e05fc70c9f47cd1c311e722cb12",
+      "m2-id": "sha256:6376bce1286e1d3ce5ba38e00ce6bf23ce0f71274cee5ea2face2142bb7c13c2",
+      "module": "gravity.sh07-b51.root8",
+      "module-ordinal": 6,
+      "module-source-id": "sha256:4bff528087ca563fe3d650fe3846434364211e05fc70c9f47cd1c311e722cb12",
+      "owner": ":r8-finalizer",
+      "physical-definition-count": 61,
+      "physical-external-runtime-callsite-count": 22,
+      "physical-local-runtime-callsite-count": 169,
+      "physical-referenced-builtin-occurrence-count": 1083,
+      "plan-id": "sha256:6376bce1286e1d3ce5ba38e00ce6bf23ce0f71274cee5ea2face2142bb7c13c2",
+      "reachable-definition-count": 57,
+      "reachable-external-runtime-callsite-count": 22,
+      "reachable-local-runtime-callsite-count": 152,
+      "reachable-referenced-builtin-occurrence-count": 988,
+      "referenced-builtin-occurrence-gap": 95,
+      "source-byte-count": 88074,
+      "source-sha256": "sha256:31c156362f7ca790745412968e1bda747f41d88ebb2469d05756b1eab519d26b"
+    }
+  ],
+  "negative-rejections": {
+    "host-fabricated-carrier": {
+      "rejected": true,
+      "result": false
+    },
+    "host-obsolete-carrier": {
+      "rejected": true,
+      "result": false
+    },
+    "producer-fabricated-carrier": {
+      "rejected": true,
+      "result": {
+        "reason": ":linked-semantic-root",
+        "status": ":rejected"
+      }
+    },
+    "producer-obsolete-carrier": {
+      "rejected": true,
+      "result": {
+        "reason": ":linked-carrier-replay",
+        "status": ":rejected"
+      }
+    },
+    "root6-fabricated-carrier": {
+      "rejected": true,
+      "result": false
+    },
+    "root6-obsolete-carrier": {
+      "rejected": true,
+      "result": false
+    },
+    "root6-obsolete-domain-recognized-only-for-rejection": true
+  },
+  "physical-census": {
+    "binding-ceiling": 2440,
+    "maximum-binding-occupancy": 2398,
+    "module-binding-occupancies": [
+      2112,
+      2398,
+      2365,
+      2295,
+      1981,
+      2020,
+      816
+    ],
+    "module-censuses": [
+      {
+        "aggregate-binding-count": 2112,
+        "core-binding-count": 262,
+        "external-binding-count": 1,
+        "lexical-binding-count": 1555,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity",
+        "module": "gravity.sh07-b51.producer-a",
+        "module-ordinal": 0,
+        "module-source-id": "sha256:4143139122767094198fcdcd0f4a884a40c20124f3a09ead1ba5808ee247b265",
+        "owner": ":r1-producer",
+        "physical-definition-count": 294,
+        "physical-external-runtime-callsite-count": 1,
+        "physical-local-runtime-callsite-count": 820,
+        "physical-referenced-builtin-occurrence-count": 4539,
+        "plan-id": "sha256:f56bd3585064867248f3e0cd3b06ff8551b60c95f434bec5c70cd542a3a7059c",
+        "reachable-definition-count": 284,
+        "reachable-external-runtime-callsite-count": 1,
+        "reachable-local-runtime-callsite-count": 803,
+        "reachable-referenced-builtin-occurrence-count": 4468,
+        "source-byte-count": 396328,
+        "source-sha256": "sha256:213d9222ebe33037ebd96c80bc9dc8d2f27ad6cda69a9762e528f76702834869"
+      },
+      {
+        "aggregate-binding-count": 2398,
+        "core-binding-count": 262,
+        "external-binding-count": 57,
+        "lexical-binding-count": 1825,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity",
+        "module": "gravity.sh07-b51.producer-b",
+        "module-ordinal": 1,
+        "module-source-id": "sha256:f0c18a313e2afd7a1e7e109e26d2c657febb509f6a1a8b5d29f1dac92fd66ae3",
+        "owner": ":r1-producer",
+        "physical-definition-count": 254,
+        "physical-external-runtime-callsite-count": 337,
+        "physical-local-runtime-callsite-count": 388,
+        "physical-referenced-builtin-occurrence-count": 4389,
+        "plan-id": "sha256:7995eabad2ce176151a00311eaec7b2b3104ed5201f1502ca7f598041964f807",
+        "reachable-definition-count": 233,
+        "reachable-external-runtime-callsite-count": 301,
+        "reachable-local-runtime-callsite-count": 348,
+        "reachable-referenced-builtin-occurrence-count": 4047,
+        "source-byte-count": 335877,
+        "source-sha256": "sha256:1385ecc26d44050d6ce274b59637362ad83018433ddbaece9257e4a9fde24540"
+      },
+      {
+        "aggregate-binding-count": 2365,
+        "core-binding-count": 262,
+        "external-binding-count": 103,
+        "lexical-binding-count": 1718,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity",
+        "module": "gravity.sh07-b51.producer-c",
+        "module-ordinal": 2,
+        "module-source-id": "sha256:c339657a980011cbdff40b9d2e5927d1a0eb66c05cc40c3fa77fcc3e594b1173",
+        "owner": ":r1-producer",
+        "physical-definition-count": 282,
+        "physical-external-runtime-callsite-count": 429,
+        "physical-local-runtime-callsite-count": 563,
+        "physical-referenced-builtin-occurrence-count": 4228,
+        "plan-id": "sha256:b4ba56138e210d1ca1583561a4c15febe4bdec9f18756a8c4ae84e6608438971",
+        "reachable-definition-count": 279,
+        "reachable-external-runtime-callsite-count": 414,
+        "reachable-local-runtime-callsite-count": 551,
+        "reachable-referenced-builtin-occurrence-count": 4180,
+        "source-byte-count": 370365,
+        "source-sha256": "sha256:0eaa33234918eceba581026cdd5197466e3d244a040986715e0fd6e642a536e3"
+      },
+      {
+        "aggregate-binding-count": 2295,
+        "core-binding-count": 262,
+        "external-binding-count": 126,
+        "lexical-binding-count": 1692,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity",
+        "module": "gravity.sh07-b51.producer-d",
+        "module-ordinal": 3,
+        "module-source-id": "sha256:79531dff8586cf46aa5d4ec485628cc55d46220eb9cce5f4eeea32c8338ab63e",
+        "owner": ":r1-producer",
+        "physical-definition-count": 215,
+        "physical-external-runtime-callsite-count": 408,
+        "physical-local-runtime-callsite-count": 374,
+        "physical-referenced-builtin-occurrence-count": 4160,
+        "plan-id": "sha256:70ce4849bc9e1880797de29b461d81965434c71e6d8eb1efbee21c72f994584b",
+        "reachable-definition-count": 208,
+        "reachable-external-runtime-callsite-count": 400,
+        "reachable-local-runtime-callsite-count": 371,
+        "reachable-referenced-builtin-occurrence-count": 4083,
+        "source-byte-count": 340979,
+        "source-sha256": "sha256:252f9bf3cf2c0812d7089b1be01f59485a2522075ebe69a43819d54b8fb39746"
+      },
+      {
+        "aggregate-binding-count": 1981,
+        "core-binding-count": 262,
+        "external-binding-count": 3,
+        "lexical-binding-count": 1535,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity",
+        "module": "gravity.sh07-b51.root6-a",
+        "module-ordinal": 4,
+        "module-source-id": "sha256:e938a9892facbd6bf57281b7c430e06e527dbfa3bc802017e3a2f47092c3d136",
+        "owner": ":r6-independent-verifier",
+        "physical-definition-count": 181,
+        "physical-external-runtime-callsite-count": 7,
+        "physical-local-runtime-callsite-count": 444,
+        "physical-referenced-builtin-occurrence-count": 3718,
+        "plan-id": "sha256:a4a448c916f6d7b3ed3e34fcbfd9c6b4f43011ec7e24993ad159afb9e01971c2",
+        "reachable-definition-count": 176,
+        "reachable-external-runtime-callsite-count": 7,
+        "reachable-local-runtime-callsite-count": 418,
+        "reachable-referenced-builtin-occurrence-count": 3614,
+        "source-byte-count": 257559,
+        "source-sha256": "sha256:c44358d71faaceabbdcb44d3f9502751c1f970f5ab2fd4cc353a554ed23237bc"
+      },
+      {
+        "aggregate-binding-count": 2020,
+        "core-binding-count": 262,
+        "external-binding-count": 52,
+        "lexical-binding-count": 1542,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity",
+        "module": "gravity.sh07-b51.root6-b",
+        "module-ordinal": 5,
+        "module-source-id": "sha256:8221c5fab294d5e8870b24411f3877c756040f0763e2d394bc31e2ab3b21e989",
+        "owner": ":r6-independent-verifier",
+        "physical-definition-count": 164,
+        "physical-external-runtime-callsite-count": 219,
+        "physical-local-runtime-callsite-count": 368,
+        "physical-referenced-builtin-occurrence-count": 4010,
+        "plan-id": "sha256:d0c18806810b91d30c9d8e1f149dac20cab6f8cd7500bc6742107a9c15234675",
+        "reachable-definition-count": 155,
+        "reachable-external-runtime-callsite-count": 211,
+        "reachable-local-runtime-callsite-count": 360,
+        "reachable-referenced-builtin-occurrence-count": 3895,
+        "source-byte-count": 298529,
+        "source-sha256": "sha256:9c2e920fe35d2b00935a850666d7eb42f3b9bc6291781b04a98ed9e0e3fb609f"
+      },
+      {
+        "aggregate-binding-count": 816,
+        "core-binding-count": 262,
+        "external-binding-count": 12,
+        "lexical-binding-count": 481,
+        "logical-source-path": "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity",
+        "module": "gravity.sh07-b51.root8",
+        "module-ordinal": 6,
+        "module-source-id": "sha256:4bff528087ca563fe3d650fe3846434364211e05fc70c9f47cd1c311e722cb12",
+        "owner": ":r8-finalizer",
+        "physical-definition-count": 61,
+        "physical-external-runtime-callsite-count": 22,
+        "physical-local-runtime-callsite-count": 169,
+        "physical-referenced-builtin-occurrence-count": 1083,
+        "plan-id": "sha256:6376bce1286e1d3ce5ba38e00ce6bf23ce0f71274cee5ea2face2142bb7c13c2",
+        "reachable-definition-count": 57,
+        "reachable-external-runtime-callsite-count": 22,
+        "reachable-local-runtime-callsite-count": 152,
+        "reachable-referenced-builtin-occurrence-count": 988,
+        "source-byte-count": 88074,
+        "source-sha256": "sha256:31c156362f7ca790745412968e1bda747f41d88ebb2469d05756b1eab519d26b"
+      }
+    ],
+    "module-count": 7,
+    "physical-definition-count": 1451,
+    "physical-external-runtime-callsite-count": 1423,
+    "physical-local-runtime-callsite-count": 3126,
+    "physical-referenced-builtin-occurrence-count": 26127,
+    "reachable-definition-count": 1392,
+    "reachable-external-runtime-callsite-count": 1356,
+    "reachable-local-runtime-callsite-count": 3003,
+    "reachable-referenced-builtin-occurrence-count": 25275,
+    "semantic-row-count": 32433
+  },
+  "prospective-bounds": {
+    "classes": {
+      "commitment": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 16384,
+          "canonical-reader-utf8": 18432,
+          "depth": 6,
+          "nodes": 64,
+          "scalar-utf8": 4096,
+          "width": 16
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      },
+      "fold": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 65536,
+          "canonical-reader-utf8": 73728,
+          "depth": 8,
+          "nodes": 512,
+          "scalar-utf8": 4096,
+          "width": 16
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      },
+      "leaf": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 196608,
+          "canonical-reader-utf8": 212992,
+          "depth": 12,
+          "nodes": 1024,
+          "scalar-utf8": 4096,
+          "width": 16
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      },
+      "module-census": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 8192,
+          "canonical-reader-utf8": 9216,
+          "depth": 2,
+          "nodes": 64,
+          "scalar-utf8": 4096,
+          "width": 20
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      },
+      "root": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 65536,
+          "canonical-reader-utf8": 73728,
+          "depth": 8,
+          "nodes": 512,
+          "scalar-utf8": 4096,
+          "width": 64
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      },
+      "row": {
+        "at-limit-admitted": true,
+        "ceiling": {
+          "c11-utf8": 8192,
+          "canonical-reader-utf8": 9216,
+          "depth": 6,
+          "nodes": 48,
+          "scalar-utf8": 4096,
+          "width": 8
+        },
+        "plus-one-rejections": {
+          "c11-utf8": true,
+          "canonical-reader-utf8": true,
+          "depth": true,
+          "nodes": true,
+          "scalar-utf8": true,
+          "width": true
+        }
+      }
+    },
+    "schedule": {
+      "category-count": 7,
+      "fold-fanout": 16,
+      "maximum-commitment-c11-bytes": 16384,
+      "maximum-commitment-canonical-reader-bytes": 18432,
+      "maximum-commitment-depth": 6,
+      "maximum-commitment-nodes": 64,
+      "maximum-commitment-scalar-utf8": 4096,
+      "maximum-commitment-width": 16,
+      "maximum-fold-c11-bytes": 65536,
+      "maximum-fold-canonical-reader-bytes": 73728,
+      "maximum-fold-depth": 8,
+      "maximum-fold-levels": 3,
+      "maximum-fold-nodes": 512,
+      "maximum-fold-scalar-utf8": 4096,
+      "maximum-fold-width": 16,
+      "maximum-leaf-c11-bytes": 196608,
+      "maximum-leaf-canonical-reader-bytes": 212992,
+      "maximum-leaf-depth": 12,
+      "maximum-leaf-nodes": 1024,
+      "maximum-leaf-scalar-utf8": 4096,
+      "maximum-leaf-width": 16,
+      "maximum-root-c11-bytes": 65536,
+      "maximum-root-canonical-reader-bytes": 73728,
+      "maximum-root-depth": 8,
+      "maximum-root-nodes": 512,
+      "maximum-root-scalar-utf8": 4096,
+      "maximum-root-width": 64,
+      "maximum-row-c11-bytes": 8192,
+      "maximum-row-canonical-reader-bytes": 9216,
+      "maximum-row-depth": 6,
+      "maximum-row-nodes": 48,
+      "maximum-row-scalar-utf8": 4096,
+      "maximum-row-width": 8,
+      "maximum-total-rows": 65536,
+      "rows-per-leaf": 16
+    }
+  },
+  "schema-version": 1,
+  "semantic-census": {
+    "categories": [
+      {
+        "category": ":roots",
+        "commitment": {
+          "category": ":roots",
+          "fold-level-count": 1,
+          "leaf-count": 1,
+          "root-digest": "sha256:236854cce4d969e45b37b4a000d0e2f1eb7c5e8af519f023c9d125a46af1fc1d",
+          "row-count": 8
+        },
+        "fold-count": 1,
+        "fold-level-count": 1,
+        "leaf-count": 1,
+        "ordinal": 0,
+        "ordinal-proof": {
+          "count": 8,
+          "dense": true,
+          "end": 8,
+          "field": ":root-ordinal",
+          "start": 1
+        },
+        "row-count": 8
+      },
+      {
+        "category": ":members",
+        "commitment": {
+          "category": ":members",
+          "fold-level-count": 2,
+          "leaf-count": 87,
+          "root-digest": "sha256:ecd5e79b8dab585b18b909d3bc0b060771e830b4bf497d6955b55a57e998ef50",
+          "row-count": 1392
+        },
+        "fold-count": 7,
+        "fold-level-count": 2,
+        "leaf-count": 87,
+        "ordinal": 1,
+        "ordinal-proof": {
+          "count": 1392,
+          "dense": true,
+          "end": 1391,
+          "field": ":member-ordinal",
+          "start": 0
+        },
+        "row-count": 1392
+      },
+      {
+        "category": ":functions",
+        "commitment": {
+          "category": ":functions",
+          "fold-level-count": 2,
+          "leaf-count": 87,
+          "root-digest": "sha256:95b92f7f67affc33e3917ec488cb7ae1761870d183952e841763f9f6e9750a0b",
+          "row-count": 1392
+        },
+        "fold-count": 7,
+        "fold-level-count": 2,
+        "leaf-count": 87,
+        "ordinal": 2,
+        "ordinal-proof": {
+          "count": 1392,
+          "dense": true,
+          "end": 1391,
+          "field": ":member-ordinal",
+          "start": 0
+        },
+        "row-count": 1392
+      },
+      {
+        "category": ":local-runtime-call-edges",
+        "commitment": {
+          "category": ":local-runtime-call-edges",
+          "fold-level-count": 2,
+          "leaf-count": 188,
+          "root-digest": "sha256:fc62c7287db30c99566b9c76fce293964f63f21c56fba8c2a875909960fba911",
+          "row-count": 3003
+        },
+        "fold-count": 13,
+        "fold-level-count": 2,
+        "leaf-count": 188,
+        "ordinal": 3,
+        "ordinal-proof": {
+          "count": 3003,
+          "dense": true,
+          "end": 3002,
+          "field": ":edge-ordinal",
+          "start": 0
+        },
+        "row-count": 3003
+      },
+      {
+        "category": ":external-runtime-call-edges",
+        "commitment": {
+          "category": ":external-runtime-call-edges",
+          "fold-level-count": 2,
+          "leaf-count": 85,
+          "root-digest": "sha256:86214d4624b74c5052c7a48a6881d71fbc871093ab963bc2793cd7e463dcc179",
+          "row-count": 1356
+        },
+        "fold-count": 7,
+        "fold-level-count": 2,
+        "leaf-count": 85,
+        "ordinal": 4,
+        "ordinal-proof": {
+          "count": 1356,
+          "dense": true,
+          "end": 1355,
+          "field": ":semantic-edge-ordinal",
+          "start": 0
+        },
+        "row-count": 1356
+      },
+      {
+        "category": ":referenced-builtins",
+        "commitment": {
+          "category": ":referenced-builtins",
+          "fold-level-count": 3,
+          "leaf-count": 1580,
+          "root-digest": "sha256:5631a24d800a796f1c66a5a705915d880d84f0ae92182362f9019374bac7c2f1",
+          "row-count": 25275
+        },
+        "fold-count": 107,
+        "fold-level-count": 3,
+        "leaf-count": 1580,
+        "ordinal": 5,
+        "ordinal-proof": {
+          "count": 25275,
+          "dense": true,
+          "end": 25274,
+          "field": ":occurrence-ordinal",
+          "start": 0
+        },
+        "row-count": 25275
+      },
+      {
+        "category": ":module-contracts",
+        "commitment": {
+          "category": ":module-contracts",
+          "fold-level-count": 1,
+          "leaf-count": 1,
+          "root-digest": "sha256:36f32de99f61b7344f2c55801ef6dd1188e0acf0b9d53897736cdd1bf10a0ab5",
+          "row-count": 7
+        },
+        "fold-count": 1,
+        "fold-level-count": 1,
+        "leaf-count": 1,
+        "ordinal": 6,
+        "ordinal-proof": {
+          "count": 7,
+          "dense": true,
+          "end": 6,
+          "field": ":module-ordinal",
+          "start": 0
+        },
+        "row-count": 7
+      }
+    ],
+    "category-order": [
+      ":roots",
+      ":members",
+      ":functions",
+      ":local-runtime-call-edges",
+      ":external-runtime-call-edges",
+      ":referenced-builtins",
+      ":module-contracts"
+    ],
+    "external-physical-ordinal-proof": {
+      "physical-gap-count": 67,
+      "physical-gap-ordinals": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        78,
+        79,
+        80,
+        81,
+        114,
+        115,
+        116,
+        117,
+        135,
+        136,
+        207,
+        208,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        221,
+        222,
+        223,
+        225,
+        226,
+        227,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        353,
+        354,
+        355,
+        356,
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        363,
+        364,
+        365,
+        366,
+        367,
+        815,
+        816,
+        817,
+        824,
+        825,
+        826,
+        827,
+        851,
+        1280,
+        1281,
+        1282,
+        1283,
+        1357,
+        1383,
+        1384,
+        1396
+      ],
+      "physical-m1-count": 1423,
+      "physical-ordinals-strictly-ascending": true,
+      "reachable-count": 1356,
+      "semantic-ordinals-dense": true
+    },
+    "total-row-count": 32433
+  },
+  "snapshot": {
+    "implementation-source-commit": "cfbe36fcb9333e1145c4b3fdd31c834e87a3a388",
+    "implementation-source-tree": "641358871ea217f53e29bc5bff2eac49ab9cefe8",
+    "module-source-paths": [
+      "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity",
+      "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
+    ],
+    "seven-governed-module-sources-match": true
+  },
+  "topology": {
+    "m0-ids": [
+      "sha256:4143139122767094198fcdcd0f4a884a40c20124f3a09ead1ba5808ee247b265",
+      "sha256:f0c18a313e2afd7a1e7e109e26d2c657febb509f6a1a8b5d29f1dac92fd66ae3",
+      "sha256:c339657a980011cbdff40b9d2e5927d1a0eb66c05cc40c3fa77fcc3e594b1173",
+      "sha256:79531dff8586cf46aa5d4ec485628cc55d46220eb9cce5f4eeea32c8338ab63e",
+      "sha256:e938a9892facbd6bf57281b7c430e06e527dbfa3bc802017e3a2f47092c3d136",
+      "sha256:8221c5fab294d5e8870b24411f3877c756040f0763e2d394bc31e2ab3b21e989",
+      "sha256:4bff528087ca563fe3d650fe3846434364211e05fc70c9f47cd1c311e722cb12"
+    ],
+    "m1-edge-count": 1423,
+    "m1-id": "sha256:8d29157cbd6c3fb9c5cbb74ad23f3d9229df27d40b95b1a2b2c41ea291ae8c1c",
+    "m2-ids": [
+      "sha256:f56bd3585064867248f3e0cd3b06ff8551b60c95f434bec5c70cd542a3a7059c",
+      "sha256:7995eabad2ce176151a00311eaec7b2b3104ed5201f1502ca7f598041964f807",
+      "sha256:b4ba56138e210d1ca1583561a4c15febe4bdec9f18756a8c4ae84e6608438971",
+      "sha256:70ce4849bc9e1880797de29b461d81965434c71e6d8eb1efbee21c72f994584b",
+      "sha256:a4a448c916f6d7b3ed3e34fcbfd9c6b4f43011ec7e24993ad159afb9e01971c2",
+      "sha256:d0c18806810b91d30c9d8e1f149dac20cab6f8cd7500bc6742107a9c15234675",
+      "sha256:6376bce1286e1d3ce5ba38e00ce6bf23ce0f71274cee5ea2face2142bb7c13c2"
+    ],
+    "m3-id": "sha256:6f4e7824372c66c2b315c95e5383e468159b6697846cccc55c7a6c6c0142c58f",
+    "module-count": 7,
+    "public-root-count": 8
+  }
+}
