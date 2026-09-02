@@ -1,0 +1,124 @@
+{
+  "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+  "author": "c2-pass-cache-capacity-architecture",
+  "base_commit": "0565b642d46fc2504412177bbd55b8e970804c4f",
+  "candidate_commit": "f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
+  "clean_worktree": true,
+  "dependencies": [],
+  "disposition": "Draft registration of exact report-only C2 pass-cache capacity-withholding candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991. No freeze, architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
+      "report candidate:f4da2ea6018ba01c8c9bc77a86c7a43b7475768a tree:a96cef7a205fa3b4fc55ec827167d7da926d31eb report-sha256:a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991",
+      "closed fresh-envelope dimensions:nodes,depth,bytes",
+      "exact fresh validated C2 artifact returned without envelope round-trip",
+      "contained local C16-POLICY evidence with cache publication withheld",
+      "zero candidate blob,receipt,entry,staging,or on-disk capacity evidence",
+      "authentic SH03 paired-input and current C2 validator acceptance gate",
+      "integrated SH07 Attempt32 is nondependency governance precedent only"
+    ],
+    "rejected_fixtures": [
+      "convert semantic-key overflow from C16-KEY",
+      "convert retained-entry malformed or overflow outcomes from C16-ENTRY",
+      "withhold direct store capacity rejection",
+      "swallow validator,unsupported-type,IO,interruption,or fatal failures",
+      "match capacity by exception message,class,or generic diagnostic id",
+      "publish a partial blob,receipt,entry,staging file,or capacity record",
+      "return a digest,summary,truncation,handle,or decoded replacement artifact",
+      "raise global cache bounds or weaken other cache clients",
+      "claim SH03,SH07,C2,C16,cache,release,proof,equivalence,or self-hosting authority"
+    ],
+    "stable_diagnostics": [
+      "C16-POLICY",
+      "C16-KEY",
+      "C16-ENTRY",
+      "C16-STALE",
+      "C2-HASH",
+      "C2-ENCODING",
+      "C2-DELIMITER",
+      "C2-STRING",
+      "C2-NUMERIC",
+      "C2-IDENTIFIER",
+      "C2-NS-SHAPE",
+      "C2-MAP",
+      "C2-SET",
+      "C2-METADATA",
+      "C2-ABBREV",
+      "C2-EXTENSION"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C2",
+    "C16",
+    "BOOT7",
+    "BOOT8",
+    "GOV6",
+    "docs/phase-06-compiler-architecture/README.md",
+    "docs/self-hosting-slice-backlog.md",
+    "bootstrap/clojure/fixtures/self-hosting/sh-03/README.md",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj"
+  ],
+  "history": [
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:13:05Z",
+      "reason": "register exact architecture-only C2 pass-cache capacity-withholding report candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 from clean authoritative base 0565b642d46fc2504412177bbd55b8e970804c4f; no freeze or architecture review is yet requested",
+      "state": "draft"
+    }
+  ],
+  "id": "c2-pass-cache-capacity-withholding-architecture-v1",
+  "invariant_family": "architecture/compiler-c2-pass-cache-capacity-withholding-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md"
+  ],
+  "owner": "compiler-c2-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary source-byte loader, SH03/C2 adapter, validator host, canonical encoder, digest implementation, local filesystem and locking host, and test observer",
+    "the local filesystem provider and same-user mutation exclusions remain those of the existing pass-cache contract",
+    "the capacity outcome governs optional local envelope publication only and establishes no C2 artifact, C16 cache, proof, equivalence, or release authority",
+    "integrated SH07 Attempt32 is not a dependency and this workstream grants no SH07 authority",
+    "this report grants no implementation acceptance, integration eligibility, roadmap completion, SH03 completion, self-hosting, release, performance, safety, or seed-retirement authority"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
+}
