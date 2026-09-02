@@ -5,7 +5,7 @@
   "candidate_commit": "141a07863c13c49a64a469573b6c1e394a3c6e41",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "ACCEPTED by fresh independent reviewer /root/attempt30_arch_review for exact immutable report-only Attempt-30 candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47. Acceptance is architecture-only and authorizes at most one separately governed implementation candidate; it does not accept any checker, transcript, certificate, carrier, pin, source, fixture, runtime result, or SH-07 completion.",
+  "disposition": "Integration-eligible architecture-only Attempt-30 candidate after fresh independent ACCEPT of immutable report tuple 141a07863c13c49a64a469573b6c1e394a3c6e41 / 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca / a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47 and clean exact-candidate preflight against unchanged authoritative main 5295fed116fac4db951234875bf49cf0e6fccdca. Authority remains architecture only.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -31,7 +31,8 @@
     "validation_commands": [
       {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
       {"command": "git diff --check 5295fed116fac4db951234875bf49cf0e6fccdca..141a07863c13c49a64a469573b6c1e394a3c6e41", "exit_code": 0, "result": "passed"},
-      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"}
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 5295fed116fac4db951234875bf49cf0e6fccdca --candidate-commit bcdcd0b47d92e7cc72ced346f165fad4a9d19a48 --candidate-tree 421c901d557dfe7ff9b49ae27261d387dbe49575 (recommendation integrate_candidate)", "exit_code": 0, "result": "passed"}
     ]
   },
   "governing_contracts": [
@@ -67,6 +68,12 @@
       "at": "2026-09-02T17:32:06Z",
       "reason": "ACCEPT exact immutable Attempt-30 report candidate 141a07863c13c49a64a469573b6c1e394a3c6e41, tree 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca, report SHA-256 a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47: infeasibility evidence, unseen-node threat response, exact D9 certificate truth, checker independence, closed acyclic identity graph, carrier-v4 sole value transport, preflight order, Root1/Root6 separation, ownership, declared external acceptance, unauthorized-edge rejection, bounds gates, mutations, and nonclaims all pass; architecture only",
       "state": "accepted"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:33:04Z",
+      "reason": "advance independently accepted architecture-only Attempt-30 after clean exact-candidate integration preflight against unchanged authoritative main 5295fed116fac4db951234875bf49cf0e6fccdca recommended integrate_candidate",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -83,6 +90,6 @@
   "reviews": [
     {"kind": "independent", "result": "accepted", "reviewer": "/root/attempt30_arch_review"}
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "SH-07 B51 closed dual census certificate architecture v18 attempt 30"
 }
