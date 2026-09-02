@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
   ],
-  "disposition": "REVIEW-PENDING exact immutable architecture-only Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d. Fresh independent carrier-architecture review is requested. No acceptance, implementation, pin, SH-07 completion, integration eligibility, self-hosting, release, performance, or seed-retirement consequence exists.",
+  "disposition": "REJECTED by independent reviewer attempt25-independent-review for immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785. Blocker one: h25 sends a qualified :functions vector with at least 984 entries through preserved C11 pr-str despite C11's exact maximum collection width of 512, so the carrier is unconstructible. Blocker two: the exact eleven-key raw request changes its domain, schema version, and :v18-executable-descriptor type, leaving eight rather than the reported nine other payload fields unchanged. No implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
@@ -28,7 +28,9 @@
       "coherent downstream rehashing around an unpinned source, plan, bundle, carrier, public sealer, token, registry mutation, caller plan, or nil expected pin grants authority",
       "Root8 has zero or multiple implementations, calls Root1 zero or multiple times after admission, changes its byte-identical request, exposes caller identity, retries, bypasses, or commits after route failure",
       "R6 uses a producer/Root8 edge or producer result as authority, source oracle O enters executable plans, or an M1 edge is confused with Attempt5 source external-binding authority",
-      "a 2441 occupancy, malformed if, rem, mod, fourth internal builtin, unbounded host recursion, dynamic lookup, or unauthorized source/link edge is admitted"
+      "a 2441 occupancy, malformed if, rem, mod, fourth internal builtin, unbounded host recursion, dynamic lookup, or unauthorized source/link edge is admitted",
+      "independent-review#h25-complete-qualified-functions-vector-has-at-least-984-elements-and-exceeds-preserved-C11-maximum-collection-width-512",
+      "independent-review#eleven-key-raw-request-changes-domain-schema-and-v18-executable-descriptor-so-eight-not-nine-other-payload-fields-remain-unchanged"
     ],
     "stable_diagnostics": [
       "AA001",
@@ -140,6 +142,12 @@
       "at": "2026-09-02T02:37:44Z",
       "reason": "request fresh independent exact carrier-architecture review of immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d: verify exact Attempt24 dependency, immutable B47/f473, seven M0-M3 plans and 2440 bound, qualified S25/h25/P25 joins, distinct raw domain and old-domain rejection, logical fourteen-symbol surface without a false module contract, Root1/Root8 law, independent R6, source/link authority separation, bounded routing, mutation matrix, pin cascade, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "attempt25-independent-review",
+      "at": "2026-09-02T02:43:57Z",
+      "reason": "REJECT exact immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785. Blocker one: S25 has a complete qualified :functions vector with at least 984 reachable entries and h25 hashes S25 through preserved C11 pr-str, but C11's exact maximum collection width is 512; no required bounded partition or fold is defined, so authentic h25 and P25 cannot be constructed. Blocker two: the report's exact eleven-key linked raw request changes :artifact, :schema-version, and :v18-executable-descriptor, leaving eight other payload fields unchanged, not the claimed nine. The B47/f473 separation, seven M0-M3 topology, old-domain rejection, Root1/Root8 law, R1/O/R6 independence, source/link separation, mutations, and nonclaims do not cure these exact defects.",
+      "state": "rejected"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-25",
@@ -160,7 +168,13 @@
     "synthetic merged plans, fixture carriers, public sealers, alternate registries, direct function calls, with-redefs, and nil expected-pin bindings are test observations only and cannot enter accepted evidence",
     "Attempt25 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "attempt25-independent-review"
+    }
+  ],
+  "state": "rejected",
   "title": "SH-07 B51 linked-bundle executable carrier topology erratum v18 attempt 25"
 }
