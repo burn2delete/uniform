@@ -21,7 +21,10 @@
                                               cli/*executor-fn*)
                         cli/*route-fn* (or (:route-fn bindings) cli/*route-fn*)
                         cli/*route-names-fn* (or (:route-names-fn bindings)
-                                                 cli/*route-names-fn*)]
+                                                 cli/*route-names-fn*)
+                        cli/*legacy-mechanism-projection-fn*
+                        (or (:legacy-mechanism-projection-fn* bindings)
+                            cli/*legacy-mechanism-projection-fn*)]
                 (cli/run! args))]
      {:code code :stdout (str out) :stderr (str err)})))
 
@@ -53,6 +56,42 @@
     :mutation-detected? false :fresh-replayable? true
     :provenance-checked? true :source-authenticated? true
     :closure-verified? true :cache-decision :miss}))
+
+;; Independent compatibility oracle.  Keep this literal so the projection
+;; cannot make its own expected output self-justifying.
+(def ^:private expected-legacy-shards
+  ["accepted"
+   "b12-contract-accepted"
+   "b12-identity-verification"
+   "b12-rejected-regression"
+   "identity-lineage"
+   "regression-a"
+   "regression-b"
+   "rejected"
+   "verification"])
+
+(def ^:private expected-legacy-counts
+  {"accepted" 8
+   "b12-contract-accepted" 8
+   "b12-identity-verification" 6
+   "b12-rejected-regression" 3
+   "identity-lineage" 2
+   "regression-a" 10
+   "regression-b" 11
+   "rejected" 1
+   "verification" 4})
+
+(def ^:private expected-help-value
+  ;; Frozen full help record from the pre-routing CLI. Compatibility routing is
+  ;; deliberately omitted from this structured baseline so adding a migration
+  ;; mechanism cannot silently change the established help contract.
+  {:schema :gravity/unified-execution-cli-help-v1
+   :status :help
+   :required ["--route ID" "--lane fast|fresh"]
+   :optional ["--coordination-root ABSOLUTE" "--timeout-ms N"
+              "--max-output-bytes N" "--cache-mode eligible|disabled|forbidden"
+              "--plan-only"]
+   :standalone ["--help" "--list-routes"]})
 
 (deftest parser-requires-the-two-primary-options
   (is (= {:mode :run :route-id "r" :lane :fast}
@@ -102,6 +141,74 @@
     (is (= {:schema :gravity/unified-execution-cli-routes-v1
             :status :listed :routes ["r1" "r2"]}
            (one-edn stdout)))))
+
+(deftest help-structure-preserves-the-base-contract
+  (let [{:keys [code stdout stderr]} (invoke ["--help"])]
+    (is (zero? code))
+    (is (empty? stderr))
+    (is (= expected-help-value (one-edn stdout)))))
+
+(deftest legacy-compatibility-parser-is-closed-and-standalone
+  (is (= {:mode :legacy :mechanism :parallel-shard-runner :operation :list}
+         (cli/parse-args ["--legacy-mechanism" "parallel-shard-runner"
+                         "--list"])))
+  (is (= {:mode :legacy :mechanism :parallel-shard-runner :operation :check}
+         (cli/parse-args ["--legacy-mechanism" "parallel-shard-runner"
+                         "--check"])))
+  (doseq [[args id]
+          [[ ["--legacy-mechanism" "parallel-shard-runner"]
+             "UEP-CLI-LEGACY-USAGE"]
+           [ ["--legacy-mechanism" "parallel-shard-runner" "--list"
+              "accepted"] "UEP-CLI-POSITIONAL"]
+           [ ["--legacy-mechanism" "parallel-shard-runner" "--list" "--check"]
+             "UEP-CLI-DUPLICATE"]]]
+    (is (= id (parse-error args)) (pr-str args))))
+
+(deftest legacy-compatibility-rejects-unknown-mechanism
+  (let [{:keys [code stdout stderr]}
+        (invoke ["--legacy-mechanism" "not-a-known-mechanism" "--list"])
+        error (one-edn stderr)]
+    (is (= 2 code))
+    (is (empty? stdout))
+    (is (= "UEP-LEGACY-MECHANISM" (:id error)))))
+
+(deftest legacy-compatibility-list-and-check-preserve-sh07-bytes
+  (let [{:keys [code stdout stderr]}
+        (invoke ["--legacy-mechanism" "parallel-shard-runner" "--list"])]
+    (is (zero? code))
+    (is (empty? stderr))
+    (is (= (str (clojure.string/join "\n" expected-legacy-shards) "\n")
+           stdout)))
+  (let [{:keys [code stdout stderr]}
+        (invoke ["--legacy-mechanism" "parallel-shard-runner" "--check"])]
+    (is (zero? code))
+    (is (empty? stderr))
+    (is (= (str (pr-str (into (sorted-map) expected-legacy-counts)) "\n")
+           stdout))))
+
+(deftest legacy-compatibility-shard-diagnostics-remain-stable
+  (let [unknown
+        (try
+          (#'cli/legacy-shard-route :parallel-shard-runner :accepted)
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            [(ex-message error) (:id (ex-data error))]))]
+    (is (= ["Unknown SH-07 parallel test shard" "SH07-PARALLEL-SHARD"]
+           unknown)))
+  (let [missing-test
+        (try
+          (with-redefs [cli/*legacy-mechanism-projection-fn*
+                        (constantly {:route-ids ["fake-route"]
+                                     :labels ["fake"]})
+                        cli/*route-fn*
+                        (constantly {:selection {:kind :exact-vars
+                                                 :namespace "gravity.self-hosting.unified-execution-plan"
+                                                 :selectors ["catalog-keys"]}})]
+            (#'cli/resolve-legacy-shard :parallel-shard-runner "fake"))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (:id (ex-data error))))]
+    (is (= "SH07-PARALLEL-SHARD-TEST" missing-test))))
 
 (deftest plan-only-builds-one-declarative-request-without-execution
   (let [requests (atom []) executions (atom 0)
