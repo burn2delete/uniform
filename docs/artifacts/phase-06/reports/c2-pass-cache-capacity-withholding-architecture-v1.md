@@ -61,9 +61,9 @@ The active C2 `lookup-or-compute!` adapter must preserve this order:
 
 1. Build and validate the complete semantic key before entering the capacity
    lane. Key construction has no withholding fallback.
-2. Perform the normal receipt-first local lookup through the failure taxonomy
-   below. A fully revalidated hit invokes the C2 semantic validator exactly
-   once, is returned unchanged, and does not execute the reader.
+2. Perform the normal receipt-first local lookup under its existing containment
+   behavior. A fully revalidated requested hit invokes the C2 semantic validator
+   exactly once, is returned unchanged, and does not execute the reader.
 3. On a miss or retained-entry rejection, execute the ordinary fresh C2
    producer while holding the existing per-key cooperative lock.
 4. Independently validate the fresh C2 artifact against the exact current key,
@@ -92,25 +92,32 @@ for the withheld candidate.
 
 ## Exactly-once semantic validation
 
-The active C2 adapter owns C2 artifact semantics. The generic cache owns only
-envelope and receipt mechanics. A successor implementation must split the
-current overloaded generic validation operation into two explicitly named
-roles:
+The exactly-once claim applies only to the requested key and its requested hit,
+fresh result, or direct-store artifact. Existing orphan recovery may validate
+other retained receipts or artifacts under its current rules before the
+requested lookup. Those distinct recovery validations are explicitly excluded
+from the requested-artifact call count. This decision does not authorize a
+change to `retention_scan.clj` and requires none.
 
-- `:validate-retained-artifact!` is used only after receipt-first integrity
-  validation and envelope decoding on a hit. The C2 adapter implementation of
-  this callback invokes the current C2 semantic validator exactly once.
-- `:validate-output!` is used only for the already prevalidated fresh or direct-
-  store envelope. It validates the closed envelope shape, payload digest, C2
-  artifact id, boundary projection id, key ids, and carrier binding. It never
+The active C2 adapter owns C2 artifact semantics. A successor must split the
+current overloaded validation operation into these explicit roles:
+
+- `:validate-requested-retained-artifact!` is called once only for the artifact
+  selected as the requested key's hit, after its receipt, blob, envelope, and
+  identity checks.
+- `:validate-output!` is envelope-only. It validates shape and identity
+  bindings for an already prevalidated fresh or direct-store envelope and never
   invokes the C2 semantic validator.
+- existing recovery validators retain their existing recovery role and counts;
+  they must not be routed through or counted as
+  `:validate-requested-retained-artifact!`.
 
-`gravity.pass-cache.receipt-validation/validate-cache-operations!` must require
-both roles for this adapter and reject aliases, missing functions, or a single
-function supplied for both roles. `validate-artifact-against-receipt!` must use
-only `:validate-retained-artifact!`; pass execution and direct publication must
-use only `:validate-output!`. A boolean skip flag is insufficient evidence of
-ownership and must be replaced or encapsulated by these typed roles.
+`gravity.pass-cache.receipt-validation` must distinguish the requested-hit role
+from envelope-only output validation and reject missing or aliased roles for the
+C2 adapter. Recovery remains on its existing validation operations. The
+requested lookup context, exact cache-key id, and artifact id must be supplied
+to the requested-hit role so a recovery artifact cannot consume or satisfy the
+requested-artifact validation obligation.
 
 After a fresh producer succeeds, or before the C2 public direct `store!` enters
 generic publication, the adapter creates this exact-key, in-memory-only state:
@@ -138,28 +145,47 @@ with that operation. The envelope binds `:carrier-id`. The C2 result projector
 uses `:exact-artifact` from the same carrier for a fresh success or withholding
 result and must not decode the envelope to manufacture the returned value.
 
-Semantic-validator ownership is therefore closed:
+Requested-artifact semantic-validator ownership is therefore closed:
 
 | Path | Semantic validator owner and count |
 | --- | --- |
 | Clean miss and fresh production | C2 adapter immediately after `produce!`, exactly 1; generic output validation is envelope-only. |
-| Rejected retained entry followed by fresh production | Same fresh C2 adapter point, exactly 1; the failed retained attempt may not invoke the semantic validator after structural rejection. |
-| Valid hit | `:validate-retained-artifact!` after receipt, blob, envelope, and identity checks, exactly 1; producer count 0. |
+| Rejected retained entry followed by fresh production | Same fresh C2 adapter point, exactly 1 for the fresh requested artifact; any earlier recovery of distinct artifacts is excluded. |
+| Valid requested hit | `:validate-requested-retained-artifact!` after receipt, blob, envelope, and identity checks, exactly 1; producer count 0. |
 | C2 public direct `store!` | C2 adapter before carrier/envelope construction, exactly 1; generic direct store performs envelope-only validation and still rejects capacity. |
+| Orphan recovery | Existing recovery validators and counts; not evidence for, and never a substitute for, validation of the requested artifact. |
 
 A semantic validation failure propagates from its owning point after one call,
 creates no carrier accepted for publication, and creates no candidate file.
-Tests must instrument the actual current validator and prove call counts of one
-for clean miss, rejected-entry miss, hit, and direct store; zero for semantic-
-key failure and retained structural rejection before fallback production; and
-no duplicate or bypass path under concurrency. Unsupported envelope values
-propagate after the one fresh semantic-validation call if production reached
-that point.
+Tests must tag calls by role, requested cache-key id, and artifact id. They must
+prove one requested-artifact semantic call for clean miss, rejected-entry miss,
+requested hit, and direct store; zero for semantic-key failure; and no requested
+artifact bypass or duplicate under concurrency. A recovery fixture may add
+calls for distinct retained artifacts without failing the count, but those calls
+must carry the recovery role and different identity and must not satisfy the
+requested assertion.
 
-## Closed typed envelope-capacity transport
+## Closed token-bound cross-layer handoff
 
-Only `clojure.lang.ExceptionInfo` may transport the internal capacity result.
-Its `ex-data` has exactly this shape:
+Each public C2 invocation creates a fresh JVM `Object` token and invocation-local
+state inaccessible to callers. Neither is canonical data. The state initially
+contains the token and, after semantic validation, the exact raw artifact and
+prevalidated carrier. The adapter operation map adds exactly one private field,
+`:capacity-failure-handoff!`, whose value is a closure over this state. The
+generic cache validates that the field is a function but receives no token or
+artifact field directly.
+
+For the C2 adapter, the closed operation-map change is: replace the overloaded
+requested-hit use of `:validate-artifact!` with
+`:validate-requested-retained-artifact!`, retain envelope-only
+`:validate-output!`, and add `:capacity-failure-handoff!`. All existing receipt,
+identity, producer, verifier, and evidence operation fields remain required and
+unchanged. Other generic cache clients need not supply the handoff callback and
+retain their current validation contract. A token, raw artifact, carrier, or
+capacity exception is forbidden as an operation-map value.
+
+On bounded envelope serialization, only the C2 adapter may create a
+`clojure.lang.ExceptionInfo` whose exact `ex-data` is:
 
 ```clojure
 {:id "C16-POLICY"
@@ -167,11 +193,10 @@ Its `ex-data` has exactly this shape:
  :schema-version 1
  :stage :c2-reader
  :operation one-of-[:lookup-or-compute :store]
- :phase one-of-[:fresh-envelope-preflight :direct-store-envelope-preflight]
- :phase-origin {:artifact :gravity/c2-pass-cache-phase-origin
-                :schema-version 1
-                :phase same-phase
-                :carrier-id sha256}
+ :phase matching-one-of-[:fresh-envelope-serialization
+                         :direct-store-envelope-serialization]
+ :invocation-token identical-private-object
+ :carrier-id sha256
  :resource one-of-[:canonical-nodes :canonical-depth :canonical-bytes]
  :maximum positive-integer
  :observed positive-integer
@@ -180,25 +205,60 @@ Its `ex-data` has exactly this shape:
  :c2-artifact-id sha256}
 ```
 
-Both the outer and nested maps have exactly the shown keys. The exception must
-be minted by the private bounded encoder only while it encodes the envelope
-from the carrier in the fresh-envelope lexical phase. `:phase-origin` must
-equal the origin built from the exact carrier held by the catch site; merely
-presenting the right diagnostic id or a forgeable look-alike map is
-insufficient. `:observed` is the first violating node or byte count, or the
-actual violating depth, and must be strictly greater than `:maximum`.
+The operation and phase must be a matching pair. The adapter stores the exact
+exception object in invocation-local state before throwing it. `:observed` must
+be strictly greater than `:maximum`. The token is
+matched with `identical?`, not equality, and is never encoded, persisted,
+logged, or returned in public evidence.
 
-The withholding catch additionally requires `:operation :lookup-or-compute`
-and `:phase :fresh-envelope-preflight`. It verifies the exception class, exact
-key sets, enum members, positive
-integer fields, strict `observed > maximum`, all three key/artifact identities,
-and exact carrier-bound phase origin. Any failed check rethrows the original
-exception unchanged. The exception is not minted by semantic-key
-canonicalization, source snapshotting, retained entry/receipt/blob decoding,
-semantic validation, store inventory, filesystem admission, or an arbitrary
-canonicalization request. Direct store may mint the closed form with
-`:operation :store` and `:phase :direct-store-envelope-preflight`, but has no
-withholding catch and therefore rejects it unchanged.
+`gravity.pass-cache.execution` adds one catch immediately around fresh producer
+execution only. Fatal and interruption exceptions are rethrown under existing
+rules. For every other throwable it invokes `:capacity-failure-handoff!` with
+the exact throwable and the already completed local lookup result. The closure
+recognizes capacity only when the throwable is identical to the exception
+registered in its private state, its exact keys and enums validate, its token is
+identical, all identities match the carrier, and `observed > maximum`.
+Otherwise it rethrows the identical original throwable.
+
+Only the lookup/compute pair is eligible for handoff. For a recognized capacity
+exception the closure creates and registers one
+wrapper `ExceptionInfo`. Clean-miss wrapper data has exactly:
+
+```clojure
+{:artifact :gravity/pass-cache-capacity-handoff
+ :schema-version 1
+ :phase :fresh-producer-capacity-handoff
+ :invocation-token identical-private-object
+ :capacity-exception identical-registered-exception
+ :lookup-variant :clean-miss
+ :cache-key-id sha256}
+```
+
+Rejected-entry wrapper data has exactly the same keys plus
+`:rejected-entry-evidence`, contains the unchanged local lookup evidence, and
+uses `:lookup-variant :rejected-entry`. No other lookup status is eligible. The
+clean variant requires the existing lookup result to report a clean `:miss`
+with no rejected-entry evidence; the rejected variant requires its closed cache
+evidence to report `:rejected`. Any other shape causes the callback to rethrow
+the original capacity exception rather than create a wrapper. The
+generic layer supplies lookup facts but cannot mint a valid origin: it lacks
+the registered exception identity and private state required by the closure.
+The wrapper, token, raw artifact, and carrier are never serialized or stored.
+
+The outer C2 adapter catches only the wrapper object identical to the one
+registered in its invocation state. It revalidates exact wrapper keys, token,
+phase, lookup variant, original exception identity and data, carrier identity,
+resource, maximum, strict `observed > maximum`, and all key/artifact ids. It
+then retrieves the exact raw artifact from the same state and builds the
+matching clean-miss or rejected-entry public evidence. Any mismatch rethrows
+the original wrapper. Thus the adapter cannot lose the lookup variant, and the
+generic layer cannot forge carrier origin.
+
+Direct `store!` uses invocation-local prevalidation but does not install the
+generic producer catch. Its bounded serialization capacity exception uses the
+same resource facts with `:operation :store` and
+`:phase :direct-store-envelope-serialization` and propagates as rejection; it
+cannot become a handoff wrapper.
 
 This is a resource-policy result, not evidence that the C2 artifact is
 malformed. Its externally contained diagnostic is `C16-POLICY`.
@@ -216,7 +276,7 @@ For a clean miss, the public C2 compatibility projection returns exactly:
  :status :miss
  :reason :fresh-artifact-envelope-capacity
  :contained-diagnostic "C16-POLICY"
- :contained-capacity exception-ex-data
+ :contained-capacity sanitized-capacity-data
  :cache-publication :withheld
  :disk-candidate-publication :none
  :reader-executed? true
@@ -237,63 +297,39 @@ unchanged closed generic rejected-entry evidence returned by lookup. It must
 not be overwritten, flattened, relabelled, or hidden by capacity evidence.
 Clean-miss evidence must not contain `:rejected-entry-evidence`.
 
-In both schemas, `:contained-capacity` is the exact validated `ex-data` map, not
-the exception object or its message. The result's artifact field is the exact
+In both schemas, `:contained-capacity` is the validated capacity data with the
+private `:invocation-token` removed; it has every other capacity key exactly and
+cannot be used as an internal handoff. The result's artifact field is the exact
 fresh validated object held by the carrier. Tests must establish value,
 metadata, host identity where observable, source provenance, diagnostic stream,
 and SH03 boundary equality with the direct uncached result. The evidence is
 in-memory only, not a cache entry, producer receipt, proof, equivalence report,
 release record, or bootstrap provenance artifact.
 
-## Generic lookup failure taxonomy seam
+## Existing generic containment boundary
 
-The live public C2 adapter calls `gravity.pass-cache.execution`, which calls
-`gravity.pass-cache.lookup`. Today the generic `lookup-unlocked!` and outer
-`lookup!` catch almost every `Throwable` and turn it into rejected-entry
-evidence. That erases ordinary filesystem failures and
-`java.nio.channels.ClosedByInterruptException`. This decision authorizes the
-minimum generic correction in `gravity.pass-cache.policy` and
-`gravity.pass-cache.lookup`, plus focused generic tests; it does not authorize
-a new cache policy or changes to unrelated clients.
+This decision does not change generic lookup, recovery, retention scanning, or
+path-policy containment. In particular, `gravity.pass-cache.lookup` currently
+turns many pre-existing read and validation failures into rejected lookup
+evidence; `gravity.pass-cache.recovery`, `gravity.pass-cache.retention-scan`,
+and `gravity.pass-cache.path-policy` retain their existing error and policy
+behavior. Propagation of every historical filesystem throwable as an identical
+object is neither claimed nor required.
 
-The generic classifier has this closed result set:
+An oversized retained file rejected by the pre-read size policy remains
+existing rejected lookup evidence exactly as today. It need not be read or
+labelled decoded corruption. If fresh production follows and the new envelope
+also exceeds capacity, the rejected-entry public capacity schema preserves that
+prior evidence; the two outcomes remain distinct.
 
-- `:propagate-fatal`: `ThreadDeath` and `VirtualMachineError`; rethrow the same
-  object.
-- `:propagate-interruption`: `InterruptedException` and
-  `ClosedByInterruptException`; restore the current thread's interrupted flag
-  and rethrow the same object.
-- `:propagate-io`: every other `java.io.IOException`; rethrow the same object.
-- `:retained-corruption`: only a private, exact-key retained-failure marker
-  minted around deterministic validation of bytes that were successfully read
-  from an existing entry, receipt, or blob. Convert this marker to rejected-
-  entry evidence while retaining its `C16-ENTRY` or `C16-STALE` diagnostic.
-- `:propagate-other`: every unsupported value, callback/validator failure,
-  unmarked `ExceptionInfo`, and other throwable; rethrow the same object.
-
-The marker's exact data binds `:artifact
-:gravity/pass-cache-retained-failure`, `:schema-version 1`, `:phase` in
-`[:entry-decode :entry-validation :receipt-decode :receipt-validation
-:blob-decode :blob-identity :entry-derived-validation]`, `:diagnostic-id` in
-`["C16-ENTRY" "C16-STALE"]`, and the current cache-key id. It may wrap only
-deterministic cache-owned decode, schema, digest, receipt-binding, and derived-
-entry checks after a successful bounded read. A successful existence probe
-that reports a missing receipt or blob may mint a retained `C16-STALE` marker;
-an exception thrown by that probe may not. The current validator callback and
-all secure-directory/open/attribute/read operations, recovery, lock, and probe
-exceptions remain outside the marker or are explicitly rethrown before
-marking. In particular, a validator throwing `C16-ENTRY` is still
-`:propagate-other`; diagnostic text or id alone never proves retained
-corruption.
-
-Both catch sites must use this classifier. Exact-path tests in
-`bootstrap/clojure/test/gravity/pass_cache_test.clj` must inject ordinary
-`IOException` and `ClosedByInterruptException` at entry, receipt, and blob read
-boundaries and recovery/outer-lookup boundaries; assert identical throwable
-identity, no rejected evidence, and restored interrupt state; and separately
-show malformed/over-node/over-depth/over-byte retained bytes become closed
-rejected-entry evidence. Callback tests must show validator exceptions,
-unsupported decoded values, and unmarked `ExceptionInfo` propagate unchanged.
+The sole non-regression required here is that the new producer and outer C2
+capacity catches do not recognize, translate, or swallow unrelated IO,
+interruption, validator, unsupported-value, or other errors. They rethrow the
+same received object unless it is the exact invocation-registered exception or
+wrapper. `ClosedByInterruptException` arising from the new adapter serialization
+seam, if reachable, restores interruption state and propagates unchanged. Tests
+must cover these new catch boundaries. Pre-existing containment elsewhere is a
+non-goal and is tested only for unchanged behavior.
 
 ## Diagnostic ownership and propagation
 
@@ -301,14 +337,15 @@ unsupported decoded values, and unmarked `ExceptionInfo` propagate unchanged.
 | --- | --- |
 | Semantic-key node, depth, or byte overflow | Propagate `C16-KEY`; never convert it to capacity withholding. |
 | Semantic-key unsupported type, metadata, or nonfinite scalar | Propagate its current key/validator diagnostic; never convert it. |
-| Malformed, oversized, over-deep, or over-node retained entry, receipt, or blob | Remain a retained-data rejection with contained `C16-ENTRY`; never relabel it as envelope capacity. |
+| Malformed, over-deep, or over-node decoded retained entry, receipt, or blob | Remain a retained-data rejection with contained `C16-ENTRY`; never relabel it as envelope capacity. |
+| Retained file exceeds the existing pre-read byte policy | Preserve today's rejected lookup evidence and owning diagnostic without reading or relabelling it as decoded corruption. |
 | Stale retained identities, receipts, boundary projections, or current bindings | Retain the current `C16-STALE` behavior. |
 | Fresh C2 producer rejection | Propagate the owning C2/L1 diagnostic and create no cache candidate. |
 | Fresh artifact validator rejection or exception | Propagate unchanged and create no cache candidate. |
 | Fresh envelope unsupported value or unknown canonical form | Propagate unchanged; unsupported type is not capacity. |
 | Store policy, unsafe path, permissions, provider, inventory, or admission failure | Propagate the owning `C16-POLICY`; it is not the closed envelope outcome. |
-| Filesystem or other IO failure, including entry/receipt/blob read and recovery | Propagate the identical throwable; do not return rejected-entry or successful artifact evidence. |
-| `InterruptedException`, closed-by-interrupt, `ThreadDeath`, or VM fatal error | Propagate, preserving interruption state where required. |
+| Pre-existing lookup, recovery, retention-scan, path-policy, or filesystem failure | Preserve existing generic containment/propagation behavior; the new capacity catches do not translate it. |
+| `InterruptedException`, closed-by-interrupt, `ThreadDeath`, or VM fatal error at a new capacity catch | Propagate the same object, preserving interruption state where required. |
 | Closed fresh-envelope `:nodes`, `:depth`, or `:bytes` outcome | Return the exact fresh artifact and contained local `C16-POLICY` withholding evidence. |
 
 Direct `store!` is not a lookup-or-compute optimization and has no fresh-result
@@ -388,11 +425,11 @@ review must prove that it changed the live path rather than a dormant analogue:
 - `gravity.c2-pass-cache.adapter-projection` owns the live C2 public
   `lookup!`, `store!`, and `lookup-or-compute!` compatibility projection.
 - `gravity.pass-cache.execution` owns generic lookup/compute/publication
-  orchestration, `gravity.pass-cache.lookup` owns the two live lookup catch
-  boundaries, `gravity.pass-cache.policy` owns the closed propagation
-  classifier, `gravity.pass-cache.receipt-validation` owns the split retained
-  and output validator roles, and `gravity.pass-cache.publication` owns direct
-  storage and atomic blob/receipt/entry publication.
+  orchestration and the one new producer-local handoff call;
+  `gravity.pass-cache.receipt-validation` owns the requested-hit versus
+  envelope-only validator roles; and `gravity.pass-cache.publication` owns
+  direct storage and atomic blob/receipt/entry publication. Generic lookup,
+  recovery, retention scanning, and path policy retain existing behavior.
 - The C2 and generic canonical encoders have different roles and bounds. No
   implementation may solve this decision by raising either global bound,
   weakening key accounting, reinterpreting v1, or making all generic cache
@@ -401,10 +438,12 @@ review must prove that it changed the live path rather than a dormant analogue:
   revalidation. A cache leaf cannot replace or weaken it.
 
 The narrow successor may change only the live C2 adapter; the minimum bounded
-canonical-accounting seam needed to mint the closed phase-tagged outcome; the
-generic `policy.clj`, `lookup.clj`, `receipt_validation.clj`, `execution.clj`,
-and `publication.clj` seams specified above; and focused C2/generic cache tests.
-It must demonstrate unchanged behavior for every non-C2 generic client.
+canonical-accounting seam needed to mint the closed token-bound outcome; the
+generic `receipt_validation.clj`, `execution.clj`, and, only if required for the
+direct-store validation role, `publication.clj` seams specified above; and
+focused C2/generic cache tests. No change to `lookup.clj`, `recovery.clj`,
+`retention_scan.clj`, or `path_policy.clj` is authorized. It must demonstrate
+unchanged behavior for every non-C2 generic client.
 Touching the SH-03 reader, reader contracts, compiler artifact semantics,
 release paths, SH-07 sources, Attempt-32 records, or unrelated cache clients
 requires a separate decision.
@@ -435,25 +474,28 @@ A separately governed implementation may be accepted only when an independent
 reviewer verifies one exact commit, tree, and evidence bundle and confirms:
 
 1. the semantic key and lookup complete before the new lane;
-2. an authentic fresh SH-03/C2 artifact passes the unchanged independent
-   validator exactly once before any capacity outcome is recognized;
+2. an authentic fresh requested SH-03/C2 artifact passes the unchanged
+   independent validator exactly once before any capacity outcome is
+   recognized, with distinct recovery artifacts explicitly excluded;
 3. clean miss, rejected-entry miss, hit, and direct-store call-count tests prove
    exactly-once semantic validator ownership, envelope-only generic output
    validation, and no bypass or duplicate under concurrency;
-4. only the exact closed `ExceptionInfo` node/depth/byte transport with strict
-   `observed > maximum` and carrier-bound phase origin is caught;
+4. only the exact invocation-registered capacity exception and handoff wrapper
+   identities, with strict `observed > maximum`, token identity, and carrier
+   binding, are caught;
 5. the exact fresh artifact is returned without envelope round-trip or semantic
    rewriting, with complete contained local `C16-POLICY` evidence;
 6. clean-miss and rejected-entry capacity evidence match their separate exact
    schemas, retaining rejected-entry evidence only in the latter;
 7. the capacity path creates no candidate blob, producer receipt, entry,
    staging file, or on-disk capacity evidence;
-8. key overflow remains `C16-KEY`, retained-data overflow/malformation remains
-   `C16-ENTRY`, direct store rejects, and validator, unsupported-type, IO,
-   interruption, and fatal failures propagate;
-9. injected entry/receipt/blob/recovery IO and closed-by-interrupt failures
-   propagate identical throwable objects with interrupt state preserved, while
-   only marker-bound retained corruption becomes rejected-entry evidence;
+8. key overflow remains `C16-KEY`, decoded retained-data
+   overflow/malformation remains `C16-ENTRY`, pre-read oversized retained files
+   preserve existing rejected evidence, and direct store rejects;
+9. unrelated validator, unsupported-type, IO, interruption, and fatal failures
+   at each new catch are not recognized or translated; closed-by-interrupt at
+   the new serialization seam propagates identically with interrupt state
+   preserved, while historical recovery/read containment remains unchanged;
 10. at-limit and first-plus-one node/depth/byte cases, real paired SH-03 input,
    artifact identity, metadata/provenance equality, mutation/substitution,
    concurrency, corrupted retained entry, and disk-inventory assertions pass;
