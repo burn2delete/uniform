@@ -41,6 +41,48 @@
         :diagnostic-id-request (str "sha256:" (apply str (repeat 64 "b")))
         :facts facts}})))
 
+(defn- private-var
+  "Resolve a parity helper without widening its production visibility."
+  [name]
+  (or (ns-resolve 'gravity.self-hosting.sh07-conformance-parity name)
+      (throw (ex-info "Focused parity helper is absent" {:name name}))))
+
+(defn- b15-enriched-diagnostic
+  "Construct one producer-shaped B15 diagnostic for contract-only tests.
+
+  This is a bounded injected value; it does not invoke the SH-07 compiler or
+  either co-canonical fixture.  The extra lineage facts mirror the producer's
+  enriched payload while the row oracle remains intentionally compact."
+  []
+  (let [oracle (:oracle (parity/reviewed-row
+                         "sh07-b15/keyword-lookup-zero-arity"))]
+    (parity/normalize-diagnostic
+     {:artifact :gravity/sh07-core-diagnostic
+      :rule (:rule oracle)
+      :stage (:stage oracle)
+      :severity (:severity oracle)
+      :lowering-rule :sh07-b47-function-call-recursion-products
+      :source-span {:source "/tmp/sh07-b15/keyword-lookup-zero-arity.gravity"
+                    :line-start 24
+                    :column-start 1}
+      :generated-origin-chain []
+      :namespace 'self-hosting.sh07-b15.reject.keyword-lookup-zero-arity
+      :profile :meta
+      :target :jvm
+      :facts {:reason (:reason oracle)
+              :semantic-rule nil
+              :rule-specific (merge (:facts oracle)
+                                    {:reason (:reason oracle)
+                                     :operator :missing-map})
+              :source-revision-id
+              "sha256:rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+              :sh06-artifact-id
+              "sha256:ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+              :fail-closed true}
+      :remediation (:remediation oracle)
+      :diagnostic-id-request
+      "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"})))
+
 (deftest reviewed-row-addresses-stable-fixture
   (let [row (parity/reviewed-row "sh07-b1/control-flow-order")]
     (is (= "sh07-b1/control-flow-order" (:id row)))
@@ -120,3 +162,34 @@
     (is (= #{:artifact :rule :stage :severity :source-span :facts :remediation
              :diagnostic-id-request :reason :fail-closed?}
            (set (keys value))))))
+
+(deftest b15-compact-oracle-accepts-complete-enriched-diagnostic
+  (let [row (parity/reviewed-row "sh07-b15/keyword-lookup-zero-arity")
+        outcome {:status :rejected
+                 :diagnostics [(b15-enriched-diagnostic)]}
+        table-parity (private-var 'table-parity)
+        result (table-parity row outcome)]
+    (is (true? (:status? result)) result)
+    (is (true? (:diagnostics? result)) result)
+    (is (true? (:declared-contract-match? result)) result)
+    (is (true? (:diagnostic-contract-complete? result)) result)
+    (is (true? (:exact? result)) result)))
+
+(deftest b15-diagnostic-contract-rejects-missing-or-invalid-fields
+  (let [row (parity/reviewed-row "sh07-b15/keyword-lookup-zero-arity")
+        complete (b15-enriched-diagnostic)
+        table-parity (private-var 'table-parity)
+        tamperings
+        {"missing namespace" #(dissoc % :namespace)
+         "missing lowering rule" #(dissoc % :lowering-rule)
+         "missing diagnostic id" #(dissoc % :diagnostic-id-request)
+         "invalid diagnostic id" #(assoc % :diagnostic-id-request "not-a-sha256-id")
+         "mismatched arity fact"
+         #(assoc-in % [:facts :rule-specific :actual-operand-count] 1)}]
+    (doseq [[label tamper] tamperings]
+      (testing label
+        (let [diagnostic (tamper complete)
+              result (table-parity row {:status :rejected
+                                         :diagnostics [diagnostic]})]
+          (is (false? (:diagnostic-contract-complete? result)) result)
+          (is (false? (:exact? result)) result))))))

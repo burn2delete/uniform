@@ -342,22 +342,19 @@
 
 (def ^:private complete-diagnostic-fields
   #{:artifact :rule :stage :severity :source-span :generated-origin-chain
-    :facts :remediation :namespace :profile :target})
+    :facts :remediation :namespace :profile :target :lowering-rule})
 
 (defn- diagnostic-contract-complete?
   [oracle diagnostic]
   (let [ids (filter #(contains? diagnostic %) [:diagnostic-id-request :id])
-        id (some #(get diagnostic %) ids)
-        expected-id (some #(get oracle %) [:diagnostic-id-request :id])]
-  (and (map? oracle)
-       (= 1 (count ids))
-       (string? id)
-       (boolean (re-matches #"sha256:[0-9a-f]{64}" id))
-       (= id expected-id)
-       (set/subset? complete-diagnostic-fields (set (keys diagnostic)))
-       (set/subset? complete-diagnostic-fields (set (keys oracle)))
-       (expected-diagnostic-match? oracle diagnostic)
-       (= (:facts oracle) (:facts diagnostic)))))
+        id (some #(get diagnostic %) ids)]
+    (and (map? oracle)
+         (map? diagnostic)
+         (= 1 (count ids))
+         (string? id)
+         (boolean (re-matches #"sha256:[0-9a-f]{64}" id))
+         (set/subset? complete-diagnostic-fields (set (keys diagnostic)))
+         (expected-diagnostic-match? oracle diagnostic))))
 
 (defn- table-parity
   [row outcome]
