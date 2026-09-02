@@ -5,7 +5,7 @@
   "candidate_commit": "4874d95d7cb2780568e45cf0a3e0445847da1c80",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Frozen second revised report-only candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42 and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after addressing all four blockers returned by c2-cache-architecture-rereviewer-v2 at /root/c2_cache_arch_rereview and passing the recorded validations. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "disposition": "Fresh independent review requested for frozen second revised report-only candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42 and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006. Both prior independent rejections remain recorded. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred unless a fresh independent reviewer accepts this exact tuple.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -161,6 +161,12 @@
       "at": "2026-09-02T22:06:46Z",
       "reason": "freeze second revised exact report-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after governance, authority, documentation, roadmap, language-boundary, C2 cache, and diff validations passed; this narrower revision preserves recovery and historical generic containment and adds only a token-bound producer handoff without implementation or acceptance",
       "state": "frozen"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:07:23Z",
+      "reason": "request fresh independent review of frozen second revised candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006, including requested-artifact validation scope, unchanged recovery and retained-file containment, exact token-bound cross-layer handoff, authentic SH03 criteria, duplication audit, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -195,6 +201,6 @@
       "reviewer": "c2-cache-architecture-rereviewer-v2"
     }
   ],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
