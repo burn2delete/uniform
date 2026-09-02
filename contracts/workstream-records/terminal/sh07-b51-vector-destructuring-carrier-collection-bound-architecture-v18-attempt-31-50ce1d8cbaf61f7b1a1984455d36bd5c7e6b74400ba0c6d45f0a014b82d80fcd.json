@@ -5,7 +5,7 @@
   "candidate_commit": "6a7877f418f41ef55aa5375dc7ebdcde2417ea00",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
-  "disposition": "Fresh independent architecture review is pending for exact frozen report-only Attempt-31 candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066. No architecture acceptance, implementation, or integration authority is conferred.",
+  "disposition": "REJECTED by fresh independent reviewer /root/attempt31_arch_review for exact immutable report-only Attempt-31 candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066. The reviewer reproduced scalar UTF-8 maximum 112 while the report asserted 114; an independent coordinator replay returned 114 and identified absolute worktree source paths as the maxima, proving that field is observer-path-sensitive. All collection counts, partition arithmetic, bounds architecture, ordering, retained laws, and nonclaims passed. No implementation or integration authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -15,7 +15,9 @@
       "authentic diagnostic profile:nodes1475999 depth67 width5150 collections303173 scalar114",
       "exact eight bucket counts:34007,48748,43070,44173,41843,39643,40340,11349; sum303173; each <=65536",
       "prospective compositional derivation:8*65536=524288",
-      "independent pre-freeze audit:/root/attempt31_bound_analysis PASS"
+      "independent pre-freeze audit:/root/attempt31_bound_analysis PASS",
+      "coordinator replay after rejection:whole carrier scalar-utf8 114; maxima are absolute worktree source paths",
+      "independent reviewer replay:whole carrier scalar-utf8 112; every collection and partition count otherwise exact"
     ],
     "rejected_fixtures": [
       "retain total carrier collection ceiling 65536",
@@ -57,6 +59,12 @@
       "at": "2026-09-02T19:29:03Z",
       "reason": "request fresh independent review of exact immutable Attempt-31 candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066: reproduce diagnostic receipt, verify exact logical occurrence and partition arithmetic, compositional prospective bound, outer and nested preflight order, sentinel nonauthority, retained runtime ceilings and Attempt30 laws, identity cascade, limit evidence, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "/root/attempt31_arch_review",
+      "at": "2026-09-02T19:44:21Z",
+      "reason": "REJECT exact immutable Attempt-31 candidate 6a7877f418f41ef55aa5375dc7ebdcde2417ea00, tree 25bbbecf42c946a87b0a4a293c2cee9eeaf92cbf, report SHA-256 a213feabee0372e5f5309870be941b4fadf3b01b344884ef423a165657003a066 because the report asserts scalar UTF-8 maximum 114 while independent receipt replay produced 112; all collection counts, partition proof, outer/nested preflight, identity cascade, retained laws, and nonclaims passed",
+      "state": "rejected"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-31",
@@ -70,7 +78,9 @@
     "Attempt31 retains complete current-emitter M2 transport and all Attempt30 certificate, ownership, external-edge, and root laws",
     "Attempt31 grants no implementation, checker, certificate, pin, runtime-result, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {"kind": "independent", "result": "rejected", "reviewer": "/root/attempt31_arch_review"}
+  ],
+  "state": "rejected",
   "title": "SH-07 B51 compositional carrier collection bound v18 attempt 31"
 }
