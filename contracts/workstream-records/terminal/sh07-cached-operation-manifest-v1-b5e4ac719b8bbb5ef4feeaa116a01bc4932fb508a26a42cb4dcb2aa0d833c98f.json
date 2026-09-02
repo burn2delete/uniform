@@ -8,7 +8,7 @@
     "sh07-cached-shard-manifest-v1",
     "sh07-warm-worker-cached-protocol-v1"
   ],
-  "disposition": "Independently accepted and integration eligible on the exact canonical local-main lineage. This records the cached-shard operation, shard, and result contract as closed executor-request data on exactly five compatibility routes and expands their authenticated implementation closure without changing execution. It invokes no cached lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
+  "disposition": "Integrated the exact independently accepted whole candidate onto canonical local main at merge commit 22cbee3697fceeb59850aaa9d014802f655bd3e0. This records the cached-shard operation, shard, and result contract as closed executor-request data on exactly five compatibility routes and expands their authenticated implementation closure without changing execution. It invokes no cached lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
   "evidence": {
     "accepted_fixtures": [
       "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan_test.clj",
@@ -58,6 +58,11 @@
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 45635b1698034f0fdc7e4c3edbe408abe2190f84 --candidate-commit 7ea6552badb178d6d5c5f9d4c296dc738f128e14 --candidate-tree 8bd5b3515f46c7ccafc9125f418cce17ea76b117",
         "exit_code": 0,
         "result": "passed"
+      },
+      {
+        "command": "focused post-merge UEP, cached-runner, and language-boundary namespaces; governance; diff check; candidate ancestry",
+        "exit_code": 0,
+        "result": "passed"
       }
     ]
   },
@@ -105,6 +110,12 @@
       "at": "2026-09-02T03:24:00Z",
       "reason": "advance the exact independently accepted candidate after clean canonical local-main integration preflight",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:26:00Z",
+      "reason": "integrate the exact accepted whole candidate onto canonical local main at merge commit 22cbee3697fceeb59850aaa9d014802f655bd3e0 and repeat focused verification",
+      "state": "integrated"
     }
   ],
   "id": "sh07-cached-operation-manifest-v1",
@@ -139,6 +150,6 @@
       "reviewer": "parallel_manifest_review"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 declarative cached operation and authenticated closure version 1"
 }
