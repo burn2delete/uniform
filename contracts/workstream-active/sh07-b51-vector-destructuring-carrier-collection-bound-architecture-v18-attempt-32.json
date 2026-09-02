@@ -5,7 +5,7 @@
   "candidate_commit": "202d92d12fa6c4f6a74571eb4769587c02c0963c",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
-  "disposition": "Fresh independent review ACCEPTED the exact report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db with no blockers. This is architecture authority only and confers no implementation acceptance or SH-07 completion.",
+  "disposition": "The independently accepted exact report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db is integration-eligible. Exact-candidate preflight passed against its immutable base; reconciliation with latest main must preserve the exact report and regenerate the sharded ledger merge. This remains architecture-only authority.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -66,6 +66,12 @@
       "at": "2026-09-02T20:07:01Z",
       "reason": "ACCEPT exact candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db after clean diagnostic replay reproduced every structural and bucket count and independent audit found the scalar scoping, 17-key bounds, preflight order, identity cascade, retained Attempt30 laws, limits, authority, and nonclaims coherent with no blockers",
       "state": "accepted"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T20:09:14Z",
+      "reason": "advance the independently accepted exact report candidate after clean named-branch preflight against immutable base 903ddfb4aaaf67000f437c6c462ab828e29c6f4e recommended integrate_candidate; authoritative main later advanced to 7be57282e345dec95caba74d294a9cbefcd27243 with unrelated UEP lifecycle work, so final reconciliation must preserve the exact report bytes and regenerate only the conflicting sharded ledger aggregate",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
@@ -86,6 +92,6 @@
       "reviewer": "attempt32_arch_review"
     }
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "SH-07 B51 reproducible compositional carrier collection bound v18 attempt 32"
 }
