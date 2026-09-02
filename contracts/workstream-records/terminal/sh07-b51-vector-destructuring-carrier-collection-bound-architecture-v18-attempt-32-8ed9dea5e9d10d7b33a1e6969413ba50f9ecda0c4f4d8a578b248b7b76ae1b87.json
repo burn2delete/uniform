@@ -5,7 +5,7 @@
   "candidate_commit": "202d92d12fa6c4f6a74571eb4769587c02c0963c",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30"],
-  "disposition": "The independently accepted exact report-only Attempt-32 candidate 202d92d12fa6c4f6a74571eb4769587c02c0963c, tree 9067b033fd9e2d6b07622f148deb6e6763b29d81, report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db is integration-eligible. Exact-candidate preflight passed against its immutable base; reconciliation with latest main must preserve the exact report and regenerate the sharded ledger merge. This remains architecture-only authority.",
+  "disposition": "Integrated the independently accepted exact Attempt-32 architecture report onto authoritative main at merge commit 8f7b90ac while preserving report SHA-256 b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db and regenerating the sharded ledger reconciliation with concurrent UEP lifecycle work. This authorizes a separately governed implementation candidate only and makes no SH-07 completion claim.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -72,6 +72,12 @@
       "at": "2026-09-02T20:09:14Z",
       "reason": "advance the independently accepted exact report candidate after clean named-branch preflight against immutable base 903ddfb4aaaf67000f437c6c462ab828e29c6f4e recommended integrate_candidate; authoritative main later advanced to 7be57282e345dec95caba74d294a9cbefcd27243 with unrelated UEP lifecycle work, so final reconciliation must preserve the exact report bytes and regenerate only the conflicting sharded ledger aggregate",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-carrier-bound-architecture",
+      "at": "2026-09-02T20:10:57Z",
+      "reason": "merge the exact accepted architecture lineage onto authoritative main at 8f7b90ac, preserve the reviewed report digest byte-for-byte, reconcile the sole sharded-ledger conflict by retaining current-main UEP lifecycle records and assigning Attempt32 the next ordinal, and rerun governance, authority, documentation, roadmap, and diff gates successfully",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
@@ -92,6 +98,6 @@
       "reviewer": "attempt32_arch_review"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 reproducible compositional carrier collection bound v18 attempt 32"
 }
