@@ -1,11 +1,30 @@
 (ns gravity.self-hosting.authenticated-artifact-pipeline-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.authenticated-artifact-pipeline :as pipeline]
-            [gravity.digest :as digest])
+            [gravity.digest :as digest]
+            [gravity.self-hosting.unified-execution-plan :as plan])
   (:import [java.nio.charset StandardCharsets]
            [java.nio.file Files LinkOption OpenOption StandardOpenOption]))
 
 (def ^:private fixture "examples/hello.gravity")
+(def ^:private plan-source
+  "bootstrap/gravity/src/gravity/checked_core.gravity")
+
+(defn- source-plan-catalog
+  []
+  ;; The reviewed catalog currently requests checked-core.  This test-only
+  ;; projection exercises the same closed UEP stage contract at the earliest
+  ;; source boundary without changing the catalog on disk or claiming a new
+  ;; production route.
+  (assoc-in plan/catalog [:modules "sh07-checked-core" :artifact-request]
+            :source))
+
+(defn- bound-plan-binding
+  []
+  (with-redefs [plan/catalog (source-plan-catalog)]
+    (plan/artifact-pipeline-binding
+     (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+     (pipeline/binding-identities))))
 
 (defn- temp-source!
   [text]
@@ -52,6 +71,126 @@
     (is (re-matches #"sha256:[0-9a-f]{64}" (:result-id result)))
     (is (= (:bytes-hash (get-in result [:artifact :source-identity]))
            (:source-content-hash result)))))
+
+(deftest plan-binding-authenticates-cache-key-and-bounded-reference
+  (pipeline/clear-cache!)
+  (let [binding (bound-plan-binding)
+        request {:source-path plan-source
+                 :target-stage :source
+                 :mode :fast
+                 :plan-binding binding}
+        first-result (pipeline/run-pipeline request)
+        second-result (pipeline/run-pipeline request)
+        reference (:artifact-reference second-result)]
+    (is (= binding (:plan-binding first-result)))
+    (is (= binding (:plan-binding reference)))
+    (is (= #{:artifact :schema-version :pipeline :stage :mode :artifact-id
+             :payload-artifact-id :payload-integrity-id :receipt-id
+             :source-content-hash :provenance :plan-binding :cache-hit?
+             :authority :reference-id}
+           (set (keys reference))))
+    (is (not (contains? reference :payload)))
+    (is (= :source (:stage reference)))
+    (is (true? (:cache-hit? reference)))
+    (is (false? (get-in reference [:authority :authoritative?])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:reference-id reference)))
+    (is (true? (get-in second-result [:artifact :receipt :cache :hit?])))
+    (is (= (:cache-key-id (get-in first-result [:artifact :receipt]))
+           (:cache-key-id (get-in second-result [:artifact :receipt]))))))
+
+(deftest plan-binding-is-closed-and-bound-to-request
+  (let [binding (bound-plan-binding)
+        request {:source-path plan-source
+                 :target-stage :source
+                 :mode :fast
+                 :plan-binding binding}]
+    (is (= "ARTIFACT-PLAN-BINDING-KEYS"
+           (try
+             (pipeline/run-pipeline
+              (assoc-in request [:plan-binding :extra] true))
+             nil
+             (catch clojure.lang.ExceptionInfo error
+               (:id (ex-data error))))))
+    (is (= "ARTIFACT-PLAN-BINDING"
+           (try
+             (pipeline/run-pipeline
+              (assoc-in request [:plan-binding :catalog-id] "sha256:bad"))
+             nil
+             (catch clojure.lang.ExceptionInfo error
+               (:id (ex-data error))))))
+    (is (= "ARTIFACT-PLAN-BINDING-MISMATCH"
+           (try
+             (pipeline/run-pipeline
+              (assoc-in request [:plan-binding :artifact-stage] :reader))
+             nil
+             (catch clojure.lang.ExceptionInfo error
+               (:id (ex-data error))))))
+    (is (= "ARTIFACT-PLAN-BINDING-MISMATCH"
+           (try
+             (pipeline/run-pipeline
+              (assoc-in request [:plan-binding :source-path] "examples/other.gravity"))
+             nil
+             (catch clojure.lang.ExceptionInfo error
+               (:id (ex-data error))))))))
+
+(deftest plan-binding-partitions-fast-reuse
+  (pipeline/clear-cache!)
+  (let [binding (bound-plan-binding)
+        first-result
+        (pipeline/run-pipeline {:source-path plan-source
+                                 :target-stage :source
+                                 :mode :fast
+                                 :plan-binding binding})
+        alternate-binding (assoc binding
+                                  :route-id "sh07-alternate-route")
+        second-result
+        (pipeline/run-pipeline {:source-path plan-source
+                                 :target-stage :source
+                                 :mode :fast
+                                 :plan-binding alternate-binding})]
+    (is (= (:artifact-id (get-in first-result [:artifact]))
+           (:artifact-id (get-in second-result [:artifact]))))
+    (is (not= (:cache-key-id (get-in first-result [:artifact :receipt]))
+              (:cache-key-id (get-in second-result [:artifact :receipt]))))
+    (is (false? (get-in second-result [:artifact :receipt :cache :hit?])))
+    (is (not= (:reference-id (:artifact-reference first-result))
+              (:reference-id (:artifact-reference second-result))))))
+
+(deftest contract-content-identity-partitions-cache-key
+  (let [bound (bound-plan-binding)
+        preimage (var-get (ns-resolve 'gravity.authenticated-artifact-pipeline
+                                      'cache-key-preimage))
+        canonical-id (var-get (ns-resolve 'gravity.authenticated-artifact-pipeline
+                                          'canonical-id!))
+        source-id {:project-root-id "sha256:root"
+                   :project-relative-path plan-source
+                   :byte-count 1
+                   :bytes-hash "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                   :encoding :utf-8
+                   :reader-policy :gravity/standard-reader}
+        request {:target-stage :source :mode :fast :plan-binding bound}
+        altered-binding (update bound :contract-binding
+                                 assoc :cache-contract
+                                 "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+        first-id (canonical-id :source
+                               (binding [pipeline/*contract-binding*
+                                         (:contract-binding bound)]
+                                 (preimage :source :fast source-id [] request)))
+        second-id (canonical-id :source
+                                (binding [pipeline/*contract-binding*
+                                          (:contract-binding altered-binding)]
+                                  (preimage :source :fast source-id []
+                                            (assoc request :plan-binding altered-binding))))]
+    (is (not= first-id second-id))
+    (is (not= (get-in (binding [pipeline/*contract-binding*
+                                (:contract-binding bound)]
+                       (preimage :source :fast source-id [] request))
+                     [:contract-binding :cache-contract])
+           (get-in (binding [pipeline/*contract-binding*
+                             (:contract-binding altered-binding)]
+                    (preimage :source :fast source-id []
+                              (assoc request :plan-binding altered-binding)))
+                   [:contract-binding :cache-contract])))))
 
 (deftest fast-reuse-is-receipted-and-fresh-bypasses-it
   (pipeline/clear-cache!)

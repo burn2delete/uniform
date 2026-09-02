@@ -14,6 +14,8 @@
   No envelope produced here grants SH, proof, integration, release,
   self-hosting, seed-retirement, safety, or performance authority."
   (:require [clojure.java.io :as io]
+            [clojure.set :as set]
+            [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.digest :as digest])
@@ -84,17 +86,58 @@
    :java-version (System/getProperty "java.version")
    :runtime-name (System/getProperty "java.runtime.name")})
 
-(def ^:private contract-binding
-  {:pipeline-contract "docs/phase-06-compiler-architecture/060-c1-compiler-pipeline-contract.md"
-   :artifact-contract "docs/phase-06-compiler-architecture/061-c1-artifact-and-pass-contract.md"
-   :cache-contract "C16"
-   :source-contract "C2/C3/SH-03"})
+(def ^:private contract-content-paths
+  {:pipeline-contract
+   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+   :artifact-contract
+   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md"
+   :cache-contract
+   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+   :source-contract
+   "docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md"})
 
 (def ^:private policy-binding
   {:reader-policy :gravity/standard-reader
    :source-bound :sh03-reader-maximum-source-bytes
    :fresh-policy :cache-free-same-jvm-reconstruction
    :fast-policy :path-scoped-content-addressed-memory})
+
+(def ^:private plan-binding-keys
+  #{:route-id :plan-id :catalog-id :lane :closure-identity
+    :closure-paths :module-id :module-owner :artifact-stage
+    :target-artifact :source-path :resource-policy :cache-policy
+    :execution-mode :compiler-binding :tool-binding :runtime-binding
+    :contract-binding})
+(def ^:private binding-resource-keys
+  #{:resource-class :timeout-ms :max-output-bytes :max-test-vars})
+(def ^:private binding-cache-keys
+  #{:mode :key-inputs :authoritative?})
+(def ^:private binding-compiler-keys
+  #{:compiler-id :compiler-version :pipeline-id :schema-version
+    :host-language :host-authoritative?})
+(def ^:private binding-tool-keys
+  #{:clojure-version :java-version :runtime-name})
+(def ^:private binding-runtime-keys
+  #{:java-version :runtime-name})
+(def ^:private binding-contract-keys
+  #{:pipeline-contract :artifact-contract :cache-contract :source-contract})
+(def ^:private artifact-reference-keys
+  #{:artifact :schema-version :pipeline :stage :mode :artifact-id
+    :payload-artifact-id :payload-integrity-id :receipt-id
+    :source-content-hash :provenance :plan-binding :cache-hit?
+    :authority :reference-id})
+(def ^:private digest-pattern #"sha256:[0-9a-f]{64}")
+(def ^:private maximum-binding-text-length 4096)
+(def ^:private maximum-binding-timeout-ms (* 4 60 60 1000))
+(def ^:private maximum-binding-output-bytes (* 256 1024))
+(def ^:private maximum-binding-test-vars 4096)
+(def ^:dynamic *contract-binding*
+  "The authenticated contract-content identities for one pipeline request.
+
+  A run binds one secure snapshot of every governing contract into all stage
+  cache keys.  Tests may bind a reviewed map, but production callers use the
+  default content snapshot and cannot provide path/label placeholders."
+  nil)
 
 ;; The process-local fast cache is deliberately bounded.  These limits apply
 ;; to both the staged per-run map and the committed map.  Cost/node accounting
@@ -312,6 +355,53 @@
   ([id message]
    (fail! id message nil)))
 
+(defn- exact-keys!
+  [value allowed id path]
+  (when-not (map? value)
+    (fail! id "authenticated artifact binding must be a map"
+           {:path path :value value}))
+  (let [actual (set (keys value))]
+    (when-not (= actual allowed)
+      (fail! id "authenticated artifact binding has missing or unknown keys"
+             {:path path
+              :missing (vec (sort-by pr-str (set/difference allowed actual)))
+              :unknown (vec (sort-by pr-str (set/difference actual allowed)))})))
+  value)
+
+(defn- contract-content-binding
+  "Return content identities for the governed compiler/cache contracts.
+
+  The existing source snapshot primitive supplies no-follow, owner, bounded,
+  double-read hashing.  A changed contract, substituted file, or missing
+  contract therefore changes this binding or fails closed before cache lookup."
+  []
+  (into (sorted-map)
+        (map (fn [[key path]]
+               (try
+                 [key (:bytes-hash (c2-pass-cache/bounded-source-snapshot! path))]
+                 (catch clojure.lang.ExceptionInfo error
+                   (fail! "ARTIFACT-CONTRACT"
+                          "governing contract content could not be authenticated"
+                          {:key key :path path
+                           :cause-data (ex-data error)})))))
+        contract-content-paths))
+
+(defn- effective-contract-binding
+  []
+  (or *contract-binding* (contract-content-binding)))
+
+(defn binding-identities
+  "Return the pipeline-owned identities for a UEP artifact binding.
+
+  UEP supplies route, plan, catalog, closure, module, stage, and policy
+  fields.  This narrow seam supplies only identities owned by this pipeline;
+  contract values are secure content hashes, not document labels."
+  []
+  {:compiler-binding implementation-binding
+   :tool-binding tool-binding
+   :runtime-binding (select-keys tool-binding [:java-version :runtime-name])
+   :contract-binding (effective-contract-binding)})
+
 (defn- require-stage!
   [stage]
   (when-not (contains? stage-index stage)
@@ -332,6 +422,206 @@
     (fail! "ARTIFACT-SOURCE"
            "authenticated artifact pipeline requires a source path"
            {:source-path source-path})))
+
+(defn- require-binding-digest!
+  [binding key]
+  (let [value (get binding key)]
+    (when-not (and (string? value)
+                   (re-matches digest-pattern value))
+      (fail! "ARTIFACT-PLAN-BINDING"
+             "authenticated artifact plan binding has an invalid digest"
+             {:key key :value value}))
+    value))
+
+(defn- require-binding-text!
+  [binding key]
+  (let [value (get binding key)]
+    (when-not (and (string? value)
+                   (not (str/blank? value))
+                   (<= (count value) maximum-binding-text-length))
+      (fail! "ARTIFACT-PLAN-BINDING"
+             "authenticated artifact plan binding text is invalid"
+             {:key key :value value}))
+    value))
+
+(defn- require-binding-paths!
+  [binding key]
+  (let [paths (get binding key)]
+    (when-not (and (vector? paths)
+                   (seq paths)
+                   (<= (count paths) 8192)
+                   (= (count paths) (count (distinct paths)))
+                   (every? (fn [path]
+                             (and (string? path)
+                                  (not (str/blank? path))
+                                  (<= (count path) maximum-binding-text-length)
+                                  (not (str/starts-with? path "/"))
+                                  (not (str/starts-with? path "~"))
+                                  (not (str/includes? path "\\"))
+                                  (not (re-matches #"(?i)^[a-z]:.*" path))
+                                  (every? #(and (not (str/blank? %))
+                                                (not= "." %)
+                                                (not= ".." %))
+                                          (str/split path #"/" -1))))
+                           paths))
+      (fail! "ARTIFACT-PLAN-BINDING"
+             "authenticated artifact plan binding closure paths are invalid"
+             {:key key :value paths}))
+    paths))
+
+(defn- require-binding-resource-policy!
+  [policy]
+  (exact-keys! policy binding-resource-keys
+               "ARTIFACT-PLAN-BINDING-POLICY-KEYS"
+               [:plan-binding :resource-policy])
+  (when-not (keyword? (:resource-class policy))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact resource class must be a keyword"
+           {:resource-class (:resource-class policy)}))
+  (doseq [key [:timeout-ms :max-output-bytes :max-test-vars]]
+    (let [value (get policy key)
+          maximum (case key
+                    :timeout-ms maximum-binding-timeout-ms
+                    :max-output-bytes maximum-binding-output-bytes
+                    :max-test-vars maximum-binding-test-vars)]
+      (when-not (and (integer? value)
+                     (pos? value)
+                     (<= value maximum))
+        (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+               "authenticated artifact resource bound is invalid"
+               {:key key :value value :maximum maximum}))))
+  policy)
+
+(defn- require-binding-cache-policy!
+  [policy]
+  (exact-keys! policy binding-cache-keys
+               "ARTIFACT-PLAN-BINDING-POLICY-KEYS"
+               [:plan-binding :cache-policy])
+  (when-not (contains? #{:eligible :disabled :forbidden} (:mode policy))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact cache mode is invalid"
+           {:mode (:mode policy)}))
+  (when-not (vector? (:key-inputs policy))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact cache key inputs must be a vector"
+           {:key-inputs (:key-inputs policy)}))
+  (when-not (every? keyword? (:key-inputs policy))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact cache key inputs must be keywords"
+           {:key-inputs (:key-inputs policy)}))
+  (when-not (boolean? (:authoritative? policy))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact cache authority must be boolean"
+           {:authoritative? (:authoritative? policy)}))
+  policy)
+
+(defn- require-binding-identity!
+  [identity allowed-keys id path]
+  (exact-keys! identity allowed-keys id path)
+  identity)
+
+(defn- validate-plan-binding!
+  "Validate the optional UEP identity carried into a pipeline request.
+
+  The pipeline remains usable by existing direct callers without a binding,
+  while execution-plan adapters must provide all route, catalog, closure, and
+  module provenance fields.  These values are operational cache partitions;
+  they never replace the semantic source/artifact identities."
+  [binding target-stage source-path mode]
+  (exact-keys! binding plan-binding-keys
+               "ARTIFACT-PLAN-BINDING-KEYS" [:plan-binding])
+  (require-binding-text! binding :route-id)
+  (require-lane! (:lane binding))
+  (when-not (= mode (:lane binding))
+    (fail! "ARTIFACT-PLAN-BINDING-MISMATCH"
+           "artifact lane identity does not match the pipeline mode"
+           {:mode mode :binding-lane (:lane binding)}))
+  (doseq [key [:plan-id :catalog-id :closure-identity]]
+    (require-binding-digest! binding key))
+  (require-binding-paths! binding :closure-paths)
+  (require-binding-text! binding :module-id)
+  (when-not (keyword? (:module-owner binding))
+    (fail! "ARTIFACT-PLAN-BINDING"
+           "authenticated artifact plan binding owner must be a keyword"
+           {:module-owner (:module-owner binding)}))
+  (require-stage! (:artifact-stage binding))
+  (require-stage! (:target-artifact binding))
+  (when-not (= (:artifact-stage binding) (:target-artifact binding))
+    (fail! "ARTIFACT-PLAN-BINDING-MISMATCH"
+           "artifact target identity does not match the requested stage"
+           {:artifact-stage (:artifact-stage binding)
+            :target-artifact (:target-artifact binding)}))
+  (require-binding-text! binding :source-path)
+  (when-not (and (not (str/starts-with? (:source-path binding) "/"))
+                 (not (str/starts-with? (:source-path binding) "~"))
+                 (not (str/includes? (:source-path binding) "\\"))
+                 (not (re-matches #"(?i)^[a-z]:.*" (:source-path binding)))
+                 (every? #(and (not (str/blank? %))
+                               (not= "." %)
+                               (not= ".." %))
+                         (str/split (:source-path binding) #"/" -1)))
+    (fail! "ARTIFACT-PLAN-BINDING"
+           "authenticated artifact plan binding source path is not normalized"
+           {:source-path (:source-path binding)}))
+  (require-binding-resource-policy! (:resource-policy binding))
+  (require-binding-cache-policy! (:cache-policy binding))
+  (when-not (contains? #{:warm-bounded-process :fresh-isolated-process}
+                       (:execution-mode binding))
+    (fail! "ARTIFACT-PLAN-BINDING-POLICY"
+           "authenticated artifact execution mode is invalid"
+           {:execution-mode (:execution-mode binding)}))
+  (require-binding-identity! (:compiler-binding binding)
+                             binding-compiler-keys
+                             "ARTIFACT-PLAN-BINDING-COMPILER-KEYS"
+                             [:plan-binding :compiler-binding])
+  (require-binding-identity! (:tool-binding binding)
+                             binding-tool-keys
+                             "ARTIFACT-PLAN-BINDING-TOOL-KEYS"
+                             [:plan-binding :tool-binding])
+  (require-binding-identity! (:runtime-binding binding)
+                             binding-runtime-keys
+                             "ARTIFACT-PLAN-BINDING-RUNTIME-KEYS"
+                             [:plan-binding :runtime-binding])
+  (require-binding-identity! (:contract-binding binding)
+                             binding-contract-keys
+                             "ARTIFACT-PLAN-BINDING-CONTRACT-KEYS"
+                             [:plan-binding :contract-binding])
+  (when-not (= implementation-binding (:compiler-binding binding))
+    (fail! "ARTIFACT-PLAN-BINDING-COMPILER"
+           "authenticated artifact compiler identity is not current"
+           {:expected implementation-binding
+            :actual (:compiler-binding binding)}))
+  (when-not (= tool-binding (:tool-binding binding))
+    (fail! "ARTIFACT-PLAN-BINDING-TOOL"
+           "authenticated artifact tool identity is not current"
+           {:expected tool-binding
+            :actual (:tool-binding binding)}))
+  (when-not (= (effective-contract-binding) (:contract-binding binding))
+    (fail! "ARTIFACT-PLAN-BINDING-CONTRACT"
+           "authenticated artifact contract identity is not current"
+           {:expected (effective-contract-binding)
+            :actual (:contract-binding binding)}))
+  (when-not (= (:runtime-binding binding)
+               (select-keys (:tool-binding binding) [:java-version :runtime-name]))
+    (fail! "ARTIFACT-PLAN-BINDING"
+           "authenticated artifact runtime identity does not match tool identity"
+           {:runtime-binding (:runtime-binding binding)}))
+  (when-not (some #{source-path} (:closure-paths binding))
+    (fail! "ARTIFACT-PLAN-BINDING-CLOSURE"
+           "artifact source path is outside the authenticated dependency closure"
+           {:source-path source-path
+            :closure-paths (:closure-paths binding)}))
+  (when-not (= target-stage (:artifact-stage binding))
+    (fail! "ARTIFACT-PLAN-BINDING-MISMATCH"
+           "artifact request stage does not match the pipeline target"
+           {:target-stage target-stage
+            :artifact-stage (:artifact-stage binding)}))
+  (when-not (= source-path (:source-path binding))
+    (fail! "ARTIFACT-PLAN-BINDING-MISMATCH"
+           "artifact request source path does not match the pipeline request"
+           {:source-path source-path
+            :binding-source-path (:source-path binding)}))
+  binding)
 
 (defn- bootstrap-var
   [symbol]
@@ -621,14 +911,14 @@
    ;; deliberately timestamp-free so a stable source and toolchain can reuse a
    ;; product while any compiler/tool/contract/policy change forces rebuild.
    :tool-binding tool-binding
-   :contract-binding contract-binding
+   :contract-binding (effective-contract-binding)
    :policy-binding policy-binding
    :pass-id (get stage-pass-ids stage)
    :policy {:cache-eligible? (= lane :fast)
             :fresh-required? (= lane :fresh)
             :source-authentication :bounded-secure-double-snapshot
             :mutation-check :post-execution-secure-resnapshot}
-   :request-policy (select-keys request [:target-stage :mode])})
+   :request-policy (select-keys request [:target-stage :mode :plan-binding])})
 
 (defn- receipt
   [stage lane artifact-id parents cache-hit? cache-key-id source-id provenance]
@@ -650,6 +940,41 @@
                                       :seed-retirement :safety :performance]}}
         receipt-id (canonical-id! stage base)]
     (assoc base :receipt-id receipt-id)))
+
+(defn- artifact-reference
+  "Project a selected envelope into a bounded, authenticated observation.
+
+  The reference deliberately excludes the compiler payload and only carries
+  identities, source/provenance witnesses, and the optional UEP plan binding.
+  Consumers that need the payload must request the stage again through the
+  authenticated pipeline; a reference alone never grants authority."
+  [envelope lane plan-binding]
+  (let [base {:artifact :gravity/authenticated-artifact-reference
+              :schema-version 1
+              :pipeline pipeline-id
+              :stage (:stage envelope)
+              :mode lane
+              :artifact-id (:artifact-id envelope)
+              :payload-artifact-id (:payload-artifact-id envelope)
+              :payload-integrity-id (:payload-integrity-id envelope)
+              :receipt-id (get-in envelope [:receipt :receipt-id])
+              :source-content-hash
+              (get-in envelope [:source-identity :bytes-hash])
+              :provenance (select-keys (:provenance envelope)
+                                       [:actual-path :project-root-path
+                                        :project-root-id :project-relative-path])
+              :plan-binding plan-binding
+              :cache-hit? (boolean (:cache-hit? envelope))
+              :authority {:authoritative? false
+                          :ceiling :development-only
+                          :nonclaims [:integration :proof :release
+                                      :self-hosting :seed-retirement
+                                      :safety :performance]}}
+        reference-id (canonical-id! (:stage envelope) base)
+        reference (assoc base :reference-id reference-id)]
+    (exact-keys! reference artifact-reference-keys
+                 "ARTIFACT-REFERENCE-KEYS" [:artifact-reference])
+    reference))
 
 (defn- envelope
   [stage lane source-id provenance parents payload cache-hit? cache-key-id]
@@ -916,7 +1241,7 @@
     (fail! "ARTIFACT-REQUEST"
            "authenticated artifact pipeline request must be a map"
            {:request request}))
-  (let [known #{:source-path :target-stage :mode}]
+  (let [known #{:source-path :target-stage :mode :plan-binding}]
     (when-let [unknown (seq (remove known (keys request)))]
       (fail! "ARTIFACT-REQUEST"
              "authenticated artifact pipeline request contains unknown keys"
@@ -928,22 +1253,29 @@
     (require-source-path! source-path)
     (require-stage! target-stage)
     (require-lane! mode)
-    {:source-path source-path :target-stage target-stage :mode mode}))
+    (when (contains? request :plan-binding)
+      (validate-plan-binding! (:plan-binding request) target-stage source-path mode))
+    (cond-> {:source-path source-path :target-stage target-stage :mode mode}
+      (contains? request :plan-binding)
+      (assoc :plan-binding (:plan-binding request)))))
 
 (defn run-pipeline
   "Build the requested earliest artifact and all of its authenticated parents.
 
   Accepts either a request map or a source path.  The map schema is closed:
-  `{:source-path string :target-stage stage :mode :fast|:fresh}`.  The result
+  `{:source-path string :target-stage stage :mode :fast|:fresh}` with an
+  optional closed `:plan-binding` identity map.  The result
   keeps both envelopes and the original bootstrap payload available:
   `:artifact` is the selected envelope, `:payload` is its existing artifact,
-  and `:stage-artifacts` is the ordered stage map.
+  `:artifact-reference` is a bounded identity-only projection, and
+  `:stage-artifacts` is the ordered stage map.
   "
   ([request]
    ;; Entries built by this invocation remain staged until the final secure
    ;; source re-snapshot and bounded result identity both succeed.  A mutation
    ;; or construction failure therefore cannot publish a misleading fast hit.
-   (binding [*pending-cache* (atom {})]
+   (binding [*pending-cache* (atom {})
+             *contract-binding* (contract-content-binding)]
      (let [{:keys [source-path target-stage mode] :as request}
            (validate-request (if (string? request)
                                {:source-path request}
@@ -1001,11 +1333,14 @@
                       :pipeline pipeline-id
                       :requested-stage target-stage
                       :mode mode
+                      :plan-binding (:plan-binding request)
                       :actual-path actual-path
                       :source-content-hash (:bytes-hash source-id)
                       :stage-artifacts stage-map
                       :artifact selected
                       :payload (:payload selected)
+                      :artifact-reference
+                      (artifact-reference selected mode (:plan-binding request))
                       :authority {:authoritative? false
                                   :ceiling :development-only
                                   :nonclaims [:integration :proof :release
@@ -1026,6 +1361,7 @@
            ;; cache hit, and fresh/fast policy remain operational fields on the
            ;; result but do not create distinct compiler artifacts.
            :source-identity source-id
+           :plan-binding (:plan-binding request)
            :stage-artifact-ids
            (mapv (fn [stage]
                    [stage (get-in stage-map [stage :artifact-id])])

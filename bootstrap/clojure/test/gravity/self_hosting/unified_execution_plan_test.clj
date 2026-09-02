@@ -144,6 +144,63 @@
     (is (= "UEP-CATALOG-CACHED-EXECUTOR-REQUEST"
            (error-id #(plan/validate-catalog duplicate))))))
 
+(deftest module-artifact-request-stage-is-closed-and-plan-provenanced
+  (let [stages [:source :reader :syntax :macroexpansion :resolution
+                :checked-core]
+        module-path [:modules "sh07-checked-core" :artifact-request]]
+    (doseq [stage stages]
+      (is (nil? (error-id #(plan/validate-catalog
+                            (assoc-in plan/catalog module-path stage))))
+          (str "catalog accepts artifact stage " stage)))
+    (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
+      (is (= {:module-id "sh07-checked-core"
+              :module-owner :gravity
+              :stage :checked-core
+              :source-path "bootstrap/gravity/src/gravity/checked_core.gravity"}
+             (:artifact-request p)))
+      (is (= #{:module-id :module-owner :stage :source-path}
+             (set (keys (:artifact-request p))))))))
+
+(deftest plan-artifact-request-tampering-fails-closed
+  (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+        identity-of (deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+        altered (assoc-in p [:artifact-request :stage] :reader)
+        altered (assoc altered :plan-id
+                       (identity-of (dissoc altered :plan-id)))]
+    (is (= "UEP-PLAN-ARTIFACT"
+           (error-id #(plan/validate-plan altered))))))
+
+(deftest artifact-pipeline-binding-is-uep-owned
+  (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+        identities {:compiler-binding {:compiler :test}
+                    :tool-binding {:tool :test}
+                    :runtime-binding {:runtime :test}
+                    :contract-binding {:contract "sha256:test"}}
+        binding (plan/artifact-pipeline-binding p identities)
+        artifact (:artifact-request p)]
+    (is (= #{:route-id :plan-id :catalog-id :lane :closure-identity
+             :closure-paths :module-id :module-owner :artifact-stage
+             :target-artifact :source-path :resource-policy :cache-policy
+             :execution-mode :compiler-binding :tool-binding :runtime-binding
+             :contract-binding}
+           (set (keys binding))))
+    (is (= (select-keys p [:route-id :plan-id :catalog-id :lane
+                           :closure-identity :resource-policy :cache-policy
+                           :execution-mode])
+           (select-keys binding [:route-id :plan-id :catalog-id :lane
+                                 :closure-identity :resource-policy
+                                 :cache-policy :execution-mode])))
+    (is (= {:module-id (:module-id artifact)
+            :module-owner (:module-owner artifact)
+            :artifact-stage (:stage artifact)
+            :target-artifact (:stage artifact)
+            :source-path (:source-path artifact)}
+           (select-keys binding [:module-id :module-owner :artifact-stage
+                                 :target-artifact :source-path])))
+    (is (= identities
+           (select-keys binding [:compiler-binding :tool-binding
+                                 :runtime-binding :contract-binding])))))
+
 (deftest plans-are-deterministic-and-declarative
   (let [request {:route-id "sh07-b8-regression" :lane :fast}
         first-plan (plan/plan request)

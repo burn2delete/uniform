@@ -42,6 +42,17 @@
 (def ^:private module-keys
   #{:id :owner :source-paths :artifact-request :ownership-scope
     :required-evidence})
+(def ^:private artifact-stages
+  "The closed compiler-artifact stages that a module may request.
+
+  A module's request names the earliest artifact needed by a route.  The
+  source path and owner are projected into each plan so downstream adapters do
+  not infer provenance from a filename or route id."
+  #{:source :reader :syntax :macroexpansion :resolution :checked-core})
+(def ^:private artifact-request-keys
+  #{:module-id :module-owner :stage :source-path})
+(def ^:private pipeline-identity-keys
+  #{:compiler-binding :tool-binding :runtime-binding :contract-binding})
 (def ^:private selection-keys #{:kind :namespace :selectors})
 (def ^:private closure-keys
   #{:module-ids :paths :complete? :identity-inputs})
@@ -69,6 +80,7 @@
 (def ^:private plan-keys
   #{:schema :version :catalog-id :route-id :lane :authority :authoritative?
     :authority-ceiling :selection :dependency-closure :closure-identity
+    :artifact-request
     :resource-policy :cache-policy :execution-mode :executor
     :receipt-generation :required-evidence :nonclaims :guards
     :fresh-authoritative-gate-required? :plan-id})
@@ -283,15 +295,64 @@
              "UEP-CATALOG-MODULE-SOURCES"
              "Module source path is not a normalized repository-relative path"
              {:module module-id :path path}))
-  (ensure! (= :checked-core (:artifact-request module))
+  (ensure! (contains? artifact-stages (:artifact-request module))
            "UEP-CATALOG-MODULE-ARTIFACT"
-           "Only the checked-core artifact request is supported in this phase"
+           "Module artifact request stage is not recognized"
            {:module module-id :artifact-request (:artifact-request module)})
   (ensure! (keyword? (:ownership-scope module)) "UEP-CATALOG-MODULE-OWNERSHIP"
            "Module ownership scope must be a keyword" {:module module-id})
   (non-empty-vector! (:required-evidence module) "UEP-CATALOG-MODULE-EVIDENCE"
                      [:modules module-id :required-evidence])
   module)
+
+(defn- module-artifact-request
+  "Project one module's reviewed artifact request into a closed plan value.
+
+  The catalog currently owns one source path per module.  Keep the projection
+  explicit and fail closed if a future module needs a multi-source artifact
+  until the pipeline has a corresponding source-unit graph request."
+  [module-id module]
+  (ensure! (= 1 (count (:source-paths module)))
+           "UEP-CATALOG-MODULE-ARTIFACT"
+           "A single-source artifact request is required by this pipeline"
+           {:module module-id :source-paths (:source-paths module)})
+  {:module-id module-id
+   :module-owner (:owner module)
+   :stage (:artifact-request module)
+   :source-path (first (:source-paths module))})
+
+(defn- validate-artifact-request!
+  [request modules path]
+  (exact-keys! request artifact-request-keys
+               "UEP-ARTIFACT-REQUEST-KEYS" path)
+  (ensure! (string? (:module-id request))
+           "UEP-ARTIFACT-REQUEST"
+           "Artifact request module id must be a string"
+           {:path path :module-id (:module-id request)})
+  (let [module (get modules (:module-id request))]
+    (ensure! (map? module)
+             "UEP-ARTIFACT-REQUEST"
+             "Artifact request references an unknown module"
+             {:path path :module-id (:module-id request)})
+    (ensure! (keyword? (:module-owner request))
+             "UEP-ARTIFACT-REQUEST"
+             "Artifact request module owner must be a keyword"
+             {:path path :module-owner (:module-owner request)})
+    (ensure! (= (:module-owner request) (:owner module))
+             "UEP-ARTIFACT-REQUEST"
+             "Artifact request module owner does not match the catalog"
+             {:path path :module-id (:module-id request)})
+    (ensure! (contains? artifact-stages (:stage request))
+             "UEP-ARTIFACT-REQUEST"
+             "Artifact request stage is not recognized"
+             {:path path :stage (:stage request)})
+    (ensure! (and (string? (:source-path request))
+                  (some #{(:source-path request)} (:source-paths module)))
+             "UEP-ARTIFACT-REQUEST"
+             "Artifact request source path is not owned by its module"
+             {:path path :module-id (:module-id request)
+              :source-path (:source-path request)}))
+  request)
 
 (defn- validate-selection!
   [route-id selection]
@@ -1163,7 +1224,10 @@
            "Execution plan version is not recognized" {})
   (let [route-value (route (:route-id plan-value))
         lane-id (:lane plan-value)
-        lane-value (get-in catalog [:lanes lane-id])]
+        lane-value (get-in catalog [:lanes lane-id])
+        module-id (:module-id route-value)
+        module (get-in catalog [:modules module-id])
+        expected-artifact-request (module-artifact-request module-id module)]
     (ensure! (some #{lane-id} (:lanes route-value)) "UEP-PLAN-LANE"
              "Execution plan route/lane admission is stale" {})
     (ensure! (= (:selection route-value) (:selection plan-value))
@@ -1174,6 +1238,14 @@
     (ensure! (= (identity-of (:dependency-closure route-value))
                 (:closure-identity plan-value))
              "UEP-PLAN-CLOSURE" "Execution plan closure identity is stale" {})
+    (validate-artifact-request! (:artifact-request plan-value)
+                                (:modules catalog)
+                                [:plan :artifact-request])
+    (ensure! (= expected-artifact-request (:artifact-request plan-value))
+             "UEP-PLAN-ARTIFACT"
+             "Execution plan artifact request was altered or is stale"
+             {:expected expected-artifact-request
+              :actual (:artifact-request plan-value)})
     (ensure! (= (:execution-mode route-value) (:execution-mode plan-value))
              "UEP-PLAN-MODE" "Execution plan execution mode was altered" {})
     (ensure! (= (:executor route-value) (:executor plan-value))
@@ -1441,7 +1513,10 @@
              "Route is not admitted to the requested lane"
              {:route (:route-id request) :lane lane-id})
     (validate-request-overrides! request route-value lane-id)
-    (let [resource-policy
+    (let [artifact-request
+          (module-artifact-request (:module-id route-value)
+                                   (get-in catalog [:modules (:module-id route-value)]))
+          resource-policy
           (merge {:resource-class (:resource-class route-value)}
                  (:bounds route-value)
                  (:resource-policy request))
@@ -1470,6 +1545,7 @@
            :selection (:selection route-value)
            :dependency-closure (:dependency-closure route-value)
            :closure-identity (identity-of (:dependency-closure route-value))
+           :artifact-request artifact-request
            :resource-policy resource-policy
            :cache-policy cache-policy
            :execution-mode (:execution-mode route-value)
@@ -1486,6 +1562,40 @@
       (assoc base :plan-id (identity-of base)))))
 
 (def build-plan plan)
+
+(defn artifact-pipeline-binding
+  "Project a validated UEP plan into the pipeline's closed identity binding.
+
+  UEP owns every route, catalog, closure, module, stage, and policy field in
+  this projection.  The pipeline supplies only its current compiler/tool/
+  runtime/contract identities through `pipeline-identities`; callers cannot
+  substitute labels for a plan identity without first passing `validate-plan`.
+  This projection remains non-authoritative and does not execute a route."
+  [plan-value pipeline-identities]
+  (validate-plan plan-value)
+  (exact-keys! pipeline-identities pipeline-identity-keys
+               "UEP-PIPELINE-BINDING-IDENTITIES"
+               [:pipeline-identities])
+  (let [artifact (:artifact-request plan-value)
+        closure (:dependency-closure plan-value)]
+    {:route-id (:route-id plan-value)
+     :plan-id (:plan-id plan-value)
+     :catalog-id (:catalog-id plan-value)
+     :lane (:lane plan-value)
+     :closure-identity (:closure-identity plan-value)
+     :closure-paths (:paths closure)
+     :module-id (:module-id artifact)
+     :module-owner (:module-owner artifact)
+     :artifact-stage (:stage artifact)
+     :target-artifact (:stage artifact)
+     :source-path (:source-path artifact)
+     :resource-policy (:resource-policy plan-value)
+     :cache-policy (:cache-policy plan-value)
+     :execution-mode (:execution-mode plan-value)
+     :compiler-binding (:compiler-binding pipeline-identities)
+     :tool-binding (:tool-binding pipeline-identities)
+     :runtime-binding (:runtime-binding pipeline-identities)
+     :contract-binding (:contract-binding pipeline-identities)}))
 
 (defn- bounded-exact-integer?
   "Check a bounded integer without coercing BigInt through a machine long."
