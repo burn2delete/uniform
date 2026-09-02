@@ -5,7 +5,7 @@
   "candidate_commit": "141a07863c13c49a64a469573b6c1e394a3c6e41",
   "clean_worktree": true,
   "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
-  "disposition": "Integration-eligible architecture-only Attempt-30 candidate after fresh independent ACCEPT of immutable report tuple 141a07863c13c49a64a469573b6c1e394a3c6e41 / 319bc7f4a831cf5bdbfe8ec8b1cb6ddbff800cca / a41060d820d0fc7e72a73fb7a04b6b5f6f4b0fc91ad133048cb73ac7d1f78b47 and clean exact-candidate preflight against unchanged authoritative main 5295fed116fac4db951234875bf49cf0e6fccdca. Authority remains architecture only.",
+  "disposition": "Integrated the exact independently accepted Attempt-30 architecture decision onto authoritative local main at merge 8b25d842aa41d5cd330c61bf7b78ea8034bcee48. This authorizes at most one separately governed implementation candidate and grants no checker, transcript, certificate, carrier, runtime-result, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement acceptance.",
   "evidence": {
     "accepted_fixtures": [
       "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
@@ -74,6 +74,12 @@
       "at": "2026-09-02T17:33:04Z",
       "reason": "advance independently accepted architecture-only Attempt-30 after clean exact-candidate integration preflight against unchanged authoritative main 5295fed116fac4db951234875bf49cf0e6fccdca recommended integrate_candidate",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:34:22Z",
+      "reason": "integrate the exact independently accepted architecture-only candidate onto authoritative local main at merge 8b25d842aa41d5cd330c61bf7b78ea8034bcee48 tree f0b1b9fb9012281262e7bae4d806d0ee5920a452; implementation remains separately governed and unaccepted",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-30",
@@ -90,6 +96,6 @@
   "reviews": [
     {"kind": "independent", "result": "accepted", "reviewer": "/root/attempt30_arch_review"}
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 closed dual census certificate architecture v18 attempt 30"
 }
