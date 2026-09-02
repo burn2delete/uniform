@@ -81,6 +81,18 @@
    "rejected" 1
    "verification" 4})
 
+(def ^:private expected-help-value
+  ;; Frozen full help record from the pre-routing CLI. Compatibility routing is
+  ;; deliberately omitted from this structured baseline so adding a migration
+  ;; mechanism cannot silently change the established help contract.
+  {:schema :gravity/unified-execution-cli-help-v1
+   :status :help
+   :required ["--route ID" "--lane fast|fresh"]
+   :optional ["--coordination-root ABSOLUTE" "--timeout-ms N"
+              "--max-output-bytes N" "--cache-mode eligible|disabled|forbidden"
+              "--plan-only"]
+   :standalone ["--help" "--list-routes"]})
+
 (deftest parser-requires-the-two-primary-options
   (is (= {:mode :run :route-id "r" :lane :fast}
          (cli/parse-args ["--route" "r" "--lane" "fast"])))
@@ -129,6 +141,12 @@
     (is (= {:schema :gravity/unified-execution-cli-routes-v1
             :status :listed :routes ["r1" "r2"]}
            (one-edn stdout)))))
+
+(deftest help-structure-preserves-the-base-contract
+  (let [{:keys [code stdout stderr]} (invoke ["--help"])]
+    (is (zero? code))
+    (is (empty? stderr))
+    (is (= expected-help-value (one-edn stdout)))))
 
 (deftest legacy-compatibility-parser-is-closed-and-standalone
   (is (= {:mode :legacy :mechanism :parallel-shard-runner :operation :list}

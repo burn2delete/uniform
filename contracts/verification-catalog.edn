@@ -1123,6 +1123,7 @@
                "sh07-parallel-regression-b"
                "sh07-parallel-rejected"
                "sh07-parallel-verification"]
+   :membership-semantics :exact-historical-membership
    :label-policy {:kind :strip-prefix
                   :prefix "sh07-parallel-"}}}
 

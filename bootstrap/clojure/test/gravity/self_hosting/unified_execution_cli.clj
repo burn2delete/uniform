@@ -198,8 +198,7 @@
    :optional ["--coordination-root ABSOLUTE" "--timeout-ms N"
               "--max-output-bytes N" "--cache-mode eligible|disabled|forbidden"
               "--plan-only"]
-   :standalone ["--help" "--list-routes"]
-   :legacy ["--legacy-mechanism MECHANISM --list|--check"]})
+   :standalone ["--help" "--list-routes"]})
 (defn list-value []
   {:schema :gravity/unified-execution-cli-routes-v1 :status :listed
    :routes (vec (*route-names-fn*))})

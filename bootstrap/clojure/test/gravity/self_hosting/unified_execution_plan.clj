@@ -58,7 +58,8 @@
 (def ^:private bounds-keys #{:timeout-ms :max-output-bytes :max-test-vars})
 (def ^:private route-cache-keys #{:mode :key-inputs :authoritative?})
 (def ^:private route-receipt-keys #{:schema :required-fields})
-(def ^:private legacy-mechanism-keys #{:route-ids :label-policy})
+(def ^:private legacy-mechanism-keys
+  #{:route-ids :label-policy :membership-semantics})
 (def ^:private legacy-label-policy-keys #{:kind :prefix})
 (def ^:private allowed-legacy-mechanisms #{:parallel-shard-runner})
 (def ^:private maximum-legacy-routes 64)
@@ -637,6 +638,12 @@
                [:legacy-mechanisms mechanism])
   (let [route-ids (:route-ids declaration)
         label-policy (:label-policy declaration)]
+    (ensure! (= :exact-historical-membership
+                (:membership-semantics declaration))
+             "UEP-CATALOG-LEGACY-MEMBERSHIP"
+             "Legacy mechanism membership semantics are not the reviewed historical projection"
+             {:mechanism mechanism
+              :membership-semantics (:membership-semantics declaration)})
     (non-empty-vector! route-ids "UEP-CATALOG-LEGACY-ROUTES"
                        [:legacy-mechanisms mechanism :route-ids])
     (ensure! (<= (count route-ids) maximum-legacy-routes)
@@ -1058,22 +1065,19 @@
   (into (sorted-map) (:routes manifest)))
 
 (defn- legacy-route-catalog-value [manifest]
- (let [generated
-       (->> (:routes manifest)
-            (mapcat (fn [[route-id route]]
-                      (map (fn [legacy] [legacy route-id])
-                           (:replacement-for route))))
-            (group-by first)
-            (map (fn [[legacy pairs]]
-                   [legacy (vec (sort (map second pairs)))]))
-            (into (sorted-map)))]
-   ;; The reviewed mechanism declaration narrows compatibility membership
-   ;; where legacy discovery historically exposed only a stable subset.  Other
-   ;; mechanisms retain their generated replacement projection unchanged.
-   (reduce-kv (fn [catalog mechanism declaration]
-                (assoc catalog mechanism (:route-ids declaration)))
-              generated
-              (:legacy-mechanisms manifest))))
+  ;; This projection is the broad migration-responsibility inventory. It must
+  ;; include every route that declares a legacy replacement (including routes
+  ;; intentionally absent from the exact historical compatibility projection).
+  ;; Keep the latter in `legacy-mechanism-projection` so the two memberships do
+  ;; not silently collapse into one route catalog.
+  (->> (:routes manifest)
+       (mapcat (fn [[route-id route]]
+                 (map (fn [legacy] [legacy route-id])
+                      (:replacement-for route))))
+       (group-by first)
+       (map (fn [[legacy pairs]]
+              [legacy (vec (sort (map second pairs)))]))
+       (into (sorted-map))))
 
 (defn- legacy-route-label-value
   [declaration route-id]
@@ -1140,9 +1144,10 @@
 (defn legacy-route-catalog
   "Generate a legacy-mechanism-to-route projection from the manifest.
 
-  Legacy names are labels for compatibility and migration accounting only;
-  they do not become executable authorities.  A mechanism can map to several
-  declarative routes, so the value is a deterministic vector of route ids."
+  Legacy names are labels for migration accounting only; they do not become
+  executable authorities. Every route's `:replacement-for` declarations are
+  included, so this broad projection may contain more routes than the exact
+  historical membership returned by `legacy-mechanism-projection`."
   ([ ] (legacy-route-catalog catalog))
   ([manifest]
    (validate-catalog manifest)
@@ -1166,6 +1171,7 @@
       :route-ids (:route-ids declaration)
       :labels (mapv #(legacy-route-label-value declaration %)
                     (:route-ids declaration))
+      :membership-semantics (:membership-semantics declaration)
       :label-policy (:label-policy declaration)})))
 
 (defn module-ownership-index

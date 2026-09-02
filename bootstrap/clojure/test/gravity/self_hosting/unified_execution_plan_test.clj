@@ -590,6 +590,17 @@
             "sh07-cached-rejected" "sh07-cached-verification"
             "sh07-conformance-table"]
            (get-in projection [:legacy-routes :cached-shard-runner])))
+    (is (= ["sh07-b10-regression" "sh07-conformance-table"
+            "sh07-parallel-accepted"
+            "sh07-parallel-b12-contract-accepted"
+            "sh07-parallel-b12-identity-verification"
+            "sh07-parallel-b12-rejected-regression"
+            "sh07-parallel-identity-lineage"
+            "sh07-parallel-regression-a"
+            "sh07-parallel-regression-b"
+            "sh07-parallel-rejected"
+            "sh07-parallel-verification"]
+           (get-in projection [:legacy-routes :parallel-shard-runner])))
     (is (= (set (mapcat :replacement-for (vals (:routes plan/catalog))))
            (set (keys (:legacy-routes projection)))))
     (is (= {:module-id "sh07-checked-core" :owner :gravity}
@@ -619,9 +630,24 @@
    "sh07-parallel-rejected"
    "sh07-parallel-verification"])
 
+(def ^:private expected-parallel-migration-route-ids
+  ["sh07-b10-regression"
+   "sh07-conformance-table"
+   "sh07-parallel-accepted"
+   "sh07-parallel-b12-contract-accepted"
+   "sh07-parallel-b12-identity-verification"
+   "sh07-parallel-b12-rejected-regression"
+   "sh07-parallel-identity-lineage"
+   "sh07-parallel-regression-a"
+   "sh07-parallel-regression-b"
+   "sh07-parallel-rejected"
+   "sh07-parallel-verification"])
+
 (deftest legacy-mechanism-projection-is-manifest-owned
   (let [projection (plan/legacy-mechanism-projection :parallel-shard-runner)]
     (is (= expected-parallel-route-ids (:route-ids projection)))
+    (is (= :exact-historical-membership
+           (:membership-semantics projection)))
     (is (= ["accepted" "b12-contract-accepted"
             "b12-identity-verification" "b12-rejected-regression"
             "identity-lineage" "regression-a" "regression-b"
@@ -629,8 +655,13 @@
            (:labels projection)))
     (is (= {:kind :strip-prefix :prefix "sh07-parallel-"}
            (:label-policy projection)))
-    (is (= expected-parallel-route-ids
-           (get (plan/legacy-route-catalog) :parallel-shard-runner)))))
+    ;; Migration accounting intentionally remains broad (11 routes), while
+    ;; the compatibility projection above retains the exact historical nine.
+    (is (= expected-parallel-migration-route-ids
+           (get (plan/legacy-route-catalog) :parallel-shard-runner)))
+    (is (= 11 (count (get (plan/legacy-route-catalog)
+                          :parallel-shard-runner))))
+    (is (= 9 (count (:route-ids projection))))))
 
 (deftest legacy-mechanism-declaration-fails-closed
   (let [declaration (get-in plan/catalog
@@ -644,6 +675,12 @@
                        (update-in plan/catalog
                                   [:legacy-mechanisms :parallel-shard-runner]
                                   assoc :extra true)))))
+    (is (= "UEP-CATALOG-LEGACY-MEMBERSHIP"
+           (error-id #(plan/validate-catalog
+                       (assoc-in plan/catalog
+                                 [:legacy-mechanisms :parallel-shard-runner
+                                  :membership-semantics]
+                                 :broad-migration-membership)))))
     (is (= "UEP-CATALOG-LEGACY-LABEL-KEYS"
            (error-id #(plan/validate-catalog
                        (assoc-in plan/catalog
