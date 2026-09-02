@@ -8,7 +8,7 @@
     "sh07-cached-shard-manifest-v1",
     "sh07-honest-warm-counter-protocol-v1"
   ],
-  "disposition": "Independently accepted and integration eligible on the exact canonical local-main lineage. This adds only a closed, bounded, non-authoritative cached-shard operation to the existing warm worker. It preserves the generic exact and shutdown protocols, executes the five manifest-projected shard names directly in legacy selector order, rejects malformed or authoritative cache results and truncated output, and retires no runner. It grants no SH roadmap credit or acceptance authority.",
+  "disposition": "Integrated the exact independently accepted whole candidate onto canonical local main at merge commit d6ccc5649fffb549050db0ce7fa6568f03028413. This adds only a closed, bounded, non-authoritative cached-shard operation to the existing warm worker. It preserves the generic exact and shutdown protocols, executes the five manifest-projected shard names directly in legacy selector order, rejects malformed or authoritative cache results and truncated output, and retires no runner. It grants no SH roadmap credit or acceptance authority.",
   "evidence": {
     "accepted_fixtures": [
       "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj",
@@ -54,6 +54,11 @@
       },
       {
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 88aa5833b34063fb69854f67ef9f737346141295 --candidate-commit 2f053e64d1ab378ac7cae09f79439b437b5ec71a --candidate-tree da60b2ed7882d0b6005bd7ac90517460b889c26e",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "focused post-merge worker and language-boundary namespaces; governance; git diff --check; candidate ancestry",
         "exit_code": 0,
         "result": "passed"
       }
@@ -103,6 +108,12 @@
       "at": "2026-09-02T02:53:00Z",
       "reason": "advance the exact independently accepted candidate after clean canonical local-main integration preflight",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T02:57:00Z",
+      "reason": "integrate the exact accepted whole candidate onto canonical local main at merge commit d6ccc5649fffb549050db0ce7fa6568f03028413 and repeat focused verification",
+      "state": "integrated"
     }
   ],
   "id": "sh07-warm-worker-cached-protocol-v1",
@@ -135,6 +146,6 @@
       "reviewer": "exact_conformance_migration_analysis"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 warm-worker cached protocol prerequisite version 1"
 }
