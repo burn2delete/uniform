@@ -616,6 +616,29 @@
   ([table-value]
    (mapv validate-legacy! (suites table-value))))
 
+(defn fixture-census
+  "Return one authenticated, table-owned fixture census.
+
+  Pair entries are exposed only after this suite has validated both peer files,
+  their exact bytes, declarations, reviewed rows, and legacy directory parity.
+  This is static accounting evidence and grants no execution authority."
+  [suite-id]
+  (let [table-value (conformance-value (read-catalog))
+        index (.indexOf ^java.util.List expected-suite-ids suite-id)]
+    (ensure! (not (neg? index)) "SH07-CONFORMANCE-SUITE"
+             "Fixture census suite is not reviewed" {:suite-id suite-id})
+    (let [suite (validate-suite! (nth (:suites table-value) index nil) index)
+          parity (validate-legacy! suite)]
+      {:suite-id suite-id
+       :accepted (set (map :basename (:accepted suite)))
+       :rejected (set (map :basename (:rejected suite)))
+       :directory-accepted (get-in parity [:accepted :directory])
+       :directory-rejected (get-in parity [:rejected :directory])
+       :exact-directory? (:exact-directory? parity)
+       :pairs (mapv #(assoc (select-keys % [:id :basename :status])
+                            :authenticated? true)
+                    (concat (:accepted suite) (:rejected suite)))})))
+
 (defn run-row
   "Expose an optional non-semantic callback boundary.
 
