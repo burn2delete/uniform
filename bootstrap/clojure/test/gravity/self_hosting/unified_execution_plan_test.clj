@@ -12,6 +12,73 @@
    :provenance-checked? true :source-authenticated? true
    :closure-verified? true :cache-decision :miss})
 
+(def ^:private cached-context
+  {:request-schema-version 15
+   :adapter :gravity/sh07-to-c6-core-products-v16
+   :checked-core-source-content-hash
+   "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092"
+   :checked-core-plan-semantic-hash
+   "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd"
+   :java-runtime-version "test-jvm"
+   :clojure-version "1.12.5"})
+
+(def ^:private cached-counters
+  {:sh06-hits 1 :sh06-misses 0
+   :core-hits 0 :core-misses 1
+   :verification-hits 0 :verification-misses 1})
+
+(defn- cached-raw-result
+  ([plan-value] (cached-raw-result plan-value {}))
+  ([plan-value overrides]
+   (let [test-vars (count (get-in plan-value [:selection :selectors]))]
+     (merge {:test test-vars :pass test-vars :fail 0 :error 0
+             :artifact :gravity/sh07-cached-shard-result
+             :shard (get-in plan-value [:executor :request :shard])
+             :test-vars test-vars
+             :cache-authoritative? false
+             :fresh-authoritative-run-required? true
+             :cache-context cached-context
+             :elapsed-ms 7
+             :cache cached-counters}
+            overrides))))
+
+(defn- cached-observation
+  ([plan-value] (cached-observation plan-value (cached-raw-result plan-value)))
+  ([plan-value raw]
+   {:schema :gravity/unified-cache-observation-v1
+    :result-contract-id
+    (get-in plan-value [:executor :request :result-contract-id])
+    :artifact (:artifact raw)
+    :shard (:shard raw)
+    :context (:cache-context raw)
+    :counters (:cache raw)
+    :elapsed-ms (:elapsed-ms raw)
+    :cache-authoritative? (:cache-authoritative? raw)
+    :fresh-authoritative-run-required?
+    (:fresh-authoritative-run-required? raw)}))
+
+(defn- cached-result
+  ([plan-value] (cached-result plan-value {}))
+  ([plan-value overrides]
+   (let [raw (cached-raw-result plan-value (select-keys overrides
+                                                        [:test :pass :fail :error
+                                                         :artifact :shard :test-vars
+                                                         :cache-authoritative?
+                                                         :fresh-authoritative-run-required?
+                                                         :cache-context :elapsed-ms :cache]))]
+     (merge {:status :passed :test-count (:test-vars raw)
+             :pass (:pass raw) :fail 0 :error 0
+             :diagnostics []
+             :evidence [:selected-tests :fixture-pairing :diagnostics :receipt]
+             :mutation-detected? false :fresh-replayable? false
+             :provenance-checked? true :source-authenticated? true
+             :closure-verified? true :cache-decision :hit
+             :artifacts [raw]
+             :cache-observation (cached-observation plan-value raw)}
+            (dissoc overrides :test :pass :fail :error :artifact :shard :test-vars
+                    :cache-authoritative? :fresh-authoritative-run-required?
+                    :cache-context :elapsed-ms :cache)))))
+
 (def ^:private cached-request-oracle
   {"sh07-cached-accepted"
    {:operation :cached-shard :shard "accepted"
@@ -145,6 +212,158 @@
     (is (= :miss (get-in receipt [:cache :decision])))
     (is (= true (get-in receipt [:integrity :source-authenticated?])))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:receipt-id receipt)))))
+
+(deftest cache-observation-is-authenticated-closed-and-nonauthoritative
+  (let [p (plan/plan {:route-id "sh07-cached-accepted" :lane :fast})
+        valid (cached-result p)
+        receipt (plan/execute-plan p (constantly valid))]
+    (is (= (:cache-observation valid)
+           (get-in receipt [:cache :observation])))
+    (is (= #{:schema :result-contract-id :artifact :shard :context :counters
+             :elapsed-ms :cache-authoritative?
+             :fresh-authoritative-run-required?}
+           (set (keys (:cache-observation valid)))))
+    (is (false? (get-in valid [:cache-observation :cache-authoritative?])))
+    (is (true? (get-in valid
+                       [:cache-observation :fresh-authoritative-run-required?])))
+    (is (= "accepted" (get-in valid [:cache-observation :shard])))
+    (is (= :gravity/sh07-cached-shard-result-v1
+           (get-in valid [:cache-observation :result-contract-id])))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+                       (constantly
+                        (assoc (passing-result)
+                               :cache-observation
+                               (:cache-observation valid)))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       (plan/plan {:route-id "sh07-authoritative" :lane :fresh})
+                       (constantly
+                        (assoc (passing-result)
+                               :cache-decision :forbidden
+                               :cache-observation
+                               (:cache-observation valid)))))))
+    (let [tightened (plan/plan
+                     {:route-id "sh07-cached-accepted" :lane :fast
+                      :resource-policy {:resource-class :memory-heavy
+                                        :timeout-ms 1000
+                                        :max-output-bytes 262144}})]
+      (is (= "UEP-RESULT-CACHE-OBSERVATION"
+             (error-id #(plan/execute-plan
+                         tightened
+                         (constantly (cached-result tightened)))))))))
+
+(deftest cache-observation-requires-raw-artifact-and-exact-bounds
+  (let [p (plan/plan {:route-id "sh07-cached-accepted" :lane :fast})
+        valid (cached-result p)]
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-REQUIRED"
+           (error-id #(plan/execute-plan
+                       p (constantly (dissoc valid :cache-observation))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       p (constantly (assoc (dissoc valid :artifacts)
+                                            :cache-observation
+                                            (:cache-observation valid)))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-REQUIRED"
+           (error-id #(plan/execute-plan
+                       p (constantly (assoc (dissoc valid :artifacts
+                                                     :cache-observation)
+                                            :status :passed))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-KEYS"
+           (error-id #(plan/execute-plan
+                       p (constantly (assoc valid :cache-observation
+                                             (assoc (:cache-observation valid)
+                                                    :extra true)))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-COUNTER"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (assoc-in valid
+                                    [:cache-observation :counters :core-hits]
+                                    100000000000000000000000000N))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-CONTEXT-KEYS"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (assoc-in valid
+                                    [:cache-observation :context :extra]
+                                    true))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION-AUTHORITY"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (assoc-in valid
+                                    [:cache-observation :cache-authoritative?]
+                                    true))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (assoc-in valid
+                                    [:cache-observation :result-contract-id]
+                                    :wrong-contract))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (assoc-in valid [:cache-observation :shard]
+                                    "contract"))))))
+    (is (= "UEP-RESULT-CACHE-OBSERVATION"
+           (error-id #(plan/execute-plan
+                       p (constantly
+                          (update valid :artifacts conj (first (:artifacts valid))))))))))
+
+(deftest cache-observation-receipt-identity-excludes-counters-and-time
+  (let [p (plan/plan {:route-id "sh07-cached-accepted" :lane :fast})
+        first-result (cached-result p {:elapsed-ms 7
+                                       :cache (assoc cached-counters
+                                                     :sh06-hits 1)})
+        second-result (cached-result p {:elapsed-ms 700
+                                        :cache (assoc cached-counters
+                                                      :sh06-hits 2
+                                                      :core-hits 3)})
+        changed-context (cached-result
+                         p {:cache-context (assoc cached-context
+                                                   :java-runtime-version "other")})
+        changed-decision (cached-result
+                          p {:cache (assoc cached-counters
+                                            :sh06-hits 0)
+                             :cache-decision :miss})
+        other-shard-plan (plan/plan {:route-id "sh07-cached-contract"
+                                     :lane :fast})
+        first-receipt (plan/execute-plan p (constantly first-result))
+        second-receipt (plan/execute-plan p (constantly second-result))
+        changed-context-receipt
+        (plan/execute-plan p (constantly changed-context))
+        changed-decision-receipt
+        (plan/execute-plan p (constantly changed-decision))
+        other-shard-receipt
+        (plan/execute-plan other-shard-plan
+                           (constantly (cached-result other-shard-plan)))]
+    (is (= (:receipt-id first-receipt) (:receipt-id second-receipt)))
+    (is (not= (:receipt-id first-receipt)
+              (:receipt-id changed-context-receipt)))
+    (is (not= (:receipt-id first-receipt)
+              (:receipt-id changed-decision-receipt)))
+    (is (not= (:receipt-id first-receipt)
+              (:receipt-id other-shard-receipt)))
+    (is (= :hit (get-in first-receipt [:cache :decision])))
+    (is (= 700 (get-in second-receipt [:cache :observation :elapsed-ms])))
+    (is (= 3 (get-in second-receipt
+                     [:cache :observation :counters :core-hits])))))
+
+(deftest generic-and-fresh-receipts-retain-cache-shape
+  (let [fast (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+        fresh (plan/plan {:route-id "sh07-authoritative" :lane :fresh})
+        generic-receipt (plan/execute-plan fast (constantly (passing-result)))
+        fresh-receipt
+        (plan/execute-plan
+         fresh
+         (constantly {:status :blocked :cache-decision :forbidden}))]
+    (is (= #{:mode :decision :authoritative?}
+           (set (keys (:cache generic-receipt)))))
+    (is (not (contains? (:cache generic-receipt) :observation)))
+    (is (= #{:mode :decision :authoritative?}
+           (set (keys (:cache fresh-receipt)))))
+    (is (not (contains? (:cache fresh-receipt) :observation)))
+    (is (= :forbidden (get-in fresh-receipt [:cache :decision])))
+    (is (false? (:authoritative? fresh-receipt)))))
 
 (deftest malformed-result-and-mutation-never-pass
   (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
