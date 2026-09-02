@@ -82,6 +82,29 @@
                        (keyword? (:target %)))
                 all-rows))))
 
+(deftest b13-static-fixture-census-is-table-driven
+  (let [census (table/fixture-census "sh07-b13")
+        accepted (:accepted census)
+        rejected (:rejected census)
+        required #{"deterministic-top-level-fragments"
+                   "cross-fragment-reference"
+                   "alias-root-aligned-fragments"}]
+    (is (= #{:suite-id :accepted :rejected :directory-accepted
+             :directory-rejected :exact-directory? :pairs}
+           (set (keys census))))
+    (is (seq accepted))
+    (is (seq rejected))
+    (is (= accepted (:directory-accepted census)))
+    (is (= rejected (:directory-rejected census)))
+    (is (true? (:exact-directory? census)))
+    (is (= 5 (count (:pairs census))))
+    (is (every? :authenticated? (:pairs census)))
+    (is (= required accepted))
+    (is (= #{"fragment-root-form-bound" "unsupported-core-form"}
+           rejected))
+    (is (= "SH07-CONFORMANCE-SUITE"
+           (error-id #(table/fixture-census "unreviewed"))))))
+
 (deftest manifest-coverage-is-derived-from-rows
   (let [value (table/table)]
     (is (= (:coverage value)

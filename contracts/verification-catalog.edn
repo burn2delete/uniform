@@ -229,8 +229,10 @@
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
+                                "contracts/verification-catalog.edn"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"]
                         :complete? true
