@@ -5,7 +5,7 @@
   "candidate_commit": "f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Draft registration of exact report-only C2 pass-cache capacity-withholding candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991. No freeze, architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "disposition": "Frozen exact report-only C2 pass-cache capacity-withholding candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after preserving concurrent main through ca05356877691a8bb3c257d8214ba69a46f20729 at reconciliation commit baae7dd3550785f6e83dc77b2f1676777d2bf005, ledger ordinal 145, and aggregate SHA-256 ea50d4760d2a4e821e3174877759684adab705448293791f8e029f02caf72b7a. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -66,6 +66,16 @@
         "command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
         "exit_code": 0,
         "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
       }
     ]
   },
@@ -97,6 +107,12 @@
       "at": "2026-09-02T21:13:05Z",
       "reason": "register exact architecture-only C2 pass-cache capacity-withholding report candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 from clean authoritative base 0565b642d46fc2504412177bbd55b8e970804c4f; no freeze or architecture review is yet requested",
       "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:16:51Z",
+      "reason": "freeze exact architecture-only report tuple at candidate f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, and report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after clean governance, architecture-authority, documentation, roadmap, language-boundary, diff, and inspect-preflight checks passed and concurrent main through ca05356877691a8bb3c257d8214ba69a46f20729 was preserved; no architecture review is yet requested",
+      "state": "frozen"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -119,6 +135,6 @@
     "this report grants no implementation acceptance, integration eligibility, roadmap completion, SH03 completion, self-hosting, release, performance, safety, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
