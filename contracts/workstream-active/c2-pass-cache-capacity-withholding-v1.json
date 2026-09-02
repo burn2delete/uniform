@@ -1,0 +1,74 @@
+{
+  "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+  "author": "c2-pass-cache-capacity-implementation",
+  "base_commit": "e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50",
+  "candidate_commit": null,
+  "clean_worktree": false,
+  "dependencies": [
+    "c2-pass-cache-capacity-withholding-architecture-v1"
+  ],
+  "disposition": "Draft implementation workstream for the integrated C2 pass-cache capacity-withholding architecture only. No candidate, implementation acceptance, review, evidence, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "evidence": {
+    "accepted_fixtures": [],
+    "rejected_fixtures": [],
+    "stable_diagnostics": [],
+    "validation_commands": []
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C2",
+    "C16",
+    "BOOT7",
+    "BOOT8",
+    "docs/phase-06-compiler-architecture/README.md",
+    "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+    "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "c2-pass-cache-capacity-implementation",
+      "at": "2026-09-02T22:29:23Z",
+      "reason": "register one draft implementation workstream from exact base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50 under the integrated C2 capacity-withholding architecture; candidate identity, reviews, fixtures, diagnostics, validation evidence, and all broader authority remain absent",
+      "state": "draft"
+    }
+  ],
+  "id": "c2-pass-cache-capacity-withholding-v1",
+  "invariant_family": "compiler/c2-pass-cache-capacity-withholding",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_projection.clj",
+    "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_request.clj",
+    "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_decode.clj",
+    "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_encode.clj",
+    "bootstrap/clojure/src/gravity/pass_cache/execution.clj",
+    "bootstrap/clojure/src/gravity/pass_cache/publication.clj",
+    "bootstrap/clojure/src/gravity/pass_cache/receipt_validation.clj",
+    "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
+    "bootstrap/clojure/test/gravity/pass_cache_test.clj"
+  ],
+  "owner": "sh-reader",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary C2 adapter, validator, canonical encoder, exception-identity transport, filesystem, locking, and test-observer boundary",
+    "the generic pass-cache remains a local speculative development optimization with its existing filesystem-provider and same-user mutation exclusions",
+    "the integrated architecture is the sole dependency and grants no implementation acceptance, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "C2 local pass-cache fresh-artifact capacity withholding implementation version 1"
+}
