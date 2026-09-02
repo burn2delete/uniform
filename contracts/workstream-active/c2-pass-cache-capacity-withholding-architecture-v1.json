@@ -5,7 +5,7 @@
   "candidate_commit": "7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Revised draft report-only candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 address all four blockers returned by reviewer c2-cache-architecture-reviewer-v1 at /root/c2_cache_arch_review on the prior exact tuple. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
+  "disposition": "Frozen revised report-only candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after addressing all four blockers returned by reviewer c2-cache-architecture-reviewer-v1 at /root/c2_cache_arch_review and passing the recorded validations. No architecture acceptance, implementation, integration, cache, release, proof, equivalence, or self-hosting authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -69,7 +69,7 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..f4da2ea6018ba01c8c9bc77a86c7a43b7475768a",
+        "command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8",
         "exit_code": 0,
         "result": "passed"
       },
@@ -80,6 +80,11 @@
       },
       {
         "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:dev-test --namespace gravity.c2-pass-cache-test --fail-fast",
         "exit_code": 0,
         "result": "passed"
       }
@@ -131,6 +136,12 @@
       "at": "2026-09-02T21:35:54Z",
       "reason": "reopen exact rejected tuple f4da2ea6018ba01c8c9bc77a86c7a43b7475768a, tree a96cef7a205fa3b4fc55ec827167d7da926d31eb, report SHA-256 a26809099b2a02f6248dfb0288bf6f640befd530bc79180912c7107164d63991 after independent reviewer c2-cache-architecture-reviewer-v1 at canonical review task /root/c2_cache_arch_review returned REJECT: specify the generic lookup failure-taxonomy seam preserving IO and ClosedByInterruptException; specify exactly-once semantic validator ownership and a prevalidated carrier; close typed capacity ExceptionInfo transport and both public evidence schemas; and bind standalone provisional provenance evidence for the real SH03 failure",
       "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T21:46:58Z",
+      "reason": "freeze revised exact report-only tuple candidate 7a0e4397bb7bf786c58eda4bb057a54ff1e0b9b8, tree 4aacf4ff94feab1b44ecafee2f2a45be8d432591, report SHA-256 c50f17688fa2e765550be778307fdd7b344d92c6b5ecf2df84598d7537e361ea, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after governance, authority, documentation, roadmap, language-boundary, C2 cache, and diff validations passed; this revision closes the prior independent review blockers without implementation or acceptance",
+      "state": "frozen"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -160,6 +171,6 @@
       "reviewer": "c2-cache-architecture-reviewer-v1"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
