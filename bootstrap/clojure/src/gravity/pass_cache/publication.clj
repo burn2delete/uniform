@@ -22,7 +22,11 @@
         artifact (if skip-artifact-validation?
                    artifact
                    (validate-artifact! validation-ops artifact
-                                       {:entry nil :key key}))
+                                       (cond-> {:entry nil :key key}
+                                         (fn? (:validate-requested-retained-artifact!
+                                               validation-ops))
+                                         (assoc :validation-role
+                                                :output-envelope))))
         artifact-id (artifact-id-of validation-ops artifact)
         artifact-bytes (encoded-value artifact maximum-blob-bytes)
         _ (when-not (= artifact-id (:output-artifact-id producer-receipt))

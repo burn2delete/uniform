@@ -54,6 +54,7 @@
   "owned_paths": [
     "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_projection.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_request.clj",
+    "bootstrap/clojure/src/gravity/c2_pass_cache/capacity_handoff.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_decode.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_encode.clj",
     "bootstrap/clojure/src/gravity/pass_cache/execution.clj",
