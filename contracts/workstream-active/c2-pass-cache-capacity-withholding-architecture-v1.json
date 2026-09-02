@@ -5,7 +5,7 @@
   "candidate_commit": "4874d95d7cb2780568e45cf0a3e0445847da1c80",
   "clean_worktree": true,
   "dependencies": [],
-  "disposition": "Independent reviewer c2-cache-architecture-reviewer-v3 at canonical task /root/c2_cache_arch_review3 accepted exact report-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006. Architecture acceptance confers no implementation, integration, cache, release, proof, equivalence, or self-hosting authority.",
+  "disposition": "Integration-eligible architecture-only tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and provisional SH03 provenance SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 after independent ACCEPT by c2-cache-architecture-reviewer-v3 at /root/c2_cache_arch_review3 and exact clean named-branch preflight against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 returned integrate_candidate. No merge, terminal publication, implementation, cache, release, proof, equivalence, or self-hosting authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "authoritative architecture base:0565b642d46fc2504412177bbd55b8e970804c4f",
@@ -15,6 +15,7 @@
             "existing generic lookup,recovery,retention-scan,and path-policy containment preserved",
             "requested-artifact exactly-once semantic validation excludes distinct recovery artifacts",
             "closed token-bound ExceptionInfo handoff preserves clean-miss versus rejected-entry lookup provenance",
+            "exact integration preflight:base ca05356877691a8bb3c257d8214ba69a46f20729 candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80 tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff recommendation integrate_candidate",
       "closed fresh-envelope dimensions:nodes,depth,bytes",
       "exact fresh validated C2 artifact returned without envelope round-trip",
       "contained local C16-POLICY evidence with cache publication withheld",
@@ -86,6 +87,11 @@
       },
       {
         "command": "clojure -M:dev-test --namespace gravity.c2-pass-cache-test --fail-fast",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --repo /private/tmp/gravity-c2-capacity-preflight.wufd82 --mode integration --base-ref main --candidate-base ca05356877691a8bb3c257d8214ba69a46f20729 --candidate-commit 4874d95d7cb2780568e45cf0a3e0445847da1c80 --candidate-tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff",
         "exit_code": 0,
         "result": "passed"
       }
@@ -173,6 +179,12 @@
       "at": "2026-09-02T22:19:54Z",
       "reason": "record independent ACCEPT from c2-cache-architecture-reviewer-v3 at canonical task /root/c2_cache_arch_review3 for exact candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006; prior rejections remain historical and no integration or implementation is performed",
       "state": "accepted"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-architecture",
+      "at": "2026-09-02T22:21:12Z",
+      "reason": "advance accepted exact architecture tuple candidate 4874d95d7cb2780568e45cf0a3e0445847da1c80, tree 99cbd21789cab83c9e7af31cd6f48cf8761d35ff, report SHA-256 70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42, and evidence SHA-256 d5e639dc40d6a5a2555298606657b74b71bf3b9addf259ccb39021bc2e196006 to integration-eligible after exact read-only preflight in a clean named temporary branch against authoritative main ca05356877691a8bb3c257d8214ba69a46f20729 passed every precondition with descendant relation and integrate_candidate recommendation; no merge, integration, terminal publication, or implementation occurred",
+      "state": "integration-eligible"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-architecture-v1",
@@ -212,6 +224,6 @@
       "reviewer": "c2-cache-architecture-reviewer-v3"
     }
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "C2 local pass-cache fresh-artifact capacity withholding architecture version 1"
 }
