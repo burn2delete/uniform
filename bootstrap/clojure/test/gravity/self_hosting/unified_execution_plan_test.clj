@@ -202,6 +202,11 @@
            (get-in projection [:legacy-routes :impact-test-planner])))
     (is (= ["sh07-b13-accepted" "sh07-conformance-table"]
            (get-in projection [:legacy-routes :iteration-cache-runner])))
+    (is (= ["sh07-b13-accepted" "sh07-cached-accepted"
+            "sh07-cached-contract" "sh07-cached-identity"
+            "sh07-cached-rejected" "sh07-cached-verification"
+            "sh07-conformance-table"]
+           (get-in projection [:legacy-routes :cached-shard-runner])))
     (is (= (set (mapcat :replacement-for (vals (:routes plan/catalog))))
            (set (keys (:legacy-routes projection)))))
     (is (= {:module-id "sh07-checked-core" :owner :gravity}
@@ -209,11 +214,11 @@
                                "bootstrap/gravity/src/gravity/checked_core.gravity"])))
     (is (= (set (keys (:routes plan/catalog)))
            (set (keys (:dependency-closures projection)))))
-    (is (= 16 (:route-count accounting)))
+    (is (= 21 (:route-count accounting)))
     (is (= 1 (:module-count accounting)))
     (is (= 2 (:suite-count accounting)))
-    (is (= 93 (:selector-count accounting)))
-    (is (= 92 (:exact-var-selector-count accounting)))
+    (is (= 109 (:selector-count accounting)))
+    (is (= 108 (:exact-var-selector-count accounting)))
     (is (= 1 (:proof-contract-selector-count accounting)))
     (is (= 14 (:fixture-suite-count accounting)))
     (is (= 68 (:accepted-fixture-count accounting)))
