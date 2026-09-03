@@ -3,11 +3,14 @@
 (defn- encode-canonical-bytes
   [value options maximum-bytes]
   (let [node (canonical-node value options)
-        bytes (.getBytes (canonical-node-text node) StandardCharsets/UTF_8)]
-    (when (> (alength bytes) maximum-bytes)
-      (cache-fail! "C16-ENTRY" "canonical cache data exceeds its byte bound"
-                   {:observed-bytes (alength bytes)
-                    :maximum-bytes maximum-bytes}))
+        bytes (.getBytes (canonical-node-text node) StandardCharsets/UTF_8)
+        observed (alength bytes)]
+    (when (> observed maximum-bytes)
+      (if-let [capacity-failure! (:capacity-failure! options)]
+        (capacity-failure! :canonical-bytes maximum-bytes observed)
+        (cache-fail! "C16-ENTRY" "canonical cache data exceeds its byte bound"
+                     {:observed-bytes observed
+                      :maximum-bytes maximum-bytes})))
     bytes))
 
 (defn- parse-integer
