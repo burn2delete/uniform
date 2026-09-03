@@ -22,6 +22,28 @@
 (def catalog-schema :gravity/verification-catalog-v1)
 (def plan-schema :gravity/unified-execution-plan-v1)
 (def receipt-schema :gravity/unified-execution-receipt-v1)
+(def artifact-invocation-schema :gravity/unified-artifact-invocation-v1)
+(def artifact-operation :run-fast-artifact)
+(def ^:private artifact-reference-schema
+  :gravity/authenticated-artifact-result-reference-v1)
+(def ^:private artifact-reference-keys
+  #{:schema :reference-id :operation :base-plan-id :binding-id :row-id :stage
+    :projection-id :result-id :selected-artifact-id
+    :source-content-hash :source-provenance-id :source-relative-path
+    :source-provenance :cache-decision :execution-boundary :authority
+    :status})
+(def ^:private artifact-reference-id-keys
+  [:schema :operation :base-plan-id :binding-id :row-id :stage
+   :projection-id :result-id :selected-artifact-id
+   :source-content-hash :source-provenance-id :source-relative-path
+   :source-provenance :cache-decision :execution-boundary :authority
+   :status])
+(def ^:private receipt-keys
+  #{:schema :version :plan-id :route-id :lane :authority :authoritative?
+    :authority-ceiling :summary :selection :closure-identity :cache :execution
+    :status :diagnostics :evidence :integrity :fresh-replayable?
+    :required-evidence :nonclaims :fresh-authoritative-gate-required?
+    :receipt-id})
 
 (def ^:private catalog-keys
   #{:schema :version :authority :authoritative? :phase :complete?
@@ -100,6 +122,16 @@
     :resource-policy :cache-policy :execution-mode :executor
     :receipt-generation :required-evidence :nonclaims :guards
     :fresh-authoritative-gate-required? :plan-id})
+(def ^:private artifact-plan-keys
+  "The ordinary plan shape plus one content-bound operation extension.
+
+  Ordinary plans never acquire this key, so their canonical value and plan id
+  remain byte-identical.  The extension is still validated by the same plan
+  engine and receipt path; it is not a second executable plan subsystem."
+  (conj plan-keys :artifact-invocation))
+(def ^:private artifact-invocation-keys
+  #{:schema :version :operation :base-plan-id :row-id :stage :binding-id :binding})
+(def ^:private artifact-row-id-max-length 256)
 (def ^:private allowed-lanes #{:fast :fresh})
 (def ^:private allowed-cache-modes #{:eligible :disabled :forbidden})
 (def ^:private allowed-execution-modes
@@ -1375,11 +1407,82 @@
                "Receipt generation cannot be disabled" {})))
   request)
 
+(declare fixture-source-binding)
+
+(defn- validate-artifact-envelope!
+  "Bound and close the artifact extension before hashing the enclosing plan."
+  [invocation]
+  (exact-keys! invocation artifact-invocation-keys
+               "UEP-ARTIFACT-INVOCATION"
+               [:plan :artifact-invocation])
+  (ensure! (= artifact-invocation-schema (:schema invocation))
+           "UEP-ARTIFACT-INVOCATION" "Artifact invocation schema is unknown" {})
+  (ensure! (= 1 (:version invocation))
+           "UEP-ARTIFACT-INVOCATION" "Artifact invocation version is unknown" {})
+  (ensure! (= artifact-operation (:operation invocation))
+           "UEP-ARTIFACT-INVOCATION" "Artifact operation is unknown" {})
+  (doseq [key [:base-plan-id :binding-id]]
+    (ensure! (and (string? (get invocation key))
+                  (re-matches #"sha256:[0-9a-f]{64}" (get invocation key)))
+             "UEP-ARTIFACT-INVOCATION" "Artifact invocation identity is invalid"
+             {:key key}))
+  (ensure! (and (string? (:row-id invocation))
+                (not (str/blank? (:row-id invocation)))
+                (<= (count (:row-id invocation)) artifact-row-id-max-length))
+           "UEP-ARTIFACT-ROW" "Artifact fixture row id is invalid or oversized" {})
+  (ensure! (and (keyword? (:stage invocation))
+                (contains? artifact-stages (:stage invocation)))
+           "UEP-ARTIFACT-STAGE" "Artifact stage is not recognized" {})
+  (let [binding (:binding invocation)]
+    (exact-keys! binding fixture-source-binding-keys
+                 "UEP-ARTIFACT-BINDING" [:plan :artifact-invocation :binding])
+    (ensure! (= fixture-source-binding-schema (:schema binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding schema is unknown" {})
+    (ensure! (= (:base-plan-id invocation) (:plan-id binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding plan identity is stale" {})
+    (ensure! (= (:binding-id invocation) (:binding-id binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding identity is stale" {})
+    (ensure! (= (:row-id invocation) (:row-id binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding row identity is stale" {})
+    (ensure! (= (:stage invocation) (:stage binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding stage is stale" {})
+    (doseq [key [:plan-id :catalog-id :binding-id :fixture-sha256]]
+      (ensure! (and (string? (get binding key))
+                    (re-matches #"sha256:[0-9a-f]{64}" (get binding key)))
+               "UEP-ARTIFACT-BINDING" "Artifact binding identity is invalid"
+               {:key key}))
+    (doseq [key [:route-id :suite-id :row-id :module-id]]
+      (let [value (get binding key)]
+        (ensure! (and (string? value) (not (str/blank? value))
+                      (<= (count value) artifact-row-id-max-length))
+                  "UEP-ARTIFACT-BINDING" "Artifact binding text is invalid"
+                  {:key key})))
+    (ensure! (and (keyword? (:module-owner binding))
+                  (<= (count (str (:module-owner binding))) artifact-row-id-max-length))
+             "UEP-ARTIFACT-BINDING" "Artifact binding owner is invalid" {})
+    (ensure! (contains? #{:accepted :rejected} (:status binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding status is invalid" {})
+    (doseq [key [:gravity-path :qst-path]]
+      (ensure! (normalized-repository-relative-path? (get binding key))
+               "UEP-ARTIFACT-BINDING-PATH" "Artifact binding path is unsafe"
+               {:key key}))
+    (ensure! (and (integer? (:fixture-bytes binding))
+                  (pos? (:fixture-bytes binding))
+                  (<= (:fixture-bytes binding) conformance/maximum-fixture-peer-bytes))
+             "UEP-ARTIFACT-BINDING" "Artifact fixture byte count is invalid" {})
+    (ensure! (true? (:authenticated? binding))
+             "UEP-ARTIFACT-BINDING" "Artifact binding is not authenticated" {}))
+  invocation)
+
 (defn validate-plan
   "Validate a generated plan, including its content identity."
   [plan-value]
   (ensure! (map? plan-value) "UEP-PLAN-SHAPE" "Execution plan must be a map" {})
-  (exact-keys! plan-value plan-keys "UEP-PLAN-KEYS" [:plan])
+  (let [artifact? (contains? plan-value :artifact-invocation)
+        expected-keys (if artifact? artifact-plan-keys plan-keys)]
+    (exact-keys! plan-value expected-keys "UEP-PLAN-KEYS" [:plan]))
+  (when (contains? plan-value :artifact-invocation)
+    (validate-artifact-envelope! (:artifact-invocation plan-value)))
   (let [without-id (dissoc plan-value :plan-id)
         expected-id (identity-of without-id)]
     (ensure! (= plan-schema (:schema plan-value)) "UEP-PLAN-SCHEMA"
@@ -1396,7 +1499,12 @@
         lane-value (get-in catalog [:lanes lane-id])
         module-id (:module-id route-value)
         module (get-in catalog [:modules module-id])
-        expected-artifact-request (module-artifact-request module-id module)]
+        expected-artifact-request (module-artifact-request module-id module)
+        artifact-invocation (:artifact-invocation plan-value)
+        artifact? (contains? plan-value :artifact-invocation)
+        expected-evidence (if artifact?
+                           (:required-evidence module)
+                           (:required-evidence route-value))]
     (ensure! (some #{lane-id} (:lanes route-value)) "UEP-PLAN-LANE"
              "Execution plan route/lane admission is stale" {})
     (ensure! (= (:selection route-value) (:selection plan-value))
@@ -1419,7 +1527,7 @@
              "UEP-PLAN-MODE" "Execution plan execution mode was altered" {})
     (ensure! (= (:executor route-value) (:executor plan-value))
              "UEP-PLAN-EXECUTOR" "Execution plan executor was altered" {})
-    (ensure! (= (:required-evidence route-value) (:required-evidence plan-value))
+    (ensure! (= expected-evidence (:required-evidence plan-value))
              "UEP-PLAN-EVIDENCE" "Execution plan required evidence was altered" {})
     (ensure! (= (:nonclaims route-value) (:nonclaims plan-value))
              "UEP-PLAN-NONCLAIMS" "Execution plan nonclaims were altered" {})
@@ -1449,6 +1557,49 @@
              "UEP-PLAN-AUTHORITY" "Execution plan authority ceiling was altered" {})
     (ensure! (false? (:authoritative? plan-value)) "UEP-PLAN-AUTHORITY"
              "Execution plan cannot be authoritative by itself" {})
+    (when artifact?
+      (ensure! (and (map? artifact-invocation)
+                    (= artifact-invocation-keys (set (keys artifact-invocation)))
+                    (= artifact-invocation-schema
+                       (:schema artifact-invocation))
+                    (= 1 (:version artifact-invocation))
+                    (= artifact-operation (:operation artifact-invocation)))
+               "UEP-ARTIFACT-INVOCATION"
+               "Artifact invocation is not a closed operation extension" {})
+      (let [base-plan (assoc (dissoc plan-value :artifact-invocation :plan-id)
+                             :required-evidence (:required-evidence route-value)
+                             :plan-id (:base-plan-id artifact-invocation))]
+        (ensure! (= (:plan-id base-plan)
+                    (:base-plan-id artifact-invocation))
+                 "UEP-ARTIFACT-BASE-PLAN"
+                 "Artifact invocation base-plan identity is stale" {})
+        ;; Revalidate the ordinary plan projection before accepting the
+        ;; operation extension.  This keeps lane, closure, resource, cache,
+        ;; and executor policy owned by the one ordinary plan contract.
+        (validate-plan base-plan)
+        (ensure! (and (string? (:row-id artifact-invocation))
+                      (not (str/blank? (:row-id artifact-invocation)))
+                      (<= (count (:row-id artifact-invocation))
+                          artifact-row-id-max-length))
+                 "UEP-ARTIFACT-ROW"
+                 "Artifact fixture row id is invalid or oversized" {})
+        (ensure! (and (keyword? (:stage artifact-invocation))
+                      (contains? artifact-stages (:stage artifact-invocation))
+                      (<= (get artifact-stage-rank (:stage artifact-invocation))
+                          (get artifact-stage-rank
+                               (get-in base-plan [:artifact-request :stage]))))
+                 "UEP-ARTIFACT-STAGE"
+                 "Artifact stage is outside the module request" {})
+        (let [binding (fixture-source-binding base-plan
+                                               (:row-id artifact-invocation)
+                                               (:stage artifact-invocation))]
+          (ensure! (= binding (:binding artifact-invocation))
+                   "UEP-ARTIFACT-BINDING"
+                   "Artifact fixture binding is stale or altered" {})
+          (ensure! (= (:binding-id binding)
+                      (:binding-id artifact-invocation))
+                   "UEP-ARTIFACT-BINDING"
+                   "Artifact fixture binding identity is stale" {}))))
     (exact-keys! (:resource-policy plan-value)
                  #{:resource-class :timeout-ms :max-output-bytes :max-test-vars}
                  "UEP-PLAN-RESOURCE" [:plan :resource-policy])
@@ -1635,33 +1786,53 @@
 
 (defn- invoke-closed-executor
   [plan-value]
-  (case (get-in plan-value [:executor :adapter])
-    :exact-tree-warm-worker
-    ;; Resolve the concrete two-lane adapter lazily to avoid a namespace cycle.
-    ;; Absence is a closed-executor failure, never permission to fall back to
-    ;; an uncoordinated current-JVM mechanism.
+  (if-let [invocation (:artifact-invocation plan-value)]
+    ;; Artifact operations use the already-authenticated fast lane adapter.
+    ;; The row and stage are read from the plan extension, never supplied as
+    ;; an unbound execute-time argument.
     (if-let [adapter (try (requiring-resolve
-                           'gravity.self-hosting.execution-lanes/run-fast!)
+                           'gravity.self-hosting.execution-lanes/run-fast-artifact!)
                           (catch Throwable _ nil))]
-      (adapter plan-value)
-      (fail! "UEP-FAST-ADAPTER-BOUNDARY"
-             "Fast execution requires the brokered lane adapter"
+      (let [;; The fast adapter derives its fixture binding from the ordinary
+            ;; plan identity.  An artifact wrapper carries a different plan
+            ;; identity and module evidence, so reconstruct the exact
+            ;; ordinary projection before crossing that seam.
+            base-plan (assoc (dissoc plan-value :artifact-invocation :plan-id)
+                             :required-evidence
+                             (:required-evidence (route (:route-id plan-value)))
+                             :plan-id (:base-plan-id invocation))]
+        (adapter base-plan (:row-id invocation) (:stage invocation)))
+      (fail! "UEP-ARTIFACT-ADAPTER-BOUNDARY"
+             "Artifact execution requires the authenticated fast lane adapter"
              {:route-id (:route-id plan-value)
-              :required-execution-mode (:execution-mode plan-value)
               :required-adapter :exact-tree-warm-worker}))
-    :authoritative-proof-runner
-    (if-let [adapter (try (requiring-resolve
-                           'gravity.self-hosting.execution-lanes/run-fresh!)
-                          (catch Throwable _ nil))]
-      (adapter plan-value)
-      (fail! "UEP-FRESH-ADAPTER-BOUNDARY"
-             "Fresh acceptance requires the isolated authoritative proof runner"
-             {:route-id (:route-id plan-value)
-              :required-execution-mode (:execution-mode plan-value)
-              :required-adapter :authoritative-proof-runner
-              :migration-gate :isolated-proof-runner-integration}))
-    (fail! "UEP-EXECUTOR-ADAPTER" "No closed executor adapter is registered"
-           {:adapter (get-in plan-value [:executor :adapter])})))
+    (case (get-in plan-value [:executor :adapter])
+      :exact-tree-warm-worker
+      ;; Resolve the concrete two-lane adapter lazily to avoid a namespace cycle.
+      ;; Absence is a closed-executor failure, never permission to fall back to
+      ;; an uncoordinated current-JVM mechanism.
+      (if-let [adapter (try (requiring-resolve
+                             'gravity.self-hosting.execution-lanes/run-fast!)
+                            (catch Throwable _ nil))]
+        (adapter plan-value)
+        (fail! "UEP-FAST-ADAPTER-BOUNDARY"
+               "Fast execution requires the brokered lane adapter"
+               {:route-id (:route-id plan-value)
+                :required-execution-mode (:execution-mode plan-value)
+                :required-adapter :exact-tree-warm-worker}))
+      :authoritative-proof-runner
+      (if-let [adapter (try (requiring-resolve
+                             'gravity.self-hosting.execution-lanes/run-fresh!)
+                            (catch Throwable _ nil))]
+        (adapter plan-value)
+        (fail! "UEP-FRESH-ADAPTER-BOUNDARY"
+               "Fresh acceptance requires the isolated authoritative proof runner"
+               {:route-id (:route-id plan-value)
+                :required-execution-mode (:execution-mode plan-value)
+                :required-adapter :authoritative-proof-runner
+                :migration-gate :isolated-proof-runner-integration}))
+      (fail! "UEP-EXECUTOR-ADAPTER" "No closed executor adapter is registered"
+             {:adapter (get-in plan-value [:executor :adapter])}))))
 
 (defn plan
   "Build a deterministic closed execution plan from a route/lane request.
@@ -1731,6 +1902,86 @@
       (assoc base :plan-id (identity-of base)))))
 
 (def build-plan plan)
+
+(defn artifact-plan
+  "Build a fast artifact operation as an extension of one ordinary plan.
+
+  Callers declare only the reviewed fixture row and earliest artifact stage.
+  The binding is derived from the canonical ordinary plan and embedded in the
+  resulting content identity.  The ordinary plan itself is never changed, and
+  the operation is dispatched only by the one-arity `execute-plan` entrypoint."
+  [request]
+  (ensure! (map? request) "UEP-ARTIFACT-REQUEST"
+           "Artifact execution request must be a map" {})
+  (let [allowed (conj #{:route-id :lane :selection :dependency-closure
+                         :resource-policy :cache-policy :execution-mode :receipt}
+                      :artifact-invocation)
+        unknown (set/difference (set (keys request)) allowed)]
+    (when (seq unknown)
+      (fail! "UEP-ARTIFACT-REQUEST-KEYS"
+             "Artifact execution request has unknown keys"
+             {:unknown (sorted-values unknown)}))
+    (ensure! (= :fast (:lane request))
+             "UEP-ARTIFACT-LANE"
+             "Artifact operations are admitted only on the fast lane" {})
+    (let [input (:artifact-invocation request)]
+      (exact-keys! input #{:row-id :stage}
+                   "UEP-ARTIFACT-REQUEST-INVOCATION-KEYS"
+                   [:request :artifact-invocation])
+      (ensure! (and (string? (:row-id input))
+                    (not (str/blank? (:row-id input)))
+                    (<= (count (:row-id input)) artifact-row-id-max-length))
+               "UEP-ARTIFACT-ROW"
+               "Artifact fixture row id is invalid or oversized"
+               {:row-id (:row-id input)})
+      (ensure! (and (keyword? (:stage input))
+                    (contains? artifact-stages (:stage input)))
+               "UEP-ARTIFACT-STAGE"
+               "Artifact stage is outside the closed pipeline"
+               {:stage (:stage input)})
+      (let [base (plan (dissoc request :artifact-invocation))
+            binding (fixture-source-binding base (:row-id input) (:stage input))
+            module (get-in catalog
+                           [:modules (:module-id (:artifact-request base))])
+            invocation {:schema artifact-invocation-schema
+                        :version 1
+                        :operation artifact-operation
+                        :base-plan-id (:plan-id base)
+                        :row-id (:row-id input)
+                        :stage (:stage input)
+                        :binding-id (:binding-id binding)
+                        :binding binding}
+            extended (assoc base
+                            :required-evidence (:required-evidence module)
+                            :artifact-invocation invocation)]
+        (let [artifact (assoc extended
+                              :plan-id (identity-of (dissoc extended :plan-id)))]
+          (validate-plan artifact)
+          artifact)))))
+
+(defn- canonical-artifact-reference-id
+  [value]
+  (if-let [id-fn (try (requiring-resolve
+                      'gravity.self-hosting.execution-lanes/artifact-reference-id)
+                     (catch Throwable _ nil))]
+    ((var-get id-fn) value)
+    (fail! "UEP-ARTIFACT-REFERENCE"
+           "Artifact reference identity helper is unavailable" {})))
+
+(defn- artifact-failure-reference
+  [invocation status cache-decision]
+  (let [base {:schema artifact-reference-schema
+              :operation artifact-operation
+              :base-plan-id (:base-plan-id invocation)
+              :binding-id (:binding-id invocation)
+              :row-id (:row-id invocation)
+              :stage (:stage invocation)
+              :projection-id nil :result-id nil :selected-artifact-id nil
+              :source-content-hash nil
+              :source-provenance-id nil :source-relative-path nil
+              :source-provenance nil :cache-decision cache-decision
+              :execution-boundary nil :authority nil :status status}]
+    (assoc base :reference-id (canonical-artifact-reference-id base))))
 
 (defn- fixture-source-row
   [table fixture-suite-ids row-id]
@@ -2132,7 +2383,151 @@
           :cache-decision (if (= :fresh (:lane plan-value)) :forbidden :miss)}
          result))
 
-(defn execute-plan
+(defn- validate-artifact-reference-binding!
+  [plan-value invocation reference]
+  (let [binding (:binding invocation)
+        provenance (:source-provenance reference)
+        root (repository-root)
+        canonical-root (when root
+                         (str (.toRealPath ^java.nio.file.Path root
+                                           (make-array LinkOption 0))))
+        canonical-source (when root
+                          (try
+                            (str (.toRealPath
+                                  (contained-path root (:gravity-path binding))
+                                  (make-array LinkOption 0)))
+                            (catch Throwable _ nil)))]
+    (ensure! (= (:fixture-sha256 binding)
+                (:source-content-hash reference))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference source hash is stale" {})
+    (ensure! (= (:gravity-path binding)
+                (:source-relative-path reference)
+                (:project-relative-path provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference source path is stale" {})
+    (ensure! (= canonical-root (:project-root-path provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference project root is stale" {})
+    (ensure! (= canonical-source (:actual-path provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference actual path is stale" {})
+    (ensure! (= (:fixture-bytes binding) (:byte-count provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference source byte count is stale" {})
+    (ensure! (= (:fixture-sha256 binding) (:content-hash provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference provenance hash is stale" {})
+    (ensure! (= (:source-provenance-id reference)
+                (canonical-artifact-reference-id provenance))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference provenance identity is stale" {})
+    (ensure! (= {:mode :fast :isolation :same-jvm
+                 :isolated? false :acceptance-authority? false
+                 :fresh-authoritative-run-required? true}
+                (:execution-boundary reference))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference execution boundary is stale" {})
+    (ensure! (= {:authoritative? false
+                 :ceiling :non-authoritative
+                 :development-only? true
+                 :nonclaims (:nonclaims plan-value)}
+                (:authority reference))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact reference authority is stale" {})
+    reference))
+
+(defn- normalize-artifact-result
+  [plan-value raw-result]
+  (let [invocation (:artifact-invocation plan-value)
+        _ (ensure! (map? raw-result) "UEP-ARTIFACT-RESULT"
+                   "Artifact adapter result must be a map" {})
+        allowed-result-keys
+        #{:status :projection :authority :execution-boundary :diagnostics
+          :mutation-detected? :provenance-checked? :source-authenticated?
+          :closure-verified? :fresh-replayable? :cache-decision :evidence
+          :artifact-reference}
+        unknown (set/difference (set (keys raw-result)) allowed-result-keys)
+        _ (when (seq unknown)
+            (fail! "UEP-ARTIFACT-RESULT-KEYS"
+                   "Artifact adapter result has unknown keys"
+                   {:unknown (sorted-values unknown)}))
+        reference (:artifact-reference raw-result)
+        ;; Projection, authority, and execution-boundary are authenticated by
+        ;; the lane and retained only in the compact reference.  They are not
+        ;; part of the ordinary UEP result contract/receipt shape.
+        result (select-keys raw-result
+                            #{:status :diagnostics :mutation-detected?
+                              :fresh-replayable? :provenance-checked?
+                              :source-authenticated? :closure-verified?
+                              :cache-decision :evidence})
+        status (:status result)
+        diagnostics-value (if (contains? result :diagnostics)
+                            (:diagnostics result)
+                            [])
+        _ (ensure! (and (vector? diagnostics-value)
+                        (<= (count diagnostics-value) 64))
+                   "UEP-ARTIFACT-DIAGNOSTICS"
+                   "Artifact diagnostics must be a bounded vector" {})
+        _ (doseq [[index diagnostic] (map-indexed vector diagnostics-value)]
+            (ensure! (and (map? diagnostic)
+                          (= #{:id :message} (set (keys diagnostic)))
+                          (string? (:id diagnostic))
+                          (not (str/blank? (:id diagnostic)))
+                          (<= (count (:id diagnostic)) 128)
+                          (string? (:message diagnostic))
+                          (not (str/blank? (:message diagnostic)))
+                          (<= (count (:message diagnostic)) 4096))
+                     "UEP-ARTIFACT-DIAGNOSTICS"
+                     "Artifact diagnostic is not a closed bounded map"
+                     {:index index :diagnostic diagnostic}))
+        diagnostics diagnostics-value
+        _ (ensure! (or (not= :passed status) (some? reference))
+                   "UEP-ARTIFACT-REFERENCE"
+                   "A passing artifact result requires an authenticated reference" {})
+        reference
+        (if reference
+          (do
+            (ensure! (and (map? reference)
+                          (= artifact-reference-keys (set (keys reference)))
+                          (= artifact-reference-schema (:schema reference)))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact adapter reference is not a closed value" {})
+            (if-let [verifier (try (requiring-resolve
+                                    'gravity.self-hosting.execution-lanes/verify-artifact-reference)
+                                   (catch Throwable _ nil))]
+              ((var-get verifier) reference)
+              (ensure! false "UEP-ARTIFACT-REFERENCE"
+                       "Artifact reference verifier is unavailable" {}))
+            (ensure! (= artifact-operation (:operation reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference operation is unknown" {})
+            (ensure! (= (:base-plan-id invocation) (:base-plan-id reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference base plan is stale" {})
+            (ensure! (= (:binding-id invocation) (:binding-id reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference binding is stale" {})
+            (ensure! (= (:row-id invocation) (:row-id reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference row is stale" {})
+            (ensure! (= (:stage invocation) (:stage reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference stage is stale" {})
+            (ensure! (= status (:status reference))
+                     "UEP-ARTIFACT-REFERENCE"
+                     "Artifact reference status is stale" {})
+            (when (= :passed status)
+              (validate-artifact-reference-binding! plan-value invocation reference))
+            reference)
+          (artifact-failure-reference invocation status
+                                      (or (:cache-decision result) :forbidden)))]
+    {:result (cond-> result
+               (= :passed status)
+               (assoc :evidence (vec (:required-evidence plan-value))))
+     :reference reference}))
+
+(defn- execute-plan*
   "Execute a validated plan through an injected bounded substrate callback.
 
   The callback receives only the immutable plan and must return a closed result
@@ -2140,14 +2535,16 @@
   elapsed time observational (and outside the identity). It never grants
   integration, proof, release, safety, performance, self-hosting, or seed
   retirement authority."
-  ([plan-value]
-   (execute-plan plan-value invoke-closed-executor))
-  ([plan-value execute-fn]
+  [plan-value execute-fn injected?]
    (validate-plan plan-value)
    (ensure! (fn? execute-fn) "UEP-EXECUTOR" "Execution callback must be callable" {})
-   (let [started (System/nanoTime)
-         result (try
-                  (execute-fn plan-value)
+   (when (and injected? (contains? plan-value :artifact-invocation))
+     (fail! "UEP-ARTIFACT-EXECUTOR"
+            "Artifact plans must use the authenticated one-arity dispatcher" {}))
+   (let [artifact? (contains? plan-value :artifact-invocation)
+         started (System/nanoTime)
+         raw-result (try
+                      (execute-fn plan-value)
                  (catch InterruptedException error
                    (.interrupt (Thread/currentThread))
                    (throw error))
@@ -2161,10 +2558,15 @@
                    (let [data (when (instance? clojure.lang.ExceptionInfo error)
                                 (ex-data error))]
                      {:status :failed
-                      :diagnostics [{:id (or (:id data) "UEP-EXECUTION-THREW")
-                                     :message "Execution substrate raised an exception"
-                                     :class (.getName (class error))
-                                     :data (dissoc data :id)}]})))
+                      :diagnostics [(cond-> {:id (or (:id data) "UEP-EXECUTION-THREW")
+                                             :message "Execution substrate raised an exception"}
+                                       (not artifact?)
+                                       (assoc :class (.getName (class error))
+                                              :data (dissoc data :id)))]})))
+         {:keys [result reference]}
+         (if (contains? plan-value :artifact-invocation)
+           (normalize-artifact-result plan-value raw-result)
+           {:result raw-result})
          result (validate-result plan-value result)
          cache-mode (get-in plan-value [:cache-policy :mode])
          cache-decision (:cache-decision result)
@@ -2184,7 +2586,9 @@
           :authoritative? false
           :authority-ceiling (:authority-ceiling plan-value)
           :status (:status result)
-          :summary (select-keys result [:test-count :pass :fail :error])
+          :summary (cond-> (select-keys result [:test-count :pass :fail :error])
+                     reference
+                     (assoc :artifact reference))
           :selection (:selection plan-value)
           :closure-identity (:closure-identity plan-value)
           :cache cache-value
@@ -2211,6 +2615,99 @@
                             (update-in [:cache :observation]
                                        #(dissoc % :counters :elapsed-ms)))
          receipt-id (identity-of receipt-identity)]
-     (assoc receipt-base :receipt-id receipt-id))))
+     (assoc receipt-base :receipt-id receipt-id)))
+
+(defn execute-plan
+  "Execute one validated plan through the closed execution engine.
+
+  Artifact plans are dispatched only by this one-arity entrypoint; the
+  two-arity callback seam remains available for ordinary focused tests."
+  ([plan-value]
+   (execute-plan* plan-value invoke-closed-executor false))
+  ([plan-value execute-fn]
+   (execute-plan* plan-value execute-fn true)))
+
+(defn verify-receipt
+  "Verify the closed receipt identity emitted by `execute-plan`.
+
+  This is an integrity check only; it does not grant any acceptance or
+  integration authority.  Artifact references are verified at their compact
+  adapter-issued boundary and remain nested inside the ordinary receipt shape."
+  ([receipt] (verify-receipt nil receipt))
+  ([plan-value receipt]
+  (exact-keys! receipt receipt-keys "UEP-RECEIPT-KEYS" [:receipt])
+  (ensure! (= receipt-schema (:schema receipt))
+           "UEP-RECEIPT-SCHEMA" "Receipt schema is not recognized" {})
+  (ensure! (= 1 (:version receipt))
+           "UEP-RECEIPT-VERSION" "Receipt version is not recognized" {})
+  (when plan-value
+    (validate-plan plan-value)
+    (doseq [[path expected actual]
+            [[ :plan-id (:plan-id plan-value) (:plan-id receipt)]
+             [ :route-id (:route-id plan-value) (:route-id receipt)]
+             [ :lane (:lane plan-value) (:lane receipt)]
+             [ :selection (:selection plan-value) (:selection receipt)]
+             [ :closure-identity (:closure-identity plan-value)
+               (:closure-identity receipt)]
+             [ :required-evidence (:required-evidence plan-value)
+               (:required-evidence receipt)]
+             [ :nonclaims (:nonclaims plan-value) (:nonclaims receipt)]]]
+      (ensure! (= expected actual) "UEP-RECEIPT-PLAN"
+               "Receipt is bound to another execution plan" {:path path}))
+    (when-let [invocation (:artifact-invocation plan-value)]
+      (let [reference (get-in receipt [:summary :artifact])]
+        (ensure! reference "UEP-RECEIPT-ARTIFACT"
+                 "Artifact plan receipt lacks its operation reference" {})
+        (doseq [[field expected actual]
+                [[:base-plan-id (:base-plan-id invocation)
+                  (:base-plan-id reference)]
+                 [:binding-id (:binding-id invocation)
+                  (:binding-id reference)]
+                 [:row-id (:row-id invocation) (:row-id reference)]
+                 [:stage (:stage invocation) (:stage reference)]]]
+          (ensure! (= expected actual) "UEP-RECEIPT-ARTIFACT"
+                   "Receipt artifact reference is bound to another invocation"
+                   {:field field}))
+        (when (= :passed (:status receipt))
+          (validate-artifact-reference-binding! plan-value invocation reference))))
+    (when (and (nil? (:artifact-invocation plan-value))
+               (contains? (:summary receipt) :artifact))
+      (fail! "UEP-RECEIPT-ARTIFACT"
+             "Ordinary plan receipt cannot carry an artifact reference" {})))
+  (ensure! (and (string? (:receipt-id receipt))
+                (re-matches #"sha256:[0-9a-f]{64}" (:receipt-id receipt)))
+           "UEP-RECEIPT-ID" "Receipt identity is malformed" {})
+  (ensure! (and (map? (:summary receipt))
+                (empty? (set/difference (set (keys (:summary receipt)))
+                                        #{:test-count :pass :fail :error :artifact})))
+           "UEP-RECEIPT-SUMMARY" "Receipt summary is not closed" {})
+  (when-let [reference (get-in receipt [:summary :artifact])]
+    (ensure! (and (map? reference)
+                  (= artifact-reference-keys (set (keys reference)))
+                  (= artifact-reference-schema (:schema reference))
+                  (= artifact-operation (:operation reference))
+                  (= (:status receipt) (:status reference)))
+             "UEP-RECEIPT-ARTIFACT" "Receipt artifact reference is not closed" {})
+    (if-let [verifier (try (requiring-resolve
+                            'gravity.self-hosting.execution-lanes/verify-artifact-reference)
+                           (catch Throwable _ nil))]
+      ((var-get verifier) reference)
+      (ensure! false "UEP-RECEIPT-ARTIFACT"
+               "Artifact reference verifier is unavailable" {}))
+    (when (= :passed (:status receipt))
+      (doseq [field [:projection-id :result-id :selected-artifact-id
+                     :source-content-hash :source-provenance-id
+                     :source-relative-path :source-provenance
+                     :execution-boundary :authority]]
+        (ensure! (some? (get reference field))
+                 "UEP-RECEIPT-ARTIFACT"
+                 "Passed receipt artifact reference is incomplete" {:field field}))))
+  (let [identity (cond-> (dissoc receipt :execution :receipt-id)
+                   (contains? (get-in receipt [:cache]) :observation)
+                   (update-in [:cache :observation]
+                              #(dissoc % :counters :elapsed-ms)))]
+    (ensure! (= (:receipt-id receipt) (identity-of identity))
+             "UEP-RECEIPT-ID" "Receipt identity does not match its content" {}))
+  receipt))
 
 (def run-plan execute-plan)
