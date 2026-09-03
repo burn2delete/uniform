@@ -1,0 +1,185 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
+  "author": "sh07-runtime-validation-architecture-v3-author",
+  "base_commit": "d49f14af9350f147fdcb475fdf2bdbf1456d8ce9",
+  "candidate_commit": "a69e9be8664a054734ff029143ed519e323755dd",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
+  ],
+  "disposition": "Integrated architecture-only authority for exact accepted candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 through authoritative-main merge 3650e57c07b8cf4916bc9540d51fb98e0fe9e22d, tree 0e73190236e070fd6cfc074d7445d1843fa8998a, with parents b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 and 3a122cc7540c8a1e26ff44f0121bc21630a3a3b2. This grants architecture authority only. A separately governed implementation, clean fixed-fuel evidence, independent implementation acceptance, and implementation integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, or release authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
+      "report-sha256:fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa",
+      "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-provisional-evidence-v3.md",
+      "provisional-evidence-sha256:ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7",
+      "candidate-tree:df14c0112d3ca428b481581c7a2e1dbbdf4e7182",
+      "integrated-dependency:sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32 candidate:202d92d12fa6c4f6a74571eb4769587c02c0963c tree:9067b033fd9e2d6b07622f148deb6e6763b29d81 report-sha256:b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db",
+      "rejected-history:sh07-b51-once-per-carrier-validation-architecture-v1 terminal-record-sha256:7adb1a0af4519978956e84ac7e4f43e70d76ff5cc3cfa83c7c43f029d68bd7ea",
+      "rejected-history:sh07-b51-once-per-invocation-nested-validation-architecture-v2 terminal-record-sha256:235aa2cc3f3995df7aa93db0587b3bea73a1e9c7184232abb24d18e889abe736",
+      "read-only implementation localization:commit 45556a3f447a1262cd5f01afe5630571ee759d18 tree e3f917afc6c2d81e805bfc86e3a185f078ff73e2",
+      "author-side adversarial pre-audit PASS:/root/runtime_validation_arch_v3/adversarial_pre_audit exact report fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa evidence ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7; not independent acceptance",
+      "closed 13-key pending descriptor, two callee-owned frame identities, three call-action producers, exact first guarded eval consumer, lexical top-level and cross-plan scope, independently retained raw, four-key issued payload, owner-safe cleanup, reference-bounded trace deltas, and exact per-machine recurrence law"
+    ],
+    "rejected_fixtures": [
+      "V1 or V2 terminally rejected history is treated as authority or dependency",
+      "call action reads admission authority, validates a receipt, publishes a scope, mutates the one-slot gate, or mints before the guarded loop",
+      "a pending descriptor is produced without a nonempty eval action or by a call-action path that does not reach the sole next guarded eval consumer",
+      "the first-eval helper runs before the maximum-step or frame guard, after the first Root-1 instruction, at another call site, or adds an action, frame, recurrence, or counter increment",
+      "a copied pending action, environment, first instruction, callee frame, invocation, argument vector, raw, scope, receipt, owner, lifecycle, token, runtime, plan, root, or carrier satisfies an identity edge",
+      "a child raw referent is derived only from its own argument or receipt rather than the independently retained admitted context raw",
+      "a losing, stale, or concurrent descriptor retires or invalidates the winner, or a cleanup owner cell retains receipt/scope/owner references after close",
+      "selected Root 8 receives a Root-8 receipt, skips general raw validation, exposes caller identity, redirects public Root 1, or mints the child before the first existing counted eval",
+      "Root 1 drops any outer/request/fresh-SH06/predecessor/contract/raw-observation/physical check or accepts physical-invocation empty map",
+      "Root 6 shares Root-1 code/output or certificate-A authority instead of the independent r6-c30/certificate-B projection",
+      "an external edge bypasses rebuilt manifest authorization, the edge count or external ceiling changes, or trace differences exceed the one private-gate row and displaced nested-proof segment",
+      "the 8388608 recurrence ceiling is raised, reset, refunded, aggregated across machines, or descriptor/mint work is misreported as a counted transition or negative fuel",
+      "provisional dirty localization is described as clean completion, benchmark evidence, architecture acceptance, implementation acceptance, or SH-07 completion"
+    ],
+    "stable_diagnostics": [
+      "WG008",
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA005",
+      "AA006",
+      "AA007",
+      "AA008",
+      "L2-UNKNOWN-CORE-FORM",
+      "L2-FUNCTION-ARITY",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR",
+      "C6-VERIFY",
+      "source-integrity-mismatch",
+      "raw-carrier-shape"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check d49f14af9350f147fdcb475fdf2bdbf1456d8ce9..a69e9be8664a054734ff029143ed519e323755dd",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "C11",
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-author",
+      "at": "2026-09-03T02:25:05Z",
+      "reason": "register immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 over history-import base d49f14af9350f147fdcb475fdf2bdbf1456d8ce9 after author-side adversarial pre-audit PASS; no freeze or independent review is yet requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-author",
+      "at": "2026-09-03T02:28:33Z",
+      "reason": "freeze immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after author-side adversarial pre-audit and documentation, roadmap, language-boundary, governance, architecture-authority, ASCII, and exact-range diff checks passed; candidate report and evidence bytes remain unchanged",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-author",
+      "at": "2026-09-03T02:29:18Z",
+      "reason": "request fresh independent exact review of immutable candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 for exact rejected-history and Attempt-32 authority, three-site pending-entry closure, first guarded eval placement, recurrence accounting, frame/argument/invocation/raw identity, scoped cross-plan transport, caller-blind Root-8 child semantics, Root-1 outer and Root-6 separation, owner-safe fatal cleanup, physical-empty-map behavior, prescribed trace deltas, D6 evidence, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-reviewer-v3",
+      "at": "2026-09-03T02:42:24Z",
+      "reason": "ACCEPT exact immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after independent exact source and contract review found V1/V2 repairs, all three call-action sites, guarded first-eval mint, action/frame/raw/argument/invocation identity, lexical scope transport, caller-blind Root-8 parity, composite CAS and owner-safe cleanup, outer predicate retention, certificate-role separation, trace accounting, fixed limits, D6 evidence obligations, and nonclaims coherent with no blocker; review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779; architecture authority only",
+      "state": "accepted"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-integrator",
+      "at": "2026-09-03T02:49:54Z",
+      "reason": "advance the accepted architecture-only tuple candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 to integration-eligible after reconciliation commit 77e9288f991ace3da14fc373681077eefd67488b with tree a253345b80fb733b81f244164b2ffb5647ed46c2 preserved the reviewed artifacts and exact integration preflight against authoritative main b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 passed every precondition with descendant relation and integrate_candidate recommendation; architecture only, with implementation and SH-07 completion still unclaimed",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-integrator",
+      "at": "2026-09-03T02:51:24Z",
+      "reason": "record integration of exact accepted architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 through authoritative-main merge 3650e57c07b8cf4916bc9540d51fb98e0fe9e22d, tree 0e73190236e070fd6cfc074d7445d1843fa8998a, with parents b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 and 3a122cc7540c8a1e26ff44f0121bc21630a3a3b2; architecture only, with implementation, fixed-fuel proof, and SH-07 completion still unclaimed",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
+  "invariant_family": "architecture/self-hosting-sh07-b51-runtime-validation-v3",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-provisional-evidence-v3.md"
+  ],
+  "owner": "sh07-b51-runtime-validation-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the bounded-preflight, source-reader, checker, digest, local-authority, pin, private identity registry, runtime-machine, external-authorizer, and observation host",
+    "the architecture shares only already-established nested authority at two private source cutpoints and grants no outer semantic fact or Gravity result",
+    "the report and provisional evidence contain no implementation, rebuilt identity cascade, authentic fixed-fuel completion, benchmark, or independent acceptance",
+    "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "sh07-runtime-validation-architecture-reviewer-v3"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
+}
