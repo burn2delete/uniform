@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Review-pending architecture candidate only for exact first-eval once-per-invocation nested validation. Independent acceptance and integration are required before any implementation workstream may depend on it. This record grants no implementation, fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
+  "disposition": "Fresh independent review ACCEPTED exact architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 with no architecture blockers; independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779. This grants architecture authority only. Latest-main reconciliation, a separately governed implementation, clean evidence, independent implementation acceptance, and integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
@@ -134,6 +134,12 @@
       "at": "2026-09-03T02:29:18Z",
       "reason": "request fresh independent exact review of immutable candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 for exact rejected-history and Attempt-32 authority, three-site pending-entry closure, first guarded eval placement, recurrence accounting, frame/argument/invocation/raw identity, scoped cross-plan transport, caller-blind Root-8 child semantics, Root-1 outer and Root-6 separation, owner-safe fatal cleanup, physical-empty-map behavior, prescribed trace deltas, D6 evidence, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-reviewer-v3",
+      "at": "2026-09-03T02:42:24Z",
+      "reason": "ACCEPT exact immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after independent exact source and contract review found V1/V2 repairs, all three call-action sites, guarded first-eval mint, action/frame/raw/argument/invocation identity, lexical scope transport, caller-blind Root-8 parity, composite CAS and owner-safe cleanup, outer predicate retention, certificate-role separation, trace accounting, fixed limits, D6 evidence obligations, and nonclaims coherent with no blocker; review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779; architecture authority only",
+      "state": "accepted"
     }
   ],
   "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -155,7 +161,13 @@
     "the report and provisional evidence contain no implementation, rebuilt identity cascade, authentic fixed-fuel completion, benchmark, or independent acceptance",
     "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "sh07-runtime-validation-architecture-reviewer-v3"
+    }
+  ],
+  "state": "accepted",
   "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
 }
