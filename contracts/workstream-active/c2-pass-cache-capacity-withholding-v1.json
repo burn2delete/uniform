@@ -2,16 +2,19 @@
   "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
   "author": "c2-pass-cache-capacity-implementation",
   "base_commit": "e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50",
-  "candidate_commit": "c8f373fb59509c4ea03339b51bdbb960c82b64cd",
+  "candidate_commit": "85e051e2bf878a1c20bdad88b9360f2419d3616c",
   "clean_worktree": true,
   "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
-  "disposition": "Independent reviewer c2-cache-implementation-reviewer-v1 rejected exact implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, and evidence digest 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77 under review report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-independent-review-v1.md, SHA256 1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8. The workstream is reopened as draft to repair requested-hit object preservation and role/key/artifact-tagged validator evidence. Current main divergence must still be reconciled before any future integration request. No acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "disposition": "Exact non-frozen repaired implementation candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, and evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081 bind requested-hit object preservation and role/key/artifact/object-tagged validator evidence for freeze and fresh independent review only. The prior rejection remains historical for its old exact tuple. Current main divergence must be reconciled before any integration request. No review of this repair, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
       "gravity.c2-pass-cache-test/c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries",
+      "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer",
+      "gravity.c2-pass-cache-test/c2-semantic-validation-trace-separates-requested-and-recovery-roles",
+      "gravity.c2-pass-cache-test/requested-hit-binding-rejects-replacement-and-post-validation-mutation",
       "gravity.self-hosting.sh03-reader-adapter-test/sh03-public-reader-accepts-its-own-gravity-source",
-      "byte-identical reader.gravity/reader.qst ordinary uncached and capacity-withheld SH03 route"
+      "byte-identical reader.gravity/reader.qst ordinary uncached and capacity-withheld SH03 route with actual cache-root zero-file inventory"
     ],
     "rejected_fixtures": [
       "gravity.c2-pass-cache-test/c2-capacity-retains-rejected-entry-and-direct-store-still-rejects",
@@ -20,12 +23,15 @@
       "corrupt retained entry remains C16-ENTRY and byte-for-byte unchanged",
       "independent review: docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-independent-review-v1.md sha256:1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8",
       "requested-hit semantic validator observes artifact object A but the public hit returns a second unvalidated decode B; equal true, identical false",
-      "aggregate validator counters do not tag validation role, requested cache-key id, and artifact id as the integrated architecture requires"
+      "aggregate validator counters do not tag validation role, requested cache-key id, and artifact id as the integrated architecture requires",
+      "equal-but-distinct semantic-validator replacement is C16-STALE",
+      "post-validation retained payload mutation is C16-STALE",
+      "rejected requested hit cannot leave a stale binding on the fresh-production path"
     ],
     "stable_diagnostics": ["C16-POLICY", "C16-KEY", "C16-STALE", "C16-ENTRY"],
     "validation_commands": [
       {
-        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<three exact focused capacity test vars recorded in the implementation evidence report>'",
+        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<six exact focused repair and capacity test vars recorded in the implementation evidence report>'",
         "exit_code": 0,
         "result": "passed"
       },
@@ -75,7 +81,7 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..c8f373fb59509c4ea03339b51bdbb960c82b64cd",
+        "command": "git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..85e051e2bf878a1c20bdad88b9360f2419d3616c",
         "exit_code": 0,
         "result": "passed"
       },
@@ -129,6 +135,7 @@
     "bootstrap/clojure/src/gravity/c2_pass_cache/capacity_handoff.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_decode.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/canonical_encode.clj",
+    "bootstrap/clojure/src/gravity/c2_pass_cache/requested_hit_binding.clj",
     "bootstrap/clojure/src/gravity/pass_cache/execution.clj",
     "bootstrap/clojure/src/gravity/pass_cache/publication.clj",
     "bootstrap/clojure/src/gravity/pass_cache/receipt_validation.clj",
