@@ -28,8 +28,28 @@
       (let [looked-up (lookup! store key operations)]
         (if (= :hit (:status looked-up))
           looked-up
-          (let [execution (pass-execution/execute-pass!
-                           execution-request (execution-operations operations))
+          (let [execution
+                (try
+                  (pass-execution/execute-pass!
+                   execution-request (execution-operations operations))
+                  (catch java.nio.channels.ClosedByInterruptException error
+                    (.interrupt (Thread/currentThread))
+                    (throw error))
+                  (catch InterruptedException error
+                    (.interrupt (Thread/currentThread))
+                    (throw error))
+                  (catch ThreadDeath error
+                    (throw error))
+                  (catch VirtualMachineError error
+                    (throw error))
+                  (catch Throwable error
+                    (if-let [handoff (:capacity-failure-handoff! operations)]
+                      (do
+                        (handoff error looked-up)
+                        ;; A handoff is an exceptional control transfer only.
+                        ;; A callback return cannot become producer output.
+                        (throw error))
+                      (throw error))))
                 rejected? (= :rejected
                              (get-in looked-up [:cache-evidence :status]))]
             (if rejected?
