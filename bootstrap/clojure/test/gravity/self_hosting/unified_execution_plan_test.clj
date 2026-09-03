@@ -1,5 +1,7 @@
 (ns gravity.self-hosting.unified-execution-plan-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.java.io :as io]
+            [gravity.self-hosting.execution-lanes :as lanes]
             [gravity.self-hosting.sh07-conformance-table :as conformance]
             [gravity.self-hosting.unified-execution-plan :as plan]))
 
@@ -82,6 +84,64 @@
             (dissoc overrides :test :pass :fail :error :artifact :shard :test-vars
                     :cache-authoritative? :fresh-authoritative-run-required?
                     :cache-context :elapsed-ms :cache)))))
+
+(def ^:private artifact-row-id
+  "sh07-b15/keyword-lookup-zero-arity")
+(def ^:private artifact-stage-order
+  [:source :reader :syntax :macroexpansion :resolution :checked-core])
+
+(defn- artifact-sha
+  [digit]
+  (str "sha256:" (apply str (repeat 64 (str digit)))))
+
+(defn- test-repository-root
+  []
+  (loop [path (.getCanonicalFile (io/file (System/getProperty "user.dir")))]
+    (if (.isFile (io/file path "contracts/verification-catalog.edn"))
+      path
+      (if-let [parent (.getParentFile path)]
+        (recur parent)
+        (throw (ex-info "test repository root is unavailable" {}))))))
+
+(defn- compact-artifact-reference
+  "Build the compact value an authenticated lane would return after its
+  already-validated worker projection.  The test deliberately does not pass a
+  projection through UEP; the lane trust-point tests cover that larger shape."
+  [artifact-plan stage]
+  (let [invocation (:artifact-invocation artifact-plan)
+        binding (:binding invocation)
+        root (.getCanonicalPath (test-repository-root))
+        provenance {:actual-path (.getCanonicalPath
+                                  (io/file (test-repository-root)
+                                           (:gravity-path binding)))
+                    :project-root-path root
+                    :project-relative-path (:gravity-path binding)
+                    :byte-count (:fixture-bytes binding)
+                    :content-hash (:fixture-sha256 binding)}
+        base {:schema lanes/artifact-reference-schema
+              :operation :run-fast-artifact
+              :base-plan-id (:base-plan-id invocation)
+              :binding-id (:binding-id invocation)
+              :row-id (:row-id invocation)
+              :stage stage
+              :projection-id (artifact-sha "a")
+              :result-id (artifact-sha "b")
+              :selected-artifact-id (artifact-sha (inc (.indexOf artifact-stage-order stage)))
+              :source-content-hash (:fixture-sha256 binding)
+              :source-provenance-id (lanes/artifact-reference-id provenance)
+              :source-relative-path (:gravity-path binding)
+              :source-provenance provenance
+              :cache-decision :miss
+              :execution-boundary {:mode :fast :isolation :same-jvm
+                                   :isolated? false
+                                   :acceptance-authority? false
+                                   :fresh-authoritative-run-required? true}
+              :authority {:authoritative? false
+                          :ceiling :non-authoritative
+                          :development-only? true
+                          :nonclaims (:nonclaims artifact-plan)}
+              :status :passed}]
+    (assoc base :reference-id (lanes/artifact-reference-id base))))
 
 (def ^:private cached-request-oracle
   {"sh07-cached-accepted"
@@ -389,6 +449,233 @@
     (is (= :miss (get-in receipt [:cache :decision])))
     (is (= true (get-in receipt [:integrity :source-authenticated?])))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:receipt-id receipt)))))
+
+(deftest ordinary-receipt-shape-and-golden-identity-remain-byte-stable
+  (let [p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})
+        receipt (plan/execute-plan p (constantly (passing-result)))]
+    (is (= #{:schema :version :plan-id :route-id :lane :authority
+             :authoritative? :authority-ceiling :summary :selection
+             :closure-identity :cache :execution :status :diagnostics :evidence
+             :integrity :fresh-replayable? :required-evidence :nonclaims
+             :fresh-authoritative-gate-required? :receipt-id}
+           (set (keys receipt))))
+    (is (= "sha256:560657c66294ae325a97af63d627844c5496ab47f813081bb2a24ed54674f5f6"
+           (:receipt-id receipt)))
+    (is (= receipt (plan/verify-receipt p receipt)))))
+
+(deftest artifact-plans-bind-earliest-requested-stage-and-evidence
+  (let [base (plan/plan {:route-id "sh07-conformance-table" :lane :fast})]
+    (doseq [stage artifact-stage-order]
+      (let [artifact (plan/artifact-plan
+                      {:route-id "sh07-conformance-table"
+                       :lane :fast
+                       :artifact-invocation {:row-id artifact-row-id
+                                             :stage stage}})]
+        (is (= (:plan-id base)
+               (:base-plan-id (:artifact-invocation artifact))))
+        (is (= stage (get-in artifact [:artifact-invocation :stage])))
+        (is (= [:source-identity :diagnostics :receipt]
+               (:required-evidence artifact)))
+        (is (= artifact (plan/validate-plan artifact)))))))
+
+(deftest artifact-plan-rejects-fresh-lane
+  (is (= "UEP-ARTIFACT-LANE"
+         (error-id #(plan/artifact-plan
+                     {:route-id "sh07-authoritative"
+                      :lane :fresh
+                      :artifact-invocation {:row-id artifact-row-id
+                                            :stage :source}})))))
+
+(deftest artifact-plan-preidentity-envelope-is-bounded
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation {:row-id artifact-row-id
+                                         :stage :source}})
+        malformed (assoc-in artifact [:artifact-invocation :binding :schema]
+                            (iterate inc 0))]
+    (is (= "UEP-ARTIFACT-BINDING"
+           (error-id #(plan/validate-plan malformed))))))
+
+(deftest artifact-execute-plan-is-closed-and-receipt-bound
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation {:row-id artifact-row-id
+                                         :stage :source}})
+        reference (compact-artifact-reference artifact :source)
+        callback-calls (atom [])
+        receipt (with-redefs [lanes/run-fast-artifact!
+                              (fn [base row stage]
+                                (swap! callback-calls conj [(:plan-id base) row stage])
+                                {:status :passed
+                                 :diagnostics []
+                                 :evidence []
+                                 :mutation-detected? false
+                                 :fresh-replayable? false
+                                 :provenance-checked? true
+                                 :source-authenticated? true
+                                 :closure-verified? true
+                                 :cache-decision :miss
+                                 :artifact-reference reference})]
+                  (plan/execute-plan artifact))]
+    (is (= [(:base-plan-id (:artifact-invocation artifact))
+            artifact-row-id :source]
+           (first @callback-calls)))
+    (is (= :passed (:status receipt)))
+    (is (= reference (get-in receipt [:summary :artifact])))
+    (is (= [:source-identity :diagnostics :receipt]
+           (:required-evidence receipt)))
+    (is (= receipt (plan/verify-receipt artifact receipt)))
+    (is (not (contains? receipt :projection)))
+    (is (not (contains? receipt :artifact-reference)))))
+
+(deftest artifact-two-arity-injected-seam-and-diagnostics-fail-closed
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation {:row-id artifact-row-id
+                                         :stage :source}})]
+    (is (= "UEP-ARTIFACT-EXECUTOR"
+           (error-id #(plan/execute-plan artifact
+                                          (constantly {:status :failed})))))
+    (is (= "UEP-ARTIFACT-DIAGNOSTICS"
+           (error-id #(with-redefs [lanes/run-fast-artifact!
+                                    (fn [_ _ _]
+                                      {:status :failed
+                                       :diagnostics [{:id "x" :message "ok"
+                                                      :extra true}]})]
+                            (plan/execute-plan artifact)))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(with-redefs [lanes/run-fast-artifact!
+                                    (fn [_ _ _]
+                                      {:status :passed
+                                       :diagnostics []
+                                       :mutation-detected? false
+                                       :fresh-replayable? false
+                                       :provenance-checked? true
+                                       :source-authenticated? true
+                                       :closure-verified? true
+                                       :cache-decision :miss})]
+                            (plan/execute-plan artifact)))))
+  ))
+
+(deftest artifact-receipt-and-plan-rebinding-fail-closed
+  (let [artifact (plan/artifact-plan
+                  {:route-id "sh07-conformance-table"
+                   :lane :fast
+                   :artifact-invocation {:row-id artifact-row-id
+                                         :stage :source}})
+        reference (compact-artifact-reference artifact :source)
+        receipt (with-redefs [lanes/run-fast-artifact!
+                              (fn [_ _ _]
+                                {:status :passed :diagnostics []
+                                 :mutation-detected? false :fresh-replayable? false
+                                 :provenance-checked? true :source-authenticated? true
+                                 :closure-verified? true :cache-decision :miss
+                                 :artifact-reference reference})]
+                  (plan/execute-plan artifact))
+        changed-reference (assoc-in receipt [:summary :artifact :source-content-hash]
+                                     (artifact-sha "d"))
+        rebound-reference
+        (update-in changed-reference [:summary :artifact]
+                   (fn [value]
+                     (assoc value :reference-id
+                            (lanes/artifact-reference-id
+                             (dissoc value :reference-id)))))
+        rebound-reference
+        (assoc rebound-reference
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc rebound-reference :execution :receipt-id)))
+        tampered-root
+        (-> receipt
+            (assoc-in [:summary :artifact :source-provenance :project-root-path]
+                      "/wrong-root")
+            (update-in [:summary :artifact]
+                       (fn [value]
+                         (assoc value :reference-id
+                                (lanes/artifact-reference-id
+                                 (dissoc value :reference-id))))))
+        tampered-root
+        (assoc tampered-root
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc tampered-root :execution :receipt-id)))
+        tampered-actual
+        (-> receipt
+            (assoc-in [:summary :artifact :source-provenance :actual-path]
+                      "/wrong-source")
+            (update-in [:summary :artifact]
+                       (fn [value]
+                         (assoc value :reference-id
+                                (lanes/artifact-reference-id
+                                 (dissoc value :reference-id))))))
+        tampered-actual
+        (assoc tampered-actual
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc tampered-actual :execution :receipt-id)))
+        tampered-provenance-id
+        (-> receipt
+            (assoc-in [:summary :artifact :source-provenance-id]
+                      (artifact-sha "e"))
+            (update-in [:summary :artifact]
+                       (fn [value]
+                         (assoc value :reference-id
+                                (lanes/artifact-reference-id
+                                 (dissoc value :reference-id))))))
+        tampered-provenance-id
+        (assoc tampered-provenance-id
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc tampered-provenance-id :execution :receipt-id)))
+        tampered-authority
+        (-> receipt
+            (assoc-in [:summary :artifact :authority :authoritative?] true)
+            (update-in [:summary :artifact]
+                       (fn [value]
+                         (assoc value :reference-id
+                                (lanes/artifact-reference-id
+                                 (dissoc value :reference-id))))))
+        tampered-authority
+        (assoc tampered-authority
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc tampered-authority :execution :receipt-id)))
+        tampered-boundary
+        (-> receipt
+            (assoc-in [:summary :artifact :execution-boundary :isolated?] true)
+            (update-in [:summary :artifact]
+                       (fn [value]
+                         (assoc value :reference-id
+                                (lanes/artifact-reference-id
+                                 (dissoc value :reference-id))))))
+        tampered-boundary
+        (assoc tampered-boundary
+               :receipt-id
+               ((deref (var gravity.self-hosting.unified-execution-plan/identity-of))
+                (dissoc tampered-boundary :execution :receipt-id)))
+        changed-plan (plan/artifact-plan
+                      {:route-id "sh07-conformance-table" :lane :fast
+                       :artifact-invocation {:row-id "sh07-b15/basic-keyword-map-lookup"
+                                             :stage :source}})]
+    (is (= "UEP-ARTIFACT-REFERENCE-ID"
+           (error-id #(plan/verify-receipt changed-reference))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact rebound-reference))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact tampered-root))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact tampered-actual))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact tampered-provenance-id))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact tampered-authority))))
+    (is (= "UEP-ARTIFACT-REFERENCE"
+           (error-id #(plan/verify-receipt artifact tampered-boundary))))
+    (is (= "UEP-RECEIPT-PLAN"
+           (error-id #(plan/verify-receipt changed-plan receipt))))))
 
 (deftest cache-observation-is-authenticated-closed-and-nonauthoritative
   (let [p (plan/plan {:route-id "sh07-cached-accepted" :lane :fast})

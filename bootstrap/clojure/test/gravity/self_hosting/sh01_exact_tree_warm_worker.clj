@@ -3,19 +3,26 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.development-test-runner :as runner])
+            [gravity.development-test-runner :as runner]
+            [gravity.digest :as digest]
+            [gravity.bootstrap :as bootstrap]
+            [gravity.c2-pass-cache :as c2-pass-cache])
   (:import (java.io BufferedReader ByteArrayOutputStream InputStreamReader
                     OutputStream OutputStreamWriter PushbackReader StringReader)
            (java.nio ByteBuffer)
            (java.nio.charset CodingErrorAction)
            (java.nio.charset StandardCharsets)
            (java.nio.file Files LinkOption Path Paths)
+           (java.nio.file.attribute BasicFileAttributes)
            (java.util.concurrent TimeUnit)))
 
 (def request-schema :gravity/exact-tree-warm-worker-request-v1)
 (def cached-request-schema :gravity/exact-tree-warm-worker-cached-request-v1)
 (def response-schema :gravity/exact-tree-warm-worker-response-v2)
 (def cached-response-schema :gravity/exact-tree-warm-worker-cached-response-v1)
+(def artifact-request-schema :gravity/exact-tree-warm-worker-artifact-request-v1)
+(def artifact-response-schema :gravity/exact-tree-warm-worker-artifact-response-v1)
+(def artifact-projection-schema :gravity/authenticated-artifact-fast-projection-v1)
 (def ready-schema :gravity/exact-tree-warm-worker-ready-v1)
 (def ^:private response-prefix "WARM_DEV ")
 (def ^:private maximum-line-length 65536)
@@ -36,6 +43,44 @@
   #{:schema :request-id :operation :candidate-commit :candidate-tree
     :lane :route-id :plan-id :catalog-id :closure-identity
     :result-contract-id :shard})
+(def ^:private artifact-request-keys
+  #{:schema :request-id :operation :candidate-commit :candidate-tree
+    :lane :route-id :plan-id :catalog-id :closure-identity :binding-id
+    :row-id :stage})
+(def ^:private artifact-response-keys
+  #{:schema :authority :authoritative? :request-id :candidate-commit
+    :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
+    :binding-id :row-id :stage :outcome :exit-code :elapsed-ns
+    :request-count :projection :stdout :stderr :output-truncated?})
+(def ^:private artifact-projection-keys
+  #{:schema :binding-id :projection-id :pipeline :result-id :requested-stage
+    :selected-artifact-id :stage-artifact-ids :source-content-hash
+    :source-provenance-id :source-provenance :source-relative-path :cache-decision
+    :execution-boundary :authority :mutation-detected?
+    :provenance-checked? :source-authenticated? :closure-verified?
+    :fresh-replayable? :diagnostics})
+(def ^:private artifact-projection-semantic-keys
+  [:schema :binding-id :pipeline :result-id :requested-stage
+   :selected-artifact-id :stage-artifact-ids :source-content-hash
+   :source-provenance-id :source-provenance :execution-boundary :authority :mutation-detected?
+   :provenance-checked? :source-authenticated? :closure-verified?
+   :fresh-replayable? :diagnostics])
+(def ^:private artifact-authority-keys
+  #{:authoritative? :ceiling :development-only? :nonclaims})
+(def ^:private artifact-boundary-keys
+  #{:mode :isolation :isolated? :acceptance-authority?
+    :fresh-authoritative-run-required?})
+(def ^:private artifact-provenance-keys
+  #{:actual-path :project-root-path :project-relative-path
+    :byte-count :content-hash})
+(def ^:private artifact-diagnostic-keys #{:id :message})
+(def ^:private artifact-nonclaims
+  [:integration :proof :release :self-hosting :seed-retirement :safety :performance])
+(def ^:private artifact-max-stage-rank
+  (zipmap [:source :reader :syntax :macroexpansion :resolution :checked-core]
+          (range)))
+(def ^:private artifact-max-row-id-length 256)
+(def ^:private artifact-max-bytes (* 256 1024))
 (def ^:private cached-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
@@ -60,8 +105,105 @@
 (def ^:private cached-context-plan-semantic-hash
   "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd")
 
+(def ^:dynamic *artifact-pipeline-runner*
+  "Injected pipeline seam for bounded worker tests."
+  nil)
+
 (defn- fail! [id message data]
   (throw (ex-info message (assoc data :id id))))
+
+(defn- ensure!
+  [value id message data]
+  (when-not value (fail! id message data))
+  value)
+
+(defn- repository-root
+  []
+  (loop [candidate (.toPath (java.io.File. (System/getProperty "user.dir")))]
+    (if (Files/isRegularFile (.resolve candidate "contracts/verification-catalog.edn")
+                             (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+      (.toRealPath candidate (make-array LinkOption 0))
+      (if-let [parent (.getParent candidate)]
+        (recur parent)
+        (fail! "WARM-ARTIFACT-ROOT" "Could not locate repository root" {})))))
+
+(defn- artifact-path-parts
+  [^Path root relative]
+  (let [relative-path (Paths/get ^String relative (make-array String 0))
+        candidate (.normalize (.resolve root relative-path))]
+    (ensure! (and (not (.isAbsolute relative-path))
+                  (.startsWith candidate root)
+                  (= relative (str (.normalize relative-path)))
+                  (not (Files/isSymbolicLink root)))
+             "WARM-ARTIFACT-PATH" "Artifact binding path is not canonical"
+             {:path relative})
+    (loop [current root
+           names (seq (iterator-seq (.iterator relative-path)))
+           paths [root]]
+      (if-let [name (first names)]
+        (let [next-path (.resolve ^Path current ^Path name)]
+          (ensure! (Files/exists next-path
+                                  (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+                   "WARM-ARTIFACT-MISSING" "Artifact binding path is missing"
+                   {:path relative :component name})
+          (ensure! (not (Files/isSymbolicLink next-path))
+                   "WARM-ARTIFACT-SYMLINK" "Artifact binding path contains a symlink"
+                   {:path relative :component name})
+          (when (next names)
+            (ensure! (Files/isDirectory next-path
+                                        (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+                     "WARM-ARTIFACT-PATH" "Artifact binding parent is not a directory"
+                     {:path relative :component name}))
+          (recur next-path (next names) (conj paths next-path)))
+        {:paths paths :file candidate}))))
+
+(defn- file-attributes
+  [^Path path]
+  (let [attrs (Files/readAttributes path BasicFileAttributes
+                                    (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))]
+    {:directory? (.isDirectory attrs)
+     :regular? (.isRegularFile attrs)
+     :symbolic-link? (Files/isSymbolicLink path)
+     :file-key (str (.fileKey attrs))
+     :size (.size attrs)
+     :modified-ms (.toMillis (.lastModifiedTime attrs))}))
+
+(defn- artifact-path-snapshot
+  [^Path root relative]
+  (let [{:keys [paths file]} (artifact-path-parts root relative)
+        attrs-before (mapv (fn [^Path path] [(str (.relativize root path))
+                                             (file-attributes path)]) paths)
+        file-attrs (last attrs-before)]
+    (ensure! (and (true? (get-in file-attrs [1 :regular?]))
+                  (false? (get-in file-attrs [1 :symbolic-link?])))
+             "WARM-ARTIFACT-FILE" "Artifact binding target is not a regular file"
+             {:path relative})
+    (let [snapshot (c2-pass-cache/bounded-source-snapshot! file artifact-max-bytes)
+          attrs-after (mapv (fn [^Path path] [(str (.relativize root path))
+                                              (file-attributes path)]) paths)]
+      (ensure! (= attrs-before attrs-after)
+               "WARM-ARTIFACT-PATH-MUTATION"
+               "Artifact binding ancestors changed during snapshot"
+               {:path relative})
+      {:relative relative
+       :paths attrs-after
+       :bytes-count (:byte-count snapshot)
+       :bytes-sha256 (:bytes-hash snapshot)
+       :bytes (:bytes snapshot)})))
+
+(defn- artifact-pair-snapshot
+  [^Path root binding]
+  (let [gravity (artifact-path-snapshot root (:gravity-path binding))
+        qst (artifact-path-snapshot root (:qst-path binding))]
+    (ensure! (and (= (:bytes-count gravity) (:bytes-count qst))
+                  (= (:bytes-sha256 gravity) (:bytes-sha256 qst))
+                  (java.util.Arrays/equals ^bytes (:bytes gravity)
+                                           ^bytes (:bytes qst)))
+             "WARM-ARTIFACT-PAIR" "Fixture peers changed or differ" {})
+    {:gravity gravity
+     :qst qst
+     :pair-sha256 (:bytes-sha256 gravity)
+     :pair-bytes (:bytes-count gravity)}))
 
 (defn- strict-edn [text]
   (let [eof (Object.)]
@@ -381,6 +523,282 @@
               :actual (:result-contract-id request)}))
     plan))
 
+(defn- artifact-plan-for-request
+  "Rebuild the fast UEP plan and fixture binding from request identities.
+
+  The request carries no source path or compiler arguments.  Paths are derived
+  only after this route, closure, and row binding have been authenticated."
+  [request]
+  (ensure! (and (string? (:row-id request))
+                (not (clojure.string/blank? (:row-id request)))
+                (<= (count (:row-id request)) artifact-max-row-id-length))
+           "WARM-ARTIFACT-ROW" "Artifact fixture row id is invalid or oversized"
+           {:row-id (:row-id request) :maximum artifact-max-row-id-length})
+  (ensure! (and (keyword? (:stage request))
+                (contains? artifact-max-stage-rank (:stage request)))
+           "WARM-ARTIFACT-STAGE" "Artifact stage is outside the closed pipeline"
+           {:stage (:stage request)})
+  (let [plan-fn (or (requiring-resolve
+                     'gravity.self-hosting.unified-execution-plan/plan)
+                    (fail! "WARM-ARTIFACT-PLAN" "UEP planner is unavailable" {}))
+        validate-fn (or (requiring-resolve
+                         'gravity.self-hosting.unified-execution-plan/validate-plan)
+                        (fail! "WARM-ARTIFACT-PLAN" "UEP validator is unavailable" {}))
+        binding-fn (or (requiring-resolve
+                        'gravity.self-hosting.unified-execution-plan/fixture-source-binding)
+                       (fail! "WARM-ARTIFACT-BINDING" "UEP fixture binding is unavailable" {}))
+        plan (plan-fn {:route-id (:route-id request) :lane :fast})]
+    (ensure! (= :fast (:lane request)) "WARM-ARTIFACT-LANE"
+             "Artifact request lane must be exactly :fast" {})
+    (validate-fn plan)
+    (ensure! (= :fast (:lane plan)) "WARM-ARTIFACT-LANE"
+             "Artifact worker accepts only fast plans" {})
+    (ensure! (= :warm-bounded-process (:execution-mode plan))
+             "WARM-ARTIFACT-LANE" "Artifact worker accepts only warm plans" {})
+    (doseq [[field value]
+            [[:plan-id (:plan-id plan)]
+             [:catalog-id (:catalog-id plan)]
+             [:closure-identity (:closure-identity plan)]]]
+      (ensure! (= value (get request field)) "WARM-ARTIFACT-IDENTITY"
+               "Artifact request identity differs from the canonical plan"
+               {:field field :expected value :actual (get request field)}))
+    (let [binding (binding-fn plan (:row-id request) (:stage request))]
+      (ensure! (= (:binding-id binding) (:binding-id request))
+               "WARM-ARTIFACT-BINDING" "Fixture binding identity changed" {})
+      {:plan plan :binding binding})))
+
+(defn- validate-artifact-projection!
+  [projection request binding]
+  (let [entries (:stage-artifact-ids projection)]
+    (ensure! (and (vector? entries)
+                  (every? #(and (vector? %) (= 3 (count %))) entries))
+             "WARM-ARTIFACT-PROJECTION"
+             "Artifact stage tuples are malformed" {})
+    (let [stages (mapv first entries)
+          ids (mapv second entries)
+          expected-stages (vec (take (count entries)
+                                     [:source :reader :syntax :macroexpansion
+                                      :resolution :checked-core]))]
+    (ensure! (and (map? projection)
+                (= artifact-projection-keys (set (keys projection)))
+                (= artifact-projection-schema (:schema projection))
+                (= (:binding-id binding) (:binding-id projection))
+                (= (:fixture-sha256 binding) (:source-content-hash projection))
+                (= (:gravity-path binding) (:source-relative-path projection))
+                (re-matches identity-pattern (:projection-id projection))
+                (re-matches identity-pattern (:result-id projection))
+                (re-matches identity-pattern (:selected-artifact-id projection))
+                (= (:stage request) (:requested-stage projection))
+                (= :fast (get-in projection [:execution-boundary :mode]))
+                (= :same-jvm (get-in projection [:execution-boundary :isolation]))
+                (false? (get-in projection [:execution-boundary :isolated?]))
+                (false? (get-in projection [:execution-boundary :acceptance-authority?]))
+                (true? (get-in projection [:execution-boundary :fresh-authoritative-run-required?]))
+                (= artifact-boundary-keys
+                   (set (keys (:execution-boundary projection))))
+                (= :non-authoritative (get-in projection [:authority :ceiling]))
+                (= artifact-authority-keys (set (keys (:authority projection))))
+                (false? (get-in projection [:authority :authoritative?]))
+                (true? (get-in projection [:authority :development-only?]))
+                (= artifact-nonclaims (get-in projection [:authority :nonclaims]))
+                (false? (:mutation-detected? projection))
+                (true? (:provenance-checked? projection))
+                (true? (:source-authenticated? projection))
+                (true? (:closure-verified? projection))
+                (false? (:fresh-replayable? projection))
+                (vector? (:stage-artifact-ids projection))
+                (<= 1 (count (:stage-artifact-ids projection)) 6)
+                (= expected-stages stages)
+                (every? (fn [entry]
+                          (and (vector? entry) (= 3 (count entry))
+                               (keyword? (first entry))
+                               (string? (second entry))
+                               (vector? (nth entry 2))))
+                        (:stage-artifact-ids projection))
+                (every? (fn [index]
+                          (= (nth (nth entries index) 2)
+                             (vec (take index ids))))
+                        (range (count entries)))
+                (vector? (:diagnostics projection))
+                (<= (count (:diagnostics projection)) 64)
+                (every? (fn [diagnostic]
+                          (and (map? diagnostic)
+                               (= artifact-diagnostic-keys
+                                  (set (keys diagnostic)))
+                               (string? (:id diagnostic))
+                               (<= 1 (count (:id diagnostic)) 128)
+                               (string? (:message diagnostic))
+                               (<= 1 (count (:message diagnostic)) 4096)))
+                        (:diagnostics projection))
+                (#{:hit :miss} (:cache-decision projection))
+                (re-matches identity-pattern (:source-provenance-id projection))
+                (= (:source-provenance-id projection)
+                   (bootstrap/reader-canonical-hash
+                    (:source-provenance projection)))
+                (= artifact-provenance-keys
+                   (set (keys (:source-provenance projection))))
+                (= (:source-relative-path projection)
+                   (get-in projection [:source-provenance :project-relative-path]))
+                (= (:source-content-hash projection)
+                   (get-in projection [:source-provenance :content-hash]))
+                (re-matches identity-pattern
+                             (get-in projection [:source-provenance :content-hash]))
+                (integer? (get-in projection [:source-provenance :byte-count]))
+                (pos? (get-in projection [:source-provenance :byte-count]))
+                (string? (get-in projection [:source-provenance :actual-path]))
+                (string? (get-in projection [:source-provenance :project-root-path]))
+                (= (:projection-id projection)
+                   (bootstrap/reader-canonical-hash
+                    (select-keys projection artifact-projection-semantic-keys))))
+           "WARM-ARTIFACT-PROJECTION" "Artifact projection is not closed"
+           {:projection projection :request request})
+      (ensure! (= (:selected-artifact-id projection)
+                  (second (last entries)))
+               "WARM-ARTIFACT-PROJECTION"
+               "Selected artifact does not match the requested stage" {})
+      projection)))
+
+(defn- artifact-projection
+  [request binding result]
+  (let [stage-map (:stage-artifacts result)
+        stages (vec (keys stage-map))
+        selected (:artifact result)
+        provenance (:provenance selected)
+        source-identity (:source-identity selected)
+        root (repository-root)
+        expected-path (str (.toRealPath (.resolve root ^String (:gravity-path binding))
+                                       (make-array LinkOption 0)))
+        source-provenance {:actual-path (:actual-path provenance)
+                           :project-root-path (:project-root-path provenance)
+                           :project-relative-path (:project-relative-path provenance)
+                           :byte-count (:byte-count source-identity)
+                           :content-hash (:bytes-hash source-identity)}
+        _ (ensure! (and (= (:source-content-hash result)
+                           (:fixture-sha256 binding))
+                          (= (:bytes-hash source-identity)
+                             (:fixture-sha256 binding))
+                          (= (:byte-count source-identity)
+                             (:fixture-bytes binding))
+                          (= expected-path (:actual-path provenance))
+                          (= (:gravity-path binding)
+                             (:project-relative-path provenance))
+                          (= (str (.toRealPath root (make-array LinkOption 0)))
+                             (:project-root-path provenance)))
+                   "WARM-ARTIFACT-PROVENANCE"
+                   "Pipeline result provenance does not match the bound fixture"
+                   {:binding binding
+                    :provenance provenance
+                    :source-identity source-identity
+                    :expected-path expected-path
+                    :root (str root)})
+        projection {:schema artifact-projection-schema
+                    :binding-id (:binding-id binding)
+                    :pipeline (:pipeline result)
+                    :result-id (:result-id result)
+                    :requested-stage (:requested-stage result)
+                    :selected-artifact-id (:artifact-id selected)
+                    :stage-artifact-ids
+                    (mapv (fn [stage]
+                            [stage (:artifact-id (get stage-map stage))
+                             (vec (:input-artifact-ids (get stage-map stage)))])
+                          stages)
+                    :source-content-hash (:source-content-hash result)
+                    :source-provenance-id
+                    (bootstrap/reader-canonical-hash source-provenance)
+                    :source-provenance source-provenance
+                    :source-relative-path (:gravity-path binding)
+                    :cache-decision (if (true? (get-in selected [:cache-policy :observed-hit?]))
+                                      :hit :miss)
+                    :execution-boundary {:mode :fast :isolation :same-jvm
+                                         :isolated? false
+                                         :acceptance-authority? false
+                                         :fresh-authoritative-run-required? true}
+                    :authority {:authoritative? false
+                                :ceiling :non-authoritative
+                                :development-only? true
+                                :nonclaims artifact-nonclaims}
+                    :mutation-detected? false
+                    :provenance-checked? true
+                    :source-authenticated? true
+                    :closure-verified? true
+                    :fresh-replayable? false
+                    :diagnostics (vec (or (:diagnostics selected) []))}
+        projection (assoc projection :projection-id
+                           (bootstrap/reader-canonical-hash
+                            (select-keys projection artifact-projection-semantic-keys)))]
+    (validate-artifact-projection! projection request binding)))
+
+(defn- invoke-artifact-runner
+  [request fixture-binding]
+  (let [root (repository-root)
+        before (artifact-pair-snapshot root fixture-binding)
+        _ (ensure! (and (= (:pair-sha256 before) (:fixture-sha256 fixture-binding))
+                        (= (:pair-bytes before) (:fixture-bytes fixture-binding)))
+                   "WARM-ARTIFACT-BINDING"
+                   "Fixture binding bytes do not match the request" {})
+        result
+        (let [runner (or *artifact-pipeline-runner*
+                         (requiring-resolve
+                          'gravity.authenticated-artifact-pipeline/run-pipeline))]
+          (ensure! (if (var? runner) (ifn? (var-get runner)) (ifn? runner))
+                   "WARM-ARTIFACT-PIPELINE" "Artifact pipeline runner is unavailable" {})
+          (let [started (System/nanoTime)
+                out-capture (bounded-writer)
+                err-capture (bounded-writer)
+                result (binding [clojure.core/*out* (:writer out-capture)
+                                 clojure.core/*err* (:writer err-capture)
+                                 test/*test-out* (:writer out-capture)]
+                         ((if (var? runner) (var-get runner) runner)
+                           {:source-path (:gravity-path fixture-binding)
+                           :target-stage (:stage request)
+                           :mode :fast}))
+                out-result (bounded-writer-result out-capture)
+                err-result (bounded-writer-result err-capture)]
+            (ensure! (and (map? result)
+                          (= :gravity/authenticated-artifact-pipeline-result (:kind result))
+                          (or (not (contains? result :status))
+                              (contains? #{:accepted :passed} (:status result)))
+                          (= :fast (:mode result))
+                          (= (:stage request) (:requested-stage result))
+                          (let [stage-map (:stage-artifacts result)
+                                stages (vec (keys stage-map))]
+                            (and (seq stages)
+                                 (= (:artifact result) (get stage-map (last stages)))
+                                 (every? (fn [[stage envelope]]
+                                           (and (= stage (:stage envelope))
+                                                (= :accepted (:status envelope))
+                                                (= :gravity/authenticated-compiler-artifact-pipeline-v1
+                                                   (:pipeline envelope))
+                                                (= :fast (:mode envelope))))
+                                         stage-map)))
+                          (false? (get-in result [:authority :authoritative?]))
+                          (= :same-jvm (get-in result [:execution-boundary :isolation])))
+                     "WARM-ARTIFACT-PIPELINE" "Pipeline result failed its fast contract"
+                     {})
+            {:exit 0 :elapsed-ns (- (System/nanoTime) started)
+             :projection (artifact-projection request fixture-binding result)
+             :out (:text out-result) :err (:text err-result)
+             :out-truncated? (:truncated? out-result)
+             :err-truncated? (:truncated? err-result)}))
+        after-binding (artifact-plan-for-request request)
+        after (artifact-pair-snapshot root (:binding after-binding))]
+        (ensure! (and (= (:pair-sha256 before) (:pair-sha256 after))
+                  (= (:pair-bytes before) (:pair-bytes after))
+                  (= (:paths (:gravity before)) (:paths (:gravity after)))
+                  (= (:paths (:qst before)) (:paths (:qst after)))
+                  (java.util.Arrays/equals ^bytes (get-in before [:gravity :bytes])
+                                           ^bytes (get-in after [:gravity :bytes]))
+                  (java.util.Arrays/equals ^bytes (get-in before [:qst :bytes])
+                                           ^bytes (get-in after [:qst :bytes])))
+             "WARM-ARTIFACT-MUTATED" "Fixture closure changed during artifact execution"
+             {:before (select-keys before [:pair-sha256 :pair-bytes])
+              :after (select-keys after [:pair-sha256 :pair-bytes])})
+    (ensure! (and (= (:fixture-sha256 fixture-binding) (:pair-sha256 after))
+                  (= (:fixture-bytes fixture-binding) (:pair-bytes after)))
+             "WARM-ARTIFACT-BINDING" "Fixture binding bytes changed"
+             {})
+    result))
+
 (defn validate-request!
   ([request expected]
    (validate-request! request expected nil))
@@ -391,19 +809,22 @@
          allowed (case operation
                    :shutdown shutdown-request-keys
                    :run-cached-shard cached-request-keys
+                   :run-fast-artifact artifact-request-keys
                    exact-request-keys)]
      (when-not (= allowed (set (keys request)))
        (fail! "WARM-REQUEST-SHAPE" "request keys are not closed"
               {:keys (vec (sort (map str (keys request))))}))
      (when-not (= (if (= :run-cached-shard operation)
                     cached-request-schema
-                    request-schema)
+                  (if (= :run-fast-artifact operation)
+                    artifact-request-schema
+                    request-schema))
                   (:schema request))
        (fail! "WARM-REQUEST-SCHEMA" "request schema is unsupported" {}))
      (when-not (and (string? (:request-id request))
                     (<= 1 (count (:request-id request)) 160))
        (fail! "WARM-REQUEST-ID" "request id must be bounded text" {}))
-     (when-not (contains? #{:run-exact :run-cached-shard :shutdown} operation)
+     (when-not (contains? #{:run-exact :run-cached-shard :run-fast-artifact :shutdown} operation)
        (fail! "WARM-REQUEST-OPERATION" "operation is unsupported" {}))
      (doseq [field [:candidate-commit :candidate-tree]]
        (when-not (= (field expected) (field request))
@@ -413,7 +834,10 @@
        (= :run-exact operation) (exact-runner-args! (:args request))
        (= :run-cached-shard operation)
        (let [plan (cached-plan-for-request request)]
-         (when cached-plan-holder (reset! cached-plan-holder plan))))
+         (when cached-plan-holder (reset! cached-plan-holder plan)))
+       (= :run-fast-artifact operation)
+       (let [artifact (artifact-plan-for-request request)]
+         (when cached-plan-holder (reset! cached-plan-holder artifact))))
      request)))
 
 (defn- bounded-process-output [process]
@@ -501,6 +925,41 @@
             :output-truncated? (boolean (or out-cut err-cut
                                             (:out-truncated? result)
                                             (:err-truncated? result)))})))
+
+(defn- artifact-response
+  [request outcome exit-code elapsed-ns result request-count]
+  (merge {:schema artifact-response-schema
+          :authority :non-authoritative
+          :authoritative? false
+          :request-id (:request-id request)
+          :candidate-commit (:candidate-commit request)
+          :candidate-tree (:candidate-tree request)
+          :lane :fast
+          :route-id (:route-id request)
+          :plan-id (:plan-id request)
+          :catalog-id (:catalog-id request)
+          :closure-identity (:closure-identity request)
+          :binding-id (:binding-id request)
+          :row-id (:row-id request)
+          :stage (:stage request)
+          :outcome outcome
+          :exit-code exit-code
+          :elapsed-ns elapsed-ns
+          :request-count request-count
+          :projection (:projection result)}
+         (let [{out-text :text out-cut :truncated?} (bounded-text (:out result))
+               {err-text :text err-cut :truncated?} (bounded-text (:err result))]
+           {:stdout out-text :stderr err-text
+           :output-truncated? (boolean (or out-cut err-cut
+                                            (:out-truncated? result)
+                                            (:err-truncated? result)))})))
+
+(defn- artifact-failure
+  [error]
+  {:exit 2 :elapsed-ns 0 :projection nil :out ""
+   :err (str (or (:id (ex-data error)) "WARM-ARTIFACT-FAILED")
+             ": " (or (.getMessage ^Throwable error) "artifact execution failed"))
+   :out-truncated? false :err-truncated? false})
 
 (defn- invoke-runner [args]
   (let [out-capture (bounded-writer) err-capture (bounded-writer)
@@ -643,7 +1102,9 @@
                request (validate-request! (strict-edn line) expected
                                           cached-plan-holder)
                cached? (= :run-cached-shard (:operation request))
+               artifact? (= :run-fast-artifact (:operation request))
                cached-plan-before (when cached? @cached-plan-holder)
+               artifact-plan-before (when artifact? @cached-plan-holder)
                live-before (observe!)]
            (when-not (= namespace-catalog-snapshot runner/namespace-catalog)
              (fail! "WARM-CATALOG-DRIFT" "development namespace catalog changed" {}))
@@ -654,9 +1115,15 @@
              (do (emit! (response request :shutdown 0 0 {:out "" :err ""
                                                          :runner-result nil}
                                   request-count)) 0)
-             (let [result (if cached?
-                            (cached-execute! (:shard request))
-                            (execute! (:args request)))
+             (let [result (cond
+                            cached? (cached-execute! (:shard request))
+                            artifact? (try
+                                        (invoke-artifact-runner
+                                         request (:binding artifact-plan-before))
+                                        (catch Throwable error
+                                          (rethrow-control! error)
+                                          (artifact-failure error)))
+                            :else (execute! (:args request)))
                    cached-plan-check (when cached?
                                        (cached-plan-after-execution
                                         request cached-plan-before))
@@ -670,17 +1137,30 @@
                    (not= namespace-catalog-snapshot runner/namespace-catalog)
                    drift? (or catalog-drift?
                               (not= (assoc expected :clean? true) live-after))
-                   exit (if (or cached-drift? drift?) 2 (:exit result))
+                   artifact-drift? (when artifact?
+                                     (try
+                                       (not= artifact-plan-before
+                                             (artifact-plan-for-request request))
+                                       (catch Throwable error
+                                         (rethrow-control! error)
+                                         true)))
+                   result (if artifact-drift?
+                            (assoc result :projection nil :exit 2)
+                            result)
+                   exit (if (or cached-drift? artifact-drift? drift?) 2 (:exit result))
                    outcome (cond cached-drift? :catalog-drift
+                                 artifact-drift? :catalog-drift
                                  catalog-drift? :catalog-drift
                                  drift? :tree-drift
                                  (zero? exit) :passed
                                  :else :failed)]
-               (emit! (if cached?
-                        (cached-response request outcome exit (:elapsed-ns result)
-                                         result next-count)
-                        (response request outcome exit (:elapsed-ns result)
-                                  result next-count)))
+               (emit! (cond
+                        cached? (cached-response request outcome exit (:elapsed-ns result)
+                                                 result next-count)
+                        artifact? (artifact-response request outcome exit (:elapsed-ns result)
+                                                     result next-count)
+                        :else (response request outcome exit (:elapsed-ns result)
+                                        result next-count)))
                (cond
                  (not (zero? exit)) exit
                  (< next-count max-count) (recur (next remaining) next-count)

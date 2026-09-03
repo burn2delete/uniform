@@ -1,0 +1,66 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "410e5bcfae3b67ea38e195a580d00b1b0ff51309",
+  "candidate_commit": "188b6ab36e0fb6007c3332bbf9e4bfdbea72ee94",
+  "clean_worktree": true,
+  "dependencies": ["sh07-b13-static-conformance-v1", "sh07-b15-diagnostic-parity-v1"],
+  "disposition": "Integrated the exact independently accepted whole B15 candidate onto canonical local main at merge ba5fbb8add22e9b8e3b21288e5426601841e6839, tree 8f7b16d26b5af741daad739af4f6d2b3eda2c0e2. Only the static pair census now delegates to the reviewed table; legacy 1-test/10-assertion receipt counters and every rejected diagnostic, lookup-order, provenance, mutation, and replay test remain exact.",
+  "evidence": {
+    "accepted_fixtures": [
+      "shared authenticated fixture census for all three reviewed B15 accepted pairs",
+      "exact directory and reviewed-row ownership for the complete six-row B15 suite",
+      "unchanged executable accepted lookup-order and map-key semantics tests"
+    ],
+    "rejected_fixtures": [
+      "shared authenticated fixture census for all three reviewed B15 rejected pairs",
+      "one-sided, symlinked, oversized, byte-divergent, orphaned, or undeclared fixture peers",
+      "unchanged executable rejected keyword-lookup arity diagnostics"
+    ],
+    "stable_diagnostics": ["SH07-CONFORMANCE-SUITE", "SH07-CONFORMANCE-LEGACY", "SH07-CONFORMANCE-PATH", "SH07-CONFORMANCE-SYMLINK", "SH07-CONFORMANCE-BOUND", "SH07-CONFORMANCE-PEER", "SH07-CONFORMANCE-ROW"],
+    "validation_commands": [
+      {"command": "governed SH-01 memory-heavy sh07_conformance_parity/prove-exact-batch for all six B15 rows and paired .gravity/.qst inputs; parity sha256:9d4a913f8e32799ea2be544609d4ef8a6cbb01483f66257de805fcff60da592f; selected 6, passed 6, failed 0", "exit_code": 0, "result": "passed"},
+      {"command": "focused exact sh07-b15-fixtures-are-complete-paired-and-byte-identical candidate var; 1 test, 10 assertions, preserving legacy counters", "exit_code": 0, "result": "passed"},
+      {"command": "clojure focused gravity.self-hosting.sh07-conformance-table-test on candidate; 10 tests, 50 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure focused gravity.self-hosting.language-boundary-test on candidate; 6 tests, 11 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "git diff --check 410e5bcfae3b67ea38e195a580d00b1b0ff51309..188b6ab36e0fb6007c3332bbf9e4bfdbea72ee94", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref 410e5bcfae3b67ea38e195a580d00b1b0ff51309 --candidate-base 410e5bcfae3b67ea38e195a580d00b1b0ff51309 --candidate-commit 188b6ab36e0fb6007c3332bbf9e4bfdbea72ee94 --candidate-tree bb8c8097d0fa0737e3ee72afde942d576c5893df", "exit_code": 0, "result": "passed"},
+      {"command": "focused exact B15 census after merge ba5fbb8add22e9b8e3b21288e5426601841e6839; 1 test, 10 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure focused gravity.self-hosting.sh07-conformance-table-test after merge; 10 tests, 50 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure focused gravity.self-hosting.sh01-language-boundary-test after merge; 6 tests, 11 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "git merge-base --is-ancestor 188b6ab36e0fb6007c3332bbf9e4bfdbea72ee94 ba5fbb8add22e9b8e3b21288e5426601841e6839", "exit_code": 0, "result": "passed"}
+    ]
+  },
+  "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "BOOT7", "BOOT8", "TEST1", "TEST2", "TEST13", "contracts/verification-catalog.edn", "contracts/workstream-governance.json"],
+  "history": [
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:00:00Z", "reason": "start the smallest B15 static pair-census consolidation while preserving semantic, diagnostic, provenance, and mutation tests", "state": "draft"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:01:00Z", "reason": "freeze exact initial candidate for bounded independent review", "state": "frozen"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:02:00Z", "reason": "request independent exact semantic, security, minimality, and receipt-counter review", "state": "review-pending"},
+    {"actor": "b15_candidate_review", "at": "2026-09-03T00:03:00Z", "reason": "request amendment because the initial shared projection changed the legacy pass counter from 10 to 6", "state": "draft"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:04:00Z", "reason": "freeze amended exact base 410e5bcfae3b67ea38e195a580d00b1b0ff51309, candidate 188b6ab36e0fb6007c3332bbf9e4bfdbea72ee94, tree bb8c8097d0fa0737e3ee72afde942d576c5893df, with legacy 1-test/10-assertion parity", "state": "frozen"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:05:00Z", "reason": "request two independent re-reviews of the amended exact tuple", "state": "review-pending"},
+    {"actor": "b15_candidate_review", "at": "2026-09-03T00:06:00Z", "reason": "accept exact shared no-follow bounded pair census, exact 1/10 counters, directory parity, reviewed-row ownership, and preserved semantic/mutation tests", "state": "accepted"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:07:00Z", "reason": "advance the amended exact candidate after two independent accepts, exact six-row paired parity, and clean bounded focused evidence", "state": "integration-eligible"},
+    {"actor": "uniform-coordinator", "at": "2026-09-03T00:12:00Z", "reason": "integrate the exact whole candidate onto canonical local main at merge ba5fbb8add22e9b8e3b21288e5426601841e6839, tree 8f7b16d26b5af741daad739af4f6d2b3eda2c0e2, and revalidate exact 1/10 counters plus shared census and language-boundary behavior", "state": "integrated"}
+  ],
+  "id": "sh07-b15-conformance-census-v1",
+  "invariant_family": "testing/sh07-data-driven-conformance",
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+  "owned_paths": ["bootstrap/clojure/test/gravity/self_hosting/sh07_keyword_map_lookup_test.clj"],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary fixture census, compiler, and verification boundary",
+    "only the B15 static fixture pair census is consolidated; rejected diagnostics and complex lookup, provenance, mutation, and replay behavior remain bespoke",
+    "the one-time exact six-row legacy parity run is non-authoritative and is not added to the ordinary fast namespace",
+    "fresh authoritative acceptance remains isolated, cache-free, and independently replayable and was not run",
+    "no runner or semantic test is retired by this candidate",
+    "the fast lane grants no integration, proof, release, self-hosting, seed-retirement, safety, or performance authority",
+    "this tooling simplification grants no SH roadmap credit and does not complete an architecture objective"
+  ],
+  "reviews": [
+    {"kind": "independent", "result": "accepted", "reviewer": "runner_migration_priority"},
+    {"kind": "independent", "result": "accepted", "reviewer": "b15_candidate_review"}
+  ],
+  "state": "integrated",
+  "title": "SH-07 B15 shared conformance census version 1"
+}
