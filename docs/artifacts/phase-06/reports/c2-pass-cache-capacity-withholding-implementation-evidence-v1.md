@@ -86,6 +86,39 @@ All successful commands below ran on the named branch with clean HEAD
    sys 298.12
    ```
 
+6. Architecture, language-boundary, document, roadmap, governance, and diff
+   gates:
+
+   ```text
+   clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md
+   architecture authority validation passed
+
+   clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+   Ran 6 tests containing 11 assertions.
+   0 failures, 0 errors.
+
+   clojure -M tools/validate_gravity_docs.clj
+   validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
+
+   clojure -M tools/validate_full_language_roadmap.clj
+   full-language roadmap validation passed
+
+   clojure -M tools/validate_workstream_governance.clj
+   validation passed: 147 workstreams
+
+   git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..ea8ecde115e19fee004467dd3b4f46b2eb642519
+   exit 0, no output
+   ```
+
+Read-only preflight
+`clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main`
+exited 0 and confirmed a clean named branch and matching candidate commit/tree.
+It also reported `main` at `410e5bcfae3b67ea38e195a580d00b1b0ff51309`
+as divergent from the architecture-authorized `e4b85b7a` lineage, with
+`resolve_divergence_before_integration`. That is an explicit later integration
+blocker, not a reason to rewrite this candidate's exact base during freeze or
+review.
+
 The paired form copied `bootstrap/gravity/src/gravity/bootstrap/reader.gravity`
 byte-for-byte to temporary `reader.gravity` and `reader.qst` paths. For each
 extension it:
