@@ -17,7 +17,7 @@
 
 (def ^:private slice-count 30)
 
-(declare valid-slice? path-slice)
+(declare valid-slice? path-slice resource-class)
 
 ;; These reviewed namespaces are verification infrastructure.  The general
 ;; self-hosting runner discovers and can execute them, but they are not SH-00
@@ -53,42 +53,135 @@
     ;; catalog so adding it cannot make ordinary impact planning fail closed.
     'gravity.self-hosting.macro-operations-normalization-test})
 
-(def ^:private exact-test-var-routes
-  "Reviewed exact test-var ownership for bounded development routes.
-
-  These routes deliberately narrow execution below a namespace boundary.  The
-  route still owns the complete test source path and slice; only the listed
-  vars are allowed to run during ordinary iteration.  A fresh namespace or
-  integration run remains required for authoritative evidence."
+(def ^:private exact-test-var-route-manifest-ids
+  "Compatibility aliases only; route metadata comes from the UEP manifest."
   (sorted-map
-   "b8-regression"
-   {:slice "SH-07"
-    :owner :sh-core
-    :path "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
-    :namespace 'gravity.self-hosting.sh07-try-catch-test
-    :test-vars
-    '[gravity.self-hosting.sh07-try-catch-test/sh07-b8-authenticated-input-substitution-fails-before-lowering
-      gravity.self-hosting.sh07-try-catch-test/sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts]
-    :selection-mode :exact-test-vars
-    :resource-class :memory-heavy}))
+   "b8-regression" {:manifest-route-id "sh07-b8-regression"
+                     :owner :sh-core}))
+
+(def ^:private route-failure-messages
+  {"SH01-IMPACT-ROUTE" "SH-01 exact test-var route could not resolve its reviewed manifest entry"
+   "SH01-IMPACT-ROUTE-CONTRACT" "SH-01 exact test-var route manifest projection is malformed"})
+
+(defn- route-failure!
+  [route-name id reason data]
+  (throw
+   (ex-info
+    (get route-failure-messages id "SH-01 exact test-var route failed")
+    (merge {:id id
+            :route route-name
+            :reason reason}
+           data))))
+
+(defn- invoke-manifest-route
+  "Lazily resolve one UEP function; normalize ordinary failures, but propagate fatal Errors."
+  [route-name manifest-route-id]
+  (let [resolved
+        (try
+          (requiring-resolve
+           'gravity.self-hosting.unified-execution-plan/route)
+          (catch Exception _ nil))]
+    (if-not (or (var? resolved) (fn? resolved))
+      (route-failure! route-name "SH01-IMPACT-ROUTE" :manifest-resolver
+                      {:function "gravity.self-hosting.unified-execution-plan/route"})
+      (try
+        (resolved manifest-route-id)
+        (catch Exception _
+          (route-failure! route-name "SH01-IMPACT-ROUTE" :manifest-invocation
+                          {:function "gravity.self-hosting.unified-execution-plan/route"}))))))
+
+(defn- canonical-test-path
+  [namespace]
+  (str "bootstrap/clojure/test/"
+       (str/replace (str/replace namespace "." "/") "-" "_") ".clj"))
+
+(defn- validate-manifest-route-projection!
+  [route-name route]
+  (let [selection (:selection route)
+        namespace-value (:namespace selection)
+        selectors (:selectors selection)
+        test-path (when (string? namespace-value)
+                    (canonical-test-path namespace-value))
+        slice (when test-path (path-slice test-path))
+        closure (:dependency-closure route)
+        closure-paths (when (map? closure) (:paths closure))
+        closure-valid?
+        (and (vector? closure-paths) (every? string? closure-paths))
+        bounds (:bounds route)
+        selectors-valid?
+        (and (vector? selectors) (= 2 (count selectors))
+             (= 2 (count (distinct selectors)))
+             (every? #(and (string? %) (not (str/blank? %))
+                           (not (str/includes? % "/"))) selectors))]
+    (when-not (and (map? route)
+                   (= "sh07-b8-regression" (:id route))
+                   (= [:fast] (:lanes route)) (= :exact-vars (:kind selection))
+                   (string? namespace-value) (not (str/blank? namespace-value))
+                   selectors-valid? (valid-slice? slice)
+                   (= (resource-class slice) (:resource-class route))
+                   (= :warm-bounded-process (:execution-mode route))
+                   (= :non-authoritative (:authority-ceiling route))
+                   (= :exact-tree-warm-worker (get-in route [:executor :adapter]))
+                   (true? (get-in route [:executor :bounded?]))
+                   (false? (get-in route [:executor :fresh-capable?]))
+                   (= :non-authoritative (get-in route [:executor :authority]))
+                   (= 2 (:max-test-vars bounds)) (true? (:complete? closure))
+                   closure-valid? (contains? (set closure-paths) test-path))
+      (route-failure!
+       route-name
+       "SH01-IMPACT-ROUTE-CONTRACT"
+       :manifest-policy
+       {:manifest-route (:id route)
+        :namespace namespace-value
+        :selectors selectors
+        :test-path test-path}))
+    {:namespace-value namespace-value
+     :selectors selectors
+     :test-path test-path
+     :slice slice}))
+
+(defn- project-manifest-route
+  [route-name manifest-route-id reviewed-owner]
+  (let [route (invoke-manifest-route route-name manifest-route-id)
+        {:keys [namespace-value selectors test-path slice]}
+        (validate-manifest-route-projection! route-name route)
+        owner (when (= "SH-07" slice) reviewed-owner)]
+    (when-not (keyword? owner)
+      (route-failure!
+       route-name
+       "SH01-IMPACT-ROUTE-CONTRACT"
+       :slice-owner
+       {:slice slice :owner owner}))
+    {:slice slice
+     :owner owner
+     :path test-path
+     :namespace (symbol namespace-value)
+     :resource-class (resource-class slice)
+     :test-vars (mapv #(symbol (str namespace-value "/" %)) selectors)
+     :selection-mode :exact-test-vars}))
 
 (def ^:private exact-test-var-route-keys
   #{:slice :owner :path :namespace :test-vars :selection-mode
     :resource-class})
 
 (defn exact-test-var-route-names
-  "Returns the closed exact-test-var route catalog in deterministic order."
+  "Returns compatibility aliases without loading the UEP manifest."
   []
-  (vec (keys exact-test-var-routes)))
+  (vec (keys exact-test-var-route-manifest-ids)))
 
 (declare exact-test-var-route-options)
 
 (defn exact-test-var-route
-  "Returns one reviewed exact-test-var route or fails closed."
+  "Returns one UEP-derived exact-test-var route or fails closed.
+
+  The static compatibility alias is checked before resolving the manifest, so
+  ordinary planner startup and route listing remain namespace-lazy."
   [route-name]
   (let [route-name (when (string? route-name) route-name)]
-    (if-let [route (get exact-test-var-routes route-name)]
-      (exact-test-var-route-options route)
+    (if-let [{:keys [manifest-route-id owner]}
+             (get exact-test-var-route-manifest-ids route-name)]
+      (exact-test-var-route-options
+       (project-manifest-route route-name manifest-route-id owner))
       (throw
        (ex-info
         "Unknown SH-01 exact test-var route"
