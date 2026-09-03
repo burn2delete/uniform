@@ -9,6 +9,7 @@
 
 (def cache-operation-fields
   #{:artifact-id-of :validate-artifact! :validate-output!
+    :validate-requested-retained-artifact! :capacity-failure-handoff!
     :validation-binding-id :validate-diagnostic-stream!
     :validate-verifier-report! :validate-evidence-record!
     :produce! :verifier-reports :evidence-records})
@@ -25,13 +26,34 @@
   (require-sha256! :validation-binding-id (:validation-binding-id operations))
   (when-not (fn? (:artifact-id-of operations))
     (fail! "C16-ENTRY" "cache artifact identity operation is required" {}))
-  (let [artifact-validator? (fn? (:validate-artifact! operations))
-        output-validator? (fn? (:validate-output! operations))]
-    (when (= artifact-validator? output-validator?)
-      (fail! "C16-ENTRY"
-             "exactly one cache artifact validation operation is required"
-             {:validate-artifact!? artifact-validator?
-              :validate-output!? output-validator?})))
+  (let [artifact-validator (:validate-artifact! operations)
+        output-validator (:validate-output! operations)
+        requested-validator (:validate-requested-retained-artifact! operations)
+        handoff (:capacity-failure-handoff! operations)
+        c2-split? (some? handoff)]
+    (if c2-split?
+      (when-not (and (fn? handoff)
+                     (fn? artifact-validator)
+                     (fn? output-validator)
+                     (fn? requested-validator)
+                     (not (identical? artifact-validator output-validator))
+                     (not (identical? artifact-validator requested-validator))
+                     (not (identical? output-validator requested-validator)))
+        (fail! "C16-ENTRY"
+               "C2 cache validation roles must be complete and distinct"
+               {:validate-artifact!? (fn? artifact-validator)
+                :validate-output!? (fn? output-validator)
+                :validate-requested-retained-artifact!?
+                (fn? requested-validator)
+                :capacity-failure-handoff!? (fn? handoff)}))
+      (when-not (and (nil? requested-validator)
+                     (not= (fn? artifact-validator) (fn? output-validator)))
+        (fail! "C16-ENTRY"
+               "exactly one cache artifact validation operation is required"
+               {:validate-artifact!? (fn? artifact-validator)
+                :validate-output!? (fn? output-validator)
+                :validate-requested-retained-artifact!?
+                (fn? requested-validator)}))))
   (doseq [field [:validate-diagnostic-stream! :validate-verifier-report!
                  :validate-evidence-record!]]
     (when-not (fn? (get operations field))
@@ -60,15 +82,28 @@
 
 (defn validate-artifact!
   [operations artifact context]
-  (cond
-    (fn? (:validate-artifact! operations))
-    ((:validate-artifact! operations) artifact (:entry context) (:key context))
+  (case (:validation-role context)
+    :requested-retained-artifact
+    ((:validate-requested-retained-artifact! operations)
+     artifact (:entry context) (:key context)
+     {:requested-cache-key-id (:requested-cache-key-id context)
+      :requested-artifact-id (:requested-artifact-id context)})
 
-    (fn? (:validate-output! operations))
+    :output-envelope
     ((:validate-output! operations) artifact (:key context)
      (get-in context [:key :contract]))
 
-    :else artifact))
+    ;; Existing retention/recovery callers deliberately supply no special role.
+    (cond
+      (fn? (:validate-artifact! operations))
+      ((:validate-artifact! operations) artifact (:entry context)
+       (:key context))
+
+      (fn? (:validate-output! operations))
+      ((:validate-output! operations) artifact (:key context)
+       (get-in context [:key :contract]))
+
+      :else artifact)))
 
 (defn receipt-output-compatible!
   [key receipt]
@@ -116,7 +151,16 @@
 
 (defn validate-artifact-against-receipt!
   [key artifact receipt validation-ops context]
-  (let [artifact (validate-artifact! validation-ops artifact context)
+  (let [artifact (validate-artifact!
+                  validation-ops artifact
+                  (if (fn? (:validate-requested-retained-artifact!
+                            validation-ops))
+                    (assoc context
+                           :validation-role :requested-retained-artifact
+                           :requested-cache-key-id (key-id key)
+                           :requested-artifact-id
+                           (:output-artifact-id receipt))
+                    context))
         id (artifact-id-of validation-ops artifact)]
     (when-not (= id (:output-artifact-id receipt))
       (fail! "C16-STALE" "artifact identity differs from producer receipt"

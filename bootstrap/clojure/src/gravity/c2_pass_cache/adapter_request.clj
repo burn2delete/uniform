@@ -127,15 +127,29 @@
 
 (def ^:private adapter-envelope-fields
   #{:artifact :schema-version :adapter-version :c2-artifact-id
-    :boundary-projection-id :payload-id :payload-bytes})
+    :boundary-projection-id :carrier-id :payload-id :payload-bytes})
+
+(load "/gravity/c2_pass_cache/capacity_handoff")
 
 (defn- adapter-envelope!
-  [artifact _legacy-key operations _entry]
+  [artifact carrier legacy-key operation state operations]
   (let [artifact-id ((:artifact-id-of operations) artifact)
         boundary-id ((:boundary-projection-id-of operations) artifact)
         _ (ensure-sha256-id! :artifact-id artifact-id)
         _ (ensure-sha256-id! :boundary-projection-id boundary-id)
-        payload (encode-canonical-bytes artifact {:reject-metadata? false}
+        _ (when-not (and (= prevalidated-carrier-fields (set (keys carrier)))
+                         (identical? artifact (:exact-artifact carrier))
+                         (= artifact-id (:c2-artifact-id carrier))
+                         (= boundary-id (:boundary-projection-id carrier)))
+            (cache-fail! "C16-STALE"
+                         "C2 prevalidated carrier identity is stale" {}))
+        payload (encode-canonical-bytes artifact
+                                        {:reject-metadata? false
+                                         :capacity-failure!
+                                         (fn [resource maximum observed]
+                                           (throw-capacity-exception!
+                                            state legacy-key operation resource
+                                            maximum observed))}
                                         maximum-blob-bytes)
         payload-id (str "sha256:" (digest/sha256-bytes-hex payload))]
     {:artifact :gravity/c2-pass-cache-v2-envelope
@@ -143,5 +157,49 @@
      :adapter-version adapter-version
      :c2-artifact-id artifact-id
      :boundary-projection-id boundary-id
+     :carrier-id (:carrier-id carrier)
      :payload-id payload-id
      :payload-bytes payload}))
+
+(defn- legacy-inventory-projection
+  [inventory]
+  (when (map? inventory)
+    (let [selected (select-keys inventory [:entries :blobs :locks :staging])]
+      (assoc selected :aggregate-bytes
+             (reduce + 0 (map #(long (or (:bytes %) 0)) (vals selected)))))))
+
+(defn- legacy-evidence
+  [legacy-key result derived]
+  (let [status (or (:status result)
+                   (get-in result [:cache-evidence :status]))
+        generic-evidence (:cache-evidence result)
+        reason (case status
+                 :hit :validated-reuse
+                 :stored :validated-success
+                 :miss (if (:rejected-entry-evidence generic-evidence)
+                         :existing-entry-rejected
+                         :entry-not-found)
+                 :rejected :entry-revalidation-failed
+                 :entry-revalidation-failed)]
+    (lookup-evidence
+     legacy-key status reason
+     (cond->
+      {:reader-executed? (boolean (:reader-executed? generic-evidence))
+       :artifact-reused? (boolean (:artifact-reused? generic-evidence))}
+       (:artifact-id derived) (assoc :artifact-id (:artifact-id derived))
+       (:blob-id derived) (assoc :blob-id (:blob-id derived))
+       (:entry-id derived) (assoc :entry-id (:entry-id derived))
+       (:blob-publication generic-evidence)
+       (assoc :blob-publication (:blob-publication generic-evidence))
+       (:entry-publication generic-evidence)
+       (assoc :entry-publication (:entry-publication generic-evidence))
+       (:post-publication-inventory generic-evidence)
+       (assoc :post-publication-inventory
+              (legacy-inventory-projection
+               (:post-publication-inventory generic-evidence)))
+       (:contained-diagnostic generic-evidence)
+       (assoc :contained-diagnostic (:contained-diagnostic generic-evidence))
+       (:rejected-entry-evidence generic-evidence)
+       (assoc :cache-publication :withheld
+              :rejected-entry-evidence
+              (:rejected-entry-evidence generic-evidence))))))

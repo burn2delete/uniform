@@ -985,6 +985,63 @@
     (is (= 79 (:rejected-fixture-count accounting)))
     (is (= 147 (:fixture-pair-count accounting)))))
 
+(deftest namespace-authority-projection-is-fast-route-owned-and-closed
+  (let [projection (plan/namespace-authority-projection)
+        entries (:entries projection)
+        by-namespace (into {} (map (juxt :namespace identity) entries))
+        b10 (get by-namespace
+                 'gravity.self-hosting.sh07-match-lowering-test)
+        b11 (get by-namespace
+                 'gravity.self-hosting.sh07-vector-pattern-test)
+        b13 (get by-namespace
+                 'gravity.self-hosting.sh07-module-fragment-test)
+        fresh (get by-namespace
+                   'gravity.self-hosting.sh07-authoritative-runner)]
+    (is (= plan/namespace-authority-schema (:schema projection)))
+    (is (= :non-authoritative (:authority projection)))
+    (is (false? (:authoritative? projection)))
+    (is (= (plan/manifest-id) (:manifest-id projection)))
+    (is (nil? fresh))
+    (is (= ["sh07-b11-fixtures-are-paired-byte-identical-and-bounded-in-scope"
+            "sh07-b11-gravity-contract-names-l7"]
+           (subvec (:selectors b11) 0 2)))
+    (is (= ["sh07-b11-contract" "sh07-parallel-accepted"
+            "sh07-parallel-identity-lineage" "sh07-parallel-rejected"
+            "sh07-parallel-verification"]
+           (vec (sort (:route-ids b11)))))
+    ;; Compatibility routes intentionally overlap; selectors are a stable
+    ;; union, while route ids preserve every contributing route owner.
+    (is (= 21 (count (:selectors b10))))
+    (is (= ["sh07-b10-regression" "sh07-parallel-regression-a"
+            "sh07-parallel-regression-b"]
+           (:route-ids b10)))
+    (is (= ["sh07-b13-accepted" "sh07-cached-accepted"
+            "sh07-cached-contract" "sh07-cached-identity"
+            "sh07-cached-rejected" "sh07-cached-verification"]
+           (:route-ids b13)))
+    (is (every? #(= % (vec (sort %))) (map :route-ids entries)))
+    (is (every? #(= (count %) (count (distinct %)))
+                (map :selectors entries)))
+    (is (= projection
+           (plan/validate-namespace-authority-projection plan/catalog projection)))
+    (let [identity-of (deref #'gravity.self-hosting.unified-execution-plan/identity-of)
+          forged-value (update-in projection [:entries 0 :selectors]
+                                  conj "forged-selector")
+          forged (assoc forged-value
+                        :projection-id (identity-of (dissoc forged-value :projection-id)))]
+      ;; A matching manifest id and recomputed projection id do not authorize
+      ;; a forged entry: the consumer compares against the deterministic build.
+      (is (= "UEP-NAMESPACE-AUTHORITY-MANIFEST"
+             (error-id #(plan/validate-namespace-authority-projection
+                         plan/catalog forged))))
+      (let [bad-route-value (assoc-in projection [:entries 0 :route-ids] [42])
+            bad-route (assoc bad-route-value
+                             :projection-id
+                             (identity-of (dissoc bad-route-value :projection-id)))]
+        (is (= "UEP-NAMESPACE-AUTHORITY-ROUTES"
+               (error-id #(plan/validate-namespace-authority-projection
+                           bad-route))))))))
+
 (def ^:private expected-parallel-route-ids
   ["sh07-parallel-accepted"
    "sh07-parallel-b12-contract-accepted"

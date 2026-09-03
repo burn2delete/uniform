@@ -1,14 +1,24 @@
 ;; Semantic C2 pass-cache component loaded by gravity.c2-pass-cache.
 ;; It deliberately evaluates in the facade namespace to retain private test seams.
+(defn- canonical-capacity-or-key-fail!
+  [options resource maximum observed message data]
+  (if-let [capacity-failure! (:capacity-failure! options)]
+    (capacity-failure! resource maximum observed)
+    (cache-fail! "C16-KEY" message data)))
+
 (defn- encode-value
   [value state depth {:keys [reject-metadata?] :as options}]
   (let [nodes (swap! state inc)]
     (when (> nodes maximum-canonical-nodes)
-      (cache-fail! "C16-KEY" "canonical value exceeds the node bound"
-                   {:maximum-nodes maximum-canonical-nodes}))
+      (canonical-capacity-or-key-fail!
+       options :canonical-nodes maximum-canonical-nodes nodes
+       "canonical value exceeds the node bound"
+       {:maximum-nodes maximum-canonical-nodes}))
     (when (> depth maximum-canonical-depth)
-      (cache-fail! "C16-KEY" "canonical value exceeds the depth bound"
-                   {:maximum-depth maximum-canonical-depth}))
+      (canonical-capacity-or-key-fail!
+       options :canonical-depth maximum-canonical-depth depth
+       "canonical value exceeds the depth bound"
+       {:maximum-depth maximum-canonical-depth}))
     (when (and reject-metadata? (metadata-bearing? value))
       (cache-fail! "C16-KEY"
                    "semantic cache keys cannot depend on host metadata"

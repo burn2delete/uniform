@@ -32,9 +32,15 @@
 (def ^:private maximum-cached-elapsed-ms (* 24 60 60 1000))
 (def ^:private oid-pattern #"[0-9a-f]{40,64}")
 (def ^:private identity-pattern #"sha256:[0-9a-f]{64}")
-(def ^:private namespace-catalog-snapshot runner/namespace-catalog)
+(def ^:private namespace-authority-snapshot (runner/namespace-authority))
+(def ^:private legacy-namespace-catalog-snapshot runner/namespace-catalog)
+(def ^:private namespace-catalog-snapshot (:entries namespace-authority-snapshot))
 (def ^:private namespace-authority
   (set (map (comp str :namespace) namespace-catalog-snapshot)))
+(def ^:private generated-namespace-authority
+  (set (:generated-namespaces namespace-authority-snapshot)))
+(def ^:private namespace-authority-by-name
+  (into {} (map (juxt (comp str :namespace) identity) namespace-catalog-snapshot)))
 (def ^:private exact-request-keys
   #{:schema :request-id :operation :candidate-commit :candidate-tree :args})
 (def ^:private shutdown-request-keys
@@ -286,11 +292,24 @@
   (when-let [fatal (fatal-cause throwable)]
     (throw fatal)))
 
+(defn- generated-selector-allowed?
+  [namespace selector]
+  (let [namespace-prefix (str namespace "/")
+        normalized (cond
+                     (str/starts-with? selector namespace-prefix)
+                     (subs selector (count namespace-prefix))
+
+                     (str/includes? selector "/") nil
+                     :else selector)]
+    (and normalized
+         (some #{normalized}
+               (:selectors (get namespace-authority-by-name namespace))))))
+
 (defn- exact-runner-args! [args]
   (when-not (and (vector? args) (<= 4 (count args) 64)
                  (every? #(and (string? %) (<= 1 (count %) 1024)) args))
     (fail! "WARM-REQUEST-ARGS" "args must be a bounded string vector" {}))
-  (loop [remaining (seq args) namespaces 0 selectors 0]
+  (loop [remaining (seq args) namespaces [] selectors []]
     (if-let [option (first remaining)]
       (case option
         "--namespace" (if-let [value (second remaining)]
@@ -299,18 +318,36 @@
                             (fail! "WARM-REQUEST-NAMESPACE"
                                    "namespace is outside the frozen development catalog"
                                    {:namespace value}))
-                          (recur (nnext remaining) (inc namespaces) selectors))
+                          (recur (nnext remaining) (conj namespaces value) selectors))
                         (fail! "WARM-REQUEST-ARGS" "--namespace requires a value" {}))
         "--exact" (if-let [value (second remaining)]
-                    (recur (nnext remaining) namespaces (inc selectors))
+                    (recur (nnext remaining) namespaces (conj selectors value))
                     (fail! "WARM-REQUEST-ARGS" "--exact requires a value" {}))
         "--fail-fast" (recur (next remaining) namespaces selectors)
         (fail! "WARM-REQUEST-ARGS" "worker accepts only exact development selections"
                {:option option}))
-      (when-not (and (pos? namespaces) (pos? selectors))
-        (fail! "WARM-REQUEST-ARGS"
-               "worker requires at least one namespace and exact selector" {}))))
-  args)
+      (do
+        (when-not (and (seq namespaces) (seq selectors))
+          (fail! "WARM-REQUEST-ARGS"
+                 "worker requires at least one namespace and exact selector" {}))
+        (let [generated-namespaces
+              (filterv generated-namespace-authority namespaces)
+              legacy-namespaces
+              (remove generated-namespace-authority namespaces)]
+          (when (and (seq generated-namespaces) (seq legacy-namespaces))
+            (fail! "WARM-REQUEST-NAMESPACE"
+                   "legacy and manifest-generated namespaces cannot be mixed"
+                   {:legacy (vec legacy-namespaces)
+                    :generated (vec generated-namespaces)}))
+          (when (seq generated-namespaces)
+            (doseq [selector selectors]
+              (when-not (some #(generated-selector-allowed? % selector)
+                              generated-namespaces)
+                (fail! "WARM-REQUEST-SELECTOR"
+                       "exact selector is outside manifest namespace authority"
+                       {:selector selector
+                        :namespaces generated-namespaces})))))
+        args))))
 
 (defn- bounded-cached-integer?
   [value]
@@ -1106,8 +1143,10 @@
                cached-plan-before (when cached? @cached-plan-holder)
                artifact-plan-before (when artifact? @cached-plan-holder)
                live-before (observe!)]
-           (when-not (= namespace-catalog-snapshot runner/namespace-catalog)
+           (when-not (= legacy-namespace-catalog-snapshot runner/namespace-catalog)
              (fail! "WARM-CATALOG-DRIFT" "development namespace catalog changed" {}))
+           (when-not (= namespace-authority-snapshot (runner/namespace-authority))
+             (fail! "WARM-CATALOG-DRIFT" "development namespace authority changed" {}))
            (when-not (= (assoc expected :clean? true) live-before)
              (fail! "WARM-TREE-DRIFT" "worker checkout changed after startup"
                     {:expected expected :actual live-before}))
@@ -1134,7 +1173,8 @@
                    next-count (inc request-count)
                    live-after (observe!)
                    catalog-drift?
-                   (not= namespace-catalog-snapshot runner/namespace-catalog)
+                   (or (not= legacy-namespace-catalog-snapshot runner/namespace-catalog)
+                       (not= namespace-authority-snapshot (runner/namespace-authority)))
                    drift? (or catalog-drift?
                               (not= (assoc expected :clean? true) live-after))
                    artifact-drift? (when artifact?

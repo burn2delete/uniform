@@ -150,6 +150,146 @@
                            ["--namespace" "gravity.not-in-static-catalog"]))))))))
     (is (empty? @loads))))
 
+(deftest legacy-selection-keeps-uep-lazy
+  (let [parse-args (deref #'gravity.development-test-runner/parse-args)
+        selected (deref #'gravity.development-test-runner/selected-namespace-records)]
+    ;; The ordinary compatibility lane must not pay manifest projection
+    ;; startup cost or acquire generated namespace authority.
+    (with-redefs-fn
+      {#'clojure.core/requiring-resolve
+       (fn [symbol]
+         (throw (ex-info "unexpected manifest resolution" {:symbol symbol})))}
+      #(is (= ['gravity.bootstrap-test]
+              (mapv :namespace (selected (parse-args []))))))))
+
+(deftest manifest-namespace-authority-is-dual-read-and-nonauthoritative
+  (let [authority (runner/namespace-authority)
+        projection (:projection authority)
+        entries (:entries authority)
+        b11 (some #(when (= 'gravity.self-hosting.sh07-vector-pattern-test
+                            (:namespace %)) %) entries)]
+    (is (= 23 (count runner/namespace-catalog)))
+    (is (= 30 (count entries)))
+    (is (= :gravity/verification-namespace-authority-v1 (:schema projection)))
+    (is (false? (:authoritative? projection)))
+    (is (= ["sh07-b11-contract" "sh07-parallel-accepted"
+            "sh07-parallel-identity-lineage" "sh07-parallel-rejected"
+            "sh07-parallel-verification"]
+           (:route-ids b11)))
+    (is (some #(= 'gravity.bootstrap-test (:namespace %)) entries))
+    (is (not-any? #(= 'gravity.self-hosting.sh07-authoritative-runner
+                     (:namespace %))
+                  entries))))
+
+(deftest generated-selection-is-closed-before-require
+  (let [parse-args (deref #'gravity.development-test-runner/parse-args)
+        selected (deref #'gravity.development-test-runner/selected-namespace-records)
+        namespace "gravity.self-hosting.sh07-vector-pattern-test"
+        exact "sh07-b11-gravity-contract-names-l7"
+        qualified (str namespace "/" exact)
+        valid (selected (parse-args ["--namespace" namespace "--exact" qualified]))]
+    (is (= ['gravity.self-hosting.sh07-vector-pattern-test]
+           (mapv :namespace valid)))
+    (let [loaded? (atom false)
+          load-var #'gravity.development-test-runner/load-selected-namespaces!]
+      (with-redefs-fn
+        {load-var (fn [_] (reset! loaded? true))}
+        (fn []
+          (is (= "DEV-NAMESPACE-SELECTOR"
+                 (:id (exception-data
+                       #(runner/run-cli!
+                         ["--namespace" namespace
+                          "--exact" "not-in-manifest"])))))))
+      (is (false? @loaded?)))
+    (doseq [[args expected-id]
+            [[["--namespace" namespace]
+              "DEV-NAMESPACE-SELECTION"]
+             [["--namespace" namespace "--regex" ".*"]
+              "DEV-NAMESPACE-SELECTION"]
+             [["--namespace" namespace "--exact" "not-in-manifest"]
+              "DEV-NAMESPACE-SELECTOR"]
+             [["--namespace" namespace "--exact" qualified
+               "--namespace" "gravity.bootstrap-test"]
+              "DEV-NAMESPACE-SELECTION"]]]
+      (is (= expected-id
+             (:id (exception-data #(selected (parse-args args)))))))))
+
+(deftest manifest-authority-resolution-fails-closed
+  (let [generated (deref #'gravity.development-test-runner/generated-namespace-authority)]
+    (with-redefs-fn
+      {#'clojure.core/requiring-resolve
+       (fn [_] (throw (IllegalStateException. "simulated manifest load failure")))}
+      (fn []
+        (is (= "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+               (:id (exception-data #(generated)))))))))
+
+(deftest malformed-manifest-authority-resolvers-fail-closed
+  (let [generated (deref #'gravity.development-test-runner/generated-namespace-authority)
+        projection-symbol
+        'gravity.self-hosting.unified-execution-plan/namespace-authority-projection
+        validator-symbol
+        'gravity.self-hosting.unified-execution-plan/validate-namespace-authority-projection
+        catalog-symbol 'gravity.self-hosting.unified-execution-plan/catalog]
+    (testing "wrong resolved values"
+      (with-redefs [clojure.core/requiring-resolve (fn [_] :not-callable)]
+        (is (= "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+               (:id (exception-data #(generated)))))))
+    (testing "projection invocation"
+      (with-redefs [clojure.core/requiring-resolve
+                    (fn [symbol]
+                      (cond
+                        (= symbol projection-symbol)
+                        (fn [] (throw (ex-info "projection failure" {})))
+                        (= symbol validator-symbol) identity
+                        (= symbol catalog-symbol) {}))]
+        (is (= "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+               (:id (exception-data #(generated)))))))
+    (testing "validator invocation"
+      (with-redefs [clojure.core/requiring-resolve
+                    (fn [symbol]
+                      (cond
+                        (= symbol projection-symbol) (fn [] {})
+                        (= symbol validator-symbol)
+                        (fn [_ _] (throw (IllegalStateException. "validator failure")))
+                        (= symbol catalog-symbol) {}))]
+        (is (= "DEV-NAMESPACE-AUTHORITY-VALIDATION"
+               (:id (exception-data #(generated)))))))))
+
+(deftest overlapping-namespace-authority-fails-closed-on-selector-drift
+  (let [generated ((deref #'gravity.development-test-runner/generated-namespace-authority))
+        c2 (first (filter #(= 'gravity.c2-pass-cache-test (:namespace %))
+                          runner/namespace-catalog))
+        forged (assoc generated
+                       :entries [(assoc c2
+                                        :selectors (conj (:selectors c2)
+                                                          "selector-drift")
+                                        :route-ids ["forged-route"])])
+        authority (deref #'gravity.development-test-runner/namespace-authority)]
+    (with-redefs-fn
+      {#'gravity.development-test-runner/generated-namespace-authority
+       (fn [] forged)}
+      (fn []
+        (is (= "DEV-NAMESPACE-AUTHORITY-PARITY"
+               (:id (exception-data #(authority)))))))))
+
+(deftest public-legacy-catalog-mutation-fails-closed
+  (let [authority runner/namespace-authority
+        mutated (conj runner/namespace-catalog
+                      {:namespace 'gravity.injected-test
+                       :path "bootstrap/clojure/test/gravity/injected_test.clj"})]
+    (with-redefs [runner/namespace-catalog mutated]
+      (is (= "DEV-NAMESPACE-CATALOG-DRIFT"
+             (:id (exception-data #(authority))))))))
+
+(deftest public-legacy-catalog-mutation-rejects-selection-before-load
+  (let [selected @#'gravity.development-test-runner/selected-namespace-records
+        parse-args @#'gravity.development-test-runner/parse-args
+        mutated (conj runner/namespace-catalog {:namespace 'gravity.injected-test})]
+    (with-redefs [runner/namespace-catalog mutated]
+      (is (= "DEV-NAMESPACE-CATALOG-DRIFT"
+             (:id (exception-data
+                   #(selected (parse-args ["--namespace" "gravity.bootstrap-test"])))))))))
+
 (deftest foundation-compatibility-namespaces-are-static-and-selectable
   (let [parse-args @#'gravity.development-test-runner/parse-args
         selected-namespaces

@@ -24,6 +24,8 @@
 (def receipt-schema :gravity/unified-execution-receipt-v1)
 (def artifact-invocation-schema :gravity/unified-artifact-invocation-v1)
 (def artifact-operation :run-fast-artifact)
+(def namespace-authority-schema
+  :gravity/verification-namespace-authority-v1)
 (def ^:private artifact-reference-schema
   :gravity/authenticated-artifact-result-reference-v1)
 (def ^:private artifact-reference-keys
@@ -113,6 +115,12 @@
     :exact-var-selector-count :proof-contract-selector-count
     :fixture-suite-count :accepted-fixture-count :rejected-fixture-count
     :fixture-pair-count})
+(def ^:private namespace-authority-keys
+  #{:schema :authority :authoritative? :manifest-id :entries :projection-id})
+(def ^:private namespace-authority-entry-keys
+  #{:namespace :path :selectors :route-ids})
+(def ^:private maximum-namespace-authority-entries 256)
+(def ^:private maximum-namespace-authority-selectors 4096)
 (def ^:private evidence-policy-keys
   #{:required :authority-ceilings :fresh-acceptance-requires})
 (def ^:private plan-keys
@@ -429,6 +437,18 @@
            "Route selectors must be distinct strings" {:route route-id})
   selection)
 
+(defn- route-test-relative-path
+  "Derive the reviewed test path from a route selection namespace.
+
+  This is the same closed namespace-to-path mapping used by route validation;
+  projections must not infer a different path from a route id or filesystem
+  discovery."
+  [namespace]
+  (str (-> namespace
+           (str/replace "." "/")
+           (str/replace "-" "_"))
+       ".clj"))
+
 (defn- validate-closure!
   [route-id closure module-ids]
   (ensure! (map? closure) "UEP-CATALOG-CLOSURE-KEYS"
@@ -511,11 +531,7 @@
                {:route route-id :module-id module-id
                 :missing (sorted-values (remove closure-paths source-paths))})))
   (let [namespace (:namespace (:selection route))
-        test-relative (-> namespace
-                          (str/replace "." "/")
-                          (str/replace "-" "_")
-                          (str (if (str/ends-with? namespace "-test") ".clj"
-                                   ".clj")))
+        test-relative (route-test-relative-path namespace)
         required-paths [(str "bootstrap/clojure/test/" test-relative)
                         "contracts/stage0-incremental-test-dependencies.edn"]
         closure-paths (set (get-in route [:dependency-closure :paths]))]
@@ -1346,6 +1362,183 @@
       :module-ownership ownership
       :dependency-closures closures
       :coverage accounting})))
+
+(defn- fast-namespace-route?
+  [[_ route]]
+  ;; Only routes that the warm, non-authoritative worker may execute contribute
+  ;; namespace authority.  In particular, the fresh proof-contract route is
+  ;; deliberately excluded even though it also carries a selection namespace.
+  (and (= [:fast] (:lanes route))
+       (= :exact-vars (get-in route [:selection :kind]))
+       (= :warm-bounded-process (:execution-mode route))
+       (= :exact-tree-warm-worker (get-in route [:executor :adapter]))
+       (true? (get-in route [:executor :bounded?]))
+       (false? (get-in route [:executor :fresh-capable?]))
+       (= :non-authoritative (get-in route [:executor :authority]))
+       (= :non-authoritative (:authority-ceiling route))
+       (false? (get-in route [:cache-policy :authoritative?]))))
+
+(defn- validate-namespace-authority-projection*
+  "Validate one generated non-authoritative namespace authority projection.
+
+  The projection is a bounded transport view of validated fast exact routes;
+  it is not an additional route catalog and cannot confer acceptance authority.
+  Callers receiving a projection from an untrusted source must validate it
+  before using its entries for namespace admission."
+  [projection]
+  (exact-keys! projection namespace-authority-keys
+               "UEP-NAMESPACE-AUTHORITY-KEYS"
+               [:namespace-authority])
+  (ensure! (= namespace-authority-schema (:schema projection))
+           "UEP-NAMESPACE-AUTHORITY-SCHEMA"
+           "Namespace authority projection schema is unknown"
+           {:schema (:schema projection)})
+  (ensure! (= :non-authoritative (:authority projection))
+           "UEP-NAMESPACE-AUTHORITY-AUTHORITY"
+           "Namespace authority projection cannot confer authority"
+           {:authority (:authority projection)})
+  (boolean! (:authoritative? projection)
+            "UEP-NAMESPACE-AUTHORITY-AUTHORITY"
+            [:namespace-authority :authoritative?])
+  (ensure! (false? (:authoritative? projection))
+           "UEP-NAMESPACE-AUTHORITY-AUTHORITY"
+           "Namespace authority projection cannot be authoritative" {})
+  (doseq [[field value] [[:manifest-id (:manifest-id projection)]
+                         [:projection-id (:projection-id projection)]]]
+    (ensure! (and (string? value)
+                  (re-matches #"sha256:[0-9a-f]{64}" value))
+             "UEP-NAMESPACE-AUTHORITY-IDENTITY"
+             "Namespace authority identity is malformed"
+             {:field field :value value}))
+  (let [entries (:entries projection)]
+    (ensure! (and (vector? entries)
+                  (<= 1 (count entries) maximum-namespace-authority-entries)
+                  (= (count entries)
+                     (count (distinct (map :namespace entries))))
+                  (= entries (vec (sort-by #(str (:namespace %)) entries))))
+             "UEP-NAMESPACE-AUTHORITY-ENTRIES"
+             "Namespace authority entries are not a bounded ordered set"
+             {:entries entries})
+    (doseq [[index entry] (map-indexed vector entries)]
+      (exact-keys! entry namespace-authority-entry-keys
+                   "UEP-NAMESPACE-AUTHORITY-ENTRY-KEYS"
+                   [:namespace-authority :entries index])
+      (let [namespace (:namespace entry)
+            path (:path entry)
+            selectors (:selectors entry)]
+        (ensure! (and (symbol? namespace)
+                      (not (str/blank? (str namespace)))
+                      (<= (count (str namespace)) 1024))
+                 "UEP-NAMESPACE-AUTHORITY-NAMESPACE"
+                 "Namespace authority namespace is malformed"
+                 {:index index :namespace namespace})
+        (ensure! (and (string? path)
+                      (normalized-repository-relative-path? path)
+                      (= (str "bootstrap/clojure/test/"
+                              (route-test-relative-path (str namespace)))
+                         path))
+                 "UEP-NAMESPACE-AUTHORITY-PATH"
+                 "Namespace authority path is not canonical"
+                 {:index index :namespace namespace :path path})
+        (ensure! (and (vector? selectors)
+                      (<= 1 (count selectors)
+                          maximum-namespace-authority-selectors)
+                      (= (count selectors) (count (distinct selectors)))
+                      (every? #(and (string? %)
+                                    (not (str/blank? %))
+                                    (<= (count %) 1024))
+                              selectors))
+                 "UEP-NAMESPACE-AUTHORITY-SELECTORS"
+                 "Namespace authority selectors are not bounded and distinct"
+                 {:index index :namespace namespace})
+        (let [route-ids (:route-ids entry)]
+          (ensure! (and (vector? route-ids)
+                        (<= 1 (count route-ids) maximum-namespace-authority-entries)
+                        (every? #(and (string? %)
+                                      (not (str/blank? %))
+                                      (<= (count %) 1024))
+                                route-ids))
+                   "UEP-NAMESPACE-AUTHORITY-ROUTES"
+                   "Namespace authority route ownership is not bounded and ordered"
+                   {:index index :namespace namespace :route-ids route-ids})
+          (ensure! (= route-ids (vec (sort route-ids)))
+                   "UEP-NAMESPACE-AUTHORITY-ROUTES"
+                   "Namespace authority route ownership is not ordered"
+                   {:index index :namespace namespace :route-ids route-ids})
+          (ensure! (= (count route-ids) (count (distinct route-ids)))
+                   "UEP-NAMESPACE-AUTHORITY-ROUTES"
+                   "Namespace authority route ownership is not distinct"
+                   {:index index :namespace namespace :route-ids route-ids})))))
+  (let [semantic (dissoc projection :projection-id)]
+    (ensure! (= (:projection-id projection) (identity-of semantic))
+             "UEP-NAMESPACE-AUTHORITY-ID"
+             "Namespace authority projection identity is stale"
+             {:expected (identity-of semantic)
+              :actual (:projection-id projection)}))
+  projection)
+
+(declare namespace-authority-projection-value)
+
+(defn validate-namespace-authority-projection
+  "Validate a generated namespace projection, optionally binding its manifest.
+
+  The one-argument form validates the closed projection shape.  Consumers
+  should prefer the two-argument form when they hold the manifest so a
+  projection cannot be replayed under a different catalog identity."
+  ([projection]
+   (validate-namespace-authority-projection* projection))
+  ([manifest projection]
+   (validate-catalog manifest)
+   (validate-namespace-authority-projection* projection)
+   (let [expected-value (namespace-authority-projection-value manifest)
+         expected (assoc expected-value
+                         :projection-id (identity-of expected-value))]
+     (ensure! (= projection expected)
+              "UEP-NAMESPACE-AUTHORITY-MANIFEST"
+              "Namespace authority projection is not the current manifest projection"
+              {:expected (identity-of expected-value)
+               :actual (:projection-id projection)}))
+   projection))
+
+(defn- namespace-authority-projection-value
+  [manifest]
+  (let [groups (->> (:routes manifest)
+                    (filter fast-namespace-route?)
+                    (group-by (comp :namespace :selection second)))
+        entries
+        (->> groups
+             (sort-by key)
+             (mapv (fn [[namespace routes]]
+                     (let [selectors
+                           (->> routes
+                                (sort-by first)
+                                (mapcat #(get-in (val %) [:selection :selectors]))
+                                distinct
+                                vec)
+                           route-ids (->> routes (map first) sort vec)]
+                       {:namespace (symbol namespace)
+                        :path (str "bootstrap/clojure/test/"
+                                   (route-test-relative-path namespace))
+                        :selectors selectors
+                        :route-ids route-ids}))))]
+    {:schema namespace-authority-schema
+     :authority :non-authoritative
+     :authoritative? false
+     :manifest-id (identity-of manifest)
+     :entries entries}))
+
+(defn namespace-authority-projection
+  "Generate the bounded namespace authority view from the reviewed manifest.
+
+  This projection intentionally contains only fast exact-variable routes for
+  the exact-tree warm worker.  Fresh/proof routes remain outside this
+  development authority, and no route is created by this view."
+  ([] (namespace-authority-projection catalog))
+  ([manifest]
+   (validate-catalog manifest)
+   (let [projection (namespace-authority-projection-value manifest)]
+     (validate-namespace-authority-projection
+      (assoc projection :projection-id (identity-of projection))))))
 
 (defn- request-keys!
   [request]
