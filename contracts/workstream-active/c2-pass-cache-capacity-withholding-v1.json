@@ -5,10 +5,11 @@
   "candidate_commit": "85e051e2bf878a1c20bdad88b9360f2419d3616c",
   "clean_worktree": true,
   "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
-  "disposition": "Fresh independent review pending for exact repaired implementation candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, and evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081, including requested-hit object preservation and role/key/artifact/object-tagged validator evidence. The prior rejection remains historical for its old exact tuple; no review of this repair has yet been performed. Current main divergence must be reconciled before any integration request. No acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "disposition": "Fresh independent review ACCEPTED exact repaired implementation candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081, and independent repair review 856fd309f92fc059b1d104b24c6a65830c0c983ddd52bb447c1c3a8fc1d78ba9 for requested-hit exact-object preservation, closed role/key/entry/envelope/payload/artifact/boundary/carrier/receipt binding, mutation and concurrency isolation, capacity failure propagation, authentic paired SH03 evidence, and authority nonclaims. The prior rejection remains historical for its old exact tuple. Current main divergence must be reconciled before any integration request, and any changed implementation tuple requires fresh exact review. No integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
+      "independent ACCEPT: docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-independent-repair-review-v2.md sha256:856fd309f92fc059b1d104b24c6a65830c0c983ddd52bb447c1c3a8fc1d78ba9",
       "gravity.c2-pass-cache-test/c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries",
       "gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer",
       "gravity.c2-pass-cache-test/c2-semantic-validation-trace-separates-requested-and-recovery-roles",
@@ -136,6 +137,12 @@
       "at": "2026-09-03T01:36:49Z",
       "reason": "request fresh independent review of repaired exact candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081, requested-hit object identity, role/requested-cache-key/artifact/object transit, mutation and concurrency isolation, authentic paired SH03 census and actual cache-root withholding, clean gates, LOC exclusions, current-main divergence, historical prior rejection, and all authority nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "c2-cache-identity-repair-reviewer-v2",
+      "at": "2026-09-03T01:50:13Z",
+      "reason": "accept exact repaired tuple 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081, and independent review digest 856fd309f92fc059b1d104b24c6a65830c0c983ddd52bb447c1c3a8fc1d78ba9 after verifying requested-hit exact-object return, equal-but-distinct and mutation rejection, stale-binding cleanup, concurrency isolation, closed identity bindings, generic compatibility, capacity and zero-publication semantics, authentic SH03 evidence honesty, clean focused and regression gates, LOC exclusions, current-main divergence, and all authority nonclaims; integration eligibility remains absent",
+      "state": "accepted"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-v1",
@@ -167,8 +174,13 @@
       "kind": "independent",
       "result": "rejected",
       "reviewer": "c2-cache-implementation-reviewer-v1"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "c2-cache-identity-repair-reviewer-v2"
     }
   ],
-  "state": "review-pending",
+  "state": "accepted",
   "title": "C2 local pass-cache fresh-artifact capacity withholding implementation version 1"
 }
