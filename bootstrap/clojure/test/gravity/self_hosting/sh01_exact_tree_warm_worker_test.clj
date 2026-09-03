@@ -169,6 +169,63 @@
       (is (true? (:out-truncated? result)))
       (is (re-find #"Ran 1 tests" (:out result))))))
 
+(deftest generated-b11-authority-admits-only-reviewed-exact-vars
+  (let [namespace "gravity.self-hosting.sh07-vector-pattern-test"
+        selector "sh07-b11-gravity-contract-names-l7"
+        accepted ["--namespace" namespace "--exact" selector]
+        request-for (fn [args]
+                      (request (str "b11-" (count args)) args))]
+    (is (map? (worker/validate-request! (request-for accepted) expected)))
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"requires at least one namespace and exact selector"
+         (worker/validate-request!
+          (request-for ["--namespace" namespace "--fail-fast" "--fail-fast"])
+          expected)))
+    (is (thrown-with-msg?
+         clojure.lang.ExceptionInfo #"outside manifest namespace authority"
+         (worker/validate-request!
+          (request-for ["--namespace" namespace "--exact" "not-in-manifest"])
+          expected)))))
+
+(deftest warm-worker-detects-namespace-authority-drift
+  (let [emitted (atom [])
+        baseline (runner/namespace-authority)
+        calls (atom 0)
+        live-authority
+        (fn []
+          (if (= 1 (swap! calls inc))
+            baseline
+            (assoc baseline :generated-namespaces [])))]
+    (with-redefs [runner/namespace-authority live-authority]
+      (is (= 2 (worker/run-session!
+                [(pr-str (request "authority-drift" exact-args))]
+                #(swap! emitted conj %) expected
+                #(assoc expected :clean? true)
+                (fn [_] {:exit 0 :elapsed-ns 1 :out "" :err ""
+                         :runner-result (machine-result :passed 0)})
+                8))))
+    (is (= :catalog-drift (:outcome (first @emitted))))
+    (is (= 2 (:exit-code (first @emitted))))))
+
+(deftest warm-worker-rejects-public-legacy-catalog-mutation
+  (let [mutated (conj runner/namespace-catalog
+                      {:namespace 'gravity.injected-test
+                       :path "bootstrap/clojure/test/gravity/injected_test.clj"})
+        failure
+        (with-redefs [runner/namespace-catalog mutated]
+          (try
+            (worker/run-session!
+             [(pr-str (request "catalog-drift" exact-args))]
+             (fn [_] nil) expected
+             (fn [] (assoc expected :clean? true))
+             (fn [_] {:exit 0 :elapsed-ns 1 :out "" :err ""
+                      :runner-result (machine-result :passed 0)})
+             8)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (is (= "WARM-CATALOG-DRIFT" (:id failure)))))
+
 (deftest machine-result-is-required-and-emitted-once
   (testing "a missing runner result cannot claim a passed execution"
     (let [result (with-redefs [runner/run-cli! (fn [_] 0)]
