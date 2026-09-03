@@ -8,9 +8,9 @@ Status: candidate evidence checkpoint, not review or acceptance.
 - Invariant family: `compiler/c2-pass-cache-capacity-withholding`
 - Base: `e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50`
 - Implementation/source commit:
-  `867adba596815a5dbb0c6ca4b26b97f916fff9fe`
+  `4ed05b21b590a93f64da6b00cca6ee6102b868cd`
 - Implementation/source tree:
-  `2058d5ae044e53e23d617db4205e89498302bf5b`
+  `7242f96dae0259131a38656e0db6a7a0590e6c30`
 - Integrated architecture terminal record:
   `contracts/workstream-records/terminal/c2-pass-cache-capacity-withholding-architecture-v1-b456d9b500402afca7fa11dd17ae9b3bab9a91604dced767be0ee85f950a3691.json`
 - Terminal-record SHA-256:
@@ -26,29 +26,32 @@ self-referential commit claim.
 
 ## Clean validation receipts
 
-All successful commands below ran on the named branch with clean HEAD
-`867adba596815a5dbb0c6ca4b26b97f916fff9fe` and tree
-`2058d5ae044e53e23d617db4205e89498302bf5b`.
+All successful implementation commands below ran on the named branch with
+clean HEAD `4ed05b21b590a93f64da6b00cca6ee6102b868cd` and tree
+`7242f96dae0259131a38656e0db6a7a0590e6c30`. The source checkpoint contains
+the requested-hit identity repair and its tests; this report is a later
+evidence-only commit and therefore names the exact source checkpoint rather
+than making a self-referential claim.
 
-1. Focused capacity matrix:
+1. Focused repair and capacity matrix:
 
    ```text
-   /usr/bin/time -p clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.c2-pass-cache-test)) (let [c (ref clojure.test/*initial-report-counters*) vars [(var gravity.c2-pass-cache-test/c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries) (var gravity.c2-pass-cache-test/c2-capacity-retains-rejected-entry-and-direct-store-still-rejects) (var gravity.c2-pass-cache-test/c2-capacity-catches-propagate-unrelated-failures-identically)]] (binding [clojure.test/*report-counters* c] (clojure.test/test-vars vars)) (prn @c) (shutdown-agents) (System/exit (if (zero? (+ (:fail @c) (:error @c))) 0 1)))'
-   {:test 3, :pass 81, :fail 0, :error 0}
-   real 3.23
-   user 7.79
-   sys 0.32
+   /usr/bin/time -p clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.c2-pass-cache-test)) (let [c (ref clojure.test/*initial-report-counters*) vars [(var gravity.c2-pass-cache-test/generic-v2-adapter-same-key-concurrency-executes-one-c2-producer) (var gravity.c2-pass-cache-test/c2-semantic-validation-trace-separates-requested-and-recovery-roles) (var gravity.c2-pass-cache-test/requested-hit-binding-rejects-replacement-and-post-validation-mutation) (var gravity.c2-pass-cache-test/c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries) (var gravity.c2-pass-cache-test/c2-capacity-retains-rejected-entry-and-direct-store-still-rejects) (var gravity.c2-pass-cache-test/c2-capacity-catches-propagate-unrelated-failures-identically)]] (binding [clojure.test/*report-counters* c] (clojure.test/test-vars vars)) (prn @c) (shutdown-agents) (System/exit (if (zero? (+ (:fail @c) (:error @c))) 0 1)))'
+   {:test 6, :pass 133, :fail 0, :error 0}
+   real 7.22
+   user 9.43
+   sys 0.51
    ```
 
 2. Complete C2 cache namespace:
 
    ```text
    /usr/bin/time -p clojure -M:dev-test --namespace gravity.c2-pass-cache-test
-   Ran 14 tests containing 185 assertions.
+   Ran 16 tests containing 231 assertions.
    0 failures, 0 errors.
-   real 78.90
-   user 95.49
-   sys 2.93
+   real 95.64
+   user 111.15
+   sys 2.34
    ```
 
 3. Complete generic pass-cache namespace:
@@ -57,9 +60,9 @@ All successful commands below ran on the named branch with clean HEAD
    /usr/bin/time -p clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.pass-cache-test)) (let [r (clojure.test/run-tests (quote gravity.pass-cache-test))] (prn r) (shutdown-agents) (System/exit (if (zero? (+ (:fail r) (:error r))) 0 1)))'
    Ran 32 tests containing 192 assertions.
    0 failures, 0 errors.
-   real 11.59
-   user 35.29
-   sys 1.54
+   real 14.61
+   user 37.50
+   sys 1.82
    ```
 
 4. Authentic SH-03 own-source smoke:
@@ -67,9 +70,9 @@ All successful commands below ran on the named branch with clean HEAD
    ```text
    /usr/bin/time -p clojure -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M -e '(require (quote gravity.self-hosting.sh03-reader-adapter-test)) (let [c (ref clojure.test/*initial-report-counters*) vars [(var gravity.self-hosting.sh03-reader-adapter-test/sh03-public-reader-accepts-its-own-gravity-source)]] (binding [clojure.test/*report-counters* c] (clojure.test/test-vars vars)) (prn @c) (shutdown-agents) (System/exit (if (zero? (+ (:fail @c) (:error @c))) 0 1)))'
    {:test 1, :pass 8, :fail 0, :error 0}
-   real 383.87
-   user 408.95
-   sys 42.76
+   real 324.98
+   user 393.24
+   sys 6.47
    ```
 
 5. Authentic paired route:
@@ -81,9 +84,9 @@ All successful commands below ran on the named branch with clean HEAD
     :source-sha256 "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77",
     :complete-census {:canonical-nodes 8256942, :canonical-depth 24},
     :extensions [".gravity" ".qst"]}
-   real 1658.50
-   user 1652.14
-   sys 298.12
+   real 1308.12
+   user 1468.60
+   sys 116.46
    ```
 
 6. Architecture, language-boundary, document, roadmap, governance, and diff
@@ -106,16 +109,15 @@ All successful commands below ran on the named branch with clean HEAD
    clojure -M tools/validate_workstream_governance.clj
    validation passed: 147 workstreams
 
-   git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..ea8ecde115e19fee004467dd3b4f46b2eb642519
+   git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..4ed05b21b590a93f64da6b00cca6ee6102b868cd
    exit 0, no output
    ```
 
-Read-only preflight
-`clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main`
-exited 0 and confirmed a clean named branch and matching candidate commit/tree.
-It also reported `main` at `410e5bcfae3b67ea38e195a580d00b1b0ff51309`
-as divergent from the architecture-authorized `e4b85b7a` lineage, with
-`resolve_divergence_before_integration`. That is an explicit later integration
+Read-only ancestry inspection found current authoritative `main` at
+`f88c8094d4150bc5cd3488f598a3d8617e1b7018`, with the repaired source
+checkpoint 10 commits ahead and 17 commits behind. The proportional preflight
+is rerun after this report is committed. Any
+`resolve_divergence_before_integration` result is an explicit later integration
 blocker, not a reason to rewrite this candidate's exact base during freeze or
 review.
 
@@ -136,9 +138,16 @@ extension it:
 - asserted clean-miss capacity evidence, exact node maximum/observation,
   sanitized token absence, withheld/no-disk publication, reader execution, and
   no artifact reuse; and
-- recursively counted regular files in `blobs`, `receipts`, `entries`, and
-  `staging`, requiring zero in every directory before deleting the temporary
-  tree in `finally`.
+- recursively counted regular files under the actual
+  `.cpcache/compiler-pass/v2/{blobs,receipts,entries,staging}` root, requiring
+  zero in every directory before deleting the temporary tree in `finally`.
+
+This rerun deliberately does not rely on the earlier candidate's inventory
+receipt. It corrects the review-time concern about a duplicated inventory path
+by measuring the actual generic pass-cache v2 root on the repaired source
+checkpoint. The source bytes, direct artifact identities, complete census, and
+capacity threshold match the earlier run; the cache-withholding inventory
+claim is newly reproduced for this candidate.
 
 The normalized executable body of `<paired-route-form>` was:
 
@@ -320,6 +329,45 @@ evidence; the successful command above created each explicit cache base first.
 
 ## Accepted and rejected behavior
 
+### Requested-hit object identity repair
+
+The private C2 adapter now closes one requested-hit binding inside each public
+invocation. The binding retains the exact decoded artifact object presented to
+the semantic validator and returns that same object after the generic cache
+result has passed projection. It binds and rechecks the invocation token,
+operation, exact generic key, entry, envelope, artifact, payload-byte objects,
+requested cache key, semantic/storage key identifiers, entry/receipt/producer
+identifiers, validation/requested/C2 artifact identifiers, and the authenticated
+boundary, carrier, and payload identifiers. No object reference or invocation
+token is emitted or persisted.
+
+The focused repair tests observe semantic validation through a private test
+seam. Every observation carries a role, requested cache-key id, validated
+cache-key id, artifact id, and a test-memory-only object tag:
+
+- a clean miss has exactly one `:fresh-requested-artifact` validation;
+- a requested hit has exactly one `:requested-retained-artifact` validation,
+  and the public result is `identical?` to that validated object;
+- direct store has exactly one `:direct-store-artifact` validation;
+- an invalid semantic key performs zero semantic validations;
+- corrupt retained data followed by fresh production records only the fresh
+  role with the requested key and new artifact identifiers;
+- recovery uses `:recovery-artifact`, remains distinct from the requested
+  artifact, and cannot replace its object binding;
+- two concurrent same-key requests execute one producer and record one fresh
+  plus one requested-hit validation with the same requested key/artifact ids,
+  distinct object tags, invocation-local bindings, and an identity-preserved
+  hit result;
+- an equal-but-distinct value returned by the semantic validator is rejected
+  as `C16-STALE`;
+- a successful requested binding followed by generic rejection clears the
+  binding before fresh production, so no stale object can escape; and
+- mutation of a retained payload byte after validation is rejected as
+  `C16-STALE` with `requested C2 hit binding changed after validation`.
+
+The semantic validator still exposes the same generic API. The role-tagged
+trace and object tags exist only at the private C2 testing boundary.
+
 The focused tests establish all three canonical resources at the exact limit
 and first-plus-one. Exact-limit node, depth, and byte artifacts publish one
 blob, one receipt, and one entry with zero staging files. First-plus-one returns
@@ -363,22 +411,25 @@ schema behavior.
 
 | File | SHA-256 |
 | --- | --- |
-| `gravity/c2_pass_cache/adapter_projection.clj` | `5ecff254d01e0e9833ad7b6939d9f1772347946d6c9130e1ece1cee9035bb255` |
+| `gravity/c2_pass_cache.clj` | `1d772b5446ae1500944d18a85044f63ada8f9ec6065d526592dcc65cd0605ea9` |
+| `gravity/c2_pass_cache/adapter_projection.clj` | `67d95a4af8e386c6639c8f4580d58e6923a0ab53d01265a9ee57909bae4cfe7a` |
 | `gravity/c2_pass_cache/adapter_request.clj` | `d79602e7a3150c97142b77e62a45fe105fe698efea11ef745d43ff431a30e588` |
 | `gravity/c2_pass_cache/canonical_decode.clj` | `e86007c14fab1fccdd729fd9afbd5a7567077d9f36aca37584194a6ee82ca96d` |
 | `gravity/c2_pass_cache/canonical_encode.clj` | `591396e29c46c29e442045eea136e6503429666c9fc8c9acd06c5e40addfe0a5` |
 | `gravity/c2_pass_cache/capacity_handoff.clj` | `e26a7467fbb2375296902df60969ca8d061cf4d1afb753ffb52366c2dd9a037d` |
+| `gravity/c2_pass_cache/requested_hit_binding.clj` | `33c47d524399602df3313a5c480558ade4712a2edc1515e0554de4c194f73b32` |
 | `gravity/pass_cache/execution.clj` | `6a29b4f61f0d526003465813f95db550766cb7da591a117dfe10441a4f1e2e7d` |
 | `gravity/pass_cache/publication.clj` | `747e75fe5c86bbd718eca9cc0f70fc536e7c63378f95e5fe9bf8e176c98c12b5` |
 | `gravity/pass_cache/receipt_validation.clj` | `ba382018a9c581a4b7017ea3cfe95f14ed922bd04dfbeea97ef159a32483609f` |
-| `gravity/c2_pass_cache_test.clj` | `74450930b9d9ae7ac84ae58c96631137782eb454789b88d53f117486bd57faeb` |
+| `gravity/c2_pass_cache_test.clj` | `a0c9b7ee9a92e63375aacba908b272e35d8f402b81213fde59447d85426de0cb` |
 | `gravity/pass_cache_test.clj` | `ae37573fe4447599ad763d473bf6c203c163f7aa1d448cbc5d36feacab64c2fb` |
 
 Paths in the table are relative to `bootstrap/clojure/src` or
 `bootstrap/clojure/test`. Definition/call-site inspection confirms the facade's
 later adapter definitions own public C2 `lookup!`, `store!`, and
-`lookup-or-compute!`; generic execution owns only the producer-local handoff;
-receipt validation and publication retain their separate roles. No lookup,
+`lookup-or-compute!`; the new requested-hit binding is private to that adapter;
+generic execution owns only the producer-local handoff; receipt validation and
+publication retain their separate roles. No generic cache API, lookup,
 recovery, retention-scan, path-policy, SH-03, SH-07, release, or roadmap source
 was changed.
 
@@ -391,6 +442,13 @@ LOC result is recorded as an exclusion, not a passing validation.
 
 Environment: Clojure CLI `1.12.5.1654`, OpenJDK `26.0.1`, Darwin arm64
 `25.5.0`.
+
+The earlier independent review report remains the authoritative REJECT for the
+old exact tuple `c8f373fb59509c4ea03339b51bdbb960c82b64cd`, tree
+`ca080ee42557232f3a8a938ddb5dac92bb9a512a`, evidence
+`0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77`.
+It is historical evidence, not a review of this repair. This repair requires a
+new independent review after its exact candidate is frozen.
 
 ## Authority ceiling
 
