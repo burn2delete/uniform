@@ -111,6 +111,22 @@
   #{:actual-path :project-root-path :project-relative-path
     :byte-count :content-hash})
 (def ^:private warm-artifact-diagnostic-keys #{:id :message})
+(def artifact-reference-schema
+  :gravity/authenticated-artifact-result-reference-v1)
+(def ^:private artifact-reference-keys
+  #{:schema :reference-id :operation :base-plan-id :binding-id :row-id :stage
+    :projection-id :result-id :selected-artifact-id
+    :source-content-hash :source-provenance-id :source-relative-path
+    :source-provenance :cache-decision :execution-boundary :authority
+    :status})
+(def ^:private artifact-reference-id-keys
+  [:schema :operation :base-plan-id :binding-id :row-id :stage
+   :projection-id :result-id :selected-artifact-id
+   :source-content-hash :source-provenance-id :source-relative-path
+   :source-provenance :cache-decision :execution-boundary :authority
+   :status])
+(def ^:private artifact-reference-id-pattern #"sha256:[0-9a-f]{64}")
+(def ^:private artifact-reference-max-text-length 4096)
 (def ^:private warm-cached-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
@@ -1289,6 +1305,158 @@
                                     selection plan-value)
     (validate-warm-response! response expected request-id expected-count selection))))
 
+(defn- artifact-reference-id?
+  [value]
+  (and (string? value) (re-matches artifact-reference-id-pattern value)))
+
+(defn artifact-reference-id
+  "Return the canonical identity for a compact artifact result reference.
+
+  The helper is intentionally small and public so the unified receipt engine
+  can construct a closed failure reference without importing the bootstrap
+  namespace itself.  Callers must still pass the exact pre-reference map;
+  validation remains owned by `verify-artifact-reference`."
+  [reference-without-id]
+  (bootstrap/reader-canonical-hash reference-without-id))
+
+(defn- artifact-reference
+  "Project an already validated worker projection into a bounded receipt ref.
+
+  `validate-warm-artifact-response!` has authenticated every field below.  We
+  intentionally project only the compact lineage/provenance reference here;
+  compiler payloads and the full worker envelope never enter the receipt."
+  [plan-value artifact-request binding projection status]
+  (let [bounded-text
+        (fn [value path]
+          (ensure! (and (string? value)
+                        (not (str/blank? value))
+                        (<= (count value) artifact-reference-max-text-length))
+                   "UEP-ARTIFACT-REFERENCE-BOUND"
+                   "Artifact receipt reference text exceeds its bound"
+                   {:path path :maximum artifact-reference-max-text-length}))
+        _ (ensure! (= (:binding-id binding) (:binding-id artifact-request))
+                   "UEP-ARTIFACT-REFERENCE-BINDING"
+                   "Artifact receipt binding is stale" {})
+        _ (when (= :passed status)
+            (doseq [field [:actual-path :project-root-path :project-relative-path]]
+              (bounded-text (get-in projection [:source-provenance field])
+                            [:source-provenance field])))
+        base {:schema artifact-reference-schema
+              :operation :run-fast-artifact
+              :base-plan-id (:plan-id plan-value)
+              :binding-id (:binding-id artifact-request)
+              :row-id (:row-id artifact-request)
+              :stage (:stage artifact-request)
+              :projection-id (when (= :passed status)
+                               (:projection-id projection))
+              :result-id (when (= :passed status) (:result-id projection))
+              :selected-artifact-id (when (= :passed status)
+                                      (:selected-artifact-id projection))
+              :source-content-hash (when (= :passed status)
+                                     (:source-content-hash projection))
+              :source-provenance-id (when (= :passed status)
+                                      (:source-provenance-id projection))
+              :source-relative-path (when (= :passed status)
+                                      (:source-relative-path projection))
+              :source-provenance (when (= :passed status)
+                                   (:source-provenance projection))
+              :cache-decision (or (:cache-decision projection)
+                                  (when (= :passed status) :miss)
+                                  :forbidden)
+              :execution-boundary (when (= :passed status)
+                                   (:execution-boundary projection))
+              :authority (when (= :passed status) (:authority projection))
+              :status status}]
+    (ensure! (= (disj artifact-reference-keys :reference-id)
+                (set (keys base)))
+             "UEP-ARTIFACT-REFERENCE-BOUND"
+             "Artifact receipt reference shape is not closed" {})
+    (assoc base :reference-id (artifact-reference-id base))))
+
+(defn verify-artifact-reference
+  "Verify the compact reference structure and identity retained in a receipt.
+
+  Full projection authentication occurs at the worker trust point above; this
+  structural/identity verifier does not recreate the projection validator.
+  Plan-bound receipt verification remains responsible for authenticated source
+  binding."
+  [reference]
+  (let [sha? #(and (string? %) (re-matches #"sha256:[0-9a-f]{64}" %))
+        bounded-text? #(and (string? %) (not (str/blank? %))
+                            (<= (count %) artifact-reference-max-text-length))
+        bounded-row? #(and (bounded-text? %)
+                           (<= (count %) artifact-row-id-max-length))
+        safe-relative? (fn [path]
+                         (try
+                           (let [parsed (Paths/get ^String path
+                                                    (make-array String 0))]
+                             (and (bounded-text? path)
+                                  (not (.isAbsolute parsed))
+                                  (= path (str (.normalize parsed)))
+                                  (not (re-matches #"(?i)^[a-z]:.*" path))
+                                  (not (str/includes? path "\\"))
+                                  (not-any? #{"" "." ".."}
+                                            (str/split path #"/"))))
+                           (catch Throwable _ false)))
+        status (:status reference)
+        pass? (= :passed status)
+        provenance (:source-provenance reference)
+        boundary (:execution-boundary reference)
+        authority (:authority reference)
+        pass-fields [:projection-id :result-id :selected-artifact-id
+                     :source-content-hash :source-provenance-id
+                     :source-relative-path :source-provenance
+                     :execution-boundary :authority]]
+    (ensure! (and (map? reference)
+                  (= artifact-reference-keys (set (keys reference)))
+                  (= artifact-reference-schema (:schema reference))
+                  (= :run-fast-artifact (:operation reference))
+                  (artifact-reference-id? (:reference-id reference))
+                  (sha? (:base-plan-id reference))
+                  (sha? (:binding-id reference))
+                  (bounded-row? (:row-id reference))
+                  (keyword? (:stage reference))
+                  (contains? artifact-stages (:stage reference))
+                  (contains? #{:passed :failed :blocked} status)
+                  (contains? #{:hit :miss :disabled :forbidden}
+                             (:cache-decision reference))
+                  (if pass?
+                    (and (every? #(sha? (get reference %))
+                                 [:projection-id :result-id :selected-artifact-id
+                                  :source-content-hash :source-provenance-id])
+                         (safe-relative? (:source-relative-path reference))
+                         (= warm-artifact-provenance-keys (set (keys provenance)))
+                         (every? bounded-text? (map provenance
+                                                      [:actual-path
+                                                       :project-root-path]))
+                         (safe-relative? (:project-relative-path provenance))
+                         (integer? (:byte-count provenance))
+                         (<= 0 (:byte-count provenance) copy-total-bytes)
+                         (sha? (:content-hash provenance))
+                         (= (:source-relative-path reference)
+                            (:project-relative-path provenance))
+                         (= warm-artifact-boundary-keys (set (keys boundary)))
+                         (= {:mode :fast :isolation :same-jvm
+                             :isolated? false :acceptance-authority? false
+                             :fresh-authoritative-run-required? true}
+                            boundary)
+                         (= warm-artifact-authority-keys (set (keys authority)))
+                         (false? (:authoritative? authority))
+                         (= :non-authoritative (:ceiling authority))
+                         (true? (:development-only? authority))
+                         (vector? (:nonclaims authority))
+                         (<= (count (:nonclaims authority)) 64)
+                         (every? keyword? (:nonclaims authority)))
+                    (every? nil? (map #(get reference %) pass-fields))))
+             "UEP-ARTIFACT-REFERENCE"
+             "Artifact receipt reference is not a closed bounded value" {}))
+  (ensure! (= (:reference-id reference)
+              (artifact-reference-id
+               (select-keys reference artifact-reference-id-keys)))
+           "UEP-ARTIFACT-REFERENCE-ID"
+           "Artifact receipt reference identity is stale or malformed" {})
+  reference)
+
 (defn- request-error
   [id message]
   (ex-info message {:id id}))
@@ -1889,28 +2057,33 @@
             (stop-warm-session! session :closure-drift))
           (ensure! stable? "UEP-ARTIFACT-SNAPSHOT"
                    "Execution closure changed during artifact execution" {})
-          {:status (if (and (= :passed (:outcome response))
-                            (map? (:projection response))) :passed :failed)
-           :projection (:projection response)
-           :authority {:authoritative? false
-                       :ceiling :non-authoritative
-                       :development-only? true
-                       :nonclaims (:nonclaims plan-value)}
-           :execution-boundary {:mode :fast :isolation :same-jvm
-                                :isolated? false
-                                :acceptance-authority? false
-                                :fresh-authoritative-run-required? true}
-           :diagnostics (if (= :passed (:outcome response)) []
-                            [{:id "UEP-ARTIFACT-FAILED"
-                              :message "Fast artifact child rejected the request"
-                              :outcome (:outcome response)}])
-           :mutation-detected? (not= before after)
-           :provenance-checked? (= :passed (:outcome response))
-           :source-authenticated? (= :passed (:outcome response))
-           :closure-verified? (= before after)
-           :fresh-replayable? false
-           :cache-decision (or (get-in response [:projection :cache-decision])
-                               :miss)})
+          (let [status (if (and (= :passed (:outcome response))
+                                (map? (:projection response))) :passed :failed)
+                diagnostics (if (= :passed status)
+                              (vec (get-in response [:projection :diagnostics]))
+                              [{:id "UEP-ARTIFACT-FAILED"
+                                :message "Fast artifact child rejected the request"}])
+                result {:status status
+                        :projection (:projection response)
+                        :authority {:authoritative? false
+                                    :ceiling :non-authoritative
+                                    :development-only? true
+                                    :nonclaims (:nonclaims plan-value)}
+                        :execution-boundary {:mode :fast :isolation :same-jvm
+                                             :isolated? false
+                                             :acceptance-authority? false
+                                             :fresh-authoritative-run-required? true}
+                        :diagnostics diagnostics
+                        :mutation-detected? (not= before after)
+                        :provenance-checked? (= :passed (:outcome response))
+                        :source-authenticated? (= :passed (:outcome response))
+                        :closure-verified? (= before after)
+                        :fresh-replayable? false
+                        :cache-decision (or (get-in response [:projection :cache-decision])
+                                            :miss)}]
+            (assoc result :artifact-reference
+                   (artifact-reference plan-value artifact-request binding
+                                       (:projection result) status))))
         (catch InterruptedException error
           (.interrupt (Thread/currentThread))
           (throw error))

@@ -586,7 +586,36 @@
     (is (true? (get-in result [:execution-boundary :fresh-authoritative-run-required?])))
     (is (#{:hit :miss} (:cache-decision result)))
     (is (= :source (get-in result [:projection :requested-stage])))
-    (is (true? (get-in result [:projection :provenance-checked?])))))
+    (is (true? (get-in result [:projection :provenance-checked?])))
+    (let [reference (:artifact-reference result)]
+      (is (= #{:schema :reference-id :operation :base-plan-id :binding-id
+               :row-id :stage :projection-id :result-id :selected-artifact-id
+               :source-content-hash :source-provenance-id
+               :source-relative-path :source-provenance :cache-decision
+               :execution-boundary :authority :status}
+             (set (keys reference))))
+      ;; Diagnostics remain one canonical stream on the execution result; the
+      ;; compact reference carries only lineage/provenance identity.
+      (is (not (contains? reference :diagnostics)))
+      (is (= reference (lanes/verify-artifact-reference reference)))
+      (doseq [[expected tampered]
+              [["UEP-ARTIFACT-REFERENCE-ID"
+                (assoc reference :reference-id (sha "d"))]
+               ["UEP-ARTIFACT-REFERENCE"
+                (let [value (assoc reference :row-id (apply str (repeat 257 "x")))]
+                  (assoc value :reference-id
+                         (lanes/artifact-reference-id
+                          (dissoc value :reference-id))))]
+               ["UEP-ARTIFACT-REFERENCE"
+                (let [value (assoc reference :source-relative-path "../escape")]
+                  (assoc value :reference-id
+                         (lanes/artifact-reference-id
+                          (dissoc value :reference-id))))]]]
+        (is (= expected
+               (try (lanes/verify-artifact-reference tampered)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error
+                      (:id (ex-data error))))))))))
 
 (deftest run-fast-artifact-rejects-tampered-projection-and-identity
   (doseq [[label options expected]
