@@ -5,7 +5,7 @@
   "candidate_commit": "c8f373fb59509c4ea03339b51bdbb960c82b64cd",
   "clean_worktree": true,
   "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
-  "disposition": "Review pending for exact implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, source, tests, and evidence. No review has yet been performed. Current main divergence must be reconciled before any integration request. No acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "disposition": "Independent reviewer c2-cache-implementation-reviewer-v1 rejected exact implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, and evidence digest 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77 under review report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-independent-review-v1.md, SHA256 1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8. The workstream is reopened as draft to repair requested-hit object preservation and role/key/artifact-tagged validator evidence. Current main divergence must still be reconciled before any future integration request. No acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
@@ -17,7 +17,10 @@
       "gravity.c2-pass-cache-test/c2-capacity-retains-rejected-entry-and-direct-store-still-rejects",
       "gravity.c2-pass-cache-test/c2-capacity-catches-propagate-unrelated-failures-identically",
       "invalid semantic key, unsupported artifact, validator error, producer IO, interruption, and closed-by-interrupt are not capacity withholding",
-      "corrupt retained entry remains C16-ENTRY and byte-for-byte unchanged"
+      "corrupt retained entry remains C16-ENTRY and byte-for-byte unchanged",
+      "independent review: docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-independent-review-v1.md sha256:1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8",
+      "requested-hit semantic validator observes artifact object A but the public hit returns a second unvalidated decode B; equal true, identical false",
+      "aggregate validator counters do not tag validation role, requested cache-key id, and artifact id as the integrated architecture requires"
     ],
     "stable_diagnostics": ["C16-POLICY", "C16-KEY", "C16-STALE", "C16-ENTRY"],
     "validation_commands": [
@@ -109,6 +112,12 @@
       "at": "2026-09-03T00:09:57Z",
       "reason": "request fresh independent review of exact candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, evidence digest 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77, clean validation receipts, authentic paired SH03 census, capacity schemas, atomicity and no-file claims, LOC exclusions, current-main divergence, and all nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "c2-cache-implementation-reviewer-v1",
+      "at": "2026-09-03T00:34:18Z",
+      "reason": "reopen exact rejected tuple c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, evidence digest 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77 after independent review 1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8 returned REJECT: requested-hit validation and public return do not preserve one artifact object, and validator evidence lacks required role, requested-key-id, and artifact-id tagging",
+      "state": "draft"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-v1",
@@ -134,7 +143,13 @@
     "local main is now divergent from the exact architecture-authorized base; reconciliation and a new exact integration preflight are required before any integration request",
     "the integrated architecture is the sole dependency and this candidate grants no implementation acceptance, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "c2-cache-implementation-reviewer-v1"
+    }
+  ],
+  "state": "draft",
   "title": "C2 local pass-cache fresh-artifact capacity withholding implementation version 1"
 }
