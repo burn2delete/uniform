@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Integration eligible for the independently accepted architecture-only tuple candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 after reconciliation commit 77e9288f991ace3da14fc373681077eefd67488b preserved those bytes and exact integration preflight against authoritative main b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 passed. This grants architecture integration eligibility only. A separately governed implementation, clean fixed-fuel evidence, independent implementation acceptance, and implementation integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, or release authority is conferred.",
+  "disposition": "Integrated architecture-only authority for exact accepted candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 through authoritative-main merge 3650e57c07b8cf4916bc9540d51fb98e0fe9e22d, tree 0e73190236e070fd6cfc074d7445d1843fa8998a, with parents b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 and 3a122cc7540c8a1e26ff44f0121bc21630a3a3b2. This grants architecture authority only. A separately governed implementation, clean fixed-fuel evidence, independent implementation acceptance, and implementation integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, or release authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
@@ -146,6 +146,12 @@
       "at": "2026-09-03T02:49:54Z",
       "reason": "advance the accepted architecture-only tuple candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 to integration-eligible after reconciliation commit 77e9288f991ace3da14fc373681077eefd67488b with tree a253345b80fb733b81f244164b2ffb5647ed46c2 preserved the reviewed artifacts and exact integration preflight against authoritative main b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 passed every precondition with descendant relation and integrate_candidate recommendation; architecture only, with implementation and SH-07 completion still unclaimed",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-integrator",
+      "at": "2026-09-03T02:51:24Z",
+      "reason": "record integration of exact accepted architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 through authoritative-main merge 3650e57c07b8cf4916bc9540d51fb98e0fe9e22d, tree 0e73190236e070fd6cfc074d7445d1843fa8998a, with parents b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 and 3a122cc7540c8a1e26ff44f0121bc21630a3a3b2; architecture only, with implementation, fixed-fuel proof, and SH-07 completion still unclaimed",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -174,6 +180,6 @@
       "reviewer": "sh07-runtime-validation-architecture-reviewer-v3"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
 }
