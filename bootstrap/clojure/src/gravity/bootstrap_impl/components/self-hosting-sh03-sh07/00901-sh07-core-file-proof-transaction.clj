@@ -1,11 +1,17 @@
 
 
-(defn sh07-core-file-proof-transaction
+(defn- sh07-core-file-proof-transaction-with-builder
   "Build and independently audit one SH-07 module in a private proof epoch.
 
   The returned receipt contains counters and identity snapshots only.  Cached
   artifacts and reports are cleared before the function returns."
-  [source-path]
+  [source-path artifact-builder]
+  (when-not (ifn? artifact-builder)
+    (throw
+     (ex-info "SH-07 proof transaction artifact builder is not callable"
+              {:id "C6-VERIFY"
+               :stage :sh07-proof-transaction
+               :reason :artifact-builder-required})))
   (when *sh07-proof-transaction-context*
     (throw
      (ex-info "Nested SH-07 proof transactions are not allowed"
@@ -38,7 +44,7 @@
     (try
       (binding [*sh07-proof-transaction-context* context]
         (try
-          (let [artifact (sh07-core-file-artifact source-path)
+          (let [artifact (artifact-builder source-path)
                 _ (sh07-proof-transaction-transition!
                    context source-snapshot core-snapshot)
                 verification (sh07-core-artifact-verification artifact)
@@ -85,3 +91,11 @@
       (catch InterruptedException interrupted
         (.interrupt (Thread/currentThread))
         (throw interrupted)))))
+
+(defn sh07-core-file-proof-transaction
+  "SH-07 proof transaction compatibility entrypoint and builder seam."
+  ([source-path]
+   (sh07-core-file-proof-transaction-with-builder
+    source-path sh07-core-file-artifact))
+  ([source-path artifact-builder]
+   (sh07-core-file-proof-transaction-with-builder source-path artifact-builder)))
