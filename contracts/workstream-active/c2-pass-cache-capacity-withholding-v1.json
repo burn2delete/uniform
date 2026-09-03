@@ -2,38 +2,94 @@
   "architecture_decision": "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
   "author": "c2-pass-cache-capacity-implementation",
   "base_commit": "e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50",
-  "candidate_commit": null,
-  "clean_worktree": false,
-  "dependencies": [
-    "c2-pass-cache-capacity-withholding-architecture-v1"
-  ],
-  "disposition": "Draft implementation workstream for the integrated C2 pass-cache capacity-withholding architecture only. No candidate, implementation acceptance, review, evidence, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "candidate_commit": "c8f373fb59509c4ea03339b51bdbb960c82b64cd",
+  "clean_worktree": true,
+  "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
+  "disposition": "Exact non-frozen implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, with source, tests, and evidence assembled for freeze and independent review only. Current main divergence must be reconciled before any integration request. No review, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
-    "accepted_fixtures": [],
-    "rejected_fixtures": [],
-    "stable_diagnostics": [],
-    "validation_commands": []
+    "accepted_fixtures": [
+      "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
+      "gravity.c2-pass-cache-test/c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries",
+      "gravity.self-hosting.sh03-reader-adapter-test/sh03-public-reader-accepts-its-own-gravity-source",
+      "byte-identical reader.gravity/reader.qst ordinary uncached and capacity-withheld SH03 route"
+    ],
+    "rejected_fixtures": [
+      "gravity.c2-pass-cache-test/c2-capacity-retains-rejected-entry-and-direct-store-still-rejects",
+      "gravity.c2-pass-cache-test/c2-capacity-catches-propagate-unrelated-failures-identically",
+      "invalid semantic key, unsupported artifact, validator error, producer IO, interruption, and closed-by-interrupt are not capacity withholding",
+      "corrupt retained entry remains C16-ENTRY and byte-for-byte unchanged"
+    ],
+    "stable_diagnostics": ["C16-POLICY", "C16-KEY", "C16-STALE", "C16-ENTRY"],
+    "validation_commands": [
+      {
+        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<three exact focused capacity test vars recorded in the implementation evidence report>'",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "/usr/bin/time -p clojure -M:dev-test --namespace gravity.c2-pass-cache-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<run-tests gravity.pass-cache-test form recorded in the implementation evidence report>'",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<SH03 own-source test-var form recorded in the implementation evidence report>'",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "/usr/bin/time -p clojure -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}' -M -e '<paired-route-form recorded in the implementation evidence report>'",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..c8f373fb59509c4ea03339b51bdbb960c82b64cd",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
   },
   "governing_contracts": [
-    "AGENTS.md",
-    "D0",
-    "D1",
-    "D2",
-    "D3",
-    "D6",
-    "D8",
-    "D9",
-    "C2",
-    "C16",
-    "BOOT7",
-    "BOOT8",
+    "AGENTS.md", "D0", "D1", "D2", "D3", "D6", "D8", "D9", "C2", "C16", "BOOT7", "BOOT8",
     "docs/phase-06-compiler-architecture/README.md",
     "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md",
     "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-sh03-failure-provenance-v1.md",
-    "docs/self-hosting-slice-ownership.edn",
-    "docs/workstream-governance.md",
-    "docs/workstream-ledger-v2.md",
-    "contracts/workstream-governance.json"
+    "docs/self-hosting-slice-ownership.edn", "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md", "contracts/workstream-governance.json"
   ],
   "history": [
     {
@@ -45,12 +101,7 @@
   ],
   "id": "c2-pass-cache-capacity-withholding-v1",
   "invariant_family": "compiler/c2-pass-cache-capacity-withholding",
-  "no_overclaim_authority": {
-    "integration_only": true,
-    "release": false,
-    "seed_retirement": false,
-    "self_hosting": false
-  },
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
   "owned_paths": [
     "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_projection.clj",
     "bootstrap/clojure/src/gravity/c2_pass_cache/adapter_request.clj",
@@ -61,13 +112,15 @@
     "bootstrap/clojure/src/gravity/pass_cache/publication.clj",
     "bootstrap/clojure/src/gravity/pass_cache/receipt_validation.clj",
     "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj",
-    "bootstrap/clojure/test/gravity/pass_cache_test.clj"
+    "bootstrap/clojure/test/gravity/pass_cache_test.clj",
+    "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md"
   ],
   "owner": "sh-reader",
   "residual_host_boundaries": [
     "Clojure and the JVM remain the temporary C2 adapter, validator, canonical encoder, exception-identity transport, filesystem, locking, and test-observer boundary",
     "the generic pass-cache remains a local speculative development optimization with its existing filesystem-provider and same-user mutation exclusions",
-    "the integrated architecture is the sole dependency and grants no implementation acceptance, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority"
+    "local main is now divergent from the exact architecture-authorized base; reconciliation and a new exact integration preflight are required before any integration request",
+    "the integrated architecture is the sole dependency and this candidate grants no implementation acceptance, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority"
   ],
   "reviews": [],
   "state": "draft",
