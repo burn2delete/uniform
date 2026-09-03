@@ -1067,3 +1067,46 @@
              "requested stage was not built by this pipeline result"
              {:stage stage
               :requested-stage (:requested-stage result)})))
+
+(defn fresh-checked-core-artifact
+  "Build and validate a fresh checked-core projection for SH-07 handoff."
+  [source-path]
+  (let [result (run-pipeline {:source-path source-path
+                              :target-stage :checked-core :mode :fresh})
+        caller (source-snapshot! source-path)
+        selected (stage-artifact result :checked-core)
+        stage-map (:stage-artifacts result)
+        fresh? #(and (= :fresh (:mode %))
+                     (every? false?
+                             [(get-in % [:cache-policy :eligible?])
+                              (get-in % [:cache-policy :observed-hit?])
+                              (get-in % [:cache-policy :authoritative?])
+                              (get-in % [:receipt :cache :eligible?])
+                              (get-in % [:receipt :cache :hit?])
+                              (get-in % [:receipt :cache :authoritative?])
+                              (get-in % [:authority :authoritative?])]))]
+    (when-not (and (= :gravity/authenticated-artifact-pipeline-result
+                     (:kind result))
+                   (= pipeline-schema-version (:schema-version result))
+                   (= pipeline-id (:pipeline result))
+                   (= :checked-core (:requested-stage result))
+                   (= :fresh (:mode result))
+                   (= stages (vec (keys stage-map)))
+                   (= selected (:artifact result))
+                   (and (some? (:payload-artifact-id selected)) (= [(:payload selected) (:payload-artifact-id selected)] [(:payload result) (get-in selected [:payload :artifact-id])]))
+                   (= [(:canonical-path caller) (:bytes-hash caller)]
+                      [(:actual-path result) (:source-content-hash result)]
+                      [(get-in selected [:provenance :actual-path]) (get-in selected [:source-identity :bytes-hash])])
+                   (= {:fresh-cache-bypassed? true :isolation :same-jvm
+                       :isolated? false :acceptance-authority? false}
+                      (:execution-boundary result))
+                   (false? (get-in result [:authority :authoritative?]))
+                   (= :development-only (get-in result [:authority :ceiling]))
+                   (= [:integration :proof :release :self-hosting :seed-retirement :safety :performance] (get-in result [:authority :nonclaims]))
+                   (every? fresh? (vals stage-map)))
+      (fail! "ARTIFACT-RESULT"
+             "fresh checked-core pipeline result failed validation"
+             {:source-path source-path
+              :requested-stage (:requested-stage result)
+              :mode (:mode result)}))
+    (:payload selected)))

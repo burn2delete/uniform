@@ -3,7 +3,8 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [gravity.bootstrap :as bootstrap])
+            [gravity.bootstrap :as bootstrap]
+            [gravity.authenticated-artifact-pipeline :as pipeline])
   (:import (java.nio.file Files LinkOption Path Paths)))
 
 (def ^:private contract-resource
@@ -452,7 +453,9 @@
           source-binding-before (source-bytes-sha256 path)
           _ (validate-source-binding!
              contract module-name source-binding-before)
-          proof-run (bootstrap/sh07-core-file-proof-transaction path)
+          proof-run
+          (bootstrap/sh07-core-file-proof-transaction
+           path pipeline/fresh-checked-core-artifact)
           artifact (:artifact proof-run)
           verification (:verification proof-run)
           proof-transaction (:proof-transaction proof-run)
