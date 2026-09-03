@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Fresh independent review ACCEPTED exact architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 with no architecture blockers; independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779. This grants architecture authority only. Latest-main reconciliation, a separately governed implementation, clean evidence, independent implementation acceptance, and integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority is conferred.",
+  "disposition": "Integration eligible for the independently accepted architecture-only tuple candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 after reconciliation commit 77e9288f991ace3da14fc373681077eefd67488b preserved those bytes and exact integration preflight against authoritative main b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 passed. This grants architecture integration eligibility only. A separately governed implementation, clean fixed-fuel evidence, independent implementation acceptance, and implementation integration remain required; no fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, or release authority is conferred.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
@@ -140,6 +140,12 @@
       "at": "2026-09-03T02:42:24Z",
       "reason": "ACCEPT exact immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after independent exact source and contract review found V1/V2 repairs, all three call-action sites, guarded first-eval mint, action/frame/raw/argument/invocation identity, lexical scope transport, caller-blind Root-8 parity, composite CAS and owner-safe cleanup, outer predicate retention, certificate-role separation, trace accounting, fixed limits, D6 evidence obligations, and nonclaims coherent with no blocker; review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779; architecture authority only",
       "state": "accepted"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-integrator",
+      "at": "2026-09-03T02:49:54Z",
+      "reason": "advance the accepted architecture-only tuple candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7, and independent review SHA-256 c60a743ff31a3002866cbd1620a8cd8af7d8ebe00055898026c45f64b0ad9779 to integration-eligible after reconciliation commit 77e9288f991ace3da14fc373681077eefd67488b with tree a253345b80fb733b81f244164b2ffb5647ed46c2 preserved the reviewed artifacts and exact integration preflight against authoritative main b8612e70596b601ccb1d2f6f2dc1a18ea63e1c53 passed every precondition with descendant relation and integrate_candidate recommendation; architecture only, with implementation and SH-07 completion still unclaimed",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -168,6 +174,6 @@
       "reviewer": "sh07-runtime-validation-architecture-reviewer-v3"
     }
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
 }
