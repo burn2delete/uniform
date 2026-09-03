@@ -1,0 +1,169 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-architecture-v2.md",
+  "author": "sh07-runtime-validation-architecture",
+  "base_commit": "e42ffdf67e43d5dada919ed239370b17a11ba950",
+  "candidate_commit": "dbc0fb60890626ecf826078d6ed679da99504b84",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
+  ],
+  "disposition": "REJECTED by fresh independent reviewer sh07-runtime-validation-architecture-reviewer-v2 for exact immutable architecture candidate dbc0fb60890626ecf826078d6ed679da99504b84, tree cae3f5044341141c1d1495d0e8f6249cb9018d51, report SHA-256 ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7, and provisional-evidence SHA-256 2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209. V2 correctly retains Root-1 outer predicates and narrows both projections, but its caller-blind Root-8-to-public-Root-1 receipt mint is assigned to an already-counted call-entry transition that does not exist: the exact external-machine path resolves and binds the initial callee before entering its steps-0 bounded loop. A successor must name a mechanically real before-body cutpoint and honestly specify whether mint is separately metered host bookkeeping or part of an exact machine transition, including fixed-ceiling accounting and cleanup. No implementation or integration authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-architecture-v2.md",
+      "report-sha256:ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7",
+      "docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-provisional-evidence-v2.md",
+      "provisional-evidence-sha256:2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209",
+      "candidate-tree:cae3f5044341141c1d1495d0e8f6249cb9018d51",
+      "integrated-dependency:sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
+      "rejected-history:sh07-b51-once-per-carrier-validation-architecture-v1 terminal record sha256:7adb1a0af4519978956e84ac7e4f43e70d76ff5cc3cfa83c7c43f029d68bd7ea",
+      "read-only host predicate probe at implementation snapshot 45556a3f447a1262cd5f01afe5630571ee759d18: malformed empty physical-invocation map produced host-raw-joins-valid true",
+      "read-only source inspection: Root 1 nested r1-compact cutpoint, Root 6 r6-c30 cutpoint, and required Root-8 to public-Root-1 transitive topology",
+      "semantic pre-audit PASS by /root/runtime_validation_arch_v2/v2_arch_pre_audit for exact candidate dbc0fb60890626ecf826078d6ed679da99504b84 and tree cae3f5044341141c1d1495d0e8f6249cb9018d51; this self-audit confers no independent acceptance",
+      "complete exact Attempt-32 17-key preflight profile, four-layer admission boundary, 21-key private receipt, role-specific projections, caller-blind child Root-1 mint, one-slot plus issued-to-retired one-shot lifetime law, mutation matrix, unchanged ceilings, and clean D6 evidence gate",
+      "independent review: docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-architecture-independent-review-v2.md sha256:e41903ebdc576617c358c70ccb43788cf3cd0b367648e05b81dfea1fa6ce6e85",
+      "read-only exact-source inspection at implementation snapshot 45556a3f447a1262cd5f01afe5630571ee759d18: selected Root 8 reaches public Root 1 through the external machine, whose initial call-action runs before the bounded loop begins at steps 0"
+    ],
+    "rejected_fixtures": [
+      "a receipt projects validity for any outer SH-06 request, predecessor descriptor, predecessor contract, raw observation, physical invocation, Root-1 result, or Root-6 result",
+      "Root 1 replaces or weakens the complete raw-carrier predicate instead of swapping only its nested executable-carrier predicate in a private gate",
+      "physical-invocation empty map passes Root-1 admission or produces anything other than the reference source-integrity-mismatch boundary with no output or external call",
+      "Root 8 receives a Root-8-scoped receipt, skips its retained general raw-carrier validation, redirects its exact public Root-1 call, or the child Root-1 mint/result/definition/instructions depend on or expose caller identity",
+      "a nested Root-1 receipt is inherited, reused, minted twice, survives child or top-level cleanup, lacks the issued-to-retired fatal-propagation backstop, or any missing, stale, consumed, invalid, wrong-role, wrong-root, wrong-plan, wrong-runtime, wrong-thread, wrong-invocation, cloned, or fabricated context returns false or falls back instead of rejecting",
+      "certificate A and B witness roles are shared, reordered, collapsed, caller-selected, or used across Root 1 and Root 6",
+      "a receipt survives return or rejection, crosses roots, calls, invocations, threads, runtimes, worktrees, or processes, or can be consumed twice",
+      "a caller supplies a profile, fact, token, receipt, projection, role, expected identity, route, certificate, carrier authority, or semantic result",
+      "host admission is skipped, weakened, reused across invocations, reordered after receipt mint, or described as authenticating outer semantic products",
+      "the 8388608-transition, 4096-frame, or 65536-external-call ceiling is raised, reset, refunded, hidden, or inferred from wrapper-call counts",
+      "provisional localization is described as clean completion, benchmark evidence, implementation acceptance, architecture acceptance, SH-07 completion, or performance proof",
+      "implementation source, test, fixture, certificate, carrier, pin, proof-contract, runtime, or roadmap changes occur in the immutable architecture candidate",
+      "the pre-loop Root-8-to-public-Root-1 call-action is described as an already-counted machine transition",
+      "a successor adds, moves, or reclassifies nested receipt mint without specifying exact before-body ordering, reference and successor transition attribution, fixed-ceiling behavior, and callee plus top-level cleanup"
+    ],
+    "stable_diagnostics": [
+      "WG008",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR",
+      "L2-UNKNOWN-CORE-FORM",
+      "C6-VERIFY",
+      "source-integrity-mismatch"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check e42ffdf67e43d5dada919ed239370b17a11ba950..dbc0fb60890626ecf826078d6ed679da99504b84",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-architecture-v2.md",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "C11",
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+  ],
+  "history": [
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T01:28:40Z",
+      "reason": "register immutable architecture-only candidate dbc0fb60890626ecf826078d6ed679da99504b84, tree cae3f5044341141c1d1495d0e8f6249cb9018d51, report SHA-256 ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7, and provisional-evidence SHA-256 2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209 over base e42ffdf67e43d5dada919ed239370b17a11ba950; no freeze or review is yet requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T01:30:49Z",
+      "reason": "freeze exact immutable architecture-only candidate dbc0fb60890626ecf826078d6ed679da99504b84, tree cae3f5044341141c1d1495d0e8f6249cb9018d51, report SHA-256 ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7, and provisional-evidence SHA-256 2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209 after semantic pre-audit PASS plus documentation, roadmap, language-boundary, governance, architecture-authority, ASCII, exact-range, and whitespace checks; report and evidence bytes remain unchanged",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T01:31:41Z",
+      "reason": "request fresh independent exact review of immutable architecture-only candidate dbc0fb60890626ecf826078d6ed679da99504b84, tree cae3f5044341141c1d1495d0e8f6249cb9018d51, report SHA-256 ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7, and provisional-evidence SHA-256 2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209 for exact Attempt-32 dependency/history, four-layer proof boundary, narrow Root-1/Root-6 projections, retained Root-1 outer predicates, caller-blind nested public-Root-1 parity, one-shot identity/lifetime/backstop, physical-invocation empty-map mutation, unchanged ceilings/accounting, D6 evidence, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-reviewer-v2",
+      "at": "2026-09-03T01:45:40Z",
+      "reason": "REJECT exact immutable candidate dbc0fb60890626ecf826078d6ed679da99504b84, tree cae3f5044341141c1d1495d0e8f6249cb9018d51, report SHA-256 ab8d8eb624bb53f7514ac4fcc38401b0a0b1a518bf28bb739f3c651816278ba7, and provisional-evidence SHA-256 2713d122e8f1ebe82f03a5ef727e80ec2348c7d82fca4689b9c284bdad550209 because the caller-blind Root-8-to-public-Root-1 child mint is placed in an asserted already-counted call-entry transition, while exact source 45556a3f447a1262cd5f01afe5630571ee759d18 resolves and binds that initial external-machine callee before entering the bounded loop at steps 0; review artifact SHA-256 e41903ebdc576617c358c70ccb43788cf3cd0b367648e05b81dfea1fa6ce6e85",
+      "state": "rejected"
+    }
+  ],
+  "id": "sh07-b51-once-per-invocation-nested-validation-architecture-v2",
+  "invariant_family": "architecture/self-hosting-sh07-b51-runtime-validation-v2",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-architecture-v2.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-once-per-invocation-nested-validation-provisional-evidence-v2.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the bounded-preflight host, source reader, checker host, canonical-hash boundary, local-authority constructor, immutable-pin boundary, private token and receipt registry, runtime-machine host, external-call authorizer, and observer",
+    "the receipt authenticates only the enumerated nested carrier facts for one exact public-Root-1 or selected-Root-6 invocation; Root 1 retains every outer semantic predicate and Root 6 retains every later independent predicate",
+    "selected Root 8 receives no Root-8-scoped receipt; its exact transitive public-Root-1 call gets one caller-blind child Root-1 receipt with an at-most-one optional slot, persistent retired tombstone, and top-level fatal-propagation cleanup backstop",
+    "the fixed 8388608-transition, 4096-frame, and 65536-external-call ceilings remain unchanged and every internal dispatch remains counted",
+    "main advanced after the requested starting commit; accepted work must preserve the exact candidate as an ancestor while reconciling onto then-latest main and passing integration gates before implementation registration",
+    "this draft grants no architecture acceptance, implementation, test, fixture, certificate, carrier, pin, roadmap, SH-07 completion, performance, self-hosting, release, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "sh07-runtime-validation-architecture-reviewer-v2"
+    }
+  ],
+  "state": "rejected",
+  "title": "SH-07 B51 once-per-invocation nested validation architecture version 2"
+}

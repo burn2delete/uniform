@@ -1,0 +1,159 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-architecture-v1.md",
+  "author": "sh07-runtime-validation-architecture",
+  "base_commit": "ba5fbb8add22e9b8e3b21288e5426601841e6839",
+  "candidate_commit": "704ab6fb69ab9cde05193859e74e90cc19722f7d",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
+  ],
+  "disposition": "REJECTED by fresh independent reviewer sh07-runtime-validation-architecture-reviewer-v1 for exact immutable architecture candidate 704ab6fb69ab9cde05193859e74e90cc19722f7d, tree f822b3fd13a4f65123b965bb33c6d79b12fda13f, report SHA-256 6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537, and provisional-evidence SHA-256 8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1. The proposed Root-1 receipt replaces the complete raw-carrier validator and grants closed outer/request/fresh-SH06/predecessor/raw-observation/physical facts that host admission does not establish. A successor must retain those Gravity checks and shortcut only the nested executable-carrier validation in a Root-1-specific gate. Root-6 separation, identity/replay closure, fixed limits, D6 evidence obligations, and provisional-evidence honesty otherwise passed. No implementation or integration authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-architecture-v1.md",
+      "report-sha256:6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537",
+      "docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-provisional-evidence-v1.md",
+      "provisional-evidence-sha256:8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1",
+      "candidate-tree:f822b3fd13a4f65123b965bb33c6d79b12fda13f",
+      "integrated-dependency:sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
+      "clean implementation-branch test observation at 45556a3f447a1262cd5f01afe5630571ee759d18: runtime admission 3 tests and 120 assertions; indexed joins 2 tests and 28 assertions",
+      "independent review: docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-architecture-independent-review-v1.md sha256:d4645c28be47084f0adaa2999faf14a2394117dae5424f1f4a7435239068c4f3",
+      "read-only host predicate probe at implementation evidence commit 45556a3f447a1262cd5f01afe5630571ee759d18: malformed empty physical-invocation map still produced host-raw-joins-valid true"
+    ],
+    "rejected_fixtures": [
+      "the dirty full-fuel and 500000-step probes are described as clean reproducible receipts, implementation acceptance, or performance proof",
+      "a caller supplies a profile, fact, token, receipt, role, expected identity, route, certificate, carrier authority, or semantic result",
+      "host admission is skipped, weakened, reused across invocations, reordered after receipt mint, or performed more than once",
+      "Root 1 consumes certificate B as its producer witness or Root 6 consumes certificate A or Root-1 output as its independent witness",
+      "a general fact-query interface, result-producing host oracle, shared helper, third compiler call occurrence, or public builtin reaches the receipt",
+      "runtime, raw, carrier, authority, plan, argument, invocation, or token value equality substitutes for required object identity",
+      "a receipt survives return or rejection, crosses roots or invocations, or can be consumed twice",
+      "the 8388608-step fuel is raised, reset, refunded, hidden, or inferred from eval-plus-continuation wrapper counts",
+      "implementation source, test, fixture, certificate, carrier, pin, proof-contract, roadmap, or current-main records change in the immutable report candidate",
+      "replace Root-1 sh07-b51-raw-carrier-shape? with the receipt while host admission has not authenticated the complete outer raw request",
+      "promote bounded or map-shaped outer values into fresh-SH06, predecessor-contract, raw-observation, physical-invocation, or other semantic facts by object identity alone"
+    ],
+    "stable_diagnostics": [
+      "WG008",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR",
+      "L2-UNKNOWN-CORE-FORM",
+      "C6-VERIFY"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check ba5fbb8add22e9b8e3b21288e5426601841e6839..704ab6fb69ab9cde05193859e74e90cc19722f7d",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "C11",
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/workstream-governance.md",
+    "contracts/workstream-governance.json",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
+  ],
+  "history": [
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T00:30:18Z",
+      "reason": "register immutable architecture-only candidate 704ab6fb69ab9cde05193859e74e90cc19722f7d, tree f822b3fd13a4f65123b965bb33c6d79b12fda13f, report SHA-256 6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537, and provisional evidence SHA-256 8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1 over authoritative main ba5fbb8add22e9b8e3b21288e5426601841e6839; no freeze or review is yet requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T00:33:05Z",
+      "reason": "freeze authoritative main base ba5fbb8add22e9b8e3b21288e5426601841e6839 and immutable report-plus-provenance candidate 704ab6fb69ab9cde05193859e74e90cc19722f7d, tree f822b3fd13a4f65123b965bb33c6d79b12fda13f, report SHA-256 6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537, and evidence SHA-256 8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1 after documentation, roadmap, language-boundary, governance, architecture-authority, ASCII, exact-range, and whitespace checks; report and evidence bytes remain unchanged",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture",
+      "at": "2026-09-03T00:34:00Z",
+      "reason": "request fresh independent exact review of immutable candidate 704ab6fb69ab9cde05193859e74e90cc19722f7d, tree f822b3fd13a4f65123b965bb33c6d79b12fda13f, report SHA-256 6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537, and provisional evidence SHA-256 8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1 for exact once-per-invocation admission facts, role-separated certificate projections, private one-shot identity binding, unchanged public semantics and fuel, mutation closure, and clean reproduction obligations",
+      "state": "review-pending"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-reviewer-v1",
+      "at": "2026-09-03T00:45:57Z",
+      "reason": "REJECT exact immutable candidate 704ab6fb69ab9cde05193859e74e90cc19722f7d, tree f822b3fd13a4f65123b965bb33c6d79b12fda13f, report SHA-256 6c94064505a7f7397250460a6b6bee80321c46ec830f00e2b0f774b370151537, and provisional-evidence SHA-256 8ed961afa35e44b2c8bb6e9c481eec2501c0c88efffb57f899b0974fb64854e1 because the Root-1 receipt is authorized to replace the complete raw-carrier shape gate even though host admission deeply authenticates only the nested carrier and leaves fresh-SH06, predecessor, raw-observation, and physical outer facts to Gravity; review artifact d4645c28be47084f0adaa2999faf14a2394117dae5424f1f4a7435239068c4f3",
+      "state": "rejected"
+    }
+  ],
+  "id": "sh07-b51-once-per-carrier-validation-architecture-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-runtime-validation-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-architecture-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-once-per-carrier-validation-provisional-evidence-v1.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the bounded-preflight host, source reader, checker host, canonical-hash boundary, local authority constructor, immutable-pin boundary, private token and receipt registry, runtime-machine host, external-call authorizer, and observer",
+    "the receipt authenticates only enumerated admission facts for one exact invocation and returns one boolean; all Root-1 and Root-6 request-specific semantics, public results, and diagnostics remain Gravity-owned",
+    "the fixed 8388608-step, 4096-frame, and 65536-external-call ceilings remain unchanged and no receipt lookup can reset, refund, hide, or increase them",
+    "the observed implementation branch and dirty probes are provisional evidence only and require a clean immutable independently replayable successor bundle",
+    "this draft grants no architecture acceptance, implementation, test, fixture, certificate, carrier, pin, roadmap, SH-07 completion, performance, self-hosting, release, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "sh07-runtime-validation-architecture-reviewer-v1"
+    }
+  ],
+  "state": "rejected",
+  "title": "SH-07 B51 once-per-carrier runtime validation architecture version 1"
+}
