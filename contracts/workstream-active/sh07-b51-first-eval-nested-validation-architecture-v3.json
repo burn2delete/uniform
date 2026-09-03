@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Draft architecture authority only for exact first-eval once-per-invocation nested validation. Independent acceptance and integration are required before any implementation workstream may depend on it. This record grants no implementation, fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
+  "disposition": "Frozen architecture candidate only for exact first-eval once-per-invocation nested validation. Independent acceptance and integration are required before any implementation workstream may depend on it. This record grants no implementation, fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
@@ -122,6 +122,12 @@
       "at": "2026-09-03T02:25:05Z",
       "reason": "register immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 over history-import base d49f14af9350f147fdcb475fdf2bdbf1456d8ce9 after author-side adversarial pre-audit PASS; no freeze or independent review is yet requested",
       "state": "draft"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-author",
+      "at": "2026-09-03T02:28:33Z",
+      "reason": "freeze immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after author-side adversarial pre-audit and documentation, roadmap, language-boundary, governance, architecture-authority, ASCII, and exact-range diff checks passed; candidate report and evidence bytes remain unchanged",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -144,6 +150,6 @@
     "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
 }
