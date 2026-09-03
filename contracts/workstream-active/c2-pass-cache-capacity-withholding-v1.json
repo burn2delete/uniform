@@ -5,7 +5,7 @@
   "candidate_commit": "c8f373fb59509c4ea03339b51bdbb960c82b64cd",
   "clean_worktree": true,
   "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
-  "disposition": "Exact non-frozen implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, with source, tests, and evidence assembled for freeze and independent review only. Current main divergence must be reconciled before any integration request. No review, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "disposition": "Frozen exact implementation candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, with source, tests, and evidence awaiting a separate review-pending transition and independent review. Current main divergence must be reconciled before any integration request. No review, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
@@ -97,6 +97,12 @@
       "at": "2026-09-02T22:29:23Z",
       "reason": "register one draft implementation workstream from exact base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50 under the integrated C2 capacity-withholding architecture; candidate identity, reviews, fixtures, diagnostics, validation evidence, and all broader authority remain absent",
       "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-implementation",
+      "at": "2026-09-03T00:09:11Z",
+      "reason": "freeze exact base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50, candidate c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, implementation evidence 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77, owned paths, clean validation receipts, main-divergence blocker, and authority nonclaims",
+      "state": "frozen"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-v1",
@@ -123,6 +129,6 @@
     "the integrated architecture is the sole dependency and this candidate grants no implementation acceptance, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "C2 local pass-cache fresh-artifact capacity withholding implementation version 1"
 }
