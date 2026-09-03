@@ -48,6 +48,11 @@
     'gravity.self-hosting.w5-tooling-conformance-verifier-test
     'gravity.self-hosting.w5-trust-provenance-verifier-test
     'gravity.self-hosting.w5-typed-effect-safety-executor-test
+    'gravity.self-hosting.artifact-parent-consumption-test
+    'gravity.self-hosting.authenticated-artifact-pipeline-test
+    'gravity.self-hosting.execution-lanes-test
+    'gravity.self-hosting.unified-execution-cli-test
+    'gravity.self-hosting.unified-execution-plan-test
     ;; Request-local optimization coverage is verification infrastructure, not
     ;; a countable SH-00..SH-29 leaf namespace.  Keep it outside the slice
     ;; catalog so adding it cannot make ordinary impact planning fail closed.
