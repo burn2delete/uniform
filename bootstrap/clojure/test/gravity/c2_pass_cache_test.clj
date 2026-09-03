@@ -218,6 +218,27 @@
     nil
     (catch Throwable error error)))
 
+(defn- with-semantic-validation-trace
+  [trace thunk]
+  (let [invoke-var (private-var 'invoke-c2-semantic-validator!)
+        invoke (var-get invoke-var)]
+    (with-redefs-fn
+      {invoke-var
+       (fn [operations artifact entry legacy-key context]
+         (swap! trace conj
+                (assoc context
+                       :artifact-id (:artifact-id artifact)
+                       :object artifact
+                       :object-tag (System/identityHashCode artifact)))
+         (invoke operations artifact entry legacy-key context))}
+      thunk)))
+
+(defn- adapter-cache-key-id
+  [legacy-key operations]
+  (let [builder (var-get (private-var 'adapter-operations!))]
+    (get-in (builder legacy-key operations nil :lookup)
+            [:key :cache-key-id])))
+
 (defn- captured-interruption
   [thunk]
   (try
@@ -1030,37 +1051,310 @@
                (key-request (cache/bounded-source-snapshot! source)))
           artifact (accepted-artifact :concurrent)
           calls (atom 0)
-          validations (atom 0)
+          validations (atom [])
           ready (CountDownLatch. 2)
           start (CountDownLatch. 1)
           store (cache/open-local-store directory)
+          ops (validation-ops
+               #(do (swap! calls inc)
+                    (Thread/sleep 100)
+                    artifact))
+          expected-cache-key-id (adapter-cache-key-id key ops)
           task (fn []
                  (.countDown ready)
                  (.await start 10 TimeUnit/SECONDS)
-                 (cache/lookup-or-compute!
-                  store key
-                  (let [base
-                        (validation-ops
-                         #(do (swap! calls inc)
-                              (Thread/sleep 100)
-                              artifact))
-                        validate (:validate-artifact! base)]
-                    (assoc base :validate-artifact!
-                           (fn [candidate entry cache-key]
-                             (swap! validations inc)
-                             (validate candidate entry cache-key))))))
-          left (future (task))
-          right (future (task))]
-      (is (.await ready 10 TimeUnit/SECONDS))
-      (.countDown start)
-      (let [results [(deref left 30000 ::timeout)
-                     (deref right 30000 ::timeout)]]
+                 (cache/lookup-or-compute! store key ops))]
+      (let [{:keys [ready? results]}
+            (with-semantic-validation-trace
+             validations
+             (fn []
+               (let [left (future (task))
+                     right (future (task))
+                     ready? (.await ready 10 TimeUnit/SECONDS)]
+                 (.countDown start)
+                 {:ready? ready?
+                  :results [(deref left 30000 ::timeout)
+                            (deref right 30000 ::timeout)]})))
+            by-status (into {} (map (juxt #(get-in % [:cache-evidence :status])
+                                          identity)
+                                    results))
+            by-role (into {} (map (juxt :validation-role identity)
+                                  @validations))]
+        (is ready?)
         (is (not-any? #{::timeout} results))
-        (is (= [:hit :stored]
-               (sort (map #(get-in % [:cache-evidence :status]) results))))
+        (is (= #{:hit :stored} (set (keys by-status))))
         (is (= 1 @calls))
-        (is (= 2 @validations))
-        (is (every? #(= artifact (:artifact %)) results))))))
+        (is (= #{:fresh-requested-artifact :requested-retained-artifact}
+               (set (keys by-role))))
+        (is (= [expected-cache-key-id]
+               (distinct (map :requested-cache-key-id @validations))))
+        (is (= [(:artifact-id artifact)]
+               (distinct (map :artifact-id @validations))))
+        (is (identical? artifact
+                        (get-in by-role
+                                [:fresh-requested-artifact :object])))
+        (is (identical?
+             (get-in by-status [:hit :artifact])
+             (get-in by-role [:requested-retained-artifact :object])))
+        (is (not (identical?
+                  (get-in by-role [:fresh-requested-artifact :object])
+                  (get-in by-role [:requested-retained-artifact :object]))))
+        (is (= 2 (count (distinct (map :object-tag @validations)))))))))
+
+(deftest c2-semantic-validation-trace-separates-requested-and-recovery-roles
+  (with-temporary-directory [directory]
+    (let [source-a (.resolve directory "trace-a.gravity")
+          _ (Files/write source-a (.getBytes "(ns trace.a)\n"
+                                              StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          snapshot-a (cache/bounded-source-snapshot! source-a)
+          request-a (key-request snapshot-a)
+          key-a (cache/cache-key request-a)
+          key-b (cache/cache-key
+                 (assoc-in request-a [:compiler-binding :compiler-id]
+                           (hash-id :compiler-v2)))
+          artifact-a (accepted-artifact :trace-a)
+          artifact-b (accepted-artifact :trace-b)
+          store (cache/open-local-store directory)
+          ops-a (validation-ops (constantly artifact-a))
+          ops-b (validation-ops (constantly artifact-b))
+          requested-cache-key-id (adapter-cache-key-id key-b ops-b)
+          fresh-trace (atom [])
+          fresh-result
+          (with-semantic-validation-trace
+            fresh-trace
+            #(cache/lookup-or-compute! store key-a ops-a))
+          requested-trace (atom [])
+          requested-result
+          (with-semantic-validation-trace
+            requested-trace #(cache/lookup! store key-a ops-a))
+          _ (cache/lookup-or-compute! store key-b ops-b)
+          direct-root (.resolve directory "direct")
+          _ (Files/createDirectory
+             direct-root
+             (make-array java.nio.file.attribute.FileAttribute 0))
+          direct-store (cache/open-local-store direct-root)
+          direct-trace (atom [])
+          direct-result
+          (with-semantic-validation-trace
+            direct-trace #(cache/store! direct-store key-b artifact-b ops-b))
+          invalid-trace (atom [])
+          invalid-error
+          (with-semantic-validation-trace
+            invalid-trace
+            #(captured-throwable
+              (fn []
+                (cache/lookup-or-compute!
+                 store (assoc key-b :semantic-key-id (hash-id :wrong))
+                 ops-b))))]
+      (is (= :stored (get-in fresh-result [:cache-evidence :status])))
+      (is (= :hit (get-in requested-result [:cache-evidence :status])))
+      (is (= :stored (get-in direct-result [:cache-evidence :status])))
+      (is (= [:fresh-requested-artifact]
+             (mapv :validation-role @fresh-trace)))
+      (is (= [:requested-retained-artifact]
+             (mapv :validation-role @requested-trace)))
+      (is (= [:direct-store-artifact]
+             (mapv :validation-role @direct-trace)))
+      (is (identical? (:artifact requested-result)
+                      (:object (first @requested-trace))))
+      (is (= "C16-STALE" (:id (ex-data invalid-error))))
+      (is (empty? @invalid-trace))
+
+      (let [rejected-root (.resolve directory "rejected-entry")
+            _ (Files/createDirectory
+               rejected-root
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            rejected-store (cache/open-local-store rejected-root)
+            retained (accepted-artifact :trace-retained)
+            replacement (accepted-artifact :trace-replacement)
+            seed-ops (validation-ops (constantly retained))
+            _ (cache/lookup-or-compute!
+               rejected-store key-a seed-ops)
+            entry-path
+            (with-open [entries (Files/list (:entries rejected-store))]
+              (first (vec (.toArray entries))))
+            corrupt (.getBytes "[:corrupt]" StandardCharsets/UTF_8)
+            _ (Files/write ^Path entry-path corrupt
+                           (into-array OpenOption
+                                       [StandardOpenOption/TRUNCATE_EXISTING
+                                        StandardOpenOption/WRITE]))
+            replacement-ops (validation-ops (constantly replacement))
+            replacement-key-id
+            (adapter-cache-key-id key-a replacement-ops)
+            rejected-trace (atom [])
+            rejected-result
+            (with-semantic-validation-trace
+              rejected-trace
+              #(cache/lookup-or-compute!
+                rejected-store key-a replacement-ops))]
+        (is (= :miss (get-in rejected-result [:cache-evidence :status])))
+        (is (= :withheld
+               (get-in rejected-result
+                       [:cache-evidence :cache-publication])))
+        (is (= "C16-ENTRY"
+               (get-in rejected-result
+                       [:cache-evidence :rejected-entry-evidence
+                        :contained-diagnostic])))
+        (is (identical? replacement (:artifact rejected-result)))
+        (is (= [:fresh-requested-artifact]
+               (mapv :validation-role @rejected-trace)))
+        (is (= [replacement-key-id]
+               (mapv :requested-cache-key-id @rejected-trace)))
+        (is (= [(:artifact-id replacement)]
+               (mapv :artifact-id @rejected-trace))))
+
+      ;; Exercise the adapter's existing recovery role with A's fully retained
+      ;; envelope, then request B. The distinct A object and id cannot satisfy
+      ;; B's requested-hit obligation.
+      (let [builder (var-get (private-var 'adapter-operations!))
+            adapted-a (builder key-a ops-a nil :lookup)
+            adapted-b (builder key-b ops-b nil :lookup)
+            generic-lookup! (requiring-resolve 'gravity.pass-cache/lookup!)
+            envelope-a
+            (:artifact
+             (generic-lookup! store (:key adapted-a)
+                              (:operations adapted-a)))
+            recovery-validator
+            (get-in adapted-b [:operations :validate-artifact!])
+            recovery-trace (atom [])
+            result (with-semantic-validation-trace
+                     recovery-trace
+                     #(do
+                        (recovery-validator envelope-a nil (:key adapted-a))
+                        (cache/lookup! store key-b ops-b)))
+            requested (filter #(= :requested-retained-artifact
+                                  (:validation-role %))
+                              @recovery-trace)
+            recovered (filter #(= :recovery-artifact
+                                  (:validation-role %))
+                              @recovery-trace)]
+        (is (= :hit (get-in result [:cache-evidence :status])))
+        (is (= 1 (count requested)))
+        (is (= 1 (count recovered)))
+        (is (every? #(= requested-cache-key-id
+                        (:requested-cache-key-id %))
+                    @recovery-trace))
+        (is (= (:artifact-id artifact-b) (:artifact-id (first requested))))
+        (is (some #(= (:artifact-id artifact-a) (:artifact-id %)) recovered))
+        (is (identical? (:artifact result) (:object (first requested))))
+        (is (every? #(not (identical? (:artifact result) (:object %)))
+                    recovered))))))
+
+(deftest requested-hit-binding-rejects-replacement-and-post-validation-mutation
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "identity.gravity")
+          _ (Files/write source (.getBytes "(ns identity)\n"
+                                            StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/bounded-source-snapshot! source)))
+          retained (accepted-artifact :retained-identity)
+          fresh (accepted-artifact :fresh-after-rejected-hit)
+          store (cache/open-local-store directory)
+          base (validation-ops (constantly retained))
+          _ (cache/lookup-or-compute! store key base)
+          validate (:validate-artifact! base)
+          replacement-ops
+          (assoc base
+                 :compute! (constantly fresh)
+                 :validate-artifact!
+                 (fn [artifact entry cache-key]
+                   (validate artifact entry cache-key)
+                   (if entry (into {} artifact) artifact)))
+          replacement-lookup (cache/lookup! store key replacement-ops)
+          replacement-trace (atom [])
+          repaired
+          (with-semantic-validation-trace
+            replacement-trace
+            #(cache/lookup-or-compute! store key replacement-ops))]
+      (is (= :rejected
+             (get-in replacement-lookup [:cache-evidence :status])))
+      (is (= "C16-STALE"
+             (get-in replacement-lookup
+                     [:cache-evidence :contained-diagnostic])))
+      (is (nil? (:artifact replacement-lookup)))
+      (is (= :miss (get-in repaired [:cache-evidence :status])))
+      (is (= :withheld
+             (get-in repaired [:cache-evidence :cache-publication])))
+      (is (identical? fresh (:artifact repaired)))
+      (is (= [:requested-retained-artifact :fresh-requested-artifact]
+             (mapv :validation-role @replacement-trace)))
+      (is (not (identical? (:object (first @replacement-trace))
+                           (:artifact repaired))))
+
+      ;; Let the requested binding close successfully, then make the next
+      ;; generic identity read fail. The fresh fallback must clear that stale
+      ;; binding before producing and must return only its own carrier object.
+      (let [artifact-id-calls (atom 0)
+            post-binding-ops
+            (assoc base
+                   :compute! (constantly fresh)
+                   :artifact-id-of
+                   (fn [artifact]
+                     (if (= 3 (swap! artifact-id-calls inc))
+                       (hash-id :post-binding-rejection)
+                       (:artifact-id artifact))))
+            post-binding-trace (atom [])
+            post-binding-result
+            (with-semantic-validation-trace
+              post-binding-trace
+              #(cache/lookup-or-compute! store key post-binding-ops))]
+        (is (= :miss
+               (get-in post-binding-result [:cache-evidence :status])))
+        (is (= :withheld
+               (get-in post-binding-result
+                       [:cache-evidence :cache-publication])))
+        (is (identical? fresh (:artifact post-binding-result)))
+        (is (= [:requested-retained-artifact :fresh-requested-artifact]
+               (mapv :validation-role @post-binding-trace)))
+        (is (not (identical?
+                  (:object (first @post-binding-trace))
+                  (:artifact post-binding-result)))))
+
+      (let [mutation-root (.resolve directory "mutation")
+            _ (Files/createDirectory
+               mutation-root
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            mutation-store (cache/open-local-store mutation-root)
+            mutable-artifact (accepted-artifact (byte-array [(byte 1)
+                                                              (byte 2)]))
+            seed-ops (validation-ops (constantly mutable-artifact))
+            _ (cache/lookup-or-compute! mutation-store key seed-ops)
+            captured (atom nil)
+            boundary-calls (atom 0)
+            validate-seed (:validate-artifact! seed-ops)
+            boundary-seed (:boundary-projection-id-of seed-ops)
+            mutation-ops
+            (assoc seed-ops
+                   :validate-artifact!
+                   (fn [artifact entry cache-key]
+                     (validate-seed artifact entry cache-key)
+                     (when entry (reset! captured artifact))
+                     artifact)
+                   :boundary-projection-id-of
+                   (fn [artifact]
+                     (let [call (swap! boundary-calls inc)]
+                       ;; Call 1 precedes semantic validation, call 2 closes
+                       ;; the binding, and call 3 is generic post-validation
+                       ;; receipt processing. Mutate only after the binding.
+                       (when (and (= 3 call) @captured)
+                         (aset-byte ^bytes (second (:value @captured))
+                                    0 (byte 9)))
+                       (boundary-seed artifact))))
+            mutation-error
+            (captured-throwable
+             (fn []
+               (cache/lookup! mutation-store key mutation-ops)))]
+        (is (instance? clojure.lang.ExceptionInfo mutation-error))
+        (is (= "C16-STALE" (:id (ex-data mutation-error))))
+        (is (= "requested C2 hit binding changed after validation"
+               (.getMessage mutation-error)))
+        (is (some? @captured))))))
 
 (deftest generic-v2-adapter-preserves-opaque-c2-size-and-depth-profile
   (with-temporary-directory [directory]
