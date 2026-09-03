@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Frozen architecture candidate only for exact first-eval once-per-invocation nested validation. Independent acceptance and integration are required before any implementation workstream may depend on it. This record grants no implementation, fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
+  "disposition": "Review-pending architecture candidate only for exact first-eval once-per-invocation nested validation. Independent acceptance and integration are required before any implementation workstream may depend on it. This record grants no implementation, fixture, certificate, carrier, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-first-eval-nested-validation-architecture-v3.md",
@@ -128,6 +128,12 @@
       "at": "2026-09-03T02:28:33Z",
       "reason": "freeze immutable architecture-only candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 after author-side adversarial pre-audit and documentation, roadmap, language-boundary, governance, architecture-authority, ASCII, and exact-range diff checks passed; candidate report and evidence bytes remain unchanged",
       "state": "frozen"
+    },
+    {
+      "actor": "sh07-runtime-validation-architecture-v3-author",
+      "at": "2026-09-03T02:29:18Z",
+      "reason": "request fresh independent exact review of immutable candidate a69e9be8664a054734ff029143ed519e323755dd, tree df14c0112d3ca428b481581c7a2e1dbbdf4e7182, report SHA-256 fd6931362f55bb039bd7bb2e9ed7ee777e2896b837a32c3a4ded57bbfe8242aa, and provisional evidence SHA-256 ef6b58fd6c1662659b8e0cd07ba017f7fe8c619627428d24a19c93d00a5508b7 for exact rejected-history and Attempt-32 authority, three-site pending-entry closure, first guarded eval placement, recurrence accounting, frame/argument/invocation/raw identity, scoped cross-plan transport, caller-blind Root-8 child semantics, Root-1 outer and Root-6 separation, owner-safe fatal cleanup, physical-empty-map behavior, prescribed trace deltas, D6 evidence, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -150,6 +156,6 @@
     "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 first-eval once-per-invocation nested validation architecture version 3"
 }
