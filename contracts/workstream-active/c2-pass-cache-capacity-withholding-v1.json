@@ -5,7 +5,7 @@
   "candidate_commit": "85e051e2bf878a1c20bdad88b9360f2419d3616c",
   "clean_worktree": true,
   "dependencies": ["c2-pass-cache-capacity-withholding-architecture-v1"],
-  "disposition": "Exact non-frozen repaired implementation candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, and evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081 bind requested-hit object preservation and role/key/artifact/object-tagged validator evidence for freeze and fresh independent review only. The prior rejection remains historical for its old exact tuple. Current main divergence must be reconciled before any integration request. No review of this repair, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
+  "disposition": "Frozen exact repaired implementation candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, and evidence digest c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081 bind requested-hit object preservation and role/key/artifact/object-tagged validator evidence and await a separate review-pending transition and fresh independent review. The prior rejection remains historical for its old exact tuple. Current main divergence must be reconciled before any integration request. No review of this repair, acceptance, integration eligibility, publication, C2 or C16 conformance, SH03 or SH07 completion, proof, equivalence, release, self-hosting, performance, safety, roadmap, or seed-retirement authority is claimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-implementation-evidence-v1.md",
@@ -124,6 +124,12 @@
       "at": "2026-09-03T00:34:18Z",
       "reason": "reopen exact rejected tuple c8f373fb59509c4ea03339b51bdbb960c82b64cd, tree ca080ee42557232f3a8a938ddb5dac92bb9a512a, evidence digest 0fc613afacd85a4e9e22339ec18aaa53effd25f8ca4c28b36c6bd24ed7a32e77 after independent review 1eac60f9e508cc1f1edf75c9a7af95a8834144fcbdeab0865628151ef14fa1f8 returned REJECT: requested-hit validation and public return do not preserve one artifact object, and validator evidence lacks required role, requested-key-id, and artifact-id tagging",
       "state": "draft"
+    },
+    {
+      "actor": "c2-pass-cache-capacity-implementation",
+      "at": "2026-09-03T01:35:47Z",
+      "reason": "freeze repaired exact base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50, candidate 85e051e2bf878a1c20bdad88b9360f2419d3616c, tree a9d0db1b34bd22f2b02be22efe4b00ddfc2d9ab6, implementation evidence c857dde5193625a18d0998a3597d5d2af54bb257c56b595f072d54a36ecd1081, requested-hit identity and role/key/artifact/object transit evidence, authentic paired SH03 reproduction, clean validation receipts, main-divergence blocker, and authority nonclaims",
+      "state": "frozen"
     }
   ],
   "id": "c2-pass-cache-capacity-withholding-v1",
@@ -157,6 +163,6 @@
       "reviewer": "c2-cache-implementation-reviewer-v1"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "C2 local pass-cache fresh-artifact capacity withholding implementation version 1"
 }
