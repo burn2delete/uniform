@@ -887,7 +887,7 @@
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
     (testing "the reviewed exclusions are explicit and discoverable"
-      (is (= 25 (count reviewed)))
+      (is (= 30 (count reviewed)))
       (is (contains? reviewed
                      'gravity.self-hosting.a1-canonical-schema-test))
       (is (contains? reviewed
@@ -900,6 +900,12 @@
                      'gravity.self-hosting.macro-operations-normalization-test))
       (is (contains? reviewed
                      'gravity.self-hosting.w5-c16-incremental-executor-test))
+      (doseq [namespace ['gravity.self-hosting.artifact-parent-consumption-test
+                         'gravity.self-hosting.authenticated-artifact-pipeline-test
+                         'gravity.self-hosting.execution-lanes-test
+                         'gravity.self-hosting.unified-execution-cli-test
+                         'gravity.self-hosting.unified-execution-plan-test]]
+        (is (contains? reviewed namespace)))
       (is (every? #(contains? general %) reviewed))
       (is (= (- (count general) (count reviewed))
              (count catalog))))
