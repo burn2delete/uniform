@@ -5728,11 +5728,10 @@
         (if (= (count remaining) 0)
           {:status :accepted :binding-ids failing}
           (let [binding (first remaining)
-                declaration-result
-                (sh07-b51-find-by
-                 (get request :forms)
-                 :syntax-id (get binding :definition-syntax-id))
-                declaration-count (get declaration-result :count)
+                declaration
+                (sh07-b51-find-form-by-syntax
+                 indexes (get binding :definition-syntax-id))
+                declaration-count (if (map? declaration) 1 0)
                 binding-class (get binding :binding-class)]
             (if (sh07-b51-v16-binding-record-base-shape? binding)
               (if (contains? #{:core :import} binding-class)

@@ -315,7 +315,8 @@
         m3 (:execution-bundle carrier)
         s30 (:semantic-manifest carrier)
         certificate-value-keys
-        (filter #{:compile-census-certificates}
+        (filter #(and (map-entry? %)
+                      (= :compile-census-certificates (key %)))
                 (tree-seq coll? seq carrier))]
     (is (every? bootstrap/p15-s23-sh07-b51-compile-census-certificate-v1-valid?
                 certificates))

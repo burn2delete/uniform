@@ -74,6 +74,12 @@
               bootstrap/p15-s23-sh07-canonical-text-compare)
       (intern runtime-ns 'sh07-observe-utf8-byte-count
               bootstrap/p15-s23-sh07-observe-utf8-byte-count)
+      (intern runtime-ns 'sh07-b51-admitted-executable-carrier-validation?
+              (fn [& _]
+                (throw
+                 (ex-info "receipt-only builtin reached in compact replay"
+                          {:function
+                           'sh07-b51-admitted-executable-carrier-validation?}))))
       (intern runtime-ns 'sort-by-pr-str
               (fn [values] (apply list (sort-by pr-str values))))
       (doseq [form definitions] (intern runtime-ns (second form)))
