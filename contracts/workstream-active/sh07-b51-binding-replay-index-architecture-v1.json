@@ -1,0 +1,151 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
+  "author": "sh07-b51-binding-replay-index-architecture-author",
+  "base_commit": "0a391faa3ea0cc299e60b476df0c3718d4b5af8c",
+  "candidate_commit": "eed780e60c54dde3a381d1889c6dcf62301be728",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-first-eval-nested-validation-architecture-v3",
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
+  ],
+  "disposition": "Review-pending architecture candidate only for the exact producer-B binding-definition form lookup substitution. Independent acceptance and integration are required before implementation. This record grants no implementation, evidence, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
+      "report-sha256:5d7d8e8f4a2799b8a29ee12137ecc4a300db2b3d33d563a747852254f12aeacf",
+      "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-provisional-evidence-v1.md",
+      "provisional-evidence-sha256:741c75d0c509de947b45c997ca2cb03ee0aca783b4767a99d2fcf775ba843e53",
+      "candidate-tree:4bbeafc71259e81241b5493c17e7a43011e161bd",
+      "integrated-dependency:sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32 candidate:202d92d12fa6c4f6a74571eb4769587c02c0963c",
+      "integrated-dependency:sh07-b51-first-eval-nested-validation-architecture-v3 candidate:a69e9be8664a054734ff029143ed519e323755dd",
+      "read-only implementation localization:commit 6974b0abb9ee27db57014a247fbb13718de66603 tree 1c0b09f2124fc0b674874d378dfdac15541239fd",
+      "exact producer-B scan-to-index cutpoint, locally constructed index provenance, duplicate-before-presence law, external-binding preservation, one-edge substitution, fixed limits, D6/D9 evidence, and explicit nonclaims"
+    ],
+    "rejected_fixtures": [
+      "the lookup moves before duplicate guards or changes binding-shape evaluation order",
+      "map last-write behavior, a supplied index, or a cross-request index grants uniqueness authority",
+      "core, import, namespace, missing, duplicate, owning-root, or authenticated-external binding laws change",
+      "an unauthorized cross-fragment edge, owner, caller, callee, arity, callsite, source, function, plan, route, manifest, duplicate row, or missing row is accepted",
+      "any source cutpoint beyond the one producer-B occurrence changes",
+      "Root 6 consumes producer index evidence or the V3 receipt fact projection expands",
+      "the 1480-edge census, 8388608 transition bound, 4096 frame bound, or 65536 call bound changes",
+      "fuel is raised, reset, refunded, hidden, aggregated, or moved into a host answer",
+      "bounded localization is described as correctness, performance, implementation acceptance, or SH-07 completion evidence"
+    ],
+    "stable_diagnostics": [
+      "WG008",
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA005",
+      "AA006",
+      "AA007",
+      "AA008",
+      "L2-UNKNOWN-CORE-FORM",
+      "source-integrity-mismatch",
+      "form-index-duplicate",
+      "binding-index-duplicate",
+      "non-waivable-missing-binding-form"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 0a391faa3ea0cc299e60b476df0c3718d4b5af8c..eed780e60c54dde3a381d1889c6dcf62301be728",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L2",
+    "C2",
+    "C6",
+    "C11",
+    "BOOT1",
+    "BOOT3",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-binding-replay-index-architecture-author",
+      "at": "2026-09-08T05:12:26Z",
+      "reason": "register immutable architecture-only candidate eed780e60c54dde3a381d1889c6dcf62301be728, tree 4bbeafc71259e81241b5493c17e7a43011e161bd, exact report and provisional-evidence hashes over authoritative main 0a391faa3ea0cc299e60b476df0c3718d4b5af8c; no implementation authority",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-binding-replay-index-architecture-author",
+      "at": "2026-09-08T05:12:27Z",
+      "reason": "freeze exact architecture-only candidate and two owned report paths after documentation, roadmap, language-boundary, and exact-range diff checks passed",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-binding-replay-index-architecture-author",
+      "at": "2026-09-08T05:12:28Z",
+      "reason": "request fresh independent exact review of scan-to-index semantic equivalence, local index provenance, duplicate and missing laws, external-binding and owning-root preservation, one-edge identity rebuild, fixed metering, evidence obligations, and nonclaims",
+      "state": "review-pending"
+    }
+  ],
+  "id": "sh07-b51-binding-replay-index-architecture-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-binding-replay-index-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-provisional-evidence-v1.md"
+  ],
+  "owner": "sh07-b51-binding-replay-index-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the bounded preflight, source reader, checker, digest, local-authority, pin, runtime-machine, external-authorizer, and observation host",
+    "the optimization uses only ephemeral Gravity indexes locally rebuilt from the exact request and accepts no host semantic answer",
+    "the report and provisional evidence contain no implementation, rebuilt identity cascade, authentic fixed-fuel completion, benchmark, or independent acceptance",
+    "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
+  ],
+  "reviews": [],
+  "state": "review-pending",
+  "title": "SH-07 B51 binding-replay indexed lookup architecture version 1"
+}
