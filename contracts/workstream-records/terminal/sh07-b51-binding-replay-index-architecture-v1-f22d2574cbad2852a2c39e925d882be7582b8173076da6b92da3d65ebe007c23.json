@@ -8,7 +8,7 @@
     "sh07-b51-first-eval-nested-validation-architecture-v3",
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Accepted architecture reconciled to authoritative main ade79916; exact preflight passed for 5ec0840a / tree 1eb1f643. Architecture integration only; implementation and SH-07 completion remain unclaimed.",
+  "disposition": "Integrated accepted architecture on authoritative main via merge bc1d172b. This authorizes one separately governed implementation successor only; fixed-fuel evidence and SH-07 completion remain unclaimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
@@ -138,6 +138,12 @@
       "at": "2026-09-08T05:28:00Z",
       "reason": "advance accepted architecture to integration-eligible after reconciliation commit 5ec0840a and exact integration preflight against main ade79916 passed",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "sh07-b51-binding-replay-index-architecture-integrator",
+      "at": "2026-09-08T05:31:00Z",
+      "reason": "integrate accepted architecture into authoritative main at merge bc1d172b; implementation and SH-07 completion remain downstream",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-binding-replay-index-architecture-v1",
@@ -166,6 +172,6 @@
       "reviewer": "sh07-b51-binding-replay-index-architecture-reviewer-v1"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 binding-replay indexed lookup architecture version 1"
 }
