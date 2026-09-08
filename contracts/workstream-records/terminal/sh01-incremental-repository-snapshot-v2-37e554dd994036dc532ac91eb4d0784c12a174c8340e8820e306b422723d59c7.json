@@ -1,0 +1,169 @@
+{
+  "architecture_decision": "Use Git's content-addressed index as the clean tracked baseline and hash only dirty, staged, deleted, and untracked worktree overlays; preserve pre/post observation equality, strict path decoding, checkout-materialization guards, and a complete content-plus-index fallback whenever Git cannot prove the fast path equivalent to the prior full-content identity.",
+  "author": "development-verification",
+  "base_commit": "42af279c30ee98140e607558459501c9d052edf0",
+  "candidate_commit": "d308962129f235ee8f0623c15beb6808a951ca6e",
+  "clean_worktree": true,
+  "dependencies": [
+    "incremental-development-loop-runner-wiring-v1",
+    "sh01-batched-parent-hit-snapshot-verification-v1"
+  ],
+  "disposition": "Integrated bounded SH-01 repository snapshot incrementality only; clean supported repositories avoid rehashing unchanged worktree bytes while unsupported index, mode, checkout-transform, attribute, encoding, and race cases fail closed or use the complete content-plus-index fallback, with no benchmark, roadmap, release, self-hosting, or seed-retirement authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-is-stable-and-complete-before-launch",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-detects-content-and-inventory-without-metadata-help",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-falls-back-for-index-flags",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-falls-back-when-git-ignores-file-mode",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-falls-back-for-clean-checkout-transforms"
+    ],
+    "rejected_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-rejects-invalid-git-path-encoding-and-early-limit",
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj#repository-snapshot-wraps-git-input-failures"
+    ],
+    "stable_diagnostics": [
+      "SH01-DEVELOPMENT-LOOP-GIT",
+      "SH01-DEVELOPMENT-LOOP-PATH",
+      "SH01-DEVELOPMENT-LOOP-SNAPSHOT-LIMIT",
+      "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE",
+      "SH01-DEVELOPMENT-LOOP-SYMLINK"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-loop-wiring-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-development-test-cache-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-parallel-test-runner-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "persistent-JVM six-sample clean repository-snapshot comparison against measured 548-591 ms warm full-content baseline",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 42af279c30ee98140e607558459501c9d052edf0..d308962129f235ee8f0623c15beb6808a951ca6e",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 42af279c30ee98140e607558459501c9d052edf0 --candidate-commit d308962129f235ee8f0623c15beb6808a951ca6e --candidate-tree fedd62377b4cda8a9151b3d6139ccb44a33288b1",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C16",
+    "BOOT7",
+    "BOOT8",
+    "TEST2",
+    "TEST13",
+    "docs/development-verification.md",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "development-verification",
+      "at": "2026-09-08T05:50:18Z",
+      "reason": "replace repeated whole-repository byte hashing with a bounded Git index and dirty-overlay identity while preserving conservative invalidation",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-08T05:50:19Z",
+      "reason": "freeze exact base 42af279c30ee98140e607558459501c9d052edf0, candidate d308962129f235ee8f0623c15beb6808a951ca6e, tree fedd62377b4cda8a9151b3d6139ccb44a33288b1, and three-path ownership set after superseding all earlier unaccepted tuples",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-08T05:50:20Z",
+      "reason": "request independent exact review of index and overlay completeness, checkout transformations, fallback identity, races, path encoding, limits, diagnostics, telemetry, tests, documentation, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "Codex /root independent SH-01 repository-identity reviewer",
+      "at": "2026-09-08T05:50:21Z",
+      "reason": "accept exact candidate after independently replaying all prior counterexamples, strict fallback path decoding, bounded input, stable diagnostics, exact-head focused tests, ancestry, tree identity, and diff checks",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-08T05:50:22Z",
+      "reason": "exact identities, clean named branch, three-path scope, positive and negative fixtures, stable diagnostics, bounded successful checks, independent acceptance, residual boundaries, and nonclaims verified",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-08T05:50:23Z",
+      "reason": "fast-forwarded the exact independently accepted candidate onto unchanged clean main and appended this lifecycle admission record",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh01-incremental-repository-snapshot-v2",
+  "invariant_family": "tooling/sh01-incremental-repository-snapshot",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring_test.clj",
+    "docs/development-verification.md"
+  ],
+  "owner": "development-verification",
+  "residual_host_boundaries": [
+    "Clojure, the JVM, Git commands, filesystem metadata, and cooperative same-user repository state remain the temporary development snapshot boundary",
+    "the fast path is limited to ordinary stage-zero regular files with trusted Git file-mode detection, core.autocrlf=false, no active tracked-path attributes, and no assume-unchanged or skip-worktree flags; all other observed states retain the slower complete content-plus-index fallback or fail closed",
+    "repository paths must be valid UTF-8; malformed Git path bytes fail closed as an availability restriction rather than being decoded lossily",
+    "pre/post Git observations and per-overlay file attributes detect bounded races but do not defend against a hostile same-user process capable of coordinated path replacement",
+    "the observed 348-425 ms clean warm samples versus the prior 548-591 ms samples are environment-specific development diagnostics only and grant no stable benchmark or performance authority",
+    "authoritative, freshness-required, proof, release, self-hosting, and seed-retirement lanes remain cache-invisible and receive no authority from this development optimization"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "Codex /root independent SH-01 repository-identity reviewer"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-01 incremental repository snapshot version 2"
+}
