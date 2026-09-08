@@ -15,11 +15,13 @@
             [gravity.self-hosting.sh01-host-resource-broker :as broker])
   (:import [java.io ByteArrayOutputStream]
            [java.nio ByteBuffer]
-           [java.nio.charset StandardCharsets]
+           [java.nio.charset CharacterCodingException CodingErrorAction
+            StandardCharsets]
            [java.nio.file Files LinkOption Path]
            [java.nio.file.attribute BasicFileAttributes FileAttribute
             PosixFilePermission PosixFilePermissions]
-           [java.security MessageDigest]))
+           [java.security MessageDigest]
+           [java.util Arrays]))
 
 (def ^:private default-timeout-ms (* 60 60 1000))
 (def ^:private maximum-path-count 100000)
@@ -64,27 +66,48 @@
                    (.digest message-digest)))))
 
 (defn- run-git-bytes!
-  [working-directory arguments]
-  (let [directory (if (instance? Path working-directory)
-                    (.toFile ^Path working-directory)
-                    (io/file working-directory))
-        command (into ["git"] arguments)
-        process (-> (ProcessBuilder. ^java.util.List command)
-                    (.directory directory)
-                    (.redirectErrorStream true)
-                    .start)
-        output (ByteArrayOutputStream.)]
-    (with-open [input (.getInputStream process)]
-      (.transferTo input output))
-    (let [exit-code (.waitFor process)
-          bytes (.toByteArray output)]
-      (when-not (zero? exit-code)
-        (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-               "Development-loop repository identity command failed"
-               {:command command
-                :exit-code exit-code
-                :output (String. bytes StandardCharsets/UTF_8)}))
-      bytes)))
+  ([working-directory arguments]
+   (run-git-bytes! working-directory arguments nil))
+  ([working-directory arguments input-bytes]
+   (let [directory (if (instance? Path working-directory)
+                     (.toFile ^Path working-directory)
+                     (io/file working-directory))
+         command (into ["git"] arguments)
+         process (-> (ProcessBuilder. ^java.util.List command)
+                     (.directory directory)
+                     (.redirectErrorStream true)
+                     .start)
+         writer-error (atom nil)
+         writer
+         (doto
+          (Thread.
+           ^Runnable
+           (fn []
+             (try
+               (with-open [input (.getOutputStream process)]
+                 (when input-bytes
+                   (.write input ^bytes input-bytes)))
+               (catch Throwable exception
+                 (reset! writer-error exception)))))
+          (.setDaemon true)
+          (.start))
+         output (ByteArrayOutputStream.)]
+     (with-open [input (.getInputStream process)]
+       (.transferTo input output))
+     (.join ^Thread writer)
+     (let [exit-code (.waitFor process)
+           bytes (.toByteArray output)]
+       (when-not (zero? exit-code)
+         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                "Development-loop repository identity command failed"
+                {:command command
+                 :exit-code exit-code
+                 :output (String. bytes StandardCharsets/UTF_8)}))
+       (when @writer-error
+         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                "Development-loop repository identity input failed"
+                {:command command :exit-code exit-code}))
+       bytes))))
 
 (defn- git-common-directory
   [working-directory]
@@ -166,14 +189,25 @@
              {:path-label label :path (str value)}))
     path))
 
+(defn- strict-utf8
+  [bytes]
+  (try
+    (str (.decode (doto (.newDecoder StandardCharsets/UTF_8)
+                    (.onMalformedInput CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter CodingErrorAction/REPORT))
+                  (ByteBuffer/wrap ^bytes bytes)))
+    (catch CharacterCodingException _
+      (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+             "Git returned a path that is not valid UTF-8"
+             {}))))
+
 (defn- repository-paths
   [working-directory]
-  (let [raw (String.
+  (let [raw (strict-utf8
              (run-git-bytes!
               working-directory
               ["ls-files" "-z" "--cached" "--others"
-               "--exclude-standard"])
-             StandardCharsets/UTF_8)
+               "--exclude-standard"]))
         paths (->> (str/split raw #"\u0000" -1)
                    (remove str/blank?)
                    distinct
@@ -184,6 +218,132 @@
              "Repository snapshot path count exceeds its reviewed bound"
              {:path-count (count paths) :maximum maximum-path-count}))
     paths))
+
+(defn- nul-separated-paths
+  [bytes]
+  (->> (str/split (strict-utf8 bytes) #"\u0000" -1)
+       (remove str/blank?)
+       distinct
+       sort
+       vec))
+
+(defn- enforce-nul-entry-limit!
+  [bytes]
+  (loop [index 0
+         count 0]
+    (if (= index (alength ^bytes bytes))
+      count
+      (let [next-count (if (zero? (aget ^bytes bytes index))
+                         (inc count) count)]
+        (when (> next-count maximum-path-count)
+          (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-LIMIT"
+                 "Repository snapshot path count exceeds its reviewed bound"
+                 {:path-count next-count :maximum maximum-path-count}))
+        (recur (inc index) next-count)))))
+
+(defn- index-entry
+  [entry]
+  (let [tab (.indexOf ^String entry "\t")]
+    (when (neg? tab)
+      (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+             "Git index entry is malformed"
+             {}))
+    (let [[mode object-id stage :as header]
+          (str/split (subs entry 0 tab) #" " -1)
+          path (subs entry (inc tab))]
+      (when-not (and (= 3 (count header))
+                     (re-matches #"[0-7]{6}" (or mode ""))
+                     (re-matches #"[0-9a-f]{40,64}" (or object-id ""))
+                     (re-matches #"[0-3]" (or stage ""))
+                     (not (str/blank? path)))
+        (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+               "Git index entry is malformed"
+               {}))
+      {:mode mode :object-id object-id :stage stage :path path})))
+
+(defn- index-entries
+  [bytes]
+  (mapv index-entry (nul-separated-paths bytes)))
+
+(defn- nul-terminated-input
+  [paths]
+  (let [output (ByteArrayOutputStream.)]
+    (doseq [path paths]
+      (.write output (.getBytes ^String path StandardCharsets/UTF_8))
+      (.write output 0))
+    (.toByteArray output)))
+
+(defn- status-entry
+  [entry]
+  (when-not (and (<= 4 (count entry))
+                 (= \space (.charAt ^String entry 2)))
+    (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+           "Git status entry is malformed"
+           {}))
+  (let [status (subs entry 0 2)
+        path (subs entry 3)]
+    (when (or (str/blank? path)
+              (= "!!" status))
+      (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+             "Git status entry is unsupported"
+             {}))
+    {:status status :path path :untracked? (= "??" status)}))
+
+(defn- status-entries
+  [bytes]
+  (mapv status-entry (nul-separated-paths bytes)))
+
+(defn- incremental-observation
+  [working-directory]
+  (let [index-bytes
+        (run-git-bytes! working-directory ["ls-files" "--stage" "-z"])
+        _ (enforce-nul-entry-limit! index-bytes)
+        entries (index-entries index-bytes)
+        flags-bytes
+        (run-git-bytes! working-directory ["ls-files" "-v" "-z"])
+        file-mode-bytes
+        (run-git-bytes! working-directory ["config" "--bool" "core.filemode"])
+        auto-crlf-bytes
+        (run-git-bytes! working-directory
+                        ["config" "--get" "--default" "false"
+                         "core.autocrlf"])
+        attributes-bytes
+        (run-git-bytes! working-directory
+                        ["check-attr" "-z" "--all" "--stdin"]
+                        (nul-terminated-input (map :path entries)))
+        status-bytes
+        (run-git-bytes! working-directory
+                        ["status" "--porcelain=v1" "-z"
+                         "--untracked-files=all" "--no-renames"])]
+    {:index-bytes index-bytes
+     :flags-bytes flags-bytes
+     :file-mode-bytes file-mode-bytes
+     :auto-crlf-bytes auto-crlf-bytes
+     :attributes-bytes attributes-bytes
+     :status-bytes status-bytes
+     :index-entries entries
+     :status-entries (status-entries status-bytes)}))
+
+(defn- incremental-observation-supported?
+  [{:keys [index-entries flags-bytes file-mode-bytes auto-crlf-bytes
+           attributes-bytes]}]
+  (let [flags (nul-separated-paths flags-bytes)
+        paths (mapv :path index-entries)]
+    (and
+     (= (count paths) (count (distinct paths)))
+     (= "true" (str/trim (String. ^bytes file-mode-bytes
+                                  StandardCharsets/UTF_8)))
+     (= "false" (str/trim (String. ^bytes auto-crlf-bytes
+                                   StandardCharsets/UTF_8)))
+     (zero? (alength ^bytes attributes-bytes))
+     (every? #(= "0" (:stage %)) index-entries)
+     (every? #(contains? #{"100644" "100755"} (:mode %)) index-entries)
+     (every? (fn [entry]
+               (let [tag (first entry)]
+                 (and tag
+                      (not (Character/isLowerCase ^char tag))
+                      (not= \S tag))))
+             flags))))
 
 (defn- update-framed-bytes!
   [^MessageDigest message-digest bytes]
@@ -215,7 +375,9 @@
              {:path relative}))
     (update-framed-text! message-digest relative)
     (if-not (Files/exists path no-links)
-      (update-framed-text! message-digest :absent)
+      (do
+        (update-framed-text! message-digest :absent)
+        {:hashed-path-count 0 :hashed-byte-count 0})
       (let [before (Files/readAttributes path BasicFileAttributes no-links)
             before-executable? (and (.isRegularFile before)
                                     (Files/isExecutable path))]
@@ -254,7 +416,9 @@
                          (= before-executable? after-executable?))
             (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
                    "Repository input changed while its cache identity was read"
-                   {:path relative})))))))
+                   {:path relative})))
+        {:hashed-path-count 1
+         :hashed-byte-count (.size before)}))))
 
 (defn- regular-file-identity
   [^Path input-path]
@@ -287,23 +451,124 @@
                  {})))
       (message-digest-id message-digest))))
 
-(defn repository-snapshot
+(defn- full-repository-snapshot
   "Return one conservative identity over all tracked and untracked inputs."
   [working-directory]
   (let [root (git-repository-root working-directory)
         paths (repository-paths root)
-        message-digest (MessageDigest/getInstance "SHA-256")]
-    (update-framed-text! message-digest
-                         :gravity/sh01-complete-repository-snapshot-v1)
-    (doseq [relative paths]
-      (update-file! message-digest root relative))
+        message-digest (MessageDigest/getInstance "SHA-256")
+        _ (update-framed-text! message-digest
+                               :gravity/sh01-complete-repository-snapshot-v1)
+        totals
+        (reduce
+         (fn [current relative]
+           (merge-with + current (update-file! message-digest root relative)))
+         {:hashed-path-count 0 :hashed-byte-count 0}
+         paths)]
     (when-not (= paths (repository-paths root))
       (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
              "Repository path inventory changed while its identity was read"
              {}))
     {:schema :gravity/sh01-complete-repository-snapshot-v1
      :repository-identity (message-digest-id message-digest)
-     :path-count (count paths)}))
+     :path-count (count paths)
+     :snapshot-engine :full-content-v1
+     :hashed-path-count (:hashed-path-count totals)
+     :hashed-byte-count (:hashed-byte-count totals)}))
+
+(defn- full-index-repository-snapshot
+  [working-directory before]
+  (let [full (full-repository-snapshot working-directory)
+        after (incremental-observation working-directory)]
+    (when-not (and (Arrays/equals ^bytes (:index-bytes before)
+                                  ^bytes (:index-bytes after))
+                   (Arrays/equals ^bytes (:flags-bytes before)
+                                  ^bytes (:flags-bytes after))
+                   (Arrays/equals ^bytes (:file-mode-bytes before)
+                                  ^bytes (:file-mode-bytes after))
+                   (Arrays/equals ^bytes (:auto-crlf-bytes before)
+                                  ^bytes (:auto-crlf-bytes after))
+                   (Arrays/equals ^bytes (:attributes-bytes before)
+                                  ^bytes (:attributes-bytes after))
+                   (Arrays/equals ^bytes (:status-bytes before)
+                                  ^bytes (:status-bytes after)))
+      (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             "Repository index or inventory changed while its identity was read"
+             {}))
+    (let [message-digest (MessageDigest/getInstance "SHA-256")]
+      (update-framed-text! message-digest
+                           :gravity/sh01-git-index-full-content-snapshot-v2)
+      (update-framed-text! message-digest (:repository-identity full))
+      (update-framed-bytes! message-digest (:index-bytes before))
+      (update-framed-bytes! message-digest (:flags-bytes before))
+      (update-framed-bytes! message-digest (:file-mode-bytes before))
+      (update-framed-bytes! message-digest (:auto-crlf-bytes before))
+      (update-framed-bytes! message-digest (:attributes-bytes before))
+      (update-framed-bytes! message-digest (:status-bytes before))
+      (assoc full
+             :schema :gravity/sh01-incremental-repository-snapshot-v2
+             :repository-identity (message-digest-id message-digest)
+             :snapshot-engine :git-index-full-content-v2))))
+
+(defn- incremental-repository-snapshot
+  [working-directory]
+  (let [root (git-repository-root working-directory)
+        before (incremental-observation root)]
+    (if-not (incremental-observation-supported? before)
+      (full-index-repository-snapshot root before)
+      (let [index-paths (mapv :path (:index-entries before))
+            overlay-paths (->> (:status-entries before)
+                               (map :path) distinct sort vec)
+            untracked-paths (->> (:status-entries before)
+                                 (filter :untracked?) (map :path) vec)
+            all-paths (->> (concat index-paths untracked-paths)
+                           distinct sort vec)]
+      (when (> (count all-paths) maximum-path-count)
+        (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-LIMIT"
+               "Repository snapshot path count exceeds its reviewed bound"
+               {:path-count (count all-paths) :maximum maximum-path-count}))
+      (let [message-digest (MessageDigest/getInstance "SHA-256")
+            _ (update-framed-text!
+               message-digest
+               :gravity/sh01-git-index-overlay-snapshot-v2)
+            _ (update-framed-bytes! message-digest (:index-bytes before))
+            totals
+            (reduce
+             (fn [current relative]
+               (merge-with + current (update-file! message-digest root relative)))
+             {:hashed-path-count 0 :hashed-byte-count 0}
+             overlay-paths)]
+        (let [after (incremental-observation root)]
+          (when-not (and (Arrays/equals ^bytes (:index-bytes before)
+                                        ^bytes (:index-bytes after))
+                         (Arrays/equals ^bytes (:flags-bytes before)
+                                        ^bytes (:flags-bytes after))
+                         (Arrays/equals ^bytes (:file-mode-bytes before)
+                                        ^bytes (:file-mode-bytes after))
+                         (Arrays/equals ^bytes (:auto-crlf-bytes before)
+                                        ^bytes (:auto-crlf-bytes after))
+                         (Arrays/equals ^bytes (:attributes-bytes before)
+                                        ^bytes (:attributes-bytes after))
+                         (Arrays/equals ^bytes (:status-bytes before)
+                                        ^bytes (:status-bytes after)))
+            (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                   "Repository index or inventory changed while its identity was read"
+                   {})))
+        {:schema :gravity/sh01-incremental-repository-snapshot-v2
+         :repository-identity (message-digest-id message-digest)
+         :path-count (count all-paths)
+         :tracked-path-count (count index-paths)
+         :overlay-path-count (count overlay-paths)
+         :snapshot-engine :git-index-overlay-v2
+         :hashed-path-count (:hashed-path-count totals)
+         :hashed-byte-count (:hashed-byte-count totals)})))))
+
+(defn repository-snapshot
+  "Return a path-neutral repository identity using the Git index plus only the
+  dirty and untracked content overlay. Unsupported index states retain the
+  complete content-hashing fallback."
+  [working-directory]
+  (incremental-repository-snapshot working-directory))
 
 (defn- classpath-identities
   [^Path repository-root repository-identity]
@@ -425,6 +690,9 @@
         snapshot-telemetry
         (atom {:full-snapshot-invocations 1
                :full-snapshot-path-observations (:path-count snapshot)
+               :rehash-path-observations (:hashed-path-count snapshot)
+               :rehash-byte-observations (:hashed-byte-count snapshot)
+               :snapshot-engines {(:snapshot-engine snapshot) 1}
                :phases {:initial 1}})
         identity-options (select-keys options [:command :clojure-command])]
     (when-not (pos? timeout-ms)
@@ -886,11 +1154,23 @@
   (when-let [telemetry (:snapshot-telemetry context)]
     (swap! telemetry
            (fn [current]
-             (-> current
-                 (update :full-snapshot-invocations (fnil inc 0))
-                 (update :full-snapshot-path-observations
-                         (fnil + 0) (:path-count snapshot))
-                 (update-in [:phases phase] (fnil inc 0))))))
+             (cond->
+              (-> current
+                  (update :full-snapshot-invocations (fnil inc 0))
+                  (update :full-snapshot-path-observations
+                          (fnil + 0) (:path-count snapshot))
+                  (update-in [:phases phase] (fnil inc 0)))
+               (number? (:hashed-path-count snapshot))
+               (update :rehash-path-observations
+                       (fnil + 0) (:hashed-path-count snapshot))
+
+               (number? (:hashed-byte-count snapshot))
+               (update :rehash-byte-observations
+                       (fnil + 0) (:hashed-byte-count snapshot))
+
+               (:snapshot-engine snapshot)
+               (update-in [:snapshot-engines (:snapshot-engine snapshot)]
+                          (fnil inc 0))))))
   snapshot)
 
 (defn- verify-snapshot!

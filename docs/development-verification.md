@@ -285,7 +285,15 @@ unsupported targets and unbounded strides are rejected.
 
 `clojure -M:incremental-check` enables the thin development-loop wiring. In
 the parent, before any child JVM can launch, it computes one conservative
-SHA-256 identity over every tracked and non-ignored untracked repository path.
+SHA-256 identity from Git's content-addressed index plus the bytes and modes of
+only dirty, deleted, and non-ignored untracked paths. Clean tracked content is
+represented by its index mode, blob identity, stage, and repository-relative
+path, so repeated snapshots do not reread unchanged files. Unsupported index
+states, including unmerged entries, special tracked modes, assume-unchanged,
+skip-worktree flags, and repositories configured to ignore file-mode changes,
+fail closed to the complete content-and-index-hashing snapshot. The same
+fallback applies when automatic CRLF conversion or any tracked-path Git
+attribute could transform clean checkout bytes.
 Repository symlinks fail closed because their followed targets are outside this
 declared closure. That identity supplies the complete production, transitive,
 fixture/contract, runner, and classpath closure in each closed cache request;
@@ -317,7 +325,9 @@ worktree paths are excluded, so identical declared inputs may reuse a result
 across Git worktrees. Missing, malformed, unknown, unowned, or undeclared
 closures retain the complete-repository identity. A detected read or inventory
 race fails closed rather than falling back. The initial and post-operation
-repository snapshot checks remain full. The reviewed set covers
+repository snapshot checks remain complete but incrementally observed. Reports
+record the snapshot engine and exact numbers of paths and bytes rehashed, in
+addition to complete path observations. The reviewed set covers
 `gravity.c11-mir-test`, `gravity.compiler-pass-manifest-test`,
 `gravity.bootstrap-compatibility.c11-test`, and
 `gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test`. The two
