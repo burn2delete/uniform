@@ -47,6 +47,8 @@
   "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553")
 (def sh04-syntax-expected-plan-semantic-hash
   "sha256:be302e17f542733b5e0078f451b11ea6b8efa43b9761fb6c4035f9bb527083db")
+(def sh04-syntax-expected-plan-id
+  "sha256:07178c6b5b68b9b17bbd3bd4144aa3e4b97171fa6bda6494410cb339677f0adc")
 (def sh04-syntax-expected-functions-semantic-hash
   "sha256:d78a2353d0f93d5b0d5438c8fdca4b18202627bb63290522e8aea29df24c0f9b")
 (def sh04-syntax-expected-function-count 102)

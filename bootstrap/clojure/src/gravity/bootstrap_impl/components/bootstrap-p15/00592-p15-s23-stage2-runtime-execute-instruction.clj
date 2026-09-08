@@ -1,5 +1,9 @@
-(defn p15-s23-stage2-runtime-execute-instruction
-  [runtime plan env instruction]
+(declare p15-s23-sh07-b51-runtime-authorize-external-link
+         p15-s23-sh07-b51-runtime-execute-external-machine
+         ^:private p15-s23-stage2-runtime-execute-function-scoped)
+
+(defn- p15-s23-stage2-runtime-execute-instruction-scoped
+  [runtime plan env instruction public-invocation-scope]
   (case (:op instruction)
     :literal (:value instruction)
     :quote (:value instruction)
@@ -13,19 +17,21 @@
                 :symbol name
                 :remediation "Regenerate the stage2 instruction plan from a valid source module."})))
     :vector-literal
-    (p15-s23-stage2-runtime-execute-values
-     runtime plan env (:items instruction) :recur-inside-vector)
+    (p15-s23-stage2-runtime-execute-values-scoped
+     runtime plan env (:items instruction) :recur-inside-vector
+     public-invocation-scope)
     :set-literal
-    (set (p15-s23-stage2-runtime-execute-values
-          runtime plan env (:items instruction) :recur-inside-set))
+    (set (p15-s23-stage2-runtime-execute-values-scoped
+          runtime plan env (:items instruction) :recur-inside-set
+          public-invocation-scope))
     :map-literal
-    (p15-s23-stage2-runtime-execute-map-entries
-     runtime plan env (:entries instruction))
+    (p15-s23-stage2-runtime-execute-map-entries-scoped
+     runtime plan env (:entries instruction) public-invocation-scope)
     :println
     (let [module (:module plan)
-          args (p15-s23-stage2-runtime-execute-values
+          args (p15-s23-stage2-runtime-execute-values-scoped
                 runtime plan env (:args instruction)
-                :recur-inside-println-argument)]
+                :recur-inside-println-argument public-invocation-scope)]
       (validate-module-effects! module)
       (if (and (= 1 (count args))
                (:runtime-artifact-plan runtime))
@@ -53,18 +59,18 @@
                      (str value)))
                  args))))))
     :do
-    (p15-s23-stage2-runtime-execute-instructions
-     runtime plan env (:body instruction))
+    (p15-s23-stage2-runtime-execute-instructions-scoped
+     runtime plan env (:body instruction) public-invocation-scope)
     :if
     (if (p15-s23-stage2-runtime-nontail-value!
          plan
-         (p15-s23-stage2-runtime-execute-instruction
-          runtime plan env (:test instruction))
+         (p15-s23-stage2-runtime-execute-instruction-scoped
+          runtime plan env (:test instruction) public-invocation-scope)
          :recur-inside-if-test)
-      (p15-s23-stage2-runtime-execute-instruction
-       runtime plan env (:then instruction))
-      (p15-s23-stage2-runtime-execute-instruction
-       runtime plan env (:else instruction)))
+      (p15-s23-stage2-runtime-execute-instruction-scoped
+       runtime plan env (:then instruction) public-invocation-scope)
+      (p15-s23-stage2-runtime-execute-instruction-scoped
+       runtime plan env (:else instruction) public-invocation-scope))
     :let
     (loop [env env
            bindings (:bindings instruction)]
@@ -72,12 +78,12 @@
         (recur (assoc env name
                       (p15-s23-stage2-runtime-nontail-value!
                        plan
-                       (p15-s23-stage2-runtime-execute-instruction
-                        runtime plan env expr)
+                       (p15-s23-stage2-runtime-execute-instruction-scoped
+                        runtime plan env expr public-invocation-scope)
                        :recur-inside-let-binding))
                (rest bindings))
-        (p15-s23-stage2-runtime-execute-instructions
-         runtime plan env (:body instruction))))
+        (p15-s23-stage2-runtime-execute-instructions-scoped
+         runtime plan env (:body instruction) public-invocation-scope)))
     :loop
     (let [bindings (:bindings instruction)
           body (:body instruction)
@@ -90,15 +96,15 @@
               (let [value
                     (p15-s23-stage2-runtime-nontail-value!
                      plan
-                     (p15-s23-stage2-runtime-execute-instruction
-                      runtime plan scope expr)
+                     (p15-s23-stage2-runtime-execute-instruction-scoped
+                      runtime plan scope expr public-invocation-scope)
                      :recur-inside-loop-initializer)]
                 (recur (assoc scope name value) (rest remaining)))
               scope))]
       (loop [loop-env initial-env]
         (let [result
-              (p15-s23-stage2-runtime-execute-instructions
-               runtime plan loop-env body)]
+              (p15-s23-stage2-runtime-execute-instructions-scoped
+               runtime plan loop-env body public-invocation-scope)]
           (if (p15-s23-stage2-runtime-recur-signal? result)
             (let [values (p15-s23-stage2-runtime-recur-values result)]
               (when-not (= target-arity (count values))
@@ -110,8 +116,9 @@
             result))))
     :recur
     (p15-s23-stage2-runtime-recur-signal
-     (p15-s23-stage2-runtime-execute-values
-      runtime plan env (:args instruction) :recur-inside-recur-argument))
+     (p15-s23-stage2-runtime-execute-values-scoped
+      runtime plan env (:args instruction) :recur-inside-recur-argument
+      public-invocation-scope))
     :builtin-call
     (let [function (:function instruction)
           argument-instructions (:args instruction)
@@ -121,30 +128,30 @@
              (instance? clojure.lang.Symbol function)
              (.equals ^clojure.lang.Symbol 'get function))
         (let [collection
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)
+               :recur-inside-builtin-argument public-invocation-scope)
               key
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 1)
-               :recur-inside-builtin-argument)]
+               :recur-inside-builtin-argument public-invocation-scope)]
           (p15-s23-stage2-runtime-invoke-get plan collection key))
 
         (and (= 3 argument-count)
              (instance? clojure.lang.Symbol function)
              (.equals ^clojure.lang.Symbol 'get function))
         (let [collection
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)
+               :recur-inside-builtin-argument public-invocation-scope)
               key
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 1)
-               :recur-inside-builtin-argument)
+               :recur-inside-builtin-argument public-invocation-scope)
               not-found
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 2)
-               :recur-inside-builtin-argument)]
+               :recur-inside-builtin-argument public-invocation-scope)]
           (p15-s23-stage2-runtime-invoke-get
            plan collection key not-found))
 
@@ -152,9 +159,9 @@
              (instance? clojure.lang.Symbol function)
              (.equals ^clojure.lang.Symbol 'count function))
         (let [value
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)]
+               :recur-inside-builtin-argument public-invocation-scope)]
           (try
             (count value)
             (catch clojure.lang.ExceptionInfo ex
@@ -168,9 +175,9 @@
              (.equals ^clojure.lang.Symbol 'str function)
              (:runtime-artifact-plan runtime))
         (let [value
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)]
+               :recur-inside-builtin-argument public-invocation-scope)]
           ;; Preserve the established artifact boundary: ordinary artifact
           ;; exceptions are not reclassified as host builtin failures.
           (p15-s23-stage2-runtime-artifact-invoke
@@ -178,11 +185,14 @@
 
         (= 1 argument-count)
         (let [value
-              (p15-s23-stage2-runtime-execute-value
+              (p15-s23-stage2-runtime-execute-value-scoped
                runtime plan env (nth argument-instructions 0)
-               :recur-inside-builtin-argument)]
-          (p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
-           plan function value))
+               :recur-inside-builtin-argument public-invocation-scope)]
+          (if (contains? instruction :compiler-internal-caller)
+            (p15-s23-sh07-runtime-invoke-compiler-internal-builtin
+             runtime plan instruction [value] public-invocation-scope)
+            (p15-s23-stage2-runtime-invoke-unary-or-generic-builtin
+             runtime plan function value)))
 
         :else
         ;; Retain the original exact-two equality-or-generic control-flow
@@ -191,13 +201,13 @@
           (if (and (instance? clojure.lang.Symbol function)
                    (.equals ^clojure.lang.Symbol '= function))
             (let [left
-                  (p15-s23-stage2-runtime-execute-value
+                  (p15-s23-stage2-runtime-execute-value-scoped
                    runtime plan env (nth argument-instructions 0)
-                   :recur-inside-builtin-argument)
+                   :recur-inside-builtin-argument public-invocation-scope)
                   right
-                  (p15-s23-stage2-runtime-execute-value
+                  (p15-s23-stage2-runtime-execute-value-scoped
                    runtime plan env (nth argument-instructions 1)
-                   :recur-inside-builtin-argument)]
+                   :recur-inside-builtin-argument public-invocation-scope)]
               ;; Preserve the generic path's boundary: argument evaluation is
               ;; outside the builtin try, while host equality failures are
               ;; mapped exactly like invoke-builtin.
@@ -208,23 +218,23 @@
                 (catch Exception ex
                   (p15-s23-stage2-runtime-fail-builtin-error!
                    plan function ex))))
-            (p15-s23-stage2-runtime-execute-generic-builtin-call
-             runtime plan env instruction function))
+            (p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
+             runtime plan env instruction function public-invocation-scope))
           (if (and (= 3 argument-count)
                    (instance? clojure.lang.Symbol function)
                    (.equals ^clojure.lang.Symbol 'assoc function))
             (let [collection
-                  (p15-s23-stage2-runtime-execute-value
+                  (p15-s23-stage2-runtime-execute-value-scoped
                    runtime plan env (nth argument-instructions 0)
-                   :recur-inside-builtin-argument)
+                   :recur-inside-builtin-argument public-invocation-scope)
                   key
-                  (p15-s23-stage2-runtime-execute-value
+                  (p15-s23-stage2-runtime-execute-value-scoped
                    runtime plan env (nth argument-instructions 1)
-                   :recur-inside-builtin-argument)
+                   :recur-inside-builtin-argument public-invocation-scope)
                   value
-                  (p15-s23-stage2-runtime-execute-value
+                  (p15-s23-stage2-runtime-execute-value-scoped
                    runtime plan env (nth argument-instructions 2)
-                   :recur-inside-builtin-argument)]
+                   :recur-inside-builtin-argument public-invocation-scope)]
               ;; Preserve the generic path's argument and exception boundaries
               ;; while avoiding its argument vector and apply seq.
               (try
@@ -234,17 +244,33 @@
                 (catch Exception ex
                   (p15-s23-stage2-runtime-fail-builtin-error!
                    plan function ex))))
-            (p15-s23-stage2-runtime-execute-generic-builtin-call
-             runtime plan env instruction function)))))
+            (p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
+             runtime plan env instruction function public-invocation-scope)))))
     :function-call
     (let [function (:function instruction)
-          args (p15-s23-stage2-runtime-execute-values
+          external-authority
+          (when (contains? instruction :external-link)
+            ;; Authenticate the complete M0/M1/M2/M3 route before argument
+            ;; evaluation.  A rejected route cannot commit argument effects,
+            ;; a result, output, or a trace row.
+            (p15-s23-sh07-b51-runtime-authorize-external-link
+             runtime plan instruction))
+          args (p15-s23-stage2-runtime-execute-values-scoped
                 runtime plan env (:args instruction)
-                :recur-inside-function-argument)]
-      (p15-s23-stage2-runtime-execute-function
-       runtime plan function args))
+                :recur-inside-function-argument public-invocation-scope)]
+      (if external-authority
+        (p15-s23-sh07-b51-runtime-execute-external-machine
+         runtime plan instruction external-authority args
+         public-invocation-scope)
+        (p15-s23-stage2-runtime-execute-function-scoped
+         runtime plan function args public-invocation-scope)))
     (fail! "L2-UNKNOWN-CORE-FORM"
            "stage2 runtime plan contains an unknown instruction"
            {:source-span {:source (get-in plan [:source :path])}
             :operator (:op instruction)
             :remediation "Regenerate the stage2 instruction plan with a supported stage2 plan emitter."})))
+
+(defn p15-s23-stage2-runtime-execute-instruction
+  [runtime plan env instruction]
+  (p15-s23-stage2-runtime-execute-instruction-scoped
+   runtime plan env instruction nil))

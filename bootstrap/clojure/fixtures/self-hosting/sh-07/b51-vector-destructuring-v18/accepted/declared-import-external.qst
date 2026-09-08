@@ -1,0 +1,13 @@
+(ns self-hosting.sh07-b51-v18.declared-import-external
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [shared.core :as shared :profile :core
+              :boundary :pure-core :refer [checksum]])
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise []
+  (let [[imported] [shared/checksum]]
+    imported))

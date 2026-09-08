@@ -1,0 +1,12 @@
+(ns self-hosting.sh07-b51-v18.strict-nested-source-def-owner
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def exercise-value
+  (do
+    (let [[left right] [20 22]]
+      (+ left right))))

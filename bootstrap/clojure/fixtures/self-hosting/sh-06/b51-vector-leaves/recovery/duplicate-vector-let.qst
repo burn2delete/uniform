@@ -1,0 +1,13 @@
+(ns self-hosting.sh06.b51-vector-leaves.duplicate-let
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :checkpoint :B51-A :fixture :duplicate-vector-let}))
+
+(defn exercise [input]
+  (let [[first [first _ & second] second] input
+        total (+ first second)]
+    (+ total first second)))

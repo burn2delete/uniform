@@ -102,6 +102,8 @@
   "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56")
 (def sh06-resolution-expected-plan-semantic-hash
   "sha256:ba8c292ffe3c703bbc220af0a7121496c134793d1e80a012f6fb0a0d9dc6b6fa")
+(def sh06-resolution-expected-plan-id
+  "sha256:a85dd6c53929b8a9f9b4fdf9d7b8b3b5c92fd06bacccf282ea036f9738cc13ee")
 (def sh06-resolution-expected-functions-semantic-hash
   "sha256:a1445872cda26a9aa0fb8959165eada593619de7a03f527a8ea8a8c216237b91")
 (def sh06-resolution-expected-function-count 94)

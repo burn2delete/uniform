@@ -1,0 +1,15 @@
+(ns self-hosting.sh07-b51-v18.nested-empty-wildcard-loop-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input empty-input]
+  (loop [[head [_ [tail]] []] input
+         [] empty-input
+         total 0]
+    (if (< total 1)
+      (recur [head [:ignored [tail]] []] [] (+ total 1))
+      (+ head tail total))))

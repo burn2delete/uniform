@@ -1,0 +1,54 @@
+; SH-07-B51 rebuilds every ordinary B47 core form on a nonlegacy request.
+(ns self-hosting.sh07-b51-v18.ordinary-core-form-matrix
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [mutable-value
+             helper
+             quoted-value
+             var-object
+             mutation-result
+             lookup-result
+             ordinary
+             recover
+             classify])
+  (:effects #{:state/write :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def mutable-value 0)
+
+(defn helper [value]
+  value)
+
+(def quoted-value
+  (quote (alpha beta)))
+
+(def var-object
+  (var mutable-value))
+
+(def mutation-result
+  (set! mutable-value 1))
+
+(def lookup-result
+  (:answer {:answer 42}))
+
+(defn ordinary [input]
+  (let [[left right] input
+        aggregate [left 1/2 {:right right} #{left right}]]
+    (loop [iteration 0]
+      (if false
+        (recur (+ iteration 1))
+        (do
+          aggregate
+          (helper left))))))
+
+(defn recover [value]
+  (try
+    (throw value)
+    (catch RuntimeException runtime-error
+      runtime-error)))
+
+(defn classify [value]
+  (match value
+    0 :zero
+    _ :other))

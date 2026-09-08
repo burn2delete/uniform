@@ -1,0 +1,20 @@
+; Function and loop recurs in one tree must bind their nearest targets.
+(ns self-hosting.sh07-b51-v18.nested-nearest-recur-targets
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (loop [[outer] input]
+    (let [advance
+          (fn [value]
+            (if (< value 1)
+              (recur (+ value 1))
+              (loop [[inner] [0]]
+                (if (< inner 1)
+                  (recur [(+ inner 1)])
+                  (+ value outer inner)))))]
+      (advance outer))))

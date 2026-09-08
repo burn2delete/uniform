@@ -1,0 +1,13 @@
+(ns self-hosting.sh07-b51-v18.recur-not-tail
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (loop [[value] input]
+    (do
+      (recur [value])
+      value)))

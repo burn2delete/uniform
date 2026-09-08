@@ -130,19 +130,21 @@
            (empty? remaining)
            active-scope-chain
            (let
-            [[binding-name initializer]
+            [[binding-pattern initializer]
              (first remaining)
              _
              (walk-form initializer active-scope-chain syntax :expression)
+             binding-paths
+             (sh06-let-loop-binding-paths binding-pattern [])
              next-scope-chain
              (if
-              (symbol? binding-name)
+              (or (symbol? binding-pattern) (vector? binding-pattern))
               (let
                [scope-id
                 (add-scope!
                  (:syntax/id syntax)
                  (first active-scope-chain)
-                 [binding-name]
+                 (mapv :name binding-paths)
                  (:span syntax))]
                (cons scope-id active-scope-chain))
               active-scope-chain)]

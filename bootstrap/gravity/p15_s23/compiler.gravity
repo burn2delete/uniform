@@ -476,7 +476,8 @@
         :argument-policy :compile-body}
     if {:op :if
         :argument-policy :compile-test-then-else
-        :arity 3}
+        :arity 3
+        :wrong-arity-diagnostic "L2-UNKNOWN-CORE-FORM"}
     let {:op :let
          :argument-policy :compile-even-binding-vector}
     quote {:op :quote
@@ -486,14 +487,111 @@
                   :status :rejected}}
    :collection-rules
    {:vector {:op :vector-literal :order :source-order}
-    :map {:op :map-literal :order :pr-str-sorted}
-    :set {:op :set-literal :order :pr-str-sorted}
+    :map {:op :map-literal
+          :seed-traversal :host-pr-str-deterministic
+          :semantic-order :unordered
+          :semantic-order-authority :none}
+    :set {:op :set-literal
+          :seed-traversal :host-pr-str-deterministic
+          :semantic-order :unordered
+          :semantic-order-authority :none}
     :literal {:op :literal}}
    :call-rules
    {:builtin-op :builtin-call
     :function-op :function-call
     :builtin-functions [* + - / < <= = > >= assoc conj count first get
                         hash-map list pr-str rest second str vector]
+    :compiler-internal-builtin-arities
+    {sh07-canonical-text-compare 2
+     sh07-declared-digest-hash 1
+     sh07-observe-utf8-byte-count 3
+     sh07-b51-admitted-executable-carrier-validation? 1}
+    :compiler-internal-builtin-contracts
+    {sh07-canonical-text-compare
+     {:arity 2 :input [:string :string] :result [:enum -1 0 1]
+      :effects #{} :capabilities #{}
+      :order :unsigned-lexicographic-strict-utf8
+      :resource-authority :none
+      :byte-census-authority :none
+      :malformed-unicode-diagnostic "L2-BUILTIN-ERROR"
+      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :callers
+      #{sh07-b51-producer-insert-decoration
+        sh07-b51-r6-decoration-insert
+        p15-s23-sh07-canonical-decoration}
+      :dynamic-resolution :forbidden
+      :public-runtime-call :forbidden}
+     sh07-declared-digest-hash
+     {:arity 1 :input [:reader-canonical-value]
+      :result :sha256-digest-id :effects #{} :capabilities #{}
+      :identity :reader-canonical-hash
+      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :callers
+      #{sh07-b51-success-digest-replay-exact?
+        sh07-b51-finalize-rejection
+        sh07-b51-producer-decimal-admission
+        sh07-b51-producer-decimal-projection-authentic?
+        sh07-b51-r6-replay-digests
+        sh07-b51-r6-decimal-projection-authentic?
+        sh07-b51-r6-predecessor-closure-authentic?
+        sh07-b51-r6-projection-binding
+        sh07-b51-r6-projected-form-id
+        sh07-b51-r6-projected-syntax-id
+        sh07-b51-r6-project-decimal
+        sh07-b51-r6-projected-macro-traces
+        sh07-b51-r6-project-lineage
+        sh07-b51-r6-replay-consume-scope
+        sh07-b51-r6-replay-reference
+        sh07-b51-r6-project-forms
+        sh07-b51-r6-project-definition-syntax-id
+        sh07-b51-r6-project-scope-catalog
+        sh07-b51-r6-project-bindings
+        sh07-b51-r6-v18-executable-authentic?}
+      :dynamic-resolution :forbidden
+      :public-runtime-call :forbidden}
+     sh07-observe-utf8-byte-count
+     {:arity 3
+      :implementation :p15-s23-sh07-observe-utf8-byte-count-v1
+      :input [:string :nonnegative-exact-integer
+              :nonnegative-exact-integer]
+      :result
+      {:artifact :gravity/sh07-utf8-byte-observation-v1
+       :keys #{:artifact :status :reason :maximum :observed-before
+               :observed-after :prospective-after :utf16-units-scanned
+               :unicode-scalars-scanned}
+       :status [:enum :accepted :rejected]
+       :reasons #{nil :utf8-byte-limit :invalid-unicode-scalar-sequence}}
+      :effects #{} :capabilities #{}
+      :maximum 1073741824 :maximum-prospective-after 1073741828
+      :algorithm :strict-unicode-scalar-utf8-prospective-census
+      :encoded-allocation :forbidden
+      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+      :callers
+      #{sh07-b51-producer-observe-decoration-bytes
+        sh07-b51-r6-observe-scalar-bytes
+        p15-s23-sh07-o-append-scalar-fragment!
+        p15-s23-sh07-combine-decorations
+        p15-s23-sh07-o-c2-decoration}
+      :dynamic-resolution :forbidden
+      :public-runtime-call :forbidden}
+     sh07-b51-admitted-executable-carrier-validation?
+     {:arity 1
+      :implementation :p15-s23-sh07-b51-first-eval-validation-receipt-v3
+      :input [:identity-bound-executable-carrier]
+      :result [:literal true]
+      :effects #{} :capabilities #{}
+      :fact-projections
+      #{:gravity/sh07-b51-attempt32-r1-nested-carrier-facts-v3
+        :gravity/sh07-b51-attempt32-r6-nested-carrier-facts-v3}
+      :one-shot true
+      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+      :callers
+      #{sh07-b51-root1-admitted-raw-carrier-shape?
+        sh07-b51-r6-c30-request-proof?}
+      :dynamic-resolution :forbidden
+      :public-runtime-call :forbidden}}
     :unknown-callee-diagnostic "L2-UNKNOWN-CORE-FORM"
     :function-arity-diagnostic "L2-FUNCTION-ARITY"
     :builtin-arity-diagnostic "L2-BUILTIN-ARITY"}
@@ -604,8 +702,95 @@
 	   :runtime-primitives
 	   {:engine :gravity-stage2-runtime-primitives-v1
 	    :host-primitive-boundary :gravity-runtime-primitives
-	    :functions [+ - * / = < > <= >= str pr-str hash-map vector list
-	                conj assoc get first second rest count]
+	    :functions [+ - * / = < > <= >= str pr-str
+                hash-map vector list conj assoc get first second rest count]
+	    :compiler-internal-builtin-arities
+	    {sh07-canonical-text-compare 2
+	     sh07-declared-digest-hash 1
+	     sh07-observe-utf8-byte-count 3
+	     sh07-b51-admitted-executable-carrier-validation? 1}
+	    :compiler-internal-builtin-contracts
+	    {sh07-canonical-text-compare
+	     {:arity 2 :input [:string :string] :result [:enum -1 0 1]
+	      :effects #{} :capabilities #{}
+	      :order :unsigned-lexicographic-strict-utf8
+      :resource-authority :none
+      :byte-census-authority :none
+	      :malformed-unicode-diagnostic "L2-BUILTIN-ERROR"
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :callers
+      #{sh07-b51-producer-insert-decoration
+        sh07-b51-r6-decoration-insert
+        p15-s23-sh07-canonical-decoration}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-declared-digest-hash
+	     {:arity 1 :input [:reader-canonical-value]
+	      :result :sha256-digest-id :effects #{} :capabilities #{}
+	      :identity :reader-canonical-hash
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :callers
+	      #{sh07-b51-success-digest-replay-exact?
+	        sh07-b51-finalize-rejection
+	        sh07-b51-producer-decimal-admission
+	        sh07-b51-producer-decimal-projection-authentic?
+	        sh07-b51-r6-replay-digests
+	        sh07-b51-r6-decimal-projection-authentic?
+	        sh07-b51-r6-predecessor-closure-authentic?
+	        sh07-b51-r6-projection-binding sh07-b51-r6-projected-form-id
+	        sh07-b51-r6-projected-syntax-id sh07-b51-r6-project-decimal
+	        sh07-b51-r6-projected-macro-traces sh07-b51-r6-project-lineage
+	        sh07-b51-r6-replay-consume-scope sh07-b51-r6-replay-reference
+	        sh07-b51-r6-project-forms
+	        sh07-b51-r6-project-definition-syntax-id
+	        sh07-b51-r6-project-scope-catalog
+	        sh07-b51-r6-project-bindings
+	        sh07-b51-r6-v18-executable-authentic?}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-observe-utf8-byte-count
+	     {:arity 3
+	      :implementation :p15-s23-sh07-observe-utf8-byte-count-v1
+	      :input [:string :nonnegative-exact-integer
+	              :nonnegative-exact-integer]
+	      :result
+	      {:artifact :gravity/sh07-utf8-byte-observation-v1
+	       :keys #{:artifact :status :reason :maximum :observed-before
+	               :observed-after :prospective-after :utf16-units-scanned
+	               :unicode-scalars-scanned}
+	       :status [:enum :accepted :rejected]
+	       :reasons #{nil :utf8-byte-limit :invalid-unicode-scalar-sequence}}
+	      :effects #{} :capabilities #{}
+	      :maximum 1073741824 :maximum-prospective-after 1073741828
+	      :algorithm :strict-unicode-scalar-utf8-prospective-census
+	      :encoded-allocation :forbidden
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+	      :callers
+      #{sh07-b51-producer-observe-decoration-bytes
+        sh07-b51-r6-observe-scalar-bytes
+	        p15-s23-sh07-o-append-scalar-fragment!
+	        p15-s23-sh07-combine-decorations
+	        p15-s23-sh07-o-c2-decoration}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-b51-admitted-executable-carrier-validation?
+	     {:arity 1
+	      :implementation :p15-s23-sh07-b51-first-eval-validation-receipt-v3
+	      :input [:identity-bound-executable-carrier]
+	      :result [:literal true]
+	      :effects #{} :capabilities #{}
+	      :fact-projections
+	      #{:gravity/sh07-b51-attempt32-r1-nested-carrier-facts-v3
+	        :gravity/sh07-b51-attempt32-r6-nested-carrier-facts-v3}
+	      :one-shot true
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+	      :callers
+	      #{sh07-b51-root1-admitted-raw-carrier-shape?
+	        sh07-b51-r6-c30-request-proof?}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}}
 	    :arity-policy :checked-before-invocation
 	    :failure-diagnostics ["L2-BUILTIN-ARITY" "L2-BUILTIN-ERROR"]
 	    :capability-policy {:io/stdout :required-for-println}}
@@ -710,6 +895,93 @@
 	   :builtin-rules
 	   {:functions [* + - / < <= = > >= assoc conj count first get
 	                hash-map list pr-str rest second str vector]
+	    :compiler-internal-builtin-arities
+	    {sh07-canonical-text-compare 2
+	     sh07-declared-digest-hash 1
+	     sh07-observe-utf8-byte-count 3
+	     sh07-b51-admitted-executable-carrier-validation? 1}
+	    :compiler-internal-builtin-contracts
+	    {sh07-canonical-text-compare
+	     {:arity 2 :input [:string :string] :result [:enum -1 0 1]
+	      :effects #{} :capabilities #{}
+	      :order :unsigned-lexicographic-strict-utf8
+      :resource-authority :none
+      :byte-census-authority :none
+	      :malformed-unicode-diagnostic "L2-BUILTIN-ERROR"
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+      :callers
+      #{sh07-b51-producer-insert-decoration
+        sh07-b51-r6-decoration-insert
+        p15-s23-sh07-canonical-decoration}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-declared-digest-hash
+	     {:arity 1 :input [:reader-canonical-value]
+	      :result :sha256-digest-id :effects #{} :capabilities #{}
+	      :identity :reader-canonical-hash
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :callers
+	      #{sh07-b51-success-digest-replay-exact?
+	        sh07-b51-finalize-rejection
+	        sh07-b51-producer-decimal-admission
+	        sh07-b51-producer-decimal-projection-authentic?
+	        sh07-b51-r6-replay-digests
+	        sh07-b51-r6-decimal-projection-authentic?
+	        sh07-b51-r6-predecessor-closure-authentic?
+	        sh07-b51-r6-projection-binding sh07-b51-r6-projected-form-id
+	        sh07-b51-r6-projected-syntax-id sh07-b51-r6-project-decimal
+	        sh07-b51-r6-projected-macro-traces sh07-b51-r6-project-lineage
+	        sh07-b51-r6-replay-consume-scope sh07-b51-r6-replay-reference
+	        sh07-b51-r6-project-forms
+	        sh07-b51-r6-project-definition-syntax-id
+	        sh07-b51-r6-project-scope-catalog
+	        sh07-b51-r6-project-bindings
+	        sh07-b51-r6-v18-executable-authentic?}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-observe-utf8-byte-count
+	     {:arity 3
+	      :implementation :p15-s23-sh07-observe-utf8-byte-count-v1
+	      :input [:string :nonnegative-exact-integer
+	              :nonnegative-exact-integer]
+	      :result
+	      {:artifact :gravity/sh07-utf8-byte-observation-v1
+	       :keys #{:artifact :status :reason :maximum :observed-before
+	               :observed-after :prospective-after :utf16-units-scanned
+	               :unicode-scalars-scanned}
+	       :status [:enum :accepted :rejected]
+	       :reasons #{nil :utf8-byte-limit :invalid-unicode-scalar-sequence}}
+	      :effects #{} :capabilities #{}
+	      :maximum 1073741824 :maximum-prospective-after 1073741828
+	      :algorithm :strict-unicode-scalar-utf8-prospective-census
+	      :encoded-allocation :forbidden
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+	      :callers
+      #{sh07-b51-producer-observe-decoration-bytes
+        sh07-b51-r6-observe-scalar-bytes
+	        p15-s23-sh07-o-append-scalar-fragment!
+	        p15-s23-sh07-combine-decorations
+	        p15-s23-sh07-o-c2-decoration}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}
+	     sh07-b51-admitted-executable-carrier-validation?
+	     {:arity 1
+	      :implementation :p15-s23-sh07-b51-first-eval-validation-receipt-v3
+	      :input [:identity-bound-executable-carrier]
+	      :result [:literal true]
+	      :effects #{} :capabilities #{}
+	      :fact-projections
+	      #{:gravity/sh07-b51-attempt32-r1-nested-carrier-facts-v3
+	        :gravity/sh07-b51-attempt32-r6-nested-carrier-facts-v3}
+	      :one-shot true
+	      :wrong-arity-diagnostic "L2-BUILTIN-ARITY"
+	      :wrong-input-diagnostic "L2-BUILTIN-ERROR"
+	      :callers
+	      #{sh07-b51-root1-admitted-raw-carrier-shape?
+	        sh07-b51-r6-c30-request-proof?}
+	      :dynamic-resolution :forbidden
+	      :public-runtime-call :forbidden}}
 	    :host-primitive-boundary :gravity-runtime-primitives
 	    :unknown-callee-diagnostic "L2-UNKNOWN-CORE-FORM"
 	    :builtin-error-diagnostic "L2-BUILTIN-ERROR"}

@@ -1,0 +1,13 @@
+(ns self-hosting.sh07-b51-v18.nested-empty-wildcard-let
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input empty-input]
+  (let [[head [_ [tail]] []] input
+        [] empty-input
+        total (+ head tail)]
+    (+ total head tail)))

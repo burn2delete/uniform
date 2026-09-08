@@ -1,0 +1,13 @@
+; A plain function recur has flat arity and owns no B51 vector transfer.
+(ns self-hosting.sh07-b51-v18.plain-function-recur
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [count-down])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn count-down [value]
+  (if (< value 1)
+    value
+    (recur (- value 1))))

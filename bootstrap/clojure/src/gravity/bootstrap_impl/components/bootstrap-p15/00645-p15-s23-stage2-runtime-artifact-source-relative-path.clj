@@ -63,13 +63,13 @@
      p15-s23-reference-runtime-grant-records})
 
 (def p15-s23-stage2-runtime-artifact-expected-source-content-hash
-  "sha256:ec1a94a979d8464492a904587913d6d1634161e5cefaf6e0bc4db977365d7230")
+  "sha256:2824d332b8208ef9ca4f47f9b0994886754cc2c6a61802bc8bc053515a8a673b")
 
 (def p15-s23-stage2-compiler-expected-source-content-hash
-  "sha256:f0c5f30518dc8ddb9979bea3344b6b29c512a9a325e6c496bbe6be29ef55a673")
+  "sha256:be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854")
 
-(def p15-s23-stage2-compiler-expected-source-byte-count 116505)
-(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 75905)
+(def p15-s23-stage2-compiler-expected-source-byte-count 128447)
+(def p15-s23-stage2-runtime-artifact-expected-source-byte-count 82780)
 
 (defn p15-s23-stage2-compiler-pinned-source!
   "Read and authenticate compiler.gravity before any of its bytes are parsed,

@@ -1,0 +1,21 @@
+(ns self-hosting.sh07-b51-v18.ordered-no-form-simple-symbol-waiver
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:compiler
+    {:sh06-request
+     {:request-version 1
+      :candidate-bindings
+      [{:name external-first
+        :namespace self-hosting.sh07-b51-v18.ordered-no-form-simple-symbol-waiver
+        :visibility :public}
+       {:name external-second
+        :namespace self-hosting.sh07-b51-v18.ordered-no-form-simple-symbol-waiver
+        :visibility :public}]}}}))
+
+(defn exercise []
+  (+ external-first external-second))

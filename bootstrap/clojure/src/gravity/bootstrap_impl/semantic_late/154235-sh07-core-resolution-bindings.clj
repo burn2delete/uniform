@@ -31,28 +31,38 @@
      (empty? remaining)
      active
      (let
-      [[binding-name initializer]
+      [[binding-pattern initializer]
        (first remaining)
-       initializer-index
-       (+ 2 (* binding-index 2))
        binding-path
        (conj path 1 (* binding-index 2))
+       binding-paths
+       (sh06-let-loop-binding-paths binding-pattern binding-path)
        _
        (walk syntax initializer (conj path 1 (inc (* binding-index 2))) active :expression)
        next-active
        (if
-        (symbol? binding-name)
+        (or (symbol? binding-pattern) (vector? binding-pattern))
         (let
          [scope
-          (consume-scope! syntax (first active) [{:name binding-name, :path binding-path}])
-          syntax-id
-          (projected-syntax-id syntax binding-path binding-name)]
-         (swap! scope-by-syntax-id assoc syntax-id (:sh07/projected-scope-id scope))
-         (swap!
-          declaration-syntax-by-upstream-id
-          assoc
-          (get-in scope [:bindings 0 :binding-syntax-id])
-          syntax-id)
+          (consume-scope! syntax (first active) binding-paths)]
+         (when
+          (vector? binding-pattern)
+          (swap!
+           scope-by-syntax-id
+           assoc
+           (projected-syntax-id syntax binding-path binding-pattern)
+           (:sh07/projected-scope-id scope)))
+         (doseq
+          [[binding projected] (map vector (:bindings scope) binding-paths)]
+          (let
+           [syntax-id
+            (projected-syntax-id syntax (:path projected) (:name projected))]
+           (swap! scope-by-syntax-id assoc syntax-id (:sh07/projected-scope-id scope))
+           (swap!
+            declaration-syntax-by-upstream-id
+            assoc
+            (:binding-syntax-id binding)
+            syntax-id)))
          (cons (:scope-id scope) active))
         active)]
       (recur (next remaining) (inc binding-index) next-active))))]

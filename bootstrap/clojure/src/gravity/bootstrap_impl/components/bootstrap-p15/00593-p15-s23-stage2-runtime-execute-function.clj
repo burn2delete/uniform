@@ -1,7 +1,9 @@
 
 
-(defn p15-s23-stage2-runtime-execute-function
-  [runtime plan callee args]
+(defn- p15-s23-stage2-runtime-execute-function-scoped
+  [runtime plan callee args public-invocation-scope]
+  (p15-s23-sh07-b51-assert-scoped-function-entry!
+   runtime plan callee args public-invocation-scope)
   (let [definition (get-in plan [:functions callee])
         params (:params definition)
         instructions (:instructions definition)]
@@ -16,8 +18,8 @@
        "L2-FUNCTION-ARITY" plan callee args (count params)))
     (loop [env (p15-s23-stage2-runtime-bind-values {} params args)]
       (let [result
-            (p15-s23-stage2-runtime-execute-instructions
-             runtime plan env instructions)]
+            (p15-s23-stage2-runtime-execute-instructions-scoped
+             runtime plan env instructions public-invocation-scope)]
         (if (p15-s23-stage2-runtime-recur-signal? result)
           (let [values (p15-s23-stage2-runtime-recur-values result)]
             (when-not (= (count params) (count values))
@@ -27,6 +29,11 @@
             (recur
              (p15-s23-stage2-runtime-bind-values {} params values)))
           result)))))
+
+(defn p15-s23-stage2-runtime-execute-function
+  [runtime plan callee args]
+  (p15-s23-stage2-runtime-execute-function-scoped
+   runtime plan callee args nil))
 
 (defn p15-s23-stage2-runtime-artifact-invoke
   "Generic host runner for a Gravity-authored runtime function plan.
@@ -154,6 +161,17 @@
 	  (let [instruction-rules (set (keys (:instruction-rules kernel)))
 	        runtime-primitives (set (get-in kernel
 	                                        [:runtime-primitives :functions]))
+	        primitive-exact-arities
+	        (get-in kernel
+	                [:runtime-primitives :compiler-internal-builtin-arities])
+	        primitive-contracts
+	        (get-in kernel
+	                [:runtime-primitives :compiler-internal-builtin-contracts])
+	        declared-arities-current?
+	        (= p15-s23-sh07-declared-builtin-exact-arities
+	           primitive-exact-arities)
+	        declared-contracts-current?
+	        (= p15-s23-sh07-declared-builtin-contracts primitive-contracts)
 	        missing-instructions
 	        (set/difference
 	         p15-s23-stage2-runtime-kernel-required-instructions
@@ -171,7 +189,9 @@
 	                (:output kernel))
 	             (= :gravity-runtime-primitives primitive-boundary)
 	             (empty? missing-instructions)
-	             (empty? missing-primitives))]
+	             (empty? missing-primitives)
+	             declared-arities-current?
+	             declared-contracts-current?)]
 	    {:artifact :gravity/p15-s23-stage2-runtime-kernel-rule-record
 	     :engine (:engine kernel)
 	     :primitive-engine (get-in kernel [:runtime-primitives :engine])
@@ -182,6 +202,10 @@
 	                         instruction-rules)
 	     :runtime-primitives (p15-s23-stage2-sort-values
 	                          runtime-primitives)
+	     :primitive-exact-arities primitive-exact-arities
+	     :declared-builtin-arities-current? declared-arities-current?
+	     :compiler-internal-builtin-contracts primitive-contracts
+	     :declared-builtin-contracts-current? declared-contracts-current?
 	     :missing-instructions (p15-s23-stage2-sort-values
 	                            missing-instructions)
 	     :missing-runtime-primitives (p15-s23-stage2-sort-values

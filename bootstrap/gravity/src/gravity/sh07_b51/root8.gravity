@@ -1,0 +1,1872 @@
+; Gravity-owned SH-07 B51 bounded module; Attempt24 owner :r8-finalizer.
+(ns gravity.sh07-b51.root8
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh07-b51-finalize-rejection])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn sh07-b51-rejection-finalizer-boundary [reason]
+  (sh07-b51-entrypoint-envelope
+   :boundary-rejected :rejection-finalizer-boundary-rejected
+   {:status :boundary-rejected
+    :boundary :sh07-b51-finalize-rejection
+    :reason reason
+    :recursive-diagnostic-forbidden true}))
+
+(defn sh07-b51-root1-pending-kind-reason? [kind reason]
+  (if (= kind :lowering-gap)
+    (contains? #{:unsupported-vector-rest :unsupported-nested-pattern} reason)
+    (if (= kind :duplicate-binding)
+      (= reason :duplicate-vector-binding-name)
+      (if (= kind :recur-target)
+        (contains?
+         #{:missing-recur-target :recur-arity-mismatch :recur-not-tail}
+         reason)
+        (if (= kind :verify)
+          (contains?
+           #{:module-slot-limit-exceeded
+             :module-binding-leaf-limit-exceeded}
+           reason)
+          false)))))
+
+(defn sh07-b51-root1-pending-envelope-authentic? [envelope]
+  (if (sh07-b51-pending-rejected-envelope-shape? envelope)
+    (let [pending-result (get envelope :pending-result)
+          semantic (get pending-result :diagnostic-semantic-value)
+          kind (get semantic :diagnostic-kind)
+          reason (get semantic :reason)
+          remediation (get semantic :remediation)
+          reconstructed
+          (sh07-b51-pending-rejection
+           kind reason (sh07-b51-semantic-coordinate semantic)
+           (get semantic :expected) (get semantic :observed)
+           (get semantic :related-semantic-ids))]
+      (if (sh07-b51-root1-pending-kind-reason? kind reason)
+        (if (= (get remediation :action) :fix-source)
+          (if (= (get remediation :owner) :source-author)
+            (= envelope reconstructed)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh07-b51-root1-pending-abi-authentic? [result]
+  (if (sh07-b51-exact-keys?
+       result #{:artifact :domain :schema-version :status :tag :value})
+    (if (= (get result :artifact)
+           :gravity/sh07-b51-entrypoint-result-v18)
+      (if (= (get result :domain) :gravity/sh07-b51-entrypoint-abi-v18)
+        (if (= (get result :schema-version) 18)
+          (if (= (get result :status) :pending-rejection)
+            (if (= (get result :tag) :template-rejected)
+              (sh07-b51-root1-pending-envelope-authentic?
+               (get result :value))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b51-root1-success-abi-authentic? [result]
+  (if (sh07-b51-exact-keys?
+       result #{:artifact :domain :schema-version :status :tag :value})
+    (if (= (get result :artifact)
+           :gravity/sh07-b51-entrypoint-result-v18)
+      (if (= (get result :domain) :gravity/sh07-b51-entrypoint-abi-v18)
+        (if (= (get result :schema-version) 18)
+          (if (= (get result :status) :accepted)
+            (if (= (get result :tag) :template-built)
+              (let [value (get result :value)]
+                (if (sh07-b51-exact-keys?
+                     value #{:template :digest-requests})
+                  (if (vector? (get value :digest-requests))
+                    (if (= (get (get value :template) :digest-requests)
+                           (get value :digest-requests))
+                      (sh07-b51-template-shape-for-plan?
+                       (get value :template) (get value :digest-requests))
+                      false)
+                    false)
+                  false))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b51-r8-index-records [records primary-field secondary-field]
+  (loop [remaining records
+         by-primary {}
+         by-secondary {}
+         duplicate-primary? false
+         duplicate-secondary? false]
+    (if (= (count remaining) 0)
+      {:by-primary by-primary
+       :by-secondary by-secondary
+       :duplicate-primary? duplicate-primary?
+       :duplicate-secondary? duplicate-secondary?}
+      (let [record (first remaining)
+            primary (get record primary-field)
+            secondary (get record secondary-field)]
+        (recur
+         (rest remaining)
+         (assoc by-primary primary record)
+         (if (= secondary-field nil)
+           by-secondary
+           (assoc by-secondary secondary record))
+         (if (contains? by-primary primary) true duplicate-primary?)
+         (if (= secondary-field nil)
+           duplicate-secondary?
+           (if (contains? by-secondary secondary)
+             true
+             duplicate-secondary?)))))))
+
+(defn sh07-b51-r8-index-request [request]
+  {:forms
+   (sh07-b51-r8-index-records
+    (get request :forms) :form-id :syntax-id)
+   :bindings
+   (sh07-b51-r8-index-records
+    (get request :binding-table) :binding-id :definition-syntax-id)
+   :resolutions
+   (sh07-b51-r8-index-records
+    (get request :resolution-table) :reference-syntax-id nil)
+   :aliases
+   (sh07-b51-r8-index-records
+    (get request :alias-table) :alias nil)})
+
+(defn sh07-b51-r8-indexes-unique? [indexes]
+  (loop [remaining [:forms :bindings :resolutions :aliases]]
+    (if (= (count remaining) 0)
+      true
+      (let [index (get indexes (first remaining))]
+        (if (get index :duplicate-primary?)
+          false
+          (if (get index :duplicate-secondary?)
+            false
+            (recur (rest remaining))))))))
+
+(defn sh07-b51-r8-index-of [values value]
+  (loop [remaining values index 0 found nil count-found 0]
+    (if (= (count remaining) 0)
+      {:count count-found :index found}
+      (if (= (first remaining) value)
+        (recur (rest remaining) (+ index 1) index (+ count-found 1))
+        (recur (rest remaining) (+ index 1) found count-found)))))
+
+(defn sh07-b51-r8-vector-contains? [values value]
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      false
+      (if (= (first remaining) value)
+        true
+        (recur (rest remaining))))))
+
+(defn sh07-b51-r8-all-unique? [values]
+  (loop [remaining values observed #{}]
+    (if (= (count remaining) 0)
+      true
+      (if (contains? observed (first remaining))
+        false
+        (recur (rest remaining) (conj observed (first remaining)))))))
+
+(defn sh07-b51-r8-vector-append [left right]
+  (loop [remaining right result left]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn sh07-b51-r8-form-by-id [request form-id]
+  (loop [remaining (get request :forms) found nil count-found 0]
+    (if (= (count remaining) 0)
+      (if (= count-found 1) found nil)
+      (if (= (get (first remaining) :form-id) form-id)
+        (recur (rest remaining) (first remaining) (+ count-found 1))
+        (recur (rest remaining) found count-found)))))
+
+(defn sh07-b51-r8-form-ordinal [request form-id]
+  (loop [remaining (get request :forms) ordinal 0 found nil count-found 0]
+    (if (= (count remaining) 0)
+      (if (= count-found 1) found nil)
+      (if (= (get (first remaining) :form-id) form-id)
+        (recur (rest remaining) (+ ordinal 1) ordinal (+ count-found 1))
+        (recur (rest remaining) (+ ordinal 1) found count-found)))))
+
+(defn sh07-b51-r8-find-form [indexes form-id]
+  (get (get (get indexes :forms) :by-primary) form-id))
+
+(defn sh07-b51-r8-find-binding [indexes binding-id]
+  (get (get (get indexes :bindings) :by-primary) binding-id))
+
+(defn sh07-b51-r8-find-binding-by-definition [indexes syntax-id]
+  (get (get (get indexes :bindings) :by-secondary) syntax-id))
+
+(defn sh07-b51-r8-find-resolution [indexes syntax-id]
+  (get (get (get indexes :resolutions) :by-primary) syntax-id))
+
+(defn sh07-b51-r8-child-membership-count [forms child-id]
+  (loop [remaining forms count-found 0 parent nil]
+    (if (= (count remaining) 0)
+      {:count count-found :parent parent}
+      (let [candidate (first remaining)
+            occurrence
+            (sh07-b51-r8-index-of
+             (get candidate :child-form-ids) child-id)]
+        (if (= (get occurrence :count) 1)
+          (recur (rest remaining) (+ count-found 1) candidate)
+          (if (= (get occurrence :count) 0)
+            (recur (rest remaining) count-found parent)
+            {:count (+ count-found 2) :parent candidate}))))))
+
+(defn sh07-b51-r8-reciprocal-parent-chain
+  [request indexes enclosing]
+  (loop [current enclosing depth 0 visited #{} chain []]
+    (if (> depth 256)
+      {:status :rejected :reason :owner-parent-depth}
+      (let [current-id (get current :form-id)]
+        (if (contains? visited current-id)
+          {:status :rejected :reason :owner-parent-cycle}
+          (let [parent-id (get current :parent-form-id)
+                next-chain (conj chain current)]
+            (if (= parent-id nil)
+              (let [root-membership
+                    (sh07-b51-r8-index-of
+                     (get request :top-level-form-ids) current-id)]
+                (if (= (get root-membership :count) 1)
+                  {:status :accepted :chain next-chain :root current}
+                  {:status :rejected :reason :owner-root-membership}))
+              (let [parent (sh07-b51-r8-find-form indexes parent-id)
+                    reciprocal
+                    (sh07-b51-r8-child-membership-count
+                     (get request :forms) current-id)]
+                (if (map? parent)
+                  (if (= (get reciprocal :count) 1)
+                    (if (= (get (get reciprocal :parent) :form-id)
+                           parent-id)
+                      (recur
+                       parent (+ depth 1) (conj visited current-id)
+                       next-chain)
+                      {:status :rejected
+                       :reason :owner-parent-not-reciprocal})
+                    {:status :rejected :reason :owner-parent-nonunique})
+                  {:status :rejected :reason :owner-parent-missing})))))))))
+
+(defn sh07-b51-r8-select-owner-fragment
+  [request root enclosing]
+  (loop [remaining (get request :fragment-manifest)
+         found nil count-found 0]
+    (if (= (count remaining) 0)
+      (if (= count-found 1)
+        {:status :accepted :fragment found}
+        {:status :rejected :reason :owner-fragment-nonunique})
+      (let [fragment (first remaining)
+            root-id (get root :form-id)
+            enclosing-id (get enclosing :form-id)]
+        (if (if (= (get fragment :fragment-id) root-id)
+              (if (= (get fragment :content-id) root-id)
+                (if (= (get fragment :root-form-ids) [root-id])
+                  (if (= (get fragment :root-node-ids) [root-id])
+                    (= (get (sh07-b51-r8-index-of
+                             (get fragment :form-ids) enclosing-id)
+                            :count)
+                       1)
+                    false)
+                  false)
+                false)
+              false)
+          (recur (rest remaining) fragment (+ count-found 1))
+          (recur (rest remaining) found count-found))))))
+
+(defn sh07-b51-r8-core-operator-authenticated?
+  [indexes operator-form expected-symbol]
+  (let [resolution
+        (sh07-b51-r8-find-resolution indexes (get operator-form :syntax-id))
+        binding
+        (sh07-b51-r8-find-binding indexes (get resolution :binding-id))]
+    (if (= (get operator-form :kind) :symbol)
+      (if (= (get operator-form :value) expected-symbol)
+        (if (map? resolution)
+          (if (map? binding)
+            (if (= (get resolution :symbol) expected-symbol)
+              (if (= (get resolution :position) :operator)
+                (if (= (get resolution :resolution-order)
+                       :profile-allowed-core-binding)
+                  (if (= (get resolution :binding-id)
+                         (get binding :binding-id))
+                    (if (= (get resolution :upstream-binding-id)
+                           (get binding :upstream-binding-id))
+                      (if (= (get binding :binding-class) :core)
+                        (if (= (get binding :visibility) :public)
+                          (= (get binding :namespace) 'gravity.core)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-b51-r8-authenticated-list-operator?
+  [indexes form expected-symbol]
+  (if (= (get form :kind) :list)
+    (let [children (get form :child-form-ids)]
+      (if (> (count children) 0)
+        (let [operator-form
+              (sh07-b51-r8-find-form indexes (first children))]
+          (if (map? operator-form)
+            (sh07-b51-r8-core-operator-authenticated?
+             indexes operator-form expected-symbol)
+            false))
+        false))
+    false))
+
+(defn sh07-b51-r8-chain-contains-form? [chain form-id]
+  (loop [remaining chain]
+    (if (= (count remaining) 0)
+      false
+      (if (= (get (first remaining) :form-id) form-id)
+        true
+        (recur (rest remaining))))))
+
+(defn sh07-b51-r8-source-def-shape?
+  [request indexes root fragment chain]
+  (let [children (get root :child-form-ids)]
+    (if (= (count children) 3)
+      (let [operator (sh07-b51-r8-find-form indexes (first children))
+            declared-name
+            (sh07-b51-r8-find-form indexes (first (rest children)))
+            value-form
+            (sh07-b51-r8-find-form
+             indexes (first (rest (rest children))))
+            binding
+            (sh07-b51-r8-find-binding-by-definition
+             indexes (get declared-name :syntax-id))]
+        (if (sh07-b51-r8-core-operator-authenticated?
+             indexes operator 'def)
+          (if (map? declared-name)
+            (if (= (get declared-name :kind) :symbol)
+              (if (map? binding)
+                (if (= (get binding :binding-class) :namespace)
+                  (if (= (get binding :name) (get declared-name :value))
+                    (if (= (get binding :namespace)
+                           (get (get request :module) :namespace))
+                      (if (= (get (sh07-b51-r8-index-of
+                                   (get fragment :local-binding-ids)
+                                   (get binding :binding-id)) :count) 1)
+                        (if (map? value-form)
+                          (if (= (get value-form :form-id)
+                                 (get (first chain) :form-id))
+                            false
+                            (sh07-b51-r8-chain-contains-form?
+                             chain (get value-form :form-id)))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false))
+      false)))
+
+(defn sh07-b51-r8-macro-origins-by-role [form role]
+  (loop [remaining (get form :generated-origin) result []]
+    (if (= (count remaining) 0)
+      result
+      (let [origin (first remaining)]
+        (if (if (= (get origin :kind) :macro-expansion)
+              (= (get origin :role) role)
+              false)
+          (recur (rest remaining) (conj result origin))
+          (recur (rest remaining) result))))))
+
+(defn sh07-b51-r8-exact-macro-origin?
+  [origin origin-id input-syntax-id role]
+  (if (sh07-b51-exact-keys?
+       origin #{:origin-id :kind :from-syntax-id :role})
+    (if (= (get origin :kind) :macro-expansion)
+      (if (= (get origin :origin-id) origin-id)
+        (if (= (get origin :from-syntax-id) input-syntax-id)
+          (= (get origin :role) role)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b51-r8-root-macro-traces [request root]
+  (loop [remaining (get request :macro-origin-traces) result []]
+    (if (= (count remaining) 0)
+      result
+      (if (= (get (first remaining) :output-def-syntax-id)
+             (get root :syntax-id))
+        (recur (rest remaining) (conj result (first remaining)))
+        (recur (rest remaining) result)))))
+
+(defn sh07-b51-r8-expanded-defn-selection
+  [indexes root chain trace]
+  (let [children (get root :child-form-ids)
+        value-form
+        (if (= (count children) 3)
+          (sh07-b51-r8-find-form
+           indexes (first (rest (rest children))))
+          nil)
+        def-origins
+        (sh07-b51-r8-macro-origins-by-role root :introduced-def)
+        fn-origins
+        (if (map? value-form)
+          (sh07-b51-r8-macro-origins-by-role value-form :introduced-fn)
+          [])]
+    (if (sh07-b51-exact-keys?
+         trace
+         #{:macro :input-syntax-id :output-def-syntax-id
+           :introduced-fn-syntax-id :def-generated-origin-id
+           :fn-generated-origin-id :source-revision-id :sh05-artifact-id
+           :macro-expansion-trace-id})
+      (if (= (get trace :macro) 'defn)
+        (if (= (get trace :output-def-syntax-id) (get root :syntax-id))
+          (if (map? value-form)
+            (if (= (get trace :introduced-fn-syntax-id)
+                   (get value-form :syntax-id))
+              (if (sh07-b51-r8-authenticated-list-operator?
+                   indexes value-form 'fn)
+                (if (= (get value-form :form-id)
+                       (get (first chain) :form-id))
+                  {:status :rejected :reason :fn-owner-not-strict-ancestor}
+                  (if (sh07-b51-r8-chain-contains-form?
+                       chain (get value-form :form-id))
+                    (if (= (count def-origins) 1)
+                      (if (= (count fn-origins) 1)
+                        (if (sh07-b51-r8-exact-macro-origin?
+                             (first def-origins)
+                             (get trace :def-generated-origin-id)
+                             (get trace :input-syntax-id)
+                             :introduced-def)
+                          (if (sh07-b51-r8-exact-macro-origin?
+                               (first fn-origins)
+                               (get trace :fn-generated-origin-id)
+                               (get trace :input-syntax-id)
+                               :introduced-fn)
+                            {:status :accepted :fn-form value-form}
+                            {:status :rejected :reason :fn-origin-mismatch})
+                          {:status :rejected :reason :def-origin-mismatch})
+                        {:status :rejected :reason :fn-origin-nonunique})
+                      {:status :rejected :reason :def-origin-nonunique})
+                    {:status :rejected :reason :fn-not-owner-ancestor}))
+                {:status :rejected :reason :fn-operator-unauthenticated})
+              {:status :rejected :reason :introduced-fn-mismatch})
+            {:status :rejected :reason :introduced-fn-missing})
+          {:status :rejected :reason :output-def-mismatch})
+        {:status :rejected :reason :macro-kind-mismatch})
+      {:status :rejected :reason :macro-trace-shape})))
+
+(defn sh07-b51-r8-owner-fragment-by-coordinate
+  [request owner-coordinate]
+  (loop [remaining (get request :fragment-manifest)
+         found nil count-found 0]
+    (if (= (count remaining) 0)
+      (if (= count-found 1)
+        {:status :accepted :fragment found}
+        {:status :rejected :reason :owner-fragment-coordinate})
+      (let [fragment (first remaining)]
+        (if (if (= (get fragment :fragment-id)
+                   (get owner-coordinate :fragment-id))
+              (= (get fragment :ordinal)
+                 (get owner-coordinate :fragment-ordinal))
+              false)
+          (recur (rest remaining) fragment (+ count-found 1))
+          (recur (rest remaining) found count-found))))))
+
+(defn sh07-b51-r8-authenticated-pattern-binding
+  [indexes fragment form]
+  (let [binding
+        (sh07-b51-r8-find-binding-by-definition
+         indexes (get form :syntax-id))]
+    (if (map? binding)
+      (if (= (get binding :binding-class) :lexical)
+        (if (= (get binding :name) (get form :value))
+          (if (= (get binding :definition-syntax-id)
+                 (get form :syntax-id))
+            (if (= (get binding :scope-id) (get form :scope-id))
+              (if (= (get (sh07-b51-r8-index-of
+                           (get fragment :local-binding-ids)
+                           (get binding :binding-id)) :count) 1)
+                binding
+                nil)
+              nil)
+            nil)
+          nil)
+        nil)
+      nil)))
+
+(defn sh07-b51-r8-authenticated-direct-child
+  [request indexes parent child-id]
+  (let [child (sh07-b51-r8-find-form indexes child-id)
+        listed (sh07-b51-r8-index-of (get parent :child-form-ids) child-id)
+        reciprocal
+        (sh07-b51-r8-child-membership-count
+         (get request :forms) child-id)]
+    (if (map? child)
+      (if (= (get listed :count) 1)
+        (if (= (get child :parent-form-id) (get parent :form-id))
+          (if (= (get reciprocal :count) 1)
+            (if (= (get (get reciprocal :parent) :form-id)
+                   (get parent :form-id))
+              {:status :accepted :form child}
+              {:status :rejected :reason :direct-child-parent-substitution})
+            {:status :rejected :reason :direct-child-parent-nonunique})
+          {:status :rejected :reason :direct-child-parent-mismatch})
+        {:status :rejected :reason :direct-child-list-nonunique})
+      {:status :rejected :reason :direct-child-missing})))
+
+(defn sh07-b51-r8-owner-coordinate [request form]
+  ;; Root 8 owns a separate authenticated owner walk.  It intentionally does
+  ;; not call the producer's g10 owner-coordinate selector: every parent edge,
+  ;; fragment membership, and expanded-defn trace is replayed in this closure.
+  (let [indexes (sh07-b51-r8-index-request request)
+        chain
+        (if (sh07-b51-r8-indexes-unique? indexes)
+          (sh07-b51-r8-reciprocal-parent-chain request indexes form)
+          {:status :rejected})
+        root (get chain :root)
+        selected
+        (if (= (get chain :status) :accepted)
+          (sh07-b51-r8-select-owner-fragment request root form)
+          chain)
+        fragment (get selected :fragment)
+        traces
+        (if (= (get selected :status) :accepted)
+          (sh07-b51-r8-root-macro-traces request root) [])
+        source-def?
+        (if (= (get selected :status) :accepted)
+          (sh07-b51-r8-source-def-shape?
+           request indexes root fragment (get chain :chain)) false)
+        expanded
+        (if (if source-def? (= (count traces) 1) false)
+          (sh07-b51-r8-expanded-defn-selection
+           indexes root (get chain :chain) (first traces))
+          {:status :rejected})]
+    (if (= (get selected :status) :accepted)
+      (if (= (get fragment :root-form-ids) [(get root :form-id)])
+        (if (if (= (count traces) 1)
+              (= (get expanded :status) :accepted) true)
+          {:fragment-id (get fragment :fragment-id)
+           :fragment-ordinal (get fragment :ordinal)
+           :root-form-id (get root :form-id)
+           :root-syntax-id (get root :syntax-id)
+           :owning-definition-form-id (if source-def? (get root :form-id) nil)
+           :owning-definition-syntax-id
+           (if source-def? (get root :syntax-id) nil)
+           :def-form-id (if source-def? (get root :form-id) nil)
+           :def-syntax-id (if source-def? (get root :syntax-id) nil)
+           :defn-input-syntax-id
+           (if (= (count traces) 1) (get (first traces) :input-syntax-id) nil)
+           :fn-form-id
+           (if (= (count traces) 1)
+             (get (get expanded :fn-form) :form-id) nil)
+           :fn-syntax-id
+           (if (= (count traces) 1)
+             (get (get expanded :fn-form) :syntax-id) nil)
+           :enclosing-form-id (get form :form-id)
+           :enclosing-syntax-id (get form :syntax-id)}
+          nil)
+        nil)
+      nil)))
+
+(defn sh07-b51-r8-even-vector-count? [values]
+  (if (vector? values)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (= (count remaining) 1)
+          false
+          (recur (rest (rest remaining))))))
+    false))
+
+(defn sh07-b51-r8-loop-owner-skeleton [request indexes enclosing]
+  (if (= enclosing
+         (sh07-b51-r8-find-form indexes (get enclosing :form-id)))
+    (if (sh07-b51-r8-authenticated-list-operator? indexes enclosing 'loop)
+      (let [owner-coordinate
+            (sh07-b51-r8-owner-coordinate request enclosing)
+            fragment-result
+            (if (map? owner-coordinate)
+              (sh07-b51-r8-owner-fragment-by-coordinate
+               request owner-coordinate)
+              {:status :rejected})
+            child-ids (get enclosing :child-form-ids)]
+        (if (map? owner-coordinate)
+          (if (= (get fragment-result :status) :accepted)
+            (if (sh07-b51-r8-all-unique? child-ids)
+              (if (>= (count child-ids) 3)
+                (let [binding-result
+                      (sh07-b51-r8-authenticated-direct-child
+                       request indexes enclosing (get child-ids 1))]
+                  (if (= (get binding-result :status) :accepted)
+                    (let [binding-vector (get binding-result :form)]
+                      (if (= (get binding-vector :kind) :vector)
+                        (if (sh07-b51-r8-even-vector-count?
+                             (get binding-vector :child-form-ids))
+                          {:status :accepted
+                           :owner-coordinate owner-coordinate
+                           :fragment (get fragment-result :fragment)
+                           :binding-vector binding-vector
+                           :body-child-ids
+                           (loop [index 2 result []]
+                             (if (= index (count child-ids))
+                               result
+                               (recur
+                                (+ index 1)
+                                (conj result (get child-ids index))))) }
+                          {:status :rejected
+                           :reason :loop-bindings-even-required})
+                        {:status :rejected
+                         :reason :loop-binding-vector-required}))
+                    binding-result))
+                {:status :rejected :reason :loop-body-required})
+              {:status :rejected :reason :loop-child-duplicate})
+            fragment-result)
+          {:status :rejected :reason :owner-coordinate-shape}))
+      {:status :rejected :reason :loop-operator-unauthenticated})
+    {:status :rejected :reason :loop-owner-substitution}))
+
+(defn sh07-b51-r8-let-owner-skeleton [request indexes enclosing]
+  (if (= enclosing
+         (sh07-b51-r8-find-form indexes (get enclosing :form-id)))
+    (if (sh07-b51-r8-authenticated-list-operator? indexes enclosing 'let)
+      (let [owner-coordinate
+            (sh07-b51-r8-owner-coordinate request enclosing)
+            fragment-result
+            (if (map? owner-coordinate)
+              (sh07-b51-r8-owner-fragment-by-coordinate
+               request owner-coordinate)
+              {:status :rejected})
+            child-ids (get enclosing :child-form-ids)]
+        (if (map? owner-coordinate)
+          (if (= (get fragment-result :status) :accepted)
+            (if (sh07-b51-r8-all-unique? child-ids)
+              (if (>= (count child-ids) 3)
+                (let [binding-result
+                      (sh07-b51-r8-authenticated-direct-child
+                       request indexes enclosing (get child-ids 1))]
+                  (if (= (get binding-result :status) :accepted)
+                    (let [binding-vector (get binding-result :form)]
+                      (if (= (get binding-vector :kind) :vector)
+                        (if (sh07-b51-r8-even-vector-count?
+                             (get binding-vector :child-form-ids))
+                          {:status :accepted
+                           :owner-coordinate owner-coordinate
+                           :fragment (get fragment-result :fragment)
+                           :binding-vector binding-vector
+                           :body-child-ids
+                           (loop [index 2 result []]
+                             (if (= index (count child-ids))
+                               result
+                               (recur
+                                (+ index 1)
+                                (conj result (get child-ids index))))) }
+                          {:status :rejected
+                           :reason :let-bindings-even-required})
+                        {:status :rejected
+                         :reason :let-binding-vector-required}))
+                    binding-result))
+                {:status :rejected :reason :let-body-required})
+              {:status :rejected :reason :let-child-duplicate})
+            fragment-result)
+          {:status :rejected :reason :owner-coordinate-shape}))
+      {:status :rejected :reason :let-operator-unauthenticated})
+    {:status :rejected :reason :let-owner-substitution}))
+
+(defn sh07-b51-r8-tail-parent-allows?
+  [indexes parent child-id loop-form-id]
+  (let [children (get parent :child-form-ids)
+        position (sh07-b51-r8-index-of children child-id)
+        index (get position :index)
+        last-index (- (count children) 1)]
+    (if (= (get position :count) 1)
+      (if (= (get parent :form-id) loop-form-id)
+        (= index last-index)
+        (if (sh07-b51-r8-authenticated-list-operator? indexes parent 'if)
+          (if (contains? #{3 4} (count children))
+            (if (= index 2)
+              true
+              (if (= (count children) 4)
+                (= index 3)
+                false))
+            false)
+          (if (sh07-b51-r8-authenticated-list-operator? indexes parent 'do)
+            (= index last-index)
+            (if (sh07-b51-r8-authenticated-list-operator?
+                 indexes parent 'match)
+              (loop [branch-index 3]
+                (if (> branch-index last-index)
+                  false
+                  (if (= index branch-index)
+                    true
+                    (recur (+ branch-index 2)))))
+              (if (sh07-b51-r8-authenticated-list-operator?
+                   indexes parent 'let)
+                (= index last-index)
+                false)))))
+      false)))
+
+(defn sh07-b51-r8-loop-recur-tail-authenticated?
+  [request indexes fragment recur-form loop-form]
+  (loop [current recur-form depth 0 visited #{}]
+    (if (> depth 256)
+      false
+      (let [current-id (get current :form-id)
+            parent-id (get current :parent-form-id)]
+        (if (contains? visited current-id)
+          false
+          (if (= parent-id nil)
+            false
+            (let [parent (sh07-b51-r8-find-form indexes parent-id)
+                  membership
+                  (if (map? parent)
+                    (sh07-b51-r8-index-of
+                     (get fragment :form-ids) (get parent :form-id))
+                    {:count 0})
+                  direct
+                  (if (map? parent)
+                    (sh07-b51-r8-authenticated-direct-child
+                     request indexes parent current-id)
+                    {:status :rejected})]
+              (if (map? parent)
+                (if (= (get membership :count) 1)
+                  (if (= (get direct :status) :accepted)
+                    (if (sh07-b51-r8-tail-parent-allows?
+                         indexes parent current-id (get loop-form :form-id))
+                      (if (= (get parent :form-id)
+                             (get loop-form :form-id))
+                        true
+                        (if (sh07-b51-r8-authenticated-list-operator?
+                             indexes parent 'loop)
+                          false
+                          (if (sh07-b51-r8-authenticated-list-operator?
+                               indexes parent 'fn)
+                            false
+                            (recur
+                             parent (+ depth 1) (conj visited current-id)))))
+                      false)
+                    false)
+                  false)
+                false))))))))
+
+(defn sh07-b51-r8-authenticated-form-preorder [request indexes]
+  (let [root-ids (get request :top-level-form-ids)
+        fragment-ids
+        (loop [remaining (get request :fragment-manifest) result []]
+          (if (= (count remaining) 0)
+            result
+            (recur (rest remaining)
+                   (conj result (get (first remaining) :fragment-id)))))
+        assembly-ids
+        (get (get request :module-assembly-manifest)
+             :ordered-fragment-ids)]
+    (if (sh07-b51-r8-all-unique? root-ids)
+      (if (= fragment-ids root-ids)
+        (if (= assembly-ids root-ids)
+          (loop [frontier
+                 (loop [remaining root-ids root-index 0 result []]
+                   (if (= (count remaining) 0)
+                     result
+                     (let [root
+                           (sh07-b51-r8-find-form indexes (first remaining))]
+                       (if (map? root)
+                         (recur
+                          (rest remaining) (+ root-index 1)
+                          (conj result
+                                {:form root :root? true
+                                 :occurrence-path [root-index]
+                                 :ancestry []}))
+                         [{:missing-root true}]))))
+                 seen-form-ids #{} result [] occurrence-paths []]
+            (if (= (count frontier) 0)
+              (if (= (count seen-form-ids) (count (get request :forms)))
+                {:status :accepted :forms result
+                 :occurrence-paths occurrence-paths :occurrence-aware true}
+                {:status :rejected :reason :request-form-coverage-mismatch})
+              (let [entry (first frontier)
+                    form (get entry :form)
+                    form-id (get form :form-id)
+                    ancestry (get entry :ancestry)]
+                (if (map? form)
+                  (if (= form (sh07-b51-r8-find-form indexes form-id))
+                    (if (sh07-b51-r8-vector-contains? ancestry form-id)
+                      {:status :rejected :reason :form-preorder-cycle}
+                      (if (if (get entry :root?)
+                            (= (get form :parent-form-id) nil)
+                            true)
+                        (let [children
+                              (loop [remaining-ids
+                                     (get form :child-form-ids)
+                                     child-index 0 values []]
+                                (if (= (count remaining-ids) 0)
+                                  {:status :accepted :children values}
+                                  (let [child
+                                        (sh07-b51-r8-find-form
+                                         indexes (first remaining-ids))]
+                                    (if (map? child)
+                                      (if (= (get child :parent-form-id)
+                                             form-id)
+                                        (recur
+                                         (rest remaining-ids)
+                                         (+ child-index 1)
+                                         (conj values
+                                               {:form child :root? false
+                                                :occurrence-path
+                                                (conj
+                                                 (get entry :occurrence-path)
+                                                 child-index)
+                                                :ancestry
+                                                (conj ancestry form-id)}))
+                                        {:status :rejected
+                                         :reason :form-preorder-parent})
+                                      {:status :rejected
+                                       :reason :form-preorder-child-missing}))))]
+                          (if (= (get children :status) :accepted)
+                            (recur
+                             (sh07-b51-r8-vector-append
+                              (get children :children) (rest frontier))
+                             (conj seen-form-ids form-id)
+                             (conj result form)
+                             (conj occurrence-paths
+                                   (get entry :occurrence-path)))
+                            children))
+                        {:status :rejected :reason :root-parent-nonnil}))
+                    {:status :rejected :reason :form-preorder-substitution})
+                  {:status :rejected :reason :top-level-root-missing}))))
+          {:status :rejected :reason :assembly-fragment-order-substitution})
+        {:status :rejected :reason :fragment-root-order-substitution})
+      {:status :rejected :reason :top-level-root-duplicate})))
+
+(defn sh07-b51-r8-pattern-children [request form path]
+  (loop [remaining (get form :child-form-ids)
+         child-index 0 children [] authentic? true]
+    (if (= (count remaining) 0)
+      (if authentic?
+        {:status :accepted :children children}
+        {:status :rejected :reason :pattern-child-missing
+         :partial-extractions []})
+      (let [child
+            (sh07-b51-r8-form-by-id request (first remaining))]
+        (recur
+         (rest remaining) (+ child-index 1)
+         (conj children
+               {:form child
+                :path (conj path child-index)
+                :expected-parent (get form :form-id)
+                :descendant? true})
+         (if (map? child) authentic? false))))))
+
+(defn sh07-b51-r8-pattern-leaves [request fragment pattern-form owner]
+  ;; A Root-8-only raw pattern walk.  It authenticates each form occurrence,
+  ;; reciprocal parent edge, and fragment membership while retaining binding
+  ;; leaves in preorder for the module-global resource census.
+  (loop [frontier [{:form pattern-form :path []
+                    :expected-parent nil :descendant? false}]
+         visited #{}
+         leaves []
+         first-by-name {}
+         next-node 0
+         next-terminal 0
+         next-leaf 0]
+    (if (= (count frontier) 0)
+      {:status :accepted :leaves leaves}
+      (let [entry (first frontier)
+            form (get entry :form)
+            path (get entry :path)
+            expected-parent (get entry :expected-parent)
+            descendant? (get entry :descendant?)
+            form-id (get form :form-id)
+            canonical (sh07-b51-r8-form-by-id request form-id)
+            membership
+            (sh07-b51-r8-index-of (get fragment :form-ids) form-id)]
+        (if (map? canonical)
+          (if (= form canonical)
+            (if (= (get membership :count) 1)
+              (if (contains? visited form-id)
+                {:status :rejected :reason :pattern-cycle
+                 :partial-extractions []}
+                (if (if (= expected-parent nil) true
+                        (= (get form :parent-form-id) expected-parent))
+                  (let [kind (get form :kind)
+                        value (get form :value)]
+                    (if (= kind :vector)
+                      (let [children-result
+                            (sh07-b51-r8-pattern-children request form path)
+                            children (get children-result :children)]
+                        (if (= (get children-result :status) :accepted)
+                          (recur
+                           (sh07-b51-r8-vector-append children (rest frontier))
+                           (conj visited form-id) leaves first-by-name
+                           (+ next-node 1) next-terminal next-leaf)
+                          children-result))
+                      (if (= kind :symbol)
+                        (if (if descendant? (= value '&) false)
+                          {:status :rejected
+                           :reason :unsupported-vector-rest
+                           :offending-form form :path path
+                           :owner-coordinate owner :slot-coordinate nil
+                           :partial-extractions []}
+                          (if (= value '_)
+                            (recur (rest frontier) (conj visited form-id)
+                                   leaves first-by-name (+ next-node 1)
+                                   (+ next-terminal 1) next-leaf)
+                            (if (contains? first-by-name value)
+                              {:status :rejected
+                               :reason :duplicate-vector-binding-name
+                               :check nil :offending-form form :path path
+                               :first-duplicate (get first-by-name value)
+                               :later-duplicate
+                               {:binding-name value :form-id form-id
+                                :syntax-id (get form :syntax-id)
+                                :scope-id (get form :scope-id)
+                                :source-span (get form :source-span)
+                                :generated-origin (get form :generated-origin)
+                                :path path
+                                :pattern-node-ordinal next-node
+                                :terminal-ordinal next-terminal
+                                :leaf-ordinal next-leaf}
+                               :owner-coordinate owner :slot-coordinate nil
+                               :partial-extractions []}
+                              (let [binding
+                                    (sh07-b51-r8-authenticated-pattern-binding
+                                     (sh07-b51-r8-index-request request)
+                                     fragment form)]
+                                (if (map? binding)
+                                  (recur
+                                   (rest frontier) (conj visited form-id)
+                                   (conj leaves
+                                         {:kind :binding-leaf :form form
+                                          :path path
+                                          :binding-name value})
+                                   (assoc first-by-name value
+                                          {:binding-name value :form-id form-id
+                                           :syntax-id (get form :syntax-id)
+                                           :scope-id (get form :scope-id)
+                                           :source-span (get form :source-span)
+                                           :generated-origin
+                                           (get form :generated-origin)
+                                           :path path
+                                           :pattern-node-ordinal next-node
+                                           :terminal-ordinal next-terminal
+                                           :leaf-ordinal next-leaf})
+                                   (+ next-node 1) (+ next-terminal 1)
+                                   (+ next-leaf 1))
+                                  {:status :rejected
+                                   :reason :binding-leaf-unauthenticated
+                                   :offending-form form :path path
+                                   :owner-coordinate owner
+                                   :slot-coordinate nil
+                                   :partial-extractions []})))))
+                        {:status :rejected :reason :unsupported-nested-pattern
+                         :offending-form form :path path
+                         :owner-coordinate owner :slot-coordinate nil
+                         :partial-extractions []})))
+                  {:status :rejected :reason :pattern-parent-not-reciprocal
+                   :offending-form form :path path
+                   :owner-coordinate owner :slot-coordinate nil
+                   :partial-extractions []}))
+              {:status :rejected :reason :pattern-cross-fragment
+               :offending-form form :path path :owner-coordinate owner
+               :slot-coordinate nil :partial-extractions []})
+            {:status :rejected :reason :pattern-form-substitution
+             :offending-form form :path path :owner-coordinate owner
+             :slot-coordinate nil :partial-extractions []})
+          {:status :rejected :reason :pattern-form-substitution
+           :offending-form form :path path :owner-coordinate owner
+           :slot-coordinate nil :partial-extractions []})))))
+
+(defn sh07-b51-r8-remember-deferred [deferred candidate]
+  (if (= deferred nil) candidate deferred))
+
+(defn sh07-b51-r8-resource-pattern-children
+  [request form path owner-coordinate]
+  (loop [remaining (get form :child-form-ids)
+         child-index 0 result [] missing nil]
+    (if (= (count remaining) 0)
+      {:children result :missing missing}
+      (let [child (sh07-b51-r8-form-by-id request (first remaining))]
+        (if (map? child)
+          (recur
+           (rest remaining) (+ child-index 1)
+           (conj result
+                 {:form child
+                  :path (conj path child-index)
+                  :expected-parent (get form :form-id)
+                  :descendant? true})
+           missing)
+          (recur
+           (rest remaining) (+ child-index 1) result
+           (if (= missing nil)
+             {:status :rejected
+              :reason :pattern-child-missing
+              :offending-form form :path path
+              :owner-coordinate owner-coordinate
+              :slot-coordinate nil
+              :partial-extractions []}
+             missing)))))))
+
+(defn sh07-b51-r8-resource-pattern-scan
+  [request indexes fragment pattern-form owner-coordinate]
+  ;; Root 8 performs a raw resource walk independent of every producer
+  ;; pattern/owner selector.  Defects are retained as deferred observations so
+  ;; later authenticated slots and leaves still determine resource precedence.
+  (loop [frontier [{:form pattern-form :path []
+                    :expected-parent nil :descendant? false}]
+         visited #{}
+         leaves []
+         first-by-name {}
+         deferred nil]
+    (if (= (count frontier) 0)
+      {:status :accepted :leaves leaves :deferred deferred}
+      (let [entry (first frontier)
+            form (get entry :form)
+            path (get entry :path)
+            expected-parent (get entry :expected-parent)
+            descendant? (get entry :descendant?)
+            form-id (get form :form-id)
+            canonical (sh07-b51-r8-form-by-id request form-id)
+            membership
+            (sh07-b51-r8-index-of (get fragment :form-ids) form-id)]
+        (if (map? canonical)
+          (if (= form canonical)
+            (if (= (get membership :count) 1)
+              (if (contains? visited form-id)
+                (recur (rest frontier) visited leaves first-by-name
+                       (sh07-b51-r8-remember-deferred deferred
+                        {:status :rejected :reason :resource-census-cycle
+                         :offending-form form :path path
+                         :owner-coordinate owner-coordinate
+                         :slot-coordinate nil :partial-extractions []}))
+                (if (if (= expected-parent nil) true
+                        (= (get form :parent-form-id) expected-parent))
+                  (let [kind (get form :kind)
+                        value (get form :value)]
+                    (if (= kind :symbol)
+                      (if (if descendant? (= value '&) false)
+                        (recur
+                         (rest frontier) (conj visited form-id) leaves
+                         first-by-name
+                         (sh07-b51-r8-remember-deferred deferred
+                          {:status :rejected :reason :unsupported-vector-rest
+                           :offending-form form :path path
+                           :owner-coordinate owner-coordinate
+                           :slot-coordinate nil :partial-extractions []}))
+                        (if (= value '_)
+                          (recur (rest frontier) (conj visited form-id)
+                                 leaves first-by-name deferred)
+                          (let [binding
+                                (sh07-b51-r8-authenticated-pattern-binding
+                                 indexes fragment form)
+                                earlier (get first-by-name value)
+                                occurrence
+                                {:binding-name value :form-id form-id
+                                 :syntax-id (get form :syntax-id)
+                                 :scope-id (get form :scope-id)
+                                 :source-span (get form :source-span)
+                                 :generated-origin
+                                 (get form :generated-origin)
+                                 :path path}]
+                            (if (map? binding)
+                              (recur
+                               (rest frontier) (conj visited form-id)
+                               (conj leaves
+                                     {:kind :binding-leaf :form form
+                                      :path path
+                                      :owner-coordinate owner-coordinate
+                                      :fragment fragment})
+                               (if (= earlier nil)
+                                 (assoc first-by-name value occurrence)
+                                 first-by-name)
+                               (if (map? earlier)
+                                 (sh07-b51-r8-remember-deferred deferred
+                                  {:status :rejected
+                                   :reason :duplicate-vector-binding-name
+                                   :check nil :offending-form form
+                                   :path path :first-duplicate earlier
+                                   :later-duplicate occurrence
+                                   :owner-coordinate owner-coordinate
+                                   :slot-coordinate nil
+                                   :partial-extractions []})
+                                 deferred))
+                              (recur
+                               (rest frontier) (conj visited form-id)
+                               leaves first-by-name
+                               (sh07-b51-r8-remember-deferred deferred
+                                {:status :rejected
+                                 :reason :binding-leaf-unauthenticated
+                                 :offending-form form :path path
+                                 :owner-coordinate owner-coordinate
+                                 :slot-coordinate nil
+                                 :partial-extractions []}))))))
+                      (if (= kind :vector)
+                        (let [children
+                              (sh07-b51-r8-resource-pattern-children
+                               request form path owner-coordinate)]
+                          (recur
+                           (sh07-b51-r8-vector-append
+                            (get children :children) (rest frontier))
+                           (conj visited form-id) leaves first-by-name
+                           (if (map? (get children :missing))
+                             (sh07-b51-r8-remember-deferred
+                              deferred (get children :missing))
+                             deferred)))
+                        (recur
+                         (rest frontier) (conj visited form-id) leaves
+                         first-by-name
+                         (sh07-b51-r8-remember-deferred deferred
+                          {:status :rejected
+                           :reason :unsupported-nested-pattern
+                           :offending-form form :path path
+                           :owner-coordinate owner-coordinate
+                           :slot-coordinate nil :partial-extractions []})))))
+                  (recur
+                   (rest frontier) (conj visited form-id) leaves first-by-name
+                   (sh07-b51-r8-remember-deferred deferred
+                    {:status :rejected :reason :pattern-parent-not-reciprocal
+                     :offending-form form :path path
+                     :owner-coordinate owner-coordinate
+                     :slot-coordinate nil :partial-extractions []}))))
+              (recur
+               (rest frontier) visited leaves first-by-name
+               (sh07-b51-r8-remember-deferred deferred
+                {:status :rejected :reason :pattern-cross-fragment
+                 :offending-form form :path path
+                 :owner-coordinate owner-coordinate
+                 :slot-coordinate nil :partial-extractions []})))
+            (recur
+             (rest frontier) visited leaves first-by-name
+             (sh07-b51-r8-remember-deferred deferred
+              {:status :rejected :reason :pattern-form-substitution
+               :offending-form form :path path
+               :owner-coordinate owner-coordinate
+               :slot-coordinate nil :partial-extractions []})))
+        (recur
+         (rest frontier) visited leaves first-by-name
+         (sh07-b51-r8-remember-deferred deferred
+          {:status :rejected :reason :pattern-form-substitution
+           :offending-form form :path path
+           :owner-coordinate owner-coordinate
+           :slot-coordinate nil :partial-extractions []})))))))
+
+(defn sh07-b51-r8-resource-owner-slots
+  [request indexes enclosing owner-kind]
+  (let [skeleton
+        (if (= owner-kind :let)
+          (sh07-b51-r8-let-owner-skeleton request indexes enclosing)
+          (sh07-b51-r8-loop-owner-skeleton request indexes enclosing))]
+    ;; The r8 loop/let skeleton is intentionally selected by a shared scalar
+    ;; shape only after the owner kind has been authenticated.  The independent
+    ;; helper below replays the direct raw binding-vector edge for both forms.
+    (if (= owner-kind :let)
+      (let [skeleton
+            (sh07-b51-r8-let-owner-skeleton request indexes enclosing)]
+        (if (= (get skeleton :status) :accepted)
+          (let [binding-vector (get skeleton :binding-vector)
+                child-ids (get binding-vector :child-form-ids)]
+            (loop [remaining child-ids slot-ordinal 0 result []]
+              (if (= (count remaining) 0)
+                {:status :accepted :slots result}
+                (let [pattern-result
+                      (sh07-b51-r8-authenticated-direct-child
+                       request indexes binding-vector (first remaining))
+                      initializer-result
+                      (if (> (count remaining) 1)
+                        (sh07-b51-r8-authenticated-direct-child
+                         request indexes binding-vector (first (rest remaining)))
+                        {:status :rejected :reason :resource-census-initializer})]
+                  (if (= (get pattern-result :status) :accepted)
+                    (if (= (get initializer-result :status) :accepted)
+                      (let [pattern-form (get pattern-result :form)
+                            scan
+                            (sh07-b51-r8-resource-pattern-scan
+                             request indexes (get skeleton :fragment)
+                             pattern-form (get skeleton :owner-coordinate))]
+                        (recur
+                         (rest (rest remaining)) (+ slot-ordinal 1)
+                         (conj result
+                               {:owner-coordinate
+                                (get skeleton :owner-coordinate)
+                                :fragment (get skeleton :fragment)
+                                :slot-ordinal slot-ordinal
+                                :pattern-form pattern-form
+                                :initializer-form
+                                (get initializer-result :form)
+                                :pattern-root pattern-form :path []
+                                :leaves (get scan :leaves)
+                                :deferred (get scan :deferred)})))
+                      (recur
+                       (rest (rest remaining)) (+ slot-ordinal 1)
+                       (conj result
+                             {:owner-coordinate
+                              (get skeleton :owner-coordinate)
+                              :fragment (get skeleton :fragment)
+                              :slot-ordinal slot-ordinal
+                              :pattern-form (get pattern-result :form)
+                              :initializer-form nil :pattern-root nil :path []
+                              :leaves [] :deferred initializer-result})))
+                    (recur
+                     (rest (rest remaining)) (+ slot-ordinal 1)
+                     (conj result
+                           {:owner-coordinate
+                            (get skeleton :owner-coordinate)
+                            :fragment (get skeleton :fragment)
+                            :slot-ordinal slot-ordinal :pattern-form nil
+                            :initializer-form nil :pattern-root nil :path []
+                            :leaves [] :deferred pattern-result})))))))
+          skeleton))
+      (let [skeleton
+            (sh07-b51-r8-loop-owner-skeleton request indexes enclosing)]
+        (if (= (get skeleton :status) :accepted)
+          (let [binding-vector (get skeleton :binding-vector)
+                child-ids (get binding-vector :child-form-ids)]
+            (loop [remaining child-ids slot-ordinal 0 result []]
+              (if (= (count remaining) 0)
+                {:status :accepted :slots result}
+                (let [pattern-result
+                      (sh07-b51-r8-authenticated-direct-child
+                       request indexes binding-vector (first remaining))
+                      initializer-result
+                      (if (> (count remaining) 1)
+                        (sh07-b51-r8-authenticated-direct-child
+                         request indexes binding-vector (first (rest remaining)))
+                        {:status :rejected :reason :resource-census-initializer})]
+                  (if (= (get pattern-result :status) :accepted)
+                    (if (= (get initializer-result :status) :accepted)
+                      (let [pattern-form (get pattern-result :form)
+                            scan
+                            (sh07-b51-r8-resource-pattern-scan
+                             request indexes (get skeleton :fragment)
+                             pattern-form (get skeleton :owner-coordinate))]
+                        (recur
+                         (rest (rest remaining)) (+ slot-ordinal 1)
+                         (conj result
+                               {:owner-coordinate
+                                (get skeleton :owner-coordinate)
+                                :fragment (get skeleton :fragment)
+                                :slot-ordinal slot-ordinal
+                                :pattern-form pattern-form
+                                :initializer-form
+                                (get initializer-result :form)
+                                :pattern-root pattern-form :path []
+                                :leaves (get scan :leaves)
+                                :deferred (get scan :deferred)})))
+                      (recur
+                       (rest (rest remaining)) (+ slot-ordinal 1)
+                       (conj result
+                             {:owner-coordinate
+                              (get skeleton :owner-coordinate)
+                              :fragment (get skeleton :fragment)
+                              :slot-ordinal slot-ordinal
+                              :pattern-form (get pattern-result :form)
+                              :initializer-form nil :pattern-root nil :path []
+                              :leaves [] :deferred initializer-result})))
+                    (recur
+                     (rest (rest remaining)) (+ slot-ordinal 1)
+                     (conj result
+                           {:owner-coordinate
+                            (get skeleton :owner-coordinate)
+                            :fragment (get skeleton :fragment)
+                            :slot-ordinal slot-ordinal :pattern-form nil
+                            :initializer-form nil :pattern-root nil :path []
+                            :leaves [] :deferred pattern-result})))))))
+          skeleton)))))
+
+(defn sh07-b51-r8-even-natural? [value]
+  (loop [remaining value]
+    (if (= remaining 0) true
+      (if (= remaining 1) false
+        (recur (- remaining 2))))))
+
+(defn sh07-b51-r8-owner-slot-entry [request indexes form]
+  (let [owner-kind
+        (if (sh07-b51-r8-authenticated-list-operator? indexes form 'let)
+          :let
+          (if (sh07-b51-r8-authenticated-list-operator? indexes form 'loop)
+            :loop nil))]
+    (if (= owner-kind nil)
+      {:status :accepted :slots []}
+      (let [owner-coordinate (sh07-b51-r8-owner-coordinate request form)
+            fragment-result
+            (if (map? owner-coordinate)
+              (sh07-b51-r8-owner-fragment-by-coordinate
+               request owner-coordinate)
+              {:status :rejected})
+            child-ids (get form :child-form-ids)
+            binding-result
+            (if (> (count child-ids) 1)
+              (sh07-b51-r8-authenticated-direct-child
+               request indexes form (get child-ids 1))
+              {:status :rejected})
+            binding-vector (get binding-result :form)
+            pair-ids (if (map? binding-vector)
+                       (get binding-vector :child-form-ids) [])]
+        (if (= (get fragment-result :status) :accepted)
+          (if (= (get binding-result :status) :accepted)
+            (if (if (= (get binding-vector :kind) :vector)
+                  (sh07-b51-r8-even-natural? (count pair-ids))
+                  false)
+              (loop [remaining pair-ids slot-ordinal 0 slots []]
+                (if (= (count remaining) 0)
+                  {:status :accepted :slots slots}
+                  (let [pattern-form
+                        (sh07-b51-r8-form-by-id request (first remaining))
+                        initializer-form
+                        (sh07-b51-r8-form-by-id request (first (rest remaining)))
+                        pattern-fragment
+                        (sh07-b51-r8-owner-fragment-by-coordinate
+                         request owner-coordinate)
+                        leaves
+                        (sh07-b51-r8-pattern-leaves
+                         request (get pattern-fragment :fragment)
+                         pattern-form owner-coordinate)
+                        slot
+                        {:slot-ordinal (+ slot-ordinal 1)
+                         :pattern-form pattern-form
+                         :initializer-form initializer-form
+                         :pattern-root pattern-form :path []
+                         :fragment (get pattern-fragment :fragment)
+                         :owner-coordinate owner-coordinate
+                         :leaves (get leaves :leaves)}]
+                    (if (= (get leaves :status) :accepted)
+                      (recur (rest (rest remaining)) (+ slot-ordinal 1)
+                             (conj slots slot))
+                      leaves))))
+              {:status :rejected :reason :owner-binding-vector})
+            fragment-result)
+          owner-coordinate)))))
+
+(defn sh07-b51-r8-first-governed-deferred [slots]
+  ;; Resource bounds have priority.  Only after the complete slot/leaf walk
+  ;; succeeds does Root 8 replay the first governed pattern observation in the
+  ;; same authenticated owner/slot/preorder sequence as Root 1.
+  (loop [remaining slots]
+    (if (= (count remaining) 0)
+      nil
+      (let [slot (first remaining)
+            deferred (get slot :deferred)
+            reason (get deferred :reason)]
+        (if (if (map? deferred)
+              (contains? #{:unsupported-vector-rest
+                           :unsupported-nested-pattern
+                           :duplicate-vector-binding-name}
+                         reason)
+              false)
+          (assoc deferred
+                 :pattern-root (get slot :pattern-root)
+                 :fragment (get slot :fragment)
+                 :owner-coordinate (get slot :owner-coordinate)
+                 :slot-coordinate nil
+                 :partial-extractions [])
+          (recur (rest remaining)))))))
+
+(defn sh07-b51-r8-resource-census [request]
+  ;; Root 8's resource walk is independent of the producer module collector.
+  ;; The authenticated preorder is traversed once and every let/loop owner is
+  ;; reduced to raw slots and binding leaves before a saturating bound is
+  ;; applied.
+  (let [indexes (sh07-b51-r8-index-request request)
+        preorder (sh07-b51-r8-authenticated-form-preorder request indexes)]
+    (if (= (get preorder :status) :accepted)
+      (loop [remaining (get preorder :forms)
+             owner-form-ids #{}
+             slots []]
+        (if (= (count remaining) 0)
+          (if (> (count slots) 1024)
+            {:status :rejected :reason :module-slot-limit-exceeded
+             :expected {:unit :module-slots :maximum 1024}
+             :observed {:unit :module-slots :saturating-count 1025}
+             :offender (get slots 1024)}
+            (loop [remaining-slots slots leaf-count 0]
+              (if (= (count remaining-slots) 0)
+                (let [deferred
+                      (sh07-b51-r8-first-governed-deferred slots)]
+                  (if (map? deferred)
+                    deferred
+                    {:status :accepted :slot-count (count slots)
+                     :binding-leaf-count leaf-count :slots slots}))
+                (let [slot (first remaining-slots)
+                      leaves (get slot :leaves)]
+                  (if (> (+ leaf-count (count leaves)) 2048)
+                    (let [offending
+                          (get leaves (- 2048 leaf-count))]
+                      {:status :rejected
+                       :reason :module-binding-leaf-limit-exceeded
+                       :expected {:unit :module-binding-leaves :maximum 2048}
+                       :observed {:unit :module-binding-leaves
+                                  :saturating-count 2049}
+                       :offender
+                       (assoc offending
+                              :pattern-root (get slot :pattern-root)
+                              :fragment (get slot :fragment)
+                              :owner-coordinate
+                              (get slot :owner-coordinate))})
+                    (recur (rest remaining-slots)
+                           (+ leaf-count (count leaves))))))))
+          (let [form (first remaining)
+                owner-kind
+                (if (sh07-b51-r8-authenticated-list-operator?
+                     indexes form 'let)
+                  :let
+                  (if (sh07-b51-r8-authenticated-list-operator?
+                       indexes form 'loop) :loop nil))]
+            (if (= owner-kind nil)
+              (recur (rest remaining) owner-form-ids slots)
+              (if (contains? owner-form-ids (get form :form-id))
+                {:status :rejected :reason :resource-census-owner-repeat}
+                (let [entry (sh07-b51-r8-resource-owner-slots
+                             request indexes form owner-kind)]
+                  (if (= (get entry :status) :accepted)
+                    (recur (rest remaining)
+                           (conj owner-form-ids (get form :form-id))
+                           (sh07-b51-r8-vector-append
+                            slots (get entry :slots)))
+                    entry)))))))
+      preorder)))
+
+(defn sh07-b51-r8-select-nearest-compatible-candidates [candidates]
+  (if (= (count candidates) 0)
+    {:status :accepted :selection []
+     :nearest-compatible-selection-cardinality 0}
+    (let [nearest-distance
+          (loop [remaining candidates selected nil]
+            (if (= (count remaining) 0) selected
+              (let [candidate-distance (get (first remaining) :distance)]
+                (recur
+                 (rest remaining)
+                 (if (= selected nil) candidate-distance
+                   (if (< candidate-distance selected)
+                     candidate-distance selected))))))
+          selection
+          (loop [remaining candidates result []]
+            (if (= (count remaining) 0) result
+              (recur
+               (rest remaining)
+               (if (= (get (first remaining) :distance) nearest-distance)
+                 (conj result (first remaining)) result))))]
+      (if (= (count selection) 1)
+        {:status :accepted :selection selection
+         :nearest-compatible-selection-cardinality 1}
+        {:status :rejected :reason :recur-target-selection-tie}))))
+
+(defn sh07-b51-r8-recur-target-selection
+  [request indexes fragment recur-form]
+  (loop [current recur-form distance 0 visited #{} candidates []]
+    (if (> distance 256)
+      {:status :rejected :reason :recur-target-depth}
+      (let [current-id (get current :form-id)
+            parent-id (get current :parent-form-id)]
+        (if (contains? visited current-id)
+          {:status :rejected :reason :recur-target-cycle}
+          (if (= parent-id nil)
+            (sh07-b51-r8-select-nearest-compatible-candidates candidates)
+            (let [parent (sh07-b51-r8-find-form indexes parent-id)
+                  direct
+                  (if (map? parent)
+                    (sh07-b51-r8-authenticated-direct-child
+                     request indexes parent current-id)
+                    {:status :rejected})
+                  membership
+                  (if (map? parent)
+                    (sh07-b51-r8-index-of
+                     (get fragment :form-ids) parent-id)
+                    {:count 0})]
+              (if (map? parent)
+                (if (= (get direct :status) :accepted)
+                  (if (= (get membership :count) 1)
+                    (let [target-kind
+                          (if (sh07-b51-r8-authenticated-list-operator?
+                               indexes parent 'loop)
+                            :loop
+                            (if (sh07-b51-r8-authenticated-list-operator?
+                                 indexes parent 'fn)
+                              :function nil))]
+                      (recur
+                       parent (+ distance 1) (conj visited current-id)
+                       (if (= target-kind nil) candidates
+                         (conj candidates
+                               {:target-kind target-kind
+                                :target-form parent
+                                :target-form-id (get parent :form-id)
+                                :target-id (get parent :syntax-id)
+                                :distance (+ distance 1)}))))
+                    {:status :rejected :reason :recur-target-cross-fragment})
+                  {:status :rejected :reason :recur-target-parent-edge})
+                {:status :rejected :reason :recur-target-parent-missing}))))))))
+
+(defn sh07-b51-r8-coordinate-from-form
+  [request form owner-coordinate path recur?]
+  {:form-id (get form :form-id)
+   :form-ordinal
+   (sh07-b51-r8-form-ordinal request (get form :form-id))
+   :fragment-ordinal (get owner-coordinate :fragment-ordinal)
+   :syntax-id (get form :syntax-id)
+   :source-span (get form :source-span)
+   :generated-origin-chain (get form :generated-origin)
+   :core-node-id nil
+   :owner-coordinate owner-coordinate
+   :slot-id nil
+   :extraction-id nil
+   :recur-form-id (if recur? (get form :form-id) nil)
+   :recur-syntax-id (if recur? (get form :syntax-id) nil)
+   :path path})
+
+(defn sh07-b51-r8-coordinate-from-stage [request stage]
+  (let [reason (get stage :reason)
+        recur? (contains?
+                #{:missing-recur-target :recur-arity-mismatch
+                  :recur-not-tail} reason)
+        offender (get stage :offender)
+        owner
+        (if (map? (get stage :owner-coordinate))
+          (get stage :owner-coordinate)
+          (if (map? offender) (get offender :owner-coordinate) nil))]
+    (if (= reason :duplicate-vector-binding-name)
+      (let [earlier (get stage :first-duplicate)
+            form
+            (sh07-b51-r8-form-by-id request (get earlier :form-id))]
+        (sh07-b51-r8-coordinate-from-form
+         request form owner (get earlier :path) false))
+      (let [form
+            (if (map? (get stage :offending-form))
+              (get stage :offending-form)
+              (if (map? (get offender :form))
+                (get offender :form)
+                (if (map? (get offender :pattern-form))
+                  (get offender :pattern-form)
+                  (if (map? (get offender :pattern-root))
+                    (get offender :pattern-root)
+                    (if (map? (get offender :descriptor))
+                      (sh07-b51-r8-form-by-id
+                       request (get (get offender :descriptor) :form-id))
+                      nil)))))
+            authentic-owner
+            (if (map? owner) owner
+              (sh07-b51-r8-owner-coordinate
+               request form))
+            path
+            (if recur? nil
+              (if (contains?
+                   #{:unsupported-vector-rest :unsupported-nested-pattern}
+                   reason)
+                nil
+                (if (vector? (get offender :path))
+                  (get offender :path)
+                  (if (map? (get offender :descriptor))
+                    (get (get offender :descriptor) :path)
+                    (get stage :path)))))]
+        (sh07-b51-r8-coordinate-from-form
+         request form authentic-owner path recur?)))))
+
+(defn sh07-b51-r8-recur-stage-for-form [request form]
+  (let [owner
+        (sh07-b51-r8-owner-coordinate request form)
+        indexes (sh07-b51-r8-index-request request)
+        fragment
+        (loop [remaining (get request :fragment-manifest)
+               found nil count-found 0]
+          (if (= (count remaining) 0)
+            (if (= count-found 1) found nil)
+            (if (= (get (first remaining) :fragment-id)
+                   (get owner :fragment-id))
+              (recur (rest remaining) (first remaining) (+ count-found 1))
+              (recur (rest remaining) found count-found))))
+        selected
+        (if (if (map? fragment) (map? form) false)
+          (sh07-b51-r8-recur-target-selection
+           request indexes fragment form)
+          {:status :rejected})
+        selection (get selected :selection)
+        cardinality
+        (get selected :nearest-compatible-selection-cardinality)
+        entry (if (= cardinality 1) (first selection) nil)
+        target (get entry :target-form)
+        target-kind (get entry :target-kind)
+        observed (if (map? form) (- (count (get form :child-form-ids)) 1) nil)
+        function-expected
+        (if (= target-kind :function)
+          (let [parameters
+                (sh07-b51-r8-authenticated-direct-child
+                 request indexes target
+                 (get (get target :child-form-ids) 1))]
+            (if (= (get parameters :status) :accepted)
+              (count (get (get parameters :form) :child-form-ids)) nil))
+          nil)
+        loop-skeleton
+        (if (= target-kind :loop)
+          (sh07-b51-r8-loop-owner-skeleton request indexes target)
+          {:status :rejected})
+        expected
+        (if (= target-kind :function) function-expected
+          (if (= (get loop-skeleton :status) :accepted)
+            (/ (count (get (get loop-skeleton :binding-vector)
+                           :child-form-ids)) 2)
+            nil))]
+    (if (if (= form (sh07-b51-r8-form-by-id request (get form :form-id)))
+          (= owner
+             (sh07-b51-r8-owner-coordinate
+              request form)) false)
+      (if (= cardinality 0)
+        {:status :rejected :reason :missing-recur-target
+         :offending-form form :owner-coordinate owner
+         :target-form-id nil :partial-products []}
+        (if (= cardinality 1)
+          (if (if (sh07-b51-nonnegative-integer? expected)
+                (if (= expected observed) false true) false)
+            {:status :rejected :reason :recur-arity-mismatch
+             :expected expected :observed observed
+             :offending-form form :owner-coordinate owner
+             :target-form-id (get target :form-id) :partial-products []}
+            (if (if (sh07-b51-r8-loop-recur-tail-authenticated?
+                     request indexes fragment form target) false true)
+              {:status :rejected :reason :recur-not-tail
+               :offending-form form :owner-coordinate owner
+               :target-form-id (get target :form-id) :partial-products []}
+              {:status :accepted}))
+          {:status :rejected :reason :source-integrity-mismatch}))
+      {:status :rejected :reason :source-integrity-mismatch})))
+
+(defn sh07-b51-r8-first-recur-stage [request]
+  (let [indexes (sh07-b51-r8-index-request request)]
+    (if (sh07-b51-r8-indexes-unique? indexes)
+      (loop [remaining (get request :forms)]
+        (if (= (count remaining) 0)
+          {:status :accepted}
+          (let [form (first remaining)]
+            (if (sh07-b51-r8-authenticated-list-operator?
+                 indexes form 'recur)
+              (let [stage (sh07-b51-r8-recur-stage-for-form request form)]
+                (if (= (get stage :status) :accepted)
+                  (recur (rest remaining)) stage))
+              (recur (rest remaining))))))
+      {:status :rejected :reason :source-integrity-mismatch})))
+
+(defn sh07-b51-r8-stage-from-raw [raw-carrier]
+  (let [request (get raw-carrier :authenticated-sh06-request)
+        resource (sh07-b51-r8-resource-census request)]
+    (if (= (get resource :status) :rejected)
+      resource
+      (sh07-b51-r8-first-recur-stage request))))
+
+(defn sh07-b51-r8-diagnostic-semantic
+  [kind reason coordinate expected observed related]
+  {:artifact :gravity/sh07-b51-c6-diagnostic-v18
+   :schema-version 18 :status :rejected :diagnostic-kind kind
+   :rule (sh07-b51-kind-rule kind) :severity :error
+   :stage :core-lowering :reason reason
+   :form-id (get coordinate :form-id)
+   :form-ordinal (get coordinate :form-ordinal)
+   :fragment-ordinal (get coordinate :fragment-ordinal)
+   :syntax-id (get coordinate :syntax-id)
+   :source-span (get coordinate :source-span)
+   :generated-origin-chain (get coordinate :generated-origin-chain [])
+   :core-node-id nil :owner-coordinate (get coordinate :owner-coordinate)
+   :slot-id nil :extraction-id nil
+   :recur-form-id (get coordinate :recur-form-id)
+   :recur-syntax-id (get coordinate :recur-syntax-id)
+   :path (get coordinate :path) :expected expected :observed observed
+   :related-semantic-ids related
+   :lowering-rule :sh07-b51-vector-destructuring-v18
+   :profile :meta :target :jvm
+   :remediation
+   (if (contains?
+        #{:module-slot-limit-exceeded
+          :module-binding-leaf-limit-exceeded} reason)
+     {:action :fix-source :owner :source-author
+      :required-evidence [:resource-bound :first-offending-coordinate]}
+     (sh07-b51-kind-remediation kind))
+   :fail-closed true})
+
+(defn sh07-b51-r8-recur-related-semantic-ids
+  [reason stage coordinate request]
+  (if (= reason :missing-recur-target)
+    (let [root-id (get (get coordinate :owner-coordinate) :root-form-id)]
+      (if (sh07-b51-sha256-id? root-id)
+        {:status :accepted :related-semantic-ids [root-id]}
+        {:status :rejected}))
+    (if (contains? #{:recur-arity-mismatch :recur-not-tail} reason)
+      (let [form (get stage :offending-form)
+            owner (get coordinate :owner-coordinate)
+            indexes (sh07-b51-r8-index-request request)
+            fragment
+            (loop [remaining (get request :fragment-manifest)
+                   found nil count-found 0]
+              (if (= (count remaining) 0)
+                (if (= count-found 1) found nil)
+                (if (= (get (first remaining) :fragment-id)
+                       (get owner :fragment-id))
+                  (recur (rest remaining) (first remaining) (+ count-found 1))
+                  (recur (rest remaining) found count-found))))
+            selected
+            (if (if (map? fragment) (map? form) false)
+              (sh07-b51-r8-recur-target-selection
+               request indexes fragment form)
+              {:status :rejected})
+            entry
+            (if (= (get selected
+                        :nearest-compatible-selection-cardinality) 1)
+              (first (get selected :selection)) nil)
+            target-id (get entry :target-id)]
+        (if (if (= (get entry :target-form-id)
+                   (get stage :target-form-id))
+              (sh07-b51-sha256-id? target-id) false)
+          {:status :accepted :related-semantic-ids [target-id]}
+          {:status :rejected}))
+      {:status :rejected})))
+
+(defn sh07-b51-r8-reconstruct-pending-semantic [raw-carrier supplied-semantic]
+  (let [request (get raw-carrier :authenticated-sh06-request)
+        stage (sh07-b51-r8-stage-from-raw raw-carrier)
+        reason (get stage :reason)
+        coordinate (sh07-b51-r8-coordinate-from-stage request stage)
+        recur? (contains?
+                #{:missing-recur-target :recur-arity-mismatch
+                  :recur-not-tail} reason)
+        related-result
+        (if recur?
+          (sh07-b51-r8-recur-related-semantic-ids
+           reason stage coordinate request)
+          {:status :accepted :related-semantic-ids []})
+        reconstructed
+        (if (= reason :duplicate-vector-binding-name)
+          (sh07-b51-r8-diagnostic-semantic
+           :duplicate-binding reason coordinate :unique-vector-leaf-name
+           (get (get stage :later-duplicate) :binding-name)
+           [(get (get stage :first-duplicate) :form-id)
+            (get (get stage :later-duplicate) :form-id)])
+          (if (contains?
+               #{:unsupported-vector-rest :unsupported-nested-pattern} reason)
+            (sh07-b51-r8-diagnostic-semantic
+             :lowering-gap reason coordinate
+             :legacy-symbol-or-fixed-vector-pattern
+             (if (= reason :unsupported-vector-rest)
+               :rest-marker :unsupported-form) [])
+            (if (if recur? (= (get related-result :status) :accepted) false)
+              (sh07-b51-r8-diagnostic-semantic
+               :recur-target reason coordinate
+               (if (= reason :recur-arity-mismatch)
+                 (get stage :expected)
+                 :nearest-compatible-function-or-loop-target)
+               (if (= reason :recur-arity-mismatch)
+                 (get stage :observed)
+                 (if (= reason :missing-recur-target) :missing :non-tail))
+               (get related-result :related-semantic-ids))
+              (if (contains?
+                   #{:module-slot-limit-exceeded
+                     :module-binding-leaf-limit-exceeded} reason)
+                (let [owner-coordinate (get coordinate :owner-coordinate)
+                      related-id (get owner-coordinate :root-form-id)]
+                  (if (sh07-b51-sha256-id? related-id)
+                    (sh07-b51-r8-diagnostic-semantic
+                     :verify reason coordinate (get stage :expected)
+                     (get stage :observed) [related-id])
+                    nil))
+                nil))))]
+    (if (= reconstructed supplied-semantic)
+      {:status :accepted :diagnostic-semantic-value reconstructed}
+      {:status :rejected})))
+
+(defn sh07-b51-root8-singleton-plan-exact?
+  [plan resolved-prefix semantic]
+  (if (vector? plan)
+    (if (= (count plan) 1)
+      (if (vector? resolved-prefix)
+        (if (= resolved-prefix [])
+          (let [request (first plan)
+                expected
+                {:purpose :sh07-b51-c6-diagnostic-id
+                 :preimage
+                 {:domain :gravity/sh07-b51-c6-diagnostic-id-preimage-v18
+                  :schema-version 18
+                  :diagnostic-semantic-value semantic}}]
+            (if (sh07-b51-exact-keys? request #{:purpose :preimage})
+              (if (= (get request :purpose) :sh07-b51-c6-diagnostic-id)
+                (if (sh07-b51-exact-keys?
+                     (get request :preimage)
+                     #{:domain :schema-version :diagnostic-semantic-value})
+                  (= request expected) false)
+                false)
+              false))
+          false)
+        false)
+      false)
+    false))
+
+(defn sh07-b51-finalize-rejection [raw-carrier]
+  (if (sh07-b51-raw-carrier-shape? raw-carrier)
+    (let [root1-result (sh07-b51-build-template raw-carrier)]
+      (if (sh07-b51-root1-pending-abi-authentic? root1-result)
+        (let [pending-envelope (get root1-result :value)
+              pending-result (get pending-envelope :pending-result)
+              supplied-semantic
+              (get pending-result :diagnostic-semantic-value)
+              independent
+              (sh07-b51-r8-reconstruct-pending-semantic
+               raw-carrier supplied-semantic)
+              semantic (get independent :diagnostic-semantic-value)
+              request
+              {:purpose :sh07-b51-c6-diagnostic-id
+               :preimage
+               {:domain :gravity/sh07-b51-c6-diagnostic-id-preimage-v18
+                :schema-version 18
+                :diagnostic-semantic-value semantic}}
+              singleton-plan [request]
+              resolved-prefix []]
+          (if (= (get independent :status) :accepted)
+            (if (sh07-b51-root8-singleton-plan-exact?
+                 singleton-plan resolved-prefix semantic)
+            (if (= request (get pending-result :diagnostic-id-request))
+              (let [replayed-request (first singleton-plan)
+                    hash-input
+                    {:domain :gravity/sh07-declared-digest-v1
+                     :purpose (get replayed-request :purpose)
+                     :preimage (get replayed-request :preimage)}]
+                (if (= hash-input
+                       {:domain :gravity/sh07-declared-digest-v1
+                        :purpose :sh07-b51-c6-diagnostic-id
+                        :preimage (get request :preimage)})
+                  (let [diagnostic-id
+                        (sh07-declared-digest-hash hash-input)
+                        materialized-diagnostic
+                        (assoc semantic :diagnostic-id diagnostic-id)
+                        rejected-result
+                        {:artifact :gravity/sh07-b51-rejected-result-v18
+                         :schema-version 18
+                         :status :rejected
+                         :diagnostic materialized-diagnostic}
+                        rejected-envelope
+                        {:artifact :gravity/sh07-b51-rejected-envelope-v18
+                         :schema-version 18
+                         :result rejected-result}]
+                    (if (sh07-b51-sha256-id? diagnostic-id)
+                      (sh07-b51-entrypoint-envelope
+                       :accepted :rejection-finalized
+                       {:status :accepted
+                        :purpose :sh07-b51-c6-diagnostic-id
+                        :digest-id diagnostic-id
+                        :envelope rejected-envelope})
+                      (sh07-b51-rejection-finalizer-boundary
+                       :canonical-replay-boundary)))
+                  (sh07-b51-rejection-finalizer-boundary
+                   :canonical-replay-boundary)))
+              (sh07-b51-rejection-finalizer-boundary
+               :canonical-replay-boundary))
+            (sh07-b51-rejection-finalizer-boundary
+             :canonical-replay-boundary))
+            (sh07-b51-rejection-finalizer-boundary
+             :canonical-replay-boundary)))
+        (if (sh07-b51-root1-success-abi-authentic? root1-result)
+          (sh07-b51-rejection-finalizer-boundary :not-rejected)
+          (sh07-b51-rejection-finalizer-boundary
+           :canonical-replay-boundary))))
+    (sh07-b51-rejection-finalizer-boundary :raw-carrier-shape)))

@@ -21,6 +21,99 @@
   [result]
   (= :complete (get result :status)))
 
+(defn p15-s23-path-append
+  [path suffix]
+  (loop [result (vec path) remaining suffix]
+    (if (= 0 (count remaining))
+      result
+      (recur (conj result (first remaining)) (rest remaining)))))
+
+(defn p15-s23-child-module
+  [module suffix]
+  (assoc
+   (assoc module :p15-s23-sh07-callsite-path
+          (p15-s23-path-append
+           (get module :p15-s23-sh07-callsite-path []) suffix))
+   :p15-s23-sh07-child-index-base 0))
+
+; This is independently authored in Gravity, but intentionally has the same
+; closed value algebra as the reader identity carrier.  The decorated vectors
+; make host map/set iteration irrelevant before sort-by-pr-str is applied.
+(defn p15-s23-reader-canonical-value
+  [value]
+  (if (map? value)
+    (loop [remaining (vec (keys value)) decorated []]
+      (if (= 0 (count remaining))
+        (vector :map (vec (sort-by-pr-str decorated)))
+        (let [key (first remaining)]
+          (recur
+           (rest remaining)
+           (conj decorated
+                 (vector (p15-s23-reader-canonical-value key)
+                         (p15-s23-reader-canonical-value (get value key))))))))
+    (if (set? value)
+      (loop [remaining (vec value) decorated []]
+        (if (= 0 (count remaining))
+          (vector :set (vec (sort-by-pr-str decorated)))
+          (recur
+           (rest remaining)
+           (conj decorated
+                 (p15-s23-reader-canonical-value (first remaining))))))
+      (if (vector? value)
+        (loop [remaining value result []]
+          (if (= 0 (count remaining))
+            (vector :vector result)
+            (recur
+             (rest remaining)
+             (conj result
+                   (p15-s23-reader-canonical-value (first remaining))))))
+        (if (seq? value)
+          (loop [remaining value result []]
+            (if (= 0 (count remaining))
+              (vector :list result)
+              (recur
+               (rest remaining)
+               (conj result
+                     (p15-s23-reader-canonical-value (first remaining))))))
+          value)))))
+
+(defn p15-s23-canonical-map-entries
+  [value]
+  (let [decorated
+        (loop [remaining (vec (keys value)) result []]
+          (if (= 0 (count remaining))
+            result
+            (let [key (first remaining)
+                  item (get value key)]
+              (recur
+               (rest remaining)
+               (conj result
+                     (vector
+                      (p15-s23-reader-canonical-value (vector key item))
+                      (vector key item)))))))]
+    (loop [remaining (sort-by-pr-str decorated) result []]
+      (if (= 0 (count remaining))
+        result
+        (recur (rest remaining)
+               (conj result (second (first remaining))))))))
+
+(defn p15-s23-canonical-set-items
+  [value]
+  (let [decorated
+        (loop [remaining (vec value) result []]
+          (if (= 0 (count remaining))
+            result
+            (let [item (first remaining)]
+              (recur
+               (rest remaining)
+               (conj result
+                     (vector (p15-s23-reader-canonical-value item) item))))))]
+    (loop [remaining (sort-by-pr-str decorated) result []]
+      (if (= 0 (count remaining))
+        result
+        (recur (rest remaining)
+               (conj result (second (first remaining))))))))
+
 (defn p15-s23-compile-forms
   [emitter module locals forms compiled]
   (if (= 0 (count forms))
@@ -37,7 +130,13 @@
            (get left :value))
           left))
       (let [compiled-form
-            (p15-s23-compile-expr emitter module locals (first forms))]
+            (p15-s23-compile-expr
+             emitter
+             (p15-s23-child-module
+              module
+              (vector (+ (get module :p15-s23-sh07-child-index-base 0)
+                         (count compiled))))
+             locals (first forms))]
         (if (p15-s23-compiler-complete? compiled-form)
           (p15-s23-compile-forms
            emitter module locals (rest forms)
@@ -60,11 +159,16 @@
            (get left :value))
           left))
       (let [entry (first entries)
+            entry-index (count compiled)
             compiled-key
-            (p15-s23-compile-expr emitter module locals (first entry))]
+            (p15-s23-compile-expr
+             emitter (p15-s23-child-module module (vector entry-index 0))
+             locals (first entry))]
         (if (p15-s23-compiler-complete? compiled-key)
           (let [compiled-value
-                (p15-s23-compile-expr emitter module locals (second entry))]
+                (p15-s23-compile-expr
+                 emitter (p15-s23-child-module module (vector entry-index 1))
+                 locals (second entry))]
             (if (p15-s23-compiler-complete? compiled-value)
               (p15-s23-compile-map-entries
                emitter module locals (rest entries)
@@ -88,7 +192,7 @@
       (if (map? form)
         (let [entries
               (p15-s23-compile-map-entries
-               emitter module locals (sort-by-pr-str form) [])]
+               emitter module locals (p15-s23-canonical-map-entries form) [])]
           (if (p15-s23-compiler-complete? entries)
             (p15-s23-compiler-result
              (hash-map :op (get (get collection-rules :map) :op)
@@ -97,7 +201,7 @@
         (if (set? form)
           (let [items
                 (p15-s23-compile-forms
-                 emitter module locals (sort-by-pr-str form) [])]
+                 emitter module locals (p15-s23-canonical-set-items form) [])]
             (if (p15-s23-compiler-complete? items)
               (p15-s23-compiler-result
                (hash-map :op (get (get collection-rules :set) :op)
@@ -125,10 +229,15 @@
              (get products :bindings)))
           left))
       (let [name (first bindings)
-            expression (second bindings)]
+            expression (second bindings)
+            pair-index (count compiled)]
         (if (symbol? name)
           (let [compiled-expression
-                (p15-s23-compile-expr emitter module scope expression)]
+                (p15-s23-compile-expr
+                 emitter
+                 (p15-s23-child-module
+                  module (vector 1 (+ 1 (* 2 pair-index))))
+                 scope expression)]
             (if (p15-s23-compiler-complete? compiled-expression)
               (p15-s23-compile-let-bindings
                emitter module (conj scope name) (rest (rest bindings))
@@ -148,7 +257,9 @@
         (let [binding-value (get compiled-bindings :value)
               compiled-body
               (p15-s23-compile-forms
-               emitter module (get binding-value :scope) body [])]
+               emitter
+               (assoc module :p15-s23-sh07-child-index-base 2)
+               (get binding-value :scope) body [])]
           (if (p15-s23-compiler-complete? compiled-body)
             (p15-s23-compiler-result
              (hash-map
@@ -160,6 +271,645 @@
     (p15-s23-compiler-error
      "L2-LET-BINDING" (hash-map :bindings bindings))))
 
+(defn p15-s23-compile-loop
+  [emitter module locals bindings body]
+  (if (if (vector? bindings) (even? (count bindings)) false)
+    (let [compiled-bindings
+          (p15-s23-compile-let-bindings emitter module locals bindings [])]
+      (if (p15-s23-compiler-complete? compiled-bindings)
+        (let [binding-value (get compiled-bindings :value)
+              compiled-body
+              (p15-s23-compile-forms
+               emitter
+               (assoc module :p15-s23-sh07-child-index-base 2)
+               (get binding-value :scope) body [])]
+          (if (p15-s23-compiler-complete? compiled-body)
+            (p15-s23-compiler-result
+             (hash-map
+              :op :loop
+              :bindings (get binding-value :bindings)
+              :binding-count (count (get binding-value :bindings))
+              :body (get compiled-body :value)))
+            compiled-body))
+        compiled-bindings))
+    (p15-s23-compiler-error
+     "L2-UNKNOWN-CORE-FORM" (hash-map :operator (quote loop)))))
+
+(defn p15-s23-nonnegative-path?
+  [path]
+  (if (vector? path)
+    (loop [remaining path]
+      (if (= 0 (count remaining))
+        true
+        (let [ordinal (first remaining)]
+          (if (integer? ordinal)
+            (if (<= 0 ordinal)
+              (recur (rest remaining))
+              false)
+            false))))
+    false))
+
+(defn p15-s23-external-edge-shape?
+  [edge ordinal]
+  (if (map? edge)
+    (if (= #{:ordinal :caller-module-source-id :caller-function
+             :caller-function-source-hash :callsite-path
+             :callee-module-source-id :callee-function
+             :callee-function-source-hash :arity :owner-edge :authorization}
+           (set (keys edge)))
+      (if (= ordinal (get edge :ordinal))
+        (if (p15-s23-nonnegative-path? (get edge :callsite-path))
+          (if (integer? (get edge :arity))
+            (if (<= 0 (get edge :arity))
+              (if (= :authenticated-b51-namespace-external
+                     (get edge :authorization))
+                (if (contains? #{:producer-internal :root6-internal
+                                 :root8-to-producer-interface}
+                               (get edge :owner-edge))
+                  true
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn p15-s23-external-binding-shape?
+  [binding]
+  (if (map? binding)
+    (= #{:symbol :callee-module-ordinal :callee-module
+         :callee-source-sha256 :callee-definition-source-hash
+         :arity :owner-edge}
+       (set (keys binding)))
+    false))
+
+(defn p15-s23-definition-row-shape?
+  [definition]
+  (if (map? definition)
+    (= #{:name :arity :visibility :source-hash}
+       (set (keys definition)))
+    false))
+
+(defn p15-s23-link-manifest-census-shape?
+  [manifest]
+  (if (map? manifest)
+    (let [module-source-ids (get manifest :module-source-ids)
+          edges (get manifest :edges)]
+      (if (vector? module-source-ids)
+        (if (= 7 (count module-source-ids))
+          (if (= 7 (count (set module-source-ids)))
+            (if (vector? edges)
+              ;; Attempt30's governed source walk derives 1,480 authenticated
+              ;; edges after its compact Root-1 cross-fragment boundaries. Edge
+              ;; identity, owner, binding, caller, path, and ordinal checks
+              ;; below remain the authority; this is their closed census.
+              (= 1480 (count edges))
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn p15-s23-module-descriptor-shape?
+  [descriptor manifest]
+  (if (map? descriptor)
+    (if (= #{:artifact :schema-version :module-source-id :module-ordinal
+             :module :logical-source-path :owner :source-byte-count
+             :source-sha256 :profile :target :effects :capabilities :safety
+             :definitions :exports :core-binding-count
+             :lexical-binding-count :external-bindings
+             :aggregate-binding-count :builtin-calls}
+           (set (keys descriptor)))
+      (if (= :gravity/sh07-b51-module-source-v1 (get descriptor :artifact))
+        (if (= 1 (get descriptor :schema-version))
+          (= (get descriptor :module-source-id)
+             (get (get manifest :module-source-ids)
+                  (get descriptor :module-ordinal)))
+          false)
+        false)
+      false)
+    false))
+
+(defn p15-s23-descriptor-binding-census
+  [bindings]
+  (loop [remaining bindings symbols #{} valid true]
+    (if (= 0 (count remaining))
+      (hash-map :valid valid :symbols symbols)
+      (let [binding (first remaining)
+            symbol (get binding :symbol)
+            unique (if (contains? symbols symbol) false true)]
+        (recur
+         (rest remaining) (conj symbols symbol)
+         (if valid
+           (if (p15-s23-external-binding-shape? binding) unique false)
+           false))))))
+
+(defn p15-s23-descriptor-definition-census
+  [definitions]
+  (loop [remaining definitions names #{} valid true]
+    (if (= 0 (count remaining))
+      (hash-map :valid valid :names names)
+      (let [definition (first remaining)
+            name (get definition :name)
+            unique (if (contains? names name) false true)]
+        (recur
+         (rest remaining) (conj names name)
+         (if valid
+           (if (p15-s23-definition-row-shape? definition) unique false)
+           false))))))
+
+(defn p15-s23-edge-index-callee-census
+  [index]
+  (loop [remaining (vec (keys index)) callees #{}]
+    (if (= 0 (count remaining))
+      callees
+      (let [edge (get index (first remaining))]
+        (recur (rest remaining)
+               (conj callees (get edge :callee-function)))))))
+
+(defn p15-s23-edge-index-callers-defined?
+  [index definition-names]
+  (loop [remaining (vec (keys index))]
+    (if (= 0 (count remaining))
+      true
+      (let [edge (get index (first remaining))]
+        (if (contains? definition-names (get edge :caller-function))
+          (recur (rest remaining))
+          false)))))
+
+(defn p15-s23-descriptor-tables-authentic?
+  [descriptor index]
+  (let [bindings
+        (p15-s23-descriptor-binding-census
+         (get descriptor :external-bindings))
+        definitions
+        (p15-s23-descriptor-definition-census
+         (get descriptor :definitions))]
+    (if (get bindings :valid)
+      (if (get definitions :valid)
+        (if (= (get bindings :symbols)
+               (p15-s23-edge-index-callee-census index))
+          (p15-s23-edge-index-callers-defined?
+           index (get definitions :names))
+          false)
+        false)
+      false)))
+
+(defn p15-s23-build-external-edge-index
+  [descriptor manifest]
+  (if (p15-s23-link-manifest-census-shape? manifest)
+    (if (p15-s23-module-descriptor-shape? descriptor manifest)
+      (loop [remaining (get manifest :edges)
+             ordinal 0 index (hash-map) seen #{}]
+        (if (= 0 (count remaining))
+          (if (p15-s23-descriptor-tables-authentic? descriptor index)
+            (p15-s23-compiler-result index)
+            (p15-s23-compiler-error
+             "L2-UNKNOWN-CORE-FORM"
+             (hash-map :reason :unauthenticated-b51-external-link)))
+          (let [edge (first remaining)
+                identity
+                (vector (get edge :caller-module-source-id)
+                        (get edge :caller-function)
+                        (get edge :callsite-path))]
+            (if (p15-s23-external-edge-shape? edge ordinal)
+              (if (contains? seen identity)
+                (p15-s23-compiler-error
+                 "L2-UNKNOWN-CORE-FORM"
+                 (hash-map :reason :unauthenticated-b51-external-link))
+                (recur
+                 (rest remaining) (+ ordinal 1)
+                 (if (= (get descriptor :module-source-id)
+                        (get edge :caller-module-source-id))
+                   (assoc index
+                          (vector (get edge :caller-function)
+                                  (get edge :callsite-path))
+                          edge)
+                   index)
+                 (conj seen identity)))
+              (p15-s23-compiler-error
+               "L2-UNKNOWN-CORE-FORM"
+               (hash-map :reason :unauthenticated-b51-external-link))))))
+      (p15-s23-compiler-error
+       "L2-UNKNOWN-CORE-FORM"
+       (hash-map :reason :unauthenticated-b51-external-link)))
+    (p15-s23-compiler-error
+     "L2-UNKNOWN-CORE-FORM"
+     (hash-map :reason :unauthenticated-b51-external-link))))
+
+(defn p15-s23-scan-external-edges
+  [edges descriptor caller callee arity path]
+  (loop [remaining edges ordinal 0 selected nil matches 0 valid true seen #{}]
+    (if (= 0 (count remaining))
+      (hash-map :valid valid :selected selected :matches matches)
+      (let [edge (first remaining)
+            row-valid (p15-s23-external-edge-shape? edge ordinal)
+            identity
+            (vector (get edge :caller-module-source-id)
+                    (get edge :caller-function)
+                    (get edge :callsite-path))
+            unique (if (contains? seen identity) false true)
+            match
+            (if row-valid
+              (if (= (get descriptor :module-source-id)
+                     (get edge :caller-module-source-id))
+                (if (= caller (get edge :caller-function))
+                  (if (= callee (get edge :callee-function))
+                    (if (= arity (get edge :arity))
+                      (= path (get edge :callsite-path))
+                      false)
+                    false)
+                  false)
+                false)
+              false)]
+        (recur (rest remaining) (+ ordinal 1)
+               (if match edge selected)
+               (if match (+ matches 1) matches)
+               (if valid (if row-valid unique false) false)
+               (conj seen identity))))))
+
+(defn p15-s23-scan-external-bindings
+  [bindings edge callee]
+  (loop [remaining bindings selected nil matches 0 valid true seen #{}]
+    (if (= 0 (count remaining))
+      (hash-map :valid valid :selected selected :matches matches)
+      (let [binding (first remaining)
+            row-valid (p15-s23-external-binding-shape? binding)
+            unique (if (contains? seen (get binding :symbol)) false true)
+            match
+            (if row-valid
+              (if (= callee (get binding :symbol))
+                (if (= (get edge :callee-function-source-hash)
+                       (get binding :callee-definition-source-hash))
+                  (if (= (get edge :arity) (get binding :arity))
+                    (= (get edge :owner-edge) (get binding :owner-edge))
+                    false)
+                  false)
+                false)
+              false)]
+        (recur (rest remaining)
+               (if match binding selected)
+               (if match (+ matches 1) matches)
+               (if valid (if row-valid unique false) false)
+               (conj seen (get binding :symbol)))))))
+
+(defn p15-s23-scan-definition-rows
+  [definitions caller source-hash]
+  (loop [remaining definitions selected nil matches 0 valid true seen #{}]
+    (if (= 0 (count remaining))
+      (hash-map :valid valid :selected selected :matches matches)
+      (let [definition (first remaining)
+            row-valid (p15-s23-definition-row-shape? definition)
+            unique (if (contains? seen (get definition :name)) false true)
+            match
+            (if row-valid
+              (if (= caller (get definition :name))
+                (= source-hash (get definition :source-hash))
+                false)
+              false)]
+        (recur (rest remaining)
+               (if match definition selected)
+               (if match (+ matches 1) matches)
+               (if valid (if row-valid unique false) false)
+               (conj seen (get definition :name)))))))
+
+(defn p15-s23-selected-edge-authentic?
+  [edge descriptor caller callee arity path]
+  (if (map? edge)
+    (if (= (get descriptor :module-source-id)
+           (get edge :caller-module-source-id))
+      (if (= caller (get edge :caller-function))
+        (if (= callee (get edge :callee-function))
+          (if (= arity (get edge :arity))
+            (if (= path (get edge :callsite-path))
+              (if (= :r1-producer (get descriptor :owner))
+                (= :producer-internal (get edge :owner-edge))
+                (if (= :r6-independent-verifier (get descriptor :owner))
+                  (= :root6-internal (get edge :owner-edge))
+                  (if (= :r8-finalizer (get descriptor :owner))
+                    (= :root8-to-producer-interface (get edge :owner-edge))
+                    false)))
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn p15-s23-external-call-descriptor
+  [module caller callee arity path]
+  (let [descriptor (get module :p15-s23-sh07-module-source-descriptor)
+        manifest (get module :p15-s23-sh07-link-manifest)
+        edge-index (get module :p15-s23-sh07-external-edge-index)
+        indexed-edge (if (map? edge-index)
+                       (get edge-index (vector caller path)) nil)
+        edge-scan
+        (if (map? edge-index)
+          (hash-map :valid true :selected indexed-edge
+                    :matches (if (= nil indexed-edge) 0 1))
+          (p15-s23-scan-external-edges
+           (get manifest :edges) descriptor caller callee arity path))
+        edge (get edge-scan :selected)]
+    (if (p15-s23-module-descriptor-shape? descriptor manifest)
+      (if (= #{:artifact :schema-version :manifest-id
+               :module-source-ids :edges}
+             (set (keys manifest)))
+        (if (= :gravity/sh07-b51-link-manifest-v1 (get manifest :artifact))
+          (if (= 1 (get manifest :schema-version))
+            (if (p15-s23-link-manifest-census-shape? manifest)
+              (if (get edge-scan :valid)
+                (if (= 1 (get edge-scan :matches))
+                  (if (p15-s23-selected-edge-authentic?
+                       edge descriptor caller callee arity path)
+                    (let [binding-scan
+                          (p15-s23-scan-external-bindings
+                           (get descriptor :external-bindings) edge callee)
+                          definition-scan
+                          (p15-s23-scan-definition-rows
+                           (get descriptor :definitions) caller
+                           (get edge :caller-function-source-hash))]
+                      (if (get binding-scan :valid)
+                        (if (= 1 (get binding-scan :matches))
+                          (if (get definition-scan :valid)
+                            (if (= 1 (get definition-scan :matches))
+                              (hash-map
+                               :artifact :gravity/sh07-b51-external-call-v1
+                               :manifest-id (get manifest :manifest-id)
+                               :edge-ordinal (get edge :ordinal))
+                              nil)
+                            nil)
+                          nil)
+                        nil))
+                    nil)
+                  nil)
+                nil)
+              nil)
+            nil)
+          nil)
+        nil)
+      nil)))
+
+(defn p15-s23-internal-builtin-arity
+  [callee]
+  (if (= callee (quote sh07-canonical-text-compare))
+    2
+    (if (= callee (quote sh07-declared-digest-hash))
+      1
+      (if (= callee (quote sh07-observe-utf8-byte-count))
+        3
+        (if (= callee
+               (quote sh07-b51-admitted-executable-carrier-validation?))
+          1
+          nil)))))
+
+(defn p15-s23-internal-builtin-caller-governed?
+  [callee caller]
+  (if (= callee (quote sh07-canonical-text-compare))
+    (contains? (quote #{sh07-b51-producer-insert-decoration
+                        sh07-b51-r6-decoration-insert})
+               caller)
+    (if (= callee (quote sh07-observe-utf8-byte-count))
+      (contains? (quote #{sh07-b51-producer-observe-decoration-bytes
+                          sh07-b51-r6-observe-scalar-bytes})
+                 caller)
+      (if (= callee (quote sh07-declared-digest-hash))
+        (contains?
+         (quote #{sh07-b51-success-digest-replay-exact?
+           sh07-b51-finalize-rejection
+           sh07-b51-producer-decimal-admission
+           sh07-b51-producer-decimal-projection-authentic?
+           sh07-b51-r6-replay-digests
+           sh07-b51-r6-decimal-projection-authentic?
+           sh07-b51-r6-predecessor-closure-authentic?
+           sh07-b51-r6-projection-binding
+           sh07-b51-r6-projected-form-id
+           sh07-b51-r6-projected-syntax-id
+           sh07-b51-r6-project-decimal
+           sh07-b51-r6-projected-macro-traces
+           sh07-b51-r6-project-lineage
+           sh07-b51-r6-replay-consume-scope
+           sh07-b51-r6-replay-reference
+           sh07-b51-r6-project-forms
+           sh07-b51-r6-project-definition-syntax-id
+           sh07-b51-r6-project-scope-catalog
+           sh07-b51-r6-project-bindings
+           sh07-b51-r6-v18-executable-authentic?})
+        caller)
+        (if (= callee
+               (quote sh07-b51-admitted-executable-carrier-validation?))
+          (contains?
+           (quote #{sh07-b51-root1-admitted-raw-carrier-shape?
+                    sh07-b51-r6-c30-request-proof?})
+           caller)
+          false)))))
+
+(defn p15-s23-builtin-call-row-shape?
+  [row]
+  (if (map? row)
+    (= #{:caller :caller-function-source-hash :builtin :arity
+         :compiler-internal?}
+       (set (keys row)))
+    false))
+
+(defn p15-s23-scan-internal-builtin-rows
+  [rows caller callee arity function-source-hash]
+  (if (vector? rows)
+    (loop [remaining rows matches 0 valid true]
+      (if (= 0 (count remaining))
+        (hash-map :valid valid :matches matches)
+        (let [row (first remaining)
+              shape (p15-s23-builtin-call-row-shape? row)
+              same-call
+              (if shape
+                (if (= caller (get row :caller))
+                  (= callee (get row :builtin))
+                  false)
+                false)
+              authentic
+              (if same-call
+                (if (= arity (get row :arity))
+                  (if (= function-source-hash
+                         (get row :caller-function-source-hash))
+                    (= true (get row :compiler-internal?))
+                    false)
+                  false)
+                true)]
+          (recur (rest remaining)
+                 (if same-call (+ matches 1) matches)
+                 (if valid (if shape authentic false) false)))))
+    (hash-map :valid false :matches 0)))
+
+(defn p15-s23-internal-call-occurrence-count
+  [definition callee]
+  (loop [pending (vector (get definition :body))
+         observed 0
+         matches 0]
+    (if (> observed 8388608)
+      -1
+      (if (= 0 (count pending))
+        matches
+        (let [value (first pending)
+              quoted
+              (if (seq? value)
+                (= (quote quote) (first value))
+                false)
+              children
+              (if quoted
+                []
+                (if (map? value)
+                  (loop [entries (p15-s23-canonical-map-entries value)
+                         result []]
+                    (if (= 0 (count entries))
+                      result
+                      (let [entry (first entries)]
+                        (recur (rest entries)
+                               (conj (conj result (first entry))
+                                     (second entry))))))
+                  (if (set? value)
+                    (p15-s23-canonical-set-items value)
+                    (if (if (vector? value) true (seq? value))
+                      (vec value)
+                      []))))
+              matched
+              (if (seq? value)
+                (if (= callee (first value)) 1 0)
+                0)]
+          (recur (p15-s23-path-append (vec (rest pending)) children)
+                 (+ observed 1)
+                 (+ matches matched)))))))
+
+(defn p15-s23-value-at-callsite-path
+  [definition path]
+  (loop [value (get definition :body) remaining path]
+    (if (= 0 (count remaining))
+      value
+      (let [ordinal (first remaining)
+            children
+            (if (map? value)
+              (p15-s23-canonical-map-entries value)
+              (if (set? value)
+                (p15-s23-canonical-set-items value)
+                (if (if (vector? value) true (seq? value))
+                  (vec value)
+                  [])))]
+        (if (integer? ordinal)
+          (if (<= 0 ordinal)
+            (if (< ordinal (count children))
+              (recur (get children ordinal) (rest remaining))
+              nil)
+            nil)
+          nil)))))
+
+(defn p15-s23-internal-callsite-authentic?
+  [definition path callee arity]
+  (let [value (p15-s23-value-at-callsite-path definition path)]
+    (if (seq? value)
+      (if (= callee (first value))
+        (= arity (- (count value) 1))
+        false)
+      false)))
+
+(defn p15-s23-internal-call-provenance
+  [module caller callee arity path]
+  (let [descriptor (get module :p15-s23-sh07-module-source-descriptor)
+        manifest (get module :p15-s23-sh07-link-manifest)
+        authority (get module :p15-s23-sh07-source-authority)
+        definition (get module :p15-s23-sh07-enclosing-definition)
+        function-source-hash
+        (get (get authority :function-source-hashes) caller)
+        definition-scan
+        (p15-s23-scan-definition-rows
+         (get descriptor :definitions) caller function-source-hash)
+        builtin-scan
+        (p15-s23-scan-internal-builtin-rows
+         (get descriptor :builtin-calls) caller callee arity
+         function-source-hash)
+        source-occurrences
+        (p15-s23-internal-call-occurrence-count definition callee)]
+    (if (= #{:artifact :manifest-id :module-source-id :source-sha256
+             :function-source-hashes :module :logical-source-path}
+           (set (keys authority)))
+      (if (= :gravity/sh07-compiler-source-authority-v2
+             (get authority :artifact))
+        (if (p15-s23-module-descriptor-shape? descriptor manifest)
+          (if (= (get manifest :manifest-id) (get authority :manifest-id))
+            (if (= (get descriptor :module-source-id)
+                   (get authority :module-source-id))
+              (if (= (get descriptor :source-sha256)
+                     (get authority :source-sha256))
+                (if (= (get descriptor :module) (get authority :module))
+                  (if (= (get descriptor :logical-source-path)
+                         (get authority :logical-source-path))
+                    (if (p15-s23-internal-builtin-caller-governed?
+                         callee caller)
+                      (if (p15-s23-internal-callsite-authentic?
+                           definition path callee arity)
+                        (if (get definition-scan :valid)
+                          (if (= 1 (get definition-scan :matches))
+                            (if (get builtin-scan :valid)
+                              (if (= source-occurrences
+                                     (get builtin-scan :matches))
+                                (if (< 0 source-occurrences)
+                                (hash-map
+                                 :artifact
+                                 :gravity/sh07-compiler-internal-call-provenance-v2
+                                 :manifest-id (get manifest :manifest-id)
+                                 :module-source-id
+                                 (get descriptor :module-source-id)
+                                 :source-sha256 (get descriptor :source-sha256)
+                                 :function caller
+                                 :function-source-hash function-source-hash
+                                 :callee callee)
+                                nil)
+                                nil)
+                              nil)
+                            nil)
+                          nil)
+                        nil)
+                      nil)
+                    nil)
+                  nil)
+                nil)
+              nil)
+            nil)
+          nil)
+        nil)
+      nil)))
+
+(defn p15-s23-compile-internal-builtin-call
+  [emitter module locals callee arguments expected-arity]
+  (if (= expected-arity (count arguments))
+    (let [caller (get module :p15-s23-sh07-enclosing-function)
+          provenance
+          (p15-s23-internal-call-provenance
+           module caller callee expected-arity
+           (get module :p15-s23-sh07-callsite-path []))]
+      (if (= nil provenance)
+        (p15-s23-compiler-error
+         "L2-UNKNOWN-CORE-FORM"
+         (hash-map :operator callee
+                   :reason :unauthenticated-compiler-provenance))
+        (let [args
+              (p15-s23-compile-forms
+               emitter (assoc module :p15-s23-sh07-child-index-base 1)
+               locals arguments [])]
+          (if (p15-s23-compiler-complete? args)
+            (p15-s23-compiler-result
+             (hash-map
+              :op (get (get emitter :call-rules) :builtin-op)
+              :function callee
+              :compiler-internal-caller caller
+              :compiler-internal-provenance provenance
+              :args (get args :value)))
+            args))))
+    (p15-s23-compiler-error
+     "L2-BUILTIN-ARITY"
+     (hash-map :function callee
+               :expected-arity expected-arity
+               :actual-arity (count arguments)))))
+
 (defn p15-s23-compile-call
   [emitter module locals form]
   (let [callee (first form)
@@ -167,9 +917,13 @@
         special-rules (get emitter :special-form-rules)
         special-rule (get special-rules callee)
         call-rules (get emitter :call-rules)
-        builtin-functions (set (get call-rules :builtin-functions))]
+        builtin-functions (set (get call-rules :builtin-functions))
+        internal-arity (p15-s23-internal-builtin-arity callee)]
     (if (= callee (quote println))
-      (let [args (p15-s23-compile-forms emitter module locals arguments [])]
+      (let [args
+            (p15-s23-compile-forms
+             emitter (assoc module :p15-s23-sh07-child-index-base 1)
+             locals arguments [])]
         (if (p15-s23-compiler-complete? args)
           (p15-s23-compiler-result
            (hash-map :op (get special-rule :op)
@@ -178,47 +932,77 @@
                      :args (get args :value)))
           args))
       (if (= callee (quote do))
-        (let [body (p15-s23-compile-forms emitter module locals arguments [])]
+        (let [body
+              (p15-s23-compile-forms
+               emitter (assoc module :p15-s23-sh07-child-index-base 1)
+               locals arguments [])]
           (if (p15-s23-compiler-complete? body)
             (p15-s23-compiler-result
              (hash-map :op (get special-rule :op)
                        :body (get body :value)))
             body))
         (if (= callee (quote if))
-          (let [test-result
-                (p15-s23-compile-expr emitter module locals (second form))]
-            (if (p15-s23-compiler-complete? test-result)
-              (let [then-result
-                    (p15-s23-compile-expr
-                     emitter module locals (first (rest (rest form))))]
-                (if (p15-s23-compiler-complete? then-result)
-                  (let [else-result
-                        (p15-s23-compile-expr
-                         emitter module locals
-                         (first (rest (rest (rest form)))))]
-                    (if (p15-s23-compiler-complete? else-result)
-                      (p15-s23-compiler-result
-                       (hash-map :op (get special-rule :op)
-                                 :test (get test-result :value)
-                                 :then (get then-result :value)
-                                 :else (get else-result :value)))
-                      else-result))
-                  then-result))
-              test-result))
+          (if (= 4 (count form))
+            (let [test-result
+                  (p15-s23-compile-expr
+                   emitter (p15-s23-child-module module [1])
+                   locals (second form))]
+              (if (p15-s23-compiler-complete? test-result)
+                (let [then-result
+                      (p15-s23-compile-expr
+                       emitter (p15-s23-child-module module [2])
+                       locals (first (rest (rest form))))]
+                  (if (p15-s23-compiler-complete? then-result)
+                    (let [else-result
+                          (p15-s23-compile-expr
+                           emitter (p15-s23-child-module module [3])
+                           locals (first (rest (rest (rest form)))))]
+                      (if (p15-s23-compiler-complete? else-result)
+                        (p15-s23-compiler-result
+                         (hash-map :op (get special-rule :op)
+                                   :test (get test-result :value)
+                                   :then (get then-result :value)
+                                   :else (get else-result :value)))
+                        else-result))
+                    then-result))
+                test-result))
+            (p15-s23-compiler-error
+             "L2-UNKNOWN-CORE-FORM"
+             (hash-map :operator (quote if)
+                       :expected-arity 3
+                       :actual-arity (- (count form) 1))))
           (if (= callee (quote let))
             (p15-s23-compile-let
              emitter module locals (second form) (rest (rest form)))
-            (if (= callee (quote quote))
-              (p15-s23-compiler-result
-               (hash-map :op (get special-rule :op) :value (second form)))
-              (if (= callee (quote host-reflect))
+            (if (= callee (quote loop))
+              (p15-s23-compile-loop
+               emitter module locals (second form) (rest (rest form)))
+              (if (= callee (quote recur))
+                (let [args
+                      (p15-s23-compile-forms
+                       emitter
+                       (assoc module :p15-s23-sh07-child-index-base 1)
+                       locals arguments [])]
+                  (if (p15-s23-compiler-complete? args)
+                    (p15-s23-compiler-result
+                     (hash-map :op :recur :args (get args :value)))
+                    args))
+                (if (= callee (quote quote))
+                  (p15-s23-compiler-result
+                   (hash-map :op (get special-rule :op) :value (second form)))
+                  (if (= callee (quote host-reflect))
                 (p15-s23-compiler-error
                  (get special-rule :diagnostic)
                  (hash-map :operator callee))
-                (if (contains? builtin-functions callee)
+                (if (integer? internal-arity)
+                  (p15-s23-compile-internal-builtin-call
+                   emitter module locals callee arguments internal-arity)
+                  (if (contains? builtin-functions callee)
                   (let [args
                         (p15-s23-compile-forms
-                         emitter module locals arguments [])]
+                         emitter
+                         (assoc module :p15-s23-sh07-child-index-base 1)
+                         locals arguments [])]
                     (if (p15-s23-compiler-complete? args)
                       (p15-s23-compiler-result
                        (hash-map :op (get call-rules :builtin-op)
@@ -228,16 +1012,40 @@
                   (if (contains? (get module :function-table) callee)
                     (let [args
                           (p15-s23-compile-forms
-                           emitter module locals arguments [])]
+                           emitter
+                           (assoc module :p15-s23-sh07-child-index-base 1)
+                           locals arguments [])]
                       (if (p15-s23-compiler-complete? args)
                         (p15-s23-compiler-result
                          (hash-map :op (get call-rules :function-op)
                                    :function callee
                                    :args (get args :value)))
                         args))
-                    (p15-s23-compiler-error
-                     (get call-rules :unknown-callee-diagnostic)
-                     (hash-map :operator callee))))))))))))
+                    (let [external-link
+                          (p15-s23-external-call-descriptor
+                           module
+                           (get module :p15-s23-sh07-enclosing-function)
+                           callee (count arguments)
+                           (get module :p15-s23-sh07-callsite-path []))]
+                      (if (= nil external-link)
+                        (p15-s23-compiler-error
+                         (get call-rules :unknown-callee-diagnostic)
+                         (hash-map :operator callee
+                                   :reason :unauthenticated-b51-external-link))
+                        (let [args
+                              (p15-s23-compile-forms
+                               emitter
+                               (assoc module
+                                      :p15-s23-sh07-child-index-base 1)
+                               locals arguments [])]
+                          (if (p15-s23-compiler-complete? args)
+                            (p15-s23-compiler-result
+                             (hash-map
+                              :op (get call-rules :function-op)
+                              :function callee
+                              :args (get args :value)
+                              :external-link external-link))
+                            args)))))))))))))))))
 
 (defn p15-s23-compile-expr
   [emitter module locals form]
@@ -260,8 +1068,16 @@
   (let [name (get definition :name)
         params (get definition :params)
         body (get definition :body)
+        compile-module
+        (assoc
+         (assoc
+          (assoc module :p15-s23-sh07-enclosing-function name)
+          :p15-s23-sh07-enclosing-definition definition)
+         :p15-s23-sh07-callsite-path [])
         compiled-body
-        (p15-s23-compile-forms emitter module (set params) body [])]
+        (p15-s23-compile-forms
+         emitter (assoc compile-module :p15-s23-sh07-child-index-base 0)
+         (set params) body [])]
     (if (p15-s23-compiler-complete? compiled-body)
       (let [exports (get module :exports)
             visibility
@@ -376,7 +1192,7 @@
                    (get instruction :else) (get then-summary :value))
                   then-summary))
               test-summary))
-          (if (= op :let)
+          (if (contains? #{:let :loop} op)
             (let [binding-summary
                   (p15-s23-summary-let-bindings
                    (get instruction :bindings) counted)]
@@ -384,20 +1200,22 @@
                 (p15-s23-summary-instructions
                  (get instruction :body) (get binding-summary :value))
                 binding-summary))
-            (if (= op :builtin-call)
+            (if (= op :recur)
               (p15-s23-summary-instructions (get instruction :args) counted)
-              (if (= op :function-call)
+              (if (= op :builtin-call)
                 (p15-s23-summary-instructions (get instruction :args) counted)
-                (if (= op :vector-literal)
-                  (p15-s23-summary-instructions
-                   (get instruction :items) counted)
-                  (if (= op :set-literal)
+                (if (= op :function-call)
+                  (p15-s23-summary-instructions (get instruction :args) counted)
+                  (if (= op :vector-literal)
                     (p15-s23-summary-instructions
                      (get instruction :items) counted)
-                    (if (= op :map-literal)
-                      (p15-s23-summary-map-entries
-                       (get instruction :entries) counted)
-                      (p15-s23-compiler-result counted))))))))))))
+                    (if (= op :set-literal)
+                      (p15-s23-summary-instructions
+                       (get instruction :items) counted)
+                      (if (= op :map-literal)
+                        (p15-s23-summary-map-entries
+                         (get instruction :entries) counted)
+                        (p15-s23-compiler-result counted)))))))))))))
 
 (defn p15-s23-assemble-functions
   [emitter module definitions functions bindings summary]
@@ -444,36 +1262,55 @@
               function-summary))
           compiled-function)))))
 
+(defn p15-s23-complete-plan-products
+  [module products entrypoint]
+  (p15-s23-compiler-result
+   (assoc products
+          :entrypoint entrypoint
+          :effect-summary
+          (hash-map
+           :declared (get module :effects)
+           :inferred
+           (if (> (get (get products :instruction-summary) :println 0) 0)
+             #{:io/write}
+             #{})
+           :capabilities (get module :capabilities)))))
+
 (defn p15-s23-assemble-plan-products
   [emitter module definitions]
-  (let [assembled
-        (p15-s23-assemble-functions
-         emitter module definitions (hash-map) [] (hash-map))]
-    (if (p15-s23-compiler-complete? assembled)
-      (let [products (get assembled :value)
+  (let [descriptor (get module :p15-s23-sh07-module-source-descriptor)
+        external-index
+        (if (= nil descriptor)
+          (p15-s23-compiler-result (hash-map))
+          (p15-s23-build-external-edge-index
+           descriptor (get module :p15-s23-sh07-link-manifest)))]
+    (if (p15-s23-compiler-complete? external-index)
+      (let [compile-module
+            (if (= nil descriptor)
+              module
+              (assoc module :p15-s23-sh07-external-edge-index
+                     (get external-index :value)))
+            assembled
+            (p15-s23-assemble-functions
+             emitter compile-module definitions (hash-map) [] (hash-map))]
+        (if (p15-s23-compiler-complete? assembled)
+          (let [products (get assembled :value)
             entrypoint (get (get emitter :plan-shape) :entrypoint)
             main-function (get (get products :functions) entrypoint)]
-        (if (= nil main-function)
-          (p15-s23-compiler-error
-           "L3-UNKNOWN-ALIAS" (hash-map :entrypoint entrypoint))
-          (if (> (count (get main-function :params)) 0)
+            (if (= nil main-function)
+              (if (= nil descriptor)
+                (p15-s23-compiler-error
+                 "L3-UNKNOWN-ALIAS" (hash-map :entrypoint entrypoint))
+                (p15-s23-complete-plan-products
+                 compile-module products nil))
+              (if (> (count (get main-function :params)) 0)
             (p15-s23-compiler-error
              "L2-MAIN-ARITY"
              (hash-map :params (get main-function :params)))
-            (p15-s23-compiler-result
-             (assoc products
-                    :entrypoint entrypoint
-                    :effect-summary
-                    (hash-map
-                     :declared (get module :effects)
-                     :inferred
-                     (if (> (get (get products :instruction-summary)
-                                 :println 0)
-                            0)
-                       #{:io/write}
-                       #{})
-                     :capabilities (get module :capabilities)))))))
-      assembled)))
+                (p15-s23-complete-plan-products
+                 compile-module products entrypoint))))
+          assembled))
+      external-index)))
 
 (defn main
   []

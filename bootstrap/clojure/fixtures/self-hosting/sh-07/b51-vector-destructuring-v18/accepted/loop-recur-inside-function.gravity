@@ -1,0 +1,14 @@
+; The loop shadows the function as the nearest recur target.
+(ns self-hosting.sh07-b51-v18.loop-recur-inside-function
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (loop [[value] input]
+    (if (< value 1)
+      (recur [(+ value 1)])
+      value)))

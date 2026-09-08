@@ -18,7 +18,7 @@
 (def sh03-reader-expected-source-content-hash
   "sha256:bd262c746ad88d9213e4b3160943fecde948c5ceee12a65dfe67ffb29d4e5b77")
 (def sh03-reader-expected-plan-semantic-hash
-  "sha256:25689f7c0bf9c1872aab4f3e41ac930efdf8c350231b14b2573e23a6d76fc475")
+  "sha256:c6ef36bdf9616b97ff92ded8786b21eab1f2f94075a87aa96f59b8e7d710b3f2")
 (def sh03-reader-expected-functions-semantic-hash
   "sha256:2e7bd1504df9cac0451d391f4f20cd5fac524e4f289289d136ac43f279f759cb")
 (def sh03-reader-expected-function-count 231)

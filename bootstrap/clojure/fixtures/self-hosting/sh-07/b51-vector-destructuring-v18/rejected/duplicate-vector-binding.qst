@@ -1,0 +1,11 @@
+(ns self-hosting.sh07-b51-v18.duplicate-vector-binding
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (let [[value [value _] tail tail] input]
+    (+ value tail)))

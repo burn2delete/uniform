@@ -1,0 +1,11 @@
+(ns self-hosting.sh07-b51-v18.runtime-vector-kind
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (let [[left right] input]
+    (+ left right)))

@@ -1,0 +1,14 @@
+(ns self-hosting.sh07-b51-v18.nested-loop-owner-attribution
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [outer-input inner-input]
+  (loop [[outer] outer-input]
+    (loop [[inner] inner-input]
+      (if (< inner 1)
+        (recur [(+ inner 1)])
+        (+ outer inner)))))

@@ -1,0 +1,11 @@
+(ns self-hosting.sh07-b51-v18.source-def-owner
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise-value])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def exercise-value
+  (let [[left right] [20 22]]
+    (+ left right)))

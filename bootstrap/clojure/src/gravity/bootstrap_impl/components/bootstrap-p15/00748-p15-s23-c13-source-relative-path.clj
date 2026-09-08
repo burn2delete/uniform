@@ -180,6 +180,8 @@
   "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71")
 (def p15-s23-sh02-expected-plan-semantic-hash
   "sha256:125e012806bddf996f23e357bd33309c9bbd40927ce0f2c841e69b39c1740922")
+(def p15-s23-sh02-expected-plan-id
+  "sha256:ba3e5452a2775af96e480196b830448505d15af80be27503f9915d3c4299a5db")
 (def p15-s23-sh02-expected-functions-semantic-hash
   "sha256:e88f53c2994f5d8d4577f6df9f6531a750c2808ef0a2b4b5d297f64e7b45e26e")
 (def p15-s23-sh02-expected-builder-semantic-hash
