@@ -8,7 +8,7 @@
     "sh07-b51-first-eval-nested-validation-architecture-v3",
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
   ],
-  "disposition": "Review-pending architecture candidate only for the exact producer-B binding-definition form lookup substitution. Independent acceptance and integration are required before implementation. This record grants no implementation, evidence, performance, SH-07 completion, roadmap, self-hosting, seed-retirement, release, or current-main integration authority.",
+  "disposition": "Independent review ACCEPTED exact candidate eed780e60c54dde3a381d1889c6dcf62301be728; architecture authority only. Implementation, fixed-fuel evidence, integration, and SH-07 completion remain unclaimed.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-v1.md",
@@ -19,7 +19,9 @@
       "integrated-dependency:sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32 candidate:202d92d12fa6c4f6a74571eb4769587c02c0963c",
       "integrated-dependency:sh07-b51-first-eval-nested-validation-architecture-v3 candidate:a69e9be8664a054734ff029143ed519e323755dd",
       "read-only implementation localization:commit 6974b0abb9ee27db57014a247fbb13718de66603 tree 1c0b09f2124fc0b674874d378dfdac15541239fd",
-      "exact producer-B scan-to-index cutpoint, locally constructed index provenance, duplicate-before-presence law, external-binding preservation, one-edge substitution, fixed limits, D6/D9 evidence, and explicit nonclaims"
+      "exact producer-B scan-to-index cutpoint, locally constructed index provenance, duplicate-before-presence law, external-binding preservation, one-edge substitution, fixed limits, D6/D9 evidence, and explicit nonclaims",
+      "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-architecture-independent-review-v1.md",
+      "independent-review-sha256:f34c066cf42cb20c365ada5df05bc19abda74aa7a76a8ce449b592fee9851ffc"
     ],
     "rejected_fixtures": [
       "the lookup moves before duplicate guards or changes binding-shape evaluation order",
@@ -124,6 +126,12 @@
       "at": "2026-09-08T05:12:28Z",
       "reason": "request fresh independent exact review of scan-to-index semantic equivalence, local index provenance, duplicate and missing laws, external-binding and owning-root preservation, one-edge identity rebuild, fixed metering, evidence obligations, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "sh07-b51-binding-replay-index-architecture-reviewer-v1",
+      "at": "2026-09-08T05:22:00Z",
+      "reason": "Independent ACCEPT of exact candidate eed780e60c54dde3a381d1889c6dcf62301be728 with no architecture blocker; architecture authority only.",
+      "state": "accepted"
     }
   ],
   "id": "sh07-b51-binding-replay-index-architecture-v1",
@@ -145,7 +153,13 @@
     "the report and provisional evidence contain no implementation, rebuilt identity cascade, authentic fixed-fuel completion, benchmark, or independent acceptance",
     "SH-07 completion, roadmap credit, self-hosting, seed retirement, release readiness, and performance remain unclaimed"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "sh07-b51-binding-replay-index-architecture-reviewer-v1"
+    }
+  ],
+  "state": "accepted",
   "title": "SH-07 B51 binding-replay indexed lookup architecture version 1"
 }
