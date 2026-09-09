@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-binding-replay-index-implementation-v1"
   ],
-  "disposition": "Frozen exact report-only review erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Overall SH-07 remains four of eight milestones.",
+  "disposition": "Review-pending exact report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Overall SH-07 remains four of eight milestones.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-implementation-review-erratum-v1.md",
@@ -74,6 +74,12 @@
       "at": "2026-09-09T07:38:00Z",
       "reason": "freeze exact report-only candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, report SHA-256 5327b6aabb9c2401b314a8ab51a2e888a0f5c6a9a9705bdcb980ba0df2df331f, and immutable integrated-record SHA-256 6bd310175fc9cbaeeb8975cc5b68949004b3b006bbd5c961ef89032c6c2a8132 after bounded host reproduction, document validation, governance validation, and diff check passed",
       "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T07:38:01Z",
+      "reason": "request fresh independent review of exact report candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, report SHA-256 5327b6aabb9c2401b314a8ab51a2e888a0f5c6a9a9705bdcb980ba0df2df331f, immutable integrated-history preservation, reproduced empty-target counterexample, checker ordering, source TOCTOU boundary, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
@@ -96,6 +102,6 @@
     "authentic fixed-fuel roots, eight-root evidence, aggregate SH-07 completion, self-hosting, release, performance, and seed retirement remain unclaimed"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 binding-replay implementation review erratum version 1"
 }
