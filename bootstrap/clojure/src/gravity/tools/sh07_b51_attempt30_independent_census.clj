@@ -1,5 +1,6 @@
 (ns gravity.tools.sh07-b51-attempt30-independent-census
-  (:require [gravity.bootstrap :as bootstrap]))
+  (:require [gravity.c2-artifact-identity.canonical :as canonical]
+            [gravity.digest :as digest]))
 
 ;; Attempt 30 checker B.  This namespace intentionally owns its traversal,
 ;; ordering, quote handling, reachability, row construction, and digest
@@ -135,7 +136,14 @@
 
 (def internal-builtins
   '[sh07-canonical-text-compare sh07-declared-digest-hash
-    sh07-observe-utf8-byte-count])
+    sh07-observe-utf8-byte-count
+    sh07-b51-admitted-executable-carrier-validation?])
+
+(def internal-builtin-arities
+  {'sh07-canonical-text-compare 2
+   'sh07-declared-digest-hash 1
+   'sh07-observe-utf8-byte-count 3
+   'sh07-b51-admitted-executable-carrier-validation? 1})
 
 (def m0-keys
   #{:artifact :schema-version :module-source-id :module-ordinal :module
@@ -190,8 +198,11 @@
 (defn- raw-git-id? [value]
   (and (string? value) (boolean (re-matches #"[0-9a-f]{40}" value))))
 
+(defn- canonical-value [value]
+  (canonical/reader-canonical-value canonical-value value))
+
 (defn- h [value]
-  (bootstrap/reader-canonical-hash value))
+  (canonical/reader-canonical-hash digest/sha256-hex canonical-value value))
 
 (defn- reject! [reason]
   (throw (ex-info "Attempt 30 checker B rejected its input"
@@ -588,11 +599,18 @@
     :else value))
 
 (defn m2-plan-id [plan]
-  (h (m2-identity-value
-      (-> plan
-          (dissoc :plan-id)
-          (update :source #(if (map? %) (dissoc % :path) %))
-          (update :module #(if (map? %) (dissoc % :source-path) %))))))
+  ;; M2 plan IDs were created by C4 over an already canonicalized value.  Do
+  ;; not pass that value through the reader identity domain a second time.
+  (str "sha256:"
+       (digest/sha256-hex
+        (pr-str
+         (m2-identity-value
+          (-> plan
+              (dissoc :plan-id)
+              (update :source #(if (map? %) (dissoc % :path) %))
+              (update :module #(if (map? %)
+                                 (dissoc % :source-path)
+                                 %))))))))
 
 (defn- check-and-derive-inputs [envelope]
   (ensure! (exact-keys? envelope input-keys) :input-schema)
@@ -642,7 +660,16 @@
              (every? #(exact-keys? % external-binding-keys)
                      (:external-bindings m0))
              (vector? (:builtin-calls m0))
-             (every? #(exact-keys? % builtin-row-keys) (:builtin-calls m0))
+             (every? #(and (exact-keys? % builtin-row-keys)
+                           (symbol? (:builtin %))
+                           (integer? (:arity %)) (<= 0 (:arity %))
+                           (boolean? (:compiler-internal? %))
+                           (= (contains? internal-builtin-arities (:builtin %))
+                              (:compiler-internal? %))
+                           (or (not (:compiler-internal? %))
+                               (= (get internal-builtin-arities (:builtin %))
+                                  (:arity %))))
+                     (:builtin-calls m0))
              (= (:aggregate-binding-count m0)
                 (+ (:core-binding-count m0) (count (:definitions m0))
                    (:lexical-binding-count m0)

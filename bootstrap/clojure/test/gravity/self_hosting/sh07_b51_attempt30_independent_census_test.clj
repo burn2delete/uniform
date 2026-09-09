@@ -14,7 +14,9 @@
     '(defn a0 [] (b0) (sh07-declared-digest-hash :x))
     '(defn a1 [] (a0) (sh07-canonical-text-compare "a" "b"))]
    [(list 'ns 'test.m1)
-    '(defn b0 [] (sh07-observe-utf8-byte-count "a" "b" "c"))]
+    '(defn b0 []
+       (sh07-observe-utf8-byte-count "a" "b" "c")
+       (sh07-b51-admitted-executable-carrier-validation? :x))]
    [(list 'ns 'test.m2) '(defn c0 [] 2)]
    [(list 'ns 'test.m3) '(defn d0 [] 3)]
    [(list 'ns 'test.m4) '(defn e0 [] 4)]
@@ -47,7 +49,10 @@
              :compiler-internal? true}]
          1 [{:caller 'b0 :caller-function-source-hash b0-hash
              :builtin 'sh07-observe-utf8-byte-count :arity 3
-             :compiler-internal? true}]}
+             :compiler-internal? true}
+            {:caller 'b0 :caller-function-source-hash b0-hash
+             :builtin 'sh07-b51-admitted-executable-carrier-validation?
+             :arity 1 :compiler-internal? true}]}
         source-shas (mapv #(digest (char (+ (int \0) %))) (range 7))]
     (mapv
      (fn [module-ordinal]
@@ -155,7 +160,16 @@
                                (provenance m0 m1 definition
                                            'sh07-observe-utf8-byte-count)
                                :args [(literal "a") (literal "b")
-                                      (literal "c")]}]
+                                      (literal "c")]}
+                              {:op :builtin-call
+                               :function
+                               'sh07-b51-admitted-executable-carrier-validation?
+                               :compiler-internal-caller 'b0
+                               :compiler-internal-provenance
+                               (provenance
+                                m0 m1 definition
+                                'sh07-b51-admitted-executable-carrier-validation?)
+                               :args [(literal :x)]}]
                              [(literal (first (:body definition)))])]
                        [name (assoc definition :instructions instructions)]))
                    (nth definitions module-ordinal)))
@@ -243,7 +257,7 @@
            (get-in certificate [:provenance :raw-transcript-artifact-id])))
     (is (= (:artifact-id m2)
            (get-in certificate [:provenance :m2-transcript-artifact-id])))
-    (is (= [8 1 1 3]
+    (is (= [8 1 1 4]
            ((juxt :definition-count :local-count :external-count
                   :builtin-count) (:result certificate))))
     (is (= 7 (count (get-in certificate

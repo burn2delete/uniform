@@ -35,6 +35,7 @@
                   (list 'sh07-canonical-text-compare "a" "b")
                   (list 'sh07-declared-digest-hash {:x 1})
                   (list 'sh07-observe-utf8-byte-count "x" 0 1)
+                  (list 'sh07-b51-admitted-executable-carrier-validation? :x)
                   (list 'quote (list 'remote))))
       (list 'defn 'helper [] 0))
      (vector (ns-form (nth modules 1) '[remote]) (list 'defn 'remote [] 1))
@@ -100,7 +101,12 @@
                  :caller-function-source-hash
                  (:source-hash (first definition-rows))
                  :builtin 'sh07-observe-utf8-byte-count
-                 :arity 3 :compiler-internal? true}]
+                 :arity 3 :compiler-internal? true}
+                {:caller 'root0
+                 :caller-function-source-hash
+                 (:source-hash (first definition-rows))
+                 :builtin 'sh07-b51-admitted-executable-carrier-validation?
+                 :arity 1 :compiler-internal? true}]
                [])
              base
              {:artifact :gravity/sh07-b51-module-source-v1
@@ -217,7 +223,23 @@
                                  :function-source-hash
                                  (:source-hash (first (:definitions descriptor)))
                                  :callee 'sh07-observe-utf8-byte-count}
-                                :args [(literal "x") (literal 0) (literal 1)]}
+                               :args [(literal "x") (literal 0) (literal 1)]}
+                               {:op :builtin-call
+                                :function
+                                'sh07-b51-admitted-executable-carrier-validation?
+                                :compiler-internal-caller 'root0
+                                :compiler-internal-provenance
+                                {:artifact
+                                 :gravity/sh07-compiler-internal-call-provenance-v2
+                                 :manifest-id (:manifest-id m1)
+                                 :module-source-id (:module-source-id descriptor)
+                                 :source-sha256 (:source-sha256 descriptor)
+                                 :function 'root0
+                                 :function-source-hash
+                                 (:source-hash (first (:definitions descriptor)))
+                                 :callee
+                                 'sh07-b51-admitted-executable-carrier-validation?}
+                                :args [(literal :x)]}
                                {:op :quote :value '(remote)}]}]
 
                             :else [(literal (last (:body definition)))])]
@@ -314,7 +336,7 @@
     (is (= 1 (get-in claim
                      [:physical-census
                       :physical-external-runtime-callsite-count])))
-    (is (= 4 (get-in claim
+    (is (= 5 (get-in claim
                      [:physical-census
                       :physical-referenced-builtin-occurrence-count])))
     (is (some #(and (:quoted-subtree-stop %)
@@ -331,6 +353,7 @@
                          (sh07-canonical-text-compare "a" "b")
                          (sh07-declared-digest-hash {:x 1})
                          (sh07-observe-utf8-byte-count "x" 0 1)
+                         (sh07-b51-admitted-executable-carrier-validation? :x)
                          '(remote))))
         changed-m2
         (update-in input [:m2s 0 :functions 'root0 :instructions 0 :body]

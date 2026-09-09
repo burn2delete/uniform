@@ -123,12 +123,14 @@
 (def internal-builtins
   '[sh07-canonical-text-compare
     sh07-declared-digest-hash
-    sh07-observe-utf8-byte-count])
+    sh07-observe-utf8-byte-count
+    sh07-b51-admitted-executable-carrier-validation?])
 
 (def internal-builtin-arities
   {'sh07-canonical-text-compare 2
    'sh07-declared-digest-hash 1
-   'sh07-observe-utf8-byte-count 3})
+   'sh07-observe-utf8-byte-count 3
+   'sh07-b51-admitted-executable-carrier-validation? 1})
 
 (def special-forms '#{defn ns if let loop recur do quote})
 
