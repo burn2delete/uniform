@@ -1,0 +1,131 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+  "author": "uniform-coordinator",
+  "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
+  "candidate_commit": "ea9ae281dce2249f779a9777c75517bebdbbad25",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
+    "sh07-b51-first-eval-nested-validation-architecture-v3",
+    "sh07-b51-binding-replay-index-architecture-v1",
+    "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
+    "c2-pass-cache-capacity-withholding-v1"
+  ],
+  "disposition": "Exact V9 architecture candidate is frozen and under independent feasibility and formal review. It grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
+    ],
+    "rejected_fixtures": [
+      "sh07-b51-git-object-evidence-publication-architecture-v8:76ea5d13a1bb20a8be199a6127d7b60d12e8e9df",
+      "sh07-b51-git-object-evidence-publication-architecture-v9-original:3a42550183781bef741969f27fd9b284a7f8f2c4",
+      "mutable-worktree-or-ref-source-authority",
+      "checker-coordinator-self-bootstrap-cycle",
+      "publication-receipt-self-cycle",
+      "incomplete-git-object-or-masked-root-schema"
+    ],
+    "stable_diagnostics": [
+      "SH07-B51-GIT-SNAPSHOT",
+      "SH07-B51-GIT-INPUT-BLOB",
+      "SH07-B51-GIT-PUBLICATION-DELTA",
+      "SH07-B51-GIT-TUPLE",
+      "SH07-B51-GIT-RELOAD",
+      "SH07-B51-RECEIPT-JOIN",
+      "SH07-B51-IDENTITY-CYCLE",
+      "SH07-B51-CHECKER-PROCESS",
+      "SH07-B51-CONTRACT-DISCHARGE",
+      "SH07-B51-PROOF-SCOPE",
+      "SH07-B51-OWNER"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 3a42550183781bef741969f27fd9b284a7f8f2c4..ea9ae281dce2249f779a9777c75517bebdbbad25",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT4",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "contracts/verification-catalog.edn",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:31Z",
+      "reason": "register the corrected V9 architecture after two independent pre-freeze reviewers rejected the original draft and the replacement feasibility and formal schemas closed every reported blocker",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:33Z",
+      "reason": "freeze exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25, tree 86f499bfd95c4b5f72715c022c3b4cd238c11d13, report SHA-256 125f9a04daec8faf52a595aca1a9d6b37ae10c8a82e6b570ca74bd0f81f8880c, and sole owned architecture report after pre-freeze schema audit PASS",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:34Z",
+      "reason": "request independent feasibility and formal review of the exact frozen commit, tree, report bytes, governed lifecycle, implementation closure, Git-object evidence topology, and nonclaims",
+      "state": "review-pending"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
+  "invariant_family": "architecture/self-hosting-sh07-b51-pin-free-publication-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
+  ],
+  "owner": "sh07-b51-git-object-publication-architecture",
+  "residual_host_boundaries": [
+    "Clojure, the JVM, and Git remain bounded launcher, fresh-process, immutable-object, strict-codec, digest, publication, and observation boundaries",
+    "architecture acceptance permits only the separately governed I9 implementation lifecycle and grants no implementation or evidence acceptance",
+    "authentic fixed-fuel Root-1, Root-6, and Root-8 evidence, aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [],
+  "state": "review-pending",
+  "title": "SH-07 B51 Git-object evidence publication architecture version 9"
+}
