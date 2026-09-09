@@ -11,10 +11,11 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Returned to draft after independent feasibility review rejected exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25 for a codec preflight closure contradiction, an existing-mode clean-C contradiction, and a missing immutable evidence-eligibility receipt input route. No implementation or downstream authority is granted.",
+  "disposition": "Returned to draft after two independent reviews rejected exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25. Revision must close codec preflight, existing-mode publication, immutable eligibility input, literal contract discharge, source-closure H-domain, and companion-count consistency before another freeze. No implementation or downstream authority is granted.",
   "evidence": {
     "accepted_fixtures": [
-      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md"
     ],
     "rejected_fixtures": [
       "sh07-b51-git-object-evidence-publication-architecture-v8:76ea5d13a1bb20a8be199a6127d7b60d12e8e9df",
@@ -124,7 +125,8 @@
     "self_hosting": false
   },
   "owned_paths": [
-    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md"
   ],
   "owner": "sh07-b51-git-object-publication-architecture",
   "residual_host_boundaries": [
@@ -137,6 +139,11 @@
       "kind": "independent",
       "result": "rejected",
       "reviewer": "/root/v9_prefreeze_feasibility"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_formal"
     }
   ],
   "state": "draft",
