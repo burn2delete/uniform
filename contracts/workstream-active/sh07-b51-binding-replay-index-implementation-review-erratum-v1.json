@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-binding-replay-index-implementation-v1"
   ],
-  "disposition": "Independently ACCEPTED exact report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. This acceptance grants authority only to integrate the append-only correction after exact current-main preflight. Overall SH-07 remains four of eight milestones.",
+  "disposition": "Integration-eligible exact independently accepted report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. Fresh exact candidate preflight against unchanged authoritative main da8f2071d4ab6f672fed76be0f7a9e827008ef83 passed. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Eligibility grants authority only to integrate this append-only correction. Overall SH-07 remains four of eight milestones.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-implementation-review-erratum-v1.md",
@@ -42,6 +42,11 @@
       },
       {
         "command": "git diff --check da8f2071d4ab6f672fed76be0f7a9e827008ef83..98ac2707af7eb8a221402465d18b76a419392f78",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base da8f2071d4ab6f672fed76be0f7a9e827008ef83 --candidate-commit 98ac2707af7eb8a221402465d18b76a419392f78 --candidate-tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27",
         "exit_code": 0,
         "result": "passed"
       }
@@ -86,6 +91,12 @@
       "at": "2026-09-09T07:45:08Z",
       "reason": "ACCEPT exact base da8f2071d4ab6f672fed76be0f7a9e827008ef83, report candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, report SHA-256 5327b6aabb9c2401b314a8ab51a2e888a0f5c6a9a9705bdcb980ba0df2df331f, review-pending lifecycle 4a9c0ab67c2a271827c81a52d358f5722386d501, tree 8d071df1df5afe87a3fc2fa4d888953d0590fb1f, and active-shard SHA-256 4e06963129a46fe7632f6459cb5e2ed2a5ba091338fcd668573a23a9cbc635a1 after independently verifying the immutable integrated predecessor byte-for-byte, both earlier ACCEPT and later REJECT facts, exact source and reproduction, dependency, lifecycle, ownership, governance, and nonclaims; all bounded gates passed and acceptance is report-only",
       "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T07:47:00Z",
+      "reason": "advance the independently accepted exact report-only candidate after a fresh clean named-branch preflight reproduced base main da8f2071d4ab6f672fed76be0f7a9e827008ef83, candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, descendant reconciliation, and integrate_candidate recommendation; preserve correction-only authority and every implementation, fixed-fuel, aggregate SH-07, self-hosting, release, performance, and seed-retirement nonclaim",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
@@ -114,6 +125,6 @@
       "reviewer": "/root/publication_arch_v2"
     }
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "SH-07 B51 binding-replay implementation review erratum version 1"
 }
