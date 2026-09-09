@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-binding-replay-index-implementation-v1"
   ],
-  "disposition": "Integration-eligible exact independently accepted report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. Fresh exact candidate preflight against unchanged authoritative main da8f2071d4ab6f672fed76be0f7a9e827008ef83 passed. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Eligibility grants authority only to integrate this append-only correction. Overall SH-07 remains four of eight milestones.",
+  "disposition": "Integrated exact independently accepted report-only erratum preserving the immutable predecessor record while recording the later exact independent rejection and host counterexample. The append-only correction lineage fast-forwarded onto authoritative main without altering implementation code. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Overall SH-07 remains four of eight milestones.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-implementation-review-erratum-v1.md",
@@ -97,6 +97,12 @@
       "at": "2026-09-09T07:47:00Z",
       "reason": "advance the independently accepted exact report-only candidate after a fresh clean named-branch preflight reproduced base main da8f2071d4ab6f672fed76be0f7a9e827008ef83, candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, descendant reconciliation, and integrate_candidate recommendation; preserve correction-only authority and every implementation, fixed-fuel, aggregate SH-07, self-hosting, release, performance, and seed-retirement nonclaim",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T07:49:08Z",
+      "reason": "fast-forward the complete accepted report-only erratum lineage from base da8f2071d4ab6f672fed76be0f7a9e827008ef83 onto authoritative main at integration-eligible commit 3da9308e9e4257ccd2dcfe63f4ea326e355bf2d9, tree a5d1683c13c260c7b7ab43bae82687d5e1dafa1d, then publish this correction as immutable terminal history without modifying implementation bytes or granting fixed-fuel, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
@@ -125,6 +131,6 @@
       "reviewer": "/root/publication_arch_v2"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 binding-replay implementation review erratum version 1"
 }
