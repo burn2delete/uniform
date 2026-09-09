@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-binding-replay-index-implementation-v1"
   ],
-  "disposition": "Review-pending exact report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. Overall SH-07 remains four of eight milestones.",
+  "disposition": "Independently ACCEPTED exact report-only erratum preserving the immutable integrated record while recording the later exact independent rejection and host counterexample. The integrated implementation bytes remain present but confer no safe evidence-publication or fixed-fuel completion authority. This acceptance grants authority only to integrate the append-only correction after exact current-main preflight. Overall SH-07 remains four of eight milestones.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-binding-replay-index-implementation-review-erratum-v1.md",
@@ -80,6 +80,12 @@
       "at": "2026-09-09T07:38:01Z",
       "reason": "request fresh independent review of exact report candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, report SHA-256 5327b6aabb9c2401b314a8ab51a2e888a0f5c6a9a9705bdcb980ba0df2df331f, immutable integrated-history preservation, reproduced empty-target counterexample, checker ordering, source TOCTOU boundary, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "/root/publication_arch_v2",
+      "at": "2026-09-09T07:45:08Z",
+      "reason": "ACCEPT exact base da8f2071d4ab6f672fed76be0f7a9e827008ef83, report candidate 98ac2707af7eb8a221402465d18b76a419392f78, tree 3ab992d60bf6ef983639dc5a80d1b2c130b26c27, report SHA-256 5327b6aabb9c2401b314a8ab51a2e888a0f5c6a9a9705bdcb980ba0df2df331f, review-pending lifecycle 4a9c0ab67c2a271827c81a52d358f5722386d501, tree 8d071df1df5afe87a3fc2fa4d888953d0590fb1f, and active-shard SHA-256 4e06963129a46fe7632f6459cb5e2ed2a5ba091338fcd668573a23a9cbc635a1 after independently verifying the immutable integrated predecessor byte-for-byte, both earlier ACCEPT and later REJECT facts, exact source and reproduction, dependency, lifecycle, ownership, governance, and nonclaims; all bounded gates passed and acceptance is report-only",
+      "state": "accepted"
     }
   ],
   "id": "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
@@ -101,7 +107,13 @@
     "source identity remains a pathname check-then-read boundary until a successor architecture explicitly closes or narrows it",
     "authentic fixed-fuel roots, eight-root evidence, aggregate SH-07 completion, self-hosting, release, performance, and seed retirement remain unclaimed"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/publication_arch_v2"
+    }
+  ],
+  "state": "accepted",
   "title": "SH-07 B51 binding-replay implementation review erratum version 1"
 }
