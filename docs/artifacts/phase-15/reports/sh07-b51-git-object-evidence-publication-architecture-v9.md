@@ -44,6 +44,149 @@ integrated are not interchangeable:
    it has its own freeze, independent review, acceptance,
    `integration-eligible` admission, and integration.
 
+Two review receipts are external to the C/E/B/G content-addressed lineage and
+therefore cannot create a commit/tree self-reference:
+
+- `docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/evidence-eligibility-receipt.edn`
+  has exactly `:artifact :schema-version :content :source-descriptors
+  :source-descriptors-root :masked-root :contract-discharge :review :state
+  :self-id-omits :nonclaims :receipt-id`. Artifact is
+  `:gravity/sh07-b51-evidence-eligibility-receipt-v1`, version is 1, content is
+  `{:commit C :tree T}`, state is `:evidence-eligible`, and receipt ID is
+  `H([:gravity/sh07-b51-evidence-eligibility-receipt-v1 RECEIPT-WITHOUT-ID])`;
+  self-id-omits is exactly `[[:receipt-id]]`.
+  Source descriptors are the exact closed twelve-DESCRIPTOR vector later
+  embedded in E9; source root is
+  `H([:gravity/sh07-b51-source-descriptors-root-v1 SOURCE-DESCRIPTORS])`;
+  masked root is the complete MASKED-ROOT map; and contract discharge is the
+  complete CONTRACT-DISCHARGE map. Every nested C/T equals content C/T, and E9
+  must reproduce all four values byte-for-byte rather than merely copying
+  their root strings.
+  It is published only by the pre-evidence review lifecycle after C freezes;
+  it is neither an E9 payload nor an ancestor of E9.
+- `docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/i9-integration-receipt.edn`
+  has exactly `:artifact :schema-version :content :evidence :publication-base
+  :ancestry-observations
+  :content-is-ancestor :evidence-is-ancestor-of-base :owned-c-paths :preserved-blobs :preservation-root
+  :absent-paths-at-base :evidence-paths-absent-at-base :evidence-eligibility-id :review
+  :state :self-id-omits :receipt-id`.
+  Artifact is `:gravity/sh07-b51-i9-integration-receipt-v1`, version is 1,
+  content is `{:commit C :tree T}`, evidence is
+  `{:commit E :tree TE :parents [C]}`, publication base is
+  `{:commit B :tree TB :parents BASE-PARENTS}`. `:content-is-ancestor` is the
+  C/B true ANCESTRY-RESULT and `:evidence-paths-absent-at-base` is true.
+  `:evidence-is-ancestor-of-base` is the E/B false ANCESTRY-RESULT, established by an exact
+  `merge-base --is-ancestor E B` exit-1 observation. `ancestry-observations`
+  is exactly the ordered `[C/B-true E/B-false]` ANCESTRY-RESULT vector.
+  State is exactly `:integrated`.
+  Self-id-omits is exactly
+  `[[:receipt-id]]`.
+  `OWNED-C-PATHS` is the exact sorted I9 implementation/test/fixture union
+  below, sorted by unsigned UTF-8 path bytes with no duplicate. Each
+  `PRESERVED-BLOB` has exactly `:path :content-commit :content :base-commit
+  :base :equal`; content commit is C and base commit is B.
+  `:content` and `:base` each have exactly `:mode :type :oid :byte-count
+  :raw-sha256`, mode is `"100644"`, type is `"blob"`, OID is the Git SHA-1,
+  raw SHA is `R(blob-bytes)`, and
+  every content/base field is equal. `preservation-root` is
+  `H([:gravity/sh07-b51-i9-preservation-root-v1 PRESERVED-BLOBS])`. The receipt also proves C is an ancestor of B and every E9
+  and G9 evidence path is absent at B. `absent-paths-at-base` is the exact
+  seven E9 paths followed by the G9 tuple path; each row has exactly `:path
+  :commit :present :mode :type :oid`, equals path/B/false/nil/nil/nil, and is
+  joined to the fixed-set ls-tree observation. It is published only after I9 is
+  integrated and is external to B and G9.
+
+In every receipt, `REVIEW` has exactly `:reviewer :candidate-commit
+:candidate-tree :artifact-path :artifact-raw-sha256 :result :completed-at`.
+Reviewer is a nonempty string; candidate commit and tree are 40 lowercase
+hexadecimal Git IDs; artifact path is a safe repository-root-relative path
+with no empty, `.` or `..` segment; and artifact raw SHA is `R(review-bytes)`.
+The eligibility review candidate is exactly C/T, I9 is B/TB, G9 is G/TG,
+A9 is its architecture content commit/tree, and P9 is P/TP. Result is the
+required lifecycle result;
+result is exactly `:evidence-eligible` for the eligibility receipt and
+`:accepted` for A9, I9 integration, G9, and P9 receipts;
+completed-at is the exact semantic timestamp `"1970-01-01T00:00:00Z"`; actual
+review time exists only in the external governance lifecycle and never enters
+a V9 receipt ID. Each receipt is exactly `W(v)`;
+its raw blob descriptor is stored by the lifecycle record and is not inside
+its own ID preimage.
+
+The lifecycle relation fields `:content-is-ancestor`,
+`:content-is-ancestor-of-base`, `:evidence-is-ancestor-of-base`,
+`:evidence-is-ancestor-of-publication`, `:base-is-ancestor`, and
+`:pin-is-ancestor` carry an `ANCESTRY-RESULT`, never a bare boolean. That type
+has exactly `:ancestor :descendant :is-ancestor :exit-code`; its nested
+`:is-ancestor` is the sole boolean, true uses exit 0, and false uses exit 1.
+Its endpoints must match the field's named relation. Git observation
+`:parsed-result` uses the same four-key type directly.
+
+A9 and P9 also have closed external lifecycle receipts:
+
+- `docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn`
+  has exactly `:artifact :schema-version :architecture :review :acceptance
+  :admission :integration :self-id-omits :nonclaims :receipt-id`. Architecture has exactly
+  `:content-commit :content-tree :content-parents :report`; report has exactly
+  `:path :mode :type :blob-oid :byte-count :raw-sha256`, with mode `"100644"`,
+  type `"blob"`, and raw SHA R(report bytes). Let AC/TA be the architecture
+  content commit/tree and AP its exact one-element ordered parent vector; every
+  element is a 40-lowercase-hex Git ID. Architecture equals
+  `{:content-commit AC :content-tree TA :content-parents AP :report REPORT}`.
+  Acceptance
+  is `{:state :accepted}`, admission is `{:state :integration-eligible}`, and
+  integration has exactly `:state :integrated :commit :tree :parents
+  :main-base :content-is-ancestor :report-preservation :reconciled`.
+  Let AI/TAI be the integration commit/tree. Main base has exactly `:commit
+  :tree :parents`; its parents are an ordered vector of 40-lowercase-hex Git
+  IDs, and integration parents are exactly the one-element vector containing
+  main-base commit. Report preservation has exactly `:content :integration
+  :equal`. Content has exactly `:commit :tree :path :mode :type :blob-oid
+  :byte-count :raw-sha256` and equals AC/TA plus every REPORT field.
+  Integration has that identical key set and equals AI/TAI plus the same path,
+  mode, type, blob OID, byte count, and raw SHA. Equal is true iff all six
+  non-commit/tree descriptor fields are pairwise equal; both raw SHAs are
+  independently recomputed as R of the respective Git blob bytes, and both
+  blob OIDs resolve those exact bytes.
+  content-is-ancestor is the architecture-content/integration true
+  ANCESTRY-RESULT AC/AI/true/0 and reconciled is true. Integration commit/tree
+  are exactly AI/TAI. Artifact is
+  `:gravity/sh07-b51-a9-lifecycle-receipt-v1`, version 1, review is REVIEW,
+  self-id-omits is `[[:receipt-id]]`, nonclaims are the five V9 nonclaims, and receipt ID H-hashes the exact map
+  with only itself omitted. The report blob at integration must equal the
+  frozen report bytes.
+- `docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/p9-pin-publication-receipt.edn`
+  has exactly `:artifact :schema-version :publication-base :pin-publication
+  :replacements :masked-root :joins :review :acceptance :admission
+  :integration :self-id-omits :nonclaims :receipt-id`. Artifact is
+  `:gravity/sh07-b51-p9-pin-publication-receipt-v1`, version is 1;
+  base is `{:commit G :tree TG :parents [B]}`; pin publication is
+  `{:commit P :tree TP :parents [G] :base-is-ancestor ANCESTRY-RESULT}`, where
+  the result is G/P/true/0. Replacements is the exact
+  five-coordinate vector; each row has exactly `:path :load-ordinal
+  :form-ordinal :owner :rhs-kind :pre-value :post-value :pre-raw-sha256
+  :post-raw-sha256`. Both raw fields are R of the exact RHS byte span. Four post-values are strict H identities and the fifth is
+  the exact quoted carrier; all pre-values are
+  `:gravity/provisional-no-authority`. Masked root is exactly the G9
+  `MASKED-ROOT` schema and recomputes the identical five coordinates, ten span
+  observations, two preimage file descriptors, two postimage file descriptors,
+  and H domain/payload; it cannot merely copy G9's root strings. Joins has exactly `:g9-lifecycle-id :e9-identity-receipt-id
+  :evidence-eligibility-id :i9-integration-id`. Review is REVIEW; acceptance,
+  admission, and integration states are respectively `:accepted`,
+  `:integration-eligible`, and `:integrated`. Integration has exactly `:state
+  :commit :tree :parents :pin-is-ancestor`, equals P/TP/[G] and the G/P true
+  ANCESTRY-RESULT, and is
+  rechecked after admission; nonclaims remain the five V9
+  values; self-id-omits is `[[:receipt-id]]`. Receipt ID H-hashes the map with only itself omitted. An exact
+  P9 diff must contain only the two component paths and must reconstruct all
+  five rows; any other changed byte rejects.
+  Replacement rows 0-4 have the same exact path, load ordinal, form ordinal,
+  owner, and RHS kind as `MASKED-ROOT`. Rows 0-3 take post-values from pin-map
+  keys `:expected-m3-id`, `:expected-certificate-a-id`,
+  `:expected-certificate-b-id`, and `:expected-semantic-root`, respectively.
+  Row 4 is exactly `(quote CARRIER)` from
+  `linked-carrier-v4-candidate.edn`. The four digest values must equal
+  `p15-s23-sh07-b51-v4-candidate-pin-map`.
+
 V1-V8 have no V9 ancestry or authority. V8 is historical nonauthority:
 content `76ea5d13a1bb20a8be199a6127d7b60d12e8e9df`, tree
 `a177b038ddcddaa25c21ec2a7b0fc25d561deb5c`, review-pending lifecycle
@@ -77,6 +220,7 @@ unlisted row, blank binding, invented section, or disposition outside
 
 | Exact governing path(s) | Applicable sections and disposition | Mandatory V9 binding | Rejection |
 | --- | --- | --- | --- |
+| `AGENTS.md` | Scope, Start Here, Source Of Truth, Implementation Principles, Validation, Working Discipline; `:applies` | normative-document priority, Clojure-only bootstrap boundary, ownership, evidence, validation, and no-overclaim rules | `SH07-B51-CONTRACT-DISCHARGE` |
 | `docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md`; `002-d1-system-architecture-overview.md`; `003-d2-implementation-roadmap-and-milestones.md`; `004-d3-terminology-and-concept-model.md`; `007-d6-performance-philosophy-and-charter.md`; `009-d8-safety-philosophy-and-charter.md`; `010-d9-verifiability-and-mathematical-correctness-charter.md` | Requirements, artifacts, conformance; `:applies` | C/T/B/TB lineage, canonical-pipeline pass/fact/provenance records, safe-semantics nonclaims, evidence-kind labels, replay and invalidation IDs | `SH07-B51-CONTRACT-DISCHARGE` |
 | `docs/phase-01-core-language/011-l1-surface-syntax-specification.md` | Source Units, Requirements, Outputs and Artifacts, Diagnostics, Conformance Criteria; `:preserved` | root-relative `.gravity` paths, UTF-8 bytes, source IDs, syntax/spans/origins/metadata; no grammar change | `SH07-B51-GIT-INPUT-BLOB` |
 | `docs/phase-01-core-language/012-l2-core-language-semantics.md` | Core Forms, Evaluation Model, Requirements, Outputs and Artifacts, Diagnostics, Conformance Criteria; `:applies` | core semantics, left-to-right order, effects/capabilities/profile facts, core diagnostics and negative fixtures | `SH07-B51-EDGE-AUTHORITY` |
@@ -88,22 +232,25 @@ unlisted row, blank binding, invented section, or disposition outside
 | `docs/phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md` | Migration Order, Requirements, Outputs and Artifacts, Conformance Criteria; `:preserved` | module inputs/outputs/effects/facts/tests, `:meta` profile, diagnostic compatibility; no stage advance | `SH07-B51-CONTRACT-DISCHARGE` |
 | `docs/phase-15-bootstrap-and-self-hosting/206-boot4-compiler-in-gravity-coding-standard.md` | Module Rules, Requirements, Outputs and Artifacts, Conformance Criteria; `:applies` | closed module manifest, effects/capabilities, deterministic output, fact/provenance preservation, positive/negative/preservation tests | `SH07-B51-FORBIDDEN-VAR` |
 | `docs/phase-15-bootstrap-and-self-hosting/207-boot5-stage-compatibility-matrix.md` | Matrix Columns, Requirements, Outputs and Artifacts, Conformance Criteria; `:preserved` | exact compatibility row and digest remain unchanged; no implied support or stage advancement | `SH07-B51-CONTRACT-DISCHARGE` |
-| `docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md`; `209-boot7-self-hosting-validation-and-equivalence-plan.md`; `210-boot8-bootstrap-artifact-provenance-specification.md` | Requirements, Outputs and Artifacts, Rejection Rules, Conformance Criteria; `:applies` | fresh L/M/A/B topology, stage comparison, TCB delta, immutable provenance receipts, cleanup and replay | `SH07-B51-CHECKER-PROCESS` |
+| `docs/phase-15-bootstrap-and-self-hosting/208-boot6-trusting-trust-and-reproducible-bootstrap-plan.md`; `209-boot7-self-hosting-validation-and-equivalence-plan.md`; `210-boot8-bootstrap-artifact-provenance-specification.md` | Requirements, Outputs and Artifacts, Rejection Rules, Conformance Criteria; `:applies` | bound already-loaded launcher L plus fresh M/A/B topology, stage comparison, TCB delta, immutable provenance receipts, cleanup and replay | `SH07-B51-CHECKER-PROCESS` |
 | `docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md` | Oracles, Requirements, Outputs and Artifacts, Rejection Rules, Conformance Criteria; `:applies` | A/B/main/I9 oracle identity/applicability, profile/target/backend/runtime/numeric mode, compared observables, diagnostics, permitted divergence and reproducers | `SH07-B51-NORMALIZE-DIVERGENCE` |
 | `docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md` | Requirements, Outputs and Artifacts, Rejection Rules, Conformance Criteria; `:applies` | assumptions, trusted basis, checker/version/input/claim IDs, invalidation and counterexamples; E9 labels these validation receipts, not formal proof | `SH07-B51-PROOF-SCOPE` |
 | `docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md` | Stages, Requirements, Outputs and Artifacts, Rejection Rules, Conformance Criteria; `:preserved` | exact stage/trusted inputs/generated artifacts/source/compiler/lock/target/output identities, expected deltas and TCB delta; no stage advancement | `SH07-B51-PROOF-SCOPE` |
 | `bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn` | complete closed EDN contract; `:applies` only within its declared B47/B15 scope | active status, fresh authoritative process, nonauthoritative iteration cache, source/checked-core rechecks, verifier/catalog IDs, immutable receipts, bounds/cache key and cleanup | `SH07-B51-PROOF-SCOPE` |
 | `docs/self-hosting-slice-backlog.md`; `docs/self-hosting-slice-ownership.edn` | Countable Backlog, Dependency Waves and Parallel Ownership, Progress Accounting, Outputs and Artifacts, Conformance Criteria; coordinator-owned, future-path-conventions, slice-owners; `:applies` | SH-07 remains partial; exact I9/E9/G9/P9 owner/path/reservation/handoff; core/evaluation/arity/mutation/recursion/exception/pattern exit gate remains open | `SH07-B51-OWNER` |
-| `contracts/verification-catalog.edn`; `bootstrap/gravity/src/gravity/checked_core.gravity`; `docs/workstream-governance.md`; `contracts/workstream-governance.json` | complete closed records and Lifecycle/Admission; `:applies` | exact C objects/catalog verifier root/checked-core revision, lifecycle state transitions, review/admission receipts and final cleanup | `SH07-B51-VERIFY-CATALOG` |
+| `contracts/verification-catalog.edn`; `bootstrap/gravity/src/gravity/checked_core.gravity`; `docs/workstream-governance.md`; `contracts/workstream-governance.json` | complete closed records and Lifecycle/Admission; `:applies` | exact C object identities, catalog schema/version/authority, literal `sh07-checked-core` module and applicable route records, checked-core revision, lifecycle state transitions, review/admission receipts and final cleanup | `SH07-B51-VERIFY-CATALOG` |
 
 The following obligations apply and cannot be discharged by a Git hash alone:
 
-- L1/L2 and C6/C11 require the original source order, authentic owning
-  top-level definition/root, checked-core revision, MIR/error-exit shape,
+- L1/L2 and C6 require the original source order, authentic owning
+  top-level definition/root, checked-core revision, core/error-exit shape,
   origin, and diagnostic semantics to survive lowering. V9 binds the exact C
   blobs for L1/L2, `checked_core.gravity`, the seven B5.1 modules, and compiler
   emitter, and carries their source IDs, spans, owners, roots, and fact digests
   through both independent checker products.
+- C11 is explicitly not applicable because B5.1 ends at verified core. E9
+  proves the absence of MIR/backend artifacts and makes no MIR preservation or
+  error-exit artifact claim.
 - C2 requires deterministic canonical identities and immutable source
   snapshots. Every authoritative acquisition has exact C/T prechecks and
   postchecks, blob OID, byte count, raw SHA-256, strict UTF-8 decode, and one
@@ -118,7 +265,7 @@ The following obligations apply and cannot be discharged by a Git hash alone:
   the process and source-closure protocol below. All success and failure paths
   execute the same bounded cleanup transaction in `finally`.
 - TEST10/TEST11/TEST13 require differential output/diagnostic comparison,
-  independent semantic reconstruction, mutation rejection, verifier-root and
+  independent semantic reconstruction, mutation rejection,
   verification-catalog identity, bounded proof execution, replay, and
   self-hosting evidence. E9 carries those identities and results; this
   architecture expressly does not convert them into aggregate SH-07,
@@ -128,8 +275,11 @@ At each precheck and postcheck the verifier reads the C blob for
 `contracts/verification-catalog.edn`, the C blob for
 `bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn`, and the
 C blob for `bootstrap/gravity/src/gravity/checked_core.gravity`. It records
-their path, mode `100644`, blob OID, byte count, raw SHA-256, and the catalog's
-declared SH-07 verifier-root identity. The three postcheck rows must equal the
+their path, mode `100644`, blob OID, byte count, and raw SHA-256. Catalog
+validation binds schema `:gravity/verification-catalog-v1`, version 1, its
+declared authority flags, the literal `sh07-checked-core` module record, and
+the exact applicable route records; V9 does not invent a catalog verifier-root
+field. The three postcheck rows must equal the
 precheck rows byte-for-byte. A missing catalog entry, stale checked-core
 revision, changed proof contract, unbounded proof transaction, absent
 immutable receipt, or cleanup not reached on rejection fails closed.
@@ -146,18 +296,22 @@ revision must be accepted before I9 freezes; otherwise
 
 C is the frozen, independently evidence-eligible I9 content commit and T is its
 tree. Neither C nor evidence eligibility is implementation acceptance. The
-governed projection has exactly eight blobs, in this order:
+governed projection has exactly twelve blobs, in this order:
 
 | Ordinal | Role | Module | Path |
 | ---: | --- | ---: | --- |
-| 0 | `:module` | 0 | `bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity` |
-| 1 | `:module` | 1 | `bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity` |
-| 2 | `:module` | 2 | `bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity` |
-| 3 | `:module` | 3 | `bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity` |
-| 4 | `:module` | 4 | `bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity` |
-| 5 | `:module` | 5 | `bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity` |
-| 6 | `:module` | 6 | `bootstrap/gravity/src/gravity/sh07_b51/root8.gravity` |
-| 7 | `:compiler` | absent | `bootstrap/gravity/p15_s23/compiler.gravity` |
+| 0 | `:l1-contract` | absent | `docs/phase-01-core-language/011-l1-surface-syntax-specification.md` |
+| 1 | `:l2-contract` | absent | `docs/phase-01-core-language/012-l2-core-language-semantics.md` |
+| 2 | `:checked-core` | absent | `bootstrap/gravity/src/gravity/checked_core.gravity` |
+| 3 | `:module` | 0 | `bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity` |
+| 4 | `:module` | 1 | `bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity` |
+| 5 | `:module` | 2 | `bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity` |
+| 6 | `:module` | 3 | `bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity` |
+| 7 | `:module` | 4 | `bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity` |
+| 8 | `:module` | 5 | `bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity` |
+| 9 | `:module` | 6 | `bootstrap/gravity/src/gravity/sh07_b51/root8.gravity` |
+| 10 | `:compiler` | absent | `bootstrap/gravity/p15_s23/compiler.gravity` |
+| 11 | `:emitter` | absent | `bootstrap/gravity/p15_s23/emitter.gravity` |
 
 The plan-linker component is zero-based load ordinal 808, physical line 810.
 Forms 13-16 define exactly these literal holes:
@@ -190,32 +344,44 @@ only new public bootstrap Var. Its session token, event dispatcher, object
 reader, and checked-product cache are private and dynamically scoped by the
 wrapper; a caller cannot install, replace, or reuse them.
 
-One session prefetches the exact eight C blobs above, in order, and strictly
-decodes each UTF-8 vector once. Products consume exactly 22 events: module
-validation 0-6, census 0-6, link authority 0-6, and compiler emitter once. The
-session finalizes once and rejects a missing, duplicate, reordered, late, or
-unconsumed event.
+One session prefetches the exact twelve C blobs above, in order, and strictly
+decodes each UTF-8 vector once. Products consume exactly 39 events: L1
+contract 0, L2 contract 1, checked-core revision 2, module validation 3-9,
+census 10-16, link authority 17-23, compiler emitter 24, source-authority
+module reads 25-31, and compiler-artifact-binding emitter reads 32-38. The
+seven final events are distinct authorized consumers of the one prefetched
+emitter byte vector, not repeated acquisitions. The session finalizes once and rejects a missing,
+duplicate, reordered, late, or unconsumed event.
 
-I9 replaces exactly four existing physical-read domains in 00945: the seven
+I9 replaces every reachable physical read in the B5.1 construction closure.
+The L1/L2 and checked-core consumers use domains `:l1-contract`,
+`:l2-contract`, and `:checked-core-revision`. The seven
 per-module reads in `p15-s23-sh07-b51-module-source-valid*` use domain
 `:module-validation`; the seven reads in
 `p15-s23-sh07-b51-derive-callsite-census` use domain `:callsite-census`; the
 seven reads in `p15-s23-sh07-b51-build-link-authority-from-census` use domain
 `:link-authority`; and the compiler read in
-`p15-s23-sh07-b51-current-emitter` uses domain `:compiler-emitter`. There is no
-fifth physical-read site or domain. All four consume the one prefetched session
-rather than invoking their current `Files/readAllBytes` or `slurp`. A lexical
-and call-graph fixture rejects any additional file/object read reachable from
-00945 or 00947. Differential fixtures run unmodified main and I9 on identical
+`p15-s23-sh07-b51-current-emitter` uses domain `:compiler-emitter`. The seven
+module discoveries/reads reachable through
+`00943-p15-s23-sh07-host-builtins-and-oracle.clj` use domain
+`:source-authority`; the seven emitter reads reachable through
+`00581-p15-s23-stage2-compiler-artifact-binding.clj` use domain
+`:compiler-artifact-binding`. Every semantic consumer accepts only bytes from the active governed session; direct
+`Files/readAllBytes`, `slurp`, directory discovery, or pathname reopening in
+this closure rejects. Verification-catalog and proof-contract object checks
+belong to the separate governance channel below; they are not source-session
+decodes or events. A lexical and call-graph fixture rejects any additional
+file/object read reachable from 00943, 00581, 00945, or 00947. Differential
+fixtures run unmodified main and I9 on identical
 accepted and rejected inputs and require identical products and diagnostics.
 Module, compiler, descriptor, event, edge-authority, and five-hole mutations
 must remain visible and reject.
 
-Evidence mode performs, for each of eight acquisitions, a pre-read and
+Evidence mode performs, for each of twelve acquisitions, a pre-read and
 post-read check of the isolated C worktree's exact HEAD, tree, index, clean
-state, no untracked files, and full projection: exactly 8 prechecks, 8
+state, no untracked files, and full projection: exactly 12 prechecks, 12
 postchecks, and zero runtime-object checks. Runtime derives equal C/T from the
-E9 certificate/carrier and performs exactly 8 object prechecks and 8 object
+E9 certificate/carrier and performs exactly 12 object prechecks and 12 object
 postchecks, with zero evidence-worktree checks. It ignores current main HEAD,
 index, worktree, ref, and all live `.gravity` source bytes. Its Clojure/JVM/JAR
 executable substrate is the separately bound trusted-runtime TCB below, not
@@ -223,7 +389,7 @@ Gravity evidence authority. Arbitrary wrapper output grants no
 authority; a private 00947 load-local gate validates carrier, pins, receipt,
 and session identity. G9 is static publication proof, never runtime input.
 
-Each A, B, and M session records exactly 8 acquisitions, 8 strict decodes, 22
+Each A, B, and M session records exactly 12 acquisitions, 12 strict decodes, 39
 events, and 1 finalize. Accepted `:new` work is `[3 3 3 2 2]`, total 13;
 accepted `:existing` work is `[2 2 2 2 2]`, total 10. Sentinels are
 nonauthoritative. The authenticated edge census remains exactly 1480.
@@ -234,7 +400,8 @@ L is the narrow already-loaded host launcher in
 `gravity.tools.sh07-b51-git-evidence`. L may locate `/usr/bin/git`, validate the
 clean C worktree, read immutable Git objects, materialize the four-entry
 C-derived classpath, and construct exactly one M `ProcessBuilder`. L may not
-load the M, A, B, bootstrap, checker, or materializer namespaces, decode a
+load the M, A, B, bootstrap, checker, or materializer namespaces; its only
+additional project dependency is the shared V9 codec defined below. It may not decode a
 Gravity source blob, compute a checker product, author a semantic payload, or
 validate a carrier. It may assemble only the closed final process receipt from
 M's six staged payloads plus L's retained process observations. Its source
@@ -243,18 +410,33 @@ materialization, process handle, bounded stdout/stderr capture, and cleanup
 are recorded in `LAUNCHER-RECEIPT`. L is a declared local TCB boundary, never
 Gravity semantic or evidence authority.
 
-M is a fresh coordinator/materializer JVM launched by L from the exact
-C-derived classpath and entrypoint specified below. M's transitive loaded and
-source closure has
-no require, load, resolve, invoke, alias, Var, or symbol reference to either
-checker namespace or entrypoint. The current direct requires in
+M is a fresh coordinator JVM launched by L from the exact C-derived classpath
+through the minimal
+`gravity.tools.sh07-b51-attempt32-coordinator-child` entrypoint at
+`bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_coordinator_child.clj`.
+That entrypoint has no project namespace in its `ns :require`; it uses only
+`clojure.core`, `clojure.edn`, `clojure.string`, and Java platform classes for
+its entry preflight. It validates actual process, argv, environment, working
+directory, the literal CP entries, C/T syntax, and output-root syntax before
+dynamically loading the shared codec from the already byte-validated C-derived
+CP. It then validates the canonical classpath manifest root and only afterward
+lazily requires the materializer. A project namespace loaded before the first
+preflight, or any project namespace other than the codec before the manifest-
+root preflight, rejects. M's transitive loaded and
+source closure has no require, load, resolve, invoke, alias, Var, or Clojure
+symbol reference to either checker namespace or child entrypoint. The child
+main class name may occur only as the exact opaque string token in A/B argv;
+no code may intern, read, resolve, or invoke that string. The current direct requires in
 `sh07_b51_attempt32_tier0_materializer.clj` are the mandatory negative fixture.
 This rule covers every helper M loads before or during the run.
 
 The only child entrypoint is
 `gravity.tools.sh07-b51-attempt32-checker-child`, at
 `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_child.clj`.
-After strict validation it lazily loads exactly one mapping:
+Its `ns` form requires no project namespace. It performs the same two-stage
+literal-CP then shared-codec/canonical-manifest preflight as M. After strict
+request/process validation it lazily loads the C-bound
+`gravity.bootstrap` product constructor and then exactly one checker mapping:
 
 | CLI role | EDN role | Checker namespace |
 | --- | --- | --- |
@@ -263,6 +445,18 @@ After strict validation it lazily loads exactly one mapping:
 
 An A child referencing or loading B, or B referencing or loading A, rejects in
 its loaded-namespace and source-closure receipt.
+
+The request deliberately carries C/T and roots rather than M-built semantic
+products. Each child opens its own twelve-blob governed C/T session, invokes
+`gravity.bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products` to
+construct its complete `:m0s`, `:m1`, `:m2s`, `:bundle-core`, and
+`:source-forms` envelope, finalizes that session, and only then invokes its one
+selected checker. The child response binds the constructed envelope IDs and
+source receipt. No semantic envelope crosses from M, A, or B into another
+participant. M starts its third independent session only after B validates,
+reconstructs the same complete envelope, and uses the neutral parent validator
+to compare both child results. Static requires, load events, and loaded
+namespace receipts prove this order.
 
 The semantic coordinator ordinals are exactly:
 
@@ -314,7 +508,8 @@ plus Java/JVM versions. Observed `java.home` is
 `/opt/homebrew/Cellar/openjdk/26.0.1/libexec/openjdk.jdk/Contents/Home`, OpenJDK
 26.0.1; this absolute observation is receipt-only.
 
-CP comes from `java.class.path`, uses Darwin `:`, and has exactly four ordered
+L derives the external three JAR entries from its observed `java.class.path`;
+the complete child CP uses Darwin `:` and has exactly four ordered
 semantic entries:
 
 1. `project/bootstrap-clojure-src` at C/T, materialized from Git objects
@@ -324,14 +519,17 @@ semantic entries:
 4. `org.clojure/spec.alpha` 0.5.238, providing `clojure.spec.alpha` and
    `clojure.spec.gen.alpha`
 
-Each binds canonical path, logical coordinate, file key, count, and SHA-256. For
-entry 0, M enumerates every mode-100644 blob below
-`C:bootstrap/clojure/src`, in Git byte-path order, and builds an exact manifest
-row `[relative-path blob-oid byte-count sha256]`. It materializes those bytes
-into a fresh private mode-0700, symlink-free directory, checks every row before
-child start and after child exit, and computes entry byte-count as the sum and
-entry SHA-256 as the canonical manifest-root hash. The directory path and file
-keys are receipt-only; the C objects and manifest root are authority. No
+Each binds canonical path, logical coordinate, file key, count, and SHA-256. L,
+before M can exist, enumerates every mode-100644 blob below
+`C:bootstrap/clojure/src` in Git byte-path order and builds exact manifest rows
+`[relative-path blob-oid byte-count sha256]`. L materializes those bytes into a
+fresh private mode-0700, symlink-free directory and computes entry byte-count
+as the sum and entry SHA-256 as the canonical manifest-root hash. M never
+creates or mutates classpath entry 0; it independently validates every Git
+object, manifest row, materialized byte, mode, and file identity at entry and
+exit and around each child. L validates the same closure before M start and
+after M exit. The directory path and file keys are receipt-only; the C objects
+and manifest root are authority. No
 worktree `bootstrap/clojure/src` directory is placed on CP. All blobs, including
 the 124 current non-Clojure resources and the numbered component fragments,
 remain in the byte manifest and materialized projection.
@@ -352,7 +550,7 @@ Exact M argv, constructed by L without a shell, is:
  "-Duser.language=en" "-Duser.country=US" "-Duser.timezone=UTC"
  "-Djava.awt.headless=true" "-Dclojure.main.report=stderr"
  "-Duser.home=/nonexistent" "-cp" CP "clojure.main" "-m"
- "gravity.tools.sh07-b51-attempt32-materialize"
+ "gravity.tools.sh07-b51-attempt32-coordinator-child"
  "--mode" MODE
  "--snapshot-commit" C "--snapshot-tree" T
  "--completed-at" "1970-01-01T00:00:00Z"
@@ -371,6 +569,12 @@ repeats the source-closure and materialized-byte checks. After M exits, L
 repeats them a third time, validates M's closed response and process receipt,
 then deletes the materialized directory in `finally`. Precheck, M-entry,
 M-exit, and L-postcheck roots must be identical.
+
+CLI/EDN conversion is one closed bijection: string `"new"` maps only to
+keyword `:new`, `"existing"` only to `:existing`, `"producer-census"` only to
+`:producer-census`, and `"independent-verifier-census"` only to
+`:independent-verifier-census`. Strings never appear in EDN mode/role fields,
+keywords never appear in argv, and every other spelling or coercion rejects.
 
 Exact A argv:
 
@@ -402,21 +606,47 @@ receipt-only. M clears inherited environment and sets exactly:
 and `PATH` are absent. Any injection or extra variable rejects.
 
 L uses that identical closed environment for M. `LAUNCHER-RECEIPT` has exactly
-`:launcher-source-closure :git :java :classpath-precheck :m-argv :m-argv-id
-:environment :working-directory :m-process-handle-id :m-process
-:m-response-transport :m-response-byte-count :m-response-sha256
-:m-response-preimage-id :classpath-postcheck :cleanup :receipt-id`. `:m-process` has the
-same PID, parent, command, arguments, runtime-MXBean, start, exit, and distinct
-process fields required of A and B. `:cleanup` is exactly
-`{:finally-entered true :stdin-closed true :stdout-closed true
-:stderr-closed true :process-terminated true :tasks-joined true
-:materialized-directory-deleted true :staging-resolved true}`. M's self receipt must join L's retained
-process handle, report L as parent, and reproduce the same normalized argv,
-environment, and classpath roots. The launcher receipt is included in E9's
-identity receipt and its normalized ID is recomputed during object-only review.
-L begins independent bounded stdout and stderr drains before waiting for M,
-allows no M stdin bytes, and applies the same 1 GiB stdout, 1 MiB stderr, and
-shared deadline/forced-termination rules used for A and B.
+`:schema :launcher-source-closure :launcher-process :git :java
+:classpath-precheck :m-argv :m-argv-id :environment :working-directory
+:m-process-handle-id :m-process :m-process-join :m-response-transport
+:m-response-byte-count :m-response-raw-sha256 :m-response-preimage-id
+:classpath-postcheck :publication :cleanup :receipt-id`. Schema is
+`:gravity/sh07-b51-launcher-receipt-v1`; launcher source closure is the closed
+SOURCE-CLOSURE containing only the launcher and shared codec; launcher process
+is SELF-PROCESS; M process is RETAINED-PROCESS; and its join is PROCESS-JOIN.
+Classpath pre/post checks each have exactly `:phase :entries :manifest-root
+:equal-to-entry-root`, with phases `:l-pre-m` and `:l-post-m` and the final
+flag true.
+
+`m-response-transport` has exactly `:stdin-byte-count :stdin-raw-sha256
+:stdin-closed-before-wait :stdout-cap :stderr-cap :deadline-ms
+:stdout-drain-started-before-wait :stderr-drain-started-before-wait
+:stdout-drain-complete :stderr-drain-complete :timed-out :destroy-called
+:destroy-forcibly-called :tasks-joined`. The values are respectively 0,
+`R(empty-bytes)`, true, 1073741824, 1048576, 3600000, true, true, true, true,
+false, false, false, true on success. M response bytes are W(response), byte
+count is their length, raw SHA is R(bytes), and preimage ID is the response's
+domain-bound H value. Publication has exactly `:mode :final-relative-path
+:reservation-created :reservation-file-key :files-created
+:commit-marker-last :foreign-entry :outcome`. Mode is `:new` or `:existing`;
+final relative path is the fixed safe repository-root-relative E9 evidence
+directory; reservation-created is a boolean; reservation file key is a
+nonempty receipt-only string when created and nil otherwise; files-created is
+the exact ordered artifact-path vector in `:new` and empty in `:existing`;
+commit-marker-last is true; foreign-entry is false; and outcome is
+`:published` or `:reused`, matching mode. The receipt-only normalizer replaces
+the reservation file key at this exact field and nowhere else. Cleanup is
+exactly `{:finally-entered true
+:stdin-closed true :stdout-closed true :stderr-closed true
+:process-terminated true :tasks-joined true
+:materialized-directory-deleted true :staging-resolved true}`.
+
+M's self receipt must join L's retained process handle, report L as parent, and
+reproduce the same normalized argv, environment, and classpath roots. The
+launcher receipt is included in E9's identity receipt and its normalized ID is
+recomputed during object-only review. L begins independent bounded stdout and
+stderr drains before waiting for M, allows no M stdin bytes, and applies the
+same caps and deadline/forced-termination rules used for A and B.
 
 M's successful stdout is one canonical closed response with exactly `:schema
 :status :mode :content :payload-descriptors :staging-receipt
@@ -437,6 +667,30 @@ domain below. No final identity-receipt ID/descriptor, launcher process handle,
 PID, raw stdout hash, or launcher receipt is present, so L can add those
 observations without a cycle.
 
+The six `PAYLOAD-DESCRIPTOR` rows are ordered exactly as
+`[[0 "checker-a-identity.edn" :checker-identity]
+[1 "checker-b-identity.edn" :checker-identity]
+[2 "checker-a-output.edn" :checker-output]
+[3 "checker-b-output.edn" :checker-output]
+[4 "certificate-pair.edn" :certificate-pair]
+[5 "linked-carrier-v4-candidate.edn" :linked-carrier]]`. Each row has exactly
+`:ordinal :name :kind :relative-path :wire-codec :byte-count :raw-sha256
+:value-id`. Wire codec is `:gravity/sh07-b51-edn-wire-v1`; relative path is the
+validated E9 root plus name; byte count is `alength(W(V))`; raw SHA is
+`R(W(V))`; and value ID is
+`H([:gravity/sh07-b51-staged-payload-value-v1 {:ordinal N :name NAME :kind KIND
+:value V}])`. No blob OID exists before E9. An E9 object descriptor adds
+exactly `:mode "100644" :type "blob" :blob-oid OID` and requires Git blob
+bytes to equal W(V).
+
+`M-COUNTERS` has exactly `:work :source-session :process :ipc`. Work is the
+closed WORK value. Source session is 12/12/39/1. Process is exactly
+`{:builder-count 2 :child-count 2 :start-count 2 :exit-count 2
+:overlap-count 0}`. IPC is exactly `{:request-count 2 :response-count 2
+:request-max-bytes 4194304 :response-max-bytes 1073741824
+:stderr-max-bytes 1048576 :deadline-ms 3600000}`. The staging receipt and payload descriptors use
+the exact schemas above; no open `:counters` or descriptor slot remains.
+
 M retains each `Process` and pipe as authority. It immediately captures PID,
 parent PID, command, args, and startInstant. The child reports current PID and
 parent plus RuntimeMXBean name matching `^([0-9]+)@(.+)$`, start-time millis,
@@ -445,12 +699,37 @@ M are distinct. PID reuse or mismatch fails closed. PID, host, and time are
 required well-formed receipt-only fields, never authority comparisons; the
 semantic ordinals above are ordering authority.
 
+Self-report and parent-observed exit state are distinct closed types.
+`SELF-PROCESS` has exactly `:role :pid :parent-pid :command :arguments
+:start-instant`; role is `:launcher`, `:m`, `:producer-census`, or
+`:independent-verifier-census`, PIDs are positive integers, arguments are a
+string vector, and start is an ISO-8601 instant. `RETAINED-PROCESS` has exactly
+`:role :process-handle-id :pid :parent-pid :command :arguments :start-instant
+:lifecycle :exit-code`. Lifecycle has exactly `:domain :builder-ordinal
+:start-ordinal :exit-ordinal`; domain is `:launcher` for M and `:coordinator`
+for A/B. The literal ordinal triples are M `[0 1 2]`, A `[1 2 3]`, and B
+`[5 6 7]`; exit is 0. Exit state never appears in a child self-report.
+
+`PROCESS-JOIN` has exactly `:self-and-retained-pid-equal
+:self-and-retained-parent-pid-equal :self-and-retained-command-equal
+:self-and-retained-arguments-equal :self-and-retained-start-instant-equal
+:mxbean-pid-equal :mxbean-host-equal`, all true. The complete receipt also has
+exactly `:pid-vector [M-PID A-PID B-PID] :pairwise-distinct true
+:parent-edges [[L-PID M-PID] [M-PID A-PID] [M-PID B-PID]]`. These joins are
+validated from retained handles and self reports before normalization; no PID
+is semantic authority.
+
 ## Exact canonical identity contract
 
 Every phrase in this report of the form "the canonical hash under DOMAIN of
-PAYLOAD" is normative shorthand for the exact call
-`gravity.c2-artifact-identity/reader-canonical-hash` on the two-element vector
-`[DOMAIN PAYLOAD]`. It is never a hash of PAYLOAD alone and never a caller's
+PAYLOAD" is normative shorthand for the exact function `H([DOMAIN PAYLOAD])`.
+`H`, `W`, and `R` are the three public functions of the new shared leaf
+`gravity.tools.sh07-b51-v9-codec` at
+`bootstrap/clojure/src/gravity/tools/sh07_b51_v9_codec.clj`. L, M, A, and B
+load this same C-bound leaf; no participant defines, copies, wraps, or selects a
+second encoder or digest implementation. The codec statically requires only
+`clojure.core`, `gravity.c2-artifact-identity.canonical`, and
+`gravity.digest`. It is never a hash of PAYLOAD alone and never a caller's
 choice of serializer. The authoritative implementation is the exact C/T Git
 object closure containing
 `bootstrap/clojure/src/gravity/c2_artifact_identity.clj`,
@@ -459,12 +738,22 @@ object closure containing
 and raw SHA-256 are recorded in every A/B/M TCB and verified before and after
 each process.
 
-That implementation recursively projects maps, sets, vectors, and sequences
-with `reader-canonical-value`; deterministically orders the decorated map/set
+`H(v)` is exactly the result of this non-interposable leaf composition:
+
+```clojure
+(letfn [(rcv [x]
+          (gravity.c2-artifact-identity.canonical/reader-canonical-value
+           rcv x))]
+  (gravity.c2-artifact-identity.canonical/reader-canonical-hash
+   gravity.digest/sha256-hex rcv v))
+```
+
+It recursively projects maps, sets, vectors, and sequences with
+`reader-canonical-value`; deterministically orders the decorated map/set
 entries exactly as the C implementation does; then binds `*print-length*` and
 `*print-level*` to nil and `*print-meta*` to true, applies `pr-str`, hashes the
 resulting UTF-8 bytes with SHA-256, renders 64 lowercase hexadecimal digits,
-and prefixes `sha256:`. The C implementation and
+and prefixes `sha256:`. `H` and
 `gravity.bootstrap/reader-canonical-hash` must return byte-identical strings
 for every admitted identity preimage and every mutation fixture. Maps with an
 extra or omitted key, a non-vector domain wrapper, metadata drift, alternate
@@ -488,15 +777,30 @@ Facade interposition, a
 second encoder, reordered load entries, or disagreement among these composed
 paths and the canonical leaf rejects.
 
-Wire bytes are a separate exact function `W(v)`: recursively order maps and
-sets using the C-derived `ordered-value` comparator from
-`gravity.tools.sh07-b51-attempt32-materialize`, bind the same three print Vars,
-emit `pr-str`, append exactly one LF byte, then UTF-8 encode. Strict reload must
-reproduce `v` and `W(v)` byte-for-byte. Raw byte identity is
-`R(b) = "sha256:" + lowercaseHex(SHA256(b))` using
-`gravity.digest/sha256-bytes-hex`. Every fresh M/A/B process runs the same
+Wire bytes are the codec's separate exact function `W(v)`. It first applies
+the codec-local `ordered-value`. Its comparator is `compare` over
+`pr-str(rcv(x))`; it recursively emits maps as `sorted-map-by` values and sets
+as `sorted-set-by` values under that comparator, vectors with `mapv`,
+sequences with `list`, and scalars unchanged. It then binds `*print-length*` and
+`*print-level*` to nil and `*print-meta*` to true, emits `pr-str`, appends
+exactly one LF byte, and UTF-8 encodes. Strict reload decodes UTF-8 without
+replacement, binds `*read-eval*` false, uses `:readers {}` and a rejecting
+`:default` tag handler, parses exactly one plain-EDN form followed by EOF,
+reproduces `v`, and reproduces `W(v)`
+byte-for-byte. Every V9 E9 and G9 EDN blob and every IPC request/response is
+exactly `W(v)`; no prose-only "canonical EDN" encoding is permitted. Raw byte
+identity is the codec's `R(b) = "sha256:" +
+gravity.digest/sha256-bytes-hex(b)`. Every field named `:sha256` or
+`*-sha256` is explicitly either `R(bytes)` or an `H` identity in its closed
+schema; an untyped SHA field rejects. L and every fresh M/A/B process run the same
 closed parity vector for every H, W, and R identity family before evidence is
 eligible.
+
+The UTF-8 decoder uses `CharsetDecoder` with both malformed-input and
+unmappable-character actions set to `CodingErrorAction/REPORT`; constructing a
+String directly from bytes is forbidden. The strict EDN reader rejects
+duplicate map keys and any comparator-key collision between distinct admitted
+encoded values before W or H is evaluated.
 
 Raw blob, stdin, stdout, and stderr SHA-256 fields are deliberately different:
 they hash the literal byte arrays with
@@ -512,7 +816,9 @@ The V9-created canonical identities use exactly these domains and payloads:
 | loaded namespace root | `:gravity/sh07-b51-loaded-namespace-root-v1` | closed loaded-namespace map with `:root` omitted |
 | host surface root | `:gravity/sh07-b51-host-surface-root-v1` | closed host-surface map with `:root` omitted |
 | source descriptor root | `:gravity/sh07-b51-source-descriptors-root-v1` | exact ordered descriptor vector |
+| I9 preservation root | `:gravity/sh07-b51-i9-preservation-root-v1` | exact UTF-8-byte-sorted C/B preserved-blob vector |
 | source event root | `:gravity/sh07-b51-source-event-root-v1` | exact dense event vector |
+| source event product ID | `:gravity/sh07-b51-source-event-product-id-v1` | exact event coordinate plus parsed consumer product |
 | request ID | `:gravity/sh07-b51-checker-request-id-v1` | exact closed request map |
 | argv ID | `:gravity/sh07-b51-process-argv-id-v1` | exact argv string vector |
 | response preimage ID | `:gravity/sh07-b51-response-preimage-id-v1` | exact closed response with only `[:transport :response-preimage-id]` omitted |
@@ -525,6 +831,13 @@ The V9-created canonical identities use exactly these domains and payloads:
 | normalized payload semantic root | `:gravity/sh07-b51-payload-semantic-root-v1` | exact ordered six parsed sibling payload projections after receipt-only replacement |
 | launcher receipt ID | `:gravity/sh07-b51-launcher-receipt-id-v1` | normalized launcher receipt with only `:receipt-id` omitted |
 | evidence receipt ID | `:gravity/sh07-b51-checker-process-identity-receipt-id-v1` | normalized whole evidence receipt with only `:receipt-id` omitted |
+| contract document event root | `:gravity/sh07-b51-contract-document-event-root-v1` | exact dense 31-row contract-read event vector |
+| contract discharge row root | `:gravity/sh07-b51-contract-discharge-row-root-v1` | exact literal 19-row discharge vector |
+| evidence-eligibility receipt ID | `:gravity/sh07-b51-evidence-eligibility-receipt-v1` | exact external receipt with only `:receipt-id` omitted |
+| I9 integration receipt ID | `:gravity/sh07-b51-i9-integration-receipt-v1` | exact external receipt with only `:receipt-id` omitted |
+| G9 lifecycle receipt ID | `:gravity/sh07-b51-g9-lifecycle-receipt-v1` | exact external receipt with only `:receipt-id` omitted |
+| A9 lifecycle receipt ID | `:gravity/sh07-b51-a9-lifecycle-receipt-v1` | exact external receipt with only `:receipt-id` omitted |
+| P9 publication receipt ID | `:gravity/sh07-b51-p9-pin-publication-receipt-v1` | exact external receipt with only `:receipt-id` omitted |
 
 The existing checker artifact, semantic, executable, dependency-closure, and
 identity-manifest domains remain the literal role-specific domains in
@@ -532,14 +845,25 @@ identity-manifest domains remain the literal role-specific domains in
 domains remain the two literal domains printed in the response schema. No
 domain is inferred from a field name.
 
+Field identity typing is closed. Every `:source-sha256`,
+`:architecture-report-sha256`, executable/JAR `:sha256`, and other field whose
+enclosing schema calls it a byte SHA is R of the exact named bytes. Classpath
+entry 0's `:sha256` is the H classpath-manifest root, while entries 1-3 are R
+of JAR bytes. Every `*-id`, `*-root`, `:artifact-id`, `:semantic-id`,
+`:executable-id`, `:dependency-closure-id`, `:manifest-id`, `:claim-id`,
+`:normalized-census-id`, `:output-id`, and `:certificate-id` is H under the
+literal domain declared here or in the immutable role-specific checker spec.
+Git `:oid`/`:blob-oid` fields are 40-hex SHA-1 object names, never H or R.
+There is no untyped digest slot and no conversion between these families.
+
 ## Closed IPC request
 
 The request is one strict canonical EDN form plus EOF:
 
 ```clojure
-{:schema :gravity/sh07-b51-checker-child-request-v1
+{:schema :gravity/sh07-b51-checker-child-request-v2
  :role :producer-census|:independent-verifier-census
- :content {:commit C :tree T :source-descriptors-root SHA :masked-root SHA}
+ :content {:commit C :tree T}
  :evidence {:mode :new|:existing
             :architecture-report-sha256 SHA
             :profile-bounds
@@ -562,12 +886,15 @@ The request is one strict canonical EDN form plus EOF:
              :offline-transcript-maximum-bytes 268435456}}
  :limits {:request-max-bytes 4194304
           :response-max-bytes 1073741824
-          :stderr-max-bytes 1048576}}
+          :stderr-max-bytes 1048576
+          :deadline-ms 3600000}}
 ```
 
 C/T are 40 lowercase hex Git IDs and SHA is `sha256:` plus 64 lowercase hex.
 All key sets are exactly shown. Role and mode are the shown keyword
 alternatives. Bounds have exactly 17 keys; limits are the shown keyed map.
+The child independently derives `source-descriptors-root` and `masked-root`
+from its own governed session; neither is a caller-supplied request field.
 
 ## Closed IPC response
 
@@ -586,9 +913,9 @@ The response is one strict canonical EDN form plus EOF:
           :production PRODUCTION
           :sentinel SENTINEL}
  :counters {:work WORK
-            :source-session {:acquire-count 8
-                             :decode-count 8
-                             :event-count 22
+            :source-session {:acquire-count 12
+                             :decode-count 12
+                             :event-count 39
                              :finalize-count 1}
             :process {:child-count 1
                       :start-count 1
@@ -598,15 +925,17 @@ The response is one strict canonical EDN form plus EOF:
                   :response-count 1
                   :request-max-bytes 4194304
                   :response-max-bytes 1073741824
-                  :stderr-max-bytes 1048576}}
+                  :stderr-max-bytes 1048576
+                  :deadline-ms 3600000}}
  :tcb {:manifest-id SHA
        :role ROLE
-       :process PROCESS
+       :process SELF-PROCESS
        :runtime-mxbean RUNTIME-MXBEAN
        :java EXECUTABLE
        :git EXECUTABLE
        :classpath CLASSPATH
        :environment ENVIRONMENT
+       :source-closure SOURCE-CLOSURE
        :loaded-namespace-receipt LOADED-NAMESPACES
        :host-surface HOST-SURFACE}
  :diagnostics DIAGNOSTICS}
@@ -642,10 +971,11 @@ placeholders. Their exact closed definitions are:
   extra-key, missing-key, and reordered-vector mutation. Only `:accepted`
   output succeeds.
 - `SOURCE-READ-RECEIPT` has exactly `:schema :role :mode :commit :tree
-  :source-descriptors :source-descriptors-root :event-root :counters
-  :finalized`. Schema is `:gravity/sh07-b51-source-read-receipt-v1`; the eight
+  :source-descriptors :source-descriptors-root :events :event-root :counters
+  :finalized`. Schema is `:gravity/sh07-b51-source-read-receipt-v2`; the twelve
   descriptors are closed below; counters equal response source counters;
-  finalized is true.
+  `:events` is the exact
+  dense 39-row vector below; finalized is true.
 - `PRODUCTION` and `SENTINEL` each have exactly `:schema :role :status
   :artifact-id :output-id :authority`. Schemas are respectively
   `:gravity/sh07-b51-checker-production-v1` and
@@ -657,9 +987,8 @@ placeholders. Their exact closed definitions are:
   under domain `:gravity/sh07-b51-checker-result-output-id-v1`, of the map with
   only `:output-id` omitted, so it includes the already-derived `artifact-id`.
   This order is mandatory and acyclic.
-- `PROCESS` has exactly `:pid :parent-pid :command :arguments :start-instant`.
-  PIDs are positive integers; command/args equal the retained handle; start is
-  ISO-8601 and receipt-only.
+- `SELF-PROCESS` is the exact self-report type above. Its role equals ROLE;
+  command/arguments equal the retained handle and start is receipt-only.
 - `RUNTIME-MXBEAN` has exactly `:name :pid :host :start-time-millis :vm-name
   :vm-vendor :vm-version :java-version :java-vendor :java-class-path`. Name
   parses to the same positive PID and a nonempty host; time is nonnegative and
@@ -675,6 +1004,15 @@ placeholders. Their exact closed definitions are:
 - `ENVIRONMENT` is exactly `{:working-directory STRING :variables MAP}`;
   variables equal the seven-entry environment and directory is the canonical
   repository-root observation.
+- `SOURCE-CLOSURE` has exactly `:role :entrypoint :static-project-namespaces
+  :dynamic-project-namespaces :source-records :forbidden-namespaces :root`.
+  Static and dynamic vectors are sorted distinct symbols, source records use
+  the closed loaded-namespace source-record schema, forbidden namespaces are
+  absent from both vectors, and root H-hashes the other fields. For A/B the
+  bootstrap constructor precedes exactly the selected checker in the recorded
+  dynamic-load event vector. For M, the checker and child symbols are absent
+  except for the child main's opaque argv string, which is not a namespace
+  value.
 - `LOADED-NAMESPACES` has exactly `:role :project-namespaces
   :external-namespaces :source-records :forbidden-overlap :root`. Namespace
   vectors are sorted distinct symbols; source records have exactly
@@ -715,23 +1053,37 @@ role-specific manifest domain of the entire checker-identity map with only
 only `:manifest-id` omitted. Those omission paths are fixed and no other field
 is omitted.
 
-A source descriptor has exactly `:ordinal :role :module-ordinal :path
-:blob-oid :byte-count :sha256`. Ordinal, role, module ordinal (`nil` only for
-compiler), and path match the table. OID is 40 lowercase hex, count nonnegative,
-and SHA strict. Descriptor and event roots canonically hash exact ordered
+A source descriptor has exactly `:ordinal :kind :module-ordinal :path :mode
+:blob-oid :byte-count :raw-sha256`. Ordinal, kind, module ordinal (`nil` for every
+non-module kind), and path match the table; mode is `"100644"`. OID is 40 lowercase hex, count nonnegative,
+and raw SHA is R(blob bytes). Descriptor and event roots canonically hash exact ordered
 vectors.
 
 An event has exactly `:ordinal :domain :source-ordinal :module-ordinal
-:consumer :source-sha256 :product-id`. Events 0-6 use domain
-`:module-validation`, source/module ordinals 0-6, and consumer
-`gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*`; events 7-13 use
-`:callsite-census`, source/module ordinals 0-6, and consumer
-`gravity.bootstrap/p15-s23-sh07-b51-derive-callsite-census`; events 14-20 use
-`:link-authority`, source/module ordinals 0-6, and consumer
-`gravity.bootstrap/p15-s23-sh07-b51-build-link-authority-from-census`; event 21
-uses domain `:compiler-emitter`, source ordinal 7, nil module ordinal, and
-consumer `gravity.bootstrap/p15-s23-sh07-b51-current-emitter`. Both hashes are
-strict SHA-256. The event root hashes this exact dense vector.
+:consumer :source-raw-sha256 :product-id`. Events 0, 1, and 2 use source ordinals
+0, 1, and 2, nil module ordinal, domains `:l1-contract`, `:l2-contract`, and
+`:checked-core-revision`, and consumers
+`gravity.bootstrap/p15-s23-sh07-b51-l1-contract`,
+`gravity.bootstrap/p15-s23-sh07-b51-l2-contract`, and
+`gravity.bootstrap/p15-s23-sh07-b51-checked-core-contract`. Events 3-9 use
+domain `:module-validation`, source ordinals 3-9, module ordinals 0-6, and
+consumer `gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*`; events
+10-16 use `:callsite-census` with the same source/module ordering and consumer
+`gravity.bootstrap/p15-s23-sh07-b51-derive-callsite-census`; events 17-23 use
+`:link-authority` with that ordering and consumer
+`gravity.bootstrap/p15-s23-sh07-b51-build-link-authority-from-census`. Event
+24 uses `:compiler-emitter`, source ordinal 10, nil module ordinal, and consumer
+`gravity.bootstrap/p15-s23-sh07-b51-current-emitter`. Events 25-31 use
+`:source-authority`, source ordinals 3-9, module ordinals 0-6, and consumer
+`gravity.bootstrap/p15-s23-sh07-b51-current-module-source-authority`. Events
+32-38 use `:compiler-artifact-binding`, source ordinal 11, module ordinals 0-6,
+and consumer `gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding`.
+Within every seven-row group module order is 0-6. Both hashes are strict
+SHA-256. `source-raw-sha256` is R of the descriptor bytes; `product-id` is
+`H([:gravity/sh07-b51-source-event-product-id-v1 {:ordinal N :domain DOMAIN
+:consumer CONSUMER :source-raw-sha256 SHA :product PRODUCT}])`. The event root
+hashes this exact dense vector. No descriptor or event
+may be synthesized from a live pathname.
 
 ### Literal V9 census schema
 
@@ -912,7 +1264,7 @@ maxima sum to 596639744 bytes, leaving 477102080 bytes of mandatory envelope
 headroom inside 1073741824.
 
 The checker-output number is an observed-closed-fixture gate, not a new general
-census limit. Because C/T and all eight inputs are exact, A and B independently
+census limit. Because C/T and all twelve inputs are exact, A and B independently
 measure the canonical byte count of their one deterministic output before
 response construction; each count must be at most 536870912 and is persisted
 in the child process receipt. M reconstructs and remeasures both outputs from
@@ -951,13 +1303,24 @@ and postchecks them before returning its compact response; it cannot construct
 the seventh file because it cannot observe its own parent launch without a
 cycle. L validates the closed M response and exact six staged byte descriptors,
 constructs `LAUNCHER-RECEIPT`, constructs the seventh receipt from those closed
-inputs, writes it once, reloads all seven blobs, and atomically renames the
-complete directory to the E9 relative root. In `:existing`, L requires the
+inputs, and publishes with a no-overwrite reservation protocol. L calls
+`Files.createDirectory(FINAL)` exactly once without an earlier authoritative
+absence check; an existing empty or nonempty target rejects. It records the
+new directory file key, then installs the six staged files into FINAL in order
+with create-new semantics. It writes `identity-receipt.edn` last with
+`StandardOpenOption/CREATE_NEW`; that seventh file is the sole publication
+commit marker. A reader treats FINAL as unpublished until that marker exists
+and then requires exactly the seven files and byte-validates all of them. This
+does not claim an atomic directory rename; it provides atomic no-overwrite
+reservation plus fail-closed visibility. In `:existing`, L requires the
 already-published seven files to be byte-identical and writes nothing. On every
-failure, L's `finally` terminates processes, closes/joins streams, and deletes
-an unpublished stage. L records process provenance but cannot change any of
-the six semantic payloads. This one-way M-response -> L-receipt construction
-has no response/receipt identity cycle.
+failure, L's `finally` terminates processes, closes/joins streams, and removes
+only an unpublished directory whose recorded file key still matches and whose
+entries are a prefix of L's exact create-new writes; a foreign entry or changed
+file key is quarantined and rejects without deletion. L records process
+provenance but cannot change any of the six semantic payloads. This one-way
+M-response -> L-receipt construction has no response/receipt identity cycle
+and cannot replace the erratum's racing empty directory.
 
 Review and reload use `/usr/bin/git cat-file blob` on exact E9 objects. Each OID
 is 40 lowercase hex and each count/SHA-256 is recomputed. The receipt joins C,
@@ -978,24 +1341,86 @@ observations. E9 has no other tree changes.
 :launcher-receipt LAUNCHER-RECEIPT
 :coordinator-receipt COORDINATOR
  :payload-joins PAYLOAD-JOINS
+ :evidence-eligibility EVIDENCE-ELIGIBILITY-JOIN
+ :contract-discharge CONTRACT-DISCHARGE
  :receipt-id-normalization NORMALIZATION
+ :self-id-omits [[:receipt-id]]
  :receipt-id SHA
  :nonclaims [:release :self-hosting :seed-retirement
              :hostile-host :sh07-complete]}
 ```
 
-Each child receipt has exactly `:role :ordinal-triple :argv :argv-id :request
-:request-id :response-transport :response-byte-count :response-sha256
-:response-reconstruction :exit-code :counters :tcb`. A's triple is `[2 3 4]`
-and B's `[6 7 8]`. Request, counters, and TCB are the exact closed values above.
-Response transport is the exact transport map. Response reconstruction has
-exactly `:schema :role :checker-identity-payload :checker-output-payload
-:source-read-receipt :production :sentinel :diagnostics`; the two payload
-fields are respectively `:checker-a-identity.edn`/`:checker-a-output.edn` or
-the B paths, and all other fields are the literal response values. Substituting
-the two referenced E9 payload values and the child receipt's counters/TCB into
-the closed response schema must reproduce canonical stdout byte-for-byte and
-therefore its byte count, SHA-256, and `response-preimage-id`. Exit code is 0.
+`EVIDENCE-ELIGIBILITY-JOIN` has exactly `:path :receipt-id :raw-sha256`.
+Path is the literal external eligibility receipt path above; receipt ID is its
+recomputed H identity; raw SHA is R of its exact W bytes. The eligibility
+receipt cannot reference E9, and E9 references only this already-fixed object,
+so the edge is one-way and acyclic.
+
+`CONTRACT-DISCHARGE` has exactly `:schema :content
+:document-read-receipt :rows :row-root :proof-scope :progress :nonclaims`.
+Schema is `:gravity/sh07-b51-contract-discharge-v1`; content is
+`{:commit C :tree T}`; progress is exactly `{:slice :SH-07 :status :partial
+:completed-stage-count 4 :total-stage-count 8}`; nonclaims are exactly
+`[:formal-proof :sh07-complete :self-hosting :release :seed-retirement]`.
+
+The document-read receipt has exactly `:schema :content :documents :events
+:event-root :counters :finalized`. Schema is
+`:gravity/sh07-b51-contract-read-receipt-v1`; it contains the 31 unique
+mode-100644 C objects named by this report's governing-contract list, in that
+literal list order after first-occurrence deduplication, plus 31 dense matching
+read events. Counters are exactly `{:acquire-count 31 :decode-count 31
+:event-count 31 :finalize-count 1}` and finalized is true. Each document
+descriptor has exactly `:ordinal :path :mode :blob-oid :byte-count
+:raw-sha256`; each event has exactly `:ordinal :document-ordinal :path
+:raw-sha256 :binding-ids`. This separate contract session is not folded into
+the 12-source semantic session.
+
+Rows are the literal 19-row vector in this order: `:agents`, `:foundation`,
+`:l1`, `:l2`, `:c2`, `:c6`, `:c11`, `:boot1`, `:boot2`, `:boot3`, `:boot4`,
+`:boot5`, `:boot6-8`, `:test10`, `:test11`, `:test13`,
+`:sh07-proof-contract`, `:backlog-ownership`, and
+`:catalog-checked-core-governance`. Each row has exactly `:ordinal :id
+:document-ordinals :sections :disposition :bindings :test-ids :diagnostic`.
+Sections are nonempty exact heading strings from the corresponding table row;
+disposition is `:applies`, `:preserved`, or `:not-applicable`; diagnostic is
+the table's literal keyword; and at least one binding is required. Each binding
+has exactly `:id :artifact :path :value-id`, where path is an EDN get-in vector
+and value ID is `H([:gravity/sh07-b51-contract-binding-v1 {:id ID :artifact
+ARTIFACT :path PATH :value (get-in ARTIFACT PATH)}])`. The row vector must
+equal an architecture-owned literal row-spec; runtime-selected headings,
+bindings, tests, blank vectors, or an unlisted row reject. Row root H-hashes
+the exact vector.
+
+Proof scope is exactly `{:evidence-kind :validation :formal-proof false
+:candidate-scope :sh07-b51-git-object-publication :proof-contract
+{:artifact :gravity/sh07-proof-process-contract :schema-version 2
+:status :active :coverage-milestone "SH-07-B47" :task "SH-07-B47"
+:input-task "SH-07-B15" :scope :sh07-b15-keyword-map-lookup
+:application :preserved-out-of-scope} :verification-catalog
+{:schema :gravity/verification-catalog-v1 :authority :non-authoritative
+:b51-route-id nil :verifier-root-id nil} :adopted-independent-controls
+[:fresh-authoritative-process :immutable-source-snapshot :immutable-receipts
+:bounded-execution :finally-cleanup] :b51-proof-contract-revision-required
+true}`. This explicitly prevents the B47/B15 contract or catalog from being
+misrepresented as B5.1 formal-proof authority.
+
+Each M-authored child receipt has exactly `:schema :role :ordinal-triple :argv
+:argv-id :request :response :process :process-join :counters :tcb`. Schema is
+`:gravity/sh07-b51-child-process-receipt-v1`; A's triple is `[2 3 4]` and B's
+is `[6 7 8]`. Request has exactly `:value :request-id :byte-count
+:raw-sha256`, where bytes are W(value), raw SHA is R(bytes), and request ID is
+the domain-bound H identity. Response has exactly `:transport :reconstruction
+:byte-count :raw-sha256 :response-preimage-id`; its bytes and raw SHA are W
+and R. Process is `RETAINED-PROCESS`, process join is `PROCESS-JOIN`, counters
+are the exact child counters, and TCB is the exact closed child TCB.
+Response reconstruction has exactly `:schema :role
+:checker-identity-payload :checker-output-payload :source-read-receipt
+:production :sentinel :diagnostics`; the two payload fields are respectively
+`:checker-a-identity.edn`/`:checker-a-output.edn` or the B paths, and all other
+fields are the literal response values. Substituting the two referenced E9
+payload values and the child receipt's counters/TCB into the closed response
+schema must reproduce W(response) byte-for-byte and therefore its byte count,
+raw SHA, and `response-preimage-id`.
 
 `COORDINATOR-EVENTS` is exactly 11 maps with exactly `:ordinal :event :role
 :process-handle-id :argv-id :request-id :response-preimage-id
@@ -1027,59 +1452,91 @@ overlapping events reject.
 `source-session-id` is the canonical hash under
 `:gravity/sh07-b51-governed-source-session-id-v1` of exactly `{:role ROLE
 :mode MODE :commit C :tree T :source-descriptors-root SHA :event-root SHA
-:counters {:acquire-count 8 :decode-count 8 :event-count 22
+:counters {:acquire-count 12 :decode-count 12 :event-count 39
 :finalize-count 1}}`. Every child ID is recomputed from its embedded
 `source-read-receipt`; M's ID is recomputed from the coordinator receipt. The
 ordinal-9 and ordinal-10 rows carry that same M ID. No object identity, path,
 PID, host, or time participates.
 
-Coordinator receipt has exactly `:process :runtime-mxbean :java :git
-:classpath :environment :loaded-namespace-receipt :host-surface
-:source-read-receipt :counters :a-validated-before-b-builder
+Coordinator receipt has exactly `:schema :process :runtime-mxbean :java :git
+:classpath-checks :environment :source-closure :load-events
+:loaded-namespace-receipt :host-surface :source-read-receipt
+:child-process-receipts :process-joins :coordinator-events
+:coordinator-event-root :counters :a-validated-before-b-builder
 :b-validated-before-m-session :launcher-process-handle-id
-:launcher-argv-id`; both booleans are true. Its launcher IDs equal the
-independently recomputed `LAUNCHER-RECEIPT` values. Its loaded namespace
-receipt excludes both checker namespaces and child entrypoint. Its process
-counters and source receipt join the G9 aggregates and semantic ordinals.
+:launcher-argv-id`. Schema is `:gravity/sh07-b51-coordinator-receipt-v1`;
+process is `SELF-PROCESS`; the two child receipts are exact A then B; process
+joins contains the exact pid vector, pairwise-distinct flag, parent edges, and
+per-process joins above; and both ordering booleans are true. `load-events` is
+a dense vector with exactly `:ordinal :operation :namespace :phase :allowed`;
+every allowed value is true and its order proves preflight, codec load,
+materializer load, A completion, B completion, then M bootstrap/session load.
+Classpath checks are exactly eight rows for phases `[:m-entry :pre-a :post-a
+:pre-b :post-b :pre-source-session :post-source-session :m-exit]`; each row
+has exactly `:phase :entries :manifest-root :equal-to-entry-root` and the final
+flag is true. Its launcher IDs equal the independently recomputed
+`LAUNCHER-RECEIPT` values. Its loaded namespace receipt excludes both checker
+namespaces and represents the child entrypoint only as the opaque argv string,
+not a loaded namespace. Its process counters and source receipt join the G9
+aggregates and semantic ordinals.
 
-PAYLOAD-JOINS has exactly `:checker-identity-sha256s
-:checker-output-sha256s :certificate-pair-sha256
-:linked-carrier-sha256`. The vectors are ordered A then B and every digest
+PAYLOAD-JOINS has exactly `:checker-identity-raw-sha256s
+:checker-output-raw-sha256s :certificate-pair-raw-sha256
+:linked-carrier-raw-sha256`. The vectors are ordered A then B and every digest
 equals a fresh raw hash of the named sibling blob. NORMALIZATION is exactly
-`{:replace-map-keys [:canonical-path :working-directory :file-key :pid
-:parent-pid :host :start-instant :start-time-millis :command :arguments
-:java-class-path :response-byte-count :staging-path]
-:argv-replacements [:java-executable :classpath :repository-root]
-:recompute-order [:payload-semantic-sha256s :classpath-manifest-root
-:loaded-namespace-root :host-surface-root :tcb-manifest-id :normalized-argv-id
-:normalized-response-preimage-id :normalized-response-byte-count
-:normalized-response-sha256
-:process-handle-id :m-argv-id :m-response-preimage-id :m-process-handle-id
-:launcher-receipt-id :coordinator-event-ids :coordinator-event-root
-:receipt-id]}`. All checker envelopes and provenance use the exact semantic
+`{:algorithm :gravity/sh07-b51-explicit-semantic-projection-v1
+:receipt-only :gravity/receipt-only
+:child-indexes [0 1] :classpath-indexes [0 1 2 3]
+:coordinator-classpath-phases [:m-entry :pre-a :post-a :pre-b :post-b
+:pre-source-session :post-source-session :m-exit]
+:recompute-order [:payload-value-ids :classpath-roots :argv-ids :request-ids
+:tcb-manifest-ids :response-values-and-transport :process-handle-ids
+:source-session-ids :coordinator-event-ids :coordinator-event-root
+:coordinator-receipt :m-response :launcher-receipt-id
+:contract-event-root :contract-row-root :receipt-id]}`. It does not perform a
+global map-key walk. It constructs a new normalized receipt from the closed
+role-specific functions below, so a same-named key at any unlisted path is
+untouched and an unrecognized path rejects.
+
+Let `RO` be `:gravity/receipt-only`. `N-ARGV` replaces only argv index 0 with
+`:gravity/java-executable` and index 11 with `:gravity/classpath`.
+`N-SELF-PROCESS` replaces exactly `:pid :parent-pid :command :arguments
+:start-instant` with RO. `N-RUNTIME-MXBEAN` replaces exactly `:name :pid :host
+:start-time-millis :java-class-path` with RO; therefore the embedded PID@host
+string cannot leak. `N-EXECUTABLE` replaces exactly `:canonical-path
+:file-key`; `N-CLASSPATH` applies that replacement to each of four entries;
+`N-ENVIRONMENT` replaces exactly `:working-directory`; `N-RETAINED-PROCESS`
+replaces exactly `:pid :parent-pid :command :arguments :start-instant` and
+recomputes rather than copies its process-handle ID; `N-STAGING` replaces only
+`:staging-path`.
+
+Those functions apply only at child receipt paths `[i :tcb :process]`, `[i
+:tcb :runtime-mxbean]`, `[i :tcb :java]`, `[i :tcb :git]`, `[i :tcb
+:classpath j]`, `[i :tcb :environment]`, and `[i :process]`; coordinator paths
+`:process`, `:runtime-mxbean`, `:java`, `:git`, `[:classpath-checks k :entries
+j]`, and `:environment`; and launcher paths `:launcher-process`, `:java`,
+`:git`, `[:classpath-precheck :entries j]`, `[:classpath-postcheck :entries
+j]`, `:environment`, `:working-directory`, `:m-process`,
+`:m-response-transport`, and `:cleanup`. Here i is 0 or 1, j is 0-3, and k is
+one of the eight literal phases. Receipt-only booleans/counters remain present;
+raw path/PID/time/process-control values at the listed paths become RO.
+
+Recomputation follows the literal order in NORMALIZATION: six payload value
+IDs; classpath manifest and semantic roots; normalized M/A/B argv IDs; A/B
+request IDs; normalized A/B/M TCB IDs; normalized A/B/M responses with W byte
+counts, R hashes, and response-preimage IDs; M/A/B process-handle IDs; three
+source-session IDs; coordinator event IDs left-to-right and event root;
+coordinator receipt; M response with W count/R hash/preimage ID; launcher
+receipt ID; contract event/row roots; and final receipt ID. Raw argv IDs,
+response IDs/hashes/counts, process-handle IDs, event IDs/roots, TCB/root IDs,
+and payload raw hashes are never copied into the normalized projection.
+
+All checker envelopes and provenance use the exact semantic
 string `"1970-01-01T00:00:00Z"` for `:completed-at` before any invocation,
 reproduction, certificate, evidence, carrier, output, or pin ID is computed.
-No wall-clock value enters a payload or payload-derived identity. First, every
-value at a listed map key is replaced by
-`:gravity/receipt-only`; exact JAVA, CP, and REPO strings in every argv are
-replaced by their three listed keywords, longest string first. Replacing
-`:command`, `:arguments`, and `:java-class-path` removes their duplicate raw
-JAVA/CP strings; normalized argv remains the semantic command coordinate.
-Replacing `:working-directory` and `:canonical-path` removes every duplicate
-REPO scalar. Next, every
-derived value named in `:recompute-order` is recomputed from the already
-normalized direct inputs, left to right. `:payload-semantic-sha256s` hashes the
-six parsed sibling values after the same recursive key replacement; raw
-payload SHA-256 values remain review observations but are replaced by these
-semantic hashes in the receipt-ID projection. Normalized response hashes are
-computed by reconstructing the whole response with normalized TCB, argv, and
-payload values. `:normalized-response-byte-count` is measured from those
-canonical bytes before their SHA-256. Raw `argv-id`, TCB/root IDs, response
-byte count/IDs/SHA, process-handle
-IDs, event IDs/roots, and payload hashes are never copied into a later
-normalized preimage. No other value changes. `receipt-id` is the canonical hash under
-`:gravity/sh07-b51-checker-process-identity-receipt-id-v1` of that normalized
-whole receipt with only `:receipt-id` omitted. E/TE, own blob OID/raw SHA, G9,
+No wall-clock value enters a payload or payload-derived identity. Receipt ID is
+`H([:gravity/sh07-b51-checker-process-identity-receipt-id-v1
+NORMALIZED-RECEIPT-WITHOUT-RECEIPT-ID])`. E/TE, own blob OID/raw SHA, G9,
 refs, branches, paths outside the seven payloads, wall-clock timestamps, PIDs, host names,
 file keys, and absolute host paths therefore do not enter the identity
 preimage, while their original receipt-only observations remain available for
@@ -1101,6 +1558,8 @@ It is strict canonical plain EDN with exactly:
  :object-format "sha1"
  :content CONTENT
  :evidence EVIDENCE
+ :publication-base PUBLICATION-BASE
+ :lineage-relations LINEAGE-RELATIONS
  :git-observations OBSERVATIONS
  :artifact-descriptors ARTIFACT-DESCRIPTORS
  :source-descriptors SOURCE-DESCRIPTORS
@@ -1114,50 +1573,80 @@ It is strict canonical plain EDN with exactly:
 Nested schemas are closed:
 
 - `CONTENT` is exactly `{:commit C :tree T}`.
-- `EVIDENCE` is exactly `{:commit E :tree TE :parent C}`.
-- `OBSERVATIONS` is the exact 39-entry dense-ordinal vector specified below.
+- `EVIDENCE` is exactly `{:commit E :tree TE :parents [C]}`.
+- `PUBLICATION-BASE` is exactly `{:commit B :tree TB :parents
+  BASE-PARENTS}` and is copied only from the external accepted I9 integration
+  receipt. `LINEAGE-RELATIONS` is exactly `{:content-is-ancestor-of-base
+  C/B-TRUE-ANCESTRY-RESULT :evidence-is-ancestor-of-base
+  E/B-FALSE-ANCESTRY-RESULT}`; both values are copied from and
+  revalidated against the external I9 integration receipt, including its
+  expected-fail E/B ancestry observation. B/TB and ordered parents are known
+  before G9 and therefore create no self-cycle; G/TG/OG are forbidden here.
+- `OBSERVATIONS` is the exact 47-entry dense-ordinal vector specified below.
   Each entry has exactly
-  `:ordinal :operation :argv :stdin-byte-count :stdin-sha256 :exit-code
-  :stdout-byte-count :stdout-sha256 :stderr-byte-count :stderr-sha256
+  `:ordinal :operation :argv :stdin-byte-count :stdin-raw-sha256 :exit-code
+  :stdout-byte-count :stdout-raw-sha256 :stderr-byte-count :stderr-raw-sha256
   :parsed-result`. Operation is one of `:rev-parse-commit :show-tree :ls-tree
   :cat-file-blob :merge-base-is-ancestor :diff-tree`. The validator constructs
   the sole allowed absolute Git argv. Counts/hashes/output parsing and required
   success code recompute. Stdin is always empty: count 0 and SHA-256
   `sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
-- `ARTIFACT-DESCRIPTORS` is exactly seven ordered
-  `[path oid count sha256]` vectors for E9.
-- `SOURCE-DESCRIPTORS` is exactly the eight ordered closed source maps.
-- `MASKED-ROOT` is exactly `{:coordinates COORDINATES :preimage-root SHA
-  :postimage-root SHA :equal true}`. `COORDINATES` is exactly:
+- `ARTIFACT-DESCRIPTORS` is exactly seven ordered maps with exactly `:path
+  :mode :type :blob-oid :byte-count :raw-sha256` for E9; mode is `"100644"`,
+  type is `"blob"`, and raw SHA is R(blob bytes).
+- `SOURCE-DESCRIPTORS` is exactly the twelve ordered closed source maps.
+- `MASKED-ROOT` has exactly `:coordinates :preimage-spans :postimage-spans
+  :preimage-files :postimage-files :preimage-root :postimage-root :equal`.
+  The five coordinates retain the exact paths, load ordinals, form ordinals,
+  owners, and RHS kinds in this literal vector:
+  `[[00945-PATH 808 13 gravity.bootstrap/p15-s23-sh07-b51-expected-m3-id
+  :digest-pin] [00945-PATH 808 14
+  gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-a-id :digest-pin]
+  [00945-PATH 808 15
+  gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-b-id :digest-pin]
+  [00945-PATH 808 16
+  gravity.bootstrap/p15-s23-sh07-b51-expected-semantic-root :digest-pin]
+  [00947-PATH 812 59
+  gravity.bootstrap/p15-s23-sh07-b51-authoritative-linked-carrier-value-v4
+  :quoted-carrier-v4]]`, where 00945-PATH is exactly
+  `"bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"`
+  and 00947-PATH is exactly
+  `"bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj"`.
+  Each coordinate adds exactly `:left-delimiter
+  :right-delimiter :preceding-byte :following-byte :masked-rhs-byte-count`.
+  For owner O, left delimiter is the literal string
+  `"(def ^:private " + str(O) + "\n  "`, right delimiter is `")"`, preceding
+  and following bytes are both decimal 10, and the mask is UTF-8
+  `:gravity/sh07-b51-masked-rhs-v1`. Each coordinate must have exactly one full
+  byte occurrence `LF || LEFT(O) || RHS || ")" || LF` at the declared top-level
+  form ordinal.
 
-```clojure
-[{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
-  :load-ordinal 808 :form-ordinal 13
-  :owner gravity.bootstrap/p15-s23-sh07-b51-expected-m3-id
-  :rhs-kind :digest-pin}
- {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
-  :load-ordinal 808 :form-ordinal 14
-  :owner gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-a-id
-  :rhs-kind :digest-pin}
- {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
-  :load-ordinal 808 :form-ordinal 15
-  :owner gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-b-id
-  :rhs-kind :digest-pin}
- {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
-  :load-ordinal 808 :form-ordinal 16
-  :owner gravity.bootstrap/p15-s23-sh07-b51-expected-semantic-root
-  :rhs-kind :digest-pin}
- {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj"
-  :load-ordinal 812 :form-ordinal 59
-  :owner gravity.bootstrap/p15-s23-sh07-b51-authoritative-linked-carrier-value-v4
-  :rhs-kind :quoted-carrier-v4}]
-```
+  Each pre/post span has exactly `:coordinate-ordinal :form-start-byte
+  :rhs-start-byte :rhs-end-byte :form-end-byte :rhs-byte-count
+  :rhs-raw-sha256`. Offsets are observational and excluded from the stable
+  root. Preimage RHS is exactly UTF-8
+  `:gravity/provisional-no-authority`; postimage digest RHS is exactly UTF-8
+  `pr-str(SHA)` and carrier RHS is `drop-final-LF(W((quote CARRIER)))`.
+  The five RHS spans are replaced in descending byte-offset order. Each of the
+  two file descriptors has exactly `:path :masked-byte-count
+  :masked-raw-sha256`. Pre/post roots are each
+  `H([:gravity/sh07-b51-masked-source-root-v1 {:coordinates
+  FIVE-CLOSED-COORDINATES :files ORDERED-TWO-MASKED-FILE-DESCRIPTORS}])` and
+  must be equal. Spans are excluded, but paths, load/form ordinals, owners,
+  kinds, delimiters, adjacent bytes, mask byte count, and masked file
+  descriptors are all inside H. This binds every
+  non-RHS byte, including delimiters and adjacent bytes, without putting the
+  changed RHS lengths into the stable identity.
 - `COUNTERS` is exactly `{:work WORK :source SOURCE :process PROCESS-COUNTERS
   :ipc IPC-COUNTERS :git GIT-COUNTERS}`. Its literal schemas and aggregation
   are specified below.
 - `RECEIPT-JOINS` is exactly `{:content-commit C :content-tree T
-  :evidence-commit E :evidence-tree TE :identity-receipt-sha256 SHA
-  :payload-sha256s VECTOR :excluded VECTOR}`. Payload hashes are the six
+  :evidence-commit E :evidence-tree TE :evidence-eligibility-id SHA
+  :evidence-eligibility-raw-sha256 SHA :i9-integration-id SHA
+  :i9-integration-raw-sha256 SHA :identity-receipt-raw-sha256 SHA
+  :payload-raw-sha256s VECTOR :excluded VECTOR}`. Receipt IDs are their
+  domain-bound H values; every raw SHA is R of the named
+  blob bytes; payload hashes are the six
   non-receipt artifacts. Excluded is exactly `[:evidence-commit :evidence-tree
   :identity-receipt-self :publication-tuple :descendants :refs :branches
   :timestamps :pids :host-names :file-keys :host-paths]` for the receipt
@@ -1171,16 +1660,21 @@ Nested schemas are closed:
 
 For Git operation variables, `REPO` is the canonical repository-root
 observation, `X` a bound commit, `Y` its bound tree, `P` a literal safe path,
-and `O` its bound blob OID. The only argv/result pairs are:
+and `O` its bound blob OID. Every commit, tree, parent, and blob OID scalar is
+exactly 40 lowercase hexadecimal characters. `ZERO-OID` is exactly 40 ASCII
+`0` characters. Parent vectors preserve Git's observed order and are never
+sorted. This table governs only the tuple's 47 pre-G9 C/E
+observations. The external 24-row receipt has the separate closed enum and
+NUL grammars below. The only internal argv/result pairs are:
 
 | Operation | Exact argv | Exact parsed-result keys |
 | --- | --- | --- |
 | `:rev-parse-commit` | `[/usr/bin/git -C REPO rev-parse --verify X^{commit}]` | `{:commit X}` |
 | `:show-tree` | `[/usr/bin/git -C REPO show -s --format=%H%n%T%n%P X]` | `{:commit X :tree Y :parents VECTOR}` |
 | `:diff-tree` | `[/usr/bin/git -C REPO diff-tree --no-commit-id --name-status -r X^ X]` | `{:parent PARENT :commit X :entries VECTOR}` |
-| `:merge-base-is-ancestor` | `[/usr/bin/git -C REPO merge-base --is-ancestor ANCESTOR DESCENDANT]` | `{:ancestor ANCESTOR :descendant DESCENDANT :is-ancestor true}` |
+| `:merge-base-is-ancestor` | `[/usr/bin/git -C REPO merge-base --is-ancestor ANCESTOR DESCENDANT]` | `{:ancestor ANCESTOR :descendant DESCENDANT :is-ancestor true :exit-code 0}` |
 | `:ls-tree` | `[/usr/bin/git -C REPO ls-tree -z X -- P]` | `{:commit X :path P :mode "100644" :type "blob" :oid O}` |
-| `:cat-file-blob` | `[/usr/bin/git -C REPO cat-file blob O]` | `{:oid O :byte-count COUNT :sha256 SHA}` |
+| `:cat-file-blob` | `[/usr/bin/git -C REPO cat-file blob O]` | `{:oid O :byte-count COUNT :raw-sha256 SHA}` |
 
 Every token in the argv table is a separate string; the rendered table omits
 quotes only for readability. Parent vectors and diff entries are closed vectors
@@ -1190,95 +1684,145 @@ required integrated A9 ancestry. E has exactly `[C]`; the E diff has exactly
 the seven `:added` evidence paths. The observation plan is: ordinals
 0-1 rev/show C; 2-3 rev/show E; 4 diff E; 5 ancestry C-to-E; 6-12 E `ls-tree`
 in artifact order; for each `j` in 0-6, ordinal `13+j` is `cat-file` of the OID
-returned at ordinal `6+j`; 20-27 C `ls-tree` in source order; for each `j` in
-0-7, ordinal `28+j` is `cat-file` of the OID returned at ordinal `20+j`; 36 rev
-C, 37 rev E, and 38 ancestry C-to-E as independent postchecks. Any other
+returned at ordinal `6+j`; 20-31 C `ls-tree` in source order; for each `j` in
+0-11, ordinal `32+j` is `cat-file` of the OID returned at ordinal `20+j`; 44
+rev C, 45 rev E, and 46 ancestry C-to-E as independent postchecks. Any other
 count/order/argv/result rejects. The tuple does not observe its own G9 object or
 bytes; the lifecycle join below supplies that external binding and avoids a
 self-cycle.
 
 G9 `WORK` is exactly
-`{:mode MODE :sessions SESSIONS :total TOTAL}`. `SESSIONS` is exactly three
+`{:mode MODE :sessions WORK-SESSIONS :total TOTAL}`. `WORK-SESSIONS` is exactly three
 ordered maps for participants `[:a :b :m]`, each with exactly `:participant
 :vector :total`; vector/total are `[3 3 3 2 2]`/13 in `:new` or
 `[2 2 2 2 2]`/10 in `:existing`; TOTAL is 39 or 30. `SOURCE` is exactly
-`{:sessions SESSIONS :acquire-count 24 :decode-count 24 :event-count 66
-:finalize-count 3}`; its sessions are exactly three ordered maps with
+`{:sessions SOURCE-SESSIONS :acquire-count 36 :decode-count 36 :event-count 117
+:finalize-count 3}`; `SOURCE-SESSIONS` is exactly three ordered maps with
 `:participant :acquire-count :decode-count :event-count :finalize-count`, each
-equal to 8/8/22/1. `PROCESS-COUNTERS` is exactly
+equal to 12/12/39/1. `PROCESS-COUNTERS` is exactly
 `{:launcher-count 1 :coordinator-count 1 :builder-count 3 :child-count 3
 :start-count 3 :exit-count 3 :m-launch-count 1 :a-b-overlap-count 0
 :m-parent :launcher :checker-parent :m
 :semantic-ordinals [0 1 2 3 4 5 6 7 8 9 10]}`. `IPC-COUNTERS` is exactly
 `{:checker-request-count 2 :checker-response-count 2 :m-response-count 1
 :rejection-count 0 :request-max-bytes 4194304
-:response-max-bytes 1073741824 :stderr-max-bytes 1048576}`. L applies the
+:response-max-bytes 1073741824 :stderr-max-bytes 1048576
+:deadline-ms 3600000}`. L applies the
 response and stderr caps to M under the same bounded process deadline; M has no
 stdin payload because its closed request is the exact argv above.
-`GIT-COUNTERS` is exactly `{:operation-count 39
+`GIT-COUNTERS` is exactly `{:operation-count 47
 :stdin-byte-count 0 :stdout-byte-count N :stderr-byte-count 0}`, where N is the
-sum of the 39 recorded stdout byte counts. No participant, counter, or aggregate
+sum of the 47 recorded stdout byte counts. No participant, counter, or aggregate
 may be missing or added. These are the tuple's pre-G9 C/E observations. The
 post-G9 lifecycle observation receipt separately has exactly 24 operations and
 cannot be folded into, omitted from, or preseeded in this counter.
 
 `gravity.tools.sh07-b51-git-evidence --mode g9-lifecycle-join` reads the tuple
-from exact G9 and proves E9 ancestry and tuple absence from E9. The static C
-accepted fixture contains only the closed derivation grammar, literal tuple
-path, seven literal payload paths/order, required `100644` modes, and the
-string productions `g9-tuple-path:`, `g9-tuple-sha256:`, and `g9-row:`. It
-contains no E/G commit, tree, OID, count, or SHA value. The lifecycle tool
-derives one exact tuple-path string, one exact tuple-SHA string, and seven exact
-row strings from immutable candidate objects after G9 exists and validates them
-against that grammar. It then executes the closed external G9 observation plan:
+from exact G9, the external evidence-eligibility receipt, and the external I9
+integration receipt. The static C fixture contains only the closed derivation
+grammar and literal paths; it contains no E/B/G commit, tree, OID, count, or
+hash. The tool writes exactly W of
+`docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/g9-lifecycle-receipt.edn`.
+That receipt has exactly `:artifact :schema-version :content :evidence
+:publication-base :publication :tuple :observations :result :pre-post-equal
+:joins :review :acceptance :admission :integration :self-id-omits :nonclaims
+:receipt-id`. Artifact is
+`:gravity/sh07-b51-g9-lifecycle-receipt-v1`, version is 1, content is
+`{:commit C :tree T}`, evidence is `{:commit E :tree TE :parents [C]}`, base is
+`{:commit B :tree TB :parents BASE-PARENTS}`, and publication is
+`{:commit G :tree TG :parents [B]}`. Tuple has exactly `:path :mode :type :oid
+:byte-count :raw-sha256 :value`, with mode `"100644"`, type `"blob"`, value
+equal to the strictly reloaded tuple, and raw SHA R(tuple bytes). Joins has exactly `:evidence-eligibility-id
+:i9-integration-id :e9-identity-receipt-id`; review is the closed REVIEW map;
+acceptance is exactly `{:state :accepted}`; admission is exactly
+`{:state :integration-eligible}`; integration is exactly `{:state :integrated
+:commit G :tree TG :parents [B] :base-is-ancestor ANC}`, where ANC is the
+B/G true ANCESTRY-RESULT;
+self-id-omits is exactly `[[:receipt-id]]`; nonclaims are the five V9
+nonclaims; and pre-post-equal is true. Receipt ID is
+`H([:gravity/sh07-b51-g9-lifecycle-receipt-v1 RECEIPT-WITHOUT-ID])`; its Git
+blob OID/raw hash and the review/lifecycle commits are external and never enter
+that preimage.
 
-1. `rev-parse --verify B^{commit}` returns B.
-2. `show -s --format=%H%n%T%n%P B` returns exactly B, TB, and the parent vector
-   recorded by the accepted I9 integration receipt.
-3. `merge-base --is-ancestor C B` succeeds.
-4. `rev-parse --verify G^{commit}` returns G.
-5. `show -s --format=%H%n%T%n%P G` returns exactly G, TG, and parent vector
-   `[B]`.
-6. `merge-base --is-ancestor B G` succeeds.
-7. `diff-tree --no-commit-id --name-status -r B G` returns exactly one
-   `:added` entry for the tuple path and no other entry.
-8. `diff-tree --raw -z B G` returns one entry with old mode `000000`, new mode
-   `100644`, all-zero old OID, new OID OG, status `A`, and TUPLE-PATH.
-9. `ls-tree -z G -- TUPLE-PATH` returns exactly mode `100644`, type `blob`, and
-   tuple OID OG.
-10. `cat-file blob OG` reproduces the exact tuple bytes, byte count, raw
-   SHA-256, and parsed value already validated from the tuple.
-11. `ls-tree -z B -- TUPLE-PATH` succeeds with empty stdout.
-12. `ls-tree -z E -- TUPLE-PATH` succeeds with empty stdout.
+`observations` is exactly 24 dense rows. A row has exactly `:ordinal
+:operation :argv :stdin-byte-count :stdin-raw-sha256 :exit-code
+:stdout-byte-count :stdout-raw-sha256 :stderr-byte-count :stderr-raw-sha256
+:parsed-result`. Stdin is always empty and R(empty); stderr is empty and
+R(empty). The exact operation vector is `[:show-tree
+:merge-base-is-ancestor :ls-tree-z-requested :show-tree :show-tree
+:merge-base-is-ancestor :merge-base-is-ancestor :diff-tree-name-status-z
+:diff-tree-raw-z :ls-tree-z-requested :cat-file-blob
+:ls-tree-z-requested]`. It occurs at ordinals 0-11 and is
+repeated byte-for-byte at 12-23 after tuple/receipt reconstruction:
 
-After tuple decoding and full receipt reconstruction, operations 1-12 repeat in
-the same order as ordinals 12-23 and must reproduce byte-identical parsed
-results and stdout hashes. The external plan therefore has exactly 24
-operations, not the tuple's 39 pre-G9 observations.
+1. `show -s --format=%H%n%T%n%P B` -> exactly B, TB, ordered BASE-PARENTS.
+2. `merge-base --is-ancestor C B` -> exit 0 and true.
+3. `ls-tree -z B -- REQUESTED-PATHS` -> every I9-owned C path present with the
+   exact preserved descriptor and every E9/G9 evidence path absent.
+4. `show -s --format=%H%n%T%n%P E` -> exactly E, TE, `[C]`.
+5. `show -s --format=%H%n%T%n%P G` -> exactly G, TG, `[B]`.
+6. `merge-base --is-ancestor B G` -> exit 0 and true.
+7. `merge-base --is-ancestor E G` -> exit 1 and false.
+8. `diff-tree --no-commit-id --name-status -r -z B G` -> exactly one added
+   tuple path.
+9. `diff-tree --no-commit-id --raw -r -z B G` -> exactly old mode `000000`, new mode
+   `100644`, all-zero old OID, OG, status A, and tuple path.
+10. `ls-tree -z G -- TUPLE-PATH` -> present mode `100644`, type blob, OG.
+11. `cat-file blob OG` -> exactly W(parsed tuple), its byte count, and R(bytes).
+12. `ls-tree -z E -- TUPLE-PATH` -> absent.
 
-The external result is the closed map
-`{:publication-base B :publication-base-tree TB
-:publication-base-parents BASE-PARENTS :content-commit C
-:content-tree T :content-is-ancestor-of-base true :evidence-commit E
-:evidence-tree TE :publication-commit G :publication-tree TG :parents [B]
-:base-is-ancestor true :diff [{:status :added :path TUPLE-PATH}]
-:diff-stdout-sha256 DIFF-SHA :raw-diff-stdout-sha256 RAW-DIFF-SHA
-:tuple-path TUPLE-PATH :tuple-mode "100644" :tuple-oid OG
-:tuple-byte-count N :tuple-sha256 SHA :tuple-absent-at-base true
-:tuple-absent-at-evidence true :pre-post-equal true}`. The tool derives B/TB
-from the integrated I9 lifecycle and derives TG, OG, N, and all hashes; none is
-caller supplied. The independently created post-G9 formal review
-artifact and the separate
-`sh07-b51-git-object-evidence-publication-v9` lifecycle record persist the
-exact result plus each command's argv, exit, stdout/stderr count, and raw
-SHA-256. That lifecycle record's accepted fixtures must include literal
-`publication-base:B`, `publication-base-tree:TB`, `publication-commit:G`,
-`publication-tree:TG`, `publication-parent:B`,
-`publication-diff-sha256:DIFF-SHA`,
-`publication-raw-diff-sha256:RAW-DIFF-SHA`, `tuple-oid:OG`, and
-`tuple-sha256:SHA` bindings.
-Generic governance remains shape-only; the workstream-specific review enforces
-their semantics.
+The external `:operation` enum is exactly `:show-tree`,
+`:merge-base-is-ancestor`, `:ls-tree-z-requested`,
+`:diff-tree-name-status-z`, `:diff-tree-raw-z`, or `:cat-file-blob`. Its sole
+argv/result shapes are:
+
+| Operation | Exact argv after `/usr/bin/git -C REPO` | Exact parsed result |
+| --- | --- | --- |
+| `:show-tree` | `show -s --format=%H%n%T%n%P X` | `{:commit X :tree TX :parents PARENTS}` |
+| `:merge-base-is-ancestor` | `merge-base --is-ancestor X Y` | `{:ancestor X :descendant Y :is-ancestor BOOLEAN :exit-code 0-OR-1}` |
+| `:ls-tree-z-requested` | `ls-tree -z X -- P1 ... PN` | `{:commit X :requested-paths [P1 ... PN] :rows ROWS}` |
+| `:diff-tree-name-status-z` | `diff-tree --no-commit-id --name-status -r -z B G` | `{:parent B :commit G :entries [{:status :added :path TUPLE-PATH}]}` |
+| `:diff-tree-raw-z` | `diff-tree --no-commit-id --raw -r -z B G` | `{:parent B :commit G :entries [{:old-mode "000000" :new-mode "100644" :old-oid ZERO-OID :new-oid OG :status :added :path TUPLE-PATH}]}` |
+| `:cat-file-blob` | `cat-file blob OG` | `{:oid OG :byte-count N :raw-sha256 SHA :value TUPLE}` |
+
+Every argv token is a distinct string and no alternate flag ordering is
+accepted. False ancestry is allowed only for the literal E/G row and requires
+exit 1; all other rows require exit 0.
+
+`REQUESTED-PATHS` is exactly the already-defined UTF-8-byte-sorted
+`OWNED-C-PATHS`, followed by the seven E9 paths in artifact order and then the
+tuple path. The three groups are disjoint; a duplicate rejects rather than
+being removed. `:show-tree` parses exactly three LF-terminated
+lines into `{:commit X :tree Y :parents VECTOR}`. `:merge-base-is-ancestor`
+accepts only exit 0/true or exit 1/false and requires empty stdout/stderr.
+`:ls-tree-z-requested` parses only NUL-terminated records `MODE SP TYPE SP OID TAB PATH
+NUL`, rejects duplicate/unrequested paths, and projects every requested path
+to exactly `{:path P :present BOOLEAN :mode STRING-OR-NIL :type
+STRING-OR-NIL :oid OID-OR-NIL}`. `:diff-tree-name-status-z` parses only
+`A NUL PATH NUL` into one `{:status :added :path P}`. `:diff-tree-raw-z`
+parses only `ASCII-COLON OLDMODE SP NEWMODE SP OLDOID SP NEWOID SP A NUL PATH
+NUL`, where ASCII-COLON is byte `0x3a`, into
+one map with exactly `:old-mode :new-mode :old-oid :new-oid :status :path`.
+`:cat-file-blob` parses strict W and returns exactly `{:oid OG :byte-count N
+:raw-sha256 SHA :value TUPLE}`. Any missing final NUL/LF, alternate token,
+extra record, non-UTF-8 path, quoted-path mode, or parser remainder rejects.
+
+The external `RESULT` has exactly `:publication-base
+:publication-base-tree :publication-base-parents :content-commit :content-tree
+:content-is-ancestor-of-base :evidence-commit :evidence-tree
+:evidence-parents :evidence-is-ancestor-of-base
+:evidence-is-ancestor-of-publication :publication-commit
+:publication-tree :publication-parents :base-is-ancestor :preserved-blobs
+:diff :raw-diff :tuple :tuple-absent-at-base :tuple-absent-at-evidence
+:pre-post-equal`. It records B/TB/BASE-PARENTS and the C/B true, E/B false,
+E/G false, and B/G true ANCESTRY-RESULT maps, including their exit codes. It
+records C/T, E/TE/[C], G/TG/[B], the
+exact I9 preservation rows, the parsed one-entry diffs, the
+tuple map exactly equal to the receipt's closed `:tuple` map (including
+descriptor and parsed value), both absence booleans true, and pre/post equal
+true. No value is caller-supplied. Generic governance remains shape-only; the
+workstream-specific independent review enforces this receipt and records its
+path, receipt ID, raw SHA, G/TG/OG, and exact candidate tree before acceptance.
 
 These checks are external because the tuple cannot contain its own G9 identity
 without a cycle. They prove the exact sole-parent topology, base relation,
@@ -1307,15 +1851,24 @@ verification catalog are read-only inputs. Crossing this allocation requires a
 separate recorded reservation and owner handoff before edit; otherwise
 `SH07-B51-OWNER` rejects.
 
-I9 may change only:
+I9's allowed path set is the exact union of the implementation, test, and
+fixture paths listed in this section. It may change no other path. The
+implementation subset is:
+
+- `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj`
+- `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-compiler-artifact-binding.clj`
+- `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00582-p15-s23-stage2-construct-emitted-core-plan.clj`
+- `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00943-p15-s23-sh07-host-builtins-and-oracle.clj`
 
 - `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj`
 - `bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_identity.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_tier0_materializer.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_materialize.clj`
+- `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_coordinator_child.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_git_evidence.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_child.clj`
+- `bootstrap/clojure/src/gravity/tools/sh07_b51_v9_codec.clj`
 
 Exact tests:
 
@@ -1324,11 +1877,19 @@ Exact tests:
 - `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt32_runtime_admission_test.clj`
 - `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_plan_linker_governed_read_test.clj`
 - `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt32_checker_child_test.clj`
+- `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_source_closure_test.clj`
+- `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_process_isolation_test.clj`
+- `bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_codec_test.clj`
 
 Fixtures are exactly
 `bootstrap/clojure/test/gravity/self_hosting/fixtures/sh07-b51-git-object-v9/accepted.edn`
 and
 `bootstrap/clojure/test/gravity/self_hosting/fixtures/sh07-b51-git-object-v9/rejected.edn`.
+The accepted fixture contains the exact twelve descriptors and 39 events. The
+rejected fixture contains one case for every omitted/extra/reordered source or
+event, direct-read escape, preflight/static-load violation, malformed UTF-8,
+wire divergence, PID/host-only normalization mutation, empty-target race, and
+checker-A-before-B fail-fast violation.
 Load order and generic governance schema/validator bytes are unchanged.
 
 E9 may add only its seven evidence paths. G9 may add only
@@ -1385,7 +1946,7 @@ Stable diagnostic IDs are exactly:
 
 Each negative fixture has one primary ID and closed details. Implementation
 review confirms all sources, schemas, bounds, semantic ordinals, two independent
-child closures, 8/8/22/1 sessions, 13/10 totals, seven E9 blobs, G9, dual
+child closures, 12/12/39/1 sessions, 13/10 totals, seven E9 blobs, G9, dual
 grammar, equal masked root, 1480 edges, object-only runtime authority, and
 unchanged generic governance/load-order bytes. It runs targeted positive and
 negative tests, the governed SH-07 evidence suite, documentation validation,
