@@ -1,0 +1,75 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1.md",
+  "author": "master-coordinator",
+  "base_commit": "14ff61809a5dbb4aa23499f14d5f7a288f76889e",
+  "candidate_commit": null,
+  "clean_worktree": false,
+  "dependencies": [
+    "sh07-b51-git-object-evidence-publication-architecture-v9",
+    "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1"
+  ],
+  "disposition": "Draft report-only architecture correction for the verified Root1 and Root6 rejection of literal V9 E3 certificates, the strict V9-only witness/lowering-product compact-verifier contract, and the exact five-path E4 ownership/count cascade. No implementation, evidence, candidate acceptance, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
+  "evidence": {
+    "accepted_fixtures": [],
+    "rejected_fixtures": [],
+    "stable_diagnostics": [],
+    "validation_commands": []
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C6",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md"
+  ],
+  "history": [
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T18:46:06Z",
+      "reason": "register a separately governed report-only correction after executable checks proved that the current Gravity Root1 and Root6 compact predicates reject the literal E3 19-key certificate and 13-key input required by integrated V9 authority; reserve only the correction report and preserve all implementation, acceptance, integration, SH-07 completion, release, self-hosting, performance, and seed-retirement nonclaims",
+      "state": "draft"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-pin-free-publication-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "the correction is architecture authority only and does not establish implementation correctness, evidence eligibility, candidate acceptance, or integration eligibility",
+    "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9 and its integrated errata",
+    "the draft I9 implementation cannot freeze until this correction receives independent acceptance, integration, and exact current-main reconciliation",
+    "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "SH-07 B51 Git-object publication V9 Root1 and Root6 E3 certificate architecture erratum version 1"
+}
