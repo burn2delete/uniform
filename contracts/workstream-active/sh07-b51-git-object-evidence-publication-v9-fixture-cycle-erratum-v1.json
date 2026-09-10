@@ -9,7 +9,7 @@
     "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
     "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1"
   ],
-  "disposition": "Draft report-only architecture correction for the C-owned fixture/event-39/C-T identity cycle and the missing ownership/input boundary for authentic independent A/B witness construction. No implementation, evidence, candidate acceptance, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
+  "disposition": "Draft report-only architecture correction for the C-owned fixture/event-39/C-T identity cycle and the missing ownership plus complete same-session pre-certificate handoff required for authentic independent A/B witness construction. No implementation, evidence, candidate acceptance, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
   "evidence": {
     "accepted_fixtures": [],
     "rejected_fixtures": [],
@@ -63,7 +63,7 @@
   "residual_host_boundaries": [
     "the correction is architecture authority only and does not establish implementation correctness, evidence eligibility, candidate acceptance, or integration eligibility",
     "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9 and its integrated errata",
-    "the draft I9 implementation cannot freeze until both the fixture-cycle and A/B checker-ownership corrections receive independent acceptance, integration, and exact current-main reconciliation",
+    "the draft I9 implementation cannot freeze until the fixture-cycle, A/B checker ownership, and complete same-session pre-certificate handoff corrections receive independent acceptance, integration, and exact current-main reconciliation",
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
   "reviews": [],

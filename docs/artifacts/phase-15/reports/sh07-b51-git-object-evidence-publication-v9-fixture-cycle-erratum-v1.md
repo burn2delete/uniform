@@ -74,6 +74,14 @@ A/B construction executable.
 }
 ```
 
+Candidate commit `2acb3b52d4e4f25bb107952ba3aca3ea62164472`, tree
+`c3968e69815f44b846ab980cd696d11b675442b9`, was independently rejected
+because its 17-key checker handoff omitted the complete source semantic carrier
+and semantic-algorithm source authority required before A/B lowering-product
+construction. That candidate grants no architecture or implementation
+authority. The corrected handoff below supersedes only that rejected
+candidate's incomplete handoff definition; its Git history is retained.
+
 ## Reproduced identity cycle
 
 Let `F` be the canonical bytes of the accepted fixture, `OF` its Git blob OID,
@@ -279,6 +287,25 @@ all-`f` digest or malformed object ID remain permitted because they do not
 purport to be authority. The rejected fixture therefore remains static and
 does not reintroduce the accepted-fixture cycle.
 
+The rejected fixture additionally carries static mutation recipes for the
+checker-local handoff. Their exact IDs and targets are:
+
+| Case IDs | Target family |
+| --- | --- |
+| `:checker-source-carrier-missing`, `:checker-source-carrier-extra` | `[:checker-semantic-input :source-semantic-carrier]` exact presence/key set |
+| `:checker-source-carrier-descriptor-mismatch`, `:checker-source-carrier-event-mismatch` | complete carrier vectors versus the finalized checker-local receipt |
+| `:checker-source-carrier-c2-ordinal-2`, `:checker-source-carrier-c2-ordinal-10`, `:checker-source-carrier-c2-ordinal-11` | each direct strict C2 artifact and its C/T source-object join |
+| `:checker-algorithm-descriptor-missing`, `:checker-algorithm-descriptor-extra`, `:checker-algorithm-descriptor-reordered` | exact seven-row algorithm descriptor vector |
+| `:checker-algorithm-descriptor-object-mismatch`, `:checker-algorithm-root-mismatch`, `:checker-algorithm-cross-content` | descriptor mode/OID/count/raw-SHA, root equation, and common C/T authority |
+| `:checker-precertificate-second-session`, `:checker-precertificate-worktree-read`, `:checker-precertificate-caller-value` | forbidden acquisition/authority source |
+
+These recipes use only paths, operations, and invalid sentinels; they embed no
+current C/T carrier, C2 artifact, algorithm descriptor, or root. At test time
+the harness first derives one valid checker-local 20-key input, applies exactly
+one recipe, invokes the real child/checker validator, and requires
+`SH07-B51-CHECKER-CHILD` with the recipe's observed reason before certificate
+construction. The accepted V2 fixture gains no dynamic handoff field.
+
 ## Authentic A/B witness-construction ownership
 
 At this report's base, both selected checker sources still declare the same
@@ -305,24 +332,78 @@ consume already-derived `:pre-stages` or `:collections-by-owner`; neither owns
 an authentic A/B certificate-production boundary.
 
 The smallest correction keeps the selected checker identities and adds their
-existing sources and direct tests to I9 ownership. The selected checker input
-becomes this exact 17-key map, called `CHECKER-SEMANTIC-INPUT-E3`:
+existing sources and direct tests to I9 ownership. It also closes the
+same-process handoff from each child-owned authenticated source session and
+object preflight into its selected checker. The selected checker input becomes
+this exact 20-key map, called `CHECKER-SEMANTIC-INPUT-E3`:
 
 ```clojure
 #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
   :predecessor-executable-descriptor-id :module-source-identities
   :module-source-byte-counts :emitter-source-id :emitter-semantic-id
   :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
-  :sh06-resolution-plan-authority :checker :provenance}
+  :sh06-resolution-plan-authority :source-semantic-carrier
+  :semantic-algorithm-source-descriptors
+  :semantic-algorithm-source-root :checker :provenance}
 ```
 
-The checker child obtains both added values from its own finalized
-`p15-s23-sh07-b51-build-receipted-bundle-core-products(C,T)` result and passes
-them byte-for-byte; neither may be supplied by M, the launcher, a fixture, an
-ambient Var, or a worktree read. `:module-transactions` is the exact complete
-seven-row E2 value. `:sh06-resolution-plan-authority` is the exact complete E2
-event-39 product and must revalidate against the same C/T and the transaction
-contexts before either checker begins semantic witness construction.
+The checker child obtains all five fields added to the legacy Attempt30 input
+from its own authenticated C/T work. None may be supplied by M, the launcher,
+a fixture, an ambient Var, or a worktree read. `:module-transactions` is the
+exact complete seven-row E2 value. `:sh06-resolution-plan-authority` is the
+exact complete E2 event-39 product and must revalidate against the same C/T and
+the transaction contexts before either checker begins semantic witness
+construction.
+
+The object-mode builder return becomes `RECEIPTED-BUNDLE-CORE-PRODUCTS-E3`,
+with this exact ten-key set:
+
+```clojure
+#{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
+  :module-transactions :sh06-resolution-plan-authority
+  :source-semantic-carrier :source-read-receipt}
+```
+
+During its one private source session, after the complete 13 descriptors, 40
+events, and seven module transactions exist but before finalization, the
+builder constructs the exact V9/E2 `SOURCE-SEMANTIC-CARRIER`. Its descriptor
+and event fields are the complete session vectors. For source ordinals 3
+through 9, its C2 artifacts join byte-for-byte to the seven module
+transactions. For ordinals 2, 10, and 11, it constructs the required strict C2
+artifacts from the already-prefetched C/T blob bytes and the exact explicit
+project contexts defined by V9; no path is reopened and no second source
+session is started. All L1 and C2 members and roots are computed under the
+existing V9 equations. The carrier remains receipt-free and contains no
+session ID, process value, operation, fuel receipt, lowering product, witness,
+certificate, or checker output.
+
+The session then finalizes exactly once. The builder returns that carrier and
+the final source-read receipt together. Before invoking `produce-certificate`,
+the checker child requires the receipt to be exact 13/13/40/1 and finalized,
+requires carrier descriptors/events to equal the receipt vectors byte-for-byte,
+recomputes their roots, revalidates the three direct C2 artifacts, and repeats
+every transaction/artifact join. This is a same-session immutable handoff, not
+an extra acquisition or transported semantic claim from another participant.
+
+The remaining two fields come from the child-local object preflight already
+completed for the same C/T. The child selects the exact seven
+`SEMANTIC-ALGORITHM-SOURCE-DESCRIPTORS-E3` rows from the independently
+reconstructed `OWNED-C-DESCRIPTORS-E3`, preserves the exact path order below,
+and requires each selected mode, OID, byte count, and raw SHA-256 to equal the
+same C-bound classpath source object. It then recomputes
+`SEMANTIC-ALGORITHM-SOURCE-ROOT-E3` with the unchanged V9 domain. The exact
+seven-row vector and root, not a caller-provided digest or a source-closure
+projection, enter the checker input. This selection performs no new Git read,
+strict decode, source event, or source session and therefore changes no E3
+counter.
+
+The handoff is acyclic. `SOURCE-SEMANTIC-CARRIER` depends only on finalized
+source-session preimages and products that precede LOWERING-PRODUCT. The seven
+algorithm descriptors and root depend only on immutable PRE/classpath C
+objects. None contains or depends on a lowering-product ID, operation, fuel
+receipt, final stage witness, certificate, or checker output. The selected
+checker may consume the five fields but may not replace, augment, or rederive
+them from ambient state.
 
 Within its own process and after its own finalized governed C/T source session,
 each selected checker must independently execute the already-normative V9/E2
@@ -522,10 +603,12 @@ schema, registry, root, fixture, test, or acceptance paragraph.
 | E2 ownership-plan tag/domain and plan ID | Exact `:gravity/sh07-b51-v9-ownership-plan-e3-v1` tag/domain and `V9-OWNERSHIP-PLAN-E3`; registry counts are unchanged |
 | 33 owned-C paths, 79 PRE paths, 84 PRE operations, and 69 PRE static decodes | Exactly 37 owned-C paths, 83 PRE paths, 88 PRE operations, and 73 PRE static decodes |
 | E2 eligibility counters based on four 84-row PRE reconstructions | Exact `ELIGIBILITY-COUNTERS-E3`: 352 PRE operations, 372 total operations, 292 static decodes, and 148 owned-C artifacts; all unchanged fields retain their E2 values |
-| Legacy Attempt30 checker input key set | Exact `CHECKER-SEMANTIC-INPUT-E3`, adding complete `:module-transactions` and `:sh06-resolution-plan-authority` from the checker-local source session |
+| E2 nine-key receipted builder return | Exact ten-key `RECEIPTED-BUNDLE-CORE-PRODUCTS-E3`, adding the complete receipt-free `:source-semantic-carrier` constructed from the same private 13-descriptor/40-event session before its sole finalization |
+| Legacy Attempt30 checker input key set, and the rejected 17-key candidate handoff | Exact 20-key `CHECKER-SEMANTIC-INPUT-E3`, adding complete `:module-transactions`, `:sh06-resolution-plan-authority`, `:source-semantic-carrier`, `:semantic-algorithm-source-descriptors`, and `:semantic-algorithm-source-root` from the checker-local source session/PRE/classpath object preflight |
 | Legacy certificate inputs without lowering product and certificate without witness | Literal V9 certificate input includes checker-local `:lowering-product-id`; literal V9 certificate includes complete checker-local `:semantic-witness`; both exist before certificate identity construction |
 | Five-row `SEMANTIC-ALGORITHM-SOURCE-PATHS` and derived descriptors/root | Exact seven-row E3 vector additionally binding both selected checker source blobs; rederive the unchanged-domain algorithm root and every dependent identity |
 | Any post-`produce-certificate` checker-child enrichment | Forbidden; A and B each construct products, operations, receipts, witness, and certificate in that order inside their separately selected checker execution |
+| Any second source session, post-finalization source acquisition, worktree read, or M/launcher/fixture-supplied pre-certificate handoff | Forbidden; the child passes only the exact same-session carrier and the exact same-C PRE/classpath seven-descriptor authority after independently validating their complete preimages |
 
 Every other V9 requirement and both prior errata remain normative. In
 particular, this report does not change source descriptor/event schemas,
@@ -561,9 +644,20 @@ In addition to every unchanged V9/E1/E2 test, I9 must prove:
 - every E2 descriptor-12/event-39 mutation is applied to a valid dynamically
   derived closure, changes the relevant vector/root, and is rejected by the
   real validator for the observed recorded reason;
-- the checker child passes exactly the two added authenticated input values and
-  rejects a missing, extra, reordered, cross-C/T, altered, or caller-supplied
-  transaction/plan-authority value before `produce-certificate` succeeds;
+- each checker-local builder returns the exact ten-key E3 product, constructs
+  SOURCE-SEMANTIC-CARRIER before its one finalization, uses no second session,
+  and joins direct strict C2 artifacts for source ordinals 2, 10, and 11 to the
+  already-prefetched C/T objects;
+- the checker child passes exactly the five authenticated fields added to the
+  legacy input and rejects a missing, extra, reordered, cross-C/T, altered, or
+  caller-supplied transaction, plan-authority, source-carrier, algorithm
+  descriptor, or algorithm-root value before `produce-certificate` succeeds;
+- source-carrier descriptors/events equal the finalized checker-local receipt,
+  all eleven carrier members and roots recompute, and the seven algorithm
+  descriptors equal both PRE owned-C rows and classpath object-preflight rows;
+- attempts to obtain any handoff member from a second session, post-finalization
+  Git read, worktree path, M, launcher, fixture, peer checker, or ambient state
+  reject and do not produce a certificate;
 - A and B independently construct their complete lowering product, operations,
   34 measurements, traces, fuel receipts, seven stage witnesses, and enclosing
   witness before their certificate IDs, with no output imported from the other
@@ -571,9 +665,12 @@ In addition to every unchanged V9/E1/E2 test, I9 must prove:
 - each certificate's lowering-product ID and complete witness rehash and join
   to its checker-local pre-certificate values, while M's independently
   reconstructed values match both; and
-- the two direct Attempt30 checker test namespaces exercise accepted exact E3
-  inputs and reject missing/extra input keys, wrong product/witness joins,
-  post-certificate enrichment, and forbidden peer-checker access.
+- the two direct Attempt30 checker test namespaces exercise accepted exact
+  20-key E3 inputs and reject every new static handoff mutation recipe,
+  missing/extra input keys, wrong product/witness joins, post-certificate
+  enrichment, and forbidden peer-checker access; and
+- accepted and rejected handoff tests prove the same 37/83/88/73 PRE counts,
+  13/13/40/1 session counters, and zero additional handoff acquisition count.
 
 The independent implementation review still must execute the authentic
 source-derived seven-module transaction required by E2. Static fixture
@@ -590,7 +687,8 @@ integrated may I9 reconcile onto authoritative main, add the dependency, and
 change only `OWNED-C-PATHS-E3`: replace the two fixture values and their
 narrowly associated validators/tests, update the two selected checker sources
 and direct tests, and make the already-owned checker-child/materializer/test
-seams conform to the exact E3 input and construction order. I9 then must
+seams conform to the exact ten-key builder return, same-session handoff,
+20-key E3 input, and construction order. I9 then must
 rederive every changed identity and complete all unchanged gates.
 
 This report grants architecture authority only. It does not establish I9
@@ -615,17 +713,21 @@ This correction is acceptable only if fresh independent review confirms:
 6. the ownership correction is exactly the two selected checker sources and
    two direct tests, with no post-certificate adapter substituted for authentic
    A/B construction;
-7. `CHECKER-SEMANTIC-INPUT-E3`, the V9 lowering-product/witness certificate
-   fields, and the seven-path semantic-algorithm source root close every
-   required A/B dependency before certificate construction;
-8. the exact 37/83/88/73 ownership/PRE counts, 13/13/40/1 session counts,
+7. exact ten-key `RECEIPTED-BUNDLE-CORE-PRODUCTS-E3` constructs the complete
+   source semantic carrier, including direct strict C2 artifacts 2/10/11,
+   inside the one checker-local source session and before its sole finalization;
+8. exact 20-key `CHECKER-SEMANTIC-INPUT-E3`, including the complete carrier
+   and seven algorithm descriptors/root, plus the V9 lowering-product/witness
+   certificate fields close every required A/B dependency before certificate
+   construction without a second read or transported authority;
+9. the exact 37/83/88/73 ownership/PRE counts, 13/13/40/1 session counts,
    aggregate 39/39/120/3 counters, eligibility 372 operations, and G9 49
    operations are complete;
-9. no other V9/E1/E2 topology, schema, authority carrier, rejection rule,
+10. no other V9/E1/E2 topology, schema, authority carrier, rejection rule,
    lifecycle gate, or nonclaim is weakened;
-10. the candidate is report-only, owns one unique report path, passes
+11. the candidate is report-only, owns one unique report path, passes
    architecture/governance/document validation, and grants no implementation
    or aggregate SH-07 authority; and
-11. the current I9 candidate remains draft until this report is independently
+12. the current I9 candidate remains draft until this report is independently
    accepted, integrated, and reconciled into its exact base and dependency
    set.
