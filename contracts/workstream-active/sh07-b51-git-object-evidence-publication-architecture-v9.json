@@ -2,8 +2,8 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
   "author": "uniform-coordinator",
   "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
-  "candidate_commit": "8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
-  "clean_worktree": true,
+  "candidate_commit": null,
+  "clean_worktree": false,
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
     "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Exact frozen V9 architecture candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, is under independent C/T, report-byte, dependency, lifecycle, implementation-closure, and nonclaim review. It grants no implementation or downstream authority before accepted and integration-eligible transitions.",
+  "disposition": "Returned to draft after exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326 received one independent acceptance and one independent formal rejection. Revision must define the complete acyclic L2 external-binding, edge-ID, accepted/rejected partition, diagnostic, and unauthorized-fixture construction from authentic Q and SH06 carriers. No implementation or downstream authority is granted.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -21,6 +21,7 @@
       "sh07-b51-git-object-evidence-publication-architecture-v8:76ea5d13a1bb20a8be199a6127d7b60d12e8e9df",
       "sh07-b51-git-object-evidence-publication-architecture-v9-original:3a42550183781bef741969f27fd9b284a7f8f2c4",
       "sh07-b51-git-object-evidence-publication-architecture-v9:ea9ae281dce2249f779a9777c75517bebdbbad25",
+      "sh07-b51-git-object-evidence-publication-architecture-v9:8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
       "mutable-worktree-or-ref-source-authority",
       "checker-coordinator-self-bootstrap-cycle",
       "publication-receipt-self-cycle",
@@ -136,6 +137,12 @@
       "at": "2026-09-10T00:39:04Z",
       "reason": "request fresh independent review of exact frozen C/T 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326/af0ab97c1c7b903199b057168bd6642114fd72f3, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, evidence topology, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:11:06Z",
+      "reason": "return V9 to draft after exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326 received one independent acceptance but independent formal review found no exact L2 external-binding vector, edge-ID equation, Q/SH06 fragment join, accepted/rejected partition, diagnostic constructor, or unauthorized-edge fixture, leaving governed external binding acceptance and unauthorized cross-fragment rejection underdetermined",
+      "state": "draft"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -166,8 +173,18 @@
       "kind": "independent",
       "result": "rejected",
       "reviewer": "/root/v9_prefreeze_formal"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_full_fuel_audit@8ea2c2dd"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_formal@8ea2c2dd"
     }
   ],
-  "state": "review-pending",
+  "state": "draft",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
