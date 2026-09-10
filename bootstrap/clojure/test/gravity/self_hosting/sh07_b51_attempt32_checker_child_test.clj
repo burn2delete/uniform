@@ -39,7 +39,7 @@
 (defn- eligibility-result []
   (let [coordinate (eligibility)
         observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
-        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 88))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 91))
         check
         {:coordinate coordinate
          :observations observations
@@ -47,14 +47,14 @@
          :decode-count 1
          :receipt-id-check-count 1
          :pre-discharge-reconstruction-count 1
-         :pre-discharge-git-operation-count 88
+         :pre-discharge-git-operation-count 91
          :pre-discharge-document-descriptor-count 33
          :pre-discharge-source-descriptor-count 13
          :pre-discharge-pre-masked-file-count 2
-         :pre-discharge-owned-c-artifact-count 37
+         :pre-discharge-owned-c-artifact-count 42
          :pre-discharge-a9-artifact-count 3
          :pre-discharge-baseline-boot5-count 1
-         :pre-discharge-static-decode-count 73
+         :pre-discharge-static-decode-count 78
          :content-match true
          :source-descriptors-match true
          :source-descriptors-root-match true
@@ -82,7 +82,7 @@
      :operation-count 5
      :pre-object-snapshot {}
      :pre-discharge-observations pre-observations
-     :pre-discharge-git-operation-count 88
+     :pre-discharge-git-operation-count 91
      :scope :immutable-q-coordinate-and-pre-discharge
      :eligibility-check check
      :eligibility-check-root

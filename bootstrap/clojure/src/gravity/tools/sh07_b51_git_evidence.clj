@@ -148,11 +148,9 @@
   ["bootstrap/gravity/p15_s23/compiler.gravity"
    "bootstrap/gravity/p15_s23/emitter.gravity"
    "bootstrap/gravity/src/gravity/resolution.gravity"
-   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity"
-   "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"])
 
@@ -180,7 +178,10 @@
    "bootstrap/clojure/test/gravity/self_hosting/fixtures/sh07-b51-git-object-v9/accepted.edn"
    "bootstrap/clojure/test/gravity/self_hosting/fixtures/sh07-b51-git-object-v9/rejected.edn"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt30_independent_census_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt30_linked_carrier_host_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt30_producer_census_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt30_producer_compact_verifier_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt30_root6_compact_verifier_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt32_checker_child_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt32_runtime_admission_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_attempt32_tier0_materializer_test.clj"
@@ -193,7 +194,9 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_existing_object_replay_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_process_isolation_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_sh06_external_binding_seam_test.clj"
-   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_source_closure_test.clj"])
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_source_closure_test.clj"
+   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity"])
 
 (def architecture-report-path
   "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md")
@@ -235,7 +238,7 @@
                                  source-only-paths
                                  owned-c-paths
                                  a9-pre-paths)))]
-    (when-not (and (= 83 (count paths)) (= 83 (count (distinct paths))))
+    (when-not (and (= 86 (count paths)) (= 86 (count (distinct paths))))
       (throw (ex-info "invalid literal SH-07 PRE path census"
                       {:count (count paths)
                        :distinct-count (count (distinct paths))})))
@@ -2924,11 +2927,9 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"
    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
    "bootstrap/gravity/src/gravity/checked_core.gravity"
-   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity"
-   "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
    "contracts/verification-catalog.edn"
@@ -2942,9 +2943,9 @@
 (defn- allocation [ordinal stage paths]
   {:ordinal ordinal :stage stage :owner :master-coordinator :paths paths})
 
-(defn- build-v9-ownership-plan-e3 []
+(defn- build-v9-ownership-plan-e4 []
   (let [base
-        {:schema :gravity/sh07-b51-v9-ownership-plan-e3-v1
+        {:schema :gravity/sh07-b51-v9-ownership-plan-e4-v1
          :allocations
          [(allocation 0 :a9 a9-paths-e1)
           (allocation 1 :i9 i9-lifecycle-paths)
@@ -2961,7 +2962,7 @@
          :aggregate-sh07-state :partial
          :self-id-omits [[:plan-id]]}]
     (assoc base :plan-id
-           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e3-v1 base]))))
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e4-v1 base]))))
 
 (def governance-rules-e1
   {:permitted-transitions
@@ -2987,7 +2988,7 @@
     (binding [*read-eval* false]
       (edn/read-string (subs text value-start value-end)))))
 
-(defn- build-registries-e3 [architecture-report]
+(defn- build-registries-e4 [architecture-report]
   (let [old-tags (fenced-edn-after! architecture-report
                                       "`V9-TAG-REGISTRY` is")
         old-domains (fenced-edn-after! architecture-report
@@ -3007,21 +3008,23 @@
                          :gravity/sh07-b51-contract-predicate-fixture-v1
                          :gravity/sh07-b51-v9-ownership-plan-v1
                          :gravity/sh07-b51-v9-ownership-plan-e1
-                         :gravity/sh07-b51-v9-ownership-plan-e2-v1}
+                         :gravity/sh07-b51-v9-ownership-plan-e2-v1
+                         :gravity/sh07-b51-v9-ownership-plan-e3-v1}
                old-tags)
                :gravity/sh07-b51-a9-stage-result-e1
                :gravity/sh07-b51-contract-predicate-fixture-v2
-               :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+               :gravity/sh07-b51-v9-ownership-plan-e4-v1))
         domains
         (sorted-keywords
          (conj (remove #{:gravity/sh07-b51-a9-lifecycle-receipt-v1
                          :gravity/sh07-b51-contract-predicate-fixture-v1
                          :gravity/sh07-b51-v9-ownership-plan-v1
                          :gravity/sh07-b51-v9-ownership-plan-e1
-                         :gravity/sh07-b51-v9-ownership-plan-e2-v1}
+                         :gravity/sh07-b51-v9-ownership-plan-e2-v1
+                         :gravity/sh07-b51-v9-ownership-plan-e3-v1}
                old-domains)
                :gravity/sh07-b51-contract-predicate-fixture-v2
-               :gravity/sh07-b51-v9-ownership-plan-e3-v1))]
+               :gravity/sh07-b51-v9-ownership-plan-e4-v1))]
     (when-not
      (and (vector? member-kinds)
           (= (count tags) (count (distinct tags)))
@@ -3029,11 +3032,11 @@
           (every? (set tags) domains)
           (contains? (set tags) :gravity/sh07-b51-a9-stage-result-e1)
           (contains? (set tags)
-                     :gravity/sh07-b51-v9-ownership-plan-e3-v1)
+                     :gravity/sh07-b51-v9-ownership-plan-e4-v1)
           (contains? (set tags)
                      :gravity/sh07-b51-contract-predicate-fixture-v2)
           (contains? (set domains)
-                     :gravity/sh07-b51-v9-ownership-plan-e3-v1)
+                     :gravity/sh07-b51-v9-ownership-plan-e4-v1)
           (contains? (set domains)
                      :gravity/sh07-b51-contract-predicate-fixture-v2)
           (not (contains? (set tags)
@@ -3044,6 +3047,10 @@
                           :gravity/sh07-b51-v9-ownership-plan-e2-v1))
           (not (contains? (set domains)
                           :gravity/sh07-b51-v9-ownership-plan-e2-v1))
+          (not (contains? (set tags)
+                          :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+          (not (contains? (set domains)
+                          :gravity/sh07-b51-v9-ownership-plan-e3-v1))
           (not (contains? (set tags)
                           :gravity/sh07-b51-v9-ownership-plan-e1))
           (not (contains? (set domains)
@@ -3177,7 +3184,7 @@
    :nonclaims nonclaims})
 
 (defn reconstruct-pre-object-snapshot!
-  "Reconstruct the literal E3 C-object PRE carriers with exactly 88 bounded
+  "Reconstruct the literal E4 C-object PRE carriers with exactly 91 bounded
   Git operations.  Terminal A9 and the acyclic pre-mask are authenticated
   solely from the requested C/T objects.  The result grants no authority."
   [{:keys [repository-root content]}]
@@ -3213,7 +3220,7 @@
         baseline-cat (cat-file-bytes-operation! repository (:oid baseline-row))
         observations
         (mapv (fn [ordinal observation] (assoc observation :ordinal ordinal))
-              (range 88)
+              (range 91)
               (concat [show-c tree-c]
                       (map :observation cat-results)
                       [show-base tree-base (:observation baseline-cat)]))
@@ -3242,33 +3249,33 @@
          content rows-by-path bytes-by-path decoded-static)
         pre-masked-root
         (build-pre-masked-root bytes-by-path decoded-static)
-        ownership-plan (build-v9-ownership-plan-e3)
+        ownership-plan (build-v9-ownership-plan-e4)
         registries
-        (build-registries-e3 (get decoded-static architecture-report-path))
+        (build-registries-e4 (get decoded-static architecture-report-path))
         foundation-static
         (build-foundation-static content (:documents document-read-receipt))
         catalog-projection
         (build-catalog-projection document-read-receipt decoded-static)
         proof-scope (build-proof-scope catalog-projection decoded-static)
         publication-boundary (build-publication-boundary content)]
-    (when-not (and (= 88 (count observations))
-                   (= (vec (range 88)) (mapv :ordinal observations))
-                   (= 73 (count static-paths))
-                   (= 73 (count (distinct static-paths)))
+    (when-not (and (= 91 (count observations))
+                   (= (vec (range 91)) (mapv :ordinal observations))
+                   (= 78 (count static-paths))
+                   (= 78 (count (distinct static-paths)))
                    (= 33 (count (:documents document-read-receipt)))
                    (= 33 (count (:events document-read-receipt)))
                    (= 13 (count source-descriptors))
                    (= resolution-source-descriptor
                       (nth source-descriptors 12))
                    (= 2 (count (:preimage-files pre-masked-root)))
-                   (= 37 (count owned-c-descriptors))
+                   (= 42 (count owned-c-descriptors))
                    (= 3 (count (:a9-artifact-descriptors a9-stage-result))))
       (fail! "SH07-B51-CONTRACT-DISCHARGE" :pre-object-census))
     {:content content
      :baseline {:commit pre-baseline-commit :tree base-tree}
      :pre-c-paths pre-c-paths
      :observations observations
-     :git-operation-count 88
+     :git-operation-count 91
      :document-read-receipt document-read-receipt
      :source-descriptors source-descriptors
      :source-descriptors-root
@@ -3552,14 +3559,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 88
+   :pre-discharge-git-operation-count 91
    :pre-discharge-document-descriptor-count 33
    :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 37
+   :pre-discharge-owned-c-artifact-count 42
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 73})
+   :pre-discharge-static-decode-count 78})
 
 (def ^:private eligibility-check-match-keys
   [:content-match :source-descriptors-match
@@ -3980,7 +3987,7 @@
     :raw-sha256})
 
 (def ^:private runtime-i9-suffix
-  (subvec (vec i9-lifecycle-paths) 37))
+  (subvec (vec i9-lifecycle-paths) 42))
 
 (def ^:private runtime-forbidden-path-refs
   [[:e9 0] [:e9 1] [:e9 2] [:e9 3] [:e9 4] [:e9 5] [:e9 6]
@@ -4271,7 +4278,7 @@
 (defn validate-eligibility-object!
   "Validate Q/TQ as the direct sibling-lineage child of C using exactly five
   Git object operations, then independently reconstruct and byte-compare the
-  E3 PRE discharge with exactly 88 further Git object operations."
+  E4 PRE discharge with exactly 91 further Git object operations."
   [{:keys [repository-root content eligibility-coordinate]}]
   (exact-keys! content #{:commit :tree} "SH07-B51-GIT-SNAPSHOT" :content)
   (exact-keys! eligibility-coordinate eligibility-coordinate-keys
@@ -4398,14 +4405,14 @@
            :decode-count 1
            :receipt-id-check-count 1
            :pre-discharge-reconstruction-count 1
-           :pre-discharge-git-operation-count 88
+           :pre-discharge-git-operation-count 91
            :pre-discharge-document-descriptor-count 33
            :pre-discharge-source-descriptor-count 13
            :pre-discharge-pre-masked-file-count 2
-           :pre-discharge-owned-c-artifact-count 37
+           :pre-discharge-owned-c-artifact-count 42
            :pre-discharge-a9-artifact-count 3
            :pre-discharge-baseline-boot5-count 1
-           :pre-discharge-static-decode-count 73
+           :pre-discharge-static-decode-count 78
            :content-match content-match
            :source-descriptors-match source-match
            :source-descriptors-root-match source-root-match
@@ -4432,7 +4439,7 @@
        :operation-count 5
        :pre-object-snapshot pre
        :pre-discharge-observations (:observations pre)
-       :pre-discharge-git-operation-count 88
+       :pre-discharge-git-operation-count 91
        :scope :immutable-q-coordinate-and-pre-discharge
        :eligibility-check eligibility-check
        :eligibility-check-root check-root

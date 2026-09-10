@@ -1116,9 +1116,9 @@
 
 (defn- canonical-ownership-plan
   []
-  ((evidence-private 'build-v9-ownership-plan-e3)))
+  ((evidence-private 'build-v9-ownership-plan-e4)))
 
-(deftest e3-ownership-and-governance-are-stage-scoped
+(deftest e4-ownership-and-governance-are-stage-scoped
   (let [plan (canonical-ownership-plan)
         rules evidence/governance-rules-e1]
     (is (= #{:schema :allocations :semantic-review-owner
@@ -1126,13 +1126,13 @@
              :read-only-prerequisite-stages :read-only-paths
              :open-exit-gates :aggregate-sh07-state :self-id-omits :plan-id}
            (set (keys plan))))
-    (is (= :gravity/sh07-b51-v9-ownership-plan-e3-v1 (:schema plan)))
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e4-v1 (:schema plan)))
     (is (= [:a9 :i9 :e9 :g9 :p9] (mapv :stage (:allocations plan))))
     (is (= [:i9 :e9 :g9 :p9] (:reservation-required-stages plan)))
     (is (= [:i9 :g9 :p9] (:handoff-required-stages plan)))
     (is (= [:a9] (:read-only-prerequisite-stages plan)))
     (is (= (:plan-id plan)
-           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e3-v1
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e4-v1
                      (dissoc plan :plan-id)])))
     (doseq [mutated [(assoc plan :schema
                             :gravity/sh07-b51-v9-ownership-plan-v1)
@@ -1158,20 +1158,22 @@
                              #(assoc % 0 (nth % 1) 1 (nth % 0)))]]
       (is (not= rules mutated)))))
 
-(deftest e3-registries-remove-old-ownership-and-split-tag-from-h-domain
+(deftest e4-registries-replace-e3-ownership-with-the-exact-e4-domain
   (let [report (String. ^bytes (file-bytes evidence/architecture-report-path)
                         StandardCharsets/UTF_8)
-        registries ((evidence-private 'build-registries-e3) report)
+        registries ((evidence-private 'build-registries-e4) report)
         tags (set (:tag-registry registries))
         domains (set (get-in registries [:identity-domain-registry :domains]))]
     (is (contains? tags :gravity/sh07-b51-a9-stage-result-e1))
-    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e4-v1))
+    (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e3-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e2-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? tags
                         :gravity/sh07-b51-a9-lifecycle-receipt-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-v1)))
-    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e4-v1))
+    (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e3-v1)))
     (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e2-v1)))
     (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? domains :gravity/sh07-b51-a9-stage-result-e1)))

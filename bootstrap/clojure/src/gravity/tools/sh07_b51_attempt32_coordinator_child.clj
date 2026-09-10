@@ -133,14 +133,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 88
+   :pre-discharge-git-operation-count 91
    :pre-discharge-document-descriptor-count 33
    :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 37
+   :pre-discharge-owned-c-artifact-count 42
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 73})
+   :pre-discharge-static-decode-count 78})
 (def ^:private eligibility-check-matches
   [:content-match :source-descriptors-match
    :source-descriptors-root-match :pre-masked-root-match
@@ -150,16 +150,16 @@
 
 (def ^:private aggregate-eligibility-counter-values
   {:q-coordinate-git-operation-count 20
-   :pre-discharge-git-operation-count 352
-   :git-operation-count 372
+   :pre-discharge-git-operation-count 364
+   :git-operation-count 384
    :q-coordinate-decode-count 4
    :receipt-id-check-count 4
    :pre-discharge-reconstruction-count 4
-   :pre-discharge-static-decode-count 292
+   :pre-discharge-static-decode-count 312
    :pre-discharge-document-descriptor-count 132
    :pre-discharge-source-descriptor-count 52
    :pre-discharge-pre-masked-file-count 8
-   :pre-discharge-owned-c-artifact-count 148
+   :pre-discharge-owned-c-artifact-count 168
    :pre-discharge-a9-artifact-count 12
    :pre-discharge-baseline-boot5-count 4
    :content-match-count 4
@@ -272,13 +272,13 @@
   (and (exact-keys? check eligibility-check-keys)
        (= expected-coordinate (:coordinate check))
        (dense-observations? 5 (:observations check))
-       (dense-observations? 88 (:pre-discharge-observations check))
+       (dense-observations? 91 (:pre-discharge-observations check))
        (= eligibility-check-counts
           (select-keys check (keys eligibility-check-counts)))
        (every? true? (map check eligibility-check-matches))))
 
 (defn aggregate-eligibility-counters!
-  "Validate the ordered L/M/A/B eligibility checks and return E3's exact
+  "Validate the ordered L/M/A/B eligibility checks and return E4's exact
   aggregate counter carrier."
   [H participant-results]
   (let [common-coordinate
@@ -1166,7 +1166,7 @@
 
 (defn- authenticate-eligibility-input!
   "Run the shared show/diff-tree/ls-tree/blob/ls-tree Q sequence and the full
-  88-operation PRE reconstruction before constructing A or B."
+  91-operation PRE reconstruction before constructing A or B."
   [options codec]
   (let [coordinate (:eligibility options)
         validate! (:validate-eligibility-object! (load-git-evidence!))
@@ -1191,8 +1191,8 @@
           (= 5 (:operation-count result))
           (dense-observations? 5 observations)
           (= observations (:observations check))
-          (= 88 (:pre-discharge-git-operation-count result))
-          (dense-observations? 88 pre-observations)
+          (= 91 (:pre-discharge-git-operation-count result))
+          (dense-observations? 91 pre-observations)
           (= pre-observations (:pre-discharge-observations check))
           (= eligibility-check-counts
              (select-keys check (keys eligibility-check-counts)))

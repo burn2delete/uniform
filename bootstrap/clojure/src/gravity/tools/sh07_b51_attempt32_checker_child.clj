@@ -176,14 +176,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 88
+   :pre-discharge-git-operation-count 91
    :pre-discharge-document-descriptor-count 33
    :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 37
+   :pre-discharge-owned-c-artifact-count 42
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 73})
+   :pre-discharge-static-decode-count 78})
 
 (def semantic-algorithm-source-paths-e3
   ["bootstrap/clojure/src/gravity/tools/sh07_b51_attempt30_independent_census.clj"
@@ -855,7 +855,7 @@
        (= (vec (range expected-count)) (mapv :ordinal observations))))
 
 (defn validate-eligibility-five-operations!
-  "Validate Q with five operations and independently reconstruct all 88 PRE
+  "Validate Q with five operations and independently reconstruct all 91 PRE
   operations through the authenticated shared Git-evidence implementation.
   The shared Q sequence retains its show, diff-tree, ls-tree, blob, ls-tree
   topology; this entrypoint does not duplicate those Git operations."
@@ -881,8 +881,8 @@
           (= 5 (:operation-count result))
           (dense-observations? 5 observations)
           (= observations (:observations check))
-          (= 88 (:pre-discharge-git-operation-count result))
-          (dense-observations? 88 pre-observations)
+          (= 91 (:pre-discharge-git-operation-count result))
+          (dense-observations? 91 pre-observations)
           (= pre-observations (:pre-discharge-observations check))
           (= eligibility-check-counts
              (select-keys check (keys eligibility-check-counts)))
