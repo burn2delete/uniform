@@ -133,14 +133,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 77
+   :pre-discharge-git-operation-count 84
    :pre-discharge-document-descriptor-count 33
-   :pre-discharge-source-descriptor-count 12
+   :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 27
+   :pre-discharge-owned-c-artifact-count 33
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 63})
+   :pre-discharge-static-decode-count 69})
 (def ^:private eligibility-check-matches
   [:content-match :source-descriptors-match
    :source-descriptors-root-match :pre-masked-root-match
@@ -150,16 +150,16 @@
 
 (def ^:private aggregate-eligibility-counter-values
   {:q-coordinate-git-operation-count 20
-   :pre-discharge-git-operation-count 308
-   :git-operation-count 328
+   :pre-discharge-git-operation-count 336
+   :git-operation-count 356
    :q-coordinate-decode-count 4
    :receipt-id-check-count 4
    :pre-discharge-reconstruction-count 4
-   :pre-discharge-static-decode-count 252
+   :pre-discharge-static-decode-count 276
    :pre-discharge-document-descriptor-count 132
-   :pre-discharge-source-descriptor-count 48
+   :pre-discharge-source-descriptor-count 52
    :pre-discharge-pre-masked-file-count 8
-   :pre-discharge-owned-c-artifact-count 108
+   :pre-discharge-owned-c-artifact-count 132
    :pre-discharge-a9-artifact-count 12
    :pre-discharge-baseline-boot5-count 4
    :content-match-count 4
@@ -220,7 +220,8 @@
     :source-descriptors-root :events :event-root :counters :finalized})
 (def ^:private product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
-    :module-transactions :source-read-receipt})
+    :module-transactions :sh06-resolution-plan-authority
+    :source-read-receipt})
 (def ^:private source-counter-keys
   #{:acquire-count :decode-count :event-count :finalize-count})
 (def ^:private source-descriptor-keys
@@ -271,13 +272,13 @@
   (and (exact-keys? check eligibility-check-keys)
        (= expected-coordinate (:coordinate check))
        (dense-observations? 5 (:observations check))
-       (dense-observations? 77 (:pre-discharge-observations check))
+       (dense-observations? 84 (:pre-discharge-observations check))
        (= eligibility-check-counts
           (select-keys check (keys eligibility-check-counts)))
        (every? true? (map check eligibility-check-matches))))
 
 (defn aggregate-eligibility-counters!
-  "Validate the ordered L/M/A/B eligibility checks and return E1's exact
+  "Validate the ordered L/M/A/B eligibility checks and return E2's exact
   aggregate counter carrier."
   [H participant-results]
   (let [common-coordinate
@@ -1165,7 +1166,7 @@
 
 (defn- authenticate-eligibility-input!
   "Run the shared show/diff-tree/ls-tree/blob/ls-tree Q sequence and the full
-  77-operation PRE reconstruction before constructing A or B."
+  84-operation PRE reconstruction before constructing A or B."
   [options codec]
   (let [coordinate (:eligibility options)
         validate! (:validate-eligibility-object! (load-git-evidence!))
@@ -1190,8 +1191,8 @@
           (= 5 (:operation-count result))
           (dense-observations? 5 observations)
           (= observations (:observations check))
-          (= 77 (:pre-discharge-git-operation-count result))
-          (dense-observations? 77 pre-observations)
+          (= 84 (:pre-discharge-git-operation-count result))
+          (dense-observations? 84 pre-observations)
           (= pre-observations (:pre-discharge-observations check))
           (= eligibility-check-counts
              (select-keys check (keys eligibility-check-counts)))
@@ -1292,17 +1293,17 @@
             (= role (:role receipt))
             (= (:content (:request joined))
                (select-keys receipt [:commit :tree]))
-            (vector? descriptors) (= 12 (count descriptors))
+            (vector? descriptors) (= 13 (count descriptors))
             (every? #(and (exact-keys? % source-descriptor-keys)
                           (= "100644" (:mode %))
                           (git-id? (:blob-oid %))
                           (sha256-id? (:raw-sha256 %)))
                     descriptors)
-            (= (vec (range 12)) (mapv :ordinal descriptors))
+            (= (vec (range 13)) (mapv :ordinal descriptors))
             (= (:source-descriptors-root receipt)
                ((:H codec)
                 [:gravity/sh07-b51-source-descriptors-root-v1 descriptors]))
-            (vector? events) (= 39 (count events))
+            (vector? events) (= 40 (count events))
             (every? #(and (exact-keys? % source-event-keys)
                           (sha256-id? (:source-raw-sha256 %))
                           (sha256-id? (:product-id %))
@@ -1310,13 +1311,13 @@
                                      [(:source-ordinal %) :raw-sha256])
                              (:source-raw-sha256 %)))
                     events)
-            (= (vec (range 39)) (mapv :ordinal events))
+            (= (vec (range 40)) (mapv :ordinal events))
             (= (:event-root receipt)
                ((:H codec)
                 [:gravity/sh07-b51-source-event-root-v1 events]))
             (exact-keys? (:counters receipt) source-counter-keys)
-            (= {:acquire-count 12 :decode-count 12
-                :event-count 39 :finalize-count 1}
+            (= {:acquire-count 13 :decode-count 13
+                :event-count 40 :finalize-count 1}
                (:counters receipt))
             (true? (:finalized receipt))
             (exact-keys? counters response-counter-keys)
@@ -1466,8 +1467,8 @@
           (exact-keys? receipt source-receipt-keys)
           (= :m (:role receipt))
           (= content (select-keys receipt [:commit :tree]))
-          (= {:acquire-count 12 :decode-count 12
-              :event-count 39 :finalize-count 1}
+          (= {:acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}
              (:counters receipt))
           (true? (:finalized receipt)))
       (reject! :m-source-session))

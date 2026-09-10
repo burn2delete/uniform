@@ -4,8 +4,25 @@
          p15-s23-stage2-compiler-artifact-augmented-emitter
          sh06-resolution-definition-records sh06-resolution-core-records
          sh06-resolution-analysis-inputs sh06-resolution-package
+         sh06-resolution-request
+         sh06-resolution-artifact-from-sh05-artifact
+         sh06-resolution-artifact-verification
+         sh06-resolution-plan-identities
+         sh06-resolution-source-relative-path
+         sh06-resolution-expected-source-byte-count
+         sh06-resolution-expected-source-content-hash
+         sh06-resolution-expected-plan-semantic-hash
+         sh06-resolution-expected-plan-id
+         sh06-resolution-expected-functions-semantic-hash
+         sh06-resolution-expected-function-count
+         sh06-resolution-expected-function-names-hash
+         sh06-resolution-expected-function-shapes-hash
+         sh06-resolution-public-function-hashes
+         sh06-resolution-public-function-shapes
+         sh07-core-authenticated-request
          p15-s23-sh07-b51-derive-callsite-census
          p15-s23-stage2-construct-emitted-core-plan
+         p15-s23-sh07-b51-resolution-plan-authority-valid?
          p15-s23-sh07-b51-plan-valid-structure?
          p15-s23-sh07-b51-plan-links-valid-structure?
          p15-s23-sh07-b51-execution-bundle-core-valid-structure?
@@ -170,7 +187,9 @@
     [{:ordinal 10 :kind :compiler :module-ordinal nil
       :path "bootstrap/gravity/p15_s23/compiler.gravity"}
      {:ordinal 11 :kind :emitter :module-ordinal nil
-      :path "bootstrap/gravity/p15_s23/emitter.gravity"}])))
+      :path "bootstrap/gravity/p15_s23/emitter.gravity"}
+     {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
+      :path "bootstrap/gravity/src/gravity/resolution.gravity"}])))
 
 (def ^:private p15-s23-sh07-b51-source-event-plan
   (vec
@@ -219,7 +238,11 @@
        :source-ordinal 11
        :module-ordinal module-ordinal
        :consumer
-       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding}))))
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding})
+    [{:ordinal 39 :domain :sh06-resolution-binding :source-ordinal 12
+      :module-ordinal nil
+      :consumer
+      'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}])))
 
 ;; This marker is denial-only: it grants no source or product authority.  The
 ;; V9 object-mode wrapper binds it before opening its private C/T session so a
@@ -296,6 +319,249 @@
   [bytes]
   (str "sha256:" (sha256-bytes-hex bytes)))
 
+(def ^:private p15-s23-sh07-b51-byte-array-class
+  (Class/forName "[B"))
+
+(defn- p15-s23-sh07-b51-byte-array?
+  [value]
+  (instance? p15-s23-sh07-b51-byte-array-class value))
+
+(defn- p15-s23-sh07-b51-unsigned-byte-vector
+  [bytes]
+  (when-not (p15-s23-sh07-b51-byte-array? bytes)
+    (p15-s23-sh07-b51-governed-read-fail!
+     :object-proof-bytes {:observed-type (some-> bytes class .getName)}))
+  (mapv #(bit-and 0xff (int %)) ^bytes bytes))
+
+(defn- p15-s23-sh07-b51-unsigned-byte-array
+  [value coordinate]
+  (when-not (and (vector? value)
+                 (every? #(and (integer? %) (<= 0 % 255)) value))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :object-proof-bytes {:coordinate coordinate}))
+  (byte-array (map unchecked-byte value)))
+
+(defn- p15-s23-sh07-b51-byte-array-equal?
+  [left right]
+  (and (p15-s23-sh07-b51-byte-array? left)
+       (p15-s23-sh07-b51-byte-array? right)
+       (java.util.Arrays/equals ^bytes left ^bytes right)))
+
+(defn- p15-s23-sh07-b51-hex-bytes
+  [bytes]
+  (let [digits "0123456789abcdef"]
+    (apply str
+           (mapcat (fn [value]
+                     (let [unsigned (bit-and 0xff (int value))]
+                       [(.charAt digits (unsigned-bit-shift-right unsigned 4))
+                        (.charAt digits (bit-and unsigned 0x0f))]))
+                   ^bytes bytes))))
+
+(defn- p15-s23-sh07-b51-git-object-id
+  [kind bytes]
+  (when-not (and (contains? #{"blob" "tree" "commit"} kind)
+                 (p15-s23-sh07-b51-byte-array? bytes))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :git-object-id-input {:kind kind}))
+  (let [digest (java.security.MessageDigest/getInstance "SHA-1")
+        header (.getBytes (str kind " " (alength ^bytes bytes) "\u0000")
+                          java.nio.charset.StandardCharsets/US_ASCII)]
+    (.update digest ^bytes header)
+    (.update digest ^bytes bytes)
+    (p15-s23-sh07-b51-hex-bytes (.digest digest))))
+
+(defn- p15-s23-sh07-b51-safe-proof-path-segments
+  [path]
+  (let [segments (when (string? path) (str/split path #"/" -1))]
+    (when-not (and (vector? segments)
+                   (not (str/blank? path))
+                   (not (str/starts-with? path "/"))
+                   (every? #(and (not (str/blank? %))
+                                 (not (contains? #{"." ".."} %))
+                                 (not (str/includes? % "\\"))
+                                 (not (str/includes? % "\u0000")))
+                           segments))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :object-proof-path {:path path}))
+    segments))
+
+(defn- p15-s23-sh07-b51-parse-commit-tree!
+  [raw-bytes coordinate]
+  (let [text (p15-s23-sh07-b51-strict-utf8 raw-bytes coordinate)
+        lines (str/split text #"\n" -1)
+        first-line (first lines)
+        tree (when first-line
+               (second (re-matches #"tree ([0-9a-f]{40})" first-line)))
+        later-tree-lines (filter #(str/starts-with? % "tree ") (rest lines))]
+    (when-not (and tree (empty? later-tree-lines))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :commit-object-tree-header
+       {:coordinate coordinate :first-line first-line
+        :later-tree-header-count (count later-tree-lines)}))
+    tree))
+
+(defn- p15-s23-sh07-b51-unsigned-bytes-compare
+  [left right]
+  (loop [index 0]
+    (cond
+      (= index (count left) (count right)) 0
+      (= index (count left)) -1
+      (= index (count right)) 1
+      :else
+      (let [comparison (compare (nth left index) (nth right index))]
+        (if (zero? comparison)
+          (recur (inc index))
+          comparison)))))
+
+(defn- p15-s23-sh07-b51-tree-sort-key
+  [{:keys [name mode]}]
+  (cond-> (p15-s23-sh07-b51-unsigned-byte-vector
+           (.getBytes ^String name java.nio.charset.StandardCharsets/UTF_8))
+    (= "40000" mode) (conj (int \/))))
+
+(defn- p15-s23-sh07-b51-parse-tree-object!
+  [raw-bytes coordinate]
+  (let [length (alength ^bytes raw-bytes)
+        entries
+        (loop [index 0 result []]
+          (if (= index length)
+            result
+            (let [space
+                  (loop [cursor index]
+                    (cond
+                      (>= cursor length) nil
+                      (= 32 (bit-and 0xff (aget ^bytes raw-bytes cursor))) cursor
+                      :else (recur (inc cursor))))
+                  nul
+                  (when space
+                    (loop [cursor (inc space)]
+                      (cond
+                        (>= cursor length) nil
+                        (zero? (bit-and 0xff (aget ^bytes raw-bytes cursor))) cursor
+                        :else (recur (inc cursor)))))
+                  oid-start (when nul (inc nul))
+                  oid-end (when oid-start (+ oid-start 20))]
+              (when-not (and space (< index space) nul (< space nul)
+                             (<= oid-end length))
+                (p15-s23-sh07-b51-governed-read-fail!
+                 :tree-object-grammar {:coordinate coordinate :offset index}))
+              (let [mode-bytes (java.util.Arrays/copyOfRange
+                                ^bytes raw-bytes index space)
+                    name-bytes (java.util.Arrays/copyOfRange
+                                ^bytes raw-bytes (inc space) nul)
+                    oid-bytes (java.util.Arrays/copyOfRange
+                               ^bytes raw-bytes oid-start oid-end)
+                    mode (p15-s23-sh07-b51-strict-utf8
+                          mode-bytes [coordinate :mode])
+                    name (p15-s23-sh07-b51-strict-utf8
+                          name-bytes [coordinate :name])]
+                (when-not (and (contains? #{"40000" "100644"} mode)
+                               (not (str/blank? name))
+                               (not (contains? #{"." ".."} name))
+                               (not (str/includes? name "/"))
+                               (not (str/includes? name "\u0000")))
+                  (p15-s23-sh07-b51-governed-read-fail!
+                   :tree-object-entry
+                   {:coordinate coordinate :mode mode :name name}))
+                (recur oid-end
+                       (conj result
+                             {:mode mode :name name
+                              :oid (p15-s23-sh07-b51-hex-bytes oid-bytes)}))))))]
+    (when-not (and (= (count entries) (count (set (map :name entries))))
+                   (every?
+                    neg?
+                    (map (fn [[left right]]
+                           (p15-s23-sh07-b51-unsigned-bytes-compare
+                            (p15-s23-sh07-b51-tree-sort-key left)
+                            (p15-s23-sh07-b51-tree-sort-key right)))
+                         (partition 2 1 entries))))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :tree-object-order {:coordinate coordinate}))
+    entries))
+
+(defn- p15-s23-sh07-b51-validate-content-object-proof!
+  [content proof]
+  (when-not (and (= #{:commit :tree} (set (keys content)))
+                 (string? (:commit content))
+                 (boolean (re-matches #"[0-9a-f]{40}" (:commit content)))
+                 (string? (:tree content))
+                 (boolean (re-matches #"[0-9a-f]{40}" (:tree content)))
+                 (= #{:oid :raw-bytes} (set (keys proof))))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :content-object-proof-shape {:content content}))
+  (let [bytes (p15-s23-sh07-b51-unsigned-byte-array
+               (:raw-bytes proof) :commit-object-proof)
+        computed (p15-s23-sh07-b51-git-object-id "commit" bytes)
+        tree (p15-s23-sh07-b51-parse-commit-tree!
+              bytes :commit-object-proof)]
+    (when-not (and (= (:commit content) (:oid proof) computed)
+                   (= (:tree content) tree))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :content-object-proof
+       {:content content :proof-oid (:oid proof)
+        :computed-oid computed :computed-tree tree}))
+    true))
+
+(defn- p15-s23-sh07-b51-validate-source-object-proof!
+  [content descriptor proof]
+  (when-not
+   (and (= #{:schema :path :root-tree :tree-chain :blob-bytes}
+           (set (keys proof)))
+        (= :gravity/sh07-b51-git-tree-inclusion-proof-v1 (:schema proof))
+        (= (:path descriptor) (:path proof))
+        (= (:tree content) (:root-tree proof))
+        (vector? (:tree-chain proof)))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :source-object-proof-shape {:path (:path descriptor)}))
+  (let [segments (p15-s23-sh07-b51-safe-proof-path-segments (:path proof))
+        chain (:tree-chain proof)
+        blob-bytes (p15-s23-sh07-b51-unsigned-byte-array
+                    (:blob-bytes proof) [(:path proof) :blob])]
+    (when-not (= (count segments) (count chain))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :source-object-proof-depth {:path (:path proof)}))
+    (doseq [index (range (count chain))]
+      (let [row (nth chain index)
+            component (nth segments index)
+            final? (= index (dec (count chain)))
+            tree-bytes (when (map? row)
+                         (p15-s23-sh07-b51-unsigned-byte-array
+                          (:tree-bytes row) [(:path proof) index :tree]))
+            entries (when tree-bytes
+                      (p15-s23-sh07-b51-parse-tree-object!
+                       tree-bytes [(:path proof) index]))
+            matches (filterv #(= component (:name %)) entries)
+            selected (first matches)
+            expected-tree-oid
+            (if (zero? index) (:tree content)
+                (:selected-oid (nth chain (dec index))))]
+        (when-not
+         (and (= #{:tree-oid :tree-bytes :component
+                   :selected-mode :selected-oid}
+                 (set (keys row)))
+              (= expected-tree-oid (:tree-oid row))
+              (= (:tree-oid row)
+                 (p15-s23-sh07-b51-git-object-id "tree" tree-bytes))
+              (= component (:component row))
+              (= 1 (count matches))
+              (= (:mode selected) (:selected-mode row))
+              (= (:oid selected) (:selected-oid row))
+              (= (if final? "100644" "40000") (:selected-mode row)))
+          (p15-s23-sh07-b51-governed-read-fail!
+           :source-object-proof-chain
+           {:path (:path proof) :index index}))))
+    (let [leaf (peek chain)
+          blob-oid (p15-s23-sh07-b51-git-object-id "blob" blob-bytes)]
+      (when-not
+       (and (= "100644" (:mode descriptor) (:selected-mode leaf))
+            (= (:blob-oid descriptor) (:selected-oid leaf) blob-oid)
+            (= (:byte-count descriptor) (alength ^bytes blob-bytes))
+            (= (:raw-sha256 descriptor)
+               (p15-s23-sh07-b51-raw-sha256 blob-bytes)))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :source-object-proof-leaf {:path (:path proof)})))
+    blob-bytes))
+
 (defn- p15-s23-sh07-b51-git-arguments-valid?
   [arguments]
   (let [git-id? #(and (string? %)
@@ -315,7 +581,8 @@
            (= "--" (nth arguments 3))
            (contains? source-paths (nth arguments 4)))
       (and (= 3 (count arguments))
-           (= ["cat-file" "blob"] (subvec arguments 0 2))
+           (= "cat-file" (first arguments))
+           (contains? #{"blob" "tree" "commit"} (second arguments))
            (git-id? (nth arguments 2)))))))
 
 (defn- p15-s23-sh07-b51-remaining-millis
@@ -492,9 +759,70 @@
       {:mode (nth fields 0) :type (nth fields 1)
        :blob-oid (nth fields 2)})))
 
+(defn- p15-s23-sh07-b51-acquire-object-proofs
+  [commit tree path]
+  (let [commit-bytes
+        (p15-s23-sh07-b51-git-bytes ["cat-file" "commit" commit])
+        content {:commit commit :tree tree}
+        content-proof
+        {:oid commit
+         :raw-bytes
+         (p15-s23-sh07-b51-unsigned-byte-vector commit-bytes)}
+        _ (p15-s23-sh07-b51-validate-content-object-proof!
+           content content-proof)
+        segments (p15-s23-sh07-b51-safe-proof-path-segments path)
+        {:keys [tree-chain leaf-oid leaf-bytes]}
+        (loop [index 0 tree-oid tree result []]
+          (let [component (nth segments index)
+                tree-bytes
+                (p15-s23-sh07-b51-git-bytes ["cat-file" "tree" tree-oid])
+                entries
+                (p15-s23-sh07-b51-parse-tree-object!
+                 tree-bytes [path index :acquisition])
+                matches (filterv #(= component (:name %)) entries)
+                selected (first matches)
+                final? (= index (dec (count segments)))]
+            (when-not
+             (and (= tree-oid
+                     (p15-s23-sh07-b51-git-object-id "tree" tree-bytes))
+                  (= 1 (count matches))
+                  (= (if final? "100644" "40000") (:mode selected)))
+              (p15-s23-sh07-b51-governed-read-fail!
+               :source-object-proof-acquisition
+               {:path path :index index :component component}))
+            (let [row {:tree-oid tree-oid
+                       :tree-bytes
+                       (p15-s23-sh07-b51-unsigned-byte-vector tree-bytes)
+                       :component component
+                       :selected-mode (:mode selected)
+                       :selected-oid (:oid selected)}
+                  next-result (conj result row)]
+              (if final?
+                (let [blob-bytes
+                      (p15-s23-sh07-b51-git-bytes
+                       ["cat-file" "blob" (:oid selected)])]
+                  {:tree-chain next-result
+                   :leaf-oid (:oid selected)
+                   :leaf-bytes blob-bytes})
+                (recur (inc index) (:oid selected) next-result)))))
+        source-proof
+        {:schema :gravity/sh07-b51-git-tree-inclusion-proof-v1
+         :path path
+         :root-tree tree
+         :tree-chain tree-chain
+         :blob-bytes
+         (p15-s23-sh07-b51-unsigned-byte-vector leaf-bytes)}]
+    {:content-object-proof content-proof
+     :source-object-proof source-proof
+     :leaf-oid leaf-oid
+     :leaf-bytes leaf-bytes}))
+
 (defn- p15-s23-sh07-b51-acquire-source-entry
   [commit tree spec]
   (let [{:keys [ordinal path]} spec]
+    (let [{:keys [content-object-proof source-object-proof
+                  leaf-oid leaf-bytes]}
+          (p15-s23-sh07-b51-acquire-object-proofs commit tree path)]
     (p15-s23-sh07-b51-assert-content-coordinate!
      commit tree :pre-acquisition ordinal)
     (let [tree-row (p15-s23-sh07-b51-ls-tree-row commit path)
@@ -510,9 +838,18 @@
            :blob-oid (:blob-oid tree-row)
            :byte-count (alength bytes)
            :raw-sha256 (p15-s23-sh07-b51-raw-sha256 bytes)}]
+      (when-not (and (= (:blob-oid tree-row) leaf-oid)
+                     (p15-s23-sh07-b51-byte-array-equal?
+                      bytes leaf-bytes))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :object-and-ls-tree-route-mismatch {:path path :ordinal ordinal}))
+      (p15-s23-sh07-b51-validate-source-object-proof!
+       {:commit commit :tree tree} descriptor source-object-proof)
       (p15-s23-sh07-b51-assert-content-coordinate!
        commit tree :post-acquisition ordinal)
-      {:descriptor descriptor :bytes bytes :text text})))
+      {:descriptor descriptor :bytes bytes :text text
+       :content-object-proof content-object-proof
+       :source-object-proof source-object-proof}))))
 
 (defn- p15-s23-sh07-b51-process-role-fail!
   [reason details]
@@ -694,11 +1031,11 @@
                   :decode-count (count (:entries state))
                   :event-count (count events)
                   :finalize-count 1}]
-    (when-not (and (= 12 (count descriptors))
-                   (= 39 @(:cursor state) (count events))
-                   (= (vec (range 39)) (mapv :ordinal events))
-                   (= {:acquire-count 12 :decode-count 12
-                       :event-count 39 :finalize-count 1}
+    (when-not (and (= 13 (count descriptors))
+                   (= 40 @(:cursor state) (count events))
+                   (= (vec (range 40)) (mapv :ordinal events))
+                   (= {:acquire-count 13 :decode-count 13
+                       :event-count 40 :finalize-count 1}
                       counters)
                    (compare-and-set! (:finalized state) false true))
       (p15-s23-sh07-b51-governed-read-fail!
@@ -2003,6 +2340,43 @@
    :unauthenticated-c5-external-binding
    (assoc details :cause cause)))
 
+(def ^:private p15-s23-sh07-b51-c5-preimage-keys
+  #{:schema :content :content-object-proof :source-descriptors
+    :module-source-inputs :module-source-descriptors :link-manifest})
+
+(def ^:private p15-s23-sh07-b51-c5-authority-keys
+  #{:schema :schema-version :content :module-ordinal :source-path
+    :sh05-artifact-id :base-request-id :imports :import-bindings
+    :dependency-edges :preimage :self-id-omits :authority-id})
+
+(def ^:private p15-s23-sh07-b51-c5-import-keys
+  #{:namespace :alias :kind :profile :targets :visibility :refer :effects
+    :capabilities :safety :boundary :semantic-span :source-span
+    :dependency-artifact-id :foreign-record-complete?})
+
+(def ^:private p15-s23-sh07-b51-c5-import-binding-keys
+  #{:name :kind :namespace :package :binding-class :visibility :profile-set
+    :target-set :type-ref :effects :capabilities :safety :semantic-span
+    :source-span :definition-syntax-id :definition-artifact-id})
+
+(def ^:private p15-s23-sh07-b51-c5-dependency-edge-keys
+  #{:from :to :kind :boundary :semantic-span :source-span})
+
+(def ^:private p15-s23-sh07-b51-resolution-plan-authority-keys
+  #{:schema :content :content-object-proof :source-descriptor
+    :source-object-proof :plan-binding :self-id-omits :authority-id})
+
+(def ^:private p15-s23-sh07-b51-resolution-plan-binding-keys
+  #{:source-path :source-byte-count :source-content-hash
+    :plan-semantic-hash :functions-semantic-hash :function-count
+    :function-names-hash :function-shapes-hash
+    :public-function-hashes :public-function-shapes
+    :artifact :status :semantic-authority :compiled-by :executed-by
+    :generic-bridge-residual? :self-hosted? :plan})
+
+(def ^:private p15-s23-sh07-b51-sh06-context-keys
+  #{:external-binding-authority :resolution-plan-authority})
+
 (defn- p15-s23-sh07-b51-c5-authority-rows*
   [module-ordinal source descriptors manifest]
   (when-not (and (integer? module-ordinal) (<= 0 module-ordinal 6)
@@ -2202,8 +2576,7 @@
               :capabilities (vec (sort (:capabilities callee)))
               :safety (:safety callee)
               :semantic-span coordinate
-              :source-span {:source (:logical-source-path caller)
-                            :external-binding (:symbol external)}
+              :source-span {:source :external-binding}
               :definition-syntax-id
               (p15-s23-sh07-b51-canonical-id
                [:gravity/sh07-b51-authenticated-sh06-binding-v1 coordinate])
@@ -2219,9 +2592,254 @@
             :semantic-span (:semantic-span dependency)
             :source-span (:source-span dependency)})
          imports)]
+    (when-not
+     (and (every? #(p15-s23-sh07-b51-exact-keys?
+                    % p15-s23-sh07-b51-c5-import-keys)
+                  imports)
+          (every? #(p15-s23-sh07-b51-exact-keys?
+                    % p15-s23-sh07-b51-c5-import-binding-keys)
+                  import-bindings)
+          (every? #(p15-s23-sh07-b51-exact-keys?
+                    % p15-s23-sh07-b51-c5-dependency-edge-keys)
+                  dependency-edges))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :projection-schema {:module-ordinal (:module-ordinal caller)}))
     {:imports imports
      :import-bindings import-bindings
      :dependency-edges dependency-edges}))
+
+(defn- p15-s23-sh07-b51-validate-c5-authority-preimage!
+  [preimage]
+  (when-not
+   (and (p15-s23-sh07-b51-exact-keys?
+         preimage p15-s23-sh07-b51-c5-preimage-keys)
+        (= :gravity/sh07-b51-c5-authority-preimage-v1
+           (:schema preimage))
+        (= #{:commit :tree} (set (keys (:content preimage))))
+        (vector? (:source-descriptors preimage))
+        (= 7 (count (:source-descriptors preimage)))
+        (vector? (:module-source-inputs preimage))
+        (= 7 (count (:module-source-inputs preimage)))
+        (vector? (:module-source-descriptors preimage))
+        (= 7 (count (:module-source-descriptors preimage))))
+    (p15-s23-sh07-b51-c5-authority-fail!
+     :preimage-shape {}))
+  (p15-s23-sh07-b51-validate-content-object-proof!
+   (:content preimage) (:content-object-proof preimage))
+  (let [content (:content preimage)
+        source-descriptors (:source-descriptors preimage)
+        inputs (:module-source-inputs preimage)
+        descriptors (:module-source-descriptors preimage)
+        manifest (:link-manifest preimage)
+        sources
+        (mapv
+         (fn [module-ordinal input]
+           (when-not
+            (and (p15-s23-sh07-b51-exact-keys?
+                  input #{:descriptor :source-object-proof})
+                 (= (nth source-descriptors module-ordinal nil)
+                    (:descriptor input)))
+             (p15-s23-sh07-b51-c5-authority-fail!
+              :module-source-input-shape
+              {:module-ordinal module-ordinal}))
+           (let [descriptor (:descriptor input)
+                 expected-spec (nth p15-s23-sh07-b51-source-specs
+                                    (+ 3 module-ordinal))
+                 bytes
+                 (p15-s23-sh07-b51-validate-source-object-proof!
+                  content descriptor (:source-object-proof input))
+                 text
+                 (p15-s23-sh07-b51-strict-utf8
+                  bytes [:c5-authority module-ordinal :source])]
+             (when-not
+              (= (select-keys descriptor
+                              [:ordinal :kind :module-ordinal :path])
+                 expected-spec)
+              (p15-s23-sh07-b51-c5-authority-fail!
+               :module-source-descriptor
+               {:module-ordinal module-ordinal}))
+             (p15-s23-sh07-b51-module-input-record
+              (p15-s23-sh07-b51-module-spec module-ordinal)
+              {:descriptor descriptor :bytes bytes :text text})))
+         (range 7) inputs)
+        _
+        (doseq [module-ordinal (range 7)]
+          (when-not
+           (p15-s23-sh07-b51-module-source-valid-with-input?
+            (nth descriptors module-ordinal)
+            (nth sources module-ordinal))
+            (p15-s23-sh07-b51-c5-authority-fail!
+             :module-source-rederivation
+             {:module-ordinal module-ordinal})))
+        census
+        (p15-s23-sh07-b51-derive-callsite-census-from-modules sources)
+        expected-edges
+        (p15-s23-sh07-b51-enrich-census-edges descriptors census)
+        expected-manifest-base
+        {:artifact :gravity/sh07-b51-link-manifest-v1
+         :schema-version 1
+         :module-source-ids (mapv :module-source-id descriptors)
+         :edges expected-edges}
+        expected-manifest
+        (assoc expected-manifest-base :manifest-id
+               (p15-s23-sh07-b51-manifest-id expected-manifest-base))
+        root8 (nth descriptors 6)
+        root6-source-ids
+        (set (map :module-source-id (subvec descriptors 4 6)))
+        root6-cross-edges
+        (filter #(and (contains? root6-source-ids
+                                 (:caller-module-source-id %))
+                      (not (contains? root6-source-ids
+                                      (:callee-module-source-id %))))
+                expected-edges)]
+    (when-not
+     (and (= expected-manifest manifest)
+          (= 1480 (count expected-edges))
+          (= p15-s23-sh07-b51-root8-external-callees
+             (mapv :symbol (:external-bindings root8)))
+          (empty? root6-cross-edges))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :m0-m1-rederivation
+       {:expected-manifest-id (:manifest-id expected-manifest)
+        :actual-manifest-id (:manifest-id manifest)
+        :edge-count (count expected-edges)}))
+    ;; Every caller is checked, including modules with no external symbols.
+    ;; This closes visibility, source/definition/arity/owner joins and proves
+    ;; complete edge coverage rather than trusting a self-consistent M0/M1.
+    (doseq [module-ordinal (range 7)]
+      (p15-s23-sh07-b51-c5-authority-rows*
+       module-ordinal (nth sources module-ordinal) descriptors manifest))
+    {:sources sources :descriptors descriptors :manifest manifest}))
+
+(defn p15-s23-sh07-b51-c5-external-binding-authority
+  [module-ordinal source sh05-artifact base-request preimage]
+  (let [{:keys [sources descriptors manifest]}
+        (p15-s23-sh07-b51-validate-c5-authority-preimage! preimage)
+        expected-source (nth sources module-ordinal nil)
+        caller (nth descriptors module-ordinal nil)
+        source-path (:path expected-source)
+        recomputed-base
+        (when (and caller expected-source)
+          (sh06-resolution-request source-path sh05-artifact))]
+    (when-not
+     (and caller expected-source
+          (= source-path (:path source))
+          (= (:source-descriptor expected-source)
+             (:source-descriptor source))
+          (= (:source-sha256 expected-source) (:source-sha256 source))
+          (p15-s23-sh07-b51-byte-array-equal?
+           (:bytes expected-source) (:bytes source))
+          (= recomputed-base base-request)
+          (= (:module caller) (get-in base-request [:module :namespace]))
+          (= (:artifact-id sh05-artifact)
+             (get-in base-request [:module :c4-artifact-id])))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :caller-sh05-base-join {:module-ordinal module-ordinal}))
+    (let [rows
+          (p15-s23-sh07-b51-c5-authority-rows*
+           module-ordinal expected-source descriptors manifest)
+          carriers
+          (p15-s23-sh07-b51-c5-request-carriers caller manifest rows)
+          external-symbols
+          (set (map #(get-in % [:external :symbol]) rows))
+          base-binding-symbols
+          (set (concat (map :name (:definitions base-request))
+                       (map :name (:import-bindings base-request))))]
+      (when-not (empty? (clojure.set/intersection external-symbols
+                                                   base-binding-symbols))
+        (p15-s23-sh07-b51-c5-authority-fail!
+         :base-binding-collision
+         {:module-ordinal module-ordinal
+          :symbols (vec (sort-by str external-symbols))}))
+      (let [base
+            (merge
+             {:schema :gravity/sh07-b51-c5-external-binding-authority-v1
+              :schema-version 1
+              :content (:content preimage)
+              :module-ordinal module-ordinal
+              :source-path source-path
+              :sh05-artifact-id (:artifact-id sh05-artifact)
+              :base-request-id
+              (p15-s23-sh07-b51-canonical-id
+               [:gravity/sh07-b51-sh06-base-request-v1 base-request])
+              :preimage preimage
+              :self-id-omits [[:authority-id]]}
+             carriers)
+            authority
+            (assoc base :authority-id
+                   (p15-s23-sh07-b51-canonical-id
+                    [:gravity/sh07-b51-c5-external-binding-authority-v1
+                     base]))]
+        (when-not
+         (and (p15-s23-sh07-b51-exact-keys?
+               authority p15-s23-sh07-b51-c5-authority-keys)
+              (p15-s23-sh07-b51-digest-id? (:authority-id authority)))
+          (p15-s23-sh07-b51-c5-authority-fail!
+           :authority-schema {:module-ordinal module-ordinal}))
+        authority))))
+
+(defn p15-s23-sh07-b51-c5-external-binding-authority-valid?
+  [authority]
+  (try
+    (let [{:keys [sources descriptors manifest]}
+          (p15-s23-sh07-b51-validate-c5-authority-preimage!
+           (:preimage authority))
+          module-ordinal (:module-ordinal authority)
+          source (nth sources module-ordinal nil)
+          caller (nth descriptors module-ordinal nil)
+          rows
+          (when (and source caller)
+            (p15-s23-sh07-b51-c5-authority-rows*
+             module-ordinal source descriptors manifest))
+          carriers
+          (when rows
+            (p15-s23-sh07-b51-c5-request-carriers
+             caller manifest rows))
+          expected-id
+          (p15-s23-sh07-b51-canonical-id
+           [:gravity/sh07-b51-c5-external-binding-authority-v1
+            (dissoc authority :authority-id)])]
+      (boolean
+       (and (p15-s23-sh07-b51-exact-keys?
+             authority p15-s23-sh07-b51-c5-authority-keys)
+            (= :gravity/sh07-b51-c5-external-binding-authority-v1
+               (:schema authority))
+            (= 1 (:schema-version authority))
+            (= (:content (:preimage authority)) (:content authority))
+            (= (:path source) (:source-path authority))
+            (p15-s23-sh07-b51-digest-id? (:sh05-artifact-id authority))
+            (p15-s23-sh07-b51-digest-id? (:base-request-id authority))
+            (= carriers
+               (select-keys authority
+                            [:imports :import-bindings :dependency-edges]))
+            (= [[:authority-id]] (:self-id-omits authority))
+            (= expected-id (:authority-id authority)))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
+
+(defn p15-s23-sh07-b51-sh06-context
+  [c5-authority resolution-plan-authority]
+  (let [context {:external-binding-authority c5-authority
+                 :resolution-plan-authority resolution-plan-authority}]
+    (when-not
+     (and (p15-s23-sh07-b51-exact-keys?
+           context p15-s23-sh07-b51-sh06-context-keys)
+          (p15-s23-sh07-b51-exact-keys?
+           c5-authority p15-s23-sh07-b51-c5-authority-keys)
+          (p15-s23-sh07-b51-exact-keys?
+           resolution-plan-authority
+           p15-s23-sh07-b51-resolution-plan-authority-keys)
+          (p15-s23-sh07-b51-c5-external-binding-authority-valid?
+           c5-authority)
+          (p15-s23-sh07-b51-resolution-plan-authority-valid?
+           resolution-plan-authority)
+          (= (:content c5-authority)
+             (:content resolution-plan-authority)))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :context-join {}))
+    context))
 
 (defn- p15-s23-sh07-b51-authenticated-c5-request-adapter
   [module-ordinal source descriptors manifest sh05-artifact
@@ -2255,7 +2873,8 @@
      {:source-path (:path source)
       :sh05-artifact-id (:artifact-id sh05-artifact)
       :base-request-id
-      (p15-s23-sh07-b51-canonical-id base-request)
+      (p15-s23-sh07-b51-canonical-id
+       [:gravity/sh07-b51-sh06-base-request-v1 base-request])
       :caller-module-source-id (:module-source-id caller)
       :manifest-id (:manifest-id manifest)}
      (p15-s23-sh07-b51-c5-request-carriers
@@ -2289,7 +2908,8 @@
           (= source-path (:source-path adapter))
           (= (:artifact-id sh05-artifact) (:sh05-artifact-id adapter))
           (= (:base-request-id adapter)
-             (p15-s23-sh07-b51-canonical-id base-request))
+             (p15-s23-sh07-b51-canonical-id
+              [:gravity/sh07-b51-sh06-base-request-v1 base-request]))
           (p15-s23-sh07-b51-digest-id? caller-id)
           (p15-s23-sh07-b51-digest-id? manifest-id)
           (vector? imports) (vector? import-bindings)
@@ -2328,7 +2948,8 @@
                (= (:artifact-id candidate-sh05-artifact)
                   (:sh05-artifact-id adapter))
                (= (:base-request-id adapter)
-                  (p15-s23-sh07-b51-canonical-id base-request)))
+                  (p15-s23-sh07-b51-canonical-id
+                   [:gravity/sh07-b51-sh06-base-request-v1 base-request])))
         (p15-s23-sh07-b51-apply-c5-request-adapter
          adapter source-path candidate-sh05-artifact base-request)
         base-request))))
@@ -2374,8 +2995,184 @@
       :self-hosted? false}
      identities)))
 
-(defn- p15-s23-sh07-b51-build-module-transaction
-  [commit tree module-ordinal source]
+(defn- p15-s23-sh07-b51-resolution-plan-binding-valid?
+  [descriptor source-object-proof binding]
+  (try
+    (let [bytes
+          (p15-s23-sh07-b51-unsigned-byte-array
+           (:blob-bytes source-object-proof) :resolution-plan-source)
+          identities (sh06-resolution-plan-identities (:plan binding))
+          plan-base (dissoc (:plan binding) :plan-id)
+          expected-plan-id
+          (c4-artifact-id (c-backend-canonical-value plan-base))]
+      (boolean
+       (and
+        (p15-s23-sh07-b51-exact-keys?
+         binding p15-s23-sh07-b51-resolution-plan-binding-keys)
+        (= {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
+            :path sh06-resolution-source-relative-path
+            :mode "100644"
+            :blob-oid "16ef2b638298a8e934fcd0b39131072305fbcfd5"
+            :byte-count sh06-resolution-expected-source-byte-count
+            :raw-sha256 sh06-resolution-expected-source-content-hash}
+           descriptor)
+        (= (:source-path binding) (:path descriptor))
+        (= (:source-byte-count binding) (:byte-count descriptor)
+           (alength ^bytes bytes))
+        (= (:source-content-hash binding) (:raw-sha256 descriptor)
+           (p15-s23-sh07-b51-raw-sha256 bytes))
+        (= :gravity/sh06-pinned-resolution-plan-binding (:artifact binding))
+        (= :complete (:status binding))
+        (= :gravity-source (:semantic-authority binding))
+        (= :clojure-stage0-seed (:compiled-by binding))
+        (= :clojure-stage2-generic-rule-runner (:executed-by binding))
+        (true? (:generic-bridge-residual? binding))
+        (false? (:self-hosted? binding))
+        (= :gravity/stage2-compiler-artifact-plan
+           (get-in binding [:plan :kind]))
+        (true? (get-in binding [:plan :compiler-artifact-plan?]))
+        (= 'gravity.resolution (get-in binding [:plan :module :module]))
+        (= :meta (get-in binding [:plan :module :profile]))
+        (= :jvm (get-in binding [:plan :module :target]))
+        (= #{} (get-in binding [:plan :module :effects]))
+        (= #{} (get-in binding [:plan :module :capabilities]))
+        (= :safe (get-in binding [:plan :module :safety]))
+        (= (:byte-count descriptor) (get-in binding [:plan :source :byte-count]))
+        (= expected-plan-id (get-in binding [:plan :plan-id])
+           sh06-resolution-expected-plan-id)
+        (= (select-keys binding
+                        [:plan-semantic-hash :functions-semantic-hash
+                         :function-count :function-names-hash
+                         :function-shapes-hash :public-function-hashes
+                         :public-function-shapes])
+           identities)
+        (= sh06-resolution-expected-plan-semantic-hash
+           (:plan-semantic-hash identities))
+        (= sh06-resolution-expected-functions-semantic-hash
+           (:functions-semantic-hash identities))
+        (= sh06-resolution-expected-function-count
+           (:function-count identities))
+        (= sh06-resolution-expected-function-names-hash
+           (:function-names-hash identities))
+        (= sh06-resolution-expected-function-shapes-hash
+           (:function-shapes-hash identities))
+        (= sh06-resolution-public-function-hashes
+           (:public-function-hashes identities))
+        (= sh06-resolution-public-function-shapes
+           (:public-function-shapes identities)))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
+
+(defn p15-s23-sh07-b51-resolution-plan-authority-valid?
+  [authority]
+  (try
+    (let [content (:content authority)
+          descriptor (:source-descriptor authority)
+          proof (:source-object-proof authority)
+          expected-id
+          (p15-s23-sh07-b51-canonical-id
+           [:gravity/sh07-b51-sh06-resolution-plan-authority-v1
+            (dissoc authority :authority-id)])]
+      (p15-s23-sh07-b51-validate-content-object-proof!
+       content (:content-object-proof authority))
+      (p15-s23-sh07-b51-validate-source-object-proof!
+       content descriptor proof)
+      (boolean
+       (and (p15-s23-sh07-b51-exact-keys?
+             authority p15-s23-sh07-b51-resolution-plan-authority-keys)
+            (= :gravity/sh07-b51-sh06-resolution-plan-authority-v1
+               (:schema authority))
+            (= [[:authority-id]] (:self-id-omits authority))
+            (= expected-id (:authority-id authority))
+            (p15-s23-sh07-b51-resolution-plan-binding-valid?
+             descriptor proof (:plan-binding authority)))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
+
+(defn p15-s23-sh07-b51-current-sh06-resolution-binding
+  [entry emitter]
+  (let [state (p15-s23-sh07-b51-active-source-session)
+        descriptor (:descriptor entry)
+        bytes (:bytes entry)
+        text (:text entry)
+        content {:commit (:commit state) :tree (:tree state)}]
+    (when-not
+     (and (p15-s23-sh07-b51-exact-keys?
+           entry #{:descriptor :bytes :text
+                   :content-object-proof :source-object-proof})
+          (= descriptor (nth (:descriptors state) 12 nil))
+          (= entry (nth (:entries state) 12 nil))
+          (identical? emitter
+                      (p15-s23-sh07-b51-session-checked-product
+                       :current-emitter))
+          (p15-s23-sh07-b51-byte-array? bytes)
+          (= text (p15-s23-sh07-b51-strict-utf8
+                   bytes :resolution-plan-source-text))
+          (= sh06-resolution-expected-source-byte-count
+             (:byte-count descriptor) (alength ^bytes bytes))
+          (= sh06-resolution-expected-source-content-hash
+             (:raw-sha256 descriptor)
+             (p15-s23-sh07-b51-raw-sha256 bytes)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :sh06-resolution-plan-source {:descriptor descriptor}))
+    (p15-s23-sh07-b51-validate-content-object-proof!
+     content (:content-object-proof entry))
+    (let [proven-bytes
+          (p15-s23-sh07-b51-validate-source-object-proof!
+           content descriptor (:source-object-proof entry))]
+      (when-not (p15-s23-sh07-b51-byte-array-equal? bytes proven-bytes)
+        (p15-s23-sh07-b51-governed-read-fail!
+         :sh06-resolution-plan-source-proof {})))
+    (let [raw-plan
+          (p15-s23-stage2-compiler-artifact-plan
+           emitter (:path descriptor) text)
+          identities (sh06-resolution-plan-identities raw-plan)
+          authenticated-plan-base
+          (assoc-in (dissoc raw-plan :plan-id)
+                    [:source :byte-count] (:byte-count descriptor))
+          plan
+          (assoc authenticated-plan-base :plan-id
+                 (c4-artifact-id
+                  (c-backend-canonical-value authenticated-plan-base)))
+          binding
+          (merge
+           {:source-path (:path descriptor)
+            :source-byte-count (:byte-count descriptor)
+            :source-content-hash (:raw-sha256 descriptor)
+            :artifact :gravity/sh06-pinned-resolution-plan-binding
+            :status :complete
+            :semantic-authority :gravity-source
+            :compiled-by :clojure-stage0-seed
+            :executed-by :clojure-stage2-generic-rule-runner
+            :generic-bridge-residual? true
+            :self-hosted? false
+            :plan plan}
+           identities)
+          authority-base
+          {:schema :gravity/sh07-b51-sh06-resolution-plan-authority-v1
+           :content content
+           :content-object-proof (:content-object-proof entry)
+           :source-descriptor descriptor
+           :source-object-proof (:source-object-proof entry)
+           :plan-binding binding
+           :self-id-omits [[:authority-id]]}
+          authority
+          (assoc authority-base :authority-id
+                 (p15-s23-sh07-b51-canonical-id
+                  [:gravity/sh07-b51-sh06-resolution-plan-authority-v1
+                   authority-base]))]
+      (when-not (p15-s23-sh07-b51-resolution-plan-authority-valid?
+                 authority)
+        (p15-s23-sh07-b51-governed-read-fail!
+         :sh06-resolution-plan-authority {}))
+      authority)))
+
+(defn p15-s23-sh07-b51-build-module-transaction
+  [commit tree module-ordinal source c5-preimage resolution-plan-authority]
   (let [descriptor (:source-descriptor source)
         source-path (:path descriptor)
         source-text (:text source)
@@ -2391,14 +3188,21 @@
         sh05-artifact
         (sh05-macro-artifact-from-c3-artifact*
          source-path c3-artifact true)
+        base-request (sh06-resolution-request source-path sh05-artifact)
+        c5-authority
+        (p15-s23-sh07-b51-c5-external-binding-authority
+         module-ordinal source sh05-artifact base-request c5-preimage)
+        sh06-context
+        (p15-s23-sh07-b51-sh06-context
+         c5-authority resolution-plan-authority)
         resolution-artifact
-        (sh06-resolution-finalize-candidate
-         source-path
-         (sh06-resolution-source-artifact-candidate
-          source-path sh05-artifact true))
+        (sh06-resolution-artifact-from-sh05-artifact
+         source-path sh05-artifact sh06-context)
         resolution-verification
-        (sh06-resolution-artifact-verification resolution-artifact)
-        request (sh07-core-authenticated-request resolution-artifact)
+        (sh06-resolution-artifact-verification
+         resolution-artifact sh06-context)
+        request
+        (sh07-core-authenticated-request resolution-artifact sh06-context)
         raw (sh07-core-execute!
              source-path 'sh07-build-core-template [request])
         template (:core-template raw)
@@ -2435,6 +3239,14 @@
           (= {:path nil :project-root-id (:project-root-id project-context)}
              (get-in c2-artifact [:source-unit-record :project-root-record]))
           (= :passed (:status resolution-verification))
+          (= base-request
+             (sh06-resolution-request source-path sh05-artifact))
+          (= (:authority-id c5-authority)
+             (get-in sh06-context
+                     [:external-binding-authority :authority-id]))
+          (= (:authority-id resolution-plan-authority)
+             (get-in sh06-context
+                     [:resolution-plan-authority :authority-id]))
           (= source-path (get-in request [:provenance :actual-source-path]))
           (= :accepted (:status raw))
           (= :passed (:status template-verification))
@@ -2480,13 +3292,41 @@
          (map (juxt :name :source-hash))
          (:definitions descriptor))})
 
+(defn- p15-s23-sh07-b51-c5-authority-preimage-from-session
+  [commit tree descriptors manifest]
+  (let [entries (mapv p15-s23-sh07-b51-governed-source-entry
+                      (range 3 10))
+        content {:commit commit :tree tree}
+        content-proof (:content-object-proof (first entries))
+        source-descriptors (mapv :descriptor entries)
+        module-source-inputs
+        (mapv #(select-keys % [:descriptor :source-object-proof]) entries)
+        preimage
+        {:schema :gravity/sh07-b51-c5-authority-preimage-v1
+         :content content
+         :content-object-proof content-proof
+         :source-descriptors source-descriptors
+         :module-source-inputs module-source-inputs
+         :module-source-descriptors descriptors
+         :link-manifest manifest}]
+    (when-not
+     (and (= 7 (count entries))
+          (every? #(= content-proof (:content-object-proof %)) entries)
+          (= source-descriptors
+             (subvec (:descriptors
+                      (p15-s23-sh07-b51-active-source-session)) 3 10)))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :session-preimage-join {}))
+    (p15-s23-sh07-b51-validate-c5-authority-preimage! preimage)
+    preimage))
+
 (defn- p15-s23-sh07-b51-replay-returned-source-authority-events!
-  [m0s link-manifest source-read-receipt]
+  [m0s link-manifest resolution-plan-authority source-read-receipt]
   (let [events (:events source-read-receipt)
         source-descriptors (:source-descriptors source-read-receipt)]
     (when-not (and (= 7 (count m0s))
-                   (= 12 (count source-descriptors))
-                   (= 39 (count events)))
+                   (= 13 (count source-descriptors))
+                   (= 40 (count events)))
       (p15-s23-sh07-b51-governed-read-fail!
        :source-authority-event-replay-shape
        {:m0-count (count m0s)
@@ -2521,6 +3361,25 @@
             :event-ordinal event-ordinal
             :expected-product-id replayed-id
             :actual-product-id (:product-id event)}))))
+    (let [event (nth events 39)
+          expected-coordinate (nth p15-s23-sh07-b51-source-event-plan 39)
+          descriptor (nth source-descriptors 12)
+          replayed-id
+          (p15-s23-sh07-b51-source-event-product-id
+           event resolution-plan-authority)]
+      (when-not
+       (and (p15-s23-sh07-b51-resolution-plan-authority-valid?
+             resolution-plan-authority)
+            (= expected-coordinate
+               (select-keys event
+                            [:ordinal :domain :source-ordinal
+                             :module-ordinal :consumer]))
+            (= (:raw-sha256 descriptor) (:source-raw-sha256 event))
+            (= replayed-id (:product-id event)))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :resolution-plan-authority-event-replay
+         {:expected-product-id replayed-id
+          :actual-product-id (:product-id event)})))
     true))
 
 (defn p15-s23-sh07-b51-build-receipted-bundle-core-products
@@ -2576,6 +3435,16 @@
                 compilation-emitter (:path source)
                 (:target (:module source))))
              sources)
+            resolution-plan-authority
+            (p15-s23-sh07-b51-governed-source-event!
+             :sh06-resolution-binding 12 nil
+             'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding
+             (fn [entry]
+               (p15-s23-sh07-b51-current-sh06-resolution-binding
+                entry emitter)))
+            c5-preimage
+            (p15-s23-sh07-b51-c5-authority-preimage-from-session
+             commit tree descriptors manifest)
             plan-sources
             (mapv #(assoc %1
                           :source-authority %2
@@ -2598,7 +3467,8 @@
                    (p15-s23-sh07-b51-build-module-transaction
                     commit tree module-ordinal
                     (p15-s23-sh07-b51-session-checked-product
-                     [:module-input module-ordinal])))
+                     [:module-input module-ordinal])
+                    c5-preimage resolution-plan-authority))
                  (range 7))))
             source-forms (mapv (comp vec :forms :module) sources)
             receipt (p15-s23-sh07-b51-finalize-source-session!)
@@ -2610,10 +3480,163 @@
              :execution-bundle-core-id (:execution-bundle-core-id products)
              :source-forms source-forms
              :module-transactions module-transactions
+             :sh06-resolution-plan-authority resolution-plan-authority
              :source-read-receipt receipt}]
         (p15-s23-sh07-b51-replay-returned-source-authority-events!
-         (:m0s returned-products) (:m1 returned-products) receipt)
+         (:m0s returned-products) (:m1 returned-products)
+         resolution-plan-authority receipt)
         returned-products)))))
+
+(def ^:private p15-s23-sh07-b51-sh06-authority-carrier-base-keys
+  #{:content :source-descriptors :bundle-core-id
+    :resolution-artifact-paths :resolution-artifacts
+    :resolution-verifications :semantic-projection-paths
+    :semantic-projection-ids :module-source-descriptors :link-manifest
+    :link-authority-event-product-ids :link-authority-id
+    :expected-edge-census :resolution-plan-authority
+    :external-binding-authorities})
+
+(defn p15-s23-sh07-b51-build-sh06-authority-carrier
+  [commit tree products]
+  (let [expected-product-keys
+        #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
+          :source-forms :module-transactions :source-read-receipt
+          :sh06-resolution-plan-authority}
+        receipt (:source-read-receipt products)
+        source-descriptors (:source-descriptors receipt)
+        module-descriptors (:m0s products)
+        manifest (:m1 products)
+        transactions (:module-transactions products)
+        resolution-plan-authority (:sh06-resolution-plan-authority products)
+        content {:commit commit :tree tree}
+        entries
+        (mapv
+         (fn [module-ordinal]
+           (p15-s23-sh07-b51-acquire-source-entry
+            commit tree (nth p15-s23-sh07-b51-source-specs
+                             (+ 3 module-ordinal))))
+         (range 7))
+        sources
+        (mapv
+         (fn [module-ordinal entry]
+           (p15-s23-sh07-b51-module-input-record
+            (p15-s23-sh07-b51-module-spec module-ordinal) entry))
+         (range 7) entries)
+        preimage
+        {:schema :gravity/sh07-b51-c5-authority-preimage-v1
+         :content content
+         :content-object-proof (:content-object-proof (first entries))
+         :source-descriptors (mapv :descriptor entries)
+         :module-source-inputs
+         (mapv #(select-keys % [:descriptor :source-object-proof]) entries)
+         :module-source-descriptors module-descriptors
+         :link-manifest manifest}
+        _ (p15-s23-sh07-b51-validate-c5-authority-preimage! preimage)
+        c5-authorities
+        (mapv
+         (fn [module-ordinal source transaction]
+           (let [resolution (:resolution-artifact transaction)
+                 sh05 (:sh05-macro-artifact resolution)
+                 base (sh06-resolution-request (:path source) sh05)]
+             (p15-s23-sh07-b51-c5-external-binding-authority
+              module-ordinal source sh05 base preimage)))
+         (range 7) sources transactions)
+        contexts
+        (mapv #(p15-s23-sh07-b51-sh06-context
+                % resolution-plan-authority)
+              c5-authorities)
+        resolution-artifacts (mapv :resolution-artifact transactions)
+        resolution-artifact-ids (mapv :artifact-id resolution-artifacts)
+        resolution-verifications
+        (mapv sh06-resolution-artifact-verification
+              resolution-artifacts contexts)
+        replayed-requests
+        (mapv sh07-core-authenticated-request
+              resolution-artifacts contexts)
+        semantic-projection-ids
+        (mapv #(get-in % [:authenticated-core-request :lineage
+                          :sh06-semantic-projection-id])
+              transactions)
+        resolution-artifact-paths
+        (mapv #(vector :resolution-artifacts %) (range 7))
+        semantic-projection-paths
+        (mapv #(vector :semantic-projection-ids %) (range 7))
+        link-authority-event-product-ids
+        (mapv :product-id (subvec (:events receipt) 17 24))
+        link-authority-id
+        (p15-s23-sh07-b51-canonical-id
+         [:gravity/sh07-b51-sh06-link-authority-id-e2-v1
+          {:resolution-artifact-ids resolution-artifact-ids
+           :semantic-projection-ids semantic-projection-ids
+           :event-product-ids link-authority-event-product-ids
+           :manifest-id (:manifest-id manifest)
+           :resolution-plan-authority resolution-plan-authority
+           :external-binding-authorities c5-authorities}])
+        base
+        {:content content
+         :source-descriptors (subvec source-descriptors 3 10)
+         :bundle-core-id (:execution-bundle-core-id products)
+         :resolution-artifact-paths resolution-artifact-paths
+         :resolution-artifacts resolution-artifacts
+         :resolution-verifications resolution-verifications
+         :semantic-projection-paths semantic-projection-paths
+         :semantic-projection-ids semantic-projection-ids
+         :module-source-descriptors module-descriptors
+         :link-manifest manifest
+         :link-authority-event-product-ids link-authority-event-product-ids
+         :link-authority-id link-authority-id
+         :expected-edge-census (:edges manifest)
+         :resolution-plan-authority resolution-plan-authority
+         :external-binding-authorities c5-authorities}
+        carrier
+        (assoc base :carrier-id
+               (p15-s23-sh07-b51-canonical-id
+                [:gravity/sh07-b51-sh06-authority-carrier-id-e2-v1 base]))]
+    (when-not
+     (and (p15-s23-sh07-b51-exact-keys? products expected-product-keys)
+          (= content (select-keys receipt [:commit :tree]))
+          (= 13 (count source-descriptors))
+          (= {:acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}
+             (:counters receipt))
+          (= (:source-descriptors preimage) (subvec source-descriptors 3 10))
+          (= content (:content resolution-plan-authority))
+          (p15-s23-sh07-b51-resolution-plan-authority-valid?
+           resolution-plan-authority)
+          (= 7 (count module-descriptors) (count transactions)
+             (count c5-authorities) (count resolution-artifacts)
+             (count resolution-verifications)
+             (count semantic-projection-ids))
+          (= (:module-source-ids manifest)
+             (mapv :module-source-id module-descriptors))
+          (= (:manifest-id manifest) (:manifest-id (:bundle-core products)))
+          (= (:execution-bundle-core-id products)
+             (p15-s23-sh07-b51-canonical-id (:bundle-core products)))
+          (= replayed-requests
+             (mapv :authenticated-core-request transactions))
+          (every? #(= :passed (:status %)) resolution-verifications)
+          (every? p15-s23-sh07-b51-digest-id? semantic-projection-ids)
+          (p15-s23-sh07-b51-exact-keys?
+           base p15-s23-sh07-b51-sh06-authority-carrier-base-keys)
+          (= (conj p15-s23-sh07-b51-sh06-authority-carrier-base-keys
+                   :carrier-id)
+             (set (keys carrier))))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :sh06-authority-carrier-join
+       {:transaction-count (count transactions)
+        :source-descriptor-count (count source-descriptors)}))
+    carrier))
+
+(defn p15-s23-sh07-b51-sh06-authority-carrier-valid?
+  [commit tree products carrier]
+  (try
+    (= carrier
+       (p15-s23-sh07-b51-build-sh06-authority-carrier
+        commit tree products))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Throwable _ false)))
 
 (defn p15-s23-sh07-b51-runtime-context [linked-products runtime]
   ;; Historical host compatibility surface.  It deliberately cannot attach a

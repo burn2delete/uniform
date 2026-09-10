@@ -65,3 +65,40 @@
       (is (str/includes? source "pre-discharge-reconstruction-unavailable"))
       (is (< (.indexOf source "pre-manifest-tcb!")
              (.lastIndexOf source "load-codec!"))))))
+
+(deftest e2-source-session-proves-thirteen-inputs-and-forty-events
+  (let [source
+        (slurp
+         "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj")]
+    (is (str/includes? source
+                       ":ordinal 12 :kind :sh06-resolution"))
+    (is (str/includes? source
+                       "bootstrap/gravity/src/gravity/resolution.gravity"))
+    (is (str/includes? source
+                       ":ordinal 39 :domain :sh06-resolution-binding"))
+    (is (str/includes? source "(= 13 (count descriptors))"))
+    (is (str/includes? source "(= 40 @(:cursor state) (count events))"))
+    (is (str/includes? source
+                       ":acquire-count 13 :decode-count 13"))
+    (is (str/includes? source
+                       ":event-count 40 :finalize-count 1"))))
+
+(deftest e2-source-session-carries-complete-git-proofs-and-rederives-m0-m1
+  (let [source
+        (slurp
+         "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj")]
+    (is (str/includes? source
+                       ":gravity/sh07-b51-git-tree-inclusion-proof-v1"))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-validate-content-object-proof!"))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-validate-source-object-proof!"))
+    (is (str/includes? source ":content-object-proof content-object-proof"))
+    (is (str/includes? source ":source-object-proof source-object-proof"))
+    (is (str/includes? source ":module-source-inputs"))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-module-source-valid-with-input?"))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-derive-callsite-census-from-modules sources"))
+    (is (str/includes? source ":m0-m1-rederivation"))
+    (is (not (str/includes? source "requiring-resolve")))))

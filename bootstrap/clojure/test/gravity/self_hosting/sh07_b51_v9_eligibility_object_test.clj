@@ -235,13 +235,13 @@
 
 (deftest literal-pre-plan-is-closed-and-dense
   (is (= 33 (count evidence/document-paths)))
-  (is (= 12 (count evidence/source-specs)))
-  (is (= 27 (count evidence/owned-c-paths)))
+  (is (= 13 (count evidence/source-specs)))
+  (is (= 33 (count evidence/owned-c-paths)))
   (is (= 3 (count evidence/a9-only-paths-e1)))
   (is (= evidence/a9-terminal-path (last evidence/a9-only-paths-e1)))
   (is (= :content-addressed-terminal-record
          (:kind (last evidence/a9-paths-e1))))
-  (is (= 72 (count evidence/pre-c-paths)
+  (is (= 79 (count evidence/pre-c-paths)
          (count (distinct evidence/pre-c-paths))))
   (is (= 19 (count evidence/row-plan)))
   (is (= (vec (range 19)) (mapv :ordinal evidence/row-plan)))
@@ -252,7 +252,7 @@
          (codec/H [:gravity/sh07-b51-contract-predicate-spec-id-v1
                    evidence/predicate-specs]))))
 
-(deftest c-object-pre-foundation-is-exactly-77-bounded-git-operations
+(deftest c-object-pre-foundation-is-exactly-84-bounded-git-operations
   (let [{:keys [root content]} (initialize-content! true)
         ;; Mutable filesystem bytes are not an authority source after C/T.
         _ (write-bytes! root evidence/a9-terminal-path
@@ -260,14 +260,14 @@
         snapshot (evidence/reconstruct-pre-object-snapshot!
                   {:repository-root root :content content})
         operations (mapv :operation (:observations snapshot))]
-    (is (= 77 (:git-operation-count snapshot)
+    (is (= 84 (:git-operation-count snapshot)
            (count (:observations snapshot))))
-    (is (= (vec (range 77)) (mapv :ordinal (:observations snapshot))))
+    (is (= (vec (range 84)) (mapv :ordinal (:observations snapshot))))
     (is (= :show-tree (first operations)))
     (is (= :ls-tree-z-requested (second operations)))
-    (is (= (vec (repeat 72 :cat-file-blob)) (subvec operations 2 74)))
+    (is (= (vec (repeat 79 :cat-file-blob)) (subvec operations 2 81)))
     (is (= [:show-tree :ls-tree-z-requested :cat-file-blob]
-           (subvec operations 74 77)))
+           (subvec operations 81 84)))
     (is (every? #(= evidence/git-executable (first (:argv %)))
                 (:observations snapshot)))
     (is (= {:acquire-count 33 :decode-count 33
@@ -276,8 +276,8 @@
     (is (= 33
            (count (get-in snapshot [:document-read-receipt :documents]))
            (count (get-in snapshot [:document-read-receipt :events]))))
-    (is (= 12 (count (:source-descriptors snapshot))))
-    (is (= 27 (count (:owned-c-descriptors snapshot))))
+    (is (= 13 (count (:source-descriptors snapshot))))
+    (is (= 33 (count (:owned-c-descriptors snapshot))))
     (is (= 3 (count (get-in snapshot
                             [:a9-stage-result :a9-artifact-descriptors]))))
     (is (true? (get-in snapshot
@@ -291,7 +291,7 @@
     (is (= [13 14 15 16 59]
            (mapv :form-ordinal
                  (get-in snapshot [:pre-masked-root :coordinates]))))
-    (is (= :gravity/sh07-b51-v9-ownership-plan-e1
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e2-v1
            (get-in snapshot [:ownership-plan :schema])))
     (is (= [:i9 :e9 :g9 :p9]
            (get-in snapshot
@@ -306,10 +306,10 @@
               :gravity/sh07-b51-a9-stage-result-e1)))
     (is (contains?
          (set (get-in snapshot [:identity-domain-registry :domains]))
-         :gravity/sh07-b51-v9-ownership-plan-e1))
+         :gravity/sh07-b51-v9-ownership-plan-e2-v1))
     (is (not (contains? (set (:v9-tag-registry snapshot))
                         :gravity/sh07-b51-a9-lifecycle-receipt-v1)))
-    (is (= 63 (:static-decode-count snapshot)))
+    (is (= 69 (:static-decode-count snapshot)))
     (is (true? (get-in snapshot [:boot5-compatibility :document-equal])))
     (is (= :none (:authority snapshot)))))
 
@@ -370,7 +370,7 @@
                  :eligibility-coordinate coordinate})]
     (is (= receipt (:receipt result)))
     (is (= 5 (:operation-count result)))
-    (is (= 77 (:pre-discharge-git-operation-count result)))
+    (is (= 84 (:pre-discharge-git-operation-count result)))
     (is (= [:show-tree :diff-tree-name-status-z :ls-tree-z-requested
             :cat-file-blob :ls-tree-z-requested]
            (mapv :operation (:observations result))))
@@ -395,7 +395,7 @@
     (testing "ordinal-only descriptors never satisfy eligibility"
       (let [bad-base
             (assoc receipt :source-descriptors
-                   (mapv (fn [ordinal] {:ordinal ordinal}) (range 12)))
+                   (mapv (fn [ordinal] {:ordinal ordinal}) (range 13)))
             bad (assoc bad-base :receipt-id
                        (codec/H
                         [:gravity/sh07-b51-evidence-eligibility-receipt-v2

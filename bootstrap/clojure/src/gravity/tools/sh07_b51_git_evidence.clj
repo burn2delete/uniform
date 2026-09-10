@@ -123,11 +123,31 @@
    [9 :module 6
     "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"]
    [10 :compiler nil "bootstrap/gravity/p15_s23/compiler.gravity"]
-   [11 :emitter nil "bootstrap/gravity/p15_s23/emitter.gravity"]])
+   [11 :emitter nil "bootstrap/gravity/p15_s23/emitter.gravity"]
+   [12 :sh06-resolution nil
+    "bootstrap/gravity/src/gravity/resolution.gravity"]])
+
+(def resolution-source-descriptor
+  {:ordinal 12
+   :kind :sh06-resolution
+   :module-ordinal nil
+   :path "bootstrap/gravity/src/gravity/resolution.gravity"
+   :mode "100644"
+   :blob-oid "16ef2b638298a8e934fcd0b39131072305fbcfd5"
+   :byte-count 77209
+   :raw-sha256
+   "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56"})
+
+(def source-session-counters-e2
+  {:acquire-count 13 :decode-count 13 :event-count 40 :finalize-count 1})
+
+(def source-aggregate-counters-e2
+  {:acquire-count 39 :decode-count 39 :event-count 120 :finalize-count 3})
 
 (def source-only-paths
   ["bootstrap/gravity/p15_s23/compiler.gravity"
    "bootstrap/gravity/p15_s23/emitter.gravity"
+   "bootstrap/gravity/src/gravity/resolution.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
    "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
@@ -143,6 +163,11 @@
    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00943-p15-s23-sh07-host-builtins-and-oracle.clj"
    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00879-sh06-resolution-artifact-verification-bounded.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00890-sh07-b13-module-assembly-manifest.clj"
    "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_child.clj"
    "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_identity.clj"
    "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_coordinator_child.clj"
@@ -163,6 +188,7 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_eligibility_object_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_existing_object_replay_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_process_isolation_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_sh06_external_binding_seam_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_source_closure_test.clj"])
 
 (def architecture-report-path
@@ -205,7 +231,7 @@
                                  source-only-paths
                                  owned-c-paths
                                  a9-pre-paths)))]
-    (when-not (and (= 72 (count paths)) (= 72 (count (distinct paths))))
+    (when-not (and (= 79 (count paths)) (= 79 (count (distinct paths))))
       (throw (ex-info "invalid literal SH-07 PRE path census"
                       {:count (count paths)
                        :distinct-count (count (distinct paths))})))
@@ -1608,6 +1634,372 @@
                       :byte-count (alength ^bytes bytes)
                       :raw-sha256 (codec/R bytes)}}}))
 
+(def ^:private git-object-proof-id "SH07-B51-GIT-OBJECT-PROOF")
+
+(def ^:private content-object-proof-keys #{:oid :raw-bytes})
+
+(def ^:private source-object-proof-keys
+  #{:schema :path :root-tree :tree-chain :blob-bytes})
+
+(def ^:private tree-chain-row-keys
+  #{:tree-oid :tree-bytes :component :selected-mode :selected-oid})
+
+(defn- unsigned-byte-vector?
+  [value]
+  (and (vector? value)
+       (<= (count value) (:response-max-bytes transport-limits))
+       (every? #(and (integer? %) (<= 0 % 255)) value)))
+
+(defn- bytes->unsigned-vector
+  [bytes]
+  (mapv #(bit-and (int %) 0xff) bytes))
+
+(defn- unsigned-vector->bytes!
+  [value reason]
+  (when-not (unsigned-byte-vector? value)
+    (fail! git-object-proof-id reason))
+  (byte-array (map unchecked-byte value)))
+
+(defn- bytes->lowercase-hex
+  [bytes]
+  (apply str (map #(format "%02x" (bit-and (int %) 0xff)) bytes)))
+
+(defn- git-object-id
+  [kind bytes]
+  (when-not (contains? #{"blob" "commit" "tree"} kind)
+    (fail! git-object-proof-id :object-kind {:kind kind}))
+  (let [digest (java.security.MessageDigest/getInstance "SHA-1")
+        header (.getBytes (str kind " " (alength ^bytes bytes) "\u0000")
+                          StandardCharsets/US_ASCII)]
+    (.update digest header)
+    (.update digest ^bytes bytes)
+    (bytes->lowercase-hex (.digest digest))))
+
+(defn- byte-line-end
+  [bytes start]
+  (loop [index start]
+    (cond
+      (= index (alength ^bytes bytes)) nil
+      (= 10 (bit-and (int (aget ^bytes bytes index)) 0xff)) index
+      :else (recur (inc index)))))
+
+(defn- bytes-prefix-at?
+  [bytes index prefix]
+  (let [prefix-bytes (.getBytes ^String prefix StandardCharsets/US_ASCII)]
+    (and (<= (+ index (alength prefix-bytes)) (alength ^bytes bytes))
+         (loop [offset 0]
+           (or (= offset (alength prefix-bytes))
+               (and (= (aget ^bytes bytes (+ index offset))
+                       (aget prefix-bytes offset))
+                    (recur (inc offset))))))))
+
+(defn- parse-commit-tree!
+  [bytes]
+  (let [first-end (byte-line-end bytes 0)]
+    (when-not first-end
+      (fail! git-object-proof-id :commit-tree-header))
+    (let [first-line (String. ^bytes bytes 0 first-end
+                              StandardCharsets/US_ASCII)
+          match (re-matches #"tree ([0-9a-f]{40})" first-line)
+          tree-header-count
+          (loop [index 0 count 0]
+            (if (>= index (alength ^bytes bytes))
+              count
+              (let [line-end (or (byte-line-end bytes index)
+                                 (alength ^bytes bytes))
+                    next-count (if (bytes-prefix-at? bytes index "tree ")
+                                 (inc count) count)]
+                (recur (if (= line-end (alength ^bytes bytes))
+                         line-end (inc line-end))
+                       next-count))))]
+      (when-not (and match (= 1 tree-header-count))
+        (fail! git-object-proof-id :commit-tree-header
+               {:tree-header-count tree-header-count}))
+      (second match))))
+
+(defn- index-of-byte
+  [bytes start target]
+  (loop [index start]
+    (cond
+      (= index (alength ^bytes bytes)) nil
+      (= target (bit-and (int (aget ^bytes bytes index)) 0xff)) index
+      :else (recur (inc index)))))
+
+(defn- slice-bytes
+  [bytes start end]
+  (java.util.Arrays/copyOfRange ^bytes bytes (int start) (int end)))
+
+(defn- git-tree-name-compare
+  [left right]
+  (let [left-name ^bytes (:name-bytes left)
+        right-name ^bytes (:name-bytes right)
+        left-count (alength left-name)
+        right-count (alength right-name)]
+    (loop [index 0]
+      (let [left-value (if (< index left-count)
+                         (bit-and (int (aget left-name index)) 0xff)
+                         (if (= "40000" (:mode left)) 47 0))
+            right-value (if (< index right-count)
+                          (bit-and (int (aget right-name index)) 0xff)
+                          (if (= "40000" (:mode right)) 47 0))]
+        (cond
+          (not= left-value right-value) (compare left-value right-value)
+          (and (>= index left-count) (>= index right-count)) 0
+          :else (recur (inc index)))))))
+
+(defn- parse-git-tree-bytes!
+  [tree-bytes]
+  (let [bytes (unsigned-vector->bytes! tree-bytes :tree-byte-vector)
+        byte-count (alength ^bytes bytes)
+        entries
+        (loop [index 0 rows []]
+          (if (= index byte-count)
+            rows
+            (let [space (index-of-byte bytes index 32)
+                  _ (when-not (and space (< index space)
+                                   (<= (- space index) 6))
+                      (fail! git-object-proof-id :tree-mode-grammar))
+                  mode-bytes (slice-bytes bytes index space)
+                  mode (String. mode-bytes StandardCharsets/US_ASCII)
+                  _ (when-not (contains? #{"40000" "100644" "100755"}
+                                         mode)
+                      (fail! git-object-proof-id
+                             (if (contains? #{"120000" "160000"} mode)
+                               :forbidden-tree-mode :tree-mode-grammar)
+                             {:mode mode}))
+                  nul (index-of-byte bytes (inc space) 0)
+                  _ (when-not (and nul (< (inc space) nul)
+                                   (<= (+ nul 21) byte-count))
+                      (fail! git-object-proof-id :tree-entry-grammar))
+                  name-bytes (slice-bytes bytes (inc space) nul)
+                  name (decode-utf8! name-bytes git-object-proof-id
+                                     :tree-name-utf8)
+                  _ (when-not (and (not (contains? #{"." ".."} name))
+                                   (not (str/includes? name "/")))
+                      (fail! git-object-proof-id :tree-name {:name name}))
+                  oid-bytes (slice-bytes bytes (inc nul) (+ nul 21))]
+              (recur (+ nul 21)
+                     (conj rows {:mode mode :name name
+                                 :name-bytes name-bytes
+                                 :oid (bytes->lowercase-hex oid-bytes)})))))]
+    (when-not (and (= (count entries) (count (distinct (map :name entries))))
+                   (every? neg?
+                           (map git-tree-name-compare entries (rest entries))))
+      (fail! git-object-proof-id :tree-entry-order))
+    entries))
+
+(defn validate-content-object-proof!
+  "Purely validate a complete raw Git commit payload against immutable C/T."
+  [content proof]
+  (exact-keys! content #{:commit :tree} git-object-proof-id :content)
+  (exact-keys! proof content-object-proof-keys
+               git-object-proof-id :content-object-proof-keys)
+  (require-git-id! (:commit content) :commit git-object-proof-id)
+  (require-git-id! (:tree content) :tree git-object-proof-id)
+  (require-git-id! (:oid proof) :oid git-object-proof-id)
+  (let [bytes (unsigned-vector->bytes! (:raw-bytes proof)
+                                       :content-object-byte-vector)
+        recomputed (git-object-id "commit" bytes)
+        parsed-tree (parse-commit-tree! bytes)]
+    (when-not (and (= (:commit content) (:oid proof) recomputed)
+                   (= (:tree content) parsed-tree))
+      (fail! git-object-proof-id :content-object-coordinate
+             {:expected content :proof-oid (:oid proof)
+              :recomputed-oid recomputed :parsed-tree parsed-tree})))
+  proof)
+
+(defn validate-source-object-proof!
+  "Purely validate a complete Git tree-inclusion chain and leaf blob bytes."
+  [content descriptor proof]
+  (exact-keys! content #{:commit :tree} git-object-proof-id :content)
+  (exact-keys! proof source-object-proof-keys
+               git-object-proof-id :source-object-proof-keys)
+  (when-not (and (map? descriptor)
+                 (safe-relative-path? (:path descriptor))
+                 (= "100644" (:mode descriptor))
+                 (git-id? (:blob-oid descriptor))
+                 (integer? (:byte-count descriptor))
+                 (not (neg? (:byte-count descriptor)))
+                 (sha256-id? (:raw-sha256 descriptor)))
+    (fail! git-object-proof-id :source-descriptor))
+  (let [components (str/split (:path descriptor) #"/" -1)
+        chain (:tree-chain proof)
+        blob-bytes (unsigned-vector->bytes! (:blob-bytes proof)
+                                            :blob-byte-vector)]
+    (when-not (and (= :gravity/sh07-b51-git-tree-inclusion-proof-v1
+                      (:schema proof))
+                   (= (:path descriptor) (:path proof))
+                   (= (:tree content) (:root-tree proof))
+                   (git-id? (:root-tree proof))
+                   (vector? chain)
+                   (= (count components) (count chain)))
+      (fail! git-object-proof-id :source-object-coordinate))
+    (doseq [[ordinal component row] (map vector (range) components chain)]
+      (exact-keys! row tree-chain-row-keys
+                   git-object-proof-id :tree-chain-row-keys)
+      (require-git-id! (:tree-oid row) :tree-oid git-object-proof-id)
+      (require-git-id! (:selected-oid row) :selected-oid git-object-proof-id)
+      (let [tree-bytes (unsigned-vector->bytes! (:tree-bytes row)
+                                                :tree-byte-vector)
+            entries (parse-git-tree-bytes! (:tree-bytes row))
+            selected (filter #(= component (:name %)) entries)
+            final? (= ordinal (dec (count components)))
+            next-row (nth chain (inc ordinal) nil)]
+        (when-not (and (= component (:component row))
+                       (= (if (zero? ordinal) (:tree content)
+                              (:selected-oid (nth chain (dec ordinal))))
+                          (:tree-oid row))
+                       (= (:tree-oid row) (git-object-id "tree" tree-bytes))
+                       (= 1 (count selected))
+                       (= [(:mode (first selected)) (:oid (first selected))]
+                          [(:selected-mode row) (:selected-oid row)])
+                       (if final?
+                         (and (= "100644" (:selected-mode row))
+                              (= (:blob-oid descriptor) (:selected-oid row)))
+                         (and (= "40000" (:selected-mode row))
+                              (= (:selected-oid row) (:tree-oid next-row)))))
+          (fail! git-object-proof-id :tree-chain-coordinate
+                 {:ordinal ordinal :component component}))))
+    (when-not (and (= (:blob-oid descriptor)
+                      (git-object-id "blob" blob-bytes))
+                   (= (:byte-count descriptor) (alength ^bytes blob-bytes))
+                   (= (:raw-sha256 descriptor) (codec/R blob-bytes)))
+      (fail! git-object-proof-id :blob-coordinate)))
+  proof)
+
+(defn validate-governed-source-entry!
+  "Purely validate one exact five-key E2 source-session entry."
+  [content entry]
+  (exact-keys! entry
+               #{:descriptor :bytes :text :content-object-proof
+                 :source-object-proof}
+               git-object-proof-id :source-entry-keys)
+  (let [descriptor (:descriptor entry)
+        bytes (unsigned-vector->bytes! (:bytes entry) :source-entry-bytes)]
+    (validate-content-object-proof! content (:content-object-proof entry))
+    (validate-source-object-proof! content descriptor
+                                   (:source-object-proof entry))
+    (when-not (and (= (:bytes entry)
+                      (get-in entry [:source-object-proof :blob-bytes]))
+                   (= (:byte-count descriptor) (alength ^bytes bytes))
+                   (= (:raw-sha256 descriptor) (codec/R bytes))
+                   (= (:text entry)
+                      (decode-utf8! bytes git-object-proof-id
+                                    :source-entry-utf8)))
+      (fail! git-object-proof-id :source-entry-coordinate)))
+  entry)
+
+(defn build-source-session-aggregate!
+  "Join the independently observed A/B/M E2 session counters exactly."
+  [participant-counters]
+  (when-not (and (map? participant-counters)
+                 (= #{:a :b :m} (set (keys participant-counters)))
+                 (every? #(= source-session-counters-e2
+                             (get participant-counters %))
+                         [:a :b :m]))
+    (fail! git-object-proof-id :source-session-counters
+           {:participant-counters participant-counters}))
+  (let [sessions
+        (mapv (fn [participant]
+                (assoc (get participant-counters participant)
+                       :participant participant))
+              [:a :b :m])
+        aggregate
+        (merge {:sessions sessions}
+               (into {}
+                     (map (fn [key]
+                            [key (reduce + (map key sessions))])
+                          [:acquire-count :decode-count
+                           :event-count :finalize-count])))]
+    (when-not (= source-aggregate-counters-e2
+                 (dissoc aggregate :sessions))
+      (fail! git-object-proof-id :source-session-aggregate))
+    aggregate))
+
+(defn- cat-file-object-bytes!
+  [repository kind oid]
+  (when-not (contains? #{"blob" "commit" "tree"} kind)
+    (fail! git-object-proof-id :object-kind {:kind kind}))
+  (require-git-id! oid :oid git-object-proof-id)
+  (let [result
+        (run-bounded-process!
+         {:argv (git-argv repository ["cat-file" kind oid])
+          :directory repository
+          :allowed-exit-codes #{0}
+          :stdout-role :response
+          :deadline-ms (:deadline-ms transport-limits)
+          :id git-object-proof-id})]
+    (when-not (zero? (alength ^bytes (:stderr-bytes result)))
+      (fail! git-object-proof-id :git-stderr
+             {:kind kind :oid oid
+              :stderr-raw-sha256 (codec/R (:stderr-bytes result))}))
+    (:stdout-bytes result)))
+
+(defn build-content-object-proof!
+  "Acquire a complete raw commit payload and return its validated C proof."
+  [{:keys [repository-root content]}]
+  (let [repository (canonical-directory! repository-root :repository-root
+                                         git-object-proof-id)
+        raw (cat-file-object-bytes! repository "commit" (:commit content))
+        proof {:oid (:commit content) :raw-bytes (bytes->unsigned-vector raw)}]
+    (validate-content-object-proof! content proof)))
+
+(defn build-source-object-proof!
+  "Acquire and validate the complete tree chain and blob for DESCRIPTOR."
+  [{:keys [repository-root content descriptor]}]
+  (let [repository (canonical-directory! repository-root :repository-root
+                                         git-object-proof-id)
+        components (str/split (:path descriptor) #"/" -1)
+        chain
+        (loop [tree-oid (:tree content) remaining components rows []]
+          (let [tree-raw (cat-file-object-bytes! repository "tree" tree-oid)
+                tree-vector (bytes->unsigned-vector tree-raw)
+                component (first remaining)
+                matches (filter #(= component (:name %))
+                                (parse-git-tree-bytes! tree-vector))]
+            (when-not (= 1 (count matches))
+              (fail! git-object-proof-id :tree-component
+                     {:component component :tree-oid tree-oid}))
+            (let [selected (first matches)
+                  row {:tree-oid tree-oid :tree-bytes tree-vector
+                       :component component :selected-mode (:mode selected)
+                       :selected-oid (:oid selected)}]
+              (if (next remaining)
+                (do
+                  (when-not (= "40000" (:mode selected))
+                    (fail! git-object-proof-id :tree-component-mode
+                           {:component component :mode (:mode selected)}))
+                  (recur (:oid selected) (next remaining) (conj rows row)))
+                (conj rows row)))))
+        blob-raw (cat-file-object-bytes! repository "blob"
+                                         (:selected-oid (peek chain)))
+        proof {:schema :gravity/sh07-b51-git-tree-inclusion-proof-v1
+               :path (:path descriptor)
+               :root-tree (:tree content)
+               :tree-chain chain
+               :blob-bytes (bytes->unsigned-vector blob-raw)}]
+    (validate-source-object-proof! content descriptor proof)))
+
+(defn build-governed-source-entry!
+  "Acquire one complete E2 source entry from immutable Git objects only."
+  [{:keys [repository-root content descriptor]}]
+  (let [content-proof
+        (build-content-object-proof!
+         {:repository-root repository-root :content content})
+        source-proof
+        (build-source-object-proof!
+         {:repository-root repository-root :content content
+          :descriptor descriptor})
+        bytes (:blob-bytes source-proof)
+        raw (unsigned-vector->bytes! bytes :source-entry-bytes)
+        entry {:descriptor descriptor
+               :bytes bytes
+               :text (decode-utf8! raw git-object-proof-id
+                                   :source-entry-utf8)
+               :content-object-proof content-proof
+               :source-object-proof source-proof}]
+    (validate-governed-source-entry! content entry)))
+
 (def ^:private document-binding-ids
   (mapv
    (fn [[document-ordinal _]]
@@ -2546,9 +2938,9 @@
 (defn- allocation [ordinal stage paths]
   {:ordinal ordinal :stage stage :owner :master-coordinator :paths paths})
 
-(defn- build-v9-ownership-plan-e1 []
+(defn- build-v9-ownership-plan-e2 []
   (let [base
-        {:schema :gravity/sh07-b51-v9-ownership-plan-e1
+        {:schema :gravity/sh07-b51-v9-ownership-plan-e2-v1
          :allocations
          [(allocation 0 :a9 a9-paths-e1)
           (allocation 1 :i9 i9-lifecycle-paths)
@@ -2565,7 +2957,7 @@
          :aggregate-sh07-state :partial
          :self-id-omits [[:plan-id]]}]
     (assoc base :plan-id
-           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e1 base]))))
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e2-v1 base]))))
 
 (def governance-rules-e1
   {:permitted-transitions
@@ -2591,7 +2983,7 @@
     (binding [*read-eval* false]
       (edn/read-string (subs text value-start value-end)))))
 
-(defn- build-registries-e1 [architecture-report]
+(defn- build-registries-e2 [architecture-report]
   (let [old-tags (fenced-edn-after! architecture-report
                                       "`V9-TAG-REGISTRY` is")
         old-domains (fenced-edn-after! architecture-report
@@ -2608,22 +3000,32 @@
         tags
         (sorted-keywords
          (conj (remove #{:gravity/sh07-b51-a9-lifecycle-receipt-v1
-                         :gravity/sh07-b51-v9-ownership-plan-v1}
+                         :gravity/sh07-b51-v9-ownership-plan-v1
+                         :gravity/sh07-b51-v9-ownership-plan-e1}
                        old-tags)
                :gravity/sh07-b51-a9-stage-result-e1
-               :gravity/sh07-b51-v9-ownership-plan-e1))
+               :gravity/sh07-b51-v9-ownership-plan-e2-v1))
         domains
         (sorted-keywords
          (conj (remove #{:gravity/sh07-b51-a9-lifecycle-receipt-v1
-                         :gravity/sh07-b51-v9-ownership-plan-v1}
+                         :gravity/sh07-b51-v9-ownership-plan-v1
+                         :gravity/sh07-b51-v9-ownership-plan-e1}
                        old-domains)
-               :gravity/sh07-b51-v9-ownership-plan-e1))]
+               :gravity/sh07-b51-v9-ownership-plan-e2-v1))]
     (when-not
      (and (vector? member-kinds)
           (= (count tags) (count (distinct tags)))
           (= (count domains) (count (distinct domains)))
           (every? (set tags) domains)
           (contains? (set tags) :gravity/sh07-b51-a9-stage-result-e1)
+          (contains? (set tags)
+                     :gravity/sh07-b51-v9-ownership-plan-e2-v1)
+          (contains? (set domains)
+                     :gravity/sh07-b51-v9-ownership-plan-e2-v1)
+          (not (contains? (set tags)
+                          :gravity/sh07-b51-v9-ownership-plan-e1))
+          (not (contains? (set domains)
+                          :gravity/sh07-b51-v9-ownership-plan-e1))
           (not (contains? (set domains)
                           :gravity/sh07-b51-a9-stage-result-e1)))
       (fail! "SH07-B51-CONTRACT-DISCHARGE" :registry-delta))
@@ -2753,7 +3155,7 @@
    :nonclaims nonclaims})
 
 (defn reconstruct-pre-object-snapshot!
-  "Reconstruct the literal E1 C-object PRE carriers with exactly 77 bounded
+  "Reconstruct the literal E2 C-object PRE carriers with exactly 84 bounded
   Git operations.  Terminal A9 and the acyclic pre-mask are authenticated
   solely from the requested C/T objects.  The result grants no authority."
   [{:keys [repository-root content]}]
@@ -2789,7 +3191,7 @@
         baseline-cat (cat-file-bytes-operation! repository (:oid baseline-row))
         observations
         (mapv (fn [ordinal observation] (assoc observation :ordinal ordinal))
-              (range 77)
+              (range 84)
               (concat [show-c tree-c]
                       (map :observation cat-results)
                       [show-base tree-base (:observation baseline-cat)]))
@@ -2818,31 +3220,33 @@
          content rows-by-path bytes-by-path decoded-static)
         pre-masked-root
         (build-pre-masked-root bytes-by-path decoded-static)
-        ownership-plan (build-v9-ownership-plan-e1)
+        ownership-plan (build-v9-ownership-plan-e2)
         registries
-        (build-registries-e1 (get decoded-static architecture-report-path))
+        (build-registries-e2 (get decoded-static architecture-report-path))
         foundation-static
         (build-foundation-static content (:documents document-read-receipt))
         catalog-projection
         (build-catalog-projection document-read-receipt decoded-static)
         proof-scope (build-proof-scope catalog-projection decoded-static)
         publication-boundary (build-publication-boundary content)]
-    (when-not (and (= 77 (count observations))
-                   (= (vec (range 77)) (mapv :ordinal observations))
-                   (= 63 (count static-paths))
-                   (= 63 (count (distinct static-paths)))
+    (when-not (and (= 84 (count observations))
+                   (= (vec (range 84)) (mapv :ordinal observations))
+                   (= 69 (count static-paths))
+                   (= 69 (count (distinct static-paths)))
                    (= 33 (count (:documents document-read-receipt)))
                    (= 33 (count (:events document-read-receipt)))
-                   (= 12 (count source-descriptors))
+                   (= 13 (count source-descriptors))
+                   (= resolution-source-descriptor
+                      (nth source-descriptors 12))
                    (= 2 (count (:preimage-files pre-masked-root)))
-                   (= 27 (count owned-c-descriptors))
+                   (= 33 (count owned-c-descriptors))
                    (= 3 (count (:a9-artifact-descriptors a9-stage-result))))
       (fail! "SH07-B51-CONTRACT-DISCHARGE" :pre-object-census))
     {:content content
      :baseline {:commit pre-baseline-commit :tree base-tree}
      :pre-c-paths pre-c-paths
      :observations observations
-     :git-operation-count 77
+     :git-operation-count 84
      :document-read-receipt document-read-receipt
      :source-descriptors source-descriptors
      :source-descriptors-root
@@ -2951,7 +3355,7 @@
 
 (defn- validate-source-descriptors!
   [descriptors]
-  (when-not (and (vector? descriptors) (= 12 (count descriptors)))
+  (when-not (and (vector? descriptors) (= 13 (count descriptors)))
     (fail! "SH07-B51-RECEIPT-JOIN" :source-descriptor-count))
   (doseq [[expected descriptor] (map vector source-specs descriptors)]
     (exact-keys! descriptor
@@ -3126,14 +3530,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 77
+   :pre-discharge-git-operation-count 84
    :pre-discharge-document-descriptor-count 33
-   :pre-discharge-source-descriptor-count 12
+   :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 27
+   :pre-discharge-owned-c-artifact-count 33
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 63})
+   :pre-discharge-static-decode-count 69})
 
 (def ^:private eligibility-check-match-keys
   [:content-match :source-descriptors-match
@@ -3554,7 +3958,7 @@
     :raw-sha256})
 
 (def ^:private runtime-i9-suffix
-  (subvec (vec i9-lifecycle-paths) 27))
+  (subvec (vec i9-lifecycle-paths) 33))
 
 (def ^:private runtime-forbidden-path-refs
   [[:e9 0] [:e9 1] [:e9 2] [:e9 3] [:e9 4] [:e9 5] [:e9 6]
@@ -3845,7 +4249,7 @@
 (defn validate-eligibility-object!
   "Validate Q/TQ as the direct sibling-lineage child of C using exactly five
   Git object operations, then independently reconstruct and byte-compare the
-  E1 PRE discharge with exactly 77 further Git object operations."
+  E2 PRE discharge with exactly 84 further Git object operations."
   [{:keys [repository-root content eligibility-coordinate]}]
   (exact-keys! content #{:commit :tree} "SH07-B51-GIT-SNAPSHOT" :content)
   (exact-keys! eligibility-coordinate eligibility-coordinate-keys
@@ -3972,14 +4376,14 @@
            :decode-count 1
            :receipt-id-check-count 1
            :pre-discharge-reconstruction-count 1
-           :pre-discharge-git-operation-count 77
+           :pre-discharge-git-operation-count 84
            :pre-discharge-document-descriptor-count 33
-           :pre-discharge-source-descriptor-count 12
+           :pre-discharge-source-descriptor-count 13
            :pre-discharge-pre-masked-file-count 2
-           :pre-discharge-owned-c-artifact-count 27
+           :pre-discharge-owned-c-artifact-count 33
            :pre-discharge-a9-artifact-count 3
            :pre-discharge-baseline-boot5-count 1
-           :pre-discharge-static-decode-count 63
+           :pre-discharge-static-decode-count 69
            :content-match content-match
            :source-descriptors-match source-match
            :source-descriptors-root-match source-root-match
@@ -4006,7 +4410,7 @@
        :operation-count 5
        :pre-object-snapshot pre
        :pre-discharge-observations (:observations pre)
-       :pre-discharge-git-operation-count 77
+       :pre-discharge-git-operation-count 84
        :scope :immutable-q-coordinate-and-pre-discharge
        :eligibility-check eligibility-check
        :eligibility-check-root check-root

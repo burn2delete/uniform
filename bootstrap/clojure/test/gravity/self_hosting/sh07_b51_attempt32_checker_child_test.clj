@@ -36,7 +36,7 @@
 (defn- eligibility-result []
   (let [coordinate (eligibility)
         observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
-        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 77))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 84))
         check
         {:coordinate coordinate
          :observations observations
@@ -44,14 +44,14 @@
          :decode-count 1
          :receipt-id-check-count 1
          :pre-discharge-reconstruction-count 1
-         :pre-discharge-git-operation-count 77
+         :pre-discharge-git-operation-count 84
          :pre-discharge-document-descriptor-count 33
-         :pre-discharge-source-descriptor-count 12
+         :pre-discharge-source-descriptor-count 13
          :pre-discharge-pre-masked-file-count 2
-         :pre-discharge-owned-c-artifact-count 27
+         :pre-discharge-owned-c-artifact-count 33
          :pre-discharge-a9-artifact-count 3
          :pre-discharge-baseline-boot5-count 1
-         :pre-discharge-static-decode-count 63
+         :pre-discharge-static-decode-count 69
          :content-match true
          :source-descriptors-match true
          :source-descriptors-root-match true
@@ -79,7 +79,7 @@
      :operation-count 5
      :pre-object-snapshot {}
      :pre-discharge-observations pre-observations
-     :pre-discharge-git-operation-count 77
+     :pre-discharge-git-operation-count 84
      :scope :immutable-q-coordinate-and-pre-discharge
      :eligibility-check check
      :eligibility-check-root
@@ -119,8 +119,8 @@
      (codec/H [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
      :events events
      :event-root (codec/H [:gravity/sh07-b51-source-event-root-v1 events])
-     :counters {:acquire-count 12 :decode-count 12
-                :event-count 39 :finalize-count 1}
+     :counters {:acquire-count 13 :decode-count 13
+                :event-count 40 :finalize-count 1}
      :finalized true}))
 
 (defn- products [role]
@@ -128,6 +128,7 @@
    :bundle-core {}
    :execution-bundle-core-id sha-a :source-forms (vec (repeat 7 []))
    :module-transactions (vec (repeat 7 {}))
+   :sh06-resolution-plan-authority {}
    :source-read-receipt (source-receipt role)})
 
 (deftest checker-child-role-and-request-boundary-is-closed
@@ -156,7 +157,7 @@
                 (assoc (request :producer-census)
                        :role :independent-verifier-census)))))
 
-(deftest checker-child-reaches-the-shared-five-plus-seventy-seven-validator
+(deftest checker-child-reaches-the-shared-five-plus-eighty-four-validator
   (let [calls (atom [])
         result (eligibility-result)
         validate!
@@ -190,7 +191,7 @@
             (update :receipt dissoc :pre-masked-root))
         partial
         (assoc base :remaining-gaps
-               [:pre-discharge-77-operation-reconstruction])]
+               [:pre-discharge-84-operation-reconstruction])]
     (doseq [invalid [old-counter old-receipt partial]]
       (with-redefs-fn
         {(private-var 'load-git-evidence!)

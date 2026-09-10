@@ -121,6 +121,156 @@
     (catch clojure.lang.ExceptionInfo error
       (:reason (ex-data error)))))
 
+(defn- descriptor-at!
+  [^Path root content ordinal kind module-ordinal path]
+  (let [row (git! root "ls-tree" (:commit content) "--" path)
+        match (re-matches #"([0-7]{6}) blob ([0-9a-f]{40})\t(.+)" row)
+        bytes (Files/readAllBytes (.resolve root path))]
+    (when-not match
+      (throw (ex-info "test path is not a regular Git blob"
+                      {:path path :row row})))
+    {:ordinal ordinal :kind kind :module-ordinal module-ordinal
+     :path path :mode (nth match 1) :blob-oid (nth match 2)
+     :byte-count (alength ^bytes bytes) :raw-sha256 (codec/R bytes)}))
+
+(defn- mutate-unsigned-byte
+  [value index]
+  (update value index #(bit-xor % 1)))
+
+(defn- tree-entry-bytes
+  [mode name oid-byte]
+  (vec
+   (concat
+    (map #(bit-and (int %) 0xff)
+         (.getBytes (str mode " " name "\u0000") StandardCharsets/UTF_8))
+    (repeat 20 oid-byte))))
+
+(deftest e2-git-object-proofs-are-complete-pure-and-fail-closed
+  (let [{:keys [root content]} (initialized-repository!)
+        path "docs/artifacts/phase-15/evidence/.keep"
+        descriptor (descriptor-at! root content 12 :test nil path)
+        content-proof
+        (evidence/build-content-object-proof!
+         {:repository-root root :content content})
+        source-proof
+        (evidence/build-source-object-proof!
+         {:repository-root root :content content :descriptor descriptor})
+        entry
+        (evidence/build-governed-source-entry!
+         {:repository-root root :content content :descriptor descriptor})
+        parse-tree!
+        (var-get (ns-resolve 'gravity.tools.sh07-b51-git-evidence
+                             'parse-git-tree-bytes!))]
+    (is (= #{:oid :raw-bytes} (set (keys content-proof))))
+    (is (= #{:schema :path :root-tree :tree-chain :blob-bytes}
+           (set (keys source-proof))))
+    (is (= (count (str/split path #"/"))
+           (count (:tree-chain source-proof))))
+    (is (every? #(= #{:tree-oid :tree-bytes :component
+                       :selected-mode :selected-oid}
+                    (set (keys %)))
+                (:tree-chain source-proof)))
+    (is (= entry (evidence/validate-governed-source-entry! content entry)))
+    (write-bytes! root path (.getBytes "uncommitted worktree mutation\n"
+                                      StandardCharsets/UTF_8))
+    (is (= content-proof
+           (evidence/validate-content-object-proof! content content-proof)))
+    (is (= source-proof
+           (evidence/validate-source-object-proof!
+            content descriptor source-proof)))
+    (testing "commit, tree, component, mode, oid, blob, and C/T mutations reject"
+      (is (some? (failure-reason
+                  #(evidence/validate-content-object-proof!
+                    content
+                    (update content-proof :raw-bytes
+                            mutate-unsigned-byte 0)))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    content descriptor
+                    (update-in source-proof [:tree-chain 0 :tree-bytes]
+                               mutate-unsigned-byte 0)))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    content descriptor
+                    (assoc-in source-proof [:tree-chain 0 :component]
+                              "wrong")))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    content descriptor
+                    (assoc-in source-proof
+                              [:tree-chain (dec (count (:tree-chain source-proof)))
+                               :selected-mode]
+                              "100755")))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    content descriptor
+                    (assoc-in source-proof [:tree-chain 0 :selected-oid]
+                              (apply str (repeat 40 "0")))))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    content descriptor
+                    (update source-proof :blob-bytes mutate-unsigned-byte 0)))))
+      (is (some? (failure-reason
+                  #(evidence/validate-source-object-proof!
+                    (assoc content :tree (apply str (repeat 40 "0")))
+                    descriptor source-proof)))))
+    (testing "the bounded parser rejects noncanonical order and unsafe modes"
+      (is (= :tree-entry-order
+             (failure-reason
+              #(parse-tree!
+                (vec (concat (tree-entry-bytes "100644" "z" 1)
+                             (tree-entry-bytes "100644" "a" 2)))))))
+      (is (= :forbidden-tree-mode
+             (failure-reason
+              #(parse-tree! (tree-entry-bytes "120000" "link" 1))))))))
+
+(deftest e2-source-pre-and-ownership-censuses-are-exact
+  (let [ownership-builder
+        (var-get (ns-resolve 'gravity.tools.sh07-b51-git-evidence
+                             'build-v9-ownership-plan-e2))
+        plan (ownership-builder)]
+    (is (= 13 (count evidence/source-specs)))
+    (is (= [12 :sh06-resolution nil
+            "bootstrap/gravity/src/gravity/resolution.gravity"]
+           (nth evidence/source-specs 12)))
+    (is (= evidence/resolution-source-descriptor
+           {:ordinal 12
+            :kind :sh06-resolution
+            :module-ordinal nil
+            :path "bootstrap/gravity/src/gravity/resolution.gravity"
+            :mode "100644"
+            :blob-oid "16ef2b638298a8e934fcd0b39131072305fbcfd5"
+            :byte-count 77209
+            :raw-sha256
+            "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56"}))
+    (is (= 33 (count evidence/owned-c-paths)))
+    (is (= 79 (count evidence/pre-c-paths)))
+    (is (= {:sessions
+            [{:participant :a :acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}
+             {:participant :b :acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}
+             {:participant :m :acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}]
+            :acquire-count 39 :decode-count 39
+            :event-count 120 :finalize-count 3}
+           (evidence/build-source-session-aggregate!
+            {:a evidence/source-session-counters-e2
+             :b evidence/source-session-counters-e2
+             :m evidence/source-session-counters-e2})))
+    (is (some? (failure-reason
+                #(evidence/build-source-session-aggregate!
+                  {:a evidence/source-session-counters-e2
+                   :b evidence/source-session-counters-e2
+                   :m (update evidence/source-session-counters-e2
+                              :event-count dec)}))))
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e2-v1 (:schema plan)))
+    (is (= 37 (count (get-in plan [:allocations 1 :paths]))))
+    (is (= 33 (- (count (get-in plan [:allocations 1 :paths])) 4)))
+    (is (= (codec/H [:gravity/sh07-b51-v9-ownership-plan-e2-v1
+                     (dissoc plan :plan-id)])
+           (:plan-id plan)))))
+
 (defn- runtime-mask-input
   "Small authenticated-source fixture for the PRE/runtime mask seam.
 
@@ -306,7 +456,7 @@
         runtime-i9-suffix
         (subvec (vec (var-get
                       (ns-resolve 'gravity.tools.sh07-b51-git-evidence
-                                  'i9-lifecycle-paths))) 27)
+                                  'i9-lifecycle-paths))) 33)
         g9-paths (vec (var-get
                        (ns-resolve 'gravity.tools.sh07-b51-git-evidence
                                    'g9-lifecycle-paths)))

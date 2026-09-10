@@ -381,7 +381,11 @@
       {:ordinal (+ 32 module-ordinal) :domain :compiler-artifact-binding
        :source-ordinal 11 :module-ordinal module-ordinal
        :consumer
-       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding}))))
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding})
+    [{:ordinal 39 :domain :sh06-resolution-binding :source-ordinal 12
+      :module-ordinal nil
+      :consumer
+      'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}])))
 
 (defn- accepted-fixture-valid?
   [fixture]
@@ -395,8 +399,8 @@
         (set (keys fixture)))
      (= :gravity/sh07-b51-contract-predicate-fixture-v1 (:schema fixture))
      (= evidence/row-plan-id (:row-plan-id fixture))
-     (= 12 (count descriptors))
-     (= (vec (range 12)) (mapv :ordinal descriptors))
+     (= 13 (count descriptors))
+     (= (vec (range 13)) (mapv :ordinal descriptors))
      (every?
       (fn [[spec descriptor]]
         (let [[ordinal kind module-ordinal path] spec]
@@ -411,8 +415,8 @@
            (not (neg? (:byte-count descriptor)))
            (sha256-id? (:raw-sha256 descriptor)))))
       (map vector evidence/source-specs descriptors))
-     (= 39 (count events))
-     (= (vec (range 39)) (mapv :ordinal events))
+     (= 40 (count events))
+     (= (vec (range 40)) (mapv :ordinal events))
      (every?
       true?
       (map
@@ -508,7 +512,7 @@
   [symbol]
   (let [resolved (ns-resolve 'gravity.tools.sh07-b51-git-evidence symbol)]
     (when-not resolved
-      (throw (ex-info "missing V9 E1 evidence seam" {:symbol symbol})))
+      (throw (ex-info "missing V9 E2 evidence seam" {:symbol symbol})))
     (var-get resolved)))
 
 (defn- file-bytes
@@ -654,9 +658,9 @@
 
 (defn- canonical-ownership-plan
   []
-  ((evidence-private 'build-v9-ownership-plan-e1)))
+  ((evidence-private 'build-v9-ownership-plan-e2)))
 
-(deftest e1-ownership-and-governance-are-stage-scoped
+(deftest e2-ownership-and-governance-are-stage-scoped
   (let [plan (canonical-ownership-plan)
         rules evidence/governance-rules-e1]
     (is (= #{:schema :allocations :semantic-review-owner
@@ -664,13 +668,13 @@
              :read-only-prerequisite-stages :read-only-paths
              :open-exit-gates :aggregate-sh07-state :self-id-omits :plan-id}
            (set (keys plan))))
-    (is (= :gravity/sh07-b51-v9-ownership-plan-e1 (:schema plan)))
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e2-v1 (:schema plan)))
     (is (= [:a9 :i9 :e9 :g9 :p9] (mapv :stage (:allocations plan))))
     (is (= [:i9 :e9 :g9 :p9] (:reservation-required-stages plan)))
     (is (= [:i9 :g9 :p9] (:handoff-required-stages plan)))
     (is (= [:a9] (:read-only-prerequisite-stages plan)))
     (is (= (:plan-id plan)
-           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e1
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e2-v1
                      (dissoc plan :plan-id)])))
     (doseq [mutated [(assoc plan :schema
                             :gravity/sh07-b51-v9-ownership-plan-v1)
@@ -696,18 +700,20 @@
                              #(assoc % 0 (nth % 1) 1 (nth % 0)))]]
       (is (not= rules mutated)))))
 
-(deftest e1-registries-remove-old-a9-and-split-tag-from-h-domain
+(deftest e2-registries-remove-old-ownership-and-split-tag-from-h-domain
   (let [report (String. ^bytes (file-bytes evidence/architecture-report-path)
                         StandardCharsets/UTF_8)
-        registries ((evidence-private 'build-registries-e1) report)
+        registries ((evidence-private 'build-registries-e2) report)
         tags (set (:tag-registry registries))
         domains (set (get-in registries [:identity-domain-registry :domains]))]
     (is (contains? tags :gravity/sh07-b51-a9-stage-result-e1))
-    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e1))
+    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e2-v1))
+    (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? tags
                         :gravity/sh07-b51-a9-lifecycle-receipt-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-v1)))
-    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e1))
+    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e2-v1))
+    (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? domains :gravity/sh07-b51-a9-stage-result-e1)))
     (is (not (contains? domains
                         :gravity/sh07-b51-a9-lifecycle-receipt-v1)))

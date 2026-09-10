@@ -77,16 +77,19 @@
 (deftest governed-projection-and-event-plan-are-closed
   (let [specs (var-get (private-var 'p15-s23-sh07-b51-source-specs))
         events (var-get (private-var 'p15-s23-sh07-b51-source-event-plan))]
-    (is (= 12 (count specs)))
-    (is (= (vec (range 12)) (mapv :ordinal specs)))
-    (is (= [nil nil nil 0 1 2 3 4 5 6 nil nil]
+    (is (= 13 (count specs)))
+    (is (= (vec (range 13)) (mapv :ordinal specs)))
+    (is (= [nil nil nil 0 1 2 3 4 5 6 nil nil nil]
            (mapv :module-ordinal specs)))
     (is (= ["docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
             "docs/phase-01-core-language/012-l2-core-language-semantics.md"
             "bootstrap/gravity/src/gravity/checked_core.gravity"]
            (mapv :path (subvec specs 0 3))))
-    (is (= 39 (count events)))
-    (is (= (vec (range 39)) (mapv :ordinal events)))
+    (is (= {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
+            :path "bootstrap/gravity/src/gravity/resolution.gravity"}
+           (nth specs 12)))
+    (is (= 40 (count events)))
+    (is (= (vec (range 40)) (mapv :ordinal events)))
     (is (= (vec (concat (range 3 10) (range 3 10) (range 3 10)))
            (mapv :source-ordinal (subvec events 3 24))))
     (is (= (vec (concat (repeat 7 :module-validation)
@@ -96,7 +99,12 @@
     (is (= (vec (range 7))
            (mapv :module-ordinal (subvec events 25 32))))
     (is (= (vec (range 7))
-           (mapv :module-ordinal (subvec events 32 39))))))
+           (mapv :module-ordinal (subvec events 32 39))))
+    (is (= {:ordinal 39 :domain :sh06-resolution-binding
+            :source-ordinal 12 :module-ordinal nil
+            :consumer
+            'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}
+           (nth events 39)))))
 
 (deftest process-role-requires-the-authenticated-entrypoint-and-checker
   (let [role-for-observation
@@ -216,6 +224,85 @@
     (is (= (codec/H value) (bootstrap/reader-canonical-hash value)))
     (is (= (codec/R bytes) (raw-sha256 bytes)))))
 
+(deftest commit-and-tree-inclusion-proofs-are-closed-and-byte-authenticated
+  (let [git-object-id
+        (var-get (private-var 'p15-s23-sh07-b51-git-object-id))
+        validate-content!
+        (var-get (private-var
+                  'p15-s23-sh07-b51-validate-content-object-proof!))
+        validate-source!
+        (var-get (private-var
+                  'p15-s23-sh07-b51-validate-source-object-proof!))
+        unsigned
+        (var-get (private-var 'p15-s23-sh07-b51-unsigned-byte-vector))
+        from-hex
+        (fn [text]
+          (byte-array
+           (map (fn [index]
+                  (unchecked-byte
+                   (Integer/parseInt (subs text index (+ index 2)) 16)))
+                (range 0 (count text) 2))))
+        append
+        (fn [& byte-arrays]
+          (let [output (java.io.ByteArrayOutputStream.)]
+            (doseq [bytes byte-arrays]
+              (.write output ^bytes bytes 0 (alength ^bytes bytes)))
+            (.toByteArray output)))
+        ascii #(-> %
+                   str
+                   (.getBytes java.nio.charset.StandardCharsets/US_ASCII))
+        blob-bytes (ascii "governed source\n")
+        blob-oid (git-object-id "blob" blob-bytes)
+        tree-bytes
+        (append (ascii "100644 file.gravity\u0000") (from-hex blob-oid))
+        tree-oid (git-object-id "tree" tree-bytes)
+        commit-bytes (ascii (str "tree " tree-oid "\n\nfixture\n"))
+        commit-oid (git-object-id "commit" commit-bytes)
+        content {:commit commit-oid :tree tree-oid}
+        content-proof {:oid commit-oid :raw-bytes (unsigned commit-bytes)}
+        descriptor
+        {:path "file.gravity" :mode "100644" :blob-oid blob-oid
+         :byte-count (alength blob-bytes)
+         :raw-sha256 (codec/R blob-bytes)}
+        source-proof
+        {:schema :gravity/sh07-b51-git-tree-inclusion-proof-v1
+         :path "file.gravity" :root-tree tree-oid
+         :tree-chain
+         [{:tree-oid tree-oid :tree-bytes (unsigned tree-bytes)
+           :component "file.gravity" :selected-mode "100644"
+           :selected-oid blob-oid}]
+         :blob-bytes (unsigned blob-bytes)}]
+    (is (true? (validate-content! content content-proof)))
+    (is (java.util.Arrays/equals
+         ^bytes blob-bytes
+         ^bytes (validate-source! content descriptor source-proof)))
+    (doseq [[kind operation]
+            [[:commit-byte
+              #(validate-content!
+                content (update-in content-proof [:raw-bytes 0] bit-xor 1))]
+             [:tree-byte
+              #(validate-source!
+                content descriptor
+                (update-in source-proof [:tree-chain 0 :tree-bytes 0]
+                           bit-xor 1))]
+             [:path-component
+              #(validate-source!
+                content descriptor
+                (assoc-in source-proof [:tree-chain 0 :component] "other"))]
+             [:mode
+              #(validate-source!
+                content descriptor
+                (assoc-in source-proof [:tree-chain 0 :selected-mode]
+                          "40000"))]
+             [:blob-byte
+              #(validate-source!
+                content descriptor
+                (update-in source-proof [:blob-bytes 0] bit-xor 1))]]]
+      (let [failure (try (operation) nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "SH07-B51-00945-GOVERNED-READ"
+               (:id (ex-data failure))) kind)))))
+
 (deftest dispatcher-is-dense-single-use-and-finalizes-once
   (let [session-var (private-var '*p15-s23-sh07-b51-governed-source-session*)
         dispatch (var-get (private-var
@@ -231,8 +318,10 @@
                  :byte-count 0
                  :raw-sha256
                  "sha256:0000000000000000000000000000000000000000000000000000000000000000"})
-              (range 12))
-        entries (mapv #(hash-map :descriptor % :bytes (byte-array 0) :text "")
+              (range 13))
+        entries (mapv #(hash-map :descriptor % :bytes (byte-array 0) :text ""
+                                 :content-object-proof {}
+                                 :source-object-proof {})
                       descriptors)
         token (Object.)
         state {:token token :thread (Thread/currentThread) :role :m
@@ -262,8 +351,8 @@
                  :source-descriptors-root :events :event-root :counters
                  :finalized}
                (set (keys receipt))))
-        (is (= {:acquire-count 12 :decode-count 12
-                :event-count 39 :finalize-count 1}
+        (is (= {:acquire-count 13 :decode-count 13
+                :event-count 40 :finalize-count 1}
                (:counters receipt)))
         (is (true? (:finalized receipt))))
       (is (= :inactive-or-forged-session
@@ -291,7 +380,7 @@
                 {:ordinal ordinal
                  :path (str "source-" ordinal ".gravity")
                  :raw-sha256 (sha ordinal)})
-              (range 12))
+              (range 13))
         m0s
         (mapv
          (fn [module-ordinal]
@@ -321,12 +410,17 @@
                    :opaque-test-product)]
              (assoc event :product-id (event-product-id event product))))
          event-plan)
-        receipt {:source-descriptors source-descriptors :events events}]
-    (is (true? (replay! m0s link-manifest receipt)))
+        receipt {:source-descriptors source-descriptors :events events}
+        plan-authority :opaque-test-product
+        plan-validator
+        (private-var 'p15-s23-sh07-b51-resolution-plan-authority-valid?)]
+    (with-redefs-fn
+      {plan-validator (constantly true)}
+      #(is (true? (replay! m0s link-manifest plan-authority receipt))))
     (let [mutated
           (assoc-in m0s [3 :definitions 0 :source-hash] (sha 60))
           failure
-          (try (replay! mutated link-manifest receipt) nil
+          (try (replay! mutated link-manifest plan-authority receipt) nil
                (catch clojure.lang.ExceptionInfo error error))]
       (is (= :source-authority-event-replay
              (:reason (ex-data failure))))
@@ -528,7 +622,9 @@
         (merge
          {:source-path (:path source)
           :sh05-artifact-id (:artifact-id sh05)
-          :base-request-id (bootstrap/reader-canonical-hash base-request)
+          :base-request-id
+          (bootstrap/reader-canonical-hash
+           [:gravity/sh07-b51-sh06-base-request-v1 base-request])
           :caller-module-source-id (:module-source-id caller)
           :manifest-id (:manifest-id manifest)}
          carriers)

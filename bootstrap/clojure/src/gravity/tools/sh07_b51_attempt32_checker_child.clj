@@ -88,7 +88,8 @@
     :raw-sha256 :receipt-id})
 (def ^:private product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
-    :module-transactions :source-read-receipt})
+    :module-transactions :sh06-resolution-plan-authority
+    :source-read-receipt})
 (def ^:private source-receipt-keys
   #{:schema :role :commit :tree :source-descriptors
     :source-descriptors-root :events :event-root :counters :finalized})
@@ -175,14 +176,14 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 77
+   :pre-discharge-git-operation-count 84
    :pre-discharge-document-descriptor-count 33
-   :pre-discharge-source-descriptor-count 12
+   :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 27
+   :pre-discharge-owned-c-artifact-count 33
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 63})
+   :pre-discharge-static-decode-count 69})
 (def ^:private eligibility-check-matches
   [:content-match :source-descriptors-match
    :source-descriptors-root-match :pre-masked-root-match
@@ -215,7 +216,9 @@
    {:ordinal 10 :kind :compiler :module-ordinal nil
     :path "bootstrap/gravity/p15_s23/compiler.gravity"}
    {:ordinal 11 :kind :emitter :module-ordinal nil
-    :path "bootstrap/gravity/p15_s23/emitter.gravity"}])
+    :path "bootstrap/gravity/p15_s23/emitter.gravity"}
+   {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
+    :path "bootstrap/gravity/src/gravity/resolution.gravity"}])
 
 (def ^:private source-event-plan
   (vec
@@ -258,7 +261,11 @@
       {:ordinal (+ 32 module-ordinal) :domain :compiler-artifact-binding
        :source-ordinal 11 :module-ordinal module-ordinal
        :consumer
-       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding}))))
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding})
+    [{:ordinal 39 :domain :sh06-resolution-binding :source-ordinal 12
+      :module-ordinal nil
+      :consumer
+      'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}])))
 
 (defn- reject!
   ([reason] (reject! reason {}))
@@ -839,7 +846,7 @@
        (= (vec (range expected-count)) (mapv :ordinal observations))))
 
 (defn validate-eligibility-five-operations!
-  "Validate Q with five operations and independently reconstruct all 77 PRE
+  "Validate Q with five operations and independently reconstruct all 84 PRE
   operations through the authenticated shared Git-evidence implementation.
   The shared Q sequence retains its show, diff-tree, ls-tree, blob, ls-tree
   topology; this entrypoint does not duplicate those Git operations."
@@ -865,8 +872,8 @@
           (= 5 (:operation-count result))
           (dense-observations? 5 observations)
           (= observations (:observations check))
-          (= 77 (:pre-discharge-git-operation-count result))
-          (dense-observations? 77 pre-observations)
+          (= 84 (:pre-discharge-git-operation-count result))
+          (dense-observations? 84 pre-observations)
           (= pre-observations (:pre-discharge-observations check))
           (= eligibility-check-counts
              (select-keys check (keys eligibility-check-counts)))
@@ -902,7 +909,7 @@
 
 (defn validate-receipted-products!
   "Reject any nonliteral descriptor/event schedule or broken raw/product/root
-  join.  Products for events 0, 1, 2, and 24-38 remain opaque in this returned
+  join.  Products for events 0, 1, 2, and 24-39 remain opaque in this returned
   product shape; their IDs must still be typed and are bound by the exact event
   root."
   ([role request products]
@@ -931,7 +938,7 @@
           (= (:commit content) (:commit receipt))
           (= (:tree content) (:tree receipt))
           (vector? descriptors)
-          (= 12 (count descriptors))
+          (= 13 (count descriptors))
           (every? true?
                   (map (fn [spec descriptor]
                          (and (exact-keys? descriptor source-descriptor-keys)
@@ -947,7 +954,7 @@
           (= (H [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
              (:source-descriptors-root receipt))
           (vector? events)
-          (= 39 (count events))
+          (= 40 (count events))
           (every? true?
                   (map (fn [plan event]
                          (let [source-ordinal (:source-ordinal event)
@@ -976,8 +983,8 @@
           (= (H [:gravity/sh07-b51-source-event-root-v1 events])
              (:event-root receipt))
           (exact-keys? counters source-counter-keys)
-          (= {:acquire-count 12 :decode-count 12
-              :event-count 39 :finalize-count 1}
+          (= {:acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1}
              counters)
           (true? (:finalized receipt)))
       (reject! :source-session {:role role}))
