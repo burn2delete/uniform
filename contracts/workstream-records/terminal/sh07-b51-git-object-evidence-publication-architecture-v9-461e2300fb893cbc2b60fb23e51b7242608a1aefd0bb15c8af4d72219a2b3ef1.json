@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "The independently accepted exact V9 architecture candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, and companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d are integration-eligible after exact preflight against unchanged authoritative main 09c795f0c0854d2d8ab542c92b2116515e096406. This remains architecture-only authority and confers no implementation or SH-07 completion claim.",
+  "disposition": "Integrated the independently accepted exact V9 architecture lineage onto authoritative main at merge commit 676a10d210822f1ba7d001bcc1a096faf30ba902 while preserving architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd and companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d. This authorizes a separately governed I9 implementation candidate only and makes no implementation, evidence, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement claim.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -185,6 +185,12 @@
       "at": "2026-09-10T06:32:17Z",
       "reason": "advance the independently accepted exact V9 architecture after clean preflight confirmed authoritative main remains the exact immutable base 09c795f0c0854d2d8ab542c92b2116515e096406, all five dependencies remain integrated, the candidate lineage is a direct descendant, and reconciliation has no upstream drift or conflicting path",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:36:05Z",
+      "reason": "merge the exact accepted V9 architecture lineage onto authoritative main at 676a10d210822f1ba7d001bcc1a096faf30ba902, preserving both reviewed report digests byte-for-byte with no upstream drift or conflict, before terminal publication and full validation",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -257,6 +263,6 @@
       "reviewer": "/root/v9_counter_contract_challenge@8907cb39"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
