@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Frozen exact report-only architecture correction candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080. It corrects only the absent A9 lifecycle input and cyclic PRE masked-root requirement and grants no implementation, evidence, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority.",
+  "disposition": "Review pending for exact report-only architecture correction candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080. Independent review must verify both reproduced contradictions, the acyclic correction, preserved 72/77 counts, and every nonclaim before any implementation dependency is granted.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
@@ -88,6 +88,12 @@
       "at": "2026-09-10T08:44:41Z",
       "reason": "freeze exact report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080 after documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks; no implementation or SH-07 authority is claimed",
       "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:07:19Z",
+      "reason": "request fresh independent exact review of report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080: verify the absent A9 path and extant terminal record, the PRE/future-value identity cycle, exact three-path substitution preserving 72/77/3/63 counts, PRE-MASKED-ROOT and RUNTIME-MASKED-ROOT split, unchanged V9 laws, report-only scope, and all authority nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -109,6 +115,6 @@
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
   "reviews": [],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
