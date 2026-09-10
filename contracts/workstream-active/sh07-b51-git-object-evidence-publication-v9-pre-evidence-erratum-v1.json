@@ -2,12 +2,12 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
   "author": "master-coordinator",
   "base_commit": "8c39712c80e7da66c23a23a6c1f01ba1f970b682",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "5ce69f8cbe00c82e6ac004ed0f51189e11c207c8",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Returned to draft after independent review rejected exact report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76. The terminal-record substitution did not replace the downstream A9-RESULT preimages, and the pre-mask rename did not reconcile every exact eligibility schema. No implementation dependency or SH-07 authority is granted.",
+  "disposition": "Frozen exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. The repair defines an exact terminal-derived A9 stage result, separates PRE-MASKED-ROOT from RUNTIME-MASKED-ROOT, scopes ownership and cleanup without inventing A9 history, and enumerates every V9 clause superseded. It grants no implementation dependency, acceptance, integration, or SH-07 authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
@@ -38,7 +38,7 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check 8c39712c80e7da66c23a23a6c1f01ba1f970b682..5443066c888016ae1f55754329f3722610a627e3",
+        "command": "git diff --check 8c39712c80e7da66c23a23a6c1f01ba1f970b682..5ce69f8cbe00c82e6ac004ed0f51189e11c207c8",
         "exit_code": 0,
         "result": "passed"
       },
@@ -100,6 +100,12 @@
       "at": "2026-09-10T09:19:10Z",
       "reason": "return exact candidate 5443066c888016ae1f55754329f3722610a627e3 to draft after independent reviewer /root/v9_source_read_closure_fix rejected it: the generic terminal record cannot supply V9's unchanged structured A9-RESULT review, integration, preservation, ownership, and cleanup preimages, and the PRE-MASKED-ROOT rename left EVIDENCE-ELIGIBILITY and counter schemas inconsistent; preserve all verified contradiction and count findings without granting authority",
       "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:46:43Z",
+      "reason": "freeze exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 after pre-freeze exact-schema review and documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks passed; no independent candidate acceptance, implementation authority, integration, or SH-07 authority is claimed",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -127,6 +133,6 @@
       "reviewer": "/root/v9_source_read_closure_fix@5443066c"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
