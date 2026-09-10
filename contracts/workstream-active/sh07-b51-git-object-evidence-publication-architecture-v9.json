@@ -2,8 +2,8 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
   "author": "uniform-coordinator",
   "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "76101841e73c1da7ef9d18ec6775d0ea9b64b59a",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
     "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Returned to draft after exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326 received one independent acceptance and one independent formal rejection. Revision must define the complete acyclic L2 external-binding, edge-ID, accepted/rejected partition, diagnostic, and unauthorized-fixture construction from authentic Q and SH06 carriers. No implementation or downstream authority is granted.",
+  "disposition": "Exact V9 architecture candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, and companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805 are frozen after three independent exact-byte PASS-FOR-FREEZE reviews. This grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority until governed review and admission complete.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -62,7 +62,7 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
+        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..76101841e73c1da7ef9d18ec6775d0ea9b64b59a",
         "exit_code": 0,
         "result": "passed"
       }
@@ -143,6 +143,12 @@
       "at": "2026-09-10T01:11:06Z",
       "reason": "return V9 to draft after exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326 received one independent acceptance but independent formal review found no exact L2 external-binding vector, edge-ID equation, Q/SH06 fragment join, accepted/rejected partition, diagnostic constructor, or unauthorized-edge fixture, leaving governed external binding acceptance and unauthorized cross-fragment rejection underdetermined",
       "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:20:00Z",
+      "reason": "freeze exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805, and two owned paths after three independent exact-byte PASS-FOR-FREEZE reviews",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -185,6 +191,6 @@
       "reviewer": "/root/v9_prefreeze_formal@8ea2c2dd"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
