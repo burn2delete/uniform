@@ -21,14 +21,16 @@
                   emitter)
         module (assoc module :function-table function-table)
         source-authority
-        (when (:p15-s23-sh07-module-source-descriptor module)
-          (p15-s23-sh07-compiler-source-authority
-           source-path source-text module function-table))
+        (or (:p15-s23-sh07-source-authority module)
+            (when (:p15-s23-sh07-module-source-descriptor module)
+              (p15-s23-sh07-compiler-source-authority
+               source-path source-text module function-table)))
         module (cond-> module
                  source-authority
                  (assoc :p15-s23-sh07-source-authority source-authority))
         compiler-artifact-binding
-        (or *p15-s23-stage2-compiler-artifact-binding*
+        (or (:p15-s23-sh07-compiler-artifact-binding module)
+            *p15-s23-stage2-compiler-artifact-binding*
             (p15-s23-stage2-compiler-artifact-binding!
              emitter source-path (:target module)))
         ;; A source map is not an ordering contract.  Give the Gravity

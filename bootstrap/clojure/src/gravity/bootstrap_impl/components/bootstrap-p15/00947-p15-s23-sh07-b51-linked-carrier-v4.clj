@@ -3,7 +3,7 @@
 ;; independently reviewed.  Candidate constructors establish schemas and
 ;; joins; they do not confer authority.
 (def p15-s23-sh07-b51-attempt32-architecture-report-sha256
-  "sha256:b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db")
+  "sha256:34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd")
 
 ;; Compatibility names retained for the Attempt-30 evidence harness.  Their
 ;; values are the superseding Attempt-32 authorities, never stale Attempt-30
@@ -557,8 +557,10 @@
             :record-root (:record-root descriptor)}))))
 
 (defn- p15-s23-sh07-b51-v4-inputs-valid? [inputs]
-  (and (p15-s23-sh07-b51-exact-keys?
-        inputs p15-s23-sh07-b51-v4-input-keys)
+  (let [v9? (contains? inputs :lowering-product-id)]
+    (and (p15-s23-sh07-b51-exact-keys?
+          inputs (cond-> p15-s23-sh07-b51-v4-input-keys
+                   v9? (conj :lowering-product-id)))
        (= p15-s23-sh07-b51-attempt32-architecture-report-sha256
           (:architecture-report-sha256 inputs))
        (p15-s23-sh07-b51-v4-git-id? (:snapshot-commit inputs))
@@ -576,7 +578,9 @@
        (p15-s23-sh07-b51-v4-digest-vector? (:m0-ids inputs) 7)
        (p15-s23-sh07-b51-digest-id? (:m1-id inputs))
        (p15-s23-sh07-b51-v4-digest-vector? (:m2-ids inputs) 7)
-       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))))
+       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))
+       (or (not v9?)
+           (p15-s23-sh07-b51-digest-id? (:lowering-product-id inputs))))))
 
 (defn- p15-s23-sh07-b51-v4-checker-valid? [checker algorithm-role]
   (and (p15-s23-sh07-b51-exact-keys?
@@ -637,6 +641,8 @@
           provenance (:provenance certificate)
           raw (:raw-source-transcript certificate)
           m2 (:m2-transcript certificate)
+          v9? (contains? certificate :semantic-witness)
+          witness (:semantic-witness certificate)
           commitments (:category-commitments claim)
           normalized-preimage
           {:domain :gravity/sh07-b51-normalized-census-id-v1
@@ -659,7 +665,8 @@
            :profile-bounds (:profile-bounds certificate)}]
       (and (p15-s23-sh07-b51-v4-certificate-preflight? certificate)
            (p15-s23-sh07-b51-exact-keys?
-            certificate p15-s23-sh07-b51-v4-certificate-keys)
+            certificate (cond-> p15-s23-sh07-b51-v4-certificate-keys
+                          v9? (conj :semantic-witness)))
            (= :gravity/sh07-b51-compile-census-certificate
               (:artifact certificate))
            (= role-domain (:domain certificate))
@@ -698,6 +705,36 @@
               assumptions)
            (p15-s23-sh07-b51-v4-checker-valid? checker algorithm-role)
            (p15-s23-sh07-b51-v4-inputs-valid? inputs)
+           (= v9? (contains? inputs :lowering-product-id))
+           (or
+            (not v9?)
+            (and
+             (p15-s23-sh07-b51-exact-keys?
+              witness
+              #{:schema :content :operation-manifest :operation-schedule-id
+                :fuel-receipts :l1 :l2 :c2 :c6 :boot2 :boot3 :boot4
+                :witness-id})
+             (= :gravity/sh07-b51-authentic-lowering-witness-v1
+                (:schema witness))
+             (= (select-keys inputs [:snapshot-commit :snapshot-tree])
+                (:content witness))
+             (p15-s23-sh07-b51-digest-id?
+              (:operation-schedule-id witness))
+             (p15-s23-sh07-b51-digest-id? (:witness-id witness))
+             (vector? (:operation-manifest witness))
+             (= 7 (count (:operation-manifest witness)))
+             (= (vec (range 7)) (mapv :ordinal (:operation-manifest witness)))
+             (= (vec (repeat 7 (:lowering-product-id inputs)))
+                (mapv :lowering-product-id (:operation-manifest witness)))
+             (vector? (:fuel-receipts witness))
+             (= 7 (count (:fuel-receipts witness)))
+             (= (mapv :operation-id (:operation-manifest witness))
+                (mapv :operation-id (:fuel-receipts witness)))
+             (every? true? (map :within-bounds (:fuel-receipts witness)))
+             (= (:witness-id witness)
+                (p15-s23-sh07-b51-canonical-id
+                 [:gravity/sh07-b51-authentic-lowering-witness-v1
+                  (dissoc witness :witness-id)]))))
            (p15-s23-sh07-b51-v4-result-valid? result claim)
            (p15-s23-sh07-b51-exact-keys?
             provenance p15-s23-sh07-b51-v4-provenance-keys)
@@ -738,14 +775,17 @@
           checker-b (:checker certificate-b)
           checker-identity-keys
           [:source-sha256 :semantic-id :executable-id :dependency-closure-id]
+          v9? (contains? certificate-a :semantic-witness)
           common-keys
-          [:architecture-report-sha256 :claim-id :claim :assumptions
-           :inputs :profile-bounds]]
+          (cond-> [:architecture-report-sha256 :claim-id :claim :assumptions
+                   :inputs :profile-bounds]
+            v9? (conj :semantic-witness))]
       (and (vector? certificates) (= 2 (count certificates))
            (= [:producer-census :independent-verifier-census]
               (mapv :role certificates))
            (every? p15-s23-sh07-b51-compile-census-certificate-v1-valid?
                    certificates)
+           (= v9? (contains? certificate-b :semantic-witness))
            (= (select-keys certificate-a common-keys)
               (select-keys certificate-b common-keys))
            (not= (:certificate-id certificate-a)

@@ -1,0 +1,378 @@
+(ns gravity.self-hosting.sh07-b51-plan-linker-governed-read-test
+  (:require [clojure.test :refer [deftest is testing]]
+            [gravity.bootstrap :as bootstrap]
+            [gravity.tools.sh07-b51-v9-codec :as codec]))
+
+(defn- private-var [name]
+  (or (ns-resolve 'gravity.bootstrap name)
+      (throw (ex-info "missing private bootstrap Var" {:name name}))))
+
+(deftest governed-projection-and-event-plan-are-closed
+  (let [specs (var-get (private-var 'p15-s23-sh07-b51-source-specs))
+        events (var-get (private-var 'p15-s23-sh07-b51-source-event-plan))]
+    (is (= 12 (count specs)))
+    (is (= (vec (range 12)) (mapv :ordinal specs)))
+    (is (= [nil nil nil 0 1 2 3 4 5 6 nil nil]
+           (mapv :module-ordinal specs)))
+    (is (= ["docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
+            "docs/phase-01-core-language/012-l2-core-language-semantics.md"
+            "bootstrap/gravity/src/gravity/checked_core.gravity"]
+           (mapv :path (subvec specs 0 3))))
+    (is (= 39 (count events)))
+    (is (= (vec (range 39)) (mapv :ordinal events)))
+    (is (= (vec (concat (range 3 10) (range 3 10) (range 3 10)))
+           (mapv :source-ordinal (subvec events 3 24))))
+    (is (= (vec (concat (repeat 7 :module-validation)
+                        (repeat 7 :callsite-census)
+                        (repeat 7 :link-authority)))
+           (mapv :domain (subvec events 3 24))))
+    (is (= (vec (range 7))
+           (mapv :module-ordinal (subvec events 25 32))))
+    (is (= (vec (range 7))
+           (mapv :module-ordinal (subvec events 32 39))))))
+
+(deftest process-role-requires-the-authenticated-entrypoint-and-checker
+  (let [role-for-observation
+        (var-get
+         (private-var 'p15-s23-sh07-b51-process-role-for-observation))
+        current-role
+        (var-get (private-var 'p15-s23-sh07-b51-process-role))
+        bootstrap-ns 'gravity.bootstrap
+        checker-child 'gravity.tools.sh07-b51-attempt32-checker-child
+        coordinator 'gravity.tools.sh07-b51-attempt32-coordinator-child
+        producer 'gravity.tools.sh07-b51-attempt30-producer-census
+        independent 'gravity.tools.sh07-b51-attempt30-independent-census
+        checker-arguments
+        (fn [role]
+          ["-Xmx8g" "clojure.main" "-m"
+           "gravity.tools.sh07-b51-attempt32-checker-child"
+           "--role" role])
+        coordinator-options
+        ["--snapshot-commit" (apply str (repeat 40 "0"))
+         "--snapshot-tree" (apply str (repeat 40 "1"))
+         "--completed-at" "1970-01-01T00:00:00Z"
+         "--evidence-relative-root" "docs/artifacts/phase-15/evidence/sh07-b51-git-object-v9"
+         "--staging-root" "/tmp/staging"
+         "--eligibility-review-commit" (apply str (repeat 40 "2"))
+         "--eligibility-review-tree" (apply str (repeat 40 "3"))
+         "--eligibility-receipt-path" "receipt.edn"
+         "--eligibility-receipt-blob" (apply str (repeat 40 "4"))
+         "--eligibility-receipt-byte-count" "1"
+         "--eligibility-receipt-raw-sha256" (str "sha256:" (apply str (repeat 64 "5")))
+         "--eligibility-receipt-id" (str "sha256:" (apply str (repeat 64 "6")))]
+        coordinator-arguments
+        (into ["-Xmx8g" "clojure.main" "-m"
+               "gravity.tools.sh07-b51-attempt32-coordinator-child"]
+              coordinator-options)
+        observe
+        (fn [arguments loaded]
+          (role-for-observation
+           {:arguments arguments :loaded-project-namespaces loaded}))]
+    (is (= :producer-census
+           (observe (checker-arguments "producer-census")
+                    #{bootstrap-ns checker-child producer})))
+    (is (= :independent-verifier-census
+           (observe (checker-arguments "independent-verifier-census")
+                    #{bootstrap-ns checker-child independent})))
+    (is (= :m
+           (observe coordinator-arguments #{bootstrap-ns coordinator})))
+    (doseq [[arguments loaded]
+            [[[] #{}]
+             [(checker-arguments "producer-census") #{bootstrap-ns producer}]
+             [(checker-arguments "producer-census")
+              #{bootstrap-ns checker-child producer independent}]
+             [coordinator-arguments #{bootstrap-ns}]
+             [coordinator-arguments #{bootstrap-ns coordinator checker-child}]]]
+      (let [failure (try (observe arguments loaded) nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "SH07-B51-TRUSTED-TCB" (:id (ex-data failure))))
+        (is (= :unauthenticated-process-role (:reason (ex-data failure))))))
+    (testing "an ordinary test JVM cannot silently become M"
+      (let [failure (try (current-role) nil
+                         (catch clojure.lang.ExceptionInfo error error))]
+        (is (= "SH07-B51-TRUSTED-TCB" (:id (ex-data failure))))
+        (is (= :unauthenticated-process-role
+               (:reason (ex-data failure))))))
+    (let [failure (try (observe (checker-arguments "producer-census")
+                                #{bootstrap-ns checker-child producer
+                                  independent})
+                       nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+      (is (= "SH07-B51-TRUSTED-TCB" (:id (ex-data failure)))))))
+
+(deftest git-transport-is-closed-bounded-and-keeps-stderr-separate
+  (let [valid-arguments?
+        (var-get (private-var 'p15-s23-sh07-b51-git-arguments-valid?))
+        read-bounded
+        (var-get (private-var 'p15-s23-sh07-b51-read-stream-bytes))
+        git-bytes (var-get (private-var 'p15-s23-sh07-b51-git-bytes))
+        zero-id (apply str (repeat 40 "0"))
+        source-path
+        "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"]
+    (is (true? (valid-arguments?
+                ["rev-parse" "--verify" (str zero-id "^{commit}")])))
+    (is (true? (valid-arguments? ["ls-tree" "-z" zero-id "--" source-path])))
+    (is (true? (valid-arguments? ["cat-file" "blob" zero-id])))
+    (doseq [arguments
+            [["status"]
+             ["cat-file" "-p" zero-id]
+             ["ls-tree" "-z" zero-id "--" "../outside"]
+             ["rev-parse" (str zero-id "^{commit}") "--verify"]]]
+      (is (false? (boolean (valid-arguments? arguments))) arguments))
+    (let [failure
+          (try
+            (read-bounded
+             (java.io.ByteArrayInputStream. (byte-array [1 2 3 4])) 3 :test)
+            nil
+            (catch clojure.lang.ExceptionInfo error error))]
+      (is (= :git-stream-overflow (:reason (ex-data failure))))
+      (is (= 3 (get-in (ex-data failure) [:details :maximum]))))
+    (let [failure (try (git-bytes ["cat-file" "blob" zero-id]) nil
+                       (catch clojure.lang.ExceptionInfo error error))
+          details (:details (ex-data failure))]
+      (is (= :git-object-read (:reason (ex-data failure))))
+      (is (zero? (:stdout-byte-count details)))
+      (is (pos? (:stderr-byte-count details)))
+      (is (string? (:stderr details)))
+      (is (not (contains? details :output))))))
+
+(deftest bootstrap-canonical-identities-match-the-v9-codec
+  (let [raw-sha256
+        (var-get (private-var 'p15-s23-sh07-b51-raw-sha256))
+        value [:gravity/sh07-b51-source-event-product-id-v1
+               {:ordinal 7 :domain :module-validation
+                :consumer 'gravity.bootstrap/example
+                :source-raw-sha256
+                "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+                :product {:accepted true}}]
+        bytes (.getBytes "strict UTF-8 parity" java.nio.charset.StandardCharsets/UTF_8)]
+    (is (= (codec/H value) (bootstrap/reader-canonical-hash value)))
+    (is (= (codec/R bytes) (raw-sha256 bytes)))))
+
+(deftest dispatcher-is-dense-single-use-and-finalizes-once
+  (let [session-var (private-var '*p15-s23-sh07-b51-governed-source-session*)
+        dispatch (var-get (private-var
+                           'p15-s23-sh07-b51-governed-source-event!))
+        finalize (var-get (private-var
+                           'p15-s23-sh07-b51-finalize-source-session!))
+        events (var-get (private-var 'p15-s23-sh07-b51-source-event-plan))
+        descriptors
+        (mapv (fn [ordinal]
+                {:ordinal ordinal :kind :test :module-ordinal nil
+                 :path (str "source-" ordinal) :mode "100644"
+                 :blob-oid "0000000000000000000000000000000000000000"
+                 :byte-count 0
+                 :raw-sha256
+                 "sha256:0000000000000000000000000000000000000000000000000000000000000000"})
+              (range 12))
+        entries (mapv #(hash-map :descriptor % :bytes (byte-array 0) :text "")
+                      descriptors)
+        token (Object.)
+        state {:token token :thread (Thread/currentThread) :role :m
+               :commit "0000000000000000000000000000000000000000"
+               :tree "1111111111111111111111111111111111111111"
+               :entries entries :descriptors descriptors
+               :descriptors-root (bootstrap/reader-canonical-hash
+                                  [:gravity/sh07-b51-source-descriptors-root-v1
+                                   descriptors])
+               :cursor (atom 0) :events (atom [])
+               :checked-products (atom {}) :finalized (atom false)}]
+    (with-bindings {session-var {:token token :state state}}
+      (testing "reordered first event rejects without consuming it"
+        (let [failure
+              (try (dispatch :l2-contract 1 nil
+                             'gravity.bootstrap/p15-s23-sh07-b51-l2-contract
+                             (constantly true))
+                   nil
+                   (catch clojure.lang.ExceptionInfo error error))]
+          (is (= :event-order (:reason (ex-data failure))))
+          (is (zero? @(:cursor state)))))
+      (doseq [{:keys [domain source-ordinal module-ordinal consumer]} events]
+        (dispatch domain source-ordinal module-ordinal consumer
+                  (constantly true)))
+      (let [receipt (finalize)]
+        (is (= #{:schema :role :commit :tree :source-descriptors
+                 :source-descriptors-root :events :event-root :counters
+                 :finalized}
+               (set (keys receipt))))
+        (is (= {:acquire-count 12 :decode-count 12
+                :event-count 39 :finalize-count 1}
+               (:counters receipt)))
+        (is (true? (:finalized receipt))))
+      (is (= :inactive-or-forged-session
+             (:reason
+              (ex-data
+               (try (finalize) nil
+                    (catch clojure.lang.ExceptionInfo error error)))))))))
+
+(deftest returned-m0-m1-values-replay-source-authority-event-products
+  (let [event-plan
+        (var-get (private-var 'p15-s23-sh07-b51-source-event-plan))
+        event-product-id
+        (var-get (private-var 'p15-s23-sh07-b51-source-event-product-id))
+        source-authority-product
+        (var-get
+         (private-var
+          'p15-s23-sh07-b51-source-authority-product-from-m0-m1))
+        replay!
+        (var-get
+         (private-var
+          'p15-s23-sh07-b51-replay-returned-source-authority-events!))
+        sha (fn [ordinal] (format "sha256:%064x" (inc ordinal)))
+        source-descriptors
+        (mapv (fn [ordinal]
+                {:ordinal ordinal
+                 :path (str "source-" ordinal ".gravity")
+                 :raw-sha256 (sha ordinal)})
+              (range 12))
+        m0s
+        (mapv
+         (fn [module-ordinal]
+           {:module-ordinal module-ordinal
+            :module (symbol (str "gravity.replay.module-" module-ordinal))
+            :module-source-id (sha (+ 20 module-ordinal))
+            :logical-source-path
+            (:path (nth source-descriptors (+ 3 module-ordinal)))
+            :source-sha256
+            (:raw-sha256 (nth source-descriptors (+ 3 module-ordinal)))
+            :definitions
+            [{:name (symbol (str "function-" module-ordinal))
+              :source-hash (sha (+ 30 module-ordinal))}]})
+         (range 7))
+        link-manifest {:manifest-id (sha 50)}
+        events
+        (mapv
+         (fn [{:keys [ordinal source-ordinal] :as coordinate}]
+           (let [event
+                 (assoc coordinate :source-raw-sha256
+                        (:raw-sha256
+                         (nth source-descriptors source-ordinal)))
+                 product
+                 (if (<= 25 ordinal 31)
+                   (source-authority-product
+                    (nth m0s (- ordinal 25)) link-manifest)
+                   :opaque-test-product)]
+             (assoc event :product-id (event-product-id event product))))
+         event-plan)
+        receipt {:source-descriptors source-descriptors :events events}]
+    (is (true? (replay! m0s link-manifest receipt)))
+    (let [mutated
+          (assoc-in m0s [3 :definitions 0 :source-hash] (sha 60))
+          failure
+          (try (replay! mutated link-manifest receipt) nil
+               (catch clojure.lang.ExceptionInfo error error))]
+      (is (= :source-authority-event-replay
+             (:reason (ex-data failure))))
+      (is (= 3 (get-in (ex-data failure) [:details :module-ordinal]))))))
+
+(deftest public-wrapper-has-no-authority-override-arity
+  (is (= '([commit tree])
+         (:arglists
+          (meta #'bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products)))))
+
+(deftest compatibility-reader-is-behaviorally-unreachable-in-v9
+  (let [compatibility-reader
+        (var-get (private-var 'p15-s23-sh07-b51-compatibility-source-record))
+        compatibility-module-input
+        (var-get (private-var 'p15-s23-sh07-b51-compatibility-module-input))
+        current-emitter
+        (var-get (private-var 'p15-s23-sh07-b51-current-emitter))
+        v9-construction-var
+        (private-var '*p15-s23-sh07-b51-v9-receipted-bundle-construction*)
+        source-session-var
+        (private-var '*p15-s23-sh07-b51-governed-source-session*)
+        module-spec (first bootstrap/p15-s23-sh07-b51-module-specs)
+        temporary-path
+        (java.nio.file.Files/createTempFile
+         "sh07-b51-legacy-source-" ".gravity"
+         (make-array java.nio.file.attribute.FileAttribute 0))]
+    (try
+      (spit (.toFile temporary-path) "legacy source bytes")
+      (testing "the pre-V9 compatibility surface remains available by itself"
+        (is (= "legacy source bytes"
+               (:text (compatibility-reader (str temporary-path))))))
+      (testing "V9 fails before reading the same extant live-worktree path"
+        (let [failure
+              (with-bindings {v9-construction-var true}
+                (try
+                  (compatibility-reader (str temporary-path))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error)))]
+          (is (= "SH07-B51-00945-GOVERNED-READ"
+                 (:id (ex-data failure))))
+          (is (= :legacy-live-source-read-in-v9
+                 (:reason (ex-data failure))))))
+      (testing "both immediate compatibility-reader callers fail closed"
+        (with-bindings {v9-construction-var true}
+          (doseq [operation [#(compatibility-module-input module-spec)
+                             current-emitter]]
+            (let [failure
+                  (try (operation) nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+              (is (= :legacy-live-source-read-in-v9
+                     (:reason (ex-data failure))))))))
+      (testing "the source-authority and compiler-binding fallbacks fail closed"
+        (with-bindings {v9-construction-var true}
+          (doseq [operation
+                  [#(bootstrap/p15-s23-sh07-compiler-source-authority
+                     "untrusted.gravity" "" {} {})
+                   #(bootstrap/p15-s23-sh07-compiler-source-authority
+                     (:logical-source-path module-spec) ""
+                     {:p15-s23-sh07-module-source-descriptor
+                      {:module-ordinal 0
+                       :logical-source-path
+                       (:logical-source-path module-spec)}}
+                     {})
+                   #(bootstrap/p15-s23-stage2-compiler-artifact-binding!
+                     {} "untrusted.gravity" :jvm)]]
+            (let [failure
+                  (try (operation) nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+              (is (= :legacy-live-source-read-in-v9
+                     (:reason (ex-data failure))))))))
+      (testing "public legacy call paths cannot become V9 fallback paths"
+        (with-bindings {v9-construction-var true}
+          (doseq [operation [bootstrap/p15-s23-sh07-b51-derive-callsite-census
+                             bootstrap/p15-s23-sh07-b51-build-link-authority
+                             bootstrap/p15-s23-sh07-b51-build-execution-bundle]]
+            (let [failure
+                  (try (operation) nil
+                       (catch clojure.lang.ExceptionInfo error error))]
+              (is (= :legacy-live-source-read-in-v9
+                     (:reason (ex-data failure))))))))
+      (testing "a present but forged governed session never falls back"
+        (let [failure
+              (with-bindings {v9-construction-var true
+                              source-session-var
+                              {:token (Object.) :state {}}}
+                (try
+                  (bootstrap/p15-s23-sh07-b51-derive-callsite-census)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error)))]
+          (is (= :inactive-or-forged-session
+                 (:reason (ex-data failure))))))
+      (finally
+        (java.nio.file.Files/deleteIfExists temporary-path)))))
+
+(deftest public-v9-wrapper-enters-deny-scope-before-source-acquisition
+  (let [v9-construction-var
+        (private-var '*p15-s23-sh07-b51-v9-receipted-bundle-construction*)
+        open-session-var
+        (private-var 'p15-s23-sh07-b51-open-source-session)
+        observed-scope (atom nil)
+        sentinel ::stop-before-object-read
+        failure
+        (with-redefs-fn
+          {open-session-var
+           (fn [_commit _tree]
+             (reset! observed-scope @v9-construction-var)
+             (throw (ex-info "test stop" {:sentinel sentinel})))}
+          #(try
+             (bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products
+              (apply str (repeat 40 "0"))
+              (apply str (repeat 40 "1")))
+             nil
+             (catch clojure.lang.ExceptionInfo error error)))]
+    (is (true? @observed-scope))
+    (is (= sentinel (:sentinel (ex-data failure))))
+    (is (false? @v9-construction-var))))

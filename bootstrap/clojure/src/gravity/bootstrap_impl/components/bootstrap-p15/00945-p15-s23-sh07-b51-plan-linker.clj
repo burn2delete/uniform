@@ -11,7 +11,6 @@
          p15-s23-sh07-b51-execution-bundle-core-valid-structure?
          p15-s23-sh07-b51-execution-bundle-valid-structure?
          p15-s23-sh07-b51-execution-bundle-authorized?
-         p15-s23-sh07-b51-authoritative-linked-products
          p15-s23-sh07-b51-current-authoritative-linked-products-v4
          ^:private p15-s23-sh07-b51-issue-top-level-validation-receipt!
          ^:private p15-s23-sh07-b51-retire-admitted-runtime-context!
@@ -65,6 +64,599 @@
     "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
     :owner :r8-finalizer
     :exports '[sh07-b51-finalize-rejection]}])
+
+(def ^:private p15-s23-sh07-b51-source-specs
+  (vec
+   (concat
+    [{:ordinal 0 :kind :l1-contract :module-ordinal nil
+      :path "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"}
+     {:ordinal 1 :kind :l2-contract :module-ordinal nil
+      :path "docs/phase-01-core-language/012-l2-core-language-semantics.md"}
+     {:ordinal 2 :kind :checked-core :module-ordinal nil
+      :path "bootstrap/gravity/src/gravity/checked_core.gravity"}]
+    (mapv (fn [{:keys [module-ordinal logical-source-path]}]
+            {:ordinal (+ 3 module-ordinal)
+             :kind :module
+             :module-ordinal module-ordinal
+             :path logical-source-path})
+          p15-s23-sh07-b51-module-specs)
+    [{:ordinal 10 :kind :compiler :module-ordinal nil
+      :path "bootstrap/gravity/p15_s23/compiler.gravity"}
+     {:ordinal 11 :kind :emitter :module-ordinal nil
+      :path "bootstrap/gravity/p15_s23/emitter.gravity"}])))
+
+(def ^:private p15-s23-sh07-b51-source-event-plan
+  (vec
+   (concat
+    [{:ordinal 0 :domain :l1-contract :source-ordinal 0
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-l1-contract}
+     {:ordinal 1 :domain :l2-contract :source-ordinal 1
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-l2-contract}
+     {:ordinal 2 :domain :checked-core-revision :source-ordinal 2
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-checked-core-contract}]
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 3 module-ordinal)
+       :domain :module-validation
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer 'gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 10 module-ordinal)
+       :domain :callsite-census
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer 'gravity.bootstrap/p15-s23-sh07-b51-derive-callsite-census})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 17 module-ordinal)
+       :domain :link-authority
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-sh07-b51-build-link-authority-from-census})
+    [{:ordinal 24 :domain :compiler-emitter :source-ordinal 10
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-current-emitter}]
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 25 module-ordinal)
+       :domain :source-authority
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-sh07-b51-current-module-source-authority})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 32 module-ordinal)
+       :domain :compiler-artifact-binding
+       :source-ordinal 11
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding}))))
+
+;; This marker is denial-only: it grants no source or product authority.  The
+;; V9 object-mode wrapper binds it before opening its private C/T session so a
+;; legacy compatibility branch can never fall through to a checked-out path,
+;; even if a later refactor accidentally reaches that branch.  The session's
+;; unforgeable token remains the positive authority for every governed read.
+(def ^:dynamic ^:private
+  *p15-s23-sh07-b51-v9-receipted-bundle-construction* false)
+
+(defn- p15-s23-sh07-b51-governed-read-fail!
+  [reason details]
+  (throw (ex-info "SH-07 B51 governed source read rejected"
+                  {:id "SH07-B51-00945-GOVERNED-READ"
+                   :reason reason
+                   :details details})))
+
+(def ^:private p15-s23-sh07-b51-git-limits
+  {:stdout-max-bytes 1073741824
+   :stderr-max-bytes 1048576
+   :deadline-ms 3600000})
+
+(def ^:private p15-s23-sh07-b51-checker-entrypoint
+  "gravity.tools.sh07-b51-attempt32-checker-child")
+
+(def ^:private p15-s23-sh07-b51-coordinator-entrypoint
+  "gravity.tools.sh07-b51-attempt32-coordinator-child")
+
+(def ^:private p15-s23-sh07-b51-coordinator-option-names
+  ["--snapshot-commit"
+   "--snapshot-tree"
+   "--completed-at"
+   "--evidence-relative-root"
+   "--staging-root"
+   "--eligibility-review-commit"
+   "--eligibility-review-tree"
+   "--eligibility-receipt-path"
+   "--eligibility-receipt-blob"
+   "--eligibility-receipt-byte-count"
+   "--eligibility-receipt-raw-sha256"
+   "--eligibility-receipt-id"])
+
+(defn- p15-s23-sh07-b51-read-stream-bytes
+  [^java.io.InputStream stream maximum coordinate]
+  (let [output (java.io.ByteArrayOutputStream.)
+        buffer (byte-array 8192)]
+    (loop [byte-count 0]
+      (let [count (.read stream buffer)]
+        (if (neg? count)
+          (.toByteArray output)
+          (let [next-count (+ byte-count count)]
+            (when (> next-count maximum)
+              (p15-s23-sh07-b51-governed-read-fail!
+               :git-stream-overflow
+               {:coordinate coordinate
+                :maximum maximum
+                :observed-at-least next-count}))
+            (.write output buffer 0 count)
+            (recur next-count)))))))
+
+(defn- p15-s23-sh07-b51-strict-utf8
+  [bytes coordinate]
+  (try
+    (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                    (.onMalformedInput
+                     java.nio.charset.CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter
+                     java.nio.charset.CodingErrorAction/REPORT))]
+      (str (.decode decoder (java.nio.ByteBuffer/wrap bytes))))
+    (catch java.nio.charset.CharacterCodingException _
+      (p15-s23-sh07-b51-governed-read-fail!
+       :malformed-utf8 {:coordinate coordinate}))))
+
+(defn- p15-s23-sh07-b51-raw-sha256
+  [bytes]
+  (str "sha256:" (sha256-bytes-hex bytes)))
+
+(defn- p15-s23-sh07-b51-git-arguments-valid?
+  [arguments]
+  (let [git-id? #(and (string? %)
+                      (boolean (re-matches #"[0-9a-f]{40}" %)))
+        source-paths (set (map :path p15-s23-sh07-b51-source-specs))]
+    (and
+     (vector? arguments)
+     (or
+      (and (= 3 (count arguments))
+           (= ["rev-parse" "--verify"] (subvec arguments 0 2))
+           (boolean
+            (re-matches #"[0-9a-f]{40}\^\{(?:commit|tree)\}"
+                        (nth arguments 2))))
+      (and (= 5 (count arguments))
+           (= ["ls-tree" "-z"] (subvec arguments 0 2))
+           (git-id? (nth arguments 2))
+           (= "--" (nth arguments 3))
+           (contains? source-paths (nth arguments 4)))
+      (and (= 3 (count arguments))
+           (= ["cat-file" "blob"] (subvec arguments 0 2))
+           (git-id? (nth arguments 2)))))))
+
+(defn- p15-s23-sh07-b51-remaining-millis
+  [deadline-nanos]
+  (max 0
+       (long
+        (Math/ceil
+         (/ (double (- deadline-nanos (System/nanoTime))) 1000000.0)))))
+
+(defn- p15-s23-sh07-b51-close-quietly!
+  [value]
+  (when value
+    (try
+      (.close ^java.io.Closeable value)
+      (catch Throwable _ nil))))
+
+(defn- p15-s23-sh07-b51-stop-git!
+  [^Process process futures executor]
+  (when (.isAlive process)
+    (.destroy process)
+    (when-not (.waitFor process 250 java.util.concurrent.TimeUnit/MILLISECONDS)
+      (.destroyForcibly process)
+      (.waitFor process 250 java.util.concurrent.TimeUnit/MILLISECONDS)))
+  (doseq [stream [(.getOutputStream process)
+                  (.getInputStream process)
+                  (.getErrorStream process)]]
+    (p15-s23-sh07-b51-close-quietly! stream))
+  (doseq [future futures]
+    (.cancel ^java.util.concurrent.Future future true))
+  (.shutdownNow ^java.util.concurrent.ExecutorService executor))
+
+(defn- p15-s23-sh07-b51-completed-git-task!
+  [completion deadline-nanos]
+  (let [remaining (p15-s23-sh07-b51-remaining-millis deadline-nanos)
+        future (.poll ^java.util.concurrent.ExecutorCompletionService
+                      completion remaining
+                      java.util.concurrent.TimeUnit/MILLISECONDS)]
+    (when-not future
+      (p15-s23-sh07-b51-governed-read-fail!
+       :git-timeout {:deadline-ms (:deadline-ms p15-s23-sh07-b51-git-limits)}))
+    (try
+      (.get ^java.util.concurrent.Future future)
+      (catch java.util.concurrent.ExecutionException error
+        (throw (.getCause error))))))
+
+(defn- p15-s23-sh07-b51-git-bytes
+  [arguments]
+  (when-not (and (vector? arguments)
+                 (every? string? arguments)
+                 (p15-s23-sh07-b51-git-arguments-valid? arguments))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :git-argv {:arguments arguments}))
+  (let [argv (into ["/usr/bin/git" "-C" (System/getProperty "user.dir")]
+                   arguments)
+        process (-> (ProcessBuilder. ^java.util.List argv) .start)
+        executor (java.util.concurrent.Executors/newFixedThreadPool 3)
+        completion (java.util.concurrent.ExecutorCompletionService. executor)
+        stdout-future
+        (.submit completion
+                 ^java.util.concurrent.Callable
+                 (reify java.util.concurrent.Callable
+                   (call [_]
+                     {:kind :stdout
+                      :bytes
+                      (p15-s23-sh07-b51-read-stream-bytes
+                       (.getInputStream process)
+                       (:stdout-max-bytes p15-s23-sh07-b51-git-limits)
+                       :stdout)})))
+        stderr-future
+        (.submit completion
+                 ^java.util.concurrent.Callable
+                 (reify java.util.concurrent.Callable
+                   (call [_]
+                     {:kind :stderr
+                      :bytes
+                      (p15-s23-sh07-b51-read-stream-bytes
+                       (.getErrorStream process)
+                       (:stderr-max-bytes p15-s23-sh07-b51-git-limits)
+                       :stderr)})))
+        exit-future
+        (.submit completion
+                 ^java.util.concurrent.Callable
+                 (reify java.util.concurrent.Callable
+                   (call [_] {:kind :exit :value (.waitFor process)})))
+        futures [stdout-future stderr-future exit-future]
+        deadline-nanos
+        (+ (System/nanoTime)
+           (* 1000000 (:deadline-ms p15-s23-sh07-b51-git-limits)))
+        completed? (atom false)]
+    (.close (.getOutputStream process))
+    (try
+      (let [results
+            (loop [remaining 3 values {}]
+              (if (zero? remaining)
+                values
+                (let [{:keys [kind] :as result}
+                      (p15-s23-sh07-b51-completed-git-task!
+                       completion deadline-nanos)]
+                  (when (contains? values kind)
+                    (p15-s23-sh07-b51-governed-read-fail!
+                     :git-task-duplicate {:kind kind}))
+                  (recur (dec remaining) (assoc values kind result)))))
+            stdout (get-in results [:stdout :bytes])
+            stderr (get-in results [:stderr :bytes])
+            exit (get-in results [:exit :value])]
+        (when-not (and (zero? exit) (zero? (alength ^bytes stderr)))
+          (p15-s23-sh07-b51-governed-read-fail!
+           :git-object-read
+           {:arguments arguments
+            :exit exit
+            :stdout-byte-count (alength ^bytes stdout)
+            :stderr-byte-count (alength ^bytes stderr)
+            :stderr (p15-s23-sh07-b51-strict-utf8 stderr :git-stderr)}))
+        (reset! completed? true)
+        stdout)
+      (finally
+        (if @completed?
+          (do
+            (doseq [stream [(.getInputStream process) (.getErrorStream process)]]
+              (p15-s23-sh07-b51-close-quietly! stream))
+            (.shutdownNow executor))
+          (p15-s23-sh07-b51-stop-git! process futures executor))))))
+
+(defn- p15-s23-sh07-b51-single-lf-line
+  [bytes coordinate]
+  (let [text (p15-s23-sh07-b51-strict-utf8 bytes coordinate)]
+    (when-not (boolean (re-matches #"[^\r\n]+\n" text))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :git-line-grammar {:coordinate coordinate}))
+    (subs text 0 (dec (count text)))))
+
+(defn- p15-s23-sh07-b51-assert-content-coordinate!
+  [commit tree phase ordinal]
+  (let [actual-commit
+        (p15-s23-sh07-b51-single-lf-line
+         (p15-s23-sh07-b51-git-bytes
+          ["rev-parse" "--verify" (str commit "^{commit}")])
+         [phase ordinal :commit])
+        actual-tree
+        (p15-s23-sh07-b51-single-lf-line
+         (p15-s23-sh07-b51-git-bytes
+          ["rev-parse" "--verify" (str commit "^{tree}")])
+         [phase ordinal :tree])]
+    (when-not (and (= commit actual-commit) (= tree actual-tree))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :content-coordinate
+       {:phase phase :ordinal ordinal
+        :expected {:commit commit :tree tree}
+        :actual {:commit actual-commit :tree actual-tree}}))))
+
+(defn- p15-s23-sh07-b51-ls-tree-row
+  [commit path]
+  (let [bytes (p15-s23-sh07-b51-git-bytes
+               ["ls-tree" "-z" commit "--" path])
+        text (p15-s23-sh07-b51-strict-utf8 bytes [:ls-tree path])]
+    (when-not (and (pos? (count text))
+                   (= \u0000 (last text))
+                   (= 1 (count (filter #(= \u0000 %) text))))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :ls-tree-record {:path path}))
+    (let [record (subs text 0 (dec (count text)))
+          tab (.indexOf ^String record "\t")
+          header (when (pos? tab) (subs record 0 tab))
+          observed-path (when (pos? tab) (subs record (inc tab)))
+          fields (when header (str/split header #" " -1))]
+      (when-not (and (= 3 (count fields))
+                     (= "100644" (nth fields 0 nil))
+                     (= "blob" (nth fields 1 nil))
+                     (boolean (re-matches #"[0-9a-f]{40}"
+                                          (nth fields 2 "")))
+                     (= path observed-path))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :ls-tree-projection {:path path :record record}))
+      {:mode (nth fields 0) :type (nth fields 1)
+       :blob-oid (nth fields 2)})))
+
+(defn- p15-s23-sh07-b51-acquire-source-entry
+  [commit tree spec]
+  (let [{:keys [ordinal path]} spec]
+    (p15-s23-sh07-b51-assert-content-coordinate!
+     commit tree :pre-acquisition ordinal)
+    (let [tree-row (p15-s23-sh07-b51-ls-tree-row commit path)
+          bytes (p15-s23-sh07-b51-git-bytes
+                 ["cat-file" "blob" (:blob-oid tree-row)])
+          text (p15-s23-sh07-b51-strict-utf8 bytes [:source ordinal path])
+          descriptor
+          {:ordinal ordinal
+           :kind (:kind spec)
+           :module-ordinal (:module-ordinal spec)
+           :path path
+           :mode (:mode tree-row)
+           :blob-oid (:blob-oid tree-row)
+           :byte-count (alength bytes)
+           :raw-sha256 (p15-s23-sh07-b51-raw-sha256 bytes)}]
+      (p15-s23-sh07-b51-assert-content-coordinate!
+       commit tree :post-acquisition ordinal)
+      {:descriptor descriptor :bytes bytes :text text})))
+
+(defn- p15-s23-sh07-b51-process-role-fail!
+  [reason details]
+  (throw (ex-info "SH-07 B51 process role rejected"
+                  {:id "SH07-B51-TRUSTED-TCB"
+                   :reason reason
+                   :details details})))
+
+(defn- p15-s23-sh07-b51-process-role-for-observation
+  [{:keys [arguments loaded-project-namespaces]}]
+  (let [arguments (when (vector? arguments) arguments)
+        loaded (set loaded-project-namespaces)
+        checker-child
+        'gravity.tools.sh07-b51-attempt32-checker-child
+        coordinator
+        'gravity.tools.sh07-b51-attempt32-coordinator-child
+        producer
+        'gravity.tools.sh07-b51-attempt30-producer-census
+        independent
+        'gravity.tools.sh07-b51-attempt30-independent-census
+        bootstrap 'gravity.bootstrap
+        checker-tail (when (and arguments (<= 5 (count arguments)))
+                       (subvec arguments (- (count arguments) 5)))
+        coordinator-tail-count
+        (+ 3 (* 2 (count p15-s23-sh07-b51-coordinator-option-names)))
+        coordinator-tail
+        (when (and arguments
+                   (<= coordinator-tail-count (count arguments)))
+          (subvec arguments (- (count arguments) coordinator-tail-count)))
+        coordinator-option-names
+        (when coordinator-tail
+          (mapv first (partition 2 (subvec coordinator-tail 3))))
+        producer-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-checker-entrypoint
+                 "--role" "producer-census"]
+                checker-tail)
+             (every? loaded [bootstrap checker-child producer])
+             (not-any? loaded [coordinator independent]))
+        independent-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-checker-entrypoint
+                 "--role" "independent-verifier-census"]
+                checker-tail)
+             (every? loaded [bootstrap checker-child independent])
+             (not-any? loaded [coordinator producer]))
+        coordinator-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-coordinator-entrypoint]
+                (when coordinator-tail (subvec coordinator-tail 0 3)))
+             (= p15-s23-sh07-b51-coordinator-option-names
+                coordinator-option-names)
+             (every? loaded [bootstrap coordinator])
+             (not-any? loaded [checker-child producer independent]))]
+    (cond
+      producer-process? :producer-census
+      independent-process? :independent-verifier-census
+      coordinator-process? :m
+      :else
+      (p15-s23-sh07-b51-process-role-fail!
+       :unauthenticated-process-role
+       {:argument-count (count arguments)
+        :loaded-project-namespaces (vec (sort-by str loaded))}))))
+
+(defn- p15-s23-sh07-b51-process-role
+  []
+  (let [info (.info (java.lang.ProcessHandle/current))
+        argument-value (.arguments info)
+        arguments (when (.isPresent argument-value)
+                    (vec (.get argument-value)))
+        loaded-project-namespaces
+        (->> (loaded-libs)
+             (filter #(str/starts-with? (str %) "gravity."))
+             set)]
+    (p15-s23-sh07-b51-process-role-for-observation
+     {:arguments arguments
+      :loaded-project-namespaces loaded-project-namespaces})))
+
+(defn- p15-s23-sh07-b51-open-source-session
+  [commit tree]
+  (when-not (and (string? commit)
+                 (boolean (re-matches #"[0-9a-f]{40}" commit))
+                 (string? tree)
+                 (boolean (re-matches #"[0-9a-f]{40}" tree)))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :content-coordinate-shape {:commit commit :tree tree}))
+  (let [entries (mapv #(p15-s23-sh07-b51-acquire-source-entry
+                        commit tree %)
+                      p15-s23-sh07-b51-source-specs)
+        descriptors (mapv :descriptor entries)
+        token (Object.)
+        state {:token token
+               :thread (Thread/currentThread)
+               :role (p15-s23-sh07-b51-process-role)
+               :commit commit :tree tree
+               :entries entries
+               :descriptors descriptors
+               :descriptors-root
+               (reader-canonical-hash
+                [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
+               :cursor (atom 0)
+               :events (atom [])
+               :checked-products (atom {})
+               :finalized (atom false)}]
+    {:token token :state state}))
+
+(defn- p15-s23-sh07-b51-active-source-session
+  []
+  (let [{:keys [token state] :as binding-value}
+        *p15-s23-sh07-b51-governed-source-session*]
+    (when-not (and (= #{:token :state} (set (keys binding-value)))
+                   (map? state)
+                   (identical? token (:token state))
+                   (identical? (Thread/currentThread) (:thread state))
+                   (false? @(:finalized state)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :inactive-or-forged-session {}))
+    state))
+
+(defn- p15-s23-sh07-b51-governed-source-entry
+  [source-ordinal]
+  (let [state (p15-s23-sh07-b51-active-source-session)]
+    (when-not (and (integer? source-ordinal)
+                   (<= 0 source-ordinal)
+                   (< source-ordinal (count (:entries state))))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :source-ordinal {:source-ordinal source-ordinal}))
+    (nth (:entries state) source-ordinal)))
+
+(defn- p15-s23-sh07-b51-source-event-product-id
+  [event product]
+  (reader-canonical-hash
+   [:gravity/sh07-b51-source-event-product-id-v1
+    {:ordinal (:ordinal event)
+     :domain (:domain event)
+     :consumer (:consumer event)
+     :source-raw-sha256 (:source-raw-sha256 event)
+     :product product}]))
+
+(defn- p15-s23-sh07-b51-governed-source-event!
+  [domain source-ordinal module-ordinal consumer product-fn]
+  (let [state (p15-s23-sh07-b51-active-source-session)
+        ordinal @(:cursor state)
+        expected (nth p15-s23-sh07-b51-source-event-plan ordinal nil)
+        coordinate {:ordinal ordinal :domain domain
+                    :source-ordinal source-ordinal
+                    :module-ordinal module-ordinal
+                    :consumer consumer}]
+    (when-not (= expected coordinate)
+      (p15-s23-sh07-b51-governed-read-fail!
+       :event-order {:expected expected :actual coordinate}))
+    (let [entry (nth (:entries state) source-ordinal)
+          product (product-fn entry)
+          raw-sha (get-in entry [:descriptor :raw-sha256])
+          event-base (assoc coordinate :source-raw-sha256 raw-sha)
+          product-id
+          (p15-s23-sh07-b51-source-event-product-id event-base product)
+          event (assoc event-base :product-id product-id)]
+      (swap! (:events state) conj event)
+      (swap! (:cursor state) inc)
+      product)))
+
+(defn- p15-s23-sh07-b51-session-checked-product
+  [key]
+  (get @(:checked-products (p15-s23-sh07-b51-active-source-session)) key))
+
+(defn- p15-s23-sh07-b51-cache-session-product!
+  [key value]
+  (let [cache (:checked-products (p15-s23-sh07-b51-active-source-session))]
+    (when (contains? @cache key)
+      (p15-s23-sh07-b51-governed-read-fail!
+       :duplicate-checked-product {:key key}))
+    (swap! cache assoc key value)
+    value))
+
+(defn- p15-s23-sh07-b51-finalize-source-session!
+  []
+  (let [state (p15-s23-sh07-b51-active-source-session)
+        descriptors (:descriptors state)
+        events @(:events state)
+        counters {:acquire-count (count (:entries state))
+                  :decode-count (count (:entries state))
+                  :event-count (count events)
+                  :finalize-count 1}]
+    (when-not (and (= 12 (count descriptors))
+                   (= 39 @(:cursor state) (count events))
+                   (= (vec (range 39)) (mapv :ordinal events))
+                   (= {:acquire-count 12 :decode-count 12
+                       :event-count 39 :finalize-count 1}
+                      counters)
+                   (compare-and-set! (:finalized state) false true))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :session-finalize
+       {:descriptor-count (count descriptors)
+        :event-count (count events)
+        :cursor @(:cursor state)}))
+    {:schema :gravity/sh07-b51-source-read-receipt-v3
+     :role (:role state)
+     :commit (:commit state)
+     :tree (:tree state)
+     :source-descriptors descriptors
+     :source-descriptors-root (:descriptors-root state)
+     :events events
+     :event-root
+     (reader-canonical-hash
+      [:gravity/sh07-b51-source-event-root-v1 events])
+     :counters counters
+     :finalized true}))
+
+(defn- p15-s23-sh07-b51-active-module-ordinal
+  [source-path]
+  (some (fn [{:keys [module-ordinal logical-source-path]}]
+          (when (= logical-source-path source-path) module-ordinal))
+        p15-s23-sh07-b51-module-specs))
+
+(defn- p15-s23-sh07-b51-compatibility-source-record
+  [source-path]
+  (when *p15-s23-sh07-b51-v9-receipted-bundle-construction*
+    (p15-s23-sh07-b51-governed-read-fail!
+     :legacy-live-source-read-in-v9
+     {:source-path source-path}))
+  (let [direct (when (string? source-path) (java.io.File. source-path))
+        file (if (and direct (.isFile direct))
+               (.getCanonicalFile direct)
+               (p15-s23-sh07-governed-source-file source-path))]
+    (when-not (and file (.isFile ^java.io.File file))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :compatibility-source-missing {:source-path source-path}))
+    (let [bytes (with-open [stream (java.io.FileInputStream. ^java.io.File file)]
+                  (p15-s23-sh07-b51-read-stream-bytes
+                   stream 268435456 :compatibility-source))]
+      {:path (.getCanonicalPath ^java.io.File file)
+       :bytes bytes
+       :text (p15-s23-sh07-b51-strict-utf8 bytes source-path)})))
 
 (def p15-s23-sh07-b51-public-root-specs
   [{:root-ordinal 1 :function 'sh07-b51-build-template :arity 1
@@ -510,8 +1102,57 @@
   (p15-s23-sh07-b51-canonical-id
    (dissoc descriptor :module-source-id)))
 
-(defn- p15-s23-sh07-b51-module-source-valid* [descriptor]
-  (let [spec (p15-s23-sh07-b51-module-spec (:module-ordinal descriptor))
+(defn- p15-s23-sh07-b51-module-input-record
+  [spec {:keys [descriptor bytes text]}]
+  (let [path (:logical-source-path spec)
+        module (parse-module path (read-forms path text))
+        table (stage0-function-table module)]
+    (when-not
+     (and (= path (:path descriptor))
+          (= (:module spec) (:module module))
+          (= :meta (:profile module))
+          (= :jvm (:target module))
+          (= #{} (:effects module))
+          (= #{} (:capabilities module))
+          (= :safe (:safety module)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-source-contract
+       {:module-ordinal (:module-ordinal spec) :path path}))
+    {:spec spec :path path :text text :bytes bytes
+     :source-descriptor descriptor :module module :table table
+     :source-sha256 (p15-s23-sh07-b51-raw-sha256 bytes)}))
+
+(defn- p15-s23-sh07-b51-validate-module-input!
+  [module-ordinal]
+  (let [spec (p15-s23-sh07-b51-module-spec module-ordinal)
+        validated?
+        (p15-s23-sh07-b51-governed-source-event!
+         :module-validation (+ 3 module-ordinal) module-ordinal
+         'gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*
+         (fn [entry]
+           (p15-s23-sh07-b51-cache-session-product!
+            [:module-input module-ordinal]
+            (p15-s23-sh07-b51-module-input-record spec entry))
+           true))]
+    (when-not (true? validated?)
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-validation {:module-ordinal module-ordinal}))
+    (p15-s23-sh07-b51-session-checked-product
+     [:module-input module-ordinal])))
+
+(defn- p15-s23-sh07-b51-compatibility-module-input
+  [spec]
+  (let [{:keys [path bytes text]}
+        (p15-s23-sh07-b51-compatibility-source-record
+         (:logical-source-path spec))
+        descriptor {:path (:logical-source-path spec)}]
+    (assoc (p15-s23-sh07-b51-module-input-record
+            spec {:descriptor descriptor :bytes bytes :text text})
+           :compatibility-path path)))
+
+(defn- p15-s23-sh07-b51-module-source-valid-with-input?
+  [descriptor source]
+  (let [spec (:spec source)
         definitions (:definitions descriptor)
         external-bindings (:external-bindings descriptor)
         builtin-calls (:builtin-calls descriptor)
@@ -523,21 +1164,14 @@
                     (+ (:core-binding-count descriptor)
                        (count definitions) lexical-count
                        (count external-bindings)))
-        source-file (when spec (p15-s23-sh07-governed-source-file
-                                (:logical-source-path spec)))
-        source-bytes (when source-file
-                       (java.nio.file.Files/readAllBytes (.toPath source-file)))
-        source-text (when source-bytes
-                      (String. source-bytes java.nio.charset.StandardCharsets/UTF_8))
-        source-module (when source-text
-                        (parse-module (.getCanonicalPath source-file)
-                                      (read-forms (.getCanonicalPath source-file)
-                                                  source-text)))
-        source-table (when source-module (stage0-function-table source-module))
+        source-bytes (:bytes source)
+        source-module (:module source)
+        source-table (:table source)
+        source-path (:path source)
         expected-binding-census
         (when source-module
           (p15-s23-sh07-b51-binding-census
-           (.getCanonicalPath source-file) source-module
+           source-path source-module
            (:module-ordinal spec)))
         expected-builtin-calls
         (when source-table
@@ -546,8 +1180,7 @@
         (when source-table
           (mapv (fn [form]
                   (let [definition
-                        (function-definition-form (.getCanonicalPath source-file)
-                                                  form)
+                        (function-definition-form source-path form)
                         definition (assoc definition :arity
                                           (count (:params definition)))]
                     {:name (:name definition) :arity (:arity definition)
@@ -556,8 +1189,7 @@
                        :public :private)
                      :source-hash
                      (p15-s23-sh07-source-definition-hash definition)}))
-                (filter #(function-definition-form
-                          (.getCanonicalPath source-file) %)
+                (filter #(function-definition-form source-path %)
                         (:forms source-module))))]
     (and (p15-s23-sh07-b51-exact-keys? descriptor
                                               p15-s23-sh07-b51-m0-keys)
@@ -609,6 +1241,18 @@
          (<= aggregate 2440)
          (= (:module-source-id descriptor)
             (p15-s23-sh07-b51-module-source-id descriptor)))))
+
+(defn- p15-s23-sh07-b51-module-source-valid* [descriptor]
+  (when-let [spec (p15-s23-sh07-b51-module-spec
+                   (:module-ordinal descriptor))]
+    (let [source
+          (if *p15-s23-sh07-b51-governed-source-session*
+            (p15-s23-sh07-b51-session-checked-product
+             [:module-input (:module-ordinal descriptor)])
+            (p15-s23-sh07-b51-compatibility-module-input spec))]
+      (and source
+           (p15-s23-sh07-b51-module-source-valid-with-input?
+            descriptor source)))))
 
 (defn p15-s23-sh07-b51-module-source-valid? [descriptor]
   (try
@@ -676,11 +1320,7 @@
             (count external-bindings))
          :builtin-calls builtin-calls}]
     (when-not (and spec
-                   (= (.getCanonicalPath (java.io.File. source-path))
-                      (.getCanonicalPath
-                       ^java.io.File
-                       (p15-s23-sh07-governed-source-file
-                        (:logical-source-path spec))))
+                   (= source-path (:logical-source-path spec))
                    (= (set (keys function-table))
                       (set (map :name definitions)))
                    (= (count definitions)
@@ -924,17 +1564,9 @@
           :authorization :authenticated-b51-namespace-external}))
      census-edges)))
 
-(defn p15-s23-sh07-b51-derive-callsite-census []
-  (let [modules
-        (mapv (fn [spec]
-                (let [file (p15-s23-sh07-governed-source-file
-                            (:logical-source-path spec))
-                      path (.getCanonicalPath ^java.io.File file)
-                      text (slurp file)
-                      module (parse-module path (read-forms path text))]
-                  {:spec spec :module module :table (stage0-function-table module)}))
-              p15-s23-sh07-b51-module-specs)
-        all-function-names
+(defn- p15-s23-sh07-b51-derive-callsite-census-from-modules
+  [modules]
+  (let [all-function-names
         (vec (mapcat (comp keys :table) modules))
         _ (when-not (= (count all-function-names)
                        (count (set all-function-names)))
@@ -1041,23 +1673,72 @@
                        :observed-count (count ordered)})))
     (mapv #(assoc %1 :ordinal %2) ordered (range))))
 
+(defn p15-s23-sh07-b51-derive-callsite-census []
+  (if *p15-s23-sh07-b51-governed-source-session*
+    (or (p15-s23-sh07-b51-session-checked-product :callsite-census)
+        (let [modules
+              (mapv
+               (fn [spec]
+                 (let [module-ordinal (:module-ordinal spec)
+                       source
+                       (p15-s23-sh07-b51-session-checked-product
+                        [:module-input module-ordinal])]
+                   (when-not source
+                     (p15-s23-sh07-b51-governed-read-fail!
+                      :module-validation-not-consumed
+                      {:module-ordinal module-ordinal}))
+                   (p15-s23-sh07-b51-governed-source-event!
+                    :callsite-census (+ 3 module-ordinal) module-ordinal
+                    'gravity.bootstrap/p15-s23-sh07-b51-derive-callsite-census
+                    (fn [entry]
+                      (when-not (and (= (:source-descriptor source)
+                                         (:descriptor entry))
+                                     (= (:text source) (:text entry)))
+                        (p15-s23-sh07-b51-governed-read-fail!
+                         :cached-source-mismatch
+                         {:module-ordinal module-ordinal
+                          :domain :callsite-census}))
+                      true))
+                   source))
+               p15-s23-sh07-b51-module-specs)
+              census
+              (p15-s23-sh07-b51-derive-callsite-census-from-modules modules)]
+          (p15-s23-sh07-b51-cache-session-product!
+           :callsite-census census)))
+    (p15-s23-sh07-b51-derive-callsite-census-from-modules
+     (mapv p15-s23-sh07-b51-compatibility-module-input
+           p15-s23-sh07-b51-module-specs))))
+
 (defn- p15-s23-sh07-b51-build-link-authority-from-census
   [census-edges]
   (let [sources
-        (mapv (fn [spec]
-                (let [file (p15-s23-sh07-governed-source-file
-                            (:logical-source-path spec))
-                      path (.getCanonicalPath ^java.io.File file)
-                      text (slurp file)
-                      module (parse-module path (read-forms path text))
-                      table (stage0-function-table module)]
-                  {:spec spec :path path :text text :module module :table table
-                   :source-sha256
-                   (str "sha256:"
-                        (sha256-bytes-hex
-                         (.getBytes ^String text
-                                    java.nio.charset.StandardCharsets/UTF_8)))}))
-              p15-s23-sh07-b51-module-specs)
+        (if *p15-s23-sh07-b51-governed-source-session*
+          (mapv
+           (fn [spec]
+             (let [module-ordinal (:module-ordinal spec)
+                   source
+                   (p15-s23-sh07-b51-session-checked-product
+                    [:module-input module-ordinal])]
+               (when-not source
+                 (p15-s23-sh07-b51-governed-read-fail!
+                  :module-validation-not-consumed
+                  {:module-ordinal module-ordinal}))
+               (p15-s23-sh07-b51-governed-source-event!
+                :link-authority (+ 3 module-ordinal) module-ordinal
+                'gravity.bootstrap/p15-s23-sh07-b51-build-link-authority-from-census
+                (fn [entry]
+                  (when-not (and (= (:source-descriptor source)
+                                     (:descriptor entry))
+                                 (= (:text source) (:text entry)))
+                    (p15-s23-sh07-b51-governed-read-fail!
+                     :cached-source-mismatch
+                     {:module-ordinal module-ordinal
+                      :domain :link-authority}))
+                  true))
+               source))
+           p15-s23-sh07-b51-module-specs)
+          (mapv p15-s23-sh07-b51-compatibility-module-input
+                p15-s23-sh07-b51-module-specs))
         by-ordinal (into {} (map (fn [source]
                                   [(get-in source [:spec :module-ordinal])
                                    source])
@@ -1110,20 +1791,42 @@
      :sources sources}))
 
 (defn p15-s23-sh07-b51-build-link-authority []
-  (p15-s23-sh07-b51-build-link-authority-from-census
-   (p15-s23-sh07-b51-derive-callsite-census)))
+  (if *p15-s23-sh07-b51-governed-source-session*
+    (or (p15-s23-sh07-b51-session-checked-product :link-authority)
+        (p15-s23-sh07-b51-cache-session-product!
+         :link-authority
+         (p15-s23-sh07-b51-build-link-authority-from-census
+          (p15-s23-sh07-b51-derive-callsite-census))))
+    (p15-s23-sh07-b51-build-link-authority-from-census
+     (p15-s23-sh07-b51-derive-callsite-census))))
 
 (def ^:private p15-s23-sh07-b51-compiler-source-path
   "bootstrap/gravity/p15_s23/compiler.gravity")
 
 (defn- p15-s23-sh07-b51-current-emitter []
-  (let [source-path p15-s23-sh07-b51-compiler-source-path
-        source-text (slurp source-path)
-        forms (:forms
-               (p15-s23-compiler-source-form-record-from-text
-                source-path source-text))]
-    (p15-s23-compiler-def-value
-     source-path forms 'p15-s23-stage2-plan-emitter)))
+  (if *p15-s23-sh07-b51-governed-source-session*
+    (or (p15-s23-sh07-b51-session-checked-product :current-emitter)
+        (let [emitter
+              (p15-s23-sh07-b51-governed-source-event!
+               :compiler-emitter 10 nil
+               'gravity.bootstrap/p15-s23-sh07-b51-current-emitter
+               (fn [{:keys [descriptor text]}]
+                 (let [source-path (:path descriptor)
+                       forms
+                       (:forms
+                        (p15-s23-compiler-source-form-record-from-text
+                         source-path text))]
+                   (p15-s23-compiler-def-value
+                    source-path forms 'p15-s23-stage2-plan-emitter))))]
+          (p15-s23-sh07-b51-cache-session-product!
+           :current-emitter emitter)))
+    (let [{:keys [path text]}
+          (p15-s23-sh07-b51-compatibility-source-record
+           p15-s23-sh07-b51-compiler-source-path)
+          forms (:forms
+                 (p15-s23-compiler-source-form-record-from-text path text))]
+      (p15-s23-compiler-def-value
+       path forms 'p15-s23-stage2-plan-emitter))))
 
 (defn p15-s23-sh07-b51-build-execution-bundle
   ([]
@@ -1136,15 +1839,26 @@
                      :reason :unauthenticated-b51-external-link})))
   (let [{:keys [module-source-descriptors link-manifest sources]}
         (p15-s23-sh07-b51-build-link-authority)
+        sources
+        (or (when *p15-s23-sh07-b51-governed-source-session*
+              (p15-s23-sh07-b51-session-checked-product :plan-sources))
+            sources)
         compilation-emitter
         (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
         raw-plans
         (mapv
          (fn [descriptor source]
            (let [module
-                 (assoc (:module source)
-                        :p15-s23-sh07-module-source-descriptor descriptor
-                        :p15-s23-sh07-link-manifest link-manifest)]
+                 (cond->
+                  (assoc (:module source)
+                         :p15-s23-sh07-module-source-descriptor descriptor
+                         :p15-s23-sh07-link-manifest link-manifest)
+                   (:source-authority source)
+                   (assoc :p15-s23-sh07-source-authority
+                          (:source-authority source))
+                   (:compiler-artifact-binding source)
+                   (assoc :p15-s23-sh07-compiler-artifact-binding
+                          (:compiler-artifact-binding source)))]
              (p15-s23-stage2-construct-emitted-core-plan
               compilation-emitter (:path source) (:text source)
               module (:table source))))
@@ -1258,6 +1972,307 @@
                        :computed-bundle-core-id
                        (p15-s23-sh07-b51-canonical-id bundle-core)})))
     products)))
+
+(defn- p15-s23-sh07-b51-project-context
+  [commit tree source-path]
+  (let [project-root-id
+        (reader-canonical-hash
+         [:gravity/sh07-b51-c2-project-root-id-v1
+          {:content {:commit commit :tree tree}
+           :scope :sh07-b51-c2-explicit-project}])]
+    {:project-root-id project-root-id
+     :project-root-path nil
+     :project-relative-path source-path}))
+
+(def ^:private p15-s23-sh07-b51-resolved-pass
+  {:artifact :gravity/sh07-core-resolved-verification
+   :schema-version 16 :status :passed :rule nil})
+
+(def ^:private p15-s23-sh07-b51-resolved-reject
+  {:artifact :gravity/sh07-core-resolved-verification
+   :schema-version 16 :status :rejected :rule "C6-VERIFY"})
+
+(defn- p15-s23-sh07-b51-session-checked-core-binding
+  [emitter]
+  (let [{:keys [descriptor bytes text]}
+        (p15-s23-sh07-b51-session-checked-product :checked-core-entry)
+        source-path (:path descriptor)
+        source-hash (p15-s23-sh07-b51-raw-sha256 bytes)
+        plan (p15-s23-stage2-compiler-artifact-plan
+              emitter source-path text)
+        identities (sh07-core-plan-identities plan)]
+    (when-not
+     (and (= sh07-core-expected-source-byte-count (alength bytes))
+          (= sh07-core-expected-source-content-hash source-hash)
+          (= sh07-core-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh07-core-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh07-core-expected-function-count (:function-count identities))
+          (= sh07-core-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh07-core-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh07-core-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh07-core-public-function-shapes
+             (:public-function-shapes identities)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :checked-core-binding
+       {:source-path source-path :source-hash source-hash}))
+    (merge
+     {:artifact :gravity/sh07-pinned-core-plan-binding
+      :source-path source-path
+      :source-byte-count (alength bytes)
+      :source-content-hash source-hash
+      :plan plan
+      :semantic-authority :gravity-source
+      :compiled-by :clojure-stage0-seed
+      :executed-by :clojure-stage2-generic-rule-runner
+      :generic-bridge-residual? true
+      :self-hosted? false}
+     identities)))
+
+(defn- p15-s23-sh07-b51-build-module-transaction
+  [commit tree module-ordinal source]
+  (let [descriptor (:source-descriptor source)
+        source-path (:path descriptor)
+        source-text (:text source)
+        project-context
+        (p15-s23-sh07-b51-project-context commit tree source-path)
+        c2-artifact
+        (compiler-c2-reader-source-artifact
+         source-path source-text project-context)
+        c3-artifact
+        (compiler-c3-syntax-source-artifact
+         source-path source-text project-context c2-artifact
+         sh03-reader-internal-product-authority)
+        sh05-artifact
+        (sh05-macro-artifact-from-c3-artifact*
+         source-path c3-artifact true)
+        resolution-artifact
+        (sh06-resolution-finalize-candidate
+         source-path
+         (sh06-resolution-source-artifact-candidate
+          source-path sh05-artifact true))
+        resolution-verification
+        (sh06-resolution-artifact-verification resolution-artifact)
+        request (sh07-core-authenticated-request resolution-artifact)
+        raw (sh07-core-execute!
+             source-path 'sh07-build-core-template [request])
+        template (:core-template raw)
+        digest-requests (:digest-requests raw)
+        template-verification
+        (sh07-core-execute!
+         source-path 'sh07-verify-core-template
+         [request template digest-requests])
+        resolved-digests
+        (sh07-core-digest-requests source-path digest-requests)
+        resolution
+        (sh07-core-execute!
+         source-path 'sh07-resolve-core-template
+         [template resolved-digests])
+        resolved (:value resolution)
+        bad-resolved (assoc-in resolved [:module :namespace] 'gravity.altered)
+        pass-actual
+        (sh07-core-execute!
+         source-path 'sh07-verify-core-resolved
+         [request resolved digest-requests resolved-digests])
+        reject-actual
+        (sh07-core-execute!
+         source-path 'sh07-verify-core-resolved
+         [request bad-resolved digest-requests resolved-digests])
+        form-ids (mapv :form-id (:forms request))
+        node-form-ids (mapv :form-id (:nodes resolved))]
+    (when-not
+     (and (= module-ordinal (:module-ordinal descriptor))
+          (= source-path (:path descriptor))
+          (= (:raw-sha256 descriptor)
+             (get-in c2-artifact [:source-unit-record :bytes-hash]))
+          (= (:project-root-id project-context)
+             (get-in c2-artifact [:source-unit-record :project-root]))
+          (= {:path nil :project-root-id (:project-root-id project-context)}
+             (get-in c2-artifact [:source-unit-record :project-root-record]))
+          (= :passed (:status resolution-verification))
+          (= source-path (get-in request [:provenance :actual-source-path]))
+          (= :accepted (:status raw))
+          (= :passed (:status template-verification))
+          (= :accepted (:status resolution))
+          (= p15-s23-sh07-b51-resolved-pass pass-actual)
+          (= p15-s23-sh07-b51-resolved-reject reject-actual)
+          (not= 'gravity.altered (get-in resolved [:module :namespace]))
+          (empty? (:diagnostics resolved))
+          (= (count (:nodes resolved)) (count (:forms request)))
+          (= (count form-ids) (count (set form-ids)))
+          (= (set form-ids) (set node-form-ids))
+          (= (count node-form-ids) (count (set node-form-ids)))
+          (<= (count digest-requests) (+ (count (:forms request)) 4)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-transaction
+       {:module-ordinal module-ordinal
+        :resolution-status (:status resolution-verification)
+        :template-status (:status raw)
+        :template-verification (:status template-verification)
+        :resolution (:status resolution)}))
+    {:module-ordinal module-ordinal
+     :source-descriptor descriptor
+     :resolution-artifact resolution-artifact
+     :c2-reader-artifact c2-artifact
+     :authenticated-core-request request
+     :resolved-digests resolved-digests
+     :module-core (:nodes resolved)
+     :template-carrier template
+     :generated-digest-carrier digest-requests
+     :resolved-core-carrier resolved
+     :module-digest-requests digest-requests}))
+
+(defn- p15-s23-sh07-b51-source-authority-product-from-m0-m1
+  [descriptor link-manifest]
+  {:artifact :gravity/sh07-compiler-source-authority-v2
+   :manifest-id (:manifest-id link-manifest)
+   :module-source-id (:module-source-id descriptor)
+   :logical-source-path (:logical-source-path descriptor)
+   :source-sha256 (:source-sha256 descriptor)
+   :module (:module descriptor)
+   :function-source-hashes
+   (into (sorted-map)
+         (map (juxt :name :source-hash))
+         (:definitions descriptor))})
+
+(defn- p15-s23-sh07-b51-replay-returned-source-authority-events!
+  [m0s link-manifest source-read-receipt]
+  (let [events (:events source-read-receipt)
+        source-descriptors (:source-descriptors source-read-receipt)]
+    (when-not (and (= 7 (count m0s))
+                   (= 12 (count source-descriptors))
+                   (= 39 (count events)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :source-authority-event-replay-shape
+       {:m0-count (count m0s)
+        :source-descriptor-count (count source-descriptors)
+        :event-count (count events)}))
+    (doseq [module-ordinal (range 7)]
+      (let [event-ordinal (+ 25 module-ordinal)
+            event (nth events event-ordinal)
+            expected-coordinate
+            (nth p15-s23-sh07-b51-source-event-plan event-ordinal)
+            m0 (nth m0s module-ordinal)
+            source-descriptor
+            (nth source-descriptors (+ 3 module-ordinal))
+            product
+            (p15-s23-sh07-b51-source-authority-product-from-m0-m1
+             m0 link-manifest)
+            replayed-id
+            (p15-s23-sh07-b51-source-event-product-id event product)]
+        (when-not
+         (and (= expected-coordinate
+                 (select-keys event
+                              [:ordinal :domain :source-ordinal
+                               :module-ordinal :consumer]))
+              (= (:module-ordinal m0) module-ordinal)
+              (= (:logical-source-path m0) (:path source-descriptor))
+              (= (:source-sha256 m0) (:raw-sha256 source-descriptor)
+                 (:source-raw-sha256 event))
+              (= replayed-id (:product-id event)))
+          (p15-s23-sh07-b51-governed-read-fail!
+           :source-authority-event-replay
+           {:module-ordinal module-ordinal
+            :event-ordinal event-ordinal
+            :expected-product-id replayed-id
+            :actual-product-id (:product-id event)}))))
+    true))
+
+(defn p15-s23-sh07-b51-build-receipted-bundle-core-products
+  [commit tree]
+  (binding [*p15-s23-sh07-b51-v9-receipted-bundle-construction* true]
+    (let [{:keys [token state] :as session}
+          (p15-s23-sh07-b51-open-source-session commit tree)]
+      (binding [*p15-s23-sh07-b51-governed-source-session*
+                {:token token :state state}]
+      ;; These three products are semantic event values.  Their bytes remain
+      ;; solely in the private session entries and never cross the wrapper.
+      (p15-s23-sh07-b51-governed-source-event!
+       :l1-contract 0 nil 'gravity.bootstrap/p15-s23-sh07-b51-l1-contract
+       (fn [{:keys [text]}] text))
+      (p15-s23-sh07-b51-governed-source-event!
+       :l2-contract 1 nil 'gravity.bootstrap/p15-s23-sh07-b51-l2-contract
+       (fn [{:keys [text]}] text))
+      (p15-s23-sh07-b51-governed-source-event!
+       :checked-core-revision 2 nil
+       'gravity.bootstrap/p15-s23-sh07-b51-checked-core-contract
+       (fn [{:keys [descriptor text] :as entry}]
+         (p15-s23-sh07-b51-cache-session-product!
+          :checked-core-entry entry)
+         (vec (read-forms (:path descriptor) text))))
+      (doseq [module-ordinal (range 7)]
+        (p15-s23-sh07-b51-validate-module-input! module-ordinal))
+      (let [census (p15-s23-sh07-b51-derive-callsite-census)
+            authority
+            (p15-s23-sh07-b51-build-link-authority-from-census census)
+            authority
+            (p15-s23-sh07-b51-cache-session-product!
+             :link-authority authority)
+            emitter (p15-s23-sh07-b51-current-emitter)
+            compilation-emitter
+            (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
+            sources (:sources authority)
+            descriptors (:module-source-descriptors authority)
+            manifest (:link-manifest authority)
+            source-authorities
+            (mapv
+             (fn [descriptor source]
+               (let [module
+                     (assoc (:module source)
+                            :p15-s23-sh07-module-source-descriptor descriptor
+                            :p15-s23-sh07-link-manifest manifest)]
+                 (p15-s23-sh07-compiler-source-authority
+                  (:path source) (:text source) module (:table source))))
+             descriptors sources)
+            compiler-bindings
+            (mapv
+             (fn [source]
+               (p15-s23-stage2-compiler-artifact-binding!
+                compilation-emitter (:path source)
+                (:target (:module source))))
+             sources)
+            plan-sources
+            (mapv #(assoc %1
+                          :source-authority %2
+                          :compiler-artifact-binding %3)
+                  sources source-authorities compiler-bindings)
+            _ (p15-s23-sh07-b51-cache-session-product!
+               :plan-sources plan-sources)
+            products
+            (p15-s23-sh07-b51-build-execution-bundle emitter)
+            checked-core-binding
+            (p15-s23-sh07-b51-session-checked-core-binding emitter)
+            checked-core-binding-var
+            (ns-resolve 'gravity.bootstrap 'sh07-core-cached-binding)
+            module-transactions
+            (with-redefs-fn
+              {checked-core-binding-var (delay checked-core-binding)}
+              (fn []
+                (mapv
+                 (fn [module-ordinal]
+                   (p15-s23-sh07-b51-build-module-transaction
+                    commit tree module-ordinal
+                    (p15-s23-sh07-b51-session-checked-product
+                     [:module-input module-ordinal])))
+                 (range 7))))
+            source-forms (mapv (comp vec :forms :module) sources)
+            receipt (p15-s23-sh07-b51-finalize-source-session!)
+            returned-products
+            {:m0s (:module-source-descriptors products)
+             :m1 (:link-manifest products)
+             :m2s (:module-plans products)
+             :bundle-core (:execution-bundle-core products)
+             :execution-bundle-core-id (:execution-bundle-core-id products)
+             :source-forms source-forms
+             :module-transactions module-transactions
+             :source-read-receipt receipt}]
+        (p15-s23-sh07-b51-replay-returned-source-authority-events!
+         (:m0s returned-products) (:m1 returned-products) receipt)
+        returned-products)))))
 
 (defn p15-s23-sh07-b51-runtime-context [linked-products runtime]
   ;; Historical host compatibility surface.  It deliberately cannot attach a
@@ -1500,18 +2515,12 @@
                        :reason :unauthenticated-b51-external-link})))
     bundle))
 
-(def ^:private p15-s23-sh07-b51-authoritative-bundle-core-products
-  (delay (p15-s23-sh07-b51-build-execution-bundle)))
-
 (defn p15-s23-sh07-b51-current-bundle-core-products []
-  @p15-s23-sh07-b51-authoritative-bundle-core-products)
-
-(def ^:private p15-s23-sh07-b51-authoritative-linked-products
-  (delay (p15-s23-sh07-b51-current-authoritative-linked-products-v4)))
+  (p15-s23-sh07-b51-build-execution-bundle))
 
 (defn p15-s23-sh07-b51-plan-valid? [descriptor manifest plan]
   (try
-    (let [products @p15-s23-sh07-b51-authoritative-bundle-core-products
+    (let [products (p15-s23-sh07-b51-current-bundle-core-products)
           ordinal (:module-ordinal descriptor)]
       (and (integer? ordinal) (<= 0 ordinal 6)
            (= descriptor
@@ -1531,7 +2540,7 @@
 (defn p15-s23-sh07-b51-execution-bundle-valid?
   [descriptors manifest plans bundle]
   (try
-    (let [products @p15-s23-sh07-b51-authoritative-linked-products]
+    (let [products (p15-s23-sh07-b51-current-authoritative-linked-products-v4)]
       (and (= descriptors (:module-source-descriptors products))
            (= manifest (:link-manifest products))
            (= plans (:module-plans products))
