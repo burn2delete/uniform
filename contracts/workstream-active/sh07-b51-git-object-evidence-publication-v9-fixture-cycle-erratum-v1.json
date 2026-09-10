@@ -9,7 +9,7 @@
     "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
     "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1"
   ],
-  "disposition": "Independently accepted and integration-eligible report-only architecture correction at candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7, tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776, after exact integration preflight against authoritative main 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0. This grants only architecture-report integration eligibility; no I9 implementation acceptance, evidence eligibility, integration, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is established.",
+  "disposition": "Integrated report-only architecture correction through authoritative-main merge ae68eb036faa8469c38e747dfdf30dda66a0c32b, parents 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 and 0e7f729f4b3b9036e19202511c71859c95c4e2a0, tree b9caefcdc63dcff02784f34c507341b5117ad3f7. Accepted candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 is its ancestor; report blob 923e5e7c4486766f03a0640656a5829e33b1c04d and raw SHA-256 1d850b48076e4b97631d9230b07b743d9ba922eb5869c26adb38155c74416631 are preserved exactly; all dependencies are integrated; main was clean at the merge before this metadata commit. This establishes only integrated architecture authority: no I9 implementation acceptance, evidence eligibility, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is established.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md"
@@ -57,6 +57,21 @@
       },
       {
         "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 --candidate-commit 5096dd00776356b1a7d3420a801e2e3a175eceb7 --candidate-tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git merge-base --is-ancestor 5096dd00776356b1a7d3420a801e2e3a175eceb7 ae68eb036faa8469c38e747dfdf30dda66a0c32b",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --exit-code 5096dd00776356b1a7d3420a801e2e3a175eceb7 ae68eb036faa8469c38e747dfdf30dda66a0c32b -- docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git status --short",
         "exit_code": 0,
         "result": "passed"
       }
@@ -134,6 +149,12 @@
       "at": "2026-09-10T16:29:50Z",
       "reason": "mark the accepted report-only architecture candidate integration-eligible after the exact read-only integration preflight passed against authoritative main 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 with candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 and tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T16:35:59Z",
+      "reason": "record integrated architecture authority at authoritative-main merge ae68eb036faa8469c38e747dfdf30dda66a0c32b with parents 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 and 0e7f729f4b3b9036e19202511c71859c95c4e2a0 and tree b9caefcdc63dcff02784f34c507341b5117ad3f7 after proving accepted candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 is an ancestor, report blob 923e5e7c4486766f03a0640656a5829e33b1c04d and raw SHA-256 1d850b48076e4b97631d9230b07b743d9ba922eb5869c26adb38155c74416631 are preserved, every dependency is integrated, and main was clean before this metadata-only update",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1",
@@ -149,9 +170,9 @@
   ],
   "owner": "sh-core-architecture",
   "residual_host_boundaries": [
-    "the independently accepted correction is architecture authority only and does not establish I9 implementation correctness, evidence eligibility, implementation acceptance, implementation integration eligibility, or implementation integration",
+    "the integrated correction is architecture authority only and does not establish I9 implementation correctness, evidence eligibility, implementation acceptance, implementation integration eligibility, or implementation integration",
     "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9 and its integrated errata",
-    "the draft I9 implementation cannot freeze until this accepted architecture report is integrated and I9 reconciles the fixture-cycle, A/B checker ownership, and complete same-session pre-certificate handoff onto that authoritative main",
+    "the draft I9 implementation must reconcile the integrated fixture-cycle, A/B checker ownership, and complete same-session pre-certificate handoff from authoritative main before it can freeze",
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
   "reviews": [
@@ -166,6 +187,6 @@
       "reviewer": "/root/i9_carrier_integration"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 Git-object publication V9 fixture-cycle and A/B ownership architecture erratum version 1"
 }
