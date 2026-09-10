@@ -48,6 +48,10 @@ token, form, syntax-seed, source-map, diagnostic, literal, and extension rows
 are path-neutralized without invented identities. Authentic Q/RC joins now
 construct the complete owning-defn registry, L2 form/evaluation/effect/
 capability projections, and C6 AST/macro-desugaring/origin/order projection.
+The unauthorized cross-fragment proof invokes one exact receipt-free verifier
+over the immutable Q/M0/M1/owner/expected values, derives its diagnostic and
+fixture from the observed rejected result, requires nil committed row and
+output, and binds both evidence roots into terminal PRE-COMPLETE.
 BOOT2 uses a path-free, cross-process-equal runtime basis, while BOOT3 and
 BOOT4 are exact pre-product projections of Q/T/D/Z/RC and foundation facts.
 After fuel receipts exist, BOOT3 replays the authentic resolved-core verifier

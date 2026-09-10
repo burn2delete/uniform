@@ -5626,54 +5626,151 @@ PROVIDER-ENDPOINT(X) =
    :fragment-id X[:provider-fragment-id]
    :binding-id X[:provider-binding-id]}
 BAD-EDGE-ID = MID(:l2-expected-edge-census, BAD-BASE)
-DIAGNOSTIC-BASE =
-{:code "SH07-B51-EDGE-AUTHORITY"
- :status :rejected
+
+PAIRING-VALID? =
+  (and (= Q-CROSS-NORMALIZED M1-NORMALIZED)
+       (= 1480 (count Q-CROSS-NORMALIZED) (count M1-NORMALIZED)
+          (count PAIRING))
+       (= 1480 (count (set (map NORMALIZED-KEY Q-CROSS-NORMALIZED))))
+       (= (mapv first PAIRING) AUTHENTIC-M1[:edges])
+       (every? #(= (Q-NORMALIZED-ROW (second %))
+                   (M1-NORMALIZED-ROW (first %))) PAIRING))
+
+REBUILT-EXPECTED =
+  (mapv (fn [PAIR]
+          (let [BASE (EDGE-BASE PAIR)]
+            (assoc BASE :edge-id (MID :l2-expected-edge-census BASE))))
+        PAIRING)
+
+EXPECTED-VALID? =
+  (and (= 1480 (count EXPECTED))
+       (= EXPECTED REBUILT-EXPECTED)
+       (= (mapv :ordinal EXPECTED) (vec (range 1480)))
+       (= 1480 (count (set (map :edge-id EXPECTED))))
+       (every? #(= (:edge-id %)
+                   (MID :l2-expected-edge-census (dissoc % :edge-id)))
+               EXPECTED)
+       (= EXPECTED-ROOT (MR :l2-expected-edge-census EXPECTED))
+       (= (mapv :m1-edge EXPECTED) AUTHENTIC-M1[:edges])
+       (= (mapv :m1-edge EXPECTED)
+          SH06-AUTHORITY-CARRIER[:expected-edge-census]))
+
+AUTHENTIC-QS = (mapv :authenticated-core-request MODULE-TRANSACTIONS)
+EDGE-ENDPOINT-KEYS =
+[:consumer-module-ordinal :consumer-source-id :consumer-fragment-id
+ :consumer-binding-id :provider-module-ordinal :provider-source-id
+ :provider-fragment-id :provider-binding-id]
+BAD-ACTUAL-KEYSET =
+#{:status :code :rule :reason :input-id :mutated-id :expected :actual
+  :committed-row :output}
+
+VERIFY-UNAUTHORIZED-CROSS-FRAGMENT
+(QS, M0, M1, OWNER, EXPECTED-AUTHORITY, CANDIDATE) =
+  (let [M1-ROW
+        (UNIQUE-WHERE #(= % (:m1-edge CANDIDATE)) (:edges M1))
+        EXPECTED-ROW
+        (UNIQUE-WHERE #(= (:m1-edge %) M1-ROW) EXPECTED-AUTHORITY)
+        AUTHORIZED-BASE (dissoc EXPECTED-ROW :edge-id)
+        CANDIDATE-ID (MID :l2-expected-edge-census CANDIDATE)]
+    (require
+      (and CARRIER-VALID? PAIRING-VALID? EXPECTED-VALID?
+           (= QS AUTHENTIC-QS)
+           (= M0 AUTHENTIC-M0)
+           (= M1 AUTHENTIC-M1)
+           (= OWNER OWNER-REGISTRY)
+           (= EXPECTED-AUTHORITY EXPECTED)
+           (= (set (keys CANDIDATE)) (set (keys AUTHORIZED-BASE)))
+           (= (:edge-id EXPECTED-ROW)
+              (MID :l2-expected-edge-census AUTHORIZED-BASE))
+           (= (apply dissoc CANDIDATE EDGE-ENDPOINT-KEYS)
+              (apply dissoc AUTHORIZED-BASE EDGE-ENDPOINT-KEYS))
+           (not= (CONSUMER-ENDPOINT AUTHORIZED-BASE)
+                 (PROVIDER-ENDPOINT AUTHORIZED-BASE))
+           (= (CONSUMER-ENDPOINT CANDIDATE)
+              (PROVIDER-ENDPOINT AUTHORIZED-BASE))
+           (= (PROVIDER-ENDPOINT CANDIDATE)
+              (CONSUMER-ENDPOINT AUTHORIZED-BASE))
+           (not= CANDIDATE AUTHORIZED-BASE)
+           (not= CANDIDATE-ID (:edge-id EXPECTED-ROW))
+           (not (contains? (set (map :edge-id EXPECTED-AUTHORITY))
+                           CANDIDATE-ID))))
+    {:status :rejected
+     :code "SH07-B51-EDGE-AUTHORITY"
+     :rule "L2-UNKNOWN-CORE-FORM"
+     :reason :unauthenticated-b51-external-link
+     :input-id (:edge-id EXPECTED-ROW)
+     :mutated-id CANDIDATE-ID
+     :expected (CONSUMER-ENDPOINT AUTHORIZED-BASE)
+     :actual (CONSUMER-ENDPOINT CANDIDATE)
+     :committed-row nil
+     :output nil}))
+
+BAD-ACTUAL =
+  VERIFY-UNAUTHORIZED-CROSS-FRAGMENT(
+    AUTHENTIC-QS, AUTHENTIC-M0, AUTHENTIC-M1,
+    OWNER-REGISTRY, EXPECTED, BAD-BASE)
+BAD-ACTUAL-EXPECTED =
+{:status :rejected
+ :code "SH07-B51-EDGE-AUTHORITY"
  :rule "L2-UNKNOWN-CORE-FORM"
  :reason :unauthenticated-b51-external-link
  :input-id (:edge-id (first EXPECTED))
  :mutated-id BAD-EDGE-ID
- :expected {:consumer-module-ordinal (:consumer-module-ordinal SEED)
-            :consumer-source-id (:consumer-source-id SEED)
-            :consumer-fragment-id (:consumer-fragment-id SEED)
-            :consumer-binding-id (:consumer-binding-id SEED)}
- :actual {:consumer-module-ordinal (:consumer-module-ordinal BAD-BASE)
-          :consumer-source-id (:consumer-source-id BAD-BASE)
-          :consumer-fragment-id (:consumer-fragment-id BAD-BASE)
-          :consumer-binding-id (:consumer-binding-id BAD-BASE)}}
+ :expected (CONSUMER-ENDPOINT SEED)
+ :actual (CONSUMER-ENDPOINT BAD-BASE)
+ :committed-row nil
+ :output nil}
+require BAD-ACTUAL = BAD-ACTUAL-EXPECTED
+
+DIAGNOSTIC-OBSERVATION-KEYS =
+[:code :status :rule :reason :input-id :mutated-id :expected :actual]
+DIAGNOSTIC-BASE =
+  (select-keys BAD-ACTUAL DIAGNOSTIC-OBSERVATION-KEYS)
 DIAGNOSTIC-ID = MID(:l2-edge-diagnostics, DIAGNOSTIC-BASE)
+DIAGNOSTIC = (assoc DIAGNOSTIC-BASE :diagnostic-id DIAGNOSTIC-ID)
+L2-DIAGNOSTICS =
+{:entries [DIAGNOSTIC]
+ :root (MR :l2-edge-diagnostics [DIAGNOSTIC])}
 L2-OPERATION = UNIQUE-BY(:owner, :l2, OPERATION-MANIFEST)
 L2-FUEL-RECEIPT =
   UNIQUE-BY(:operation-id, L2-OPERATION[:operation-id], FUEL-RECEIPTS)
 L2-FUEL-RECEIPT-ID = L2-FUEL-RECEIPT[:receipt-id]
 FIXTURE-BASE =
-{:input-id (:edge-id (first EXPECTED))
+{:input-id BAD-ACTUAL[:input-id]
  :mutation {:operation :swap-endpoints
-            :paths [[:consumer-module-ordinal] [:consumer-source-id]
-                    [:consumer-fragment-id] [:consumer-binding-id]
-                    [:provider-module-ordinal] [:provider-source-id]
-                    [:provider-fragment-id] [:provider-binding-id]]
+            :paths (mapv vector EDGE-ENDPOINT-KEYS)
             :before [(CONSUMER-ENDPOINT SEED)
                      (PROVIDER-ENDPOINT SEED)]
             :after [(CONSUMER-ENDPOINT BAD-BASE)
                     (PROVIDER-ENDPOINT BAD-BASE)]}
- :mutated-id BAD-EDGE-ID
+ :mutated-id BAD-ACTUAL[:mutated-id]
  :diagnostic-id DIAGNOSTIC-ID
- :status :rejected
+ :status BAD-ACTUAL[:status]
  :fuel-receipt-id L2-FUEL-RECEIPT-ID}
 FIXTURE-ID = MID(:l2-edge-negative-fixtures, FIXTURE-BASE)
+FIXTURE = (assoc FIXTURE-BASE :fixture-id FIXTURE-ID)
+L2-NEGATIVE-FIXTURES =
+{:entries [FIXTURE]
+ :root (MR :l2-edge-negative-fixtures [FIXTURE])}
 REJECTED-EDGE-IDS = []
 ```
 
-BAD-EDGE-ID must be absent from ACCEPTED-EDGE-IDS. The independent verifier
-selects L2-FUEL-RECEIPT by joining its `:operation-id` to the unique
-OPERATION-MANIFEST row whose owner is `:l2`; zero or multiple operation or
-receipt matches reject. It does not obtain that receipt through WITNESS. The
-independent verifier
-rejects BAD-BASE because its unchanged M1 caller endpoint no longer owns the Q
-reference, binding, or fragment. Diagnostic ID precedes fixture ID, the fixture
-contains the diagnostic ID, and the diagnostic contains no fixture ID, so no
-identity cycle exists.
+`VERIFY-UNAUTHORIZED-CROSS-FRAGMENT` is the exact independent, receipt-free
+verifier. `UNIQUE-WHERE` rejects zero or multiple matches. It rebuilds the sole
+authorized base from the authentic M1 row and EXPECTED authority, checks all
+Q/M0/M1/owner inputs byte-for-byte against the immutable values, proves that
+only the eight endpoint fields changed, and emits the closed BAD-ACTUAL value.
+It consumes no fuel receipt, diagnostic, fixture, authority receipt, witness,
+certificate, host path, process session, or caller-supplied expected row.
+BAD-ACTUAL proves that rejection committed neither a row nor an output.
+
+The construction selects L2-FUEL-RECEIPT only after BAD-ACTUAL by joining its
+`:operation-id` to the unique OPERATION-MANIFEST row whose owner is `:l2`; zero
+or multiple operation or receipt matches reject. The verifier does not obtain
+that receipt through WITNESS. DIAGNOSTIC is derived from BAD-ACTUAL, and FIXTURE
+is derived from BAD-ACTUAL and the later fuel-receipt join. Diagnostic ID
+precedes fixture ID, the fixture contains the diagnostic ID, and the diagnostic
+contains no fixture ID, so no identity cycle exists.
 
 The authority receipt has exactly `:schema :content :source-descriptors
 :authenticated-sh06-artifact-ids :sh06-semantic-projection-ids
@@ -5769,27 +5866,6 @@ RECEIPT-VALID? =
        (= (:rejected-edge-ids RECEIPT) [])
        (= (:self-id-omits RECEIPT) [[:receipt-id]]))
 
-PAIRING-VALID? =
-  (and (= Q-CROSS-NORMALIZED M1-NORMALIZED)
-       (= 1480 (count Q-CROSS-NORMALIZED) (count M1-NORMALIZED)
-          (count PAIRING))
-       (= 1480 (count (set (map NORMALIZED-KEY Q-CROSS-NORMALIZED))))
-       (= (mapv first PAIRING) AUTHENTIC-M1[:edges])
-       (every? #(= (Q-NORMALIZED-ROW (second %))
-                   (M1-NORMALIZED-ROW (first %))) PAIRING))
-
-EXPECTED-VALID? =
-  (and (= 1480 (count EXPECTED))
-       (= (mapv :ordinal EXPECTED) (vec (range 1480)))
-       (= 1480 (count (set (map :edge-id EXPECTED))))
-       (every? #(= (:edge-id %)
-                   (MID :l2-expected-edge-census (dissoc % :edge-id)))
-               EXPECTED)
-       (= EXPECTED-ROOT (MR :l2-expected-edge-census EXPECTED))
-       (= (mapv :m1-edge EXPECTED) AUTHENTIC-M1[:edges])
-       (= (mapv :m1-edge EXPECTED)
-          SH06-AUTHORITY-CARRIER[:expected-edge-census]))
-
 ACCEPTED-VALID? =
   (and (= 1480 (count ACCEPTED))
        (= (mapv :ordinal ACCEPTED) (vec (range 1480)))
@@ -5802,6 +5878,22 @@ ACTUAL-REJECTED = []
 PRE-COMPLETE =
   (and CARRIER-VALID? RECEIPT-VALID? PAIRING-VALID?
        EXPECTED-VALID? ACCEPTED-VALID?
+       (= BAD-ACTUAL BAD-ACTUAL-EXPECTED)
+       (= (set (keys BAD-ACTUAL)) BAD-ACTUAL-KEYSET)
+       (= (:committed-row BAD-ACTUAL) nil)
+       (= (:output BAD-ACTUAL) nil)
+       (= DIAGNOSTIC-BASE
+          (select-keys BAD-ACTUAL DIAGNOSTIC-OBSERVATION-KEYS))
+       (= DIAGNOSTIC
+          (assoc DIAGNOSTIC-BASE :diagnostic-id DIAGNOSTIC-ID))
+       (= L2-DIAGNOSTICS
+          {:entries [DIAGNOSTIC]
+           :root (MR :l2-edge-diagnostics [DIAGNOSTIC])})
+       (= FIXTURE
+          (assoc FIXTURE-BASE :fixture-id FIXTURE-ID))
+       (= L2-NEGATIVE-FIXTURES
+          {:entries [FIXTURE]
+           :root (MR :l2-edge-negative-fixtures [FIXTURE])})
        (= (set (keys BAD-BASE)) (set (keys SEED)))
        (not= (CONSUMER-ENDPOINT SEED) (PROVIDER-ENDPOINT SEED))
        (= (CONSUMER-ENDPOINT BAD-BASE) (PROVIDER-ENDPOINT SEED))
@@ -5842,31 +5934,21 @@ PRE-COMPLETE, and terminal COMPLETE additionally proves the full map and that
 stored value true. It is not a supplied boolean. No external resolution or cross-module edge absent from
 the authenticated projections may enter the core graph.
 
-The independent verifier's exact rejection is rule
-`"L2-UNKNOWN-CORE-FORM"` and reason
-`:unauthenticated-b51-external-link`; the stable enclosing diagnostic code is
-`"SH07-B51-EDGE-AUTHORITY"`. DIAGNOSTIC has exactly `:code :status :rule
-:reason :input-id :mutated-id :expected :actual :diagnostic-id`. FIXTURE has
-exactly `:input-id :mutation :mutated-id :diagnostic-id :status
-:fuel-receipt-id :fixture-id`. The final negative values are:
-
-```clojure
-DIAGNOSTIC = (assoc DIAGNOSTIC-BASE :diagnostic-id DIAGNOSTIC-ID)
-FIXTURE = (assoc FIXTURE-BASE :fixture-id FIXTURE-ID)
-L2-DIAGNOSTICS =
-{:entries [DIAGNOSTIC]
- :root (MR :l2-edge-diagnostics [DIAGNOSTIC])}
-L2-NEGATIVE-FIXTURES =
-{:entries [FIXTURE]
- :root (MR :l2-edge-negative-fixtures [FIXTURE])}
-```
+The executed verifier's exact rejection is rule `"L2-UNKNOWN-CORE-FORM"` and
+reason `:unauthenticated-b51-external-link`; the stable enclosing diagnostic
+code is `"SH07-B51-EDGE-AUTHORITY"`. DIAGNOSTIC has exactly `:code :status
+:rule :reason :input-id :mutated-id :expected :actual :diagnostic-id`. FIXTURE
+has exactly `:input-id :mutation :mutated-id :diagnostic-id :status
+:fuel-receipt-id :fixture-id`. Both one-entry roots are constructed above and
+recomputed as mandatory PRE-COMPLETE conjuncts.
 
 Rejection commits no external row, edge-authority row, graph row, or output
 artifact. The acyclic construction order is Q/M0/M1/OWNER, Q external
-census/root, normalized cross-call bijection, EDGE-BASE/EDGE-ID/EXPECTED/root
-and BAD/DIAGNOSTIC ID, fuel receipt, then independent FIXTURE-ID and authority
-receipt/ID, ACCEPTED and final negative rows, edge-authority root, then L2
-witness. No receipt enters an edge preimage.
+census/root, normalized cross-call PAIRING/EXPECTED, BAD-BASE, receipt-free
+BAD-ACTUAL, DIAGNOSTIC, the pre-existing fuel-receipt join, FIXTURE and both
+roots, authority RECEIPT, ACCEPTED, PRE-COMPLETE and edge-authority root, then
+the L2 witness. No receipt enters an edge preimage, and BAD-ACTUAL is an
+internal verifier observation rather than a witness member or identity domain.
 
 The C6 witness has exactly `:schema :fuel-subject-id :ast :syntax-core-map :desugaring-trace
 :origins-facts-order :verification :mutations :operation-ids :witness-id`; schema is
@@ -6617,6 +6699,16 @@ implementation subset is:
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_git_evidence.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_child.clj`
 - `bootstrap/clojure/src/gravity/tools/sh07_b51_v9_codec.clj`
+
+I9 implements the exact pure `VERIFY-UNAUTHORIZED-CROSS-FRAGMENT` equation in
+the already-owned `sh07_b51_attempt32_materialize.clj`. The already-owned
+checker-child and coordinator-child paths must invoke that same implementation,
+and the existing checker-child and runtime-admission tests plus accepted and
+rejected fixtures must prove the exact BAD-ACTUAL equality, nil committed row,
+nil output, and derived diagnostic/fixture roots. The changed algorithm-source
+bytes must rederive SEMANTIC-ALGORITHM-SOURCE-ROOT and every dependent product,
+fuel, witness, and certificate identity. This adds no owned path, identity
+domain, operation, counter, or witness member.
 
 Exact tests:
 
