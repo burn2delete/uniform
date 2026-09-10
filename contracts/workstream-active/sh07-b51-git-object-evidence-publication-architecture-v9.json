@@ -1,0 +1,262 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+  "author": "uniform-coordinator",
+  "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
+  "candidate_commit": "8907cb39ac60127f1fb4f2a5763de185b6e0f548",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
+    "sh07-b51-first-eval-nested-validation-architecture-v3",
+    "sh07-b51-binding-replay-index-architecture-v1",
+    "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
+    "c2-pass-cache-capacity-withholding-v1"
+  ],
+  "disposition": "The independently accepted exact V9 architecture candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, and companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d are integration-eligible after exact preflight against unchanged authoritative main 09c795f0c0854d2d8ab542c92b2116515e096406. This remains architecture-only authority and confers no implementation or SH-07 completion claim.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md"
+    ],
+    "rejected_fixtures": [
+      "sh07-b51-git-object-evidence-publication-architecture-v8:76ea5d13a1bb20a8be199a6127d7b60d12e8e9df",
+      "sh07-b51-git-object-evidence-publication-architecture-v9-original:3a42550183781bef741969f27fd9b284a7f8f2c4",
+      "sh07-b51-git-object-evidence-publication-architecture-v9:ea9ae281dce2249f779a9777c75517bebdbbad25",
+      "sh07-b51-git-object-evidence-publication-architecture-v9:8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
+      "mutable-worktree-or-ref-source-authority",
+      "checker-coordinator-self-bootstrap-cycle",
+      "publication-receipt-self-cycle",
+      "incomplete-git-object-or-masked-root-schema"
+    ],
+    "stable_diagnostics": [
+      "SH07-B51-GIT-SNAPSHOT",
+      "SH07-B51-GIT-INPUT-BLOB",
+      "SH07-B51-GIT-PUBLICATION-DELTA",
+      "SH07-B51-GIT-TUPLE",
+      "SH07-B51-GIT-RELOAD",
+      "SH07-B51-RECEIPT-JOIN",
+      "SH07-B51-IDENTITY-CYCLE",
+      "SH07-B51-CHECKER-PROCESS",
+      "SH07-B51-CONTRACT-DISCHARGE",
+      "SH07-B51-PROOF-SCOPE",
+      "SH07-B51-OWNER"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..8907cb39ac60127f1fb4f2a5763de185b6e0f548",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "BOOT1",
+    "BOOT2",
+    "BOOT3",
+    "BOOT4",
+    "BOOT5",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "contracts/verification-catalog.edn",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:31Z",
+      "reason": "register the corrected V9 architecture after two independent pre-freeze reviewers rejected the original draft and the replacement feasibility and formal schemas closed every reported blocker",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:33Z",
+      "reason": "freeze exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25, tree 86f499bfd95c4b5f72715c022c3b4cd238c11d13, report SHA-256 125f9a04daec8faf52a595aca1a9d6b37ae10c8a82e6b570ca74bd0f81f8880c, and sole owned architecture report after pre-freeze schema audit PASS",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:20:34Z",
+      "reason": "request independent feasibility and formal review of the exact frozen commit, tree, report bytes, governed lifecycle, implementation closure, Git-object evidence topology, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-09T15:26:45Z",
+      "reason": "return V9 to draft after independent feasibility review rejected exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25 for the codec preflight dependency cycle, the clean-C versus existing-E9 filesystem contradiction, and the absence of an immutable route for the external evidence-eligibility receipt",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T00:35:57Z",
+      "reason": "freeze exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, architecture SHA-256 a7d44d8a81412bc941a859e70cc2e0a12f829529b919deddaaeea78c15ee50d4, companion SHA-256 2e06c2fc7f9296fbfaffc4212540dfed77d4ee6480c904e0ec8fb4d9d1c69235, and two owned paths after independent full and formal PASS-FOR-FREEZE reviews",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T00:39:04Z",
+      "reason": "request fresh independent review of exact frozen C/T 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326/af0ab97c1c7b903199b057168bd6642114fd72f3, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, evidence topology, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:11:06Z",
+      "reason": "return V9 to draft after exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326 received one independent acceptance but independent formal review found no exact L2 external-binding vector, edge-ID equation, Q/SH06 fragment join, accepted/rejected partition, diagnostic constructor, or unauthorized-edge fixture, leaving governed external binding acceptance and unauthorized cross-fragment rejection underdetermined",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:20:00Z",
+      "reason": "freeze exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805, and two owned paths after three independent exact-byte PASS-FOR-FREEZE reviews",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:20:01Z",
+      "reason": "request fresh independent review of exact frozen candidate/tree 76101841e73c1da7ef9d18ec6775d0ea9b64b59a/1e15665e1c3f3239185bc0ef742dc2c1772ac58d, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, evidence topology, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:40:00Z",
+      "reason": "return V9 to draft after one independent acceptance and two independent formal rejections of exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a identified the same sole fatal blocker: BAD-BASE has no exact verifier invocation or observed BAD-ACTUAL rejection bound into DIAGNOSTIC, FIXTURE, and PRE-COMPLETE",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:17:45Z",
+      "reason": "freeze exact candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d, and two owned paths after two independent exact-byte PASS-FOR-FREEZE reviews and one scoped adversarial pass",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:19:40Z",
+      "reason": "request fresh independent review of exact frozen candidate/tree 8907cb39ac60127f1fb4f2a5763de185b6e0f548/b8a28476e6bb226107840ed4151274093b8dcfc7, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, mechanical unauthorized-edge rejection, evidence topology, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:29:07Z",
+      "reason": "ACCEPT exact candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, and companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d after three fresh independent reviews found the complete architecture, mechanical unauthorized-edge rejection, lifecycle, dependencies, boundedness, evidence topology, ownership, and nonclaims coherent with no fatal blockers",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:32:17Z",
+      "reason": "advance the independently accepted exact V9 architecture after clean preflight confirmed authoritative main remains the exact immutable base 09c795f0c0854d2d8ab542c92b2116515e096406, all five dependencies remain integrated, the candidate lineage is a direct descendant, and reconciliation has no upstream drift or conflicting path",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
+  "invariant_family": "architecture/self-hosting-sh07-b51-pin-free-publication-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md"
+  ],
+  "owner": "sh07-b51-git-object-publication-architecture",
+  "residual_host_boundaries": [
+    "Clojure, the JVM, and Git remain bounded launcher, fresh-process, immutable-object, strict-codec, digest, publication, and observation boundaries",
+    "architecture acceptance permits only the separately governed I9 implementation lifecycle and grants no implementation or evidence acceptance",
+    "authentic fixed-fuel Root-1, Root-6, and Root-8 evidence, aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_feasibility"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_formal"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_full_fuel_audit@8ea2c2dd"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_formal@8ea2c2dd"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_full_fuel_audit@76101841"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_prefreeze_formal@76101841"
+    },
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_counter_contract_challenge@76101841"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_full_fuel_audit@8907cb39"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_prefreeze_formal@8907cb39"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_counter_contract_challenge@8907cb39"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 B51 Git-object evidence publication architecture version 9"
+}
