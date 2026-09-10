@@ -1,0 +1,171 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md",
+  "author": "master-coordinator",
+  "base_commit": "798ebcfc49cf62085e17bf67c764e42aa6c0ffe0",
+  "candidate_commit": "5096dd00776356b1a7d3420a801e2e3a175eceb7",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-git-object-evidence-publication-architecture-v9",
+    "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1"
+  ],
+  "disposition": "Independently accepted and integration-eligible report-only architecture correction at candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7, tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776, after exact integration preflight against authoritative main 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0. This grants only architecture-report integration eligibility; no I9 implementation acceptance, evidence eligibility, integration, aggregate SH-07 completion, self-hosting, release, performance, or seed-retirement authority is established.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md"
+    ],
+    "rejected_fixtures": [
+      "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1:2acb3b52d4e4f25bb107952ba3aca3ea62164472:17-key-checker-handoff-constructability",
+      "C-owned accepted fixture containing current event-39 C/T-dependent product authority",
+      "checker handoff missing complete source-semantic carrier or seven-row semantic-algorithm source authority"
+    ],
+    "stable_diagnostics": [
+      "SH07-B51-IDENTITY-CYCLE",
+      "SH07-B51-CHECKER-CHILD",
+      "SH07-B51-CONTRACT-DISCHARGE"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0..5096dd00776356b1a7d3420a801e2e3a175eceb7",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 --candidate-commit 5096dd00776356b1a7d3420a801e2e3a175eceb7 --candidate-tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1.md"
+  ],
+  "history": [
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T15:22:36Z",
+      "reason": "register a separately governed report-only correction after the integrated E2 event-39 authority made the C-owned accepted fixture depend on its own containing C/T Git identities and audit showed the two selected A/B checker implementations and direct tests were outside I9 ownership despite their required pre-certificate witness construction; reserve only the correction report and preserve all implementation, acceptance, integration, SH-07 completion, release, self-hosting, and seed-retirement nonclaims",
+      "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T15:45:00Z",
+      "reason": "freeze exact first candidate 2acb3b52d4e4f25bb107952ba3aca3ea62164472, tree c3968e69815f44b846ab980cd696d11b675442b9, on authoritative base 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 for independent architecture review",
+      "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T15:46:00Z",
+      "reason": "request independent exact review of first candidate 2acb3b52d4e4f25bb107952ba3aca3ea62164472 and tree c3968e69815f44b846ab980cd696d11b675442b9",
+      "state": "review-pending"
+    },
+    {
+      "actor": "/root/i9_carrier_integration",
+      "at": "2026-09-10T15:55:00Z",
+      "reason": "independently reject first candidate 2acb3b52d4e4f25bb107952ba3aca3ea62164472 because its exact 17-key CHECKER-SEMANTIC-INPUT-E3 omits the complete authenticated pre-certificate SOURCE-SEMANTIC-CARRIER, including C2 artifacts for source ordinals 2, 10, and 11, and the seven SEMANTIC-ALGORITHM-SOURCE-DESCRIPTORS-E3 plus root required by FUEL-SOURCE-ROOTS; return the workstream to draft for correction",
+      "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T16:20:00Z",
+      "reason": "freeze corrected exact candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7, tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776, retaining the rejected first candidate in history and closing the same-session 20-key pre-certificate handoff",
+      "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T16:21:00Z",
+      "reason": "request independent exact review of corrected candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 and tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776",
+      "state": "review-pending"
+    },
+    {
+      "actor": "/root/i9_carrier_integration",
+      "at": "2026-09-10T16:25:00Z",
+      "reason": "independently accept corrected candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 and tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776 with no blockers after confirming the complete same-session source carrier, seven-row semantic-algorithm authority, A/B independence, count preservation, fixtures, tests, lifecycle, and nonclaims",
+      "state": "accepted"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T16:29:50Z",
+      "reason": "mark the accepted report-only architecture candidate integration-eligible after the exact read-only integration preflight passed against authoritative main 798ebcfc49cf62085e17bf67c764e42aa6c0ffe0 with candidate 5096dd00776356b1a7d3420a801e2e3a175eceb7 and tree 2d32cb268d37f2e75b1bc84a5bf94a89be4df776",
+      "state": "integration-eligible"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-pin-free-publication-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "the independently accepted correction is architecture authority only and does not establish I9 implementation correctness, evidence eligibility, implementation acceptance, implementation integration eligibility, or implementation integration",
+    "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9 and its integrated errata",
+    "the draft I9 implementation cannot freeze until this accepted architecture report is integrated and I9 reconciles the fixture-cycle, A/B checker ownership, and complete same-session pre-certificate handoff onto that authoritative main",
+    "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/i9_carrier_integration"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/i9_carrier_integration"
+    }
+  ],
+  "state": "integration-eligible",
+  "title": "SH-07 B51 Git-object publication V9 fixture-cycle and A/B ownership architecture erratum version 1"
+}
