@@ -10,7 +10,7 @@
     "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1",
     "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1"
   ],
-  "disposition": "Frozen report-only architecture correction for the verified Root1 and Root6 rejection of literal V9 E3 certificates, the strict V9-only witness/lowering-product compact-verifier contract, and the exact five-path E4 ownership/count cascade. Independent review is pending; no implementation, evidence, candidate acceptance, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
+  "disposition": "Independently accepted and integration-eligible report-only architecture correction for the verified Root1 and Root6 rejection of literal V9 E3 certificates, the strict V9-only witness/lowering-product compact-verifier contract, and the exact five-path E4 ownership/count cascade. No implementation correctness, I9 acceptance, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1.md"
@@ -54,6 +54,11 @@
       },
       {
         "command": "git diff --check 14ff61809a5dbb4aa23499f14d5f7a288f76889e..6a594c593b5d557d8937dbd799c980071763a67a",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 14ff61809a5dbb4aa23499f14d5f7a288f76889e --candidate-commit 6a594c593b5d557d8937dbd799c980071763a67a --candidate-tree a952949c27ad45726424f08f5080fa010e609824",
         "exit_code": 0,
         "result": "passed"
       }
@@ -103,6 +108,18 @@
       "at": "2026-09-10T18:50:02Z",
       "reason": "request fresh independent review of exact candidate 6a594c593b5d557d8937dbd799c980071763a67a and tree a952949c27ad45726424f08f5080fa010e609824 against the verified Root1 and Root6 E3 schema failures, exact E4 ownership and counts, identity cascade, lifecycle, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "/root/e4_arch_review",
+      "at": "2026-09-10T19:00:00Z",
+      "reason": "independently accept exact candidate 6a594c593b5d557d8937dbd799c980071763a67a, tree a952949c27ad45726424f08f5080fa010e609824, and report SHA-256 2e2fd20cf31ab0c1fd85c6a5cd30e6112c56c2b3988f887b9cd96b65d074beb0 with no blockers after reproducing both legacy-schema contradictions and confirming the strict V9-only verifier contract, split profiles, minimal five-path E4 ownership, corrected counters, identity cascade, lifecycle, and nonclaims",
+      "state": "accepted"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T19:01:32Z",
+      "reason": "mark the independently accepted report-only candidate integration-eligible after exact named-branch preflight passed against authoritative main 14ff61809a5dbb4aa23499f14d5f7a288f76889e with candidate 6a594c593b5d557d8937dbd799c980071763a67a and tree a952949c27ad45726424f08f5080fa010e609824",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1",
@@ -123,7 +140,13 @@
     "the draft I9 implementation cannot freeze until this correction receives independent acceptance, integration, and exact current-main reconciliation",
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/e4_arch_review"
+    }
+  ],
+  "state": "integration-eligible",
   "title": "SH-07 B51 Git-object publication V9 Root1 and Root6 E3 certificate architecture erratum version 1"
 }
