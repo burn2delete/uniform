@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Integration-eligible exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. Clean preflight proved authoritative main remains exact base 8c39712c80e7da66c23a23a6c1f01ba1f970b682, the integrated V9 dependency remains terminal, candidate lineage and one-file scope are exact, and no upstream drift or conflict exists. Authority is limited to integrating this exact report candidate; it grants no implementation or SH-07 completion authority.",
+  "disposition": "Integrated exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 onto authoritative main through exact-candidate merge aa62f19bd2f651507be15f2ea0b18ca8978fee38 and governed lifecycle merge eaabe8c283b7bf62b6c172fd8fee532052ce29f4, tree c7e86bd13e92a3606097fac510b4897598bf3462. Candidate ancestry and report-byte preservation are exact. Integration grants architecture authority only; it does not establish implementation correctness or SH-07 completion.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
@@ -59,6 +59,16 @@
       },
       {
         "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git merge-base --is-ancestor 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8 eaabe8c283b7bf62b6c172fd8fee532052ce29f4",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "test \"$(git rev-parse 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8:docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md)\" = \"$(git rev-parse eaabe8c283b7bf62b6c172fd8fee532052ce29f4:docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md)\"",
         "exit_code": 0,
         "result": "passed"
       }
@@ -134,6 +144,12 @@
       "at": "2026-09-10T10:09:00Z",
       "reason": "advance independently accepted exact candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8 to integration-eligible after clean preflight proved authoritative main is unchanged exact base 8c39712c80e7da66c23a23a6c1f01ba1f970b682, the V9 dependency remains terminal integrated, candidate ancestry and exact tree/report identities hold, and the diff remains one report-only path with no upstream drift",
       "state": "integration-eligible"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T10:11:32Z",
+      "reason": "integrate exact accepted report candidate through merge aa62f19bd2f651507be15f2ea0b18ca8978fee38 and its governed lifecycle through merge eaabe8c283b7bf62b6c172fd8fee532052ce29f4, tree c7e86bd13e92a3606097fac510b4897598bf3462, with candidate ancestry, exact report blob preservation, clean main reconciliation, integrated dependency, and all nonclaims intact",
+      "state": "integrated"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -166,6 +182,6 @@
       "reviewer": "/root/v9_source_read_closure_fix@5ce69f8c"
     }
   ],
-  "state": "integration-eligible",
+  "state": "integrated",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
