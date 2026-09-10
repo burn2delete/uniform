@@ -57,9 +57,10 @@ normalized diagnostic-context observations with explicit MID/MR equations.
 BOOT4 binds each deterministic module output to its compiler, pass, input and
 output artifacts, facts, provenance, diagnostic root, and test root, and its
 preservation root commits the exact seven positive and seven negative rows.
-The V9 registries now close 117 tags, 100 V9-defined H domains, and 34 member
+The V9 registries now close 117 tags, 100 V9-defined H domains, and 37 member
 kinds; inherited checker-spec and declared-digest domains are explicitly
-classified rather than inferred.
+classified rather than inferred, as are the inherited projected-SH06-binding
+and execution-bundle-core domains.
 Post-I9 alone may report integration preservation or observed deltas.
 
 The current revision is draft and unfrozen. Its governed V9 workstream is

@@ -709,7 +709,21 @@ I9 makes
 `gravity.bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products` the
 only new public bootstrap Var. Its session token, event dispatcher, object
 reader, and checked-product cache are private and dynamically scoped by the
-wrapper; a caller cannot install, replace, or reuse them.
+wrapper; a caller cannot install, replace, or reuse them. Its exact public
+arity is two, `(C,T)`, and both arguments must be the 40-lowercase-hex commit
+and tree IDs already bound by the lifecycle. It returns exactly
+`:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
+:module-transactions :source-read-receipt`; `:bundle-core` is the authentic
+six-key 00945 inner value and `:execution-bundle-core-id` is its authenticated
+sibling ID. `:module-transactions` is the complete seven-row R/Q/T/D/Z/RC
+vector constructed from the same prefetched module bytes before the private
+session is finalized. No path, reader, cache, session, or product override
+argument exists.
+
+```clojure
+RECEIPTED-BUNDLE-CORE-PRODUCTS =
+  gravity.bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products(C,T)
+```
 
 One session prefetches the exact twelve C blobs above, in order, and strictly
 decodes each UTF-8 vector once. Products consume exactly 39 events: L1
@@ -719,6 +733,16 @@ module reads 25-31, and compiler-artifact-binding emitter reads 32-38. The
 seven final events are distinct authorized consumers of the one prefetched
 emitter byte vector, not repeated acquisitions. The session finalizes once and rejects a missing,
 duplicate, reordered, late, or unconsumed event.
+
+The module transaction builder consumes the already authenticated decoded
+values from module-validation events 3-9 in the same dynamic session; it does
+not acquire or decode a source again and therefore adds no source event. Each
+transaction's resolution artifact and Q/RC descendants bind that event's
+descriptor raw SHA and the same cached bytes. Returning the transactions after
+session finalization is permitted because they contain semantic values and
+identities only, never raw bytes, readers, host/absolute/checked-out paths,
+handles, or the private cache. Their identity-bound project-relative descriptor
+and Q provenance path fields remain exactly as specified below.
 
 I9 replaces every reachable physical read in the B5.1 construction closure.
 The L1/L2 and checked-core consumers use domains `:l1-contract`,
@@ -835,8 +859,9 @@ its loaded-namespace and source-closure receipt.
 The request deliberately carries C/T and roots rather than M-built semantic
 products. Each child opens its own twelve-blob governed C/T session, invokes
 `gravity.bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products` to
-construct its complete `:m0s`, `:m1`, `:m2s`, `:bundle-core`, and
-`:source-forms` envelope, finalizes that session, and only then invokes its one
+construct its complete `:m0s`, `:m1`, `:m2s`, `:bundle-core`,
+`:source-forms`, and `:module-transactions` envelope, finalizes that session,
+and only then invokes its one
 selected checker. The child response binds the constructed envelope IDs and
 source receipt. No semantic envelope crosses from M, A, or B into another
 participant. M starts its third independent session only after B validates,
@@ -1465,9 +1490,10 @@ has exactly one named H payload equation in this report. Every H domain defined
 by V9 must occur here. An identity under such a domain whose registry member is
 absent, whose domain has two payload grammars, or whose payload does not match
 that equation rejects. The only closed exceptions are the inherited
-role-specific checker-spec domains and inherited declared-digest domain named
-below; their products are recomputed during V9, but V9 does not define their
-domain or payload grammar.
+role-specific checker-spec domains and the three inherited source domains
+named below: declared digest, projected-SH06 binding, and execution bundle
+core. Their products are recomputed during V9, but V9 does not define their
+domains or payload grammars.
 
 ```clojure
 [:gravity/sh07-b51-a9-lifecycle-receipt-v1
@@ -1580,8 +1606,9 @@ Member kinds are exactly
 :c2-source-map :c2-tokens :c6-ast :c6-desugaring-trace :c6-evaluation-order
 :c6-facts :c6-origins :c6-syntax-core-map :l1-syntax :l2-capabilities
 :l2-core-form
-:l2-edge-authority :l2-effects
-:l2-evaluation-order :l2-expected-edge-census :l2-owner-registry
+:l2-edge-authority :l2-edge-diagnostics :l2-edge-negative-fixtures :l2-effects
+:l2-evaluation-order :l2-expected-edge-census :l2-external-edges
+:l2-owner-registry
 :lowering-facts :lowering-modules :lowering-passes :lowering-provenance]`,
 also unsigned-UTF-8 sorted and duplicate-free.
 
@@ -1627,8 +1654,23 @@ V9-defined domain and therefore is not a V9 tag or H-registry member. It is
 the existing checked-core adapter domain executed only by the exact
 `sh07-core-digest-requests` equation below, whose payload has exactly `:domain
 :purpose :preimage`; changing its domain, purpose, preimage resolver, prior-Z
-prefix, or canonical reader hash rejects. This classification does not permit
-another unregistered V9 identity domain.
+prefix, or canonical reader hash rejects. The inherited
+`:gravity/sh07-projected-sh06-binding-v1` domain is likewise not a V9 tag or
+H-registry member. V9 may execute it only while reproducing the authentic SH06
+binding projection, with the sole payload grammar
+`{:source-revision-id Q_i[:lineage :source-revision-id]
+:binding (dissoc SEM(A,R_i,Q_i)
+                 :upstream-binding-id :definition-artifact-id)}` and
+only after `Q-REPLAY_i = Q_i` byte-for-byte. This classification does not
+permit another unregistered V9 identity domain. The inherited
+`:gravity/sh07-b51-execution-bundle-core-id-v1` domain is the literal `:domain`
+of the authentic six-key 00945 BUNDLE-CORE. Its sole source-defined payload is
+that complete BUNDLE-CORE value, and its identity is the sibling
+`:execution-bundle-core-id` returned by the object-mode wrapper. V9 recomputes
+that sibling with the governed 00945 `p15-s23-sh07-b51-canonical-id` algorithm,
+equivalently H of the complete six-key core; the domain is not a V9 tag or
+H-registry member. No fifth inherited or otherwise unregistered identity
+domain is permitted.
 
 Field identity typing is closed. Every `:source-sha256`,
 `:architecture-report-sha256`, executable/JAR `:sha256`, and other field whose
@@ -3518,16 +3560,27 @@ The remaining receipt-free stage values are closed by the following exact
 construction. `QFORM(Q, ID)` is the unique row of `Q[:forms]` whose
 `:form-id` is ID. `RCNODE(RC, F)` is the unique row of `RC[:nodes]` whose
 `[:source :form-id]` equals `F[:form-id]`. `TOP(Q, F)` follows
-`:parent-form-id` through QFORM until `nil`; every link must exist, the walk
-must be acyclic, and its final form ID must occur exactly once in
-`Q[:top-level-form-ids]`. `TOPIDX(Q, F)` is the zero-based position of that
-ID in the latter vector. `EIDX(RC, N)` is the unique zero-based position of an
+`:parent-form-id` through QFORM until `nil` and returns that final complete form
+row; every link must exist, the walk must be acyclic, and the returned row's
+form ID must occur exactly once in `Q[:top-level-form-ids]`. `TOPIDX(Q, F)` is
+the zero-based position of that form ID in the latter vector. `EIDX(RC, N)` is the unique zero-based position of an
 `RC[:evaluation-order]` row whose `:core-node-id` equals `N[:node-id]`.
 Evaluation-order node IDs must be a permutation of RC node IDs without a
 missing or duplicate value. These joins are recomputed rather than supplied.
 
-`OWNER-REGISTRY` is constructed in module order and then zero-based top-level
-form order. For every top-level form Fdef, X is the unique
+`EXECUTABLE-TOP-LEVEL-FORMS(Q)` is
+`(mapv #(QFORM Q %) Q[:top-level-form-ids])` in exact source order. The
+authenticated `sh07-core-authenticated-request` construction removes the
+source `(ns ...)` syntax before building Q trees/forms, so no namespace root or
+descendant occurs in Q. For these seven governed modules, every remaining
+source root is a defn expansion. Therefore the vector count equals the count
+of `Q[:macro-origin-traces]`, and every Fdef has exactly one trace whose
+`:output-def-syntax-id = Fdef[:syntax-id]` and `:macro = 'defn`; conversely
+every such trace selects exactly one Fdef. Any namespace or other untraced
+top-level form in Q rejects rather than being filtered.
+
+`OWNER-REGISTRY` is constructed in module order and then
+EXECUTABLE-TOP-LEVEL-FORMS source order. For every Fdef, X is the unique
 `Q[:macro-origin-traces]` row whose `:output-def-syntax-id` equals
 `Fdef[:syntax-id]`; Ffn is the unique Q form whose syntax ID equals
 `X[:introduced-fn-syntax-id]`; FR is the unique RC function record whose
@@ -3553,9 +3606,10 @@ The row adds only `:registry-id`, equal to
 `MID(:l2-owner-registry, REGISTRY-BASE)`. FR's definition core ID must equal
 DR's core node ID, FR's definition binding ID must equal DR's binding ID, and
 FR's body core node must be the sole child of the corresponding function node.
-Every Q form must reach exactly one registry row through TOPIDX; this admits
-the authentic owning top-level defn and rejects nested same-named forms or a
-scan-first substitute.
+Every Q form must reach exactly one registry row through TOPIDX. The
+namespace form was removed before Q existed and cannot enter this census. This
+admits the authentic owning top-level defn and rejects nested same-named forms,
+an untraced top-level root, or a scan-first substitute.
 
 For each ROOT-SPECS row in root-ordinal order, candidates are exactly the
 OWNER-REGISTRY IDs whose module ordinal, declared name, and arity equal that
@@ -3571,9 +3625,18 @@ row. Exactly one candidate is required. Its selection is exactly
 :registry-root MR(:l2-owner-registry,
 [ROOT-SPECS OWNER-REGISTRY CANDIDATE-VECTORS SELECTIONS []])}`.
 
-`L2-CORE-FORMS` is the module-order, Q-form-order vector obtained by joining
-each F to its registry row REG, its RCNODE N, and EIDX. Its zero-based global
-ordinal is dense. Each row base is exactly:
+`LOWERED-Q-FORMS(Q,RC)` is exactly `Q[:forms]` in Q form order. Every F must
+have exactly one RCNODE, every RC node must join exactly one F, their counts
+must be equal, and projecting RCNODE node IDs must be a permutation of all RC
+node IDs. This equality is valid because Q already excludes the source
+namespace tree; the more general checked-core namespace skip is a reject guard
+that is never exercised by an authentic SH07 Q. A duplicate/missing RC form ID
+or a namespace/untraced root in Q rejects.
+
+`L2-CORE-FORMS` is the module-order, LOWERED-Q-FORMS order vector obtained by
+joining each F to its unique registry row REG, its RCNODE N, and EIDX. Its
+zero-based global ordinal is dense over the complete Q/RC bijection. Each row
+base is exactly:
 
 ```clojure
 {:ordinal g
@@ -3934,9 +3997,11 @@ Each `:stage-semantic-root` equals the corresponding ordinal's named root
 above. Ordinal, owner, kind, collection key set, collection order, semantic
 root, or source-root substitution rejects.
 
-The named carriers are materialized during one authenticated pre-certificate
-transaction per module. `MODULE-TRANSACTIONS` is an exact seven-row vector in
-module-ordinal order; every row has exactly `:module-ordinal :source-descriptor
+The named carriers are materialized inside the object-mode wrapper during one
+authenticated pre-certificate transaction per module.
+`MODULE-TRANSACTIONS =
+RECEIPTED-BUNDLE-CORE-PRODUCTS[:module-transactions]` byte-for-byte. It is an
+exact seven-row vector in module-ordinal order; every row has exactly `:module-ordinal :source-descriptor
 :resolution-artifact :c2-reader-artifact :authenticated-core-request
 :resolved-digests :module-core :template-carrier :generated-digest-carrier
 :resolved-core-carrier :module-digest-requests`. For row i:
@@ -4301,9 +4366,14 @@ greater than FIXED-FUEL. This distinction is checked explicitly and prevents
 either a source-census omission or a later checked-core use from being hidden.
 For every fragment-resolution row, its values equal that fragment's exact
 `:resolution-reference-syntax-ids` and each joins exactly once to the same
-module Q_i `:resolution-table`. Every external binding ID is present in the
-authenticated SH06 authority census and accepted exactly once by the L2 edge
-authority; an unauthorized cross-fragment ID cannot enter a row.
+module Q_i `:resolution-table`. Every external binding ID joins exactly once
+to the same Q_i `:binding-table` and is authorized by the exact Q resolution
+classifier defined below. Q externality is not equated with an SH06 M1 edge:
+core bindings, declared imports, declared namespace aliases, and same-module
+references are present in Q but are not all cross-module calls. Only the
+filtered seven-module operator-call subset participates in the exact Q-to-M1
+bijection below. An unauthorized cross-fragment ID cannot enter either
+projection.
 
 Each module-core value is the dense vector of complete canonical core-node
 records. C2-MODULE-CARRIERS has exactly two typed rows per module in printed
@@ -4526,8 +4596,9 @@ key. Within-bounds is true. Receipt ID is
 RECEIPT-WITHOUT-RECEIPT-ID])`. A and B independently reconstruct identical
 manifests, traces, roots, counts, and resulting witness bytes.
 
-WITNESS fuel receipts are in operation ordinal order and correspond one-to-one
-with OPERATION-MANIFEST. Every nested witness carries the exact ordered
+`FUEL-RECEIPTS` is the complete seven-row vector of those constructed receipts
+in operation ordinal order; WITNESS stores that exact vector at
+`:fuel-receipts`. It corresponds one-to-one with OPERATION-MANIFEST. Every nested witness carries the exact ordered
 `:operation-ids` subsequence whose owner equals that witness. An empty or
 fabricated trace, zero count contradicted by the subject traversal, missing or
 extra operation, unknown kind, wrong subject/source root, counter mismatch,
@@ -4629,8 +4700,9 @@ defn plus its authenticated SH05 expanded def/fn and declared body root.
 Candidates contain every matching top-level registry ID; exactly one is
 required for every ROOT-SPECS row and rejected is therefore exactly empty.
 Missing, duplicate, nested, scan-first, or ambiguous selection rejects.
-Registry root is MR of `:l2-owner-registry` and
-`[ROOT-SPECS REGISTRY CANDIDATES SELECTIONS REJECTED]`. Every core form's
+`OWNER-REGISTRY-ROOT` is exactly
+`MR(:l2-owner-registry,
+[ROOT-SPECS REGISTRY CANDIDATES SELECTIONS REJECTED])`. Every core form's
 `owning-defn-id` and `owning-root-id` equal its unique full OWNER-REGISTRY row;
 the eight selections are the public-root subset rather than an assertion that
 the modules contain only eight defns. No free H value is admitted. The exact
@@ -4681,59 +4753,1120 @@ BUNDLE-ROOT-SPECS])`. Owner selection stores that complete projection at
 MR(:l2-owner-registry, ...); a different eight-row vector cannot satisfy owner
 selection.
 
-Each external binding has exactly `:binding-id :edge-id :provider-fragment-id
-:consumer-fragment-id :symbol :authority-receipt-id :authorized`; authority
-receipt has exactly `:schema :content :source-descriptor-ids
-:authenticated-sh06-artifact-id :sh06-semantic-projection-id :link-authority-id
-:owner-registry-root :expected-edge-root :expected-edge-census
-:accepted-edge-ids :rejected-edge-ids :self-id-omits
-:receipt-id`, schema `:gravity/sh07-b51-edge-authority-receipt-v1`, content C/T,
-source descriptor IDs exactly ordinals 3-9. `SH06-AUTHORITY-CARRIER` has exactly
-`:content :source-descriptors :bundle-core-id :raw-carrier-path
-:resolution-artifact :resolution-verification :semantic-projection-path
-:semantic-projection-id :link-authority-event-product-ids :link-authority-id
-:expected-edge-census :carrier-id`. Content is C/T; descriptors are exact
-source ordinals 3-9; bundle-core ID is the authenticated BUNDLE-CORE ID; raw
-carrier path is exactly `[:sh06-resolution-artifact]`; resolution artifact is
-the complete value at that path and has the existing SH06 closed outer keyset.
-Its artifact ID is freshly recomputed under
-`:gravity/sh06-resolution-artifact-v1`; its embedded SH05 artifact at
-`[:sh05-macro-artifact]` is freshly verified and joined through
-`:gravity-macro-boundary :authenticated-sh04-artifact` to the exact C3/C2
-semantic projection. Semantic projection path is that complete literal nested
-path; semantic projection ID equals the terminal `:projection-id` there.
-Resolution verification is the complete closed result of
-`sh06-resolution-artifact-verification` with status `:accepted`, recomputed
-artifact ID, upstream SH05 ID, and semantic projection ID all equal.
-Link-authority event product IDs are exactly source events 17-23 in module
-order. Link authority ID is
-`H([:gravity/sh07-b51-sh06-link-authority-id-v1
-{:resolution-artifact-id ARTIFACT-ID :event-product-ids EVENT-PRODUCT-IDS}])`.
-Expected edge census is the exact dense concatenation of the seven authenticated
-event products' cross-fragment edge rows. Carrier ID is
-`H([:gravity/sh07-b51-sh06-authority-carrier-id-v1
-CARRIER-WITHOUT-CARRIER-ID])`. The receipt's three upstream IDs must equal this
-carrier's artifact, semantic projection, and link-authority IDs; expected edge
-census is the complete dense
-cross-fragment projection of that carrier, and expected edge root is MR of
-`:l2-expected-edge-census` and that vector. Receipt ID is H of the map without
-itself. The receipt is independently derived by A and B from their immutable
-source sessions before WITNESS or either certificate exists. Authorized is true
-iff binding edge ID occurs exactly once in its accepted IDs.
-Edge authority has exactly `:receipt :expected-census :accepted :rejected
-:complete :root`; accepted contains the exact external binding IDs, rejected
-contains dense maps with exactly `:edge-id
-:provider-fragment-id :consumer-fragment-id :symbol :diagnostic-id :status`,
-status `:unauthorized-rejected`. Expected census is the authority receipt's
-dense edge census; every census edge occurs exactly once in accepted or
-rejected, none occurs in both, no extra edge exists, complete is true, and root
-is MR of `:l2-edge-authority` and `[EXPECTED ACCEPTED REJECTED]`. Empty vectors
-are valid only when the authenticated expected census is empty. No external or
-cross-fragment edge absent from the authenticated carrier may enter the core
-graph. Each diagnostic has exactly `:diagnostic-id :status
-:fixture-id` and status `:rejected`. Each negative fixture has exactly
-`:fixture-id :input-id :diagnostic-id :status :fuel`; status is `:rejected`
-and fuel is a complete FUEL-RECEIPT.
+L2 external resolution authority and SH06 cross-module call authority are two
+different projections. They are never equated. The first admits core,
+declared-import, and declared-namespace resolutions that legitimately have no
+provider fragment in the consumer Q_i. The second proves the exact subset of
+operator resolutions that crosses between the seven governed B51 modules and
+therefore has both a consumer and provider fragment.
+
+For each module Q_i, `Q-REFERENCE-ROWS_i` is constructed by visiting Q_i
+`:fragment-manifest` in vector order and, within each fragment G, visiting
+G `:resolution-reference-syntax-ids` in vector order. For each visited ID there
+must be exactly one resolution R in Q_i `:resolution-table`, exactly one binding
+B in Q_i `:binding-table` whose `:binding-id` is R `:binding-id`, exactly one
+form F whose `:syntax-id` is R `:reference-syntax-id`, and exactly one containing
+fragment G. The resolution and binding have their complete existing closed Q
+keysets. R's symbol, binding IDs, source span, and qualified/unqualified name
+relationship must agree with B and F under the exact checked-core index,
+binding-shape, binding-name, and resolution-record predicates below. The older
+Root6 shortcut `sh07-b51-r6-resolution-record-authentic?` is not used because
+it incorrectly equates every qualified reference spelling with an unqualified
+binding name. Zero or multiple joins reject.
+
+For each `(Q_i,G,R,B)`, `LOCAL-COUNT` and `EXTERNAL-COUNT` are the exact
+membership counts of B `:binding-id` in G `:local-binding-ids` and
+`:external-binding-ids`. Let `R_i` be the same module transaction's complete
+`:resolution-artifact`, `RAW_i` the complete value at
+`R_i[:gravity-resolution-boundary :authenticated-resolution-request]`, and
+`AN_i` the complete value at
+`R_i[:gravity-resolution-boundary :resolved-analysis]`. The fresh SH06 verifier
+must accept R_i, and `AN_i[:module-contract]` must equal `RAW_i[:module]`
+byte-for-byte. Define
+`Q-REPLAY_i = sh07-core-authenticated-request(R_i)` and require
+`Q-REPLAY_i = Q_i` byte-for-byte before selecting any row. `ANALYSIS-BINDING`,
+written A below, is the unique row in `AN_i[:binding-table]` whose `:binding-id`
+is B `:upstream-binding-id`; B must be the unique row in
+`Q-REPLAY_i[:binding-table]` with that upstream ID. External classification
+never admits a lexical A. `DEF-SYNTAX(A,R_i,Q_i)` is exactly the existing
+`sh07-b51-r6-project-definition-syntax-id` result when called with carrier
+`{:authenticated-sh06-request Q_i :sh06-resolution-artifact R_i}`, A, and
+Q_i source revision. The exact replay is:
+
+```clojure
+DEF-SYNTAX(A,R_i,Q_i) =
+  sh07-b51-r6-project-definition-syntax-id(
+    {:authenticated-sh06-request Q_i
+     :sh06-resolution-artifact R_i},
+    A, Q_i[:lineage :source-revision-id])
+SEM(A,R_i,Q_i) =
+  {:capabilities A[:capabilities] :package A[:package] :name A[:name]
+   :target-set A[:target-set] :upstream-binding-id A[:binding-id]
+   :type-ref A[:type-ref]
+   :definition-artifact-id A[:definition-artifact-id]
+   :effects A[:effects] :safety A[:safety] :kind A[:kind]
+   :semantic-span A[:semantic-span] :scope-id nil
+   :definition-syntax-id (DEF-SYNTAX A R_i Q_i)
+   :profile-set A[:profile-set]
+   :namespace A[:namespace] :visibility A[:visibility]
+   :binding-class A[:binding-class]}
+B-EXPECTED(A,R_i,Q_i) =
+  (assoc SEM(A,R_i,Q_i) :binding-id
+    H([:gravity/sh07-projected-sh06-binding-v1
+       {:source-revision-id Q_i[:lineage :source-revision-id]
+        :binding (dissoc SEM(A,R_i,Q_i)
+                         :upstream-binding-id :definition-artifact-id)}]))
+require B = B-EXPECTED(A,R_i,Q_i)
+```
+
+DEF-SYNTAX must be the same unique value in Q-REPLAY_i's complete
+form/declaration projection; absence or ambiguity rejects. The full
+upstream and projected binding-ID maps must both be bijective. No locally
+restated partial semantic map or caller-supplied syntax/scope ID is admitted.
+
+`DECLARATION-BODY(A)` is exactly `(dissoc A :artifact :binding-id)`. Define the
+three declaration selections as rows byte-equal to DECLARATION-BODY(A) in,
+respectively, `RAW_i[:definitions]`, `RAW_i[:import-bindings]`, and
+`RAW_i[:core-bindings]`. Their counts are `DEFINITION-COUNT`, `IMPORT-COUNT`,
+and `CORE-COUNT`. These are the only declared-binding membership sets. They are
+derived from the authenticated SH06 request; the architecture neither reads nor
+invents the latent Root6 names `:declared-import-binding-ids`,
+`:declared-alias-binding-ids`, or `:declared-core-binding-ids`, because those
+keys are absent from the exact SH06 module-contract schema.
+
+`DEPENDENCY-CANDIDATES` is the selection from `RAW_i[:imports]` whose
+`:namespace` equals A namespace and whose `:dependency-artifact-id` equals A
+definition artifact ID. `LOCAL-PROVIDERS` is the Q_i fragment selection
+containing B `:binding-id` in `:local-binding-ids`. `ALIAS-CANDIDATES` is the
+Q_i alias-table selection whose `:alias` equals the namespace portion of R
+symbol, whose `:namespace` equals A and B namespace, whose
+`:dependency-artifact-id` equals A and B definition artifact ID, whose profile
+occurs in B profile set, and whose target vector is a subset of B target set;
+its alias must also occur exactly once in G `:alias-names`. Alias rows retain
+their authentic exact `:alias :dependency-artifact-id :kind :namespace
+:profile :targets` keyset. `MEMBERSHIP-COUNT(V,X)` is exactly
+`sh07-b51-r6-vector-membership-count(V,X)`, the bounded equality count over V;
+it is not caller supplied.
+
+The external classifier is a literal function of one authentic reference
+tuple. `SEM`, `B-EXPECTED`, `DECLARATION-BODY`, and `MEMBERSHIP-COUNT` are the
+exact equations already printed. Its only successful branches are:
+
+```clojure
+EXTERNAL-CLASSIFICATION([M Q G fragment-resolution-ordinal R B F]) =
+  (let [R_i (:resolution-artifact M)
+        RAW_i (get-in R_i
+                      [:gravity-resolution-boundary
+                       :authenticated-resolution-request])
+        AN_i (get-in R_i
+                     [:gravity-resolution-boundary :resolved-analysis])
+        Q-REPLAY_i (sh07-core-authenticated-request R_i)
+        CHECKED-INDEXES (sh07-index-request Q-REPLAY_i)
+        AUTHORITY-INDEXES (sh07-b51-index-request Q-REPLAY_i)
+        A (UNIQUE-BY :binding-id (:upstream-binding-id B)
+                     (:binding-table AN_i))
+        DEFINITION-ROWS
+        (filterv #(= % (DECLARATION-BODY A)) (:definitions RAW_i))
+        IMPORT-ROWS
+        (filterv #(= % (DECLARATION-BODY A)) (:import-bindings RAW_i))
+        CORE-ROWS
+        (filterv #(= % (DECLARATION-BODY A)) (:core-bindings RAW_i))
+        DEFINITION-COUNT (count DEFINITION-ROWS)
+        IMPORT-COUNT (count IMPORT-ROWS)
+        CORE-COUNT (count CORE-ROWS)
+        LOCAL-COUNT
+        (MEMBERSHIP-COUNT (:local-binding-ids G) (:binding-id B))
+        EXTERNAL-COUNT
+        (MEMBERSHIP-COUNT (:external-binding-ids G) (:binding-id B))
+        DEPENDENCY-CANDIDATES
+        (filterv #(and (= (:namespace %) (:namespace A))
+                       (= (:dependency-artifact-id %)
+                          (:definition-artifact-id A)))
+                 (:imports RAW_i))
+        LOCAL-PROVIDERS
+        (filterv #(= 1 (MEMBERSHIP-COUNT (:local-binding-ids %)
+                                        (:binding-id B)))
+                 (:fragment-manifest Q-REPLAY_i))
+        ALIAS-CANDIDATES
+        (filterv
+          #(and (= (:alias %) (some-> R :symbol namespace symbol))
+                (= (:namespace %) (:namespace A) (:namespace B))
+                (= (:dependency-artifact-id %)
+                   (:definition-artifact-id A)
+                   (:definition-artifact-id B))
+                (= 1 (MEMBERSHIP-COUNT (:profile-set B) (:profile %)))
+                (sh07-vector-subset? (:targets %) (:target-set B))
+                (= 1 (MEMBERSHIP-COUNT (:alias-names G) (:alias %))))
+          (:alias-table Q-REPLAY_i))
+        BASE-VALID?
+        (and (= :passed
+                (:status (sh06-resolution-artifact-verification R_i)))
+             (= Q-REPLAY_i Q)
+             (= (:module-contract AN_i) (:module RAW_i))
+             (= B (B-EXPECTED A R_i Q-REPLAY_i))
+             (= [LOCAL-COUNT EXTERNAL-COUNT] [0 1])
+             (= (:binding-class A) (:binding-class B))
+             (= (:name A) (:name B))
+             (= (:namespace A) (:namespace B))
+             (= (:definition-artifact-id A)
+                (:definition-artifact-id B))
+             (= 1 (+ DEFINITION-COUNT IMPORT-COUNT CORE-COUNT))
+             (sh07-binding-shape? B)
+             (every? sh07-alias-shape? (:alias-table Q-REPLAY_i))
+             (sh07-resolution-records-valid?
+               Q-REPLAY_i CHECKED-INDEXES)
+             (= :authenticated-external
+                (sh07-b51-authorize-resolution
+                  R_i Q-REPLAY_i AUTHORITY-INDEXES R)))]
+    (if BASE-VALID?
+      (cond
+  (and (= :current-namespace-binding (:resolution-order R))
+       (= :namespace (:binding-class A) (:binding-class B))
+       (contains? #{:public :private} (:visibility A))
+       (= 1 DEFINITION-COUNT)
+       (= 0 IMPORT-COUNT CORE-COUNT)
+       (= (:namespace A) (get-in RAW_i [:module :namespace]))
+       (= (:namespace A) (get-in Q [:module :namespace]))
+       (or (= 1 (count LOCAL-PROVIDERS))
+           (and (= 0 (count LOCAL-PROVIDERS))
+                (sh07-b51-no-form-namespace-declaration?
+                  (first DEFINITION-ROWS) A))))
+  :authenticated-current-namespace
+
+  (and (= :alias-qualified-required-binding (:resolution-order R))
+       (= :import (:binding-class A) (:binding-class B))
+       (= :public (:visibility A))
+       (= 0 DEFINITION-COUNT CORE-COUNT)
+       (= 1 IMPORT-COUNT)
+       (= 0 (count LOCAL-PROVIDERS))
+       (= 1 (count ALIAS-CANDIDATES))
+       (= 1 (count DEPENDENCY-CANDIDATES))
+       (= (:alias (first DEPENDENCY-CANDIDATES))
+          (symbol (namespace (:symbol R)))))
+  :authenticated-alias
+
+  (and (= :fully-qualified-namespace-binding (:resolution-order R))
+       (contains? #{:namespace :import} (:binding-class A))
+       (= (:binding-class A) (:binding-class B))
+       (= 1 (+ DEFINITION-COUNT IMPORT-COUNT))
+       (= 0 CORE-COUNT)
+       (= (str (:namespace A) "/" (:name A)) (str (:symbol R)))
+       (or (and (= :namespace (:binding-class A))
+                (contains? #{:public :private} (:visibility A))
+                (= 1 DEFINITION-COUNT)
+                (= (:namespace A)
+                   (get-in RAW_i [:module :namespace])
+                   (get-in Q [:module :namespace]))
+                (or (= 1 (count LOCAL-PROVIDERS))
+                    (and (= 0 (count LOCAL-PROVIDERS))
+                         (sh07-b51-no-form-namespace-declaration?
+                           (first DEFINITION-ROWS) A))))
+           (and (= :import (:binding-class A))
+                (= :public (:visibility A))
+                (= 1 IMPORT-COUNT)
+                (= 0 (count LOCAL-PROVIDERS))
+                (= 1 (count DEPENDENCY-CANDIDATES)))))
+  :authenticated-fully-qualified
+
+  (and (= :profile-allowed-core-binding (:resolution-order R))
+       (= :core (:binding-class A) (:binding-class B))
+       (= :public (:visibility A))
+       (= 'gravity.core (:namespace A))
+       (= 0 DEFINITION-COUNT IMPORT-COUNT)
+       (= 1 CORE-COUNT)
+       (= 0 (count LOCAL-PROVIDERS)))
+  :authenticated-core
+
+  (and (= :profile-allowed-core-binding (:resolution-order R))
+       (= :import (:binding-class A) (:binding-class B))
+       (= :public (:visibility A))
+       (= 0 DEFINITION-COUNT CORE-COUNT)
+       (= 1 IMPORT-COUNT)
+       (= 0 (count LOCAL-PROVIDERS))
+       (= 1 (count DEPENDENCY-CANDIDATES))
+       (= :public (:visibility (first DEPENDENCY-CANDIDATES)))
+       (or (= [:all] (:refer (first DEPENDENCY-CANDIDATES)))
+           (= 1 (MEMBERSHIP-COUNT
+                 (:refer (first DEPENDENCY-CANDIDATES)) (:name A)))))
+  :authenticated-referred-import
+
+  (and (= :explicit-foreign-import-binding (:resolution-order R))
+       (= :import (:binding-class A) (:binding-class B))
+       (= :foreign (:kind A) (:kind B))
+       (= :public (:visibility A))
+       (= 0 DEFINITION-COUNT CORE-COUNT)
+       (= 1 IMPORT-COUNT)
+       (= 0 (count LOCAL-PROVIDERS))
+       (= 1 (count DEPENDENCY-CANDIDATES))
+       (= :foreign (:kind (first DEPENDENCY-CANDIDATES)))
+       (= true (:foreign-record-complete?
+                 (first DEPENDENCY-CANDIDATES))))
+  :authenticated-import
+
+        :else :rejected)
+      :rejected))
+```
+
+Every branch additionally requires the exact
+`sh07-b51-authorize-resolution` replay to return `:authenticated-external`.
+That governed predicate authenticates the raw reference qualifier, dependency
+analysis product, form-backed or no-form namespace declaration, import/core
+visibility, foreign completeness, binding projection, target, alias, and
+resolution record from R_i/Q bytes. The separately printed binding-shape,
+alias-shape, and resolution-table checks must also pass. `ANALYSIS-BINDING` must exist
+exactly once, A and B must have equal class/name/namespace/definition-artifact
+coordinates, and exactly one of the three declaration counts must be one.
+This classifier uses only fields present in authenticated SH06/Q bytes. Every
+Q_i fragment's
+`:external-binding-ids` must equal the stable first-occurrence-distinct
+projection of the binding IDs of its successfully classified external
+reference rows. A lexical external reference, an ambiguous local provider or
+alias/dependency, a row absent from its authenticated declaration source, an
+unverified import/core binding, or a binding/name mismatch rejects.
+
+Each `Q-EXTERNAL-OCCURRENCES` row has exactly
+`:ordinal :consumer-module-ordinal :consumer-source-id :consumer-fragment-id
+:fragment-ordinal :fragment-resolution-ordinal :reference-syntax-id
+:binding-id :upstream-binding-id :binding-class :symbol :position
+:resolution-order :authority-basis`. Rows are the successfully classified Q
+external reference rows in module/fragment/resolution order;
+`:ordinal` is dense from zero, fragment-resolution ordinal is the visited ID's
+position in G `:resolution-reference-syntax-ids`, consumer source ID is the
+module's authenticated SH06 semantic projection ID, and authority basis is
+exactly the successful classifier result from the six closed values above.
+Define:
+
+```clojure
+Q-REFERENCE-ROWS =
+  (vec
+    (for [M MODULE-TRANSACTIONS
+          :let [Q (:authenticated-core-request M)]
+          G (:fragment-manifest Q)
+          fragment-resolution-ordinal
+          (range (count (:resolution-reference-syntax-ids G)))
+          :let [reference-id
+                (nth (:resolution-reference-syntax-ids G)
+                     fragment-resolution-ordinal)
+                R (UNIQUE-BY :reference-syntax-id
+                             reference-id (:resolution-table Q))
+                B (UNIQUE-BY :binding-id (:binding-id R)
+                             (:binding-table Q))
+                F (UNIQUE-BY :syntax-id reference-id (:forms Q))]]
+      [M Q G fragment-resolution-ordinal R B F]))
+AUTHENTIC-EXTERNAL-REFERENCES =
+  (filterv #(not= :rejected (EXTERNAL-CLASSIFICATION %)) Q-REFERENCE-ROWS)
+Q-EXTERNAL-OCCURRENCES =
+  (mapv
+    (fn [ordinal [M Q G fragment-resolution-ordinal R B F]]
+      {:ordinal ordinal
+       :consumer-module-ordinal (:module-ordinal M)
+       :consumer-source-id
+       (get-in Q [:lineage :sh06-semantic-projection-id])
+       :consumer-fragment-id (:fragment-id G)
+       :fragment-ordinal (:ordinal G)
+       :fragment-resolution-ordinal fragment-resolution-ordinal
+       :reference-syntax-id (:reference-syntax-id R)
+       :binding-id (:binding-id B)
+       :upstream-binding-id (:upstream-binding-id B)
+       :binding-class (:binding-class B)
+       :symbol (:symbol R)
+       :position (:position R)
+       :resolution-order (:resolution-order R)
+       :authority-basis (EXTERNAL-CLASSIFICATION
+                          [M Q G fragment-resolution-ordinal R B F])})
+    (range) AUTHENTIC-EXTERNAL-REFERENCES)
+Q-EXTERNAL-ROOT = MR(:l2-external-edges, Q-EXTERNAL-OCCURRENCES)
+L2-EXTERNAL-BINDINGS =
+  {:entries Q-EXTERNAL-OCCURRENCES :root Q-EXTERNAL-ROOT}
+```
+
+`UNIQUE-BY(K,V,ROWS)` returns the sole complete row whose K value is V and
+rejects zero or multiple matches. `EXTERNAL-CLASSIFICATION` is exactly the
+closed cond above, applied to the tuple's authentic joins; it has no other
+successful value.
+
+Q-EXTERNAL-OCCURRENCES is the complete per-reference census; a fragment's
+`:external-binding-ids` remains its stable-distinct binding projection rather
+than being misrepresented as an edge census.
+
+The only literal link-product invocation is the I9 object-mode wrapper already
+defined by this architecture. Its `(C,T)` arguments are the immutable Git
+commit/tree pair; the wrapper opens, finalizes, and returns the receipt for its
+own governed source session. Calling the legacy 00945 zero-argument entrypoint
+directly is forbidden because its current implementation can resolve live
+paths.
+
+```clojure
+require (set (keys RECEIPTED-BUNDLE-CORE-PRODUCTS)) =
+  #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
+    :source-forms :module-transactions :source-read-receipt}
+AUTHENTIC-M0 = RECEIPTED-BUNDLE-CORE-PRODUCTS[:m0s]
+AUTHENTIC-M1 = RECEIPTED-BUNDLE-CORE-PRODUCTS[:m1]
+BUNDLE-CORE = RECEIPTED-BUNDLE-CORE-PRODUCTS[:bundle-core]
+BUNDLE-CORE-ID =
+  RECEIPTED-BUNDLE-CORE-PRODUCTS[:execution-bundle-core-id]
+require (set (keys BUNDLE-CORE)) =
+  #{:domain :schema-version :manifest-id :module-plans :routes :public-roots}
+require BUNDLE-CORE[:domain] =
+  :gravity/sh07-b51-execution-bundle-core-id-v1
+require BUNDLE-CORE-ID =
+  p15-s23-sh07-b51-canonical-id(BUNDLE-CORE) = H(BUNDLE-CORE)
+require (mapv :source-sha256 AUTHENTIC-M0) =
+  (mapv :raw-sha256 (subvec SOURCE-DESCRIPTORS 3 10))
+require (count AUTHENTIC-M1[:edges]) = 1480
+require AUTHENTIC-M1[:manifest-id] = BUNDLE-CORE[:manifest-id]
+```
+
+During this invocation, the wrapper's seven `:callsite-census` reads and seven
+`:link-authority` reads are exactly SOURCE-EVENTS ordinals 10-23, and each read
+is supplied only the C/T blob bound by the corresponding SOURCE-DESCRIPTORS
+ordinal 3-9. The same session first performs the seven module-validation reads
+at event ordinals 3-9. A direct live-path read, legacy zero-argument invocation,
+or invocation outside the wrapper's private session rejects. The returned
+keyset is exact. `:source-forms` is a semantic envelope member and the session's
+host-only source handles are not returned; neither enters an identity preimage
+except through the separately specified normalized transcript. AUTHENTIC-M0 is the seven complete freshly recomputed
+module-source descriptors and AUTHENTIC-M1 is the complete freshly recomputed
+`:gravity/sh07-b51-link-manifest-v1`. M1 has exactly `:artifact :schema-version :manifest-id
+:module-source-ids :edges`; its edge rows have exactly `:ordinal
+:caller-module-source-id :caller-function :caller-function-source-hash
+:callsite-path :callee-module-source-id :callee-function
+:callee-function-source-hash :arity :owner-edge :authorization`. Existing M1
+verification proves dense ordinals, canonical order, exact source hashes,
+`:authenticated-b51-namespace-external` authorization, and the closed
+1,480-edge governed census.
+
+The carrier binds all seven module transactions rather than a singular
+unrelated SH06 artifact. Define these complete vectors in module order:
+
+```clojure
+SH06-RESOLUTION-ARTIFACTS =
+  (mapv :resolution-artifact MODULE-TRANSACTIONS)
+SH06-RESOLUTION-ARTIFACT-IDS =
+  (mapv :artifact-id SH06-RESOLUTION-ARTIFACTS)
+SH06-RESOLUTION-VERIFICATIONS =
+  (mapv sh06-resolution-artifact-verification SH06-RESOLUTION-ARTIFACTS)
+SH06-SEMANTIC-PROJECTION-IDS =
+  (mapv #(get-in % [:authenticated-core-request :lineage
+                    :sh06-semantic-projection-id]) MODULE-TRANSACTIONS)
+RESOLUTION-ARTIFACT-PATHS =
+  (mapv #(vector :resolution-artifacts %) (range 7))
+SEMANTIC-PROJECTION-PATHS =
+  (mapv #(vector :semantic-projection-ids %) (range 7))
+LINK-AUTHORITY-EVENT-PRODUCT-IDS =
+  (mapv :product-id (subvec SOURCE-EVENTS 17 24))
+LINK-AUTHORITY-ID =
+  H([:gravity/sh07-b51-sh06-link-authority-id-v1
+     {:resolution-artifact-ids SH06-RESOLUTION-ARTIFACT-IDS
+      :semantic-projection-ids SH06-SEMANTIC-PROJECTION-IDS
+      :event-product-ids LINK-AUTHORITY-EVENT-PRODUCT-IDS
+      :manifest-id AUTHENTIC-M1[:manifest-id]}])
+SH06-AUTHORITY-CARRIER-BASE =
+  {:content C/T
+   :source-descriptors (subvec SOURCE-DESCRIPTORS 3 10)
+   :bundle-core-id BUNDLE-CORE-ID
+   :resolution-artifact-paths RESOLUTION-ARTIFACT-PATHS
+   :resolution-artifacts SH06-RESOLUTION-ARTIFACTS
+   :resolution-verifications SH06-RESOLUTION-VERIFICATIONS
+   :semantic-projection-paths SEMANTIC-PROJECTION-PATHS
+   :semantic-projection-ids SH06-SEMANTIC-PROJECTION-IDS
+   :module-source-descriptors AUTHENTIC-M0
+   :link-manifest AUTHENTIC-M1
+   :link-authority-event-product-ids LINK-AUTHORITY-EVENT-PRODUCT-IDS
+   :link-authority-id LINK-AUTHORITY-ID
+   :expected-edge-census AUTHENTIC-M1[:edges]}
+SH06-AUTHORITY-CARRIER-ID =
+  H([:gravity/sh07-b51-sh06-authority-carrier-id-v1
+     SH06-AUTHORITY-CARRIER-BASE])
+SH06-AUTHORITY-CARRIER =
+  (assoc SH06-AUTHORITY-CARRIER-BASE
+         :carrier-id SH06-AUTHORITY-CARRIER-ID)
+CARRIER-KEYSET =
+  #{:content :source-descriptors :bundle-core-id
+    :resolution-artifact-paths :resolution-artifacts
+    :resolution-verifications :semantic-projection-paths
+    :semantic-projection-ids :module-source-descriptors :link-manifest
+    :link-authority-event-product-ids :link-authority-id
+    :expected-edge-census :carrier-id}
+CARRIER-VALID? =
+  (and (= (set (keys SH06-AUTHORITY-CARRIER)) CARRIER-KEYSET)
+       (= (dissoc SH06-AUTHORITY-CARRIER :carrier-id)
+          SH06-AUTHORITY-CARRIER-BASE)
+       (= (:carrier-id SH06-AUTHORITY-CARRIER)
+          SH06-AUTHORITY-CARRIER-ID)
+       (= SH06-AUTHORITY-CARRIER-ID
+          H([:gravity/sh07-b51-sh06-authority-carrier-id-v1
+             SH06-AUTHORITY-CARRIER-BASE]))
+       (= 7 (count SH06-RESOLUTION-ARTIFACTS)
+          (count SH06-RESOLUTION-VERIFICATIONS)
+          (count SH06-SEMANTIC-PROJECTION-IDS))
+       (every? #(= :passed (:status %)) SH06-RESOLUTION-VERIFICATIONS)
+       (= (:resolution-artifacts SH06-AUTHORITY-CARRIER)
+          SH06-RESOLUTION-ARTIFACTS)
+       (= (:resolution-verifications SH06-AUTHORITY-CARRIER)
+          SH06-RESOLUTION-VERIFICATIONS)
+       (= (:semantic-projection-ids SH06-AUTHORITY-CARRIER)
+          SH06-SEMANTIC-PROJECTION-IDS)
+       (= (:module-source-descriptors SH06-AUTHORITY-CARRIER) AUTHENTIC-M0)
+       (= (:link-manifest SH06-AUTHORITY-CARRIER) AUTHENTIC-M1)
+       (= (:link-authority-id SH06-AUTHORITY-CARRIER) LINK-AUTHORITY-ID)
+       (= (:expected-edge-census SH06-AUTHORITY-CARRIER)
+          AUTHENTIC-M1[:edges]))
+```
+
+Every artifact has the existing closed SH06 outer keyset and recomputed
+artifact ID; every verification is the complete fresh passing result for the
+artifact at the same ordinal. Every semantic projection ID equals the ID in the
+same transaction's Q_i lineage. `AUTHENTIC-M0` equals the carrier's complete
+`:module-source-descriptors`, `AUTHENTIC-M1` equals its complete
+`:link-manifest`, and their source IDs agree in module order. No summary,
+caller-supplied row, separately sorted copy, singular-artifact substitution, or
+path value outside these two literal seven-row path vectors is admitted.
+
+For each Q external occurrence X, F is the unique Q form whose syntax ID is X
+`:reference-syntax-id` and P is the unique parent form. A Q cross-call candidate
+requires X position `:operator`, P kind `:list`, F as the first P child, and
+arity `(dec (count (:child-form-ids P)))`. G must satisfy
+`G[:root-form-ids] = [Q_i[:top-level-form-ids][G[:ordinal]]]` byte-for-byte,
+and its sole root must be the unique ancestor root reached from P. `TOPIDXc` is
+that root's unique index in Q_i `:top-level-form-ids`. `REGc` is the unique full
+OWNER-REGISTRY row with X consumer module ordinal, top-level-form ordinal
+TOPIDXc, and matching declared defn/root coordinates; it supplies caller
+function. An ordinal-only fragment-to-owner shortcut rejects. `M0c` is the unique M0 descriptor
+at that module ordinal and must have module equal Q module namespace and source
+SHA equal Q lineage source revision ID. Exactly one D in M0c
+`:external-bindings` must have `D[:symbol] = B[:name]`; R is joined through the
+already required checked-core binding-name predicate, so alias-qualified and
+fully-qualified spellings are not falsely equated with the unqualified binding
+name. D must also have a different callee module ordinal and the same arity.
+Rows failing any condition remain in
+Q-EXTERNAL-OCCURRENCES but are not SH06 cross-module calls.
+
+The call-list form P has a unique child-index path `QP` from its Q_i top-level
+root, reconstructed by following `:parent-form-id` links and finding each child
+exactly once in its parent's `:child-form-ids`. The owning root must be the
+authenticated SH05 expansion `(def NAME (fn PARAMS BODY...))`: the fn form is
+root child 2, has the recorded introduced-fn origin, and P descends from its
+child q where q is at least 2. This follows the literal governed expansion
+`(defn name parameters & body) -> (def name (fn parameters & body))`; the body
+forms are transported unchanged.
+
+`Q-RAW-CALLSITE-PATH(P)` begins with `[(- q 2)]` and appends the descendant
+coordinates from fn child q to P. For list and vector parents, each coordinate
+is the child index. For a map parent, pair its Q children as key/value entries,
+locate the selected pair uniquely after sorting complete entries by
+`pr-str(reader-canonical-value(entry))`, and append the pair's canonical rank
+followed by 0 for its key or 1 for its value. For a set parent, locate the
+selected complete child uniquely after sorting values by
+`pr-str(reader-canonical-value(value))` and append its canonical rank. The
+complete child value is reconstructed from the closed Q form subtree; a missing,
+duplicate, non-descendant, malformed map pair, or canonical comparison collision
+rejects. This is exactly the recursive coordinate grammar used by the raw M1
+source callsite census, including its map and set ordering.
+
+`UNIQUE-WHERE(PRED,ROWS)` evaluates PRED once on every complete row, returns the
+sole row for which it is true, and rejects unless exactly one such row exists.
+`UNIQUE-INDEX(V,X)` returns the sole zero-based index at which V equals X and
+rejects unless there is exactly one. With those selectors, `Q-CROSS-CALLS` is
+the following literal vector in X `:ordinal` order. `TOP` and `TOPIDX` are the
+acyclic unique-parent selectors already defined for OWNER-REGISTRY. The
+successful `Q-RAW-CALLSITE-PATH` call includes the authenticated def/fn/body
+checks and canonical collection-coordinate checks stated above; it returns no
+value on rejection.
+
+```clojure
+Q-CROSS-CALLS =
+  (vec
+    (for [X Q-EXTERNAL-OCCURRENCES
+          :let [[M Q G fragment-resolution-ordinal R B F]
+                (nth AUTHENTIC-EXTERNAL-REFERENCES (:ordinal X))]
+          :when (= X (nth Q-EXTERNAL-OCCURRENCES (:ordinal X)))
+          :when (= [(:fragment-resolution-ordinal X)
+                    (:reference-syntax-id X) (:binding-id X)]
+                   [fragment-resolution-ordinal
+                    (:reference-syntax-id R) (:binding-id B)])
+          :when (= :operator (:position X) (:position R))
+          :let [P (UNIQUE-BY :form-id (:parent-form-id F) (:forms Q))]
+          :when (and (= :list (:kind P))
+                     (= (:form-id F) (first (:child-form-ids P))))
+          :let [TOPIDXc (TOPIDX Q P)
+                Fdef (TOP Q P)]
+          :when (= (:root-form-ids G)
+                   [(nth (:top-level-form-ids Q) (:ordinal G))]
+                   [(:form-id Fdef)])
+          :let [REGc
+                (UNIQUE-WHERE
+                  #(and (= (:module-ordinal %) (:consumer-module-ordinal X))
+                        (= (:top-level-form-ordinal %) TOPIDXc)
+                        (= (:sh05-expanded-def-id %) (:syntax-id Fdef)))
+                  OWNER-REGISTRY)
+                TRACEc
+                (UNIQUE-WHERE
+                  #(and (= 'defn (:macro %))
+                        (= (:output-def-syntax-id %)
+                           (:sh05-expanded-def-id REGc))
+                        (= (:introduced-fn-syntax-id %)
+                           (:sh05-expanded-fn-id REGc)))
+                  (:macro-origin-traces Q))
+                Ffn (UNIQUE-BY :syntax-id (:introduced-fn-syntax-id TRACEc)
+                               (:forms Q))]
+          :when (and (= (:parent-form-id Ffn) (:form-id Fdef))
+                     (= (:form-id Ffn) (nth (:child-form-ids Fdef) 2))
+                     (= (:sh05-expanded-def-id REGc) (:syntax-id Fdef))
+                     (= (:sh05-expanded-fn-id REGc) (:syntax-id Ffn))
+                     (some? (Q-RAW-CALLSITE-PATH P)))
+          :let [M0c
+                (UNIQUE-BY :module-ordinal (:consumer-module-ordinal X)
+                           AUTHENTIC-M0)]
+          :when (and (= (:module M0c) (get-in Q [:module :namespace]))
+                     (= (:source-sha256 M0c)
+                        (get-in Q [:lineage :source-revision-id])))
+          :let [D
+                (UNIQUE-WHERE
+                  #(and (= (:symbol %) (:name B))
+                        (not= (:callee-module-ordinal %)
+                              (:consumer-module-ordinal X))
+                        (= (:arity %)
+                           (dec (count (:child-form-ids P)))))
+                  (:external-bindings M0c))
+                M0p (UNIQUE-BY :module-ordinal (:callee-module-ordinal D)
+                               AUTHENTIC-M0)
+                DP (UNIQUE-WHERE
+                     #(and (= (:name %) (:symbol D))
+                           (= (:arity %) (:arity D)))
+                     (:definitions M0p))]
+          :when (and (= (:module M0p) (:callee-module D))
+                     (= (:source-sha256 M0p) (:callee-source-sha256 D))
+                     (= (:source-hash DP)
+                        (:callee-definition-source-hash D)))]
+      [X R B F P G REGc M0c D M0p]))
+```
+
+Every X/R/B/F/G coordinate therefore comes from the exact indexed
+AUTHENTIC-EXTERNAL-REFERENCES tuple; P, REGc, M0c, D, and M0p each have exactly
+one match. No reconstituted summary map or omitted tuple member is admitted.
+`Q-NORMALIZED-ROW` below accepts one such tuple only.
+
+For a Q cross call, M0p is the unique AUTHENTIC-M0 row whose module ordinal is
+D `:callee-module-ordinal`; its module-source ID and module name must equal D's
+callee source/name coordinates. Define the two normalized constructors and
+the sole sort operator exactly:
+
+```clojure
+Q-NORMALIZED-ROW([X R B F P G REGc M0c D M0p]) =
+  {:caller-module-source-id M0c[:module-source-id]
+   :caller-function REGc[:declared-name]
+   :callsite-path (Q-RAW-CALLSITE-PATH P)
+   :callee-module-source-id M0p[:module-source-id]
+   :callee-function D[:symbol]
+   :arity (dec (count P[:child-form-ids]))
+   :owner-edge (OWNER-EDGE M0c[:owner] M0p[:owner])}
+M1-NORMALIZED-ROW(E) =
+  {:caller-module-source-id E[:caller-module-source-id]
+   :caller-function E[:caller-function]
+   :callsite-path E[:callsite-path]
+   :callee-module-source-id E[:callee-module-source-id]
+   :callee-function E[:callee-function]
+   :arity E[:arity]
+   :owner-edge E[:owner-edge]}
+UNSIGNED-W-SORT(KEY, ROWS) =
+  (let [ENCODED-KEYS (mapv #(vec (W(KEY(%)))) ROWS)]
+    (require (= (count ENCODED-KEYS)
+                (count (set ENCODED-KEYS))))
+    (vec
+      (sort (fn [A B]
+              (UNSIGNED-LEXICOGRAPHIC-BYTES
+                (W(KEY(A))) (W(KEY(B)))))
+            ROWS)))
+```
+
+`UNSIGNED-LEXICOGRAPHIC-BYTES` compares each octet as 0 through 255 and uses
+the shorter vector first only when it is a proper prefix; it returns a strict
+negative/zero/positive comparator result. Equal encoded keys reject before
+sorting, so the comparator never chooses between distinct tied rows. The
+sorted result is realized as a vector. W is the already
+closed wire codec; no host comparator, locale, printed-map order, or alternate
+serialization is admitted.
+
+`OWNER-EDGE` is the literal three-case 00945 function: equal owners map
+`:r1-producer` to `:producer-internal` and `:r6-independent-verifier` to
+`:root6-internal`; caller `:r8-finalizer` plus callee `:r1-producer` maps to
+`:root8-to-producer-interface`; every other pair rejects. D `:owner-edge` must
+equal that derived value. Each M1 edge E emits the same exact keyset by selecting
+its seven corresponding fields, and E `:owner-edge` must equal both D
+`:owner-edge` and the derived OWNER-EDGE value.
+
+Define the two complete values before any edge or receipt exists:
+
+```clojure
+Q-CROSS-NORMALIZED =
+  (UNSIGNED-W-SORT NORMALIZED-KEY
+    (mapv Q-NORMALIZED-ROW Q-CROSS-CALLS))
+M1-NORMALIZED =
+  (UNSIGNED-W-SORT NORMALIZED-KEY
+    (mapv M1-NORMALIZED-ROW AUTHENTIC-M1[:edges]))
+NORMALIZED-KEY(row) =
+  [row[:caller-module-source-id] row[:caller-function]
+   row[:callsite-path] row[:callee-module-source-id]
+   row[:callee-function] row[:arity] row[:owner-edge]]
+```
+
+Both complete vectors must be byte-equal, contain exactly 1,480 rows, and have
+1,480 distinct NORMALIZED-KEY values. The pre-receipt pairing constructor is
+literal:
+
+```clojure
+PAIRING =
+  (mapv
+    (fn [E]
+      (let [QC
+            (UNIQUE-WHERE
+              #(= (M1-NORMALIZED-ROW E) (Q-NORMALIZED-ROW %))
+              Q-CROSS-CALLS)]
+        [E QC]))
+    AUTHENTIC-M1[:edges])
+```
+
+PAIRING is therefore the vector, in M1 ordinal order, of exact `[E QC]` pairs,
+where QC is one complete ten-value Q cross-call tuple. It must consume every
+M1 edge and every Q cross call exactly once.
+In particular `Q-RAW-CALLSITE-PATH(P) = E[:callsite-path]` byte-for-byte; no
+K0 occurrence-rank fallback exists. A zero, duplicate, omitted,
+alias-normalized, path-rewritten, or reordered join rejects.
+
+The provider module Q_j and M0p are selected by D callee module ordinal and E
+`:callee-module-source-id`. M0p module/source SHA and D callee
+source/definition hashes must match the authentic M1/M0 values. The unique full
+OWNER-REGISTRY row `REGp` in Q_j whose declared name and arity equal D symbol
+and arity supplies the provider top-level form ordinal, defn ID, and declared
+body root. `PROVIDER-TOP-ID` is
+`Q_j[:top-level-form-ids][REGp[:top-level-form-ordinal]]` and
+`PROVIDER-FRAGMENT` is the unique Q_j fragment containing PROVIDER-TOP-ID in
+`:root-form-ids`. `FRp` is the unique RC_j function row used to construct REGp:
+its module ordinal, declared name, arity, defn ID, function-form ID, and declared
+body-root ID must reproduce REGp's source, top-level, SH05, and body coordinates
+byte-for-byte. FRp supplies `:definition-binding-id`; zero or multiple FRp rows
+reject. `PROVIDER-BINDING` is the unique Q_j binding Bp with
+that ID; it must have class `:namespace`, name D symbol, namespace equal both
+Q_j module namespace and D callee module, and exactly one membership in
+PROVIDER-FRAGMENT `:local-binding-ids`. `CONSUMER-FRAGMENT` is the unique Q_i fragment containing
+the paired Q reference syntax ID. Consumer and provider projected binding IDs
+are deliberately not compared because each hashes its own module source
+revision and definition syntax.
+
+The provider selector is literal. `require` rejects construction when its
+predicate is false; it does not return a value. Every UNIQUE selector rejects
+zero or multiple matches.
+
+```clojure
+PROVIDER-JOIN(E,X,D,M0p) =
+  (let [T (UNIQUE-BY :module-ordinal (:callee-module-ordinal D)
+                     MODULE-TRANSACTIONS)
+        Q_j (:authenticated-core-request T)
+        RC_j (:resolved-core-carrier T)
+        REGp
+        (UNIQUE-WHERE
+          #(and (= (:module-ordinal %) (:callee-module-ordinal D))
+                (= (:declared-name %) (:symbol D))
+                (= (:arity %) (:arity D)))
+          OWNER-REGISTRY)
+        FRp
+        (UNIQUE-WHERE
+          #(and (= :named-top-level (:definition-kind %))
+                (= (:definition-name %) (:declared-name REGp))
+                (= (:fixed-arity %) (:arity REGp))
+                (= (:function-syntax-id %)
+                   (:sh05-expanded-fn-id REGp))
+                (= (:definition-core-node-id %) (:defn-id REGp))
+                (= (:body-core-node-id %)
+                   (:declared-body-root-id REGp)))
+          (:function-records RC_j))
+        PROVIDER-TOP-ID
+        (nth (:top-level-form-ids Q_j)
+             (:top-level-form-ordinal REGp))
+        PROVIDER-TOP
+        (UNIQUE-BY :form-id PROVIDER-TOP-ID (:forms Q_j))
+        TRACEp
+        (UNIQUE-WHERE
+          #(and (= 'defn (:macro %))
+                (= (:output-def-syntax-id %)
+                   (:sh05-expanded-def-id REGp))
+                (= (:introduced-fn-syntax-id %)
+                   (:sh05-expanded-fn-id REGp)))
+          (:macro-origin-traces Q_j))
+        Ffnp
+        (UNIQUE-BY :syntax-id (:introduced-fn-syntax-id TRACEp)
+                   (:forms Q_j))
+        PROVIDER-FRAGMENT
+        (UNIQUE-WHERE #(= (:root-form-ids %) [PROVIDER-TOP-ID])
+                      (:fragment-manifest Q_j))
+        Bp (UNIQUE-BY :binding-id (:definition-binding-id FRp)
+                      (:binding-table Q_j))
+        DP (UNIQUE-WHERE
+             #(and (= (:name %) (:symbol D))
+                   (= (:arity %) (:arity D)))
+             (:definitions M0p))]
+    (require
+      (and (= (:module-ordinal T) (:callee-module-ordinal D))
+           (= (get-in Q_j [:module :namespace]) (:callee-module D)
+              (:module M0p))
+           (= (get-in Q_j [:lineage :source-revision-id])
+              (:source-sha256 M0p) (:callee-source-sha256 D))
+           (= (:module-source-id M0p) (:callee-module-source-id E))
+           (= (:source-id REGp)
+              (get-in Q_j [:lineage :sh06-semantic-projection-id]))
+           (= (:symbol D) (:callee-function E))
+           (= (:arity D) (:arity E) (:fixed-arity FRp))
+           (= (:source-hash DP) (:callee-definition-source-hash D)
+              (:callee-function-source-hash E))
+           (= (:owner-edge D) (:owner-edge E)
+              (OWNER-EDGE (:owner (UNIQUE-BY
+                                    :module-ordinal
+                                    (:consumer-module-ordinal X)
+                                    AUTHENTIC-M0))
+                          (:owner M0p)))
+           (= :authenticated-b51-namespace-external (:authorization E))
+           (= (:syntax-id PROVIDER-TOP) (:sh05-expanded-def-id REGp))
+           (= (:form-id Ffnp) (:function-form-id FRp))
+           (= (:syntax-id Ffnp) (:function-syntax-id FRp)
+              (:sh05-expanded-fn-id REGp))
+           (= (:parent-form-id Ffnp) (:form-id PROVIDER-TOP))
+           (= (:form-id Ffnp) (nth (:child-form-ids PROVIDER-TOP) 2))
+           (= :namespace (:binding-class Bp))
+           (= (:name Bp) (:symbol D))
+           (= (:namespace Bp) (get-in Q_j [:module :namespace])
+              (:callee-module D))
+           (= 1 (MEMBERSHIP-COUNT (:local-binding-ids PROVIDER-FRAGMENT)
+                                  (:binding-id Bp)))))
+    [Q_j REGp FRp PROVIDER-TOP-ID PROVIDER-FRAGMENT Bp]))
+```
+
+The returned value is exactly that six-value vector; T, RC_j, PROVIDER-TOP,
+and DP are checked intermediates and are not omitted caller inputs. Zero or
+multiple matches or any failed equality reject.
+
+`EDGE-BASE` has exactly `:ordinal :manifest-id :m1-edge
+:consumer-module-ordinal :consumer-source-id :consumer-fragment-id
+:consumer-reference-syntax-id :consumer-binding-id :symbol :resolution-order
+:provider-module-ordinal :provider-source-id :provider-fragment-id
+:provider-binding-id`. `:ordinal` is E ordinal, manifest ID is M1 manifest ID,
+`:m1-edge` is the complete exact E row, consumer fields come from X, and
+provider fields come from Q_j,
+PROVIDER-FRAGMENT, and Bp. Define, before any authority receipt exists:
+
+```clojure
+EDGE-BASE([E [X R B F P G REGc M0c D M0p]]) =
+  (let [[Q_j REGp FRp PROVIDER-TOP-ID PROVIDER-FRAGMENT Bp]
+        (PROVIDER-JOIN E X D M0p)]
+    {:ordinal E[:ordinal]
+     :manifest-id AUTHENTIC-M1[:manifest-id]
+     :m1-edge E
+     :consumer-module-ordinal X[:consumer-module-ordinal]
+     :consumer-source-id X[:consumer-source-id]
+     :consumer-fragment-id X[:consumer-fragment-id]
+     :consumer-reference-syntax-id X[:reference-syntax-id]
+     :consumer-binding-id X[:binding-id]
+     :symbol X[:symbol]
+     :resolution-order X[:resolution-order]
+     :provider-module-ordinal D[:callee-module-ordinal]
+     :provider-source-id
+     Q_j[:lineage :sh06-semantic-projection-id]
+     :provider-fragment-id PROVIDER-FRAGMENT[:fragment-id]
+     :provider-binding-id Bp[:binding-id]}))
+EDGE-BASES-IN-M1-ORDINAL-ORDER =
+  (mapv EDGE-BASE PAIRING)
+EDGE-ID = MID(:l2-expected-edge-census, EDGE-BASE)
+EXPECTED = (mapv #(assoc % :edge-id (MID :l2-expected-edge-census %))
+                 EDGE-BASES-IN-M1-ORDINAL-ORDER)
+EXPECTED-ROOT = MR(:l2-expected-edge-census, EXPECTED)
+ACCEPTED-EDGE-IDS = (mapv :edge-id EXPECTED)
+```
+
+All edge IDs are therefore typed edge IDs; no Q binding ID is placed in either
+partition. EXPECTED has dense ordinals 0 through 1479 and unique edge IDs; its
+`(mapv :m1-edge EXPECTED)` must equal AUTHENTIC-M1 `:edges`
+byte-for-byte. Duplicate edge IDs, an M1 edge without exactly one Q pair, a Q
+pair without exactly one M1 edge, or any authority row not in EXPECTED rejects.
+
+The mandatory unauthorized-cross-fragment candidate is receipt-free. `SEED` is
+the first EDGE-BASE in M1 order; the authentic 1,480-row census proves it
+exists. Its consumer and provider module, source, fragment, and binding
+coordinates must differ. `BAD-BASE` swaps the four endpoint pairs
+`:consumer-module-ordinal`/`:provider-module-ordinal`,
+`:consumer-source-id`/`:provider-source-id`,
+`:consumer-fragment-id`/`:provider-fragment-id`, and
+`:consumer-binding-id`/`:provider-binding-id`, leaving `:m1-edge`,
+`:consumer-reference-syntax-id`, and every other field unchanged. Define:
+
+`CONSUMER-ENDPOINT(X)` has exactly `:module-ordinal :source-id :fragment-id
+:binding-id` and takes those values from X's four `:consumer-*` fields.
+`PROVIDER-ENDPOINT(X)` has the same exact keyset and takes its values from X's
+four `:provider-*` fields.
+
+```clojure
+SEED = (first EDGE-BASES-IN-M1-ORDINAL-ORDER)
+BAD-BASE =
+  (assoc SEED
+    :consumer-module-ordinal (:provider-module-ordinal SEED)
+    :consumer-source-id (:provider-source-id SEED)
+    :consumer-fragment-id (:provider-fragment-id SEED)
+    :consumer-binding-id (:provider-binding-id SEED)
+    :provider-module-ordinal (:consumer-module-ordinal SEED)
+    :provider-source-id (:consumer-source-id SEED)
+    :provider-fragment-id (:consumer-fragment-id SEED)
+    :provider-binding-id (:consumer-binding-id SEED))
+CONSUMER-ENDPOINT(X) =
+  {:module-ordinal X[:consumer-module-ordinal]
+   :source-id X[:consumer-source-id]
+   :fragment-id X[:consumer-fragment-id]
+   :binding-id X[:consumer-binding-id]}
+PROVIDER-ENDPOINT(X) =
+  {:module-ordinal X[:provider-module-ordinal]
+   :source-id X[:provider-source-id]
+   :fragment-id X[:provider-fragment-id]
+   :binding-id X[:provider-binding-id]}
+BAD-EDGE-ID = MID(:l2-expected-edge-census, BAD-BASE)
+DIAGNOSTIC-BASE =
+{:code "SH07-B51-EDGE-AUTHORITY"
+ :status :rejected
+ :rule "L2-UNKNOWN-CORE-FORM"
+ :reason :unauthenticated-b51-external-link
+ :input-id (:edge-id (first EXPECTED))
+ :mutated-id BAD-EDGE-ID
+ :expected {:consumer-module-ordinal (:consumer-module-ordinal SEED)
+            :consumer-source-id (:consumer-source-id SEED)
+            :consumer-fragment-id (:consumer-fragment-id SEED)
+            :consumer-binding-id (:consumer-binding-id SEED)}
+ :actual {:consumer-module-ordinal (:consumer-module-ordinal BAD-BASE)
+          :consumer-source-id (:consumer-source-id BAD-BASE)
+          :consumer-fragment-id (:consumer-fragment-id BAD-BASE)
+          :consumer-binding-id (:consumer-binding-id BAD-BASE)}}
+DIAGNOSTIC-ID = MID(:l2-edge-diagnostics, DIAGNOSTIC-BASE)
+L2-OPERATION = UNIQUE-BY(:owner, :l2, OPERATION-MANIFEST)
+L2-FUEL-RECEIPT =
+  UNIQUE-BY(:operation-id, L2-OPERATION[:operation-id], FUEL-RECEIPTS)
+L2-FUEL-RECEIPT-ID = L2-FUEL-RECEIPT[:receipt-id]
+FIXTURE-BASE =
+{:input-id (:edge-id (first EXPECTED))
+ :mutation {:operation :swap-endpoints
+            :paths [[:consumer-module-ordinal] [:consumer-source-id]
+                    [:consumer-fragment-id] [:consumer-binding-id]
+                    [:provider-module-ordinal] [:provider-source-id]
+                    [:provider-fragment-id] [:provider-binding-id]]
+            :before [(CONSUMER-ENDPOINT SEED)
+                     (PROVIDER-ENDPOINT SEED)]
+            :after [(CONSUMER-ENDPOINT BAD-BASE)
+                    (PROVIDER-ENDPOINT BAD-BASE)]}
+ :mutated-id BAD-EDGE-ID
+ :diagnostic-id DIAGNOSTIC-ID
+ :status :rejected
+ :fuel-receipt-id L2-FUEL-RECEIPT-ID}
+FIXTURE-ID = MID(:l2-edge-negative-fixtures, FIXTURE-BASE)
+REJECTED-EDGE-IDS = []
+```
+
+BAD-EDGE-ID must be absent from ACCEPTED-EDGE-IDS. The independent verifier
+selects L2-FUEL-RECEIPT by joining its `:operation-id` to the unique
+OPERATION-MANIFEST row whose owner is `:l2`; zero or multiple operation or
+receipt matches reject. It does not obtain that receipt through WITNESS. The
+independent verifier
+rejects BAD-BASE because its unchanged M1 caller endpoint no longer owns the Q
+reference, binding, or fragment. Diagnostic ID precedes fixture ID, the fixture
+contains the diagnostic ID, and the diagnostic contains no fixture ID, so no
+identity cycle exists.
+
+The authority receipt has exactly `:schema :content :source-descriptors
+:authenticated-sh06-artifact-ids :sh06-semantic-projection-ids
+:link-authority-id :owner-registry-root :q-external-root :expected-edge-root
+:expected-edge-census :accepted-edge-ids :rejected-edge-ids :self-id-omits
+`:receipt-id`; schema is `:gravity/sh07-b51-edge-authority-receipt-v1`. The
+exact receipt construction is:
+
+```clojure
+RECEIPT-KEYSET =
+  #{:schema :content :source-descriptors
+    :authenticated-sh06-artifact-ids :sh06-semantic-projection-ids
+    :link-authority-id :owner-registry-root :q-external-root
+    :expected-edge-root :expected-edge-census :accepted-edge-ids
+    :rejected-edge-ids :self-id-omits :receipt-id}
+RECEIPT-BASE =
+  {:schema :gravity/sh07-b51-edge-authority-receipt-v1
+   :content C/T
+   :source-descriptors
+   SH06-AUTHORITY-CARRIER[:source-descriptors]
+   :authenticated-sh06-artifact-ids
+   (mapv :artifact-id SH06-AUTHORITY-CARRIER[:resolution-artifacts])
+   :sh06-semantic-projection-ids
+   SH06-AUTHORITY-CARRIER[:semantic-projection-ids]
+   :link-authority-id SH06-AUTHORITY-CARRIER[:link-authority-id]
+   :owner-registry-root OWNER-REGISTRY-ROOT
+   :q-external-root Q-EXTERNAL-ROOT
+   :expected-edge-root EXPECTED-ROOT
+   :expected-edge-census EXPECTED
+   :accepted-edge-ids ACCEPTED-EDGE-IDS
+   :rejected-edge-ids []
+   :self-id-omits [[:receipt-id]]}
+RECEIPT-ID =
+  H([:gravity/sh07-b51-edge-authority-receipt-v1 RECEIPT-BASE])
+RECEIPT = (assoc RECEIPT-BASE :receipt-id RECEIPT-ID)
+```
+
+Content is C/T and source descriptors are the seven complete rows at ordinals
+3-9, not invented descriptor IDs. Artifact and semantic-projection vectors are
+the literal carrier-path projections above and contain seven values each in
+module order. Q external root is Q-EXTERNAL-ROOT, expected values are
+EXPECTED-ROOT and EXPECTED, accepted IDs are exactly ACCEPTED-EDGE-IDS,
+rejected IDs are exactly empty, and `:self-id-omits` is exactly
+`[[:receipt-id]]`. Thus
+`RECEIPT-ID = H([:gravity/sh07-b51-edge-authority-receipt-v1 RECEIPT-BASE])`.
+The receipt is the base associated with that ID and is independently derived by
+A and B from immutable source sessions before WITNESS or either certificate.
+It contains no final external-binding row, diagnostic ID, fuel receipt, edge
+authority root, witness, or certificate.
+
+The carrier's seven resolution artifacts, embedded SH05 artifacts, semantic
+projections, M0 descriptors, M1 manifest, and bundle core are all freshly
+verified under their existing domains. M0 source IDs must equal M1
+`:module-source-ids`, M1 manifest ID must equal BUNDLE-CORE manifest ID,
+BUNDLE-CORE routes must equal the dense M1 edge-ordinal projection, and carrier
+`:expected-edge-census` must equal M1 `:edges` byte-for-byte. The link-authority
+and carrier IDs are exactly LINK-AUTHORITY-ID and SH06-AUTHORITY-CARRIER-ID as
+constructed above; no `ARTIFACT-ID`, `EVENT-PRODUCT-IDS`, or
+`CARRIER-WITHOUT-CARRIER-ID` metavariable exists. Receipt artifact IDs,
+semantic-projection IDs, link-authority ID, and source descriptors must equal
+their four literal carrier projections byte-for-byte, and
+`(mapv :m1-edge EXPECTED)` must equal the carrier's raw expected edge census.
+
+Only after receipt construction, `ACCEPTED` is
+`(mapv #(assoc % :authority-receipt-id RECEIPT-ID :authorized true) EXPECTED)`.
+The existing edge ID is a typed reference to its unique EXPECTED row; the
+post-receipt row receives no new MID identity. Define the final predicates and
+value literally:
+
+```clojure
+RECEIPT-VALID? =
+  (and (= (set (keys RECEIPT)) RECEIPT-KEYSET)
+       (= (:schema RECEIPT)
+          :gravity/sh07-b51-edge-authority-receipt-v1)
+       (= (dissoc RECEIPT :receipt-id) RECEIPT-BASE)
+       (= (:receipt-id RECEIPT) RECEIPT-ID)
+       (= RECEIPT-ID
+          H([:gravity/sh07-b51-edge-authority-receipt-v1 RECEIPT-BASE]))
+       (= (:source-descriptors RECEIPT)
+          (:source-descriptors SH06-AUTHORITY-CARRIER))
+       (= (:authenticated-sh06-artifact-ids RECEIPT)
+          (mapv :artifact-id
+                (:resolution-artifacts SH06-AUTHORITY-CARRIER)))
+       (= (:sh06-semantic-projection-ids RECEIPT)
+          (:semantic-projection-ids SH06-AUTHORITY-CARRIER))
+       (= (:link-authority-id RECEIPT)
+          (:link-authority-id SH06-AUTHORITY-CARRIER))
+       (= (:owner-registry-root RECEIPT) OWNER-REGISTRY-ROOT)
+       (= (:q-external-root RECEIPT) Q-EXTERNAL-ROOT)
+       (= (:expected-edge-root RECEIPT) EXPECTED-ROOT)
+       (= (:expected-edge-census RECEIPT) EXPECTED)
+       (= (:accepted-edge-ids RECEIPT) ACCEPTED-EDGE-IDS)
+       (= (:rejected-edge-ids RECEIPT) [])
+       (= (:self-id-omits RECEIPT) [[:receipt-id]]))
+
+PAIRING-VALID? =
+  (and (= Q-CROSS-NORMALIZED M1-NORMALIZED)
+       (= 1480 (count Q-CROSS-NORMALIZED) (count M1-NORMALIZED)
+          (count PAIRING))
+       (= 1480 (count (set (map NORMALIZED-KEY Q-CROSS-NORMALIZED))))
+       (= (mapv first PAIRING) AUTHENTIC-M1[:edges])
+       (every? #(= (Q-NORMALIZED-ROW (second %))
+                   (M1-NORMALIZED-ROW (first %))) PAIRING))
+
+EXPECTED-VALID? =
+  (and (= 1480 (count EXPECTED))
+       (= (mapv :ordinal EXPECTED) (vec (range 1480)))
+       (= 1480 (count (set (map :edge-id EXPECTED))))
+       (every? #(= (:edge-id %)
+                   (MID :l2-expected-edge-census (dissoc % :edge-id)))
+               EXPECTED)
+       (= EXPECTED-ROOT (MR :l2-expected-edge-census EXPECTED))
+       (= (mapv :m1-edge EXPECTED) AUTHENTIC-M1[:edges])
+       (= (mapv :m1-edge EXPECTED)
+          SH06-AUTHORITY-CARRIER[:expected-edge-census]))
+
+ACCEPTED-VALID? =
+  (and (= 1480 (count ACCEPTED))
+       (= (mapv :ordinal ACCEPTED) (vec (range 1480)))
+       (= (mapv :edge-id ACCEPTED) ACCEPTED-EDGE-IDS
+          (:accepted-edge-ids RECEIPT))
+       (every? #(= (:authority-receipt-id %) RECEIPT-ID) ACCEPTED)
+       (every? #(= (:authorized %) true) ACCEPTED))
+
+ACTUAL-REJECTED = []
+PRE-COMPLETE =
+  (and CARRIER-VALID? RECEIPT-VALID? PAIRING-VALID?
+       EXPECTED-VALID? ACCEPTED-VALID?
+       (= (set (keys BAD-BASE)) (set (keys SEED)))
+       (not= (CONSUMER-ENDPOINT SEED) (PROVIDER-ENDPOINT SEED))
+       (= (CONSUMER-ENDPOINT BAD-BASE) (PROVIDER-ENDPOINT SEED))
+       (= (PROVIDER-ENDPOINT BAD-BASE) (CONSUMER-ENDPOINT SEED))
+       (= BAD-EDGE-ID (MID :l2-expected-edge-census BAD-BASE))
+       (not (contains? (set ACCEPTED-EDGE-IDS) BAD-EDGE-ID))
+       (= ACTUAL-REJECTED [])
+       (= (:rejected-edge-ids RECEIPT) ACTUAL-REJECTED))
+EDGE-AUTHORITY-ROOT =
+  (MR :l2-edge-authority [EXPECTED ACCEPTED ACTUAL-REJECTED])
+EDGE-AUTHORITY-KEYSET =
+  #{:receipt :expected-census :accepted :rejected :complete :root}
+EDGE-AUTHORITY =
+  {:receipt RECEIPT
+   :expected-census EXPECTED
+   :accepted ACCEPTED
+   :rejected ACTUAL-REJECTED
+   :complete PRE-COMPLETE
+   :root EDGE-AUTHORITY-ROOT}
+EDGE-AUTHORITY-VALID? =
+  (and (= (set (keys EDGE-AUTHORITY)) EDGE-AUTHORITY-KEYSET)
+       (= (:receipt EDGE-AUTHORITY) RECEIPT)
+       (= (:expected-census EDGE-AUTHORITY) EXPECTED)
+       (= (:accepted EDGE-AUTHORITY) ACCEPTED)
+       (= (:rejected EDGE-AUTHORITY) ACTUAL-REJECTED)
+       (= (:complete EDGE-AUTHORITY) PRE-COMPLETE)
+       (= (:root EDGE-AUTHORITY) EDGE-AUTHORITY-ROOT))
+COMPLETE =
+  (and PRE-COMPLETE EDGE-AUTHORITY-VALID?
+       (= true (:complete EDGE-AUTHORITY)))
+require COMPLETE = true
+```
+
+`RECEIPT-KEYSET` is exactly the printed receipt keyset above. Edge authority
+has exactly `:receipt :expected-census :accepted :rejected :complete :root` and
+must equal EDGE-AUTHORITY byte-for-byte; `:complete` is recomputed
+PRE-COMPLETE, and terminal COMPLETE additionally proves the full map and that
+stored value true. It is not a supplied boolean. No external resolution or cross-module edge absent from
+the authenticated projections may enter the core graph.
+
+The independent verifier's exact rejection is rule
+`"L2-UNKNOWN-CORE-FORM"` and reason
+`:unauthenticated-b51-external-link`; the stable enclosing diagnostic code is
+`"SH07-B51-EDGE-AUTHORITY"`. DIAGNOSTIC has exactly `:code :status :rule
+:reason :input-id :mutated-id :expected :actual :diagnostic-id`. FIXTURE has
+exactly `:input-id :mutation :mutated-id :diagnostic-id :status
+:fuel-receipt-id :fixture-id`. The final negative values are:
+
+```clojure
+DIAGNOSTIC = (assoc DIAGNOSTIC-BASE :diagnostic-id DIAGNOSTIC-ID)
+FIXTURE = (assoc FIXTURE-BASE :fixture-id FIXTURE-ID)
+L2-DIAGNOSTICS =
+{:entries [DIAGNOSTIC]
+ :root (MR :l2-edge-diagnostics [DIAGNOSTIC])}
+L2-NEGATIVE-FIXTURES =
+{:entries [FIXTURE]
+ :root (MR :l2-edge-negative-fixtures [FIXTURE])}
+```
+
+Rejection commits no external row, edge-authority row, graph row, or output
+artifact. The acyclic construction order is Q/M0/M1/OWNER, Q external
+census/root, normalized cross-call bijection, EDGE-BASE/EDGE-ID/EXPECTED/root
+and BAD/DIAGNOSTIC ID, fuel receipt, then independent FIXTURE-ID and authority
+receipt/ID, ACCEPTED and final negative rows, edge-authority root, then L2
+witness. No receipt enters an edge preimage.
 
 The C6 witness has exactly `:schema :fuel-subject-id :ast :syntax-core-map :desugaring-trace
 :origins-facts-order :verification :mutations :operation-ids :witness-id`; schema is
