@@ -369,10 +369,14 @@ sh07-core-authenticated-request(R_i,CONTEXT_i)
 The context-bearing bounded verifier takes `PLAN-BINDING` solely from the
 lexical plan authority, reruns `sh06-resolution-run-request!`, and compares
 every current stored product exactly as the legacy verifier does. It must not
-call `sh06-resolution-current-binding!`. File 00874 and all its functions
-remain byte-identical and read-only; they are reachable only from legacy
-context-free paths. No dynamic Var, global root mutation, process cache,
-registry, function-valued carrier, or hidden default is permitted.
+call `sh06-resolution-current-binding!`. File 00874 remains byte-identical and
+read-only. Its live source reader, builder, delay, and current-binding function
+are reachable only from legacy context-free paths. Its unchanged
+`sh06-resolution-execute!` is deliberately shared: the strict path passes the
+lexically authenticated 18-key binding through unchanged
+`sh06-resolution-run-request!` to that executor. No dynamic Var, global root
+mutation, process cache, registry, function-valued carrier, or hidden default
+is permitted.
 
 The 00873 and 00879 strict helpers implement the pure validation locally; they
 do not dynamically resolve or call later-loaded 00945 Vars. The 00945 arity-5
