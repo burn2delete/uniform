@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Exact V9 architecture candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, and companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805 are frozen after three independent exact-byte PASS-FOR-FREEZE reviews. This grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority until governed review and admission complete.",
+  "disposition": "Exact frozen V9 candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, and companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805 are under fresh independent governed review. No implementation or downstream authority is granted unless exact-candidate review accepts and admission completes.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -149,6 +149,12 @@
       "at": "2026-09-10T01:20:00Z",
       "reason": "freeze exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a, tree 1e15665e1c3f3239185bc0ef742dc2c1772ac58d, architecture SHA-256 996c4e5be8ecc18e5c5a5cc63d8adaa099478a27edeb927a2a365f2249c490d3, companion SHA-256 b1d13555c19d571a222f23622b7a49ea7f6ccb718e571d5fa94b9ad437571805, and two owned paths after three independent exact-byte PASS-FOR-FREEZE reviews",
       "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T01:20:01Z",
+      "reason": "request fresh independent review of exact frozen candidate/tree 76101841e73c1da7ef9d18ec6775d0ea9b64b59a/1e15665e1c3f3239185bc0ef742dc2c1772ac58d, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, evidence topology, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -191,6 +197,6 @@
       "reviewer": "/root/v9_prefreeze_formal@8ea2c2dd"
     }
   ],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
