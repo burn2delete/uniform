@@ -29,7 +29,7 @@
 (defn- eligibility-result []
   (let [coordinate (eligibility-coordinate)
         observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
-        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 84))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 88))
         check
         {:coordinate coordinate
          :observations observations
@@ -37,14 +37,14 @@
          :decode-count 1
          :receipt-id-check-count 1
          :pre-discharge-reconstruction-count 1
-         :pre-discharge-git-operation-count 84
+         :pre-discharge-git-operation-count 88
          :pre-discharge-document-descriptor-count 33
          :pre-discharge-source-descriptor-count 13
          :pre-discharge-pre-masked-file-count 2
-         :pre-discharge-owned-c-artifact-count 33
+         :pre-discharge-owned-c-artifact-count 37
          :pre-discharge-a9-artifact-count 3
          :pre-discharge-baseline-boot5-count 1
-         :pre-discharge-static-decode-count 69
+         :pre-discharge-static-decode-count 73
          :content-match true
          :source-descriptors-match true
          :source-descriptors-root-match true
@@ -72,7 +72,7 @@
      :operation-count 5
      :pre-object-snapshot {}
      :pre-discharge-observations pre-observations
-     :pre-discharge-git-operation-count 84
+     :pre-discharge-git-operation-count 88
      :scope :immutable-q-coordinate-and-pre-discharge
      :eligibility-check check
      :eligibility-check-root
@@ -186,16 +186,16 @@
     (is (= [:l :m :a :b] coordinator/eligibility-participant-order))
     (is (= {:participants [:l :m :a :b]
             :q-coordinate-git-operation-count 20
-            :pre-discharge-git-operation-count 336
-            :git-operation-count 356
+            :pre-discharge-git-operation-count 352
+            :git-operation-count 372
             :q-coordinate-decode-count 4
             :receipt-id-check-count 4
             :pre-discharge-reconstruction-count 4
-            :pre-discharge-static-decode-count 276
+            :pre-discharge-static-decode-count 292
             :pre-discharge-document-descriptor-count 132
             :pre-discharge-source-descriptor-count 52
             :pre-discharge-pre-masked-file-count 8
-            :pre-discharge-owned-c-artifact-count 132
+            :pre-discharge-owned-c-artifact-count 148
             :pre-discharge-a9-artifact-count 12
             :pre-discharge-baseline-boot5-count 4
             :content-match-count 4
@@ -212,7 +212,7 @@
 (deftest coordinator-rejects-a-partial-pre-discharge-result
   (let [partial
         (assoc (eligibility-result) :remaining-gaps
-               [:pre-discharge-84-operation-reconstruction])
+               [:pre-discharge-88-operation-reconstruction])
         authenticate!
         (var-get (coordinator-private-var 'authenticate-eligibility-input!))]
     (with-redefs-fn
@@ -321,7 +321,9 @@
            (set (keys request))))
     (is (empty? (select-keys request
                             [:m0s :m1 :m2s :bundle-core :source-forms
-                             :module-transactions :source-read-receipt])))
+                             :module-transactions :source-read-receipt
+                             :sh06-resolution-plan-authority
+                             :source-semantic-carrier])))
     (is (= coordinator/closed-environment environment))
     (is (not (contains? environment "HOME")))
     (is (not (contains? environment "PATH")))

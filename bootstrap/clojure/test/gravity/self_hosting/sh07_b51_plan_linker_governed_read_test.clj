@@ -426,12 +426,147 @@
              (:reason (ex-data failure))))
       (is (= 3 (get-in (ex-data failure) [:details :module-ordinal]))))))
 
+(deftest e3-source-semantic-carrier-is-complete-before-sole-finalization
+  (let [session-var (private-var '*p15-s23-sh07-b51-governed-source-session*)
+        build-carrier
+        (var-get
+         (private-var
+          'p15-s23-sh07-b51-source-semantic-carrier-from-session!))
+        finalize
+        (var-get (private-var 'p15-s23-sh07-b51-finalize-source-session!))
+        content {:commit (apply str (repeat 40 "a"))
+                 :tree (apply str (repeat 40 "b"))}
+        root-id
+        (bootstrap/reader-canonical-hash
+         [:gravity/sh07-b51-c2-project-root-id-v1
+          {:content content :scope :sh07-b51-c2-explicit-project}])
+        sha (fn [ordinal] (format "sha256:%064x" (inc ordinal)))
+        descriptors
+        (mapv (fn [ordinal]
+                {:ordinal ordinal :kind :test :module-ordinal nil
+                 :path (str "source-" ordinal ".gravity")
+                 :mode "100644"
+                 :blob-oid (format "%040x" (inc ordinal))
+                 :byte-count 0 :raw-sha256 (sha ordinal)})
+              (range 13))
+        artifact
+        (fn [descriptor]
+          (let [path (:path descriptor)
+                form-id (sha (+ 100 (:ordinal descriptor)))
+                span {:source path :start-byte 0 :end-byte 0}]
+            {:source-unit-record
+             {:extension ".gravity" :project-relative-path path
+              :identity-inputs {:encoding :utf-8
+                                :project-relative-path path
+                                :project-root-id root-id}
+              :source-id (sha (+ 20 (:ordinal descriptor)))
+              :bytes-hash (:raw-sha256 descriptor)
+              :project-root root-id
+              :project-root-record {:path nil :project-root-id root-id}
+              :reader-options {} :enabled-features #{} :source-kind :gravity}
+             :token-stream [{:token-id form-id :source-path path :span span}]
+             :form-tree [{:form-id form-id :source-path path :span span
+                          :surface-span span :origin nil
+                          :generated-origin []}]
+             :syntax-seed-stream [{:form-id form-id :span span}]
+             :reader-source-map [{:form-id form-id :span span}]
+             :reader-diagnostics [] :literal-decoding-records []
+             :reader-extension-invocation-records []}))
+        artifacts (mapv artifact descriptors)
+        transactions
+        (mapv (fn [module-ordinal]
+                {:module-ordinal module-ordinal
+                 :c2-reader-artifact (nth artifacts (+ 3 module-ordinal))})
+              (range 7))
+        events (mapv (fn [ordinal] {:ordinal ordinal}) (range 40))
+        entries (mapv #(hash-map :descriptor % :text "") descriptors)
+        token (Object.)
+        state {:token token :thread (Thread/currentThread) :role :m
+               :commit (:commit content) :tree (:tree content)
+               :entries entries :descriptors descriptors
+               :descriptors-root
+               (bootstrap/reader-canonical-hash
+                [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
+               :cursor (atom 40) :events (atom events)
+               :checked-products (atom {}) :finalized (atom false)}
+        direct-paths (atom [])]
+    (with-bindings {session-var {:token token :state state}}
+      (with-redefs [bootstrap/compiler-c2-reader-source-artifact
+                    (fn [path _text _context]
+                      (swap! direct-paths conj path)
+                      (nth artifacts
+                           (:ordinal (first (filter #(= path (:path %))
+                                                    descriptors)))))]
+        (let [carrier (build-carrier (:commit content) (:tree content)
+                                     transactions)]
+          (is (false? @(:finalized state)))
+          (is (= (mapv #(get-in descriptors [% :path]) [2 10 11])
+                 @direct-paths))
+          (is (= #{:source-descriptors :source-events :l1-document
+                   :l1-source-units :l1-grammar-change :c2-snapshot
+                   :c2-units :c2-source-map :c2-diagnostics
+                   :c2-literal-records :c2-reader-extensions}
+                 (set (keys carrier))))
+          (is (= (vec (range 2 12)) (mapv :ordinal (:c2-units carrier))))
+          (is (= (vec (range 2 12))
+                 (mapv :ordinal (:l1-source-units carrier))))
+          (let [receipt (finalize)]
+            (is (true? @(:finalized state)))
+            (let [member-root
+                  (var-get
+                   (private-var 'p15-s23-sh07-b51-semantic-member-root))]
+              (is (every?
+                   true?
+                   (map (fn [descriptor c2-unit l1-unit]
+                          (and (= (:path descriptor) (:path c2-unit)
+                                  (:project-relative-path c2-unit))
+                               (= (:raw-sha256 descriptor)
+                                  (:bytes-hash c2-unit))
+                               (= (select-keys
+                                   c2-unit
+                                   [:path :extension :project-relative-path
+                                    :encoding :source-id :bytes-hash
+                                    :project-root :reader-options :features
+                                    :source-kind])
+                                  (:descriptor l1-unit))
+                               (= (get-in c2-unit [:source-map :root])
+                                  (member-root
+                                   :c2-source-map
+                                   (get-in c2-unit
+                                           [:source-map :entries])))
+                               (= (get-in c2-unit [:diagnostics :root])
+                                  (member-root
+                                   :c2-diagnostics
+                                   (get-in c2-unit
+                                           [:diagnostics :entries])))))
+                        (subvec descriptors 2 12)
+                        (:c2-units carrier)
+                        (:l1-source-units carrier))))
+              (is (= (vec (mapcat :literal-records (:c2-units carrier)))
+                     (:c2-literal-records carrier)))
+              (is (= (vec (mapcat :reader-extensions (:c2-units carrier)))
+                     (:c2-reader-extensions carrier))))
+            (is (true?
+                 (bootstrap/p15-s23-sh07-b51-source-semantic-carrier-valid?
+                  content receipt transactions carrier)))
+            (is (false?
+                 (bootstrap/p15-s23-sh07-b51-source-semantic-carrier-valid?
+                  content receipt transactions
+                  (assoc-in carrier [:c2-source-map :root] (sha 999)))))))))))
+
 (deftest public-wrapper-has-no-authority-override-arity
   (is (= '([commit tree])
          (:arglists
           (meta #'bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products)))))
 
-(deftest linked-carrier-boundary-normalizes-the-exact-e2-receipted-products
+(deftest e3-receipted-builder-return-has-exactly-ten-keys
+  (is (= #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
+           :source-forms :module-transactions :source-read-receipt
+           :sh06-resolution-plan-authority :source-semantic-carrier}
+         (var-get
+          (private-var 'p15-s23-sh07-b51-v9-builder-receipted-product-keys)))))
+
+(deftest linked-carrier-boundary-normalizes-the-exact-e3-receipted-products
   (let [sha-a
         "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         sha-b
@@ -445,6 +580,8 @@
         replay
         (private-var
          'p15-s23-sh07-b51-replay-returned-source-authority-events!)
+        source-carrier-validator
+        (private-var 'p15-s23-sh07-b51-source-semantic-carrier-valid?)
         content {:commit (apply str (repeat 40 "a"))
                  :tree (apply str (repeat 40 "b"))}
         descriptors
@@ -479,6 +616,7 @@
          :source-forms (vec (repeat 7 []))
          :module-transactions (vec (repeat 7 {}))
          :sh06-resolution-plan-authority authority
+         :source-semantic-carrier :complete-same-session-carrier
          :source-read-receipt receipt}
         expected
         {:artifact :gravity/sh07-b51-linked-plan-products-v2
@@ -492,19 +630,21 @@
         (fn [candidate]
           (with-redefs-fn
             {plan-validator (constantly true)
+             source-carrier-validator (constantly true)
              replay (constantly true)}
             #(normalize candidate)))]
     (is (= expected (normalize-with-stubs wrapper)))
     (testing "the ordinary already-linked product shape remains unchanged"
       (is (identical? expected (normalize expected))))
-    (testing "E2 authority, receipt roots, and all-seven emitter joins fail closed"
+    (testing "E3 authority, carrier, receipt roots, and all-seven joins fail closed"
       (doseq [invalid
               [(assoc-in wrapper
                          [:sh06-resolution-plan-authority :content :tree]
                          (apply str (repeat 40 "d")))
                (assoc-in wrapper [:source-read-receipt :event-root] sha-a)
                (assoc-in wrapper [:m2s 1 :compiler :semantic-hash] sha-a)
-               (dissoc wrapper :sh06-resolution-plan-authority)]]
+               (dissoc wrapper :sh06-resolution-plan-authority)
+               (dissoc wrapper :source-semantic-carrier)]]
         (is (thrown? clojure.lang.ExceptionInfo
                      (normalize-with-stubs invalid)))))))
 

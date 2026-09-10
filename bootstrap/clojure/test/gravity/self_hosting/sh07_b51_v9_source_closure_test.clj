@@ -66,7 +66,7 @@
       (is (< (.indexOf source "pre-manifest-tcb!")
              (.lastIndexOf source "load-codec!"))))))
 
-(deftest e2-source-session-proves-thirteen-inputs-and-forty-events
+(deftest e3-source-session-proves-thirteen-inputs-and-forty-events
   (let [source
         (slurp
          "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj")]
@@ -83,7 +83,7 @@
     (is (str/includes? source
                        ":event-count 40 :finalize-count 1"))))
 
-(deftest e2-source-session-carries-complete-git-proofs-and-rederives-m0-m1
+(deftest e3-source-session-carries-complete-git-proofs-and-rederives-m0-m1
   (let [source
         (slurp
          "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj")]
@@ -102,3 +102,20 @@
                        "p15-s23-sh07-b51-derive-callsite-census-from-modules sources"))
     (is (str/includes? source ":m0-m1-rederivation"))
     (is (not (str/includes? source "requiring-resolve")))))
+
+(deftest e3-source-semantic-carrier-is-built-inside-the-governed-session
+  (let [source
+        (slurp
+         "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj")
+        carrier-build (.indexOf source
+                                "source-semantic-carrier\n            (p15-s23-sh07-b51-source-semantic-carrier-from-session!")
+        finalization (.indexOf source
+                              "receipt (p15-s23-sh07-b51-finalize-source-session!)")]
+    (is (not (neg? carrier-build)))
+    (is (not (neg? finalization)))
+    (is (< carrier-build finalization))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-v9-builder-receipted-product-keys"))
+    (is (str/includes? source ":source-semantic-carrier source-semantic-carrier"))
+    (is (str/includes? source
+                       "p15-s23-sh07-b51-source-semantic-carrier-valid?"))))

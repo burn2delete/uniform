@@ -224,10 +224,10 @@
              (failure-reason
               #(parse-tree! (tree-entry-bytes "120000" "link" 1))))))))
 
-(deftest e2-source-pre-and-ownership-censuses-are-exact
+(deftest e3-source-pre-and-ownership-censuses-are-exact
   (let [ownership-builder
         (var-get (ns-resolve 'gravity.tools.sh07-b51-git-evidence
-                             'build-v9-ownership-plan-e2))
+                             'build-v9-ownership-plan-e3))
         plan (ownership-builder)]
     (is (= 13 (count evidence/source-specs)))
     (is (= [12 :sh06-resolution nil
@@ -243,8 +243,8 @@
             :byte-count 77209
             :raw-sha256
             "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56"}))
-    (is (= 33 (count evidence/owned-c-paths)))
-    (is (= 79 (count evidence/pre-c-paths)))
+    (is (= 37 (count evidence/owned-c-paths)))
+    (is (= 83 (count evidence/pre-c-paths)))
     (is (= {:sessions
             [{:participant :a :acquire-count 13 :decode-count 13
               :event-count 40 :finalize-count 1}
@@ -264,10 +264,10 @@
                    :b evidence/source-session-counters-e2
                    :m (update evidence/source-session-counters-e2
                               :event-count dec)}))))
-    (is (= :gravity/sh07-b51-v9-ownership-plan-e2-v1 (:schema plan)))
-    (is (= 37 (count (get-in plan [:allocations 1 :paths]))))
-    (is (= 33 (- (count (get-in plan [:allocations 1 :paths])) 4)))
-    (is (= (codec/H [:gravity/sh07-b51-v9-ownership-plan-e2-v1
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e3-v1 (:schema plan)))
+    (is (= 41 (count (get-in plan [:allocations 1 :paths]))))
+    (is (= 37 (- (count (get-in plan [:allocations 1 :paths])) 4)))
+    (is (= (codec/H [:gravity/sh07-b51-v9-ownership-plan-e3-v1
                      (dissoc plan :plan-id)])
            (:plan-id plan)))))
 
@@ -456,7 +456,7 @@
         runtime-i9-suffix
         (subvec (vec (var-get
                       (ns-resolve 'gravity.tools.sh07-b51-git-evidence
-                                  'i9-lifecycle-paths))) 33)
+                                  'i9-lifecycle-paths))) 37)
         g9-paths (vec (var-get
                        (ns-resolve 'gravity.tools.sh07-b51-git-evidence
                                    'g9-lifecycle-paths)))
