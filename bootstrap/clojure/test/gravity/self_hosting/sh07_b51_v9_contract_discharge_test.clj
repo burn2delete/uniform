@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [gravity.tools.sh07-b51-attempt32-checker-child :as checker-child]
             [gravity.tools.sh07-b51-attempt32-materialize :as materialize]
             [gravity.tools.sh07-b51-git-evidence :as evidence]
             [gravity.tools.sh07-b51-v9-codec :as codec])
@@ -387,64 +388,100 @@
       :consumer
       'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}])))
 
+(defn- source-spec-plan
+  []
+  (mapv (fn [[ordinal kind module-ordinal path]]
+          {:ordinal ordinal :kind kind :module-ordinal module-ordinal
+           :path path})
+        evidence/source-specs))
+
+(def ^:private accepted-fixture-v2-keys
+  #{:schema :row-plan-id :source-specs :source-event-plan
+    :predicate-specs :predicate-spec-id :self-id-omits :fixture-id})
+
+(def ^:private forbidden-static-fixture-keys
+  #{:content :commit :tree :candidate-commit :candidate-tree
+    :content-object-proof :source-descriptors :source-descriptors-root
+    :source-events :source-event-root :event-root :product-id
+    :resolution-plan-authority :c5-authorities :sh06-context
+    :source-read-receipt :eligibility-coordinate :runtime-contract-discharge
+    :e9-payload :lifecycle-receipt})
+
+(defn- accepted-fixture-v2-base
+  []
+  {:schema :gravity/sh07-b51-contract-predicate-fixture-v2
+   :row-plan-id evidence/row-plan-id
+   :source-specs (source-spec-plan)
+   :source-event-plan (source-event-plan)
+   :predicate-specs evidence/predicate-specs
+   :predicate-spec-id evidence/predicate-spec-id
+   :self-id-omits [[:fixture-id]]})
+
+(defn- accepted-fixture-v2
+  []
+  (let [base (accepted-fixture-v2-base)]
+    (assoc base :fixture-id
+           (codec/H [:gravity/sh07-b51-contract-predicate-fixture-v2
+                     base]))))
+
+(defn- accepted-fixture-rejection-reason
+  [fixture]
+  (cond
+    (not (map? fixture)) :fixture-shape
+    (some #(contains? fixture %) forbidden-static-fixture-keys)
+    :identity-cycle
+    (not= accepted-fixture-v2-keys (set (keys fixture)))
+    :fixture-keys
+    (not= :gravity/sh07-b51-contract-predicate-fixture-v2
+          (:schema fixture))
+    :fixture-schema
+    (not= evidence/row-plan-id (:row-plan-id fixture))
+    :row-plan-id
+    (not (and (vector? (:source-specs fixture))
+              (= 13 (count (:source-specs fixture)))))
+    :source-spec-census
+    (not= (source-spec-plan) (:source-specs fixture))
+    :source-spec-order
+    (not (and (vector? (:source-event-plan fixture))
+              (= 40 (count (:source-event-plan fixture)))))
+    :source-event-plan-census
+    (not= (source-event-plan) (:source-event-plan fixture))
+    :source-event-plan-order
+    (not= evidence/predicate-specs (:predicate-specs fixture))
+    :predicate-specs
+    (not= evidence/predicate-spec-id (:predicate-spec-id fixture))
+    :predicate-spec-id
+    (not= [[:fixture-id]] (:self-id-omits fixture))
+    :fixture-self-id-omits
+    (not= (:fixture-id fixture)
+          (codec/H [:gravity/sh07-b51-contract-predicate-fixture-v2
+                    (dissoc fixture :fixture-id)]))
+    :fixture-id
+    :else nil))
+
 (defn- accepted-fixture-valid?
   [fixture]
-  (let [descriptors (:source-descriptors fixture)
-        events (:source-events fixture)
-        descriptor-by-ordinal (into {} (map (juxt :ordinal identity)
-                                             descriptors))]
-    (and
-     (= #{:schema :row-plan-id :source-descriptors :source-events
-          :predicate-specs :predicate-spec-id :self-id-omits :fixture-id}
-        (set (keys fixture)))
-     (= :gravity/sh07-b51-contract-predicate-fixture-v1 (:schema fixture))
-     (= evidence/row-plan-id (:row-plan-id fixture))
-     (= 13 (count descriptors))
-     (= (vec (range 13)) (mapv :ordinal descriptors))
-     (every?
-      (fn [[spec descriptor]]
-        (let [[ordinal kind module-ordinal path] spec]
-          (and
-           (= #{:ordinal :kind :module-ordinal :path :mode :blob-oid
-                :byte-count :raw-sha256}
-              (set (keys descriptor)))
-           (= [ordinal kind module-ordinal path "100644"]
-              ((juxt :ordinal :kind :module-ordinal :path :mode) descriptor))
-           (git-id? (:blob-oid descriptor))
-           (integer? (:byte-count descriptor))
-           (not (neg? (:byte-count descriptor)))
-           (sha256-id? (:raw-sha256 descriptor)))))
-      (map vector evidence/source-specs descriptors))
-     (= 40 (count events))
-     (= (vec (range 40)) (mapv :ordinal events))
-     (every?
-      true?
-      (map
-       (fn [expected event]
-         (and
-          (= #{:ordinal :domain :source-ordinal :module-ordinal :consumer
-               :source-raw-sha256 :product-id}
-             (set (keys event)))
-          (= expected
-             (select-keys event
-                          [:ordinal :domain :source-ordinal :module-ordinal
-                           :consumer]))
-          (= (:raw-sha256
-              (get descriptor-by-ordinal (:source-ordinal event)))
-             (:source-raw-sha256 event))
-          (sha256-id? (:product-id event))))
-       (source-event-plan) events))
-     (= evidence/predicate-specs (:predicate-specs fixture))
-     (= evidence/predicate-spec-id (:predicate-spec-id fixture))
-     (= [[:fixture-id]] (:self-id-omits fixture))
-     (= (:fixture-id fixture)
-        (codec/H [:gravity/sh07-b51-contract-predicate-fixture-v1
-                  (dissoc fixture :fixture-id)])))))
+  (nil? (accepted-fixture-rejection-reason fixture)))
 
-(deftest canonical-source-closure-and-predicate-fixture-is-literal
+(deftest canonical-static-source-plan-and-predicate-fixture-is-literal
   (let [{:keys [bytes value]} (read-one-canonical-fixture "accepted.edn")]
     (is (Arrays/equals ^bytes bytes ^bytes (codec/W value)))
-    (is (accepted-fixture-valid? value))))
+    (is (= (accepted-fixture-v2) value))
+    (is (accepted-fixture-valid? value))
+    (is (= 13 (count (:source-specs value))))
+    (is (= 40 (count (:source-event-plan value))))
+    (is (every? #(= #{:ordinal :kind :module-ordinal :path}
+                    (set (keys %)))
+                (:source-specs value)))
+    (is (every? #(= #{:ordinal :domain :source-ordinal :module-ordinal
+                      :consumer}
+                    (set (keys %)))
+                (:source-event-plan value)))
+    (is (not-any? #(contains? value %) forbidden-static-fixture-keys))
+    (doseq [forbidden-key forbidden-static-fixture-keys]
+      (is (= :identity-cycle
+             (accepted-fixture-rejection-reason
+              (assoc value forbidden-key :forbidden-dynamic-authority)))))))
 
 (def ^:private required-rejected-case-ids
   #{:source-omitted :source-extra :source-reordered
@@ -455,6 +492,21 @@
     :resolution-event-missing :resolution-event-extra
     :resolution-event-reordered :resolution-event-stale
     :resolution-event-malformed :resolution-event-wrong-product
+    :checker-source-carrier-missing :checker-source-carrier-extra
+    :checker-source-carrier-descriptor-mismatch
+    :checker-source-carrier-event-mismatch
+    :checker-source-carrier-c2-ordinal-2
+    :checker-source-carrier-c2-ordinal-10
+    :checker-source-carrier-c2-ordinal-11
+    :checker-algorithm-descriptor-missing
+    :checker-algorithm-descriptor-extra
+    :checker-algorithm-descriptor-reordered
+    :checker-algorithm-descriptor-object-mismatch
+    :checker-algorithm-root-mismatch
+    :checker-algorithm-cross-content
+    :checker-precertificate-second-session
+    :checker-precertificate-worktree-read
+    :checker-precertificate-caller-value
     :predicate-omitted :predicate-extra :predicate-reordered
     :predicate-id-changed :fixture-id-changed
     :direct-read-escape :preflight-after-project-load
@@ -495,108 +547,430 @@
 
 (def ^:private required-e2-resolution-rejections
   {:resolution-source-missing
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-descriptors 12]
     :operation :remove
     :value nil
-    :expected-reason :source-descriptor-census}
+    :expected-reason :source-session}
    :resolution-source-extra
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-descriptors]
     :operation :duplicate-last
     :value nil
-    :expected-reason :source-descriptor-census}
+    :expected-reason :source-session}
    :resolution-source-reordered
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-descriptors]
     :operation :swap-last-two
     :value nil
-    :expected-reason :source-descriptor-order}
+    :expected-reason :source-session}
    :resolution-source-stale
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-descriptors 12 :raw-sha256]
     :operation :replace
     :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    :expected-reason :source-descriptor}
+    :expected-reason :source-session}
    :resolution-source-malformed
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-descriptors 12 :blob-oid]
     :operation :replace
     :value "not-a-git-object-id"
-    :expected-reason :source-descriptor}
+    :expected-reason :source-session}
    :resolution-event-missing
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events 39]
     :operation :remove
     :value nil
-    :expected-reason :source-event-census}
+    :expected-reason :source-session}
    :resolution-event-extra
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events]
     :operation :duplicate-last
     :value nil
-    :expected-reason :source-event-census}
+    :expected-reason :source-session}
    :resolution-event-reordered
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events]
     :operation :swap-last-two
     :value nil
-    :expected-reason :source-event-order}
+    :expected-reason :source-session}
    :resolution-event-stale
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events 39 :source-raw-sha256]
     :operation :replace
     :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    :expected-reason :source-event-source}
+    :expected-reason :source-session}
    :resolution-event-malformed
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events 39 :consumer]
     :operation :replace
     :value :not-a-symbol
-    :expected-reason :source-event-coordinate}
+    :expected-reason :source-session}
    :resolution-event-wrong-product
-   {:family :source-closure
+   {:family :realized-source-closure
     :target [:source-events 39 :product-id]
     :operation :replace
     :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    :expected-reason :source-event-product}})
+    :expected-reason :source-session}})
 
-(deftest rejected-fixture-is-canonical-closed-and-covers-e2
+(def ^:private required-static-source-plan-rejections
+  {:source-omitted
+   {:family :source-plan :target [:source-specs] :operation :drop-last
+    :value nil :expected-reason :source-spec-census}
+   :source-extra
+   {:family :source-plan :target [:source-specs] :operation :duplicate-first
+    :value nil :expected-reason :source-spec-census}
+   :source-reordered
+   {:family :source-plan :target [:source-specs] :operation :swap-first-two
+    :value nil :expected-reason :source-spec-order}
+   :event-omitted
+   {:family :source-plan :target [:source-event-plan] :operation :drop-last
+    :value nil :expected-reason :source-event-plan-census}
+   :event-extra
+   {:family :source-plan :target [:source-event-plan]
+    :operation :duplicate-first :value nil
+    :expected-reason :source-event-plan-census}
+   :event-reordered
+   {:family :source-plan :target [:source-event-plan]
+    :operation :swap-first-two :value nil
+    :expected-reason :source-event-plan-order}})
+
+(def ^:private required-checker-handoff-rejections
+  {:checker-source-carrier-missing
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier]
+    :operation :remove :value nil
+    :expected-reason :source-semantic-carrier}
+   :checker-source-carrier-extra
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier :unexpected]
+    :operation :add :value true
+    :expected-reason :source-semantic-carrier}
+   :checker-source-carrier-descriptor-mismatch
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier
+             :source-descriptors 12 :raw-sha256]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :source-carrier-descriptors}
+   :checker-source-carrier-event-mismatch
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier
+             :source-events 39 :product-id]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :source-carrier-events}
+   :checker-source-carrier-c2-ordinal-2
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier
+             :c2-units 0 :ordinal]
+    :operation :replace :value -1
+    :expected-reason :source-carrier-c2}
+   :checker-source-carrier-c2-ordinal-10
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier
+             :c2-units 8 :ordinal]
+    :operation :replace :value -1
+    :expected-reason :source-carrier-c2}
+   :checker-source-carrier-c2-ordinal-11
+   {:family :checker-handoff
+    :target [:checker-semantic-input :source-semantic-carrier
+             :c2-units 9 :ordinal]
+    :operation :replace :value -1
+    :expected-reason :source-carrier-c2}
+   :checker-algorithm-descriptor-missing
+   {:family :checker-handoff
+    :target [:checker-semantic-input
+             :semantic-algorithm-source-descriptors]
+    :operation :drop-last :value nil
+    :expected-reason :semantic-algorithm-source-descriptors}
+   :checker-algorithm-descriptor-extra
+   {:family :checker-handoff
+    :target [:checker-semantic-input
+             :semantic-algorithm-source-descriptors]
+    :operation :duplicate-first :value nil
+    :expected-reason :semantic-algorithm-source-descriptors}
+   :checker-algorithm-descriptor-reordered
+   {:family :checker-handoff
+    :target [:checker-semantic-input
+             :semantic-algorithm-source-descriptors]
+    :operation :swap-first-two :value nil
+    :expected-reason :semantic-algorithm-source-descriptors}
+   :checker-algorithm-descriptor-object-mismatch
+   {:family :checker-handoff
+    :target [:checker-semantic-input
+             :semantic-algorithm-source-descriptors 0 :blob-oid]
+    :operation :replace :value "not-a-git-object-id"
+    :expected-reason :semantic-algorithm-source-object}
+   :checker-algorithm-root-mismatch
+   {:family :checker-handoff
+    :target [:checker-semantic-input :semantic-algorithm-source-root]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :semantic-algorithm-source-root}
+   :checker-algorithm-cross-content
+   {:family :checker-handoff
+    :target [:checker-semantic-input :snapshot-tree]
+    :operation :replace
+    :value "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    :expected-reason :semantic-algorithm-source-object}
+   :checker-precertificate-second-session
+   {:family :checker-handoff
+    :target [:checker-semantic-input :precertificate-authority-source]
+    :operation :add :value :second-source-session
+    :expected-reason :precertificate-authority-source}
+   :checker-precertificate-worktree-read
+   {:family :checker-handoff
+    :target [:checker-semantic-input :precertificate-authority-source]
+    :operation :add :value :worktree-read
+    :expected-reason :precertificate-authority-source}
+   :checker-precertificate-caller-value
+   {:family :checker-handoff
+    :target [:checker-semantic-input :precertificate-authority-source]
+    :operation :add :value :caller-supplied
+    :expected-reason :precertificate-authority-source}})
+
+(def ^:private checker-handoff-case-order
+  [:checker-source-carrier-missing
+   :checker-source-carrier-extra
+   :checker-source-carrier-descriptor-mismatch
+   :checker-source-carrier-event-mismatch
+   :checker-source-carrier-c2-ordinal-2
+   :checker-source-carrier-c2-ordinal-10
+   :checker-source-carrier-c2-ordinal-11
+   :checker-algorithm-descriptor-missing
+   :checker-algorithm-descriptor-extra
+   :checker-algorithm-descriptor-reordered
+   :checker-algorithm-descriptor-object-mismatch
+   :checker-algorithm-root-mismatch
+   :checker-algorithm-cross-content
+   :checker-precertificate-second-session
+   :checker-precertificate-worktree-read
+   :checker-precertificate-caller-value])
+
+(defn- selected-case-contracts
+  [required cases]
+  (into {}
+        (keep (fn [case]
+                (when (contains? required (:id case))
+                  [(:id case)
+                   (select-keys case
+                                [:family :target :operation
+                                 :value :expected-reason])]))
+              cases)))
+
+(defn- remove-target
+  [value target]
+  (let [parent (vec (butlast target))
+        leaf (last target)]
+    (update-in
+     value parent
+     (fn [container]
+       (cond
+         (map? container) (dissoc container leaf)
+         (and (vector? container) (integer? leaf)
+              (<= 0 leaf) (< leaf (count container)))
+         (into (subvec container 0 leaf) (subvec container (inc leaf)))
+         :else container)))))
+
+(defn- swap-vector-members
+  [items left right]
+  (assoc items left (nth items right) right (nth items left)))
+
+(defn- apply-mutation-recipe
+  [value {:keys [operation target] :as recipe}]
+  (case operation
+    :drop-last (update-in value target pop)
+    :duplicate-first (update-in value target #(conj % (first %)))
+    :duplicate-last (update-in value target #(conj % (peek %)))
+    :swap-first-two (update-in value target swap-vector-members 0 1)
+    :swap-last-two
+    (update-in value target
+               #(swap-vector-members % (- (count %) 2) (dec (count %))))
+    :remove (remove-target value target)
+    :replace (assoc-in value target (:value recipe))
+    :add (assoc-in value target (:value recipe))
+    (throw (ex-info "unsupported fixture mutation recipe"
+                    {:operation operation :target target}))))
+
+(deftest rejected-fixture-is-canonical-closed-and-covers-e3
   (let [{:keys [bytes value]} (read-one-canonical-fixture "rejected.edn")
         cases (:cases value)
         ids (mapv :id cases)]
     (is (Arrays/equals ^bytes bytes ^bytes (codec/W value)))
     (is (= #{:accepted-schema :cases}
            (set (keys value))))
-    (is (= :gravity/sh07-b51-contract-predicate-fixture-v1
+    (is (= :gravity/sh07-b51-contract-predicate-fixture-v2
            (:accepted-schema value)))
     (is (= (count ids) (count (distinct ids))))
     (is (= required-rejected-case-ids (set ids)))
     (is (= required-e2-resolution-rejections
-           (into {}
-                 (keep (fn [case]
-                         (when (contains? required-e2-resolution-rejections
-                                          (:id case))
-                           [(:id case)
-                            (select-keys case
-                                         [:family :target :operation
-                                          :value :expected-reason])]))
-                       cases))))
+           (selected-case-contracts required-e2-resolution-rejections cases)))
+    (is (= required-static-source-plan-rejections
+           (selected-case-contracts required-static-source-plan-rejections
+                                    cases)))
+    (is (= required-checker-handoff-rejections
+           (selected-case-contracts required-checker-handoff-rejections
+                                    cases)))
     (is (every?
          #(= #{:id :family :target :operation :value :expected-reason}
              (set (keys %)))
          cases))
-    (is (= #{:source-closure :contract-predicate :process-source-closure
+    (is (= #{:source-plan :realized-source-closure :checker-handoff
+             :contract-predicate :process-source-closure
              :codec :process :publication :a9-terminal :masked-source
              :ownership :governance :registry :phase :lifecycle
              :external-review-coordinate}
-           (set (map :family cases))))))
+           (set (map :family cases))))
+    (let [accepted (:value (read-one-canonical-fixture "accepted.edn"))]
+      (doseq [case (filter #(contains? required-static-source-plan-rejections
+                                      (:id %))
+                           cases)]
+        (is (= (:expected-reason case)
+               (accepted-fixture-rejection-reason
+                (apply-mutation-recipe accepted case)))
+            (str "static plan recipe " (:id case)))))))
+
+(def ^:private fixture-content
+  {:commit "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   :tree "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"})
+
+(def ^:private fixture-opaque-product-id
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+(defn- fresh-source-read-receipt
+  [role]
+  (let [descriptors
+        (mapv (fn [spec]
+                (let [ordinal (:ordinal spec)]
+                  (assoc spec
+                         :mode "100644"
+                         :blob-oid
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                         :byte-count (inc ordinal)
+                         :raw-sha256 (codec/R (byte-array [ordinal])))))
+              (source-spec-plan))
+        events
+        (mapv
+         (fn [plan]
+           (let [source-raw-sha256
+                 (:raw-sha256
+                  (nth descriptors (:source-ordinal plan)))
+                 product-id
+                 (if (<= 3 (:ordinal plan) 23)
+                   (codec/H
+                    [:gravity/sh07-b51-source-event-product-id-v1
+                     {:ordinal (:ordinal plan)
+                      :domain (:domain plan)
+                      :consumer (:consumer plan)
+                      :source-raw-sha256 source-raw-sha256
+                      :product true}])
+                   fixture-opaque-product-id)]
+             (assoc plan
+                    :source-raw-sha256 source-raw-sha256
+                    :product-id product-id)))
+         (source-event-plan))]
+    {:schema :gravity/sh07-b51-source-read-receipt-v3
+     :role role
+     :commit (:commit fixture-content)
+     :tree (:tree fixture-content)
+     :source-descriptors descriptors
+     :source-descriptors-root
+     (codec/H [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
+     :events events
+     :event-root
+     (codec/H [:gravity/sh07-b51-source-event-root-v1 events])
+     :counters {:acquire-count 13 :decode-count 13
+                :event-count 40 :finalize-count 1}
+     :finalized true}))
+
+(defn- validate-source-read-receipt!
+  [role receipt]
+  (let [validator
+        (ns-resolve 'gravity.tools.sh07-b51-attempt32-checker-child
+                    'validate-source-read-receipt!)]
+    (when-not validator
+      (throw (ex-info "missing E3 source-receipt validator" {})))
+    (validator codec/H role {:content fixture-content} receipt)))
+
+(defn- realized-source-closure
+  [receipt]
+  {:content {:commit (:commit receipt) :tree (:tree receipt)}
+   :source-descriptors (:source-descriptors receipt)
+   :source-descriptors-root (:source-descriptors-root receipt)
+   :source-events (:events receipt)
+   :source-event-root (:event-root receipt)})
+
+(defn- closure->receipt
+  [receipt closure]
+  (assoc receipt
+         :source-descriptors (:source-descriptors closure)
+         :source-descriptors-root (:source-descriptors-root closure)
+         :events (:source-events closure)
+         :event-root (:source-event-root closure)))
+
+(defn- rejection-reason
+  [f]
+  (try
+    (f)
+    nil
+    (catch clojure.lang.ExceptionInfo error
+      (:reason (ex-data error)))))
+
+(deftest e2-resolution-recipes-run-only-on-a-fresh-realized-closure
+  (let [{accepted :value} (read-one-canonical-fixture "accepted.edn")
+        {rejected :value} (read-one-canonical-fixture "rejected.edn")
+        cases-by-id (into {} (map (juxt :id identity) (:cases rejected)))]
+    (is (not (contains? accepted :source-descriptors)))
+    (is (not (contains? accepted :source-events)))
+    (doseq [id (keys required-e2-resolution-rejections)]
+      (let [recipe (get cases-by-id id)
+            receipt (fresh-source-read-receipt :producer-census)
+            closure (realized-source-closure receipt)
+            mutated (apply-mutation-recipe closure recipe)
+            mutated-receipt (closure->receipt receipt mutated)
+            descriptor-mutation? (= :source-descriptors
+                                    (first (:target recipe)))]
+        (is (= receipt
+               (validate-source-read-receipt! :producer-census receipt))
+            (str "fresh baseline validates before " id))
+        (is (= (source-spec-plan)
+               (mapv #(select-keys %
+                                   [:ordinal :kind :module-ordinal :path])
+                     (:source-descriptors closure))))
+        (is (= (source-event-plan)
+               (mapv #(select-keys %
+                                   [:ordinal :domain :source-ordinal
+                                    :module-ordinal :consumer])
+                     (:source-events closure))))
+        (is (not= (if descriptor-mutation?
+                    (:source-descriptors closure)
+                    (:source-events closure))
+                  (if descriptor-mutation?
+                    (:source-descriptors mutated)
+                    (:source-events mutated)))
+            (str "recipe changes its realized vector " id))
+        (is (not=
+             (if descriptor-mutation?
+               (:source-descriptors-root closure)
+               (:source-event-root closure))
+             (if descriptor-mutation?
+               (codec/H [:gravity/sh07-b51-source-descriptors-root-v1
+                         (:source-descriptors mutated)])
+               (codec/H [:gravity/sh07-b51-source-event-root-v1
+                         (:source-events mutated)])))
+            (str "recipe changes the realized root equation " id))
+        (is (= (:expected-reason recipe)
+               (rejection-reason
+                #(validate-source-read-receipt!
+                  :producer-census mutated-receipt)))
+            (str "real source validator rejects " id))))))
 
 (defn- evidence-private
   [symbol]
   (let [resolved (ns-resolve 'gravity.tools.sh07-b51-git-evidence symbol)]
     (when-not resolved
-      (throw (ex-info "missing V9 E2 evidence seam" {:symbol symbol})))
+      (throw (ex-info "missing V9 evidence seam" {:symbol symbol})))
     (var-get resolved)))
 
 (defn- file-bytes
@@ -742,9 +1116,9 @@
 
 (defn- canonical-ownership-plan
   []
-  ((evidence-private 'build-v9-ownership-plan-e2)))
+  ((evidence-private 'build-v9-ownership-plan-e3)))
 
-(deftest e2-ownership-and-governance-are-stage-scoped
+(deftest e3-ownership-and-governance-are-stage-scoped
   (let [plan (canonical-ownership-plan)
         rules evidence/governance-rules-e1]
     (is (= #{:schema :allocations :semantic-review-owner
@@ -752,13 +1126,13 @@
              :read-only-prerequisite-stages :read-only-paths
              :open-exit-gates :aggregate-sh07-state :self-id-omits :plan-id}
            (set (keys plan))))
-    (is (= :gravity/sh07-b51-v9-ownership-plan-e2-v1 (:schema plan)))
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e3-v1 (:schema plan)))
     (is (= [:a9 :i9 :e9 :g9 :p9] (mapv :stage (:allocations plan))))
     (is (= [:i9 :e9 :g9 :p9] (:reservation-required-stages plan)))
     (is (= [:i9 :g9 :p9] (:handoff-required-stages plan)))
     (is (= [:a9] (:read-only-prerequisite-stages plan)))
     (is (= (:plan-id plan)
-           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e2-v1
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e3-v1
                      (dissoc plan :plan-id)])))
     (doseq [mutated [(assoc plan :schema
                             :gravity/sh07-b51-v9-ownership-plan-v1)
@@ -784,19 +1158,21 @@
                              #(assoc % 0 (nth % 1) 1 (nth % 0)))]]
       (is (not= rules mutated)))))
 
-(deftest e2-registries-remove-old-ownership-and-split-tag-from-h-domain
+(deftest e3-registries-remove-old-ownership-and-split-tag-from-h-domain
   (let [report (String. ^bytes (file-bytes evidence/architecture-report-path)
                         StandardCharsets/UTF_8)
-        registries ((evidence-private 'build-registries-e2) report)
+        registries ((evidence-private 'build-registries-e3) report)
         tags (set (:tag-registry registries))
         domains (set (get-in registries [:identity-domain-registry :domains]))]
     (is (contains? tags :gravity/sh07-b51-a9-stage-result-e1))
-    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e2-v1))
+    (is (contains? tags :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+    (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e2-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? tags
                         :gravity/sh07-b51-a9-lifecycle-receipt-v1)))
     (is (not (contains? tags :gravity/sh07-b51-v9-ownership-plan-v1)))
-    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e2-v1))
+    (is (contains? domains :gravity/sh07-b51-v9-ownership-plan-e3-v1))
+    (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e2-v1)))
     (is (not (contains? domains :gravity/sh07-b51-v9-ownership-plan-e1)))
     (is (not (contains? domains :gravity/sh07-b51-a9-stage-result-e1)))
     (is (not (contains? domains
