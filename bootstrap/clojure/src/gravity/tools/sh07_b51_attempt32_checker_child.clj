@@ -1045,10 +1045,31 @@
      (str evidence-relative-root "/" (:output-name spec))
      :completed-at completed-at}))
 
+(defn- receipted-product-emitter-identities!
+  [products]
+  (let [plans (:m2s products)
+        source-ids (mapv #(get-in % [:compiler :source-content-hash]) plans)
+        semantic-ids (mapv #(get-in % [:compiler :semantic-hash]) plans)
+        source-id (first source-ids)
+        semantic-id (first semantic-ids)]
+    (when-not
+     (and (vector? plans) (= 7 (count plans))
+          (sha256-id? source-id) (sha256-id? semantic-id)
+          (= (vec (repeat 7 source-id)) source-ids)
+          (= (vec (repeat 7 semantic-id)) semantic-ids))
+      (reject! :emitter-identity-join
+               {:plan-count (when (vector? plans) (count plans))
+                :source-id-count (count (set source-ids))
+                :semantic-id-count (count (set semantic-ids))}))
+    {:emitter-source-id source-id
+     :emitter-semantic-id semantic-id}))
+
 (defn build-checker-envelope
   "Build the semantic checker input only inside the selected child process."
   [H role request products checker-manifest]
-  (let [m0s (:m0s products)]
+  (let [m0s (:m0s products)
+        {:keys [emitter-source-id emitter-semantic-id]}
+        (receipted-product-emitter-identities! products)]
     {:architecture-report-sha256
      (get-in request [:evidence :architecture-report-sha256])
      :snapshot-commit (get-in request [:content :commit])
@@ -1057,8 +1078,8 @@
      predecessor-executable-descriptor-id
      :module-source-identities (mapv :source-sha256 m0s)
      :module-source-byte-counts (mapv :source-byte-count m0s)
-     :emitter-source-id (:emitter-source-id products)
-     :emitter-semantic-id (:emitter-semantic-id products)
+     :emitter-source-id emitter-source-id
+     :emitter-semantic-id emitter-semantic-id
      :m0s m0s
      :m1 (:m1 products)
      :m2s (:m2s products)
@@ -1067,6 +1088,18 @@
      :checker (:checker checker-manifest)
      :provenance
      (checker-provenance H role request checker-manifest)}))
+
+(defn- v9-checker-output-shell? [output]
+  (let [certificate (:certificate output)]
+    (and (= :accepted (:status output))
+         (map? certificate)
+         (contains? certificate :semantic-witness)
+         (map? (:semantic-witness certificate))
+         (= :gravity/sh07-b51-authentic-lowering-witness-v1
+            (get-in certificate [:semantic-witness :schema]))
+         (sha256-id? (get-in certificate [:semantic-witness :witness-id]))
+         (contains? (:inputs certificate) :lowering-product-id)
+         (sha256-id? (get-in certificate [:inputs :lowering-product-id])))))
 
 (defn- result-record [H role status authority]
   (let [base {:schema (if authority
@@ -1210,7 +1243,7 @@
           (identity-fn (:source-authority preflight) role)
           envelope (build-checker-envelope H role request products manifest)
           output (checker-fn envelope)
-          _ (when-not (= :accepted (:status output))
+          _ (when-not (v9-checker-output-shell? output)
               (reject! :checker-output {:role role :status (:status output)}))
           production (result-record H role :accepted true)
           sentinel (result-record H role :accepted false)

@@ -431,6 +431,102 @@
          (:arglists
           (meta #'bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products)))))
 
+(deftest linked-carrier-boundary-normalizes-the-exact-e2-receipted-products
+  (let [sha-a
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        sha-b
+        "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        canonical-id
+        (var-get (private-var 'p15-s23-sh07-b51-canonical-id))
+        normalize
+        (var-get (private-var 'p15-s23-sh07-b51-v4-normalize-products))
+        plan-validator
+        (private-var 'p15-s23-sh07-b51-resolution-plan-authority-valid?)
+        replay
+        (private-var
+         'p15-s23-sh07-b51-replay-returned-source-authority-events!)
+        content {:commit (apply str (repeat 40 "a"))
+                 :tree (apply str (repeat 40 "b"))}
+        descriptors
+        (mapv (fn [ordinal]
+                {:ordinal ordinal :kind :fixture :module-ordinal nil
+                 :path (str "fixture-" ordinal) :mode "100644"
+                 :blob-oid (apply str (repeat 40 "c"))
+                 :byte-count ordinal :raw-sha256 sha-a})
+              (range 13))
+        events (mapv (fn [ordinal] {:ordinal ordinal}) (range 40))
+        receipt
+        {:schema :gravity/sh07-b51-source-read-receipt-v3
+         :role :m :commit (:commit content) :tree (:tree content)
+         :source-descriptors descriptors
+         :source-descriptors-root
+         (canonical-id
+          [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
+         :events events
+         :event-root
+         (canonical-id [:gravity/sh07-b51-source-event-root-v1 events])
+         :counters {:acquire-count 13 :decode-count 13
+                    :event-count 40 :finalize-count 1}
+         :finalized true}
+        authority {:content content :source-descriptor (nth descriptors 12)}
+        plans
+        (vec
+         (repeat 7 {:compiler {:source-content-hash sha-a
+                               :semantic-hash sha-b}}))
+        wrapper
+        {:m0s (vec (repeat 7 {})) :m1 {} :m2s plans :bundle-core {}
+         :execution-bundle-core-id sha-a
+         :source-forms (vec (repeat 7 []))
+         :module-transactions (vec (repeat 7 {}))
+         :sh06-resolution-plan-authority authority
+         :source-read-receipt receipt}
+        expected
+        {:artifact :gravity/sh07-b51-linked-plan-products-v2
+         :module-source-descriptors (:m0s wrapper)
+         :link-manifest (:m1 wrapper)
+         :module-plans plans
+         :emitter-source-id sha-a :emitter-semantic-id sha-b
+         :execution-bundle-core (:bundle-core wrapper)
+         :execution-bundle-core-id sha-a}
+        normalize-with-stubs
+        (fn [candidate]
+          (with-redefs-fn
+            {plan-validator (constantly true)
+             replay (constantly true)}
+            #(normalize candidate)))]
+    (is (= expected (normalize-with-stubs wrapper)))
+    (testing "the ordinary already-linked product shape remains unchanged"
+      (is (identical? expected (normalize expected))))
+    (testing "E2 authority, receipt roots, and all-seven emitter joins fail closed"
+      (doseq [invalid
+              [(assoc-in wrapper
+                         [:sh06-resolution-plan-authority :content :tree]
+                         (apply str (repeat 40 "d")))
+               (assoc-in wrapper [:source-read-receipt :event-root] sha-a)
+               (assoc-in wrapper [:m2s 1 :compiler :semantic-hash] sha-a)
+               (dissoc wrapper :sh06-resolution-plan-authority)]]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (normalize-with-stubs invalid)))))))
+
+(deftest linked-carrier-candidate-requires-v9-witness-and-lowering-product
+  (let [valid?
+        (var-get (private-var 'p15-s23-sh07-b51-v9-certificate-shell?))
+        sha-a
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        certificate
+        {:inputs {:lowering-product-id sha-a}
+         :semantic-witness
+         {:schema :gravity/sh07-b51-authentic-lowering-witness-v1
+          :witness-id sha-a}}]
+    (is (true? (valid? certificate)))
+    (doseq [invalid
+            [(update certificate :inputs dissoc :lowering-product-id)
+             (dissoc certificate :semantic-witness)
+             (assoc-in certificate [:semantic-witness :witness-id] nil)
+             (assoc-in certificate [:semantic-witness :schema]
+                       :gravity/legacy-witness)]]
+      (is (false? (valid? invalid))))))
+
 (deftest compatibility-reader-is-behaviorally-unreachable-in-v9
   (let [compatibility-reader
         (var-get (private-var 'p15-s23-sh07-b51-compatibility-source-record))

@@ -449,6 +449,12 @@
 (def ^:private required-rejected-case-ids
   #{:source-omitted :source-extra :source-reordered
     :event-omitted :event-extra :event-reordered
+    :resolution-source-missing :resolution-source-extra
+    :resolution-source-reordered :resolution-source-stale
+    :resolution-source-malformed
+    :resolution-event-missing :resolution-event-extra
+    :resolution-event-reordered :resolution-event-stale
+    :resolution-event-malformed :resolution-event-wrong-product
     :predicate-omitted :predicate-extra :predicate-reordered
     :predicate-id-changed :fixture-id-changed
     :direct-read-escape :preflight-after-project-load
@@ -487,7 +493,75 @@
     :external-review-path-mutated :external-review-mode-mutated
     :external-review-type-mutated})
 
-(deftest rejected-fixture-is-canonical-closed-and-covers-e1
+(def ^:private required-e2-resolution-rejections
+  {:resolution-source-missing
+   {:family :source-closure
+    :target [:source-descriptors 12]
+    :operation :remove
+    :value nil
+    :expected-reason :source-descriptor-census}
+   :resolution-source-extra
+   {:family :source-closure
+    :target [:source-descriptors]
+    :operation :duplicate-last
+    :value nil
+    :expected-reason :source-descriptor-census}
+   :resolution-source-reordered
+   {:family :source-closure
+    :target [:source-descriptors]
+    :operation :swap-last-two
+    :value nil
+    :expected-reason :source-descriptor-order}
+   :resolution-source-stale
+   {:family :source-closure
+    :target [:source-descriptors 12 :raw-sha256]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :source-descriptor}
+   :resolution-source-malformed
+   {:family :source-closure
+    :target [:source-descriptors 12 :blob-oid]
+    :operation :replace
+    :value "not-a-git-object-id"
+    :expected-reason :source-descriptor}
+   :resolution-event-missing
+   {:family :source-closure
+    :target [:source-events 39]
+    :operation :remove
+    :value nil
+    :expected-reason :source-event-census}
+   :resolution-event-extra
+   {:family :source-closure
+    :target [:source-events]
+    :operation :duplicate-last
+    :value nil
+    :expected-reason :source-event-census}
+   :resolution-event-reordered
+   {:family :source-closure
+    :target [:source-events]
+    :operation :swap-last-two
+    :value nil
+    :expected-reason :source-event-order}
+   :resolution-event-stale
+   {:family :source-closure
+    :target [:source-events 39 :source-raw-sha256]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :source-event-source}
+   :resolution-event-malformed
+   {:family :source-closure
+    :target [:source-events 39 :consumer]
+    :operation :replace
+    :value :not-a-symbol
+    :expected-reason :source-event-coordinate}
+   :resolution-event-wrong-product
+   {:family :source-closure
+    :target [:source-events 39 :product-id]
+    :operation :replace
+    :value "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    :expected-reason :source-event-product}})
+
+(deftest rejected-fixture-is-canonical-closed-and-covers-e2
   (let [{:keys [bytes value]} (read-one-canonical-fixture "rejected.edn")
         cases (:cases value)
         ids (mapv :id cases)]
@@ -498,6 +572,16 @@
            (:accepted-schema value)))
     (is (= (count ids) (count (distinct ids))))
     (is (= required-rejected-case-ids (set ids)))
+    (is (= required-e2-resolution-rejections
+           (into {}
+                 (keep (fn [case]
+                         (when (contains? required-e2-resolution-rejections
+                                          (:id case))
+                           [(:id case)
+                            (select-keys case
+                                         [:family :target :operation
+                                          :value :expected-reason])]))
+                       cases))))
     (is (every?
          #(= #{:id :family :target :operation :value :expected-reason}
              (set (keys %)))

@@ -6,6 +6,8 @@
 
 (def sha-a
   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def sha-b
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
 (def git-a "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 (def git-b "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
 
@@ -124,12 +126,61 @@
      :finalized true}))
 
 (defn- products [role]
-  {:m0s (vec (repeat 7 {})) :m1 {} :m2s (vec (repeat 7 {}))
+  {:m0s (vec (repeat 7 {}))
+   :m1 {}
+   :m2s
+   (vec (repeat 7 {:compiler {:source-content-hash sha-a
+                              :semantic-hash sha-b}}))
    :bundle-core {}
    :execution-bundle-core-id sha-a :source-forms (vec (repeat 7 []))
    :module-transactions (vec (repeat 7 {}))
    :sh06-resolution-plan-authority {}
    :source-read-receipt (source-receipt role)})
+
+(deftest checker-envelope-derives-emitter-identities-from-all-seven-m2s
+  (let [values (products :producer-census)
+        identities
+        ((private-value 'receipted-product-emitter-identities!) values)
+        envelope
+        (child/build-checker-envelope
+         codec/H :producer-census (request :producer-census) values
+         {:checker {} :dependencies {}})]
+    (is (= {:emitter-source-id sha-a :emitter-semantic-id sha-b}
+           identities))
+    (is (= identities
+           (select-keys envelope
+                        [:emitter-source-id :emitter-semantic-id])))
+    (testing "a nil, split, or incomplete M2 emitter identity cannot cross"
+      (doseq [invalid
+              [(assoc-in values [:m2s 0 :compiler :source-content-hash] nil)
+               (assoc-in values [:m2s 3 :compiler :source-content-hash] sha-b)
+               (assoc-in values [:m2s 4 :compiler :semantic-hash] sha-a)
+               (update values :m2s pop)]]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     ((private-value
+                       'receipted-product-emitter-identities!)
+                     invalid)))))))
+
+(deftest checker-child-never-promotes-a-legacy-census-certificate-to-v9
+  (let [valid?
+        (private-value 'v9-checker-output-shell?)
+        witness
+        {:schema :gravity/sh07-b51-authentic-lowering-witness-v1
+         :witness-id sha-a}
+        certificate
+        {:inputs {:lowering-product-id sha-b}
+         :semantic-witness witness}
+        output {:status :accepted :certificate certificate}]
+    (is (true? (valid? output)))
+    (doseq [invalid
+            [(update output :certificate dissoc :semantic-witness)
+             (update-in output [:certificate :inputs]
+                        dissoc :lowering-product-id)
+             (assoc-in output [:certificate :semantic-witness :schema]
+                       :gravity/legacy-witness)
+             (assoc-in output [:certificate :inputs :lowering-product-id] nil)
+             (assoc output :status :rejected)]]
+      (is (false? (valid? invalid))))))
 
 (deftest checker-child-role-and-request-boundary-is-closed
   (is (= :producer-census
