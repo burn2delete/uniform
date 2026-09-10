@@ -104,7 +104,8 @@
          (exact-keys? witness semantic-witness-keys)
          (= :gravity/sh07-b51-authentic-lowering-witness-v1
             (:schema witness))
-         (= (select-keys inputs [:snapshot-commit :snapshot-tree])
+         (= {:commit (:snapshot-commit inputs)
+             :tree (:snapshot-tree inputs)}
             (:content witness))
          (digest-id? (:operation-schedule-id witness))
          (digest-id? (:witness-id witness))

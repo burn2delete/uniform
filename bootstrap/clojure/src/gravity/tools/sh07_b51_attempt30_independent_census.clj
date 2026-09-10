@@ -1,6 +1,7 @@
 (ns gravity.tools.sh07-b51-attempt30-independent-census
   (:require [gravity.c2-artifact-identity.canonical :as canonical]
-            [gravity.digest :as digest]))
+            [gravity.digest :as digest]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]))
 
 ;; Attempt 30 checker B.  This namespace intentionally owns its traversal,
 ;; ordering, quote handling, reachability, row construction, and digest
@@ -11,7 +12,10 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0s :m1 :m2s :bundle-core :source-forms :checker :provenance})
+    :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
+    :sh06-resolution-plan-authority :source-semantic-carrier
+    :semantic-algorithm-source-descriptors :semantic-algorithm-source-root
+    :checker :provenance})
 
 (def checker-keys
   #{:artifact-id :source-sha256 :semantic-id :executable-id
@@ -21,7 +25,7 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0-ids :m1-id :m2-ids :bundle-core-id})
+    :m0-ids :m1-id :m2-ids :bundle-core-id :lowering-product-id})
 
 (def provenance-input-keys
   #{:invocation-id :tool-closure-id :reproduction-command-id
@@ -35,7 +39,7 @@
 (def certificate-keys
   #{:artifact :domain :schema-version :status :role
     :architecture-report-sha256 :claim-id :claim :assumptions :checker
-    :inputs :result :provenance :raw-source-transcript :m2-transcript
+    :inputs :result :semantic-witness :provenance :raw-source-transcript :m2-transcript
     :profile-bounds :evidence-root :certificate-id})
 
 (def claim-keys
@@ -64,7 +68,7 @@
 
 (def accepted-output-keys
   #{:status :certificate :raw-source-transcript-artifact
-    :m2-transcript-artifact})
+    :m2-transcript-artifact :lowering-product})
 
 (def rejection-output-keys #{:status :rejection-evidence})
 
@@ -249,6 +253,15 @@
            (:certificate-maximum-scalar-utf8 profile-bounds))
        (<= (:canonical-reader-bytes profile)
            (:certificate-maximum-canonical-reader-bytes profile-bounds))))
+
+(defn- semantic-witness-profile-within? [profile]
+  (and (<= (:nodes profile) (:carrier-maximum-nodes profile-bounds))
+       (<= (:depth profile) (:carrier-maximum-depth profile-bounds))
+       (<= (:width profile) (:carrier-maximum-width profile-bounds))
+       (<= (:collection-count profile)
+           (:carrier-maximum-collection-count profile-bounds))
+       (<= (:scalar-utf8 profile)
+           (:carrier-maximum-scalar-utf8 profile-bounds))))
 
 (defn transcript-counts-within?
   [{:keys [node-count record-count call-row-count byte-count]}]
@@ -1321,7 +1334,12 @@
 (defn- accepted-products [envelope]
   ;; Deliberately M2-first: no source form is traversed until the complete M2
   ;; instruction space has been scanned under the closed rules above.
-  (let [inputs (check-and-derive-inputs envelope)
+  (let [legacy-inputs (check-and-derive-inputs envelope)
+        {:keys [lowering-product semantic-witness measurement-count]}
+        (materialize/build-checker-precertificate envelope)
+        _ (ensure! (= 34 measurement-count) :fixed-fuel-measurement-count)
+        inputs (assoc legacy-inputs
+                      :lowering-product-id (:product-id lowering-product))
         m0s (:m0s envelope) m1 (:m1 envelope) m2s (:m2s envelope)
         bundle-core (:bundle-core envelope) checker (:checker envelope)
         m2-scan (scan-m2 m2s)
@@ -1421,14 +1439,19 @@
          (:architecture-report-sha256 envelope)
          :claim-id claim-id :claim claim :assumptions assumptions-value
          :checker checker :inputs inputs :result result
+         :semantic-witness semantic-witness
          :provenance provenance :raw-source-transcript raw-descriptor
          :m2-transcript m2-descriptor :profile-bounds profile-bounds
          :evidence-root evidence-root}
         certificate (assoc certificate-base :certificate-id
                            (h certificate-base))]
-    (ensure! (certificate-profile-within? (value-profile certificate))
+    (ensure! (and (certificate-profile-within?
+                   (value-profile (dissoc certificate :semantic-witness)))
+                  (semantic-witness-profile-within?
+                   (value-profile semantic-witness)))
              :certificate-profile-bound)
     {:status :accepted :certificate certificate
+     :lowering-product lowering-product
      :raw-source-transcript-artifact raw-artifact
      :m2-transcript-artifact m2-artifact}))
 
@@ -1491,6 +1514,7 @@
           checker (:checker certificate)
           inputs (:inputs certificate)
           result (:result certificate)
+          witness (:semantic-witness certificate)
           provenance (:provenance certificate)
           raw (:raw-source-transcript certificate)
           m2 (:m2-transcript certificate)
@@ -1505,6 +1529,19 @@
             (= [1 :accepted :independent-verifier-census]
                [(:schema-version certificate) (:status certificate)
                 (:role certificate)])
+            (exact-keys?
+             witness
+             #{:schema :content :operation-manifest :operation-schedule-id
+               :fuel-receipts :l1 :l2 :c2 :c6 :boot2 :boot3 :boot4
+               :witness-id})
+            (= :gravity/sh07-b51-authentic-lowering-witness-v1
+               (:schema witness))
+            (= {:commit (:snapshot-commit inputs)
+                :tree (:snapshot-tree inputs)}
+               (:content witness))
+            (= (:witness-id witness)
+               (h [:gravity/sh07-b51-authentic-lowering-witness-v1
+                   (dissoc witness :witness-id)]))
             (digest-id? (:architecture-report-sha256 certificate))
             (exact-keys? checker checker-keys)
             (= :m2-first-independent-exhaustive (:algorithm-role checker))
@@ -1521,7 +1558,8 @@
                              (:predecessor-executable-descriptor-id inputs)
                              (:emitter-source-id inputs)
                              (:emitter-semantic-id inputs) (:m1-id inputs)
-                             (:bundle-core-id inputs)]))
+                             (:bundle-core-id inputs)
+                             (:lowering-product-id inputs)]))
             (exact-keys? claim claim-keys)
             (= :gravity/sh07-b51-common-census-claim-v1 (:domain claim))
             (exact-keys? assumptions-value assumptions-keys)
@@ -1574,7 +1612,9 @@
             (= profile-bounds (:profile-bounds certificate))
             (= (:certificate-id certificate)
                (h (dissoc certificate :certificate-id)))
-            (certificate-profile-within? (value-profile certificate)))))
+            (certificate-profile-within?
+             (value-profile (dissoc certificate :semantic-witness)))
+            (semantic-witness-profile-within? (value-profile witness)))))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
@@ -1592,10 +1632,13 @@
       (let [certificate (:certificate output)
             checker (:checker certificate)
             inputs (:inputs certificate)
+            lowering-product (:lowering-product output)
             raw (:raw-source-transcript-artifact output)
             m2 (:m2-transcript-artifact output)]
         (boolean
          (and (exact-keys? output accepted-output-keys)
+              (= (get-in certificate [:inputs :lowering-product-id])
+                 (:product-id lowering-product))
               (certificate-valid? certificate)
               (valid-full-transcript?
                raw :gravity/sh07-b51-raw-source-census-transcript-v1
@@ -1618,14 +1661,18 @@
 (defn- valid-accepted-output? [envelope output]
   (try
     (let [certificate (:certificate output)
+          lowering-product (:lowering-product output)
           raw (:raw-source-transcript-artifact output)
           m2 (:m2-transcript-artifact output)
-          inputs (check-and-derive-inputs envelope)
+          inputs (assoc (check-and-derive-inputs envelope)
+                        :lowering-product-id (:product-id lowering-product))
           checker (:checker envelope)
           claim (:claim certificate)
           result (:result certificate)
           certificate-base (dissoc certificate :certificate-id)]
       (and (exact-keys? output accepted-output-keys)
+           (= (get-in certificate [:inputs :lowering-product-id])
+              (:product-id lowering-product))
            (= :accepted (:status output))
            (certificate-valid? certificate)
            (exact-keys? certificate certificate-keys)
@@ -1715,7 +1762,10 @@
                   :profile-bounds profile-bounds}))
            (= (:certificate-id certificate) (h certificate-base))
            (= profile-bounds (:profile-bounds certificate))
-           (certificate-profile-within? (value-profile certificate))))
+           (certificate-profile-within?
+            (value-profile (dissoc certificate :semantic-witness)))
+           (semantic-witness-profile-within?
+            (value-profile (:semantic-witness certificate)))))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))

@@ -89,7 +89,7 @@
 (def ^:private product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
     :module-transactions :sh06-resolution-plan-authority
-    :source-read-receipt})
+    :source-semantic-carrier :source-read-receipt})
 (def ^:private source-receipt-keys
   #{:schema :role :commit :tree :source-descriptors
     :source-descriptors-root :events :event-root :counters :finalized})
@@ -176,14 +176,23 @@
   {:decode-count 1
    :receipt-id-check-count 1
    :pre-discharge-reconstruction-count 1
-   :pre-discharge-git-operation-count 84
+   :pre-discharge-git-operation-count 88
    :pre-discharge-document-descriptor-count 33
    :pre-discharge-source-descriptor-count 13
    :pre-discharge-pre-masked-file-count 2
-   :pre-discharge-owned-c-artifact-count 33
+   :pre-discharge-owned-c-artifact-count 37
    :pre-discharge-a9-artifact-count 3
    :pre-discharge-baseline-boot5-count 1
-   :pre-discharge-static-decode-count 69})
+   :pre-discharge-static-decode-count 73})
+
+(def semantic-algorithm-source-paths-e3
+  ["bootstrap/clojure/src/gravity/tools/sh07_b51_attempt30_independent_census.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt30_producer_census.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_child.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_identity.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_materialize.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_tier0_materializer.clj"
+   "bootstrap/clojure/src/gravity/tools/sh07_b51_v9_codec.clj"])
 (def ^:private eligibility-check-matches
   [:content-match :source-descriptors-match
    :source-descriptors-root-match :pre-masked-root-match
@@ -846,7 +855,7 @@
        (= (vec (range expected-count)) (mapv :ordinal observations))))
 
 (defn validate-eligibility-five-operations!
-  "Validate Q with five operations and independently reconstruct all 84 PRE
+  "Validate Q with five operations and independently reconstruct all 88 PRE
   operations through the authenticated shared Git-evidence implementation.
   The shared Q sequence retains its show, diff-tree, ls-tree, blob, ls-tree
   topology; this entrypoint does not duplicate those Git operations."
@@ -872,8 +881,8 @@
           (= 5 (:operation-count result))
           (dense-observations? 5 observations)
           (= observations (:observations check))
-          (= 84 (:pre-discharge-git-operation-count result))
-          (dense-observations? 84 pre-observations)
+          (= 88 (:pre-discharge-git-operation-count result))
+          (dense-observations? 88 pre-observations)
           (= pre-observations (:pre-discharge-observations check))
           (= eligibility-check-counts
              (select-keys check (keys eligibility-check-counts)))
@@ -907,32 +916,20 @@
   [event]
   (when (<= 3 (:ordinal event) 23) true))
 
-(defn validate-receipted-products!
+(defn validate-source-read-receipt!
   "Reject any nonliteral descriptor/event schedule or broken raw/product/root
-  join.  Products for events 0, 1, 2, and 24-39 remain opaque in this returned
-  product shape; their IDs must still be typed and are bound by the exact event
-  root."
-  ([role request products]
-   (validate-receipted-products! (:H (load-codec!)) role request products))
-  ([H role request products]
-   (let [receipt (:source-read-receipt products)
-         counters (:counters receipt)
+  join for one finalized checker-local source session. Products for events 0,
+  1, 2, and 24-39 remain opaque; their IDs are bound by the exact event root."
+  ([role request receipt]
+   (validate-source-read-receipt! (:H (load-codec!)) role request receipt))
+  ([H role request receipt]
+   (let [counters (:counters receipt)
          content (:content request)
          descriptors (:source-descriptors receipt)
          events (:events receipt)
          descriptor-shas (mapv :raw-sha256 descriptors)]
     (when-not
-     (and (exact-keys? products product-keys)
-          (vector? (:m0s products)) (= 7 (count (:m0s products)))
-          (map? (:m1 products))
-          (vector? (:m2s products)) (= 7 (count (:m2s products)))
-          (map? (:bundle-core products))
-          (sha256-id? (:execution-bundle-core-id products))
-          (vector? (:source-forms products))
-          (= 7 (count (:source-forms products)))
-          (vector? (:module-transactions products))
-          (= 7 (count (:module-transactions products)))
-          (exact-keys? receipt source-receipt-keys)
+     (and (exact-keys? receipt source-receipt-keys)
           (= :gravity/sh07-b51-source-read-receipt-v3 (:schema receipt))
           (= role (:role receipt))
           (= (:commit content) (:commit receipt))
@@ -988,7 +985,41 @@
              counters)
           (true? (:finalized receipt)))
       (reject! :source-session {:role role}))
-    products)))
+    receipt)))
+
+(defn validate-receipted-products!
+  "Validate the exact ten-key E3 builder return and its same-session semantic
+  carrier before either selected checker receives the receipt-free handoff."
+  ([role request products]
+   (validate-receipted-products! (:H (load-codec!)) role request products))
+  ([H role request products]
+   (validate-source-read-receipt! H role request
+                                  (:source-read-receipt products))
+   (when-not
+    (and (exact-keys? products product-keys)
+         (vector? (:m0s products)) (= 7 (count (:m0s products)))
+         (map? (:m1 products))
+         (vector? (:m2s products)) (= 7 (count (:m2s products)))
+         (map? (:bundle-core products))
+         (sha256-id? (:execution-bundle-core-id products))
+         (vector? (:source-forms products))
+         (= 7 (count (:source-forms products)))
+         (vector? (:module-transactions products))
+         (= 7 (count (:module-transactions products)))
+         (map? (:sh06-resolution-plan-authority products))
+         (map? (:source-semantic-carrier products)))
+     (reject! :source-session {:role role}))
+   (let [carrier-valid?
+         (resolve-public!
+          bootstrap-namespace
+          "p15-s23-sh07-b51-source-semantic-carrier-valid?")
+         content (:content request)]
+     (when-not
+      (carrier-valid? content (:source-read-receipt products)
+                      (:module-transactions products)
+                      (:source-semantic-carrier products))
+       (reject! :source-semantic-carrier {:role role})))
+   products))
 
 (defn- source-session-id [H receipt]
   (H [:gravity/sh07-b51-governed-source-session-id-v1
@@ -1064,12 +1095,47 @@
     {:emitter-source-id source-id
      :emitter-semantic-id semantic-id}))
 
+(defn semantic-algorithm-source-authority!
+  "Select the seven E3 algorithm rows from the already reconstructed PRE
+  snapshot and join them to the same C-bound classpath source objects. This
+  performs no Git operation, strict decode, or governed source acquisition."
+  [H preflight]
+  (let [owned (get-in preflight [:pre-object-snapshot
+                                 :owned-c-descriptors])
+        objects (get-in preflight [:source-authority :source-objects])
+        by-path (group-by :path owned)
+        descriptors
+        (mapv
+         (fn [ordinal path]
+           (let [matches (get by-path path)
+                 owned-row (first matches)
+                 object-row (get objects path)
+                 base (select-keys owned-row
+                                   [:path :mode :blob-oid :byte-count
+                                    :raw-sha256])]
+             (when-not
+              (and (= 1 (count matches))
+                   (= base
+                      (select-keys object-row
+                                   [:path :mode :blob-oid :byte-count
+                                    :raw-sha256]))
+                   (bytes? (:bytes object-row))
+                   (= (:byte-count object-row)
+                      (alength ^bytes (:bytes object-row))))
+               (reject! :semantic-algorithm-source-authority {:path path}))
+             (assoc base :ordinal ordinal)))
+         (range 7) semantic-algorithm-source-paths-e3)
+        root (H [:gravity/sh07-b51-semantic-algorithm-source-root-v1
+                 descriptors])]
+    {:descriptors descriptors :root root}))
+
 (defn build-checker-envelope
   "Build the semantic checker input only inside the selected child process."
-  [H role request products checker-manifest]
+  [H role request products checker-manifest preflight]
   (let [m0s (:m0s products)
         {:keys [emitter-source-id emitter-semantic-id]}
-        (receipted-product-emitter-identities! products)]
+        (receipted-product-emitter-identities! products)
+        algorithm (semantic-algorithm-source-authority! H preflight)]
     {:architecture-report-sha256
      (get-in request [:evidence :architecture-report-sha256])
      :snapshot-commit (get-in request [:content :commit])
@@ -1085,6 +1151,12 @@
      :m2s (:m2s products)
      :bundle-core (:bundle-core products)
      :source-forms (:source-forms products)
+     :module-transactions (:module-transactions products)
+     :sh06-resolution-plan-authority
+     (:sh06-resolution-plan-authority products)
+     :source-semantic-carrier (:source-semantic-carrier products)
+     :semantic-algorithm-source-descriptors (:descriptors algorithm)
+     :semantic-algorithm-source-root (:root algorithm)
      :checker (:checker checker-manifest)
      :provenance
      (checker-provenance H role request checker-manifest)}))
@@ -1241,7 +1313,8 @@
           _ (validate-receipted-products! H role request products)
           manifest
           (identity-fn (:source-authority preflight) role)
-          envelope (build-checker-envelope H role request products manifest)
+          envelope (build-checker-envelope H role request products manifest
+                                           preflight)
           output (checker-fn envelope)
           _ (when-not (v9-checker-output-shell? output)
               (reject! :checker-output {:role role :status (:status output)}))
@@ -1389,7 +1462,8 @@
           preflight
           (assoc preflight
                  :eligibility-preflight (:eligibility-check eligibility)
-                 :eligibility-check-root (:eligibility-check-root eligibility))
+                 :eligibility-check-root (:eligibility-check-root eligibility)
+                 :pre-object-snapshot (:pre-object-snapshot eligibility))
           execution (execute-request! preflight codec request)
           response (build-response preflight codec request execution)
           bytes ((:W codec) response)]

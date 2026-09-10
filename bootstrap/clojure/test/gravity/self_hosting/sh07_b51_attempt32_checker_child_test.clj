@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh07-b51-attempt32-checker-child-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.bootstrap :as bootstrap]
             [gravity.tools.sh07-b51-attempt32-checker-child :as child]
             [gravity.tools.sh07-b51-attempt32-materialize :as materialize]
             [gravity.tools.sh07-b51-v9-codec :as codec]))
@@ -38,7 +39,7 @@
 (defn- eligibility-result []
   (let [coordinate (eligibility)
         observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
-        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 84))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 88))
         check
         {:coordinate coordinate
          :observations observations
@@ -46,14 +47,14 @@
          :decode-count 1
          :receipt-id-check-count 1
          :pre-discharge-reconstruction-count 1
-         :pre-discharge-git-operation-count 84
+         :pre-discharge-git-operation-count 88
          :pre-discharge-document-descriptor-count 33
          :pre-discharge-source-descriptor-count 13
          :pre-discharge-pre-masked-file-count 2
-         :pre-discharge-owned-c-artifact-count 33
+         :pre-discharge-owned-c-artifact-count 37
          :pre-discharge-a9-artifact-count 3
          :pre-discharge-baseline-boot5-count 1
-         :pre-discharge-static-decode-count 69
+         :pre-discharge-static-decode-count 73
          :content-match true
          :source-descriptors-match true
          :source-descriptors-root-match true
@@ -81,7 +82,7 @@
      :operation-count 5
      :pre-object-snapshot {}
      :pre-discharge-observations pre-observations
-     :pre-discharge-git-operation-count 84
+     :pre-discharge-git-operation-count 88
      :scope :immutable-q-coordinate-and-pre-discharge
      :eligibility-check check
      :eligibility-check-root
@@ -135,7 +136,23 @@
    :execution-bundle-core-id sha-a :source-forms (vec (repeat 7 []))
    :module-transactions (vec (repeat 7 {}))
    :sh06-resolution-plan-authority {}
+   :source-semantic-carrier {}
    :source-read-receipt (source-receipt role)})
+
+(defn- algorithm-preflight []
+  (let [rows
+        (mapv (fn [ordinal path]
+                {:ordinal ordinal :path path :mode "100644" :blob-oid git-a
+                 :byte-count 1 :raw-sha256 sha-a})
+              (range) child/semantic-algorithm-source-paths-e3)
+        objects
+        (into {}
+              (map (fn [row]
+                     [(:path row)
+                      (assoc (dissoc row :ordinal) :bytes (byte-array [0]))]))
+              rows)]
+    {:pre-object-snapshot {:owned-c-descriptors rows}
+     :source-authority {:source-objects objects}}))
 
 (deftest checker-envelope-derives-emitter-identities-from-all-seven-m2s
   (let [values (products :producer-census)
@@ -144,7 +161,7 @@
         envelope
         (child/build-checker-envelope
          codec/H :producer-census (request :producer-census) values
-         {:checker {} :dependencies {}})]
+         {:checker {} :dependencies {}} (algorithm-preflight))]
     (is (= {:emitter-source-id sha-a :emitter-semantic-id sha-b}
            identities))
     (is (= identities
@@ -160,6 +177,31 @@
                      ((private-value
                        'receipted-product-emitter-identities!)
                      invalid)))))))
+
+(deftest checker-envelope-and-00947-use-the-exact-e3-product-boundary
+  (let [values (products :producer-census)
+        envelope
+        (child/build-checker-envelope
+         codec/H :producer-census (request :producer-census) values
+         {:checker {} :dependencies {}} (algorithm-preflight))
+        bootstrap-product-keys
+        (var-get
+         (ns-resolve 'gravity.bootstrap
+                     'p15-s23-sh07-b51-v9-receipted-product-keys))]
+    (is (= #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
+             :source-forms :module-transactions
+             :sh06-resolution-plan-authority :source-semantic-carrier
+             :source-read-receipt}
+           bootstrap-product-keys
+           (set (keys values))))
+    (is (= materialize/checker-semantic-input-keys-e3
+           (set (keys envelope))))
+    (is (= child/semantic-algorithm-source-paths-e3
+           (mapv :path (:semantic-algorithm-source-descriptors envelope))))
+    (is (= (:semantic-algorithm-source-root envelope)
+           (codec/H
+            [:gravity/sh07-b51-semantic-algorithm-source-root-v1
+             (:semantic-algorithm-source-descriptors envelope)])))))
 
 (deftest checker-child-never-promotes-a-legacy-census-certificate-to-v9
   (let [valid?
@@ -208,7 +250,7 @@
                 (assoc (request :producer-census)
                        :role :independent-verifier-census)))))
 
-(deftest checker-child-reaches-the-shared-five-plus-eighty-four-validator
+(deftest checker-child-reaches-the-shared-five-plus-eighty-eight-validator
   (let [calls (atom [])
         result (eligibility-result)
         validate!
@@ -254,22 +296,22 @@
                        (request :producer-census))))))))
 
 (deftest checker-child-requires-finalized-process-local-source-role
-  (is (= (products :producer-census)
-         (child/validate-receipted-products!
+  (is (= (:source-read-receipt (products :producer-census))
+         (child/validate-source-read-receipt!
           :producer-census (request :producer-census)
-          (products :producer-census))))
+          (:source-read-receipt (products :producer-census)))))
   (testing "a neutral or opposite-role receipt cannot be repaired by the child"
     (doseq [role [nil :m :independent-verifier-census]]
       (is (thrown? clojure.lang.ExceptionInfo
-                   (child/validate-receipted-products!
+                   (child/validate-source-read-receipt!
                     :producer-census (request :producer-census)
-                    (products role))))))
+                    (:source-read-receipt (products role)))))))
   (testing "checker semantics cannot begin over an unfinalized session"
     (is (thrown? clojure.lang.ExceptionInfo
-                 (child/validate-receipted-products!
+                 (child/validate-source-read-receipt!
                   :producer-census (request :producer-census)
-                  (assoc-in (products :producer-census)
-                            [:source-read-receipt :finalized] false)))))
+                  (assoc (:source-read-receipt (products :producer-census))
+                         :finalized false)))))
   (testing "descriptor, event, product, raw, and root joins are not ordinal-only"
     (doseq [mutate
             [#(assoc-in % [:source-read-receipt :source-descriptors 3 :path]
@@ -284,9 +326,21 @@
                         sha-a)
              #(assoc-in % [:source-read-receipt :event-root] sha-a)]]
       (is (thrown? clojure.lang.ExceptionInfo
-                   (child/validate-receipted-products!
+                   (child/validate-source-read-receipt!
                     :producer-census (request :producer-census)
-                    (mutate (products :producer-census))))))))
+                    (:source-read-receipt
+                     (mutate (products :producer-census))))))))
+  (testing "the ten-key product boundary validates the same-session carrier"
+    (with-redefs [bootstrap/p15-s23-sh07-b51-source-semantic-carrier-valid?
+                  (fn [_ receipt transactions carrier]
+                    (and (= receipt (:source-read-receipt
+                                     (products :producer-census)))
+                         (= 7 (count transactions))
+                         (= {} carrier)))]
+      (is (= (products :producer-census)
+             (child/validate-receipted-products!
+              :producer-census (request :producer-census)
+              (products :producer-census)))))))
 
 (defn- authority-fixture []
   (let [m1-row {:ordinal 0 :caller 'consumer/f :callee 'provider/g}

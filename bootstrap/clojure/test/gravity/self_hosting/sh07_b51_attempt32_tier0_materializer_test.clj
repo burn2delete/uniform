@@ -7,8 +7,8 @@
   (str "sha256:" (apply str (repeat 64 c))))
 
 (def content
-  {:snapshot-commit (apply str (repeat 40 "a"))
-   :snapshot-tree (apply str (repeat 40 "b"))})
+  {:commit (apply str (repeat 40 "a"))
+   :tree (apply str (repeat 40 "b"))})
 
 (def lowering-product
   {:schema :gravity/sh07-b51-lowering-product-v1
@@ -56,7 +56,8 @@
    :claim {:normalized-census-id (sha "2") :physical-census {:rows 1}
            :category-schedule [:source] :category-commitments [:root]}
    :assumptions {:closed true} :checker (role-checker role)
-   :inputs (merge content
+   :inputs (merge {:snapshot-commit (:commit content)
+                   :snapshot-tree (:tree content)}
                   {:architecture-report-sha256 (sha "0")
                    :lowering-product-id (:product-id lowering-product)
                    :predecessor-executable-descriptor-id

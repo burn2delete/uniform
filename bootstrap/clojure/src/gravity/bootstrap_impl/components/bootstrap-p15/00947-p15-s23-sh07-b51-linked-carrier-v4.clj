@@ -391,14 +391,24 @@
 
 (defn p15-s23-sh07-b51-v4-certificate-preflight? [certificate]
   (try
-    (let [profile
+    (let [v9? (contains? certificate :semantic-witness)
+          compact (if v9? (dissoc certificate :semantic-witness) certificate)
+          profile
           (p15-s23-sh07-b51-v4-bounded-value-profile
-           certificate
+           compact
            {:maximum-nodes 2048 :maximum-depth 12 :maximum-width 35
-            :maximum-collection-count 64 :maximum-scalar-utf8 4096})]
+            :maximum-collection-count 64 :maximum-scalar-utf8 4096})
+          witness-profile
+          (when v9?
+            (p15-s23-sh07-b51-v4-bounded-value-profile
+             (:semantic-witness certificate)
+             (p15-s23-sh07-b51-v4-carrier-profile-limits
+              (:carrier-maximum-collection-count
+               p15-s23-sh07-b51-attempt32-profile-bounds))))]
       (and profile
+           (or (not v9?) witness-profile)
            (<= (p15-s23-sh07-b51-v4-bounded-utf8-count
-                (pr-str (reader-canonical-value certificate)) 262144)
+                (pr-str (reader-canonical-value compact)) 262144)
                262144)))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
@@ -716,7 +726,8 @@
                 :witness-id})
              (= :gravity/sh07-b51-authentic-lowering-witness-v1
                 (:schema witness))
-             (= (select-keys inputs [:snapshot-commit :snapshot-tree])
+             (= {:commit (:snapshot-commit inputs)
+                 :tree (:snapshot-tree inputs)}
                 (:content witness))
              (p15-s23-sh07-b51-digest-id?
               (:operation-schedule-id witness))
@@ -1076,7 +1087,7 @@
 (def ^:private p15-s23-sh07-b51-v9-receipted-product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
     :module-transactions :sh06-resolution-plan-authority
-    :source-read-receipt})
+    :source-semantic-carrier :source-read-receipt})
 
 (def ^:private p15-s23-sh07-b51-v9-source-receipt-keys
   #{:schema :role :commit :tree :source-descriptors
@@ -1093,6 +1104,7 @@
         emitter-source-id (first source-ids)
         emitter-semantic-id (first semantic-ids)
         plan-authority (:sh06-resolution-plan-authority products)
+        source-semantic-carrier (:source-semantic-carrier products)
         content (select-keys receipt [:commit :tree])
         linked-products
         {:artifact :gravity/sh07-b51-linked-plan-products-v2
@@ -1137,6 +1149,9 @@
       (= content (:content plan-authority))
       (= (nth source-descriptors 12 nil)
          (:source-descriptor plan-authority))
+      (p15-s23-sh07-b51-source-semantic-carrier-valid?
+       content receipt (:module-transactions products)
+       source-semantic-carrier)
       (p15-s23-sh07-b51-replay-returned-source-authority-events!
        (:m0s products) (:m1 products) plan-authority receipt)
       (p15-s23-sh07-b51-exact-keys?
