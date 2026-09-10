@@ -2,8 +2,8 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
   "author": "uniform-coordinator",
   "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "8907cb39ac60127f1fb4f2a5763de185b6e0f548",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
     "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Returned to draft after exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a received one independent acceptance and two independent formal rejections. The sole fatal blocker is that BAD-BASE and its rejected diagnostic/fixture are asserted without an exact verifier invocation or observed BAD-ACTUAL result; PRE-COMPLETE can pass without executing unauthorized cross-fragment rejection. Revision must bind a receipt-free exact verifier result, derive the diagnostic and fixture from it, and require rejected/no-output equality in PRE-COMPLETE. No implementation or downstream authority is granted.",
+  "disposition": "Exact V9 architecture candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, and companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d are frozen after two independent exact-byte PASS-FOR-FREEZE reviews and one scoped adversarial pass. This grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority until governed review and admission complete.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -62,7 +62,7 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..76101841e73c1da7ef9d18ec6775d0ea9b64b59a",
+        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..8907cb39ac60127f1fb4f2a5763de185b6e0f548",
         "exit_code": 0,
         "result": "passed"
       }
@@ -161,6 +161,12 @@
       "at": "2026-09-10T01:40:00Z",
       "reason": "return V9 to draft after one independent acceptance and two independent formal rejections of exact candidate 76101841e73c1da7ef9d18ec6775d0ea9b64b59a identified the same sole fatal blocker: BAD-BASE has no exact verifier invocation or observed BAD-ACTUAL rejection bound into DIAGNOSTIC, FIXTURE, and PRE-COMPLETE",
       "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T06:17:45Z",
+      "reason": "freeze exact candidate 8907cb39ac60127f1fb4f2a5763de185b6e0f548, tree b8a28476e6bb226107840ed4151274093b8dcfc7, architecture SHA-256 34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd, companion SHA-256 7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d, and two owned paths after two independent exact-byte PASS-FOR-FREEZE reviews and one scoped adversarial pass",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -218,6 +224,6 @@
       "reviewer": "/root/v9_counter_contract_challenge@76101841"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
