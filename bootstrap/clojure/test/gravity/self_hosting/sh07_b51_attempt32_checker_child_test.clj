@@ -30,6 +30,63 @@
   (var-get (ns-resolve
             'gravity.tools.sh07-b51-attempt32-checker-child name)))
 
+(defn- private-var [name]
+  (ns-resolve 'gravity.tools.sh07-b51-attempt32-checker-child name))
+
+(defn- eligibility-result []
+  (let [coordinate (eligibility)
+        observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 77))
+        check
+        {:coordinate coordinate
+         :observations observations
+         :pre-discharge-observations pre-observations
+         :decode-count 1
+         :receipt-id-check-count 1
+         :pre-discharge-reconstruction-count 1
+         :pre-discharge-git-operation-count 77
+         :pre-discharge-document-descriptor-count 33
+         :pre-discharge-source-descriptor-count 12
+         :pre-discharge-pre-masked-file-count 2
+         :pre-discharge-owned-c-artifact-count 27
+         :pre-discharge-a9-artifact-count 3
+         :pre-discharge-baseline-boot5-count 1
+         :pre-discharge-static-decode-count 63
+         :content-match true
+         :source-descriptors-match true
+         :source-descriptors-root-match true
+         :pre-masked-root-match true
+         :owned-c-root-match true
+         :pre-discharge-match true}
+        receipt
+        {:artifact :gravity/sh07-b51-evidence-eligibility-receipt-v2
+         :schema-version 2
+         :content {:commit git-a :tree git-b}
+         :freeze {:active-record-ref
+                  {:transition {:architecture-report-sha256 sha-a}}}
+         :source-descriptors []
+         :source-descriptors-root sha-a
+         :pre-masked-root sha-a
+         :pre-evidence-contract-discharge {}
+         :review {}
+         :state :evidence-eligible
+         :self-id-omits [[:receipt-id]]
+         :nonclaims []
+         :receipt-id sha-a}]
+    {:coordinate coordinate
+     :receipt receipt
+     :observations observations
+     :operation-count 5
+     :pre-object-snapshot {}
+     :pre-discharge-observations pre-observations
+     :pre-discharge-git-operation-count 77
+     :scope :immutable-q-coordinate-and-pre-discharge
+     :eligibility-check check
+     :eligibility-check-root
+     (codec/H [:gravity/sh07-b51-eligibility-check-root-v1 check])
+     :remaining-gaps []
+     :authority :none}))
+
 (defn- source-receipt [role]
   (let [descriptors
         (mapv (fn [spec]
@@ -98,6 +155,51 @@
                 :producer-census
                 (assoc (request :producer-census)
                        :role :independent-verifier-census)))))
+
+(deftest checker-child-reaches-the-shared-five-plus-seventy-seven-validator
+  (let [calls (atom [])
+        result (eligibility-result)
+        validate!
+        (fn [options]
+          (swap! calls conj options)
+          result)]
+    (with-redefs-fn
+      {(private-var 'load-git-evidence!)
+       (fn [] {:validate-eligibility-object! validate!})}
+      #(is (= result
+              (child/validate-eligibility-five-operations!
+               {:working-directory "/immutable/repository"}
+               {:H codec/H}
+               (request :producer-census)))))
+    (is (= [{:repository-root "/immutable/repository"
+             :content {:commit git-a :tree git-b}
+             :eligibility-coordinate (eligibility)}]
+           @calls))))
+
+(deftest checker-child-rejects-partial-or-old-eligibility-results
+  (let [base (eligibility-result)
+        old-counter
+        (-> base
+            (assoc-in [:eligibility-check
+                       :pre-discharge-masked-file-count] 2)
+            (update :eligibility-check
+                    dissoc :pre-discharge-pre-masked-file-count))
+        old-receipt
+        (-> base
+            (assoc-in [:receipt :masked-root] sha-a)
+            (update :receipt dissoc :pre-masked-root))
+        partial
+        (assoc base :remaining-gaps
+               [:pre-discharge-77-operation-reconstruction])]
+    (doseq [invalid [old-counter old-receipt partial]]
+      (with-redefs-fn
+        {(private-var 'load-git-evidence!)
+         (fn [] {:validate-eligibility-object! (fn [_] invalid)})}
+        #(is (thrown? clojure.lang.ExceptionInfo
+                      (child/validate-eligibility-five-operations!
+                       {:working-directory "/immutable/repository"}
+                       {:H codec/H}
+                       (request :producer-census))))))))
 
 (deftest checker-child-requires-finalized-process-local-source-role
   (is (= (products :producer-census)

@@ -50,7 +50,7 @@
     (Paths/get (System/getProperty "user.dir") (make-array String 0)))))
 
 (defn- initialize-content!
-  [include-a9-receipt?]
+  [include-a9-terminal?]
   (let [root (Files/createTempDirectory
               "sh07-b51-pre-objects-"
               (make-array java.nio.file.attribute.FileAttribute 0))
@@ -63,8 +63,8 @@
     (git! root "checkout" "--detach" evidence/pre-baseline-commit)
     (doseq [path evidence/pre-c-paths
             :when (and (not= path evidence/boot5-path)
-                       (or include-a9-receipt?
-                           (not= path (last evidence/a9-pre-paths))))]
+                       (or include-a9-terminal?
+                           (not= path evidence/a9-terminal-path)))]
       (let [source-path (.resolve source path)
             bytes (if (Files/isRegularFile source-path
                                            (make-array java.nio.file.LinkOption
@@ -76,38 +76,28 @@
           t (git! root "show" "-s" "--format=%T" c)]
       {:root root :content {:commit c :tree t}})))
 
-(defn- dummy-masked-root []
-  {:coordinates [] :preimage-spans [] :postimage-spans []
-   :preimage-files [] :postimage-files []
-   :preimage-root (typed-sha :preimage-root)
-   :postimage-root (typed-sha :postimage-root)
-   :equal false})
-
 (defn- pre-carriers
   [snapshot]
-  (let [content (:content snapshot)
-        masked-root (dummy-masked-root)]
+  (let [content (:content snapshot)]
     {:content content
      :document-read-receipt (:document-read-receipt snapshot)
      :source-descriptors (:source-descriptors snapshot)
      :source-descriptors-root (:source-descriptors-root snapshot)
-     :masked-root masked-root
+     :pre-masked-root (:pre-masked-root snapshot)
      :owned-c-descriptors (:owned-c-descriptors snapshot)
      :owned-c-root (:owned-c-root snapshot)
      :row-plan evidence/row-plan
-     :foundation-static {:test :foundation-static}
+     :foundation-static (:foundation-static snapshot)
      :boot5-compatibility (:boot5-compatibility snapshot)
-     :ownership-plan {:test :ownership-plan}
-     :catalog-projection {:test :catalog-projection}
-     :governance-rules {:test :governance-rules}
-     :identity-domain-registry {:test :identity-domain-registry}
-     :publication-boundary {:test :publication-boundary}
-     :proof-scope {:test :proof-scope
-                   :proof-contract {:test :proof-contract}}
-     :progress {:slice :SH-07 :status :partial
-                :completed-stage-count 4 :total-stage-count 8}
+     :ownership-plan (:ownership-plan snapshot)
+     :catalog-projection (:catalog-projection snapshot)
+     :governance-rules (:governance-rules snapshot)
+     :identity-domain-registry (:identity-domain-registry snapshot)
+     :publication-boundary (:publication-boundary snapshot)
+     :proof-scope (:proof-scope snapshot)
+     :progress (:progress snapshot)
      :nonclaims evidence/nonclaims
-     :a9-lifecycle {:test :missing-authoritative-a9-lifecycle}}))
+     :a9-stage-result (:a9-stage-result snapshot)}))
 
 (defn- pre-discharge
   [snapshot]
@@ -127,7 +117,7 @@
          :resolved-root (:resolved-root resolved)
          :authority
          {:phase :pre-evidence
-          :attained [:a9-architecture-integrated]
+          :attained [:a9-terminal-record-integrated]
           :deferred [:c-content-frozen :q-evidence-eligible
                      :fresh-runtime-complete :e9-evidence-immutable
                      :i9-integrated :g9-integrated :p9-integrated
@@ -144,7 +134,8 @@
   [snapshot]
   (let [content (:content snapshot)
         discharge (pre-discharge snapshot)
-        masked-root (get-in discharge [:evidence :carriers :masked-root])
+        pre-masked-root
+        (get-in discharge [:evidence :carriers :pre-masked-root])
         architecture-report-sha256 (typed-sha :architecture-report)
         active-record-raw (typed-sha :active-record)
         base
@@ -174,7 +165,7 @@
           :frozen-at "1970-01-01T00:00:00Z"}
          :source-descriptors (:source-descriptors snapshot)
          :source-descriptors-root (:source-descriptors-root snapshot)
-         :masked-root masked-root
+         :pre-masked-root pre-masked-root
          :pre-evidence-contract-discharge discharge
          :review
          {:reviewer "independent-test-reviewer"
@@ -190,6 +181,31 @@
     (assoc base :receipt-id
            (codec/H
             [:gravity/sh07-b51-evidence-eligibility-receipt-v2 base]))))
+
+(defn- replace-pre-carrier
+  [receipt key value]
+  (let [discharge (:pre-evidence-contract-discharge receipt)
+        carriers (assoc (get-in discharge [:evidence :carriers]) key value)
+        resolved (evidence/resolve-contract-phase! :pre-evidence carriers)
+        discharge-base
+        (-> discharge
+            (assoc-in [:evidence :carriers] carriers)
+            (assoc :resolved-rows (:resolved-rows resolved)
+                   :resolved-root (:resolved-root resolved))
+            (dissoc :discharge-id))
+        next-discharge
+        (assoc discharge-base :discharge-id
+               (codec/H
+                [:gravity/sh07-b51-pre-evidence-contract-discharge-v1
+                 discharge-base]))
+        receipt-base
+        (-> receipt
+            (assoc :pre-evidence-contract-discharge next-discharge)
+            (dissoc :receipt-id))]
+    (assoc receipt-base :receipt-id
+           (codec/H
+            [:gravity/sh07-b51-evidence-eligibility-receipt-v2
+             receipt-base]))))
 
 (defn- commit-eligibility!
   [root content receipt]
@@ -221,6 +237,10 @@
   (is (= 33 (count evidence/document-paths)))
   (is (= 12 (count evidence/source-specs)))
   (is (= 27 (count evidence/owned-c-paths)))
+  (is (= 3 (count evidence/a9-only-paths-e1)))
+  (is (= evidence/a9-terminal-path (last evidence/a9-only-paths-e1)))
+  (is (= :content-addressed-terminal-record
+         (:kind (last evidence/a9-paths-e1))))
   (is (= 72 (count evidence/pre-c-paths)
          (count (distinct evidence/pre-c-paths))))
   (is (= 19 (count evidence/row-plan)))
@@ -234,6 +254,9 @@
 
 (deftest c-object-pre-foundation-is-exactly-77-bounded-git-operations
   (let [{:keys [root content]} (initialize-content! true)
+        ;; Mutable filesystem bytes are not an authority source after C/T.
+        _ (write-bytes! root evidence/a9-terminal-path
+                        (.getBytes "{}\n" StandardCharsets/UTF_8))
         snapshot (evidence/reconstruct-pre-object-snapshot!
                   {:repository-root root :content content})
         operations (mapv :operation (:observations snapshot))]
@@ -255,11 +278,42 @@
            (count (get-in snapshot [:document-read-receipt :events]))))
     (is (= 12 (count (:source-descriptors snapshot))))
     (is (= 27 (count (:owned-c-descriptors snapshot))))
+    (is (= 3 (count (get-in snapshot
+                            [:a9-stage-result :a9-artifact-descriptors]))))
+    (is (true? (get-in snapshot
+                       [:a9-stage-result :checks :all-checks-pass])))
+    (is (= :terminal-record-integrated
+           (get-in snapshot [:a9-stage-result :result])))
+    (is (= #{:coordinates :preimage-spans :preimage-files :preimage-root}
+           (set (keys (:pre-masked-root snapshot)))))
+    (is (= 5 (count (get-in snapshot [:pre-masked-root :coordinates]))))
+    (is (= 2 (count (get-in snapshot [:pre-masked-root :preimage-files]))))
+    (is (= [13 14 15 16 59]
+           (mapv :form-ordinal
+                 (get-in snapshot [:pre-masked-root :coordinates]))))
+    (is (= :gravity/sh07-b51-v9-ownership-plan-e1
+           (get-in snapshot [:ownership-plan :schema])))
+    (is (= [:i9 :e9 :g9 :p9]
+           (get-in snapshot
+                   [:ownership-plan :reservation-required-stages])))
+    (is (= [:i9 :g9 :p9]
+           (get-in snapshot
+                   [:ownership-plan :handoff-required-stages])))
+    (is (contains? (set (:v9-tag-registry snapshot))
+                   :gravity/sh07-b51-a9-stage-result-e1))
+    (is (not (contains?
+              (set (get-in snapshot [:identity-domain-registry :domains]))
+              :gravity/sh07-b51-a9-stage-result-e1)))
+    (is (contains?
+         (set (get-in snapshot [:identity-domain-registry :domains]))
+         :gravity/sh07-b51-v9-ownership-plan-e1))
+    (is (not (contains? (set (:v9-tag-registry snapshot))
+                        :gravity/sh07-b51-a9-lifecycle-receipt-v1)))
     (is (= 63 (:static-decode-count snapshot)))
     (is (true? (get-in snapshot [:boot5-compatibility :document-equal])))
     (is (= :none (:authority snapshot)))))
 
-(deftest missing-required-a9-lifecycle-object-fails-closed
+(deftest missing-required-a9-terminal-object-fails-closed
   (let [{:keys [root content]} (initialize-content! false)
         result
         (failure-data
@@ -267,7 +321,43 @@
            {:repository-root root :content content}))]
     (is (= "SH07-B51-GIT-SNAPSHOT" (:id result)))
     (is (= :pre-c-path (:reason result)))
-    (is (= (last evidence/a9-pre-paths) (:path result)))))
+    (is (= evidence/a9-terminal-path (:path result)))))
+
+(deftest a9-fixed-bytes-and-authenticated-ledger-row-reject-drift
+  (testing "terminal bytes must reproduce the literal descriptor"
+    (let [{:keys [root content]} (initialize-content! true)
+          _ (write-bytes! root evidence/a9-terminal-path
+                          (.getBytes "{}\n" StandardCharsets/UTF_8))
+          c (commit! root "mutated terminal")
+          t (git! root "show" "-s" "--format=%T" c)
+          result
+          (failure-data
+           #(evidence/reconstruct-pre-object-snapshot!
+             {:repository-root root :content {:commit c :tree t}}))]
+      (is (not= c (:commit content)))
+      (is (= "SH07-B51-GIT-SNAPSHOT" (:id result)))
+      (is (= :a9-fixed-descriptor (:reason result)))
+      (is (= evidence/a9-terminal-path (:path result)))))
+  (testing "the concrete argv path is checked against the C ledger row"
+    (let [{:keys [root]} (initialize-content! true)
+          ledger-path "contracts/workstream-ledger.json"
+          ledger (String. (Files/readAllBytes (.resolve root ledger-path))
+                          StandardCharsets/UTF_8)
+          _ (write-bytes!
+             root ledger-path
+             (.getBytes (str/replace ledger
+                                     "\"ordinal\":161"
+                                     "\"ordinal\":162")
+                        StandardCharsets/UTF_8))
+          c (commit! root "mutated ledger")
+          t (git! root "show" "-s" "--format=%T" c)
+          result
+          (failure-data
+           #(evidence/reconstruct-pre-object-snapshot!
+             {:repository-root root :content {:commit c :tree t}}))]
+      (is (= "SH07-B51-GIT-SNAPSHOT" (:id result)))
+      (is (= :a9-stage-result-checks (:reason result)))
+      (is (= [:manifest-entry-match] (:failed-checks result))))))
 
 (deftest q-coordinate-joins-five-operations-to-the-pre-foundation
   (let [{:keys [root content]} (initialize-content! true)
@@ -284,12 +374,18 @@
     (is (= [:show-tree :diff-tree-name-status-z :ls-tree-z-requested
             :cat-file-blob :ls-tree-z-requested]
            (mapv :operation (:observations result))))
-    (is (= :immutable-q-coordinate-and-pre-foundation (:scope result)))
+    (is (= :immutable-q-coordinate-and-pre-discharge (:scope result)))
+    (is (= 1 (get-in result [:eligibility-check :decode-count])))
+    (is (= 2 (get-in result
+                     [:eligibility-check
+                      :pre-discharge-pre-masked-file-count])))
+    (is (true? (get-in result
+                       [:eligibility-check :pre-discharge-match])))
+    (is (= (:eligibility-check-root result)
+           (codec/H [:gravity/sh07-b51-eligibility-check-root-v1
+                     (:eligibility-check result)])))
     (is (= :none (:authority result)))
-    (is (= [:a9-lifecycle-object-absent-from-authoritative-main
-            :masked-postimage-depends-on-forbidden-future-runtime-values
-            :complete-static-carrier-schema-validation]
-           (:remaining-gaps result)))))
+    (is (= [] (:remaining-gaps result)))))
 
 (deftest skeletal-source-descriptors-and-one-path-q-deltas-reject
   (let [{:keys [root content]} (initialize-content! true)
@@ -337,3 +433,46 @@
                   :eligibility-coordinate coordinate}))]
           (is (= "SH07-B51-RECEIPT-JOIN" (:id result)))
           (is (= :eligibility-object-join (:reason result))))))))
+
+(deftest pre-mask-and-registry-carriers-reject-aliases-or-drift
+  (testing "the superseded full-mask key is outside the closed receipt schema"
+    (let [{:keys [root content]} (initialize-content! true)
+          snapshot (evidence/reconstruct-pre-object-snapshot!
+                    {:repository-root root :content content})
+          good (eligibility-receipt snapshot)
+          bad-base (-> good
+                       (dissoc :pre-masked-root)
+                       (assoc :masked-root (:pre-masked-root good))
+                       (dissoc :receipt-id))
+          bad (assoc bad-base :receipt-id
+                     (codec/H
+                      [:gravity/sh07-b51-evidence-eligibility-receipt-v2
+                       bad-base]))
+          {:keys [coordinate]} (commit-eligibility! root content bad)
+          result
+          (failure-data
+           #(evidence/validate-eligibility-object!
+             {:repository-root root :content content
+              :eligibility-coordinate coordinate}))]
+      (is (= "SH07-B51-RECEIPT-JOIN" (:id result)))
+      (is (= :eligibility-receipt-keys (:reason result)))))
+  (testing "an unknown H domain cannot survive full PRE W equality"
+    (let [{:keys [root content]} (initialize-content! true)
+          snapshot (evidence/reconstruct-pre-object-snapshot!
+                    {:repository-root root :content content})
+          receipt (eligibility-receipt snapshot)
+          registry (get-in receipt
+                           [:pre-evidence-contract-discharge :evidence
+                            :carriers :identity-domain-registry])
+          bad-registry
+          (update registry :domains conj :gravity/test-unknown-domain)
+          bad (replace-pre-carrier receipt :identity-domain-registry
+                                   bad-registry)
+          {:keys [coordinate]} (commit-eligibility! root content bad)
+          result
+          (failure-data
+           #(evidence/validate-eligibility-object!
+             {:repository-root root :content content
+              :eligibility-coordinate coordinate}))]
+      (is (= "SH07-B51-RECEIPT-JOIN" (:id result)))
+      (is (= :pre-object-carrier-join (:reason result))))))

@@ -146,4 +146,22 @@
                 {:repository-root root :content content
                  :existing-evidence existing
                  :fresh-payload-values payloads
-                 :fresh-identity-receipt-id (:receipt-id receipt)})))))))
+                 :fresh-identity-receipt-id (:receipt-id receipt)}))))))
+  (testing "the existing E/TE coordinate is exact and direct from C"
+    (let [{:keys [root content payloads receipt existing]} (initialize-e9!)
+          invoke
+          (fn [coordinate]
+            (evidence/verify-existing-object-replay!
+             {:repository-root root :content content
+              :existing-evidence coordinate
+              :fresh-payload-values payloads
+              :fresh-identity-receipt-id (:receipt-id receipt)}))]
+      (is (= {:id "SH07-B51-GIT-RELOAD"
+              :reason :existing-evidence}
+             (failure #(invoke (dissoc existing :parents)))))
+      (is (= {:id "SH07-B51-GIT-RELOAD"
+              :reason :existing-evidence}
+             (failure #(invoke (assoc existing :path "forged")))))
+      (is (= {:id "SH07-B51-GIT-RELOAD"
+              :reason :existing-parent}
+             (failure #(invoke (assoc existing :parents []))))))))

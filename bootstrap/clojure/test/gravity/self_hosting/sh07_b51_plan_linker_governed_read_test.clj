@@ -7,6 +7,73 @@
   (or (ns-resolve 'gravity.bootstrap name)
       (throw (ex-info "missing private bootstrap Var" {:name name}))))
 
+(defn- c5-fixture []
+  (let [sha (fn [ordinal] (format "sha256:%064x" (inc ordinal)))
+        path "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
+        bytes (.getBytes "a" java.nio.charset.StandardCharsets/UTF_8)
+        descriptors
+        (mapv
+         (fn [ordinal]
+           {:module-ordinal ordinal
+            :module (symbol (str "gravity.sh07-b51.fixture-" ordinal))
+            :module-source-id (sha ordinal)
+            :logical-source-path (if (zero? ordinal) path (str "source-" ordinal))
+            :source-sha256 (sha (+ 10 ordinal))
+            :source-byte-count (if (zero? ordinal) (alength bytes) 1)
+            :owner (if (< ordinal 4) :r1-producer
+                       (if (< ordinal 6) :r6-independent-verifier
+                           :r8-finalizer))
+            :profile :meta :target :jvm :effects #{} :capabilities #{}
+            :safety :safe :definitions [] :external-bindings []})
+         (range 7))
+        caller-definition
+        {:name 'caller :arity 0 :visibility :private :source-hash (sha 30)}
+        callee-definition
+        {:name 'governed-external :arity 2 :visibility :private
+         :source-hash (sha 31)}
+        callee (-> (nth descriptors 2)
+                   (assoc :module 'gravity.sh07-b51.producer-c
+                          :definitions [callee-definition]))
+        external
+        {:symbol 'governed-external
+         :callee-module-ordinal 2
+         :callee-module (:module callee)
+         :callee-source-sha256 (:source-sha256 callee)
+         :callee-definition-source-hash (:source-hash callee-definition)
+         :arity 2 :owner-edge :producer-internal}
+        caller (-> (first descriptors)
+                   (assoc :module 'gravity.sh07-b51.producer-a
+                          :source-sha256 (sha 10)
+                          :definitions [caller-definition]
+                          :external-bindings [external]))
+        descriptors (assoc descriptors 0 caller 2 callee)
+        edge
+        {:ordinal 0
+         :caller-module-source-id (:module-source-id caller)
+         :caller-function 'caller
+         :caller-function-source-hash (:source-hash caller-definition)
+         :callsite-path [0 1]
+         :callee-module-source-id (:module-source-id callee)
+         :callee-function 'governed-external
+         :callee-function-source-hash (:source-hash callee-definition)
+         :arity 2 :owner-edge :producer-internal
+         :authorization :authenticated-b51-namespace-external}
+        source
+        {:path path :bytes bytes :text "a"
+         :source-sha256 (:source-sha256 caller)
+         :source-descriptor {:path path :raw-sha256 (:source-sha256 caller)}
+         :module {:module (:module caller)}}]
+    {:source source :descriptors descriptors
+     :manifest {:manifest-id (sha 50) :edges [edge]}
+     :edge edge}))
+
+(defn- c5-failure-data [operation]
+  (try
+    (operation)
+    nil
+    (catch clojure.lang.ExceptionInfo error
+      (ex-data error))))
+
 (deftest governed-projection-and-event-plan-are-closed
   (let [specs (var-get (private-var 'p15-s23-sh07-b51-source-specs))
         events (var-get (private-var 'p15-s23-sh07-b51-source-event-plan))]
@@ -376,3 +443,114 @@
     (is (true? @observed-scope))
     (is (= sentinel (:sentinel (ex-data failure))))
     (is (false? @v9-construction-var))))
+
+(deftest c5-import-carriers-are-an-exact-m0-m1-projection
+  (let [{:keys [source descriptors manifest edge]} (c5-fixture)
+        authority-rows
+        ((var-get (private-var 'p15-s23-sh07-b51-c5-authority-rows*))
+         0 source descriptors manifest)
+        carriers
+        ((var-get (private-var 'p15-s23-sh07-b51-c5-request-carriers))
+         (first descriptors) manifest authority-rows)
+        binding (first (:import-bindings carriers))
+        coordinate (:semantic-span binding)]
+    (is (= 1 (count authority-rows)))
+    (is (= 'governed-external (:name binding)))
+    (is (= 'gravity.sh07-b51.producer-c (:namespace binding)))
+    (is (= (:module-source-id (nth descriptors 2))
+           (:definition-artifact-id binding)
+           (:callee-module-source-id coordinate)))
+    (is (= (:source-sha256 (nth descriptors 2))
+           (:callee-source-sha256 coordinate)))
+    (is (= (get-in descriptors [2 :definitions 0 :source-hash])
+           (:callee-definition-source-hash coordinate)))
+    (is (= 2 (:arity coordinate)))
+    (is (= :producer-internal (:owner-edge coordinate)))
+    (is (= [(:ordinal edge)] (:authorized-edge-ordinals coordinate)))
+    (is (= ['governed-external] (get-in carriers [:imports 0 :refer])))
+    (is (= (:dependency-edges carriers)
+           [{:from 'gravity.sh07-b51.producer-a
+             :to 'gravity.sh07-b51.producer-c
+             :kind :namespace
+             :boundary :producer-internal
+             :semantic-span (get-in carriers [:imports 0 :semantic-span])
+             :source-span (get-in carriers [:imports 0 :source-span])}]))))
+
+(deftest c5-authority-preflight-rejects-closed-set-mutations
+  (let [{:keys [source descriptors manifest edge]} (c5-fixture)
+        rows (var-get (private-var
+                       'p15-s23-sh07-b51-c5-authority-rows*))
+        failure-cause
+        (fn [changed-descriptors changed-manifest]
+          (get-in
+           (c5-failure-data
+            #(rows 0 source changed-descriptors changed-manifest))
+           [:details :cause]))
+        duplicate-binding
+        (update-in descriptors [0 :external-bindings]
+                   #(conj % (assoc (first %) :callee-module-ordinal 3)))
+        stale-binding
+        (assoc-in descriptors [0 :external-bindings 0
+                               :callee-source-sha256]
+                  (format "sha256:%064x" 999))
+        missing-edge (assoc manifest :edges [])
+        extra-edge
+        (update manifest :edges conj
+                (assoc edge :ordinal 1 :callee-function 'fabricated-extra))
+        unauthorized-edge
+        (assoc-in manifest [:edges 0 :authorization] :fabricated)]
+    (is (= :ambiguous-external-binding
+           (failure-cause duplicate-binding manifest)))
+    (is (= :stale-external-binding
+           (failure-cause stale-binding manifest)))
+    (is (= :missing-authorized-edge
+           (failure-cause descriptors missing-edge)))
+    (is (= :extra-or-ambiguous-authorized-edge
+           (failure-cause descriptors extra-edge)))
+    (is (= :unauthorized-owner-edge
+           (failure-cause descriptors unauthorized-edge)))))
+
+(deftest c5-scoped-request-adapter-is-closed-and-delegates-nonmatches
+  (let [{:keys [source descriptors manifest]} (c5-fixture)
+        caller (first descriptors)
+        rows
+        ((var-get (private-var 'p15-s23-sh07-b51-c5-authority-rows*))
+         0 source descriptors manifest)
+        carriers
+        ((var-get (private-var 'p15-s23-sh07-b51-c5-request-carriers))
+         caller manifest rows)
+        sh05 {:artifact-id (format "sha256:%064x" 200)}
+        base-request
+        {:module {:namespace (:module caller)}
+         :definitions [] :imports [] :import-bindings []
+         :dependency-edges []}
+        adapter
+        (merge
+         {:source-path (:path source)
+          :sh05-artifact-id (:artifact-id sh05)
+          :base-request-id (bootstrap/reader-canonical-hash base-request)
+          :caller-module-source-id (:module-source-id caller)
+          :manifest-id (:manifest-id manifest)}
+         carriers)
+        scoped
+        ((var-get (private-var
+                   'p15-s23-sh07-b51-c5-scoped-request-function))
+         adapter (fn [_ _] base-request))
+        unrelated (scoped "unrelated.gravity" sh05)
+        admitted (scoped (:path source) sh05)
+        fabricated
+        (update adapter :import-bindings conj
+                (assoc (first (:import-bindings adapter))
+                       :name 'fabricated-extra))
+        fabricated-failure
+        (c5-failure-data
+         #((var-get (private-var
+                     'p15-s23-sh07-b51-apply-c5-request-adapter))
+           fabricated (:path source) sh05 base-request))]
+    (is (identical? base-request unrelated))
+    (is (= (:imports adapter) (:imports admitted)))
+    (is (= (:import-bindings adapter) (:import-bindings admitted)))
+    (is (= :unauthenticated-c5-external-binding
+           (:reason fabricated-failure)))
+    (is (= :request-replay-mismatch
+           (get-in fabricated-failure [:details :cause])))))

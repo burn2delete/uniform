@@ -105,10 +105,69 @@
   "gravity.tools.sh07-b51-attempt32-coordinator-child")
 (def ^:private codec-namespace "gravity.tools.sh07-b51-v9-codec")
 (def ^:private bootstrap-namespace "gravity.bootstrap")
+(def ^:private git-evidence-namespace
+  "gravity.tools.sh07-b51-git-evidence")
 (def ^:private eligibility-receipt-keys
   #{:artifact :schema-version :content :freeze :source-descriptors
-    :source-descriptors-root :masked-root :pre-evidence-contract-discharge
+    :source-descriptors-root :pre-masked-root :pre-evidence-contract-discharge
     :review :state :self-id-omits :nonclaims :receipt-id})
+(def ^:private eligibility-result-keys
+  #{:coordinate :receipt :observations :operation-count
+    :pre-object-snapshot :pre-discharge-observations
+    :pre-discharge-git-operation-count :scope :eligibility-check
+    :eligibility-check-root :remaining-gaps :authority})
+(def ^:private eligibility-check-keys
+  #{:coordinate :observations :pre-discharge-observations :decode-count
+    :receipt-id-check-count :pre-discharge-reconstruction-count
+    :pre-discharge-git-operation-count
+    :pre-discharge-document-descriptor-count
+    :pre-discharge-source-descriptor-count
+    :pre-discharge-pre-masked-file-count
+    :pre-discharge-owned-c-artifact-count
+    :pre-discharge-a9-artifact-count
+    :pre-discharge-baseline-boot5-count
+    :pre-discharge-static-decode-count :content-match
+    :source-descriptors-match :source-descriptors-root-match
+    :pre-masked-root-match :owned-c-root-match :pre-discharge-match})
+(def ^:private eligibility-check-counts
+  {:decode-count 1
+   :receipt-id-check-count 1
+   :pre-discharge-reconstruction-count 1
+   :pre-discharge-git-operation-count 77
+   :pre-discharge-document-descriptor-count 33
+   :pre-discharge-source-descriptor-count 12
+   :pre-discharge-pre-masked-file-count 2
+   :pre-discharge-owned-c-artifact-count 27
+   :pre-discharge-a9-artifact-count 3
+   :pre-discharge-baseline-boot5-count 1
+   :pre-discharge-static-decode-count 63})
+(def ^:private eligibility-check-matches
+  [:content-match :source-descriptors-match
+   :source-descriptors-root-match :pre-masked-root-match
+   :owned-c-root-match :pre-discharge-match])
+
+(def eligibility-participant-order [:l :m :a :b])
+
+(def ^:private aggregate-eligibility-counter-values
+  {:q-coordinate-git-operation-count 20
+   :pre-discharge-git-operation-count 308
+   :git-operation-count 328
+   :q-coordinate-decode-count 4
+   :receipt-id-check-count 4
+   :pre-discharge-reconstruction-count 4
+   :pre-discharge-static-decode-count 252
+   :pre-discharge-document-descriptor-count 132
+   :pre-discharge-source-descriptor-count 48
+   :pre-discharge-pre-masked-file-count 8
+   :pre-discharge-owned-c-artifact-count 108
+   :pre-discharge-a9-artifact-count 12
+   :pre-discharge-baseline-boot5-count 4
+   :content-match-count 4
+   :source-descriptors-match-count 4
+   :source-descriptors-root-match-count 4
+   :pre-masked-root-match-count 4
+   :owned-c-root-match-count 4
+   :pre-discharge-match-count 4})
 (def ^:private nonclaims
   [:formal-proof :sh07-complete :self-hosting :release :seed-retirement
    :hostile-host])
@@ -201,6 +260,47 @@
 (defn- sha256-id? [value]
   (and (string? value)
        (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+
+(defn- dense-observations? [expected-count observations]
+  (and (vector? observations)
+       (= expected-count (count observations))
+       (= (vec (range expected-count)) (mapv :ordinal observations))))
+
+(defn- eligibility-check-valid?
+  [expected-coordinate check]
+  (and (exact-keys? check eligibility-check-keys)
+       (= expected-coordinate (:coordinate check))
+       (dense-observations? 5 (:observations check))
+       (dense-observations? 77 (:pre-discharge-observations check))
+       (= eligibility-check-counts
+          (select-keys check (keys eligibility-check-counts)))
+       (every? true? (map check eligibility-check-matches))))
+
+(defn aggregate-eligibility-counters!
+  "Validate the ordered L/M/A/B eligibility checks and return E1's exact
+  aggregate counter carrier."
+  [H participant-results]
+  (let [common-coordinate
+        (get-in participant-results [0 :eligibility-check :coordinate])]
+    (when-not
+     (and (ifn? H)
+          (vector? participant-results)
+          (= eligibility-participant-order
+             (mapv :participant participant-results))
+          (every?
+           (fn [{:keys [eligibility-check eligibility-check-root] :as result}]
+             (and (exact-keys?
+                   result
+                   #{:participant :eligibility-check :eligibility-check-root})
+                  (eligibility-check-valid? common-coordinate
+                                            eligibility-check)
+                  (= eligibility-check-root
+                     (H [:gravity/sh07-b51-eligibility-check-root-v1
+                         eligibility-check]))))
+           participant-results))
+      (reject! :eligibility-aggregate-invalid))
+    (assoc aggregate-eligibility-counter-values
+           :participants eligibility-participant-order)))
 
 (defn- nonnegative-long! [value option]
   (try
@@ -1058,145 +1158,70 @@
         (.shutdownNow executor)
         (.awaitTermination executor 1000 TimeUnit/MILLISECONDS)))))
 
-(defn- operation-row-core [ordinal operation parsed]
-  (assoc (dissoc operation :stdout-bytes)
-         :ordinal ordinal :parsed-result parsed))
-
-(defn- parse-diff-added-core! [bytes content-commit q path]
-  (let [tokens (nul-records-core! bytes :eligibility-diff-grammar)]
-    (when-not (= ["A" path] tokens)
-      (reject! :eligibility-diff-grammar {:actual tokens}))
-    {:parent content-commit :commit q
-     :entries [{:status :added :path path}]}))
-
-(defn- eligibility-five-operations!
-  [options codec]
-  (let [coordinate (:eligibility options)
-        c (get-in options [:content :commit])
-        q (:commit coordinate)
-        path (:path coordinate)
-        show
-        (git-operation-core! options :show-tree
-                             ["show" "-s" "--format=%H%n%T%n%P" q] 4096)
-        show-value (parse-show-core! (:stdout-bytes show))
-        diff
-        (git-operation-core!
-         options :diff-tree-name-status-z
-         ["diff-tree" "--no-commit-id" "--name-status" "-r" "-z" c q]
-         1048576)
-        diff-value (parse-diff-added-core! (:stdout-bytes diff) c q path)
-        tree-q
-        (git-operation-core! options :ls-tree-z-requested
-                             ["ls-tree" "-z" q "--" path] 1048576)
-        q-row (first (parse-ls-tree-core! (:stdout-bytes tree-q) [path]))
-        blob
-        (git-operation-core! options :cat-file-blob
-                             ["cat-file" "blob" (:blob-oid coordinate)]
-                             (:response-max-bytes transport-limits))
-        bytes (:stdout-bytes blob)
-        receipt ((:strict-read-wire codec) :response bytes)
-        blob-value {:oid (:blob-oid coordinate)
-                    :byte-count (alength ^bytes bytes)
-                    :raw-sha256 ((:R codec) bytes)}
-        tree-c
-        (git-operation-core! options :ls-tree-z-requested
-                             ["ls-tree" "-z" c "--" path] 1048576)
-        c-row (first (parse-ls-tree-core! (:stdout-bytes tree-c) [path]))
-        observations
-        [(operation-row-core 0 show show-value)
-         (operation-row-core 1 diff diff-value)
-         (operation-row-core 2 tree-q
-                             {:commit q :requested-paths [path]
-                              :rows [(assoc q-row :present true)]})
-         (operation-row-core 3 blob blob-value)
-         (operation-row-core 4 tree-c
-                             {:commit c :requested-paths [path]
-                              :rows [(assoc c-row :present false)]})]]
-    (when-not
-     (and (= {:commit q :tree (:tree coordinate) :parents [c]} show-value)
-          (= "100644" (:mode q-row)) (= "blob" (:type q-row))
-          (= (:blob-oid coordinate) (:oid q-row))
-          (nil? (:mode c-row)) (nil? (:type c-row)) (nil? (:oid c-row))
-          (= (:byte-count coordinate) (:byte-count blob-value))
-          (= (:raw-sha256 coordinate) (:raw-sha256 blob-value)))
-      (reject! :eligibility-object-join))
-    {:receipt receipt :observations observations}))
+(defn- load-git-evidence! []
+  (require (symbol git-evidence-namespace))
+  {:validate-eligibility-object!
+   (resolve-public! git-evidence-namespace "validate-eligibility-object!")})
 
 (defn- authenticate-eligibility-input!
+  "Run the shared show/diff-tree/ls-tree/blob/ls-tree Q sequence and the full
+  77-operation PRE reconstruction before constructing A or B."
   [options codec]
   (let [coordinate (:eligibility options)
-        {:keys [receipt observations]}
-        (eligibility-five-operations! options codec)
-        freeze (:freeze receipt)
-        active-record (:active-record-ref freeze)
-        container (:container active-record)
-        transition (:transition active-record)
-        review (:review receipt)
-        descriptors (:source-descriptors receipt)
+        validate! (:validate-eligibility-object! (load-git-evidence!))
+        result (validate! {:repository-root (:working-directory options)
+                           :content (:content options)
+                           :eligibility-coordinate coordinate})
+        receipt (:receipt result)
+        check (:eligibility-check result)
+        observations (:observations result)
+        pre-observations (:pre-discharge-observations result)
+        transition (get-in receipt [:freeze :active-record-ref :transition])
         architecture-report-sha256
         (:architecture-report-sha256 transition)]
+    (when (seq (:remaining-gaps result))
+      (reject! :pre-discharge-reconstruction-unavailable))
     (when-not
-     (and (exact-keys? receipt eligibility-receipt-keys)
-          (= :gravity/sh07-b51-evidence-eligibility-receipt-v2
-             (:artifact receipt))
-          (= 2 (:schema-version receipt))
-          (= (:content options) (:content receipt))
-          (= :evidence-eligible (:state receipt))
-          (= [[:receipt-id]] (:self-id-omits receipt))
-          (= nonclaims (:nonclaims receipt))
-          (= (:receipt-id coordinate) (:receipt-id receipt))
-          (= (:receipt-id receipt)
+     (and (exact-keys? result eligibility-result-keys)
+          (exact-keys? receipt eligibility-receipt-keys)
+          (not (contains? receipt :masked-root))
+          (exact-keys? check eligibility-check-keys)
+          (= coordinate (:coordinate result) (:coordinate check))
+          (= 5 (:operation-count result))
+          (dense-observations? 5 observations)
+          (= observations (:observations check))
+          (= 77 (:pre-discharge-git-operation-count result))
+          (dense-observations? 77 pre-observations)
+          (= pre-observations (:pre-discharge-observations check))
+          (= eligibility-check-counts
+             (select-keys check (keys eligibility-check-counts)))
+          (every? true? (map check eligibility-check-matches))
+          (= :immutable-q-coordinate-and-pre-discharge (:scope result))
+          (= [] (:remaining-gaps result))
+          (= :none (:authority result))
+          (= (:eligibility-check-root result)
              ((:H codec)
-              [:gravity/sh07-b51-evidence-eligibility-receipt-v2
-               (dissoc receipt :receipt-id)]))
-          (exact-keys? freeze
-                       #{:state :candidate-commit :candidate-tree
-                         :active-record-ref :frozen-at})
-          (= :frozen (:state freeze))
-          (= (:content options)
-             {:commit (:candidate-commit freeze)
-              :tree (:candidate-tree freeze)})
-          (exact-keys? active-record
-                       #{:container :value-path :record-id :transition})
-          (exact-keys? container
-                       #{:commit :tree :parents :path :mode :type :blob-oid
-                         :byte-count :raw-sha256})
-          (= [] (:value-path active-record))
-          (= (:record-id active-record) (:raw-sha256 container))
-          (exact-keys? transition
-                       #{:workstream-id :from :to :candidate-commit
-                         :candidate-tree :architecture-report-sha256
-                         :history-ordinal})
-          (= :draft (:from transition))
-          (= :frozen (:to transition))
-          (= (:content options)
-             {:commit (:candidate-commit transition)
-              :tree (:candidate-tree transition)})
+              [:gravity/sh07-b51-eligibility-check-root-v1 check]))
           (sha256-id? architecture-report-sha256)
-          (exact-keys? review
-                       #{:reviewer :candidate-commit :candidate-tree
-                         :artifact-path :artifact-raw-sha256 :result
-                         :completed-at})
-          (= :evidence-eligible (:result review))
-          (= (:content options)
-             {:commit (:candidate-commit review)
-              :tree (:candidate-tree review)})
-          (= completed-at (:completed-at review))
-          (vector? descriptors) (= 12 (count descriptors))
-          (= (:source-descriptors-root receipt)
-             ((:H codec)
-              [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])))
+          (= (:content options) (:content receipt)))
       (reject! :eligibility-object-invalid))
     (assoc options
            :architecture-report-sha256 architecture-report-sha256
-           :eligibility-preflight
-           {:status :immutable-q-coordinate-validated
-            :coordinate coordinate
-            :observations observations
-            :receipt-id (:receipt-id receipt)
-            :architecture-report-sha256 architecture-report-sha256
-            :remaining-gaps
-            [:pre-discharge-77-operation-reconstruction]})))
+           :eligibility-preflight check
+           :eligibility-check-root (:eligibility-check-root result))))
+
+(defn- validate-child-eligibility!
+  [joined codec tcb]
+  (let [request (:request joined)
+        expected-coordinate (:eligibility request)
+        check (:eligibility-check tcb)]
+    (when-not
+     (and (= (:request-id joined)
+             ((:H codec)
+              [:gravity/sh07-b51-checker-request-id-v1 request]))
+          (eligibility-check-valid? expected-coordinate check))
+      (reject! :child-eligibility-check {:role (:role joined)}))
+    check))
 
 (defn validate-child!
   "Strictly parse and validate a joined child after its exit event is recorded."
@@ -1223,7 +1248,8 @@
           (update response :transport dissoc :response-preimage-id)
           response-id
           ((:H codec)
-           [:gravity/sh07-b51-response-preimage-id-v1 without-self-id])]
+           [:gravity/sh07-b51-response-preimage-id-v1 without-self-id])
+          _ (validate-child-eligibility! joined codec tcb)]
       (when-not
        (and (exact-keys? response response-keys)
             (= :gravity/sh07-b51-checker-child-response-v1
@@ -1773,9 +1799,6 @@
           preflight (merge preflight classpath
                            {:pre-manifest-tcb pre-manifest})
           preflight (authenticate-eligibility-input! preflight codec)
-          _ (when (seq (get-in preflight
-                               [:eligibility-preflight :remaining-gaps]))
-              (reject! :pre-discharge-reconstruction-unavailable))
           topology (run-process-topology! preflight codec)
           response (build-m-response preflight codec topology)
           bytes ((:bounded-wire-bytes codec) :response response)]

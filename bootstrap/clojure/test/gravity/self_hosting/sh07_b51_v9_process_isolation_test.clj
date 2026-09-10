@@ -15,6 +15,77 @@
 
 (def ^:private strict-read-wire (:strict-read-wire codec/transport-api))
 
+(defn- coordinator-private-var [name]
+  (ns-resolve 'gravity.tools.sh07-b51-attempt32-coordinator-child name))
+
+(defn- eligibility-coordinate []
+  {:schema :gravity/sh07-b51-external-review-object-v1
+   :commit git-b :tree git-a :parents [git-a]
+   :path
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/evidence-eligibility-receipt.edn"
+   :mode "100644" :type "blob" :blob-oid git-b :byte-count 1
+   :raw-sha256 sha-a :receipt-id sha-a})
+
+(defn- eligibility-result []
+  (let [coordinate (eligibility-coordinate)
+        observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 5))
+        pre-observations (mapv (fn [ordinal] {:ordinal ordinal}) (range 77))
+        check
+        {:coordinate coordinate
+         :observations observations
+         :pre-discharge-observations pre-observations
+         :decode-count 1
+         :receipt-id-check-count 1
+         :pre-discharge-reconstruction-count 1
+         :pre-discharge-git-operation-count 77
+         :pre-discharge-document-descriptor-count 33
+         :pre-discharge-source-descriptor-count 12
+         :pre-discharge-pre-masked-file-count 2
+         :pre-discharge-owned-c-artifact-count 27
+         :pre-discharge-a9-artifact-count 3
+         :pre-discharge-baseline-boot5-count 1
+         :pre-discharge-static-decode-count 63
+         :content-match true
+         :source-descriptors-match true
+         :source-descriptors-root-match true
+         :pre-masked-root-match true
+         :owned-c-root-match true
+         :pre-discharge-match true}
+        receipt
+        {:artifact :gravity/sh07-b51-evidence-eligibility-receipt-v2
+         :schema-version 2
+         :content {:commit git-a :tree git-b}
+         :freeze {:active-record-ref
+                  {:transition {:architecture-report-sha256 sha-a}}}
+         :source-descriptors []
+         :source-descriptors-root sha-a
+         :pre-masked-root sha-a
+         :pre-evidence-contract-discharge {}
+         :review {}
+         :state :evidence-eligible
+         :self-id-omits [[:receipt-id]]
+         :nonclaims []
+         :receipt-id sha-a}]
+    {:coordinate coordinate
+     :receipt receipt
+     :observations observations
+     :operation-count 5
+     :pre-object-snapshot {}
+     :pre-discharge-observations pre-observations
+     :pre-discharge-git-operation-count 77
+     :scope :immutable-q-coordinate-and-pre-discharge
+     :eligibility-check check
+     :eligibility-check-root
+     (codec/H [:gravity/sh07-b51-eligibility-check-root-v1 check])
+     :remaining-gaps []
+     :authority :none}))
+
+(defn- participant-result [participant check]
+  {:participant participant
+   :eligibility-check check
+   :eligibility-check-root
+   (codec/H [:gravity/sh07-b51-eligibility-check-root-v1 check])})
+
 (defn- fake-operations
   ([calls] (fake-operations calls nil))
   ([calls fail-at]
@@ -95,6 +166,125 @@
       (is (= [:build-a :start-a :join-a :validate-a
               :build-b :start-b :join-b :validate-b]
              @calls)))))
+
+(deftest coordinator-mirrors-the-complete-eligibility-result
+  (let [result (eligibility-result)
+        options {:working-directory "/immutable/repository"
+                 :content {:commit git-a :tree git-b}
+                 :eligibility (eligibility-coordinate)}
+        authenticate!
+        (var-get (coordinator-private-var 'authenticate-eligibility-input!))]
+    (with-redefs-fn
+      {(coordinator-private-var 'load-git-evidence!)
+       (fn [] {:validate-eligibility-object! (fn [_] result)})}
+      #(let [authenticated (authenticate! options {:H codec/H})]
+         (is (= (:eligibility-check result)
+                (:eligibility-preflight authenticated)))
+         (is (= (:eligibility-check-root result)
+                (:eligibility-check-root authenticated)))
+         (is (= sha-a (:architecture-report-sha256 authenticated)))))
+    (is (= [:l :m :a :b] coordinator/eligibility-participant-order))
+    (is (= {:participants [:l :m :a :b]
+            :q-coordinate-git-operation-count 20
+            :pre-discharge-git-operation-count 308
+            :git-operation-count 328
+            :q-coordinate-decode-count 4
+            :receipt-id-check-count 4
+            :pre-discharge-reconstruction-count 4
+            :pre-discharge-static-decode-count 252
+            :pre-discharge-document-descriptor-count 132
+            :pre-discharge-source-descriptor-count 48
+            :pre-discharge-pre-masked-file-count 8
+            :pre-discharge-owned-c-artifact-count 108
+            :pre-discharge-a9-artifact-count 12
+            :pre-discharge-baseline-boot5-count 4
+            :content-match-count 4
+            :source-descriptors-match-count 4
+            :source-descriptors-root-match-count 4
+            :pre-masked-root-match-count 4
+            :owned-c-root-match-count 4
+            :pre-discharge-match-count 4}
+           (coordinator/aggregate-eligibility-counters!
+            codec/H
+            (mapv #(participant-result % (:eligibility-check result))
+                  [:l :m :a :b]))))))
+
+(deftest coordinator-rejects-a-partial-pre-discharge-result
+  (let [partial
+        (assoc (eligibility-result) :remaining-gaps
+               [:pre-discharge-77-operation-reconstruction])
+        authenticate!
+        (var-get (coordinator-private-var 'authenticate-eligibility-input!))]
+    (with-redefs-fn
+      {(coordinator-private-var 'load-git-evidence!)
+       (fn [] {:validate-eligibility-object! (fn [_] partial)})}
+      #(is (thrown? clojure.lang.ExceptionInfo
+                    (authenticate!
+                     {:working-directory "/immutable/repository"
+                      :content {:commit git-a :tree git-b}
+                     :eligibility (eligibility-coordinate)}
+                     {:H codec/H}))))))
+
+(deftest eligibility-aggregation-rejects-order-coordinate-observation-and-counter-drift
+  (let [result (eligibility-result)
+        participants
+        (mapv #(participant-result % (:eligibility-check result))
+              coordinator/eligibility-participant-order)
+        mutate-check
+        (fn [results index update-check]
+          (let [check (update-check (get-in results
+                                           [index :eligibility-check]))]
+            (assoc results index
+                   (participant-result
+                    (get-in results [index :participant]) check))))
+        coordinate-drift
+        (mutate-check participants 1
+                      #(assoc-in % [:coordinate :blob-oid] git-a))
+        q-observation-drift
+        (mutate-check participants 2
+                      #(assoc % :observations
+                              (vec (reverse (:observations %)))))
+        pre-observation-drift
+        (mutate-check participants 3
+                      #(update % :pre-discharge-observations pop))
+        old-counter
+        (mutate-check
+         participants 2
+         #(-> %
+              (assoc :pre-discharge-masked-file-count 2)
+              (dissoc :pre-discharge-pre-masked-file-count)))]
+    (doseq [invalid [(assoc-in participants [1 :participant] :a)
+                     (assoc-in participants [3 :eligibility-check-root]
+                               sha-a)
+                     coordinate-drift
+                     q-observation-drift
+                     pre-observation-drift
+                     old-counter]]
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (coordinator/aggregate-eligibility-counters!
+                    codec/H invalid))))))
+
+(deftest child-eligibility-check-is-bound-to-request-and-authenticated-coordinate
+  (let [check (:eligibility-check (eligibility-result))
+        request {:eligibility (eligibility-coordinate)}
+        joined {:role :producer-census
+                :request request
+                :request-id
+                (codec/H [:gravity/sh07-b51-checker-request-id-v1 request])}
+        validate!
+        (var-get (coordinator-private-var 'validate-child-eligibility!))]
+    (is (= check (validate! joined {:H codec/H}
+                            {:eligibility-check check})))
+    (doseq [[invalid-joined invalid-check]
+            [[(assoc joined :request-id sha-a) check]
+             [joined (assoc-in check [:coordinate :blob-oid] git-a)]
+             [joined (assoc check :observations
+                            (vec (reverse (:observations check))))]
+             [joined (update check :pre-discharge-observations pop)]
+             [joined (assoc check :pre-discharge-match false)]]]
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (validate! invalid-joined {:H codec/H}
+                              {:eligibility-check invalid-check}))))))
 
 (defn- coordinator-arguments [staging-root]
   ["--snapshot-commit" git-a

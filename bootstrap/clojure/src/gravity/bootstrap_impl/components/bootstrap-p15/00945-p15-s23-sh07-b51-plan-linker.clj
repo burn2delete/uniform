@@ -3,7 +3,7 @@
          p15-s23-compiler-def-value
          p15-s23-stage2-compiler-artifact-augmented-emitter
          sh06-resolution-definition-records sh06-resolution-core-records
-         sh06-resolution-analysis-inputs
+         sh06-resolution-analysis-inputs sh06-resolution-package
          p15-s23-sh07-b51-derive-callsite-census
          p15-s23-stage2-construct-emitted-core-plan
          p15-s23-sh07-b51-plan-valid-structure?
@@ -64,6 +64,93 @@
     "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
     :owner :r8-finalizer
     :exports '[sh07-b51-finalize-rejection]}])
+
+(def p15-s23-sh07-b51-public-root-specs
+  [{:root-ordinal 1 :function 'sh07-b51-build-template :arity 1
+    :module-ordinal 3}
+   {:root-ordinal 2 :function 'sh07-b51-verify-template :arity 3
+    :module-ordinal 3}
+   {:root-ordinal 3 :function 'sh07-b51-resolve-digest-preimage :arity 3
+    :module-ordinal 2}
+   {:root-ordinal 4 :function 'sh07-b51-resolve-template :arity 3
+    :module-ordinal 3}
+   {:root-ordinal 5 :function 'sh07-b51-verify-resolved :arity 4
+    :module-ordinal 3}
+   {:root-ordinal 6
+    :function 'sh07-b51-build-independent-verifier-binding :arity 6
+    :module-ordinal 5}
+   {:root-ordinal 7 :function 'sh07-b51-build-final-artifact :arity 7
+    :module-ordinal 3}
+   {:root-ordinal 8 :function 'sh07-b51-finalize-rejection :arity 1
+    :module-ordinal 6}])
+
+(def ^:private p15-s23-sh07-b51-m0-keys
+  #{:artifact :schema-version :module-source-id :module-ordinal :module
+    :logical-source-path :owner :source-byte-count :source-sha256 :profile
+    :target :effects :capabilities :safety :definitions :exports
+    :core-binding-count :lexical-binding-count :external-bindings
+    :aggregate-binding-count :builtin-calls})
+
+(def ^:private p15-s23-sh07-b51-definition-keys
+  #{:name :arity :visibility :source-hash})
+
+(def ^:private p15-s23-sh07-b51-external-binding-keys
+  #{:symbol :callee-module-ordinal :callee-module :callee-source-sha256
+    :callee-definition-source-hash :arity :owner-edge})
+
+(def ^:private p15-s23-sh07-b51-builtin-call-keys
+  #{:caller :caller-function-source-hash :builtin :arity
+    :compiler-internal?})
+
+(def ^:private p15-s23-sh07-b51-edge-keys
+  #{:ordinal :caller-module-source-id :caller-function
+    :caller-function-source-hash :callsite-path :callee-module-source-id
+    :callee-function :callee-function-source-hash :arity :owner-edge
+    :authorization})
+
+(def ^:private p15-s23-sh07-b51-census-edge-keys
+  #{:ordinal :caller-module-ordinal :caller-module :caller-function
+    :callsite-path :callee-module-ordinal :callee-module :callee-function
+    :arity :owner-edge})
+
+(def ^:private p15-s23-sh07-b51-m1-keys
+  #{:artifact :schema-version :manifest-id :module-source-ids :edges})
+
+(def ^:private p15-s23-sh07-b51-m3-keys
+  #{:artifact :schema-version :manifest-id :module-plans :routes
+    :public-roots :bundle-core-id :compile-census-certificate-ids
+    :bundle-id})
+
+(def ^:private p15-s23-sh07-b51-bundle-core-keys
+  #{:domain :schema-version :manifest-id :module-plans :routes
+    :public-roots})
+
+(def ^:private p15-s23-sh07-b51-root8-external-callees
+  '[sh07-b51-build-template
+    sh07-b51-entrypoint-envelope
+    sh07-b51-exact-keys?
+    sh07-b51-kind-remediation
+    sh07-b51-kind-rule
+    sh07-b51-nonnegative-integer?
+    sh07-b51-pending-rejected-envelope-shape?
+    sh07-b51-pending-rejection
+    sh07-b51-raw-carrier-shape?
+    sh07-b51-semantic-coordinate
+    sh07-b51-sha256-id?
+    sh07-b51-template-shape-for-plan?])
+
+;; Attempt 30 cannot acquire implementation authority until both independent
+;; census certificates and the resulting M3/root snapshot have been frozen.
+;; These deliberately non-digest values fail every authority check and must be
+;; replaced only by a separately reviewed immutable implementation snapshot.
+(def ^:private p15-s23-sh07-b51-expected-m3-id
+  :gravity/provisional-no-authority)
+(def ^:private p15-s23-sh07-b51-expected-certificate-a-id
+  :gravity/provisional-no-authority)
+(def ^:private p15-s23-sh07-b51-expected-certificate-b-id
+  :gravity/provisional-no-authority)
+(def ^:private p15-s23-sh07-b51-expected-semantic-root
+  :gravity/provisional-no-authority)
 
 (def ^:private p15-s23-sh07-b51-source-specs
   (vec
@@ -657,93 +744,6 @@
       {:path (.getCanonicalPath ^java.io.File file)
        :bytes bytes
        :text (p15-s23-sh07-b51-strict-utf8 bytes source-path)})))
-
-(def p15-s23-sh07-b51-public-root-specs
-  [{:root-ordinal 1 :function 'sh07-b51-build-template :arity 1
-    :module-ordinal 3}
-   {:root-ordinal 2 :function 'sh07-b51-verify-template :arity 3
-    :module-ordinal 3}
-   {:root-ordinal 3 :function 'sh07-b51-resolve-digest-preimage :arity 3
-    :module-ordinal 2}
-   {:root-ordinal 4 :function 'sh07-b51-resolve-template :arity 3
-    :module-ordinal 3}
-   {:root-ordinal 5 :function 'sh07-b51-verify-resolved :arity 4
-    :module-ordinal 3}
-   {:root-ordinal 6
-    :function 'sh07-b51-build-independent-verifier-binding :arity 6
-    :module-ordinal 5}
-   {:root-ordinal 7 :function 'sh07-b51-build-final-artifact :arity 7
-    :module-ordinal 3}
-   {:root-ordinal 8 :function 'sh07-b51-finalize-rejection :arity 1
-    :module-ordinal 6}])
-
-(def ^:private p15-s23-sh07-b51-m0-keys
-  #{:artifact :schema-version :module-source-id :module-ordinal :module
-    :logical-source-path :owner :source-byte-count :source-sha256 :profile
-    :target :effects :capabilities :safety :definitions :exports
-    :core-binding-count :lexical-binding-count :external-bindings
-    :aggregate-binding-count :builtin-calls})
-
-(def ^:private p15-s23-sh07-b51-definition-keys
-  #{:name :arity :visibility :source-hash})
-
-(def ^:private p15-s23-sh07-b51-external-binding-keys
-  #{:symbol :callee-module-ordinal :callee-module :callee-source-sha256
-    :callee-definition-source-hash :arity :owner-edge})
-
-(def ^:private p15-s23-sh07-b51-builtin-call-keys
-  #{:caller :caller-function-source-hash :builtin :arity
-    :compiler-internal?})
-
-(def ^:private p15-s23-sh07-b51-edge-keys
-  #{:ordinal :caller-module-source-id :caller-function
-    :caller-function-source-hash :callsite-path :callee-module-source-id
-    :callee-function :callee-function-source-hash :arity :owner-edge
-    :authorization})
-
-(def ^:private p15-s23-sh07-b51-census-edge-keys
-  #{:ordinal :caller-module-ordinal :caller-module :caller-function
-    :callsite-path :callee-module-ordinal :callee-module :callee-function
-    :arity :owner-edge})
-
-(def ^:private p15-s23-sh07-b51-m1-keys
-  #{:artifact :schema-version :manifest-id :module-source-ids :edges})
-
-(def ^:private p15-s23-sh07-b51-m3-keys
-  #{:artifact :schema-version :manifest-id :module-plans :routes
-    :public-roots :bundle-core-id :compile-census-certificate-ids
-    :bundle-id})
-
-(def ^:private p15-s23-sh07-b51-bundle-core-keys
-  #{:domain :schema-version :manifest-id :module-plans :routes
-    :public-roots})
-
-(def ^:private p15-s23-sh07-b51-root8-external-callees
-  '[sh07-b51-build-template
-    sh07-b51-entrypoint-envelope
-    sh07-b51-exact-keys?
-    sh07-b51-kind-remediation
-    sh07-b51-kind-rule
-    sh07-b51-nonnegative-integer?
-    sh07-b51-pending-rejected-envelope-shape?
-    sh07-b51-pending-rejection
-    sh07-b51-raw-carrier-shape?
-    sh07-b51-semantic-coordinate
-    sh07-b51-sha256-id?
-    sh07-b51-template-shape-for-plan?])
-
-;; Attempt 30 cannot acquire implementation authority until both independent
-;; census certificates and the resulting M3/root snapshot have been frozen.
-;; These deliberately non-digest values fail every authority check and must be
-;; replaced only by a separately reviewed immutable implementation snapshot.
-(def ^:private p15-s23-sh07-b51-expected-m3-id
-  :gravity/provisional-no-authority)
-(def ^:private p15-s23-sh07-b51-expected-certificate-a-id
-  :gravity/provisional-no-authority)
-(def ^:private p15-s23-sh07-b51-expected-certificate-b-id
-  :gravity/provisional-no-authority)
-(def ^:private p15-s23-sh07-b51-expected-semantic-root
-  :gravity/provisional-no-authority)
 
 ;; Historical public name retained only so older host code fails closed rather
 ;; than resolving a removed Var.  It is not an accepted M3-v1 pin.
@@ -1991,6 +1991,347 @@
 (def ^:private p15-s23-sh07-b51-resolved-reject
   {:artifact :gravity/sh07-core-resolved-verification
    :schema-version 16 :status :rejected :rule "C6-VERIFY"})
+
+;; SH-06 is intentionally unaware of B51's seven-fragment manifest.  The
+;; pure constructors below close the exact M0/M1-to-SH06 import projection.
+;; Installing that projection requires an explicit lexical SH06 constructor
+;; and verifier seam; ambient Var state is deliberately not used as authority.
+
+(defn- p15-s23-sh07-b51-c5-authority-fail!
+  [cause details]
+  (p15-s23-sh07-b51-governed-read-fail!
+   :unauthenticated-c5-external-binding
+   (assoc details :cause cause)))
+
+(defn- p15-s23-sh07-b51-c5-authority-rows*
+  [module-ordinal source descriptors manifest]
+  (when-not (and (integer? module-ordinal) (<= 0 module-ordinal 6)
+                 (vector? descriptors) (= 7 (count descriptors))
+                 (= (vec (range 7)) (mapv :module-ordinal descriptors))
+                 (= 7 (count (set (map :module-source-id descriptors))))
+                 (map? manifest) (vector? (:edges manifest)))
+    (p15-s23-sh07-b51-c5-authority-fail!
+     :authority-shape
+     {:module-ordinal module-ordinal
+      :descriptor-count (when (vector? descriptors) (count descriptors))}))
+  (let [caller (nth descriptors module-ordinal)
+        source-descriptor (:source-descriptor source)
+        externals (:external-bindings caller)
+        caller-edges
+        (filterv #(= (:module-source-id caller)
+                     (:caller-module-source-id %))
+                 (:edges manifest))]
+    (when-not
+     (and (= caller (nth descriptors (:module-ordinal caller) nil))
+          (= (:module caller) (get-in source [:module :module]))
+          (= (:logical-source-path caller) (:path source)
+             (:path source-descriptor))
+          (= (:source-sha256 caller) (:source-sha256 source)
+             (:raw-sha256 source-descriptor))
+          (= (:source-byte-count caller) (alength ^bytes (:bytes source)))
+          (vector? externals))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :caller-descriptor
+       {:module-ordinal module-ordinal
+        :logical-source-path (:logical-source-path caller)}))
+    (when-not (= (count externals)
+                 (count (set (map :symbol externals))))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :ambiguous-external-binding
+       {:module-ordinal module-ordinal
+        :symbols (mapv :symbol externals)}))
+    (let [rows
+          (mapv
+           (fn [external]
+             (let [symbol (:symbol external)
+                   callee-ordinal (:callee-module-ordinal external)
+                   callee (when (and (integer? callee-ordinal)
+                                     (<= 0 callee-ordinal 6))
+                            (nth descriptors callee-ordinal nil))
+                   definitions
+                   (filterv #(= symbol (:name %)) (:definitions callee))
+                   definition (first definitions)
+                   edges (filterv #(= symbol (:callee-function %))
+                                  caller-edges)
+                   expected-owner-edge
+                   (when callee
+                     (p15-s23-sh07-b51-owner-edge-kind
+                      (:owner caller) (:owner callee)))]
+               (when-not (= 1 (count definitions))
+                 (p15-s23-sh07-b51-c5-authority-fail!
+                  :ambiguous-external-binding
+                  {:module-ordinal module-ordinal :symbol symbol
+                   :callee-module-ordinal callee-ordinal
+                   :definition-count (count definitions)}))
+               (when (empty? edges)
+                 (p15-s23-sh07-b51-c5-authority-fail!
+                  :missing-authorized-edge
+                  {:module-ordinal module-ordinal :symbol symbol}))
+               (when-not
+                (and expected-owner-edge
+                     (= expected-owner-edge (:owner-edge external))
+                     (every?
+                      #(and (= :authenticated-b51-namespace-external
+                               (:authorization %))
+                            (= expected-owner-edge (:owner-edge %)))
+                      edges))
+                 (p15-s23-sh07-b51-c5-authority-fail!
+                  :unauthorized-owner-edge
+                  {:module-ordinal module-ordinal :symbol symbol
+                   :expected-owner-edge expected-owner-edge
+                   :external-owner-edge (:owner-edge external)
+                   :edge-owner-edges (mapv :owner-edge edges)
+                   :authorizations (mapv :authorization edges)}))
+               (when-not
+                (and callee
+                     (= callee-ordinal (:module-ordinal callee))
+                     (= (:callee-module external) (:module callee))
+                     (= (:callee-source-sha256 external)
+                        (:source-sha256 callee))
+                     (= (:callee-definition-source-hash external)
+                        (:source-hash definition))
+                     (= (:arity external) (:arity definition))
+                     (every?
+                      (fn [edge]
+                        (let [caller-definition
+                              (p15-s23-sh07-b51-definition-by-name
+                               caller (:caller-function edge))]
+                          (and caller-definition
+                               (= (:caller-function-source-hash edge)
+                                  (:source-hash caller-definition))
+                               (= (:callee-module-source-id edge)
+                                  (:module-source-id callee))
+                               (= (:callee-function-source-hash edge)
+                                  (:source-hash definition))
+                               (= (:arity edge) (:arity external)))))
+                      edges))
+                 (p15-s23-sh07-b51-c5-authority-fail!
+                  :stale-external-binding
+                  {:module-ordinal module-ordinal :symbol symbol
+                   :callee-module-ordinal callee-ordinal}))
+               {:external external
+                :callee callee
+                :definition definition
+                :edges edges}))
+           externals)
+          covered-edge-ordinals
+          (mapcat #(map :ordinal (:edges %)) rows)]
+      (when-not
+       (and (= (count caller-edges) (count covered-edge-ordinals))
+            (= (set (map :ordinal caller-edges))
+               (set covered-edge-ordinals))
+            (= (count covered-edge-ordinals)
+               (count (set covered-edge-ordinals))))
+        (p15-s23-sh07-b51-c5-authority-fail!
+         :extra-or-ambiguous-authorized-edge
+         {:module-ordinal module-ordinal
+          :caller-edge-ordinals (mapv :ordinal caller-edges)
+          :covered-edge-ordinals (vec covered-edge-ordinals)}))
+      rows)))
+
+(defn- p15-s23-sh07-b51-c5-request-carriers
+  [caller manifest authority-rows]
+  (let [groups
+        (->> authority-rows
+             (group-by #(get-in % [:callee :module-ordinal]))
+             (sort-by key)
+             (mapv second))
+        imports
+        (mapv
+         (fn [rows]
+           (let [callee (:callee (first rows))
+                 edge-ordinals (vec (mapcat #(map :ordinal (:edges %)) rows))
+                 dependency-id
+                 (p15-s23-sh07-b51-canonical-id
+                  [:gravity/sh07-b51-authenticated-sh06-import-v1
+                   {:manifest-id (:manifest-id manifest)
+                    :caller-module-source-id (:module-source-id caller)
+                    :callee-module-source-id (:module-source-id callee)
+                    :bindings
+                    (mapv (fn [{:keys [external edges]}]
+                            {:external-binding external
+                             :edge-ordinals (mapv :ordinal edges)})
+                          rows)}])]
+             {:namespace (:module callee)
+              :alias nil
+              :kind :namespace
+              :profile (:profile callee)
+              :targets [(:target callee)]
+              :visibility :public
+              :refer (mapv #(get-in % [:external :symbol]) rows)
+              :effects (vec (sort (:effects callee)))
+              :capabilities (vec (sort (:capabilities callee)))
+              :safety (:safety callee)
+              :boundary (get-in rows [0 :external :owner-edge])
+              :semantic-span
+              {:manifest-id (:manifest-id manifest)
+               :caller-module-source-id (:module-source-id caller)
+               :callee-module-source-id (:module-source-id callee)
+               :authorized-edge-ordinals edge-ordinals}
+              :source-span {:source (:logical-source-path caller)}
+              :dependency-artifact-id dependency-id
+              :foreign-record-complete? true}))
+         groups)
+        import-bindings
+        (mapv
+         (fn [{:keys [external callee definition edges]}]
+           (let [edge-ordinals (mapv :ordinal edges)
+                 coordinate
+                 {:manifest-id (:manifest-id manifest)
+                  :caller-module-source-id (:module-source-id caller)
+                  :callee-module-source-id (:module-source-id callee)
+                  :callee-module (:module callee)
+                  :callee-source-sha256 (:source-sha256 callee)
+                  :callee-definition-source-hash (:source-hash definition)
+                  :symbol (:symbol external)
+                  :arity (:arity external)
+                  :owner-edge (:owner-edge external)
+                  :authorized-edge-ordinals edge-ordinals}]
+             {:name (:symbol external)
+              :kind :function
+              :namespace (:module callee)
+              :package (sh06-resolution-package (:module callee))
+              :binding-class :import
+              ;; M1 authorization is the visibility grant.  The originating
+              ;; M0 definition may remain module-private.
+              :visibility :public
+              :profile-set [(:profile callee)]
+              :target-set [(:target callee)]
+              :type-ref :gravity.type/function
+              :effects (vec (sort (:effects callee)))
+              :capabilities (vec (sort (:capabilities callee)))
+              :safety (:safety callee)
+              :semantic-span coordinate
+              :source-span {:source (:logical-source-path caller)
+                            :external-binding (:symbol external)}
+              :definition-syntax-id
+              (p15-s23-sh07-b51-canonical-id
+               [:gravity/sh07-b51-authenticated-sh06-binding-v1 coordinate])
+              :definition-artifact-id (:module-source-id callee)}))
+         authority-rows)
+        dependency-edges
+        (mapv
+         (fn [dependency]
+           {:from (:module caller)
+            :to (:namespace dependency)
+            :kind :namespace
+            :boundary (:boundary dependency)
+            :semantic-span (:semantic-span dependency)
+            :source-span (:source-span dependency)})
+         imports)]
+    {:imports imports
+     :import-bindings import-bindings
+     :dependency-edges dependency-edges}))
+
+(defn- p15-s23-sh07-b51-authenticated-c5-request-adapter
+  [module-ordinal source descriptors manifest sh05-artifact
+   base-request-function]
+  (when-not (p15-s23-sh07-b51-link-manifest-valid? descriptors manifest)
+    (p15-s23-sh07-b51-c5-authority-fail!
+     :unverified-m0-m1
+     {:module-ordinal module-ordinal}))
+  (let [authority-rows
+        (p15-s23-sh07-b51-c5-authority-rows*
+         module-ordinal source descriptors manifest)
+        caller (nth descriptors module-ordinal)
+        base-request
+        (base-request-function (:path source) sh05-artifact)
+        external-symbols (set (map #(get-in % [:external :symbol])
+                                   authority-rows))
+        base-binding-symbols
+        (set (concat (map :name (:definitions base-request))
+                     (map :name (:import-bindings base-request))))]
+    (when-not
+     (and (= (:module caller) (get-in base-request [:module :namespace]))
+          (= (:artifact-id sh05-artifact)
+             (get-in base-request [:module :c4-artifact-id]))
+          (empty? (clojure.set/intersection external-symbols
+                                            base-binding-symbols)))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :unverified-m0-m1-or-caller-request
+       {:module-ordinal module-ordinal
+        :external-symbols (vec (sort-by str external-symbols))}))
+    (merge
+     {:source-path (:path source)
+      :sh05-artifact-id (:artifact-id sh05-artifact)
+      :base-request-id
+      (p15-s23-sh07-b51-canonical-id base-request)
+      :caller-module-source-id (:module-source-id caller)
+      :manifest-id (:manifest-id manifest)}
+     (p15-s23-sh07-b51-c5-request-carriers
+      caller manifest authority-rows))))
+
+(defn- p15-s23-sh07-b51-apply-c5-request-adapter
+  [adapter source-path sh05-artifact base-request]
+  (let [imports (:imports adapter)
+        import-bindings (:import-bindings adapter)
+        dependency-edges (:dependency-edges adapter)
+        manifest-id (:manifest-id adapter)
+        caller-id (:caller-module-source-id adapter)
+        referred (vec (mapcat :refer imports))
+        binding-names (mapv :name import-bindings)
+        expected-dependency-edges
+        (mapv
+         (fn [dependency]
+           {:from (get-in base-request [:module :namespace])
+            :to (:namespace dependency)
+            :kind :namespace
+            :boundary (:boundary dependency)
+            :semantic-span (:semantic-span dependency)
+            :source-span (:source-span dependency)})
+         imports)]
+    (when-not
+     (and (p15-s23-sh07-b51-exact-keys?
+           adapter
+           #{:source-path :sh05-artifact-id :base-request-id
+             :caller-module-source-id :manifest-id :imports
+             :import-bindings :dependency-edges})
+          (= source-path (:source-path adapter))
+          (= (:artifact-id sh05-artifact) (:sh05-artifact-id adapter))
+          (= (:base-request-id adapter)
+             (p15-s23-sh07-b51-canonical-id base-request))
+          (p15-s23-sh07-b51-digest-id? caller-id)
+          (p15-s23-sh07-b51-digest-id? manifest-id)
+          (vector? imports) (vector? import-bindings)
+          (vector? dependency-edges)
+          (= dependency-edges expected-dependency-edges)
+          (= (set referred) (set binding-names))
+          (= (count referred) (count (set referred)))
+          (= (count binding-names) (count (set binding-names)))
+          (every?
+           #(and (= manifest-id (get-in % [:semantic-span :manifest-id]))
+                 (= caller-id
+                    (get-in % [:semantic-span
+                               :caller-module-source-id])))
+           imports)
+          (every?
+           #(and (= manifest-id (get-in % [:semantic-span :manifest-id]))
+                 (= caller-id
+                    (get-in % [:semantic-span
+                               :caller-module-source-id])))
+           import-bindings))
+      (p15-s23-sh07-b51-c5-authority-fail!
+       :request-replay-mismatch
+       {:source-path source-path
+        :expected-source-path (:source-path adapter)}))
+    (-> base-request
+        (update :imports into imports)
+        (update :import-bindings into import-bindings)
+        (update :dependency-edges into dependency-edges))))
+
+(defn- p15-s23-sh07-b51-c5-scoped-request-function
+  [adapter base-request-function]
+  (fn [source-path candidate-sh05-artifact]
+    (let [base-request
+          (base-request-function source-path candidate-sh05-artifact)]
+      (if (and (= source-path (:source-path adapter))
+               (= (:artifact-id candidate-sh05-artifact)
+                  (:sh05-artifact-id adapter))
+               (= (:base-request-id adapter)
+                  (p15-s23-sh07-b51-canonical-id base-request)))
+        (p15-s23-sh07-b51-apply-c5-request-adapter
+         adapter source-path candidate-sh05-artifact base-request)
+        base-request))))
 
 (defn- p15-s23-sh07-b51-session-checked-core-binding
   [emitter]

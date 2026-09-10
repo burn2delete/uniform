@@ -5,9 +5,10 @@
   It deliberately returns `:authority :none`: the full V9 runtime contract
   discharge and receipt-normalization implementation must join this seam before
   an E9 candidate can claim evidence authority."
-  (:require [clojure.string :as str]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [gravity.tools.sh07-b51-v9-codec :as codec])
-  (:import [java.io Closeable]
+  (:import [java.io Closeable PushbackReader StringReader]
            [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file DirectoryStream Files LinkOption OpenOption Path Paths
@@ -164,10 +165,34 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_process_isolation_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh07_b51_v9_source_closure_test.clj"])
 
-(def a9-pre-paths
-  ["docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
-   "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md"
-   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn"])
+(def architecture-report-path
+  "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md")
+
+(def provisional-report-path
+  "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-provisional-evidence-v9.md")
+
+(def a9-terminal-path
+  "contracts/workstream-records/terminal/sh07-b51-git-object-evidence-publication-architecture-v9-461e2300fb893cbc2b60fb23e51b7242608a1aefd0bb15c8af4d72219a2b3ef1.json")
+
+(defn- governance-path-spec [workstream-id]
+  {:kind :content-addressed-terminal-record
+   :directory "contracts/workstream-records/terminal"
+   :workstream-id workstream-id
+   :record-digest-domain :sha256
+   :filename-rule :workstream-id-hyphen-record-sha256-dot-json})
+
+(def a9-paths-e1
+  [architecture-report-path
+   provisional-report-path
+   (governance-path-spec
+    "sh07-b51-git-object-evidence-publication-architecture-v9")])
+
+(def a9-only-paths-e1
+  [architecture-report-path provisional-report-path a9-terminal-path])
+
+;; Compatibility name for callers which only need the concrete PRE paths.  It
+;; intentionally no longer denotes the superseded A9 lifecycle receipt.
+(def a9-pre-paths a9-only-paths-e1)
 
 (defn- unsigned-utf8-compare
   [left right]
@@ -1134,6 +1159,139 @@
       (catch java.nio.charset.CharacterCodingException _
         (fail! id reason)))))
 
+;; This parser is deliberately local to the authenticated Git-object seam.
+;; Adding a tooling JSON namespace to the checker classpath would enlarge the
+;; source-authority closure.  Duplicate keys, malformed grammar, and trailing
+;; input all reject before any governance field is consulted.
+(defn- json-skip-whitespace! [^PushbackReader reader]
+  (loop [value (.read reader)]
+    (if (and (not= -1 value)
+             (contains? #{\space \tab \newline \return} (char value)))
+      (recur (.read reader))
+      value)))
+
+(defn- json-unread! [^PushbackReader reader value]
+  (when-not (= -1 value) (.unread reader value)))
+
+(defn- json-read-string! [^PushbackReader reader]
+  (let [output (StringBuilder.)]
+    (loop []
+      (let [value (.read reader)]
+        (cond
+          (= -1 value) (fail! "SH07-B51-GIT-SNAPSHOT" :json-string)
+          (= \" (char value)) (str output)
+          (= \\ (char value))
+          (let [escaped (.read reader)]
+            (when (= -1 escaped)
+              (fail! "SH07-B51-GIT-SNAPSHOT" :json-escape))
+            (case (char escaped)
+              \" (.append output \" )
+              \\ (.append output \\)
+              \/ (.append output \/)
+              \b (.append output \backspace)
+              \f (.append output \formfeed)
+              \n (.append output \newline)
+              \r (.append output \return)
+              \t (.append output \tab)
+              \u (let [values (repeatedly 4 #(.read reader))]
+                   (when (some #(= -1 %) values)
+                     (fail! "SH07-B51-GIT-SNAPSHOT" :json-unicode))
+                   (let [digits (apply str (map char values))]
+                     (when-not (re-matches #"[0-9A-Fa-f]{4}" digits)
+                       (fail! "SH07-B51-GIT-SNAPSHOT" :json-unicode))
+                     (.append output (char (Integer/parseInt digits 16)))))
+              (fail! "SH07-B51-GIT-SNAPSHOT" :json-escape))
+            (recur))
+          (< value 0x20)
+          (fail! "SH07-B51-GIT-SNAPSHOT" :json-control)
+          :else (do (.append output (char value)) (recur)))))))
+
+(declare json-read-value!)
+
+(defn- json-read-literal!
+  [^PushbackReader reader suffix value]
+  (doseq [expected suffix]
+    (let [actual (.read reader)]
+      (when (or (= -1 actual) (not= expected (char actual)))
+        (fail! "SH07-B51-GIT-SNAPSHOT" :json-literal))))
+  value)
+
+(defn- json-read-number! [^PushbackReader reader first-character]
+  (let [token
+        (loop [output (StringBuilder. (str first-character))]
+          (let [value (.read reader)]
+            (if (and (not= -1 value)
+                     (re-matches #"[0-9eE+\-.]" (str (char value))))
+              (recur (.append output (char value)))
+              (do (json-unread! reader value) (str output)))))]
+    (when-not
+     (re-matches #"-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?"
+                 token)
+      (fail! "SH07-B51-GIT-SNAPSHOT" :json-number))
+    (try
+      (if (re-find #"[.eE]" token) (bigdec token) (bigint token))
+      (catch NumberFormatException _
+        (fail! "SH07-B51-GIT-SNAPSHOT" :json-number)))))
+
+(defn- json-read-array! [^PushbackReader reader]
+  (let [first-value (json-skip-whitespace! reader)]
+    (if (= (int \]) first-value)
+      []
+      (do
+        (json-unread! reader first-value)
+        (loop [values []]
+          (let [value (json-read-value! reader)
+                delimiter (json-skip-whitespace! reader)]
+            (cond
+              (= (int \,) delimiter) (recur (conj values value))
+              (= (int \]) delimiter) (conj values value)
+              :else (fail! "SH07-B51-GIT-SNAPSHOT" :json-array))))))))
+
+(defn- json-read-object! [^PushbackReader reader]
+  (let [first-key (json-skip-whitespace! reader)]
+    (if (= (int \}) first-key)
+      {}
+      (do
+        (json-unread! reader first-key)
+        (loop [result {}]
+          (when-not (= (int \") (json-skip-whitespace! reader))
+            (fail! "SH07-B51-GIT-SNAPSHOT" :json-object-key))
+          (let [key (json-read-string! reader)
+                colon (json-skip-whitespace! reader)]
+            (when (contains? result key)
+              (fail! "SH07-B51-GIT-SNAPSHOT" :json-duplicate-key
+                     {:key key}))
+            (when-not (= (int \:) colon)
+              (fail! "SH07-B51-GIT-SNAPSHOT" :json-object-colon))
+            (let [updated (assoc result key (json-read-value! reader))
+                  delimiter (json-skip-whitespace! reader)]
+              (cond
+                (= (int \,) delimiter) (recur updated)
+                (= (int \}) delimiter) updated
+                :else (fail! "SH07-B51-GIT-SNAPSHOT" :json-object)))))))))
+
+(defn- json-read-value! [^PushbackReader reader]
+  (let [value (json-skip-whitespace! reader)]
+    (when (= -1 value) (fail! "SH07-B51-GIT-SNAPSHOT" :json-value))
+    (let [character (char value)]
+      (case character
+        \{ (json-read-object! reader)
+        \[ (json-read-array! reader)
+        \" (json-read-string! reader)
+        \t (json-read-literal! reader "rue" true)
+        \f (json-read-literal! reader "alse" false)
+        \n (json-read-literal! reader "ull" nil)
+        (if (or (= character \-) (Character/isDigit character))
+          (json-read-number! reader character)
+          (fail! "SH07-B51-GIT-SNAPSHOT" :json-value))))))
+
+(defn- read-strict-json! [text]
+  (with-open [reader (PushbackReader. (StringReader. text))]
+    (let [value (json-read-value! reader)]
+      (when-not (= -1 (json-skip-whitespace! reader))
+        (fail! "SH07-B51-GIT-SNAPSHOT" :json-trailing))
+      value)))
+
 (defn- remaining-millis
   [deadline-nanos]
   (max 0 (long (Math/ceil
@@ -1569,11 +1727,1035 @@
      :stage-support-claims []
      :stage-advanced false}))
 
+(def ^:private a9-fixed-descriptor-fields
+  {architecture-report-path
+   {:blob-oid "1eef3f25b18b941deed09bdfb178573f08f7928e"
+    :byte-count 393221
+    :raw-sha256
+    "sha256:34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd"}
+   provisional-report-path
+   {:blob-oid "fc36dc37d4e45adc7255eb531ae8d312d9eb51da"
+    :byte-count 4977
+    :raw-sha256
+    "sha256:7401846ab6892cc32d4ba4f0d8d0c87be531575d75abc88852f6516cd769ae4d"}
+   a9-terminal-path
+   {:blob-oid "ddae151f339068955ff9f7df75c975e697962bd6"
+    :byte-count 13404
+    :raw-sha256
+    "sha256:461e2300fb893cbc2b60fb23e51b7242608a1aefd0bb15c8af4d72219a2b3ef1"}})
+
+(def ^:private a9-workstream-id
+  "sh07-b51-git-object-evidence-publication-architecture-v9")
+
+(def ^:private a9-invariant-family
+  "architecture/self-hosting-sh07-b51-pin-free-publication-v1")
+
+(def ^:private a9-dependencies
+  ["sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32"
+   "sh07-b51-first-eval-nested-validation-architecture-v3"
+   "sh07-b51-binding-replay-index-architecture-v1"
+   "sh07-b51-binding-replay-index-implementation-review-erratum-v1"
+   "c2-pass-cache-capacity-withholding-v1"])
+
+(def ^:private a9-record-keys
+  #{"architecture_decision" "author" "base_commit" "candidate_commit"
+    "clean_worktree" "dependencies" "disposition" "evidence"
+    "governing_contracts" "history" "id" "invariant_family"
+    "no_overclaim_authority" "owned_paths" "owner"
+    "residual_host_boundaries" "reviews" "state" "title"})
+
+(def ^:private governance-transitions
+  {"draft" #{"frozen" "held" "rejected" "superseded" "abandoned"}
+   "frozen" #{"draft" "review-pending" "held" "rejected"
+              "superseded" "abandoned"}
+   "review-pending" #{"draft" "accepted" "held" "rejected"
+                      "superseded" "abandoned"}
+   "accepted" #{"integration-eligible" "held" "rejected"
+                 "superseded" "abandoned"}
+   "integration-eligible" #{"integrated" "held" "rejected"
+                            "superseded" "abandoned"}
+   "held" #{"draft" "frozen" "rejected" "superseded" "abandoned"}
+   "integrated" #{} "rejected" #{} "superseded" #{} "abandoned" #{}})
+
+(defn- exact-json-keys? [value expected]
+  (and (map? value) (= expected (set (keys value)))))
+
+(defn- a9-record-shape-valid? [record]
+  (and
+   (exact-json-keys? record a9-record-keys)
+   (every? string?
+           (map #(get record %)
+                ["architecture_decision" "author" "base_commit"
+                 "candidate_commit" "disposition" "id" "invariant_family"
+                 "owner" "state" "title"]))
+   (boolean? (get record "clean_worktree"))
+   (every? #(and (vector? (get record %))
+                 (every? string? (get record %)))
+           ["dependencies" "governing_contracts" "owned_paths"
+            "residual_host_boundaries"])
+   (let [evidence (get record "evidence")]
+     (and (exact-json-keys?
+           evidence
+           #{"accepted_fixtures" "rejected_fixtures" "stable_diagnostics"
+             "validation_commands"})
+          (every? #(and (vector? (get evidence %))
+                        (every? string? (get evidence %)))
+                  ["accepted_fixtures" "rejected_fixtures"
+                   "stable_diagnostics"])
+          (vector? (get evidence "validation_commands"))
+          (every?
+           #(and (exact-json-keys? % #{"command" "exit_code" "result"})
+                 (string? (get % "command"))
+                 (integer? (get % "exit_code"))
+                 (string? (get % "result")))
+           (get evidence "validation_commands"))))
+   (let [authority (get record "no_overclaim_authority")]
+     (and (exact-json-keys?
+           authority
+           #{"integration_only" "release" "seed_retirement" "self_hosting"})
+          (every? boolean? (vals authority))))
+   (and (vector? (get record "reviews"))
+        (every?
+         #(and (exact-json-keys? % #{"kind" "result" "reviewer"})
+               (every? string? (vals %)))
+         (get record "reviews")))
+   (and (vector? (get record "history"))
+        (seq (get record "history"))
+        (every?
+         #(and (exact-json-keys? % #{"actor" "at" "reason" "state"})
+               (every? string? (vals %)))
+         (get record "history")))))
+
+(defn- history-transitions-valid? [history]
+  (and (= "draft" (get (first history) "state"))
+       (every?
+        (fn [[left right]]
+          (contains? (get governance-transitions (get left "state") #{})
+                     (get right "state")))
+        (partition 2 1 history))))
+
+(defn- a9-artifact-descriptors
+  [rows-by-path bytes-by-path]
+  (mapv
+   (fn [path]
+     (let [row (get rows-by-path path)
+           bytes (get bytes-by-path path)
+           descriptor
+           {:path path :mode "100644" :type "blob" :blob-oid (:oid row)
+            :byte-count (alength ^bytes bytes) :raw-sha256 (codec/R bytes)}]
+       (when-not (= (get a9-fixed-descriptor-fields path)
+                    (select-keys descriptor
+                                 [:blob-oid :byte-count :raw-sha256]))
+         (fail! "SH07-B51-GIT-SNAPSHOT" :a9-fixed-descriptor
+                {:path path :descriptor descriptor}))
+       descriptor))
+   a9-only-paths-e1))
+
+(defn- terminal-manifest-entry!
+  [ledger record]
+  (let [matches (filterv #(= a9-workstream-id (get % "id"))
+                         (get ledger "records"))]
+    (when-not (= 1 (count matches))
+      (fail! "SH07-B51-GIT-SNAPSHOT" :a9-terminal-manifest-census))
+    (first matches)))
+
+(defn- build-a9-stage-result-e1
+  [content rows-by-path bytes-by-path decoded-static]
+  (let [descriptors (a9-artifact-descriptors rows-by-path bytes-by-path)
+        terminal-descriptor (nth descriptors 2)
+        record (read-strict-json! (get decoded-static a9-terminal-path))
+        ledger (read-strict-json!
+                (get decoded-static "contracts/workstream-ledger.json"))
+        manifest (terminal-manifest-entry! ledger record)
+        owned [architecture-report-path provisional-report-path]
+        history (get record "history")
+        expected-manifest
+        {"dependencies" a9-dependencies
+         "id" a9-workstream-id
+         "invariant_family" a9-invariant-family
+         "ordinal" 161
+         "path" a9-terminal-path
+         "sha256" (subs (:raw-sha256 terminal-descriptor) 7)
+         "state" "integrated"
+         "terminal" true}
+        preceding-checks
+        {:canonical-json true
+         :record-shape-valid (a9-record-shape-valid? record)
+         :filename-sha256-match
+         (= a9-terminal-path
+            (str "contracts/workstream-records/terminal/" a9-workstream-id
+                 "-" (subs (:raw-sha256 terminal-descriptor) 7) ".json"))
+         :manifest-entry-match (= expected-manifest manifest)
+         :workstream-id-match (= a9-workstream-id (get record "id"))
+         :invariant-family-match
+         (= a9-invariant-family (get record "invariant_family"))
+         :architecture-decision-path-match
+         (= architecture-report-path (get record "architecture_decision"))
+         :owned-paths-match (= owned (get record "owned_paths"))
+         :accepted-fixtures-equal-owned-paths
+         (= (get record "owned_paths")
+            (get-in record ["evidence" "accepted_fixtures"]))
+         :base-commit-id-syntax-valid (git-id? (get record "base_commit"))
+         :candidate-commit-id-syntax-valid
+         (git-id? (get record "candidate_commit"))
+         :candidate-differs-from-base
+         (not= (get record "candidate_commit") (get record "base_commit"))
+         :clean-worktree-recorded (true? (get record "clean_worktree"))
+         :independent-accepted-review-present
+         (boolean
+          (some #(and (= "independent" (get % "kind"))
+                      (= "accepted" (get % "result"))
+                      (not= (get record "author") (get % "reviewer")))
+                (get record "reviews")))
+         :history-transitions-valid
+         (and (a9-record-shape-valid? record)
+              (history-transitions-valid? history))
+         :history-final-state-match
+         (= (get record "state") (get (last history) "state"))
+         :record-state-integrated (= "integrated" (get record "state"))
+         :authority-ceiling-match
+         (= {"integration_only" true "release" false
+             "seed_retirement" false "self_hosting" false}
+            (get record "no_overclaim_authority"))}
+        checks (assoc preceding-checks :all-checks-pass
+                      (every? true? (vals preceding-checks)))]
+    (when-not (:all-checks-pass checks)
+      (fail! "SH07-B51-GIT-SNAPSHOT" :a9-stage-result-checks
+             {:failed-checks
+              (->> preceding-checks
+                   (keep (fn [[key value]] (when-not (true? value) key)))
+                   vec)}))
+    {:schema :gravity/sh07-b51-a9-stage-result-e1
+     :stage :a9
+     :content content
+     :a9-artifact-descriptors descriptors
+     :terminal-record
+     {:coordinate (assoc terminal-descriptor
+                         :commit (:commit content) :tree (:tree content))
+      :manifest-entry manifest
+      :record record}
+     :checks checks
+     :result :terminal-record-integrated
+     :historical-claims
+     {:candidate-bound-review false
+      :candidate-tree false
+      :integration-commit false
+      :integration-tree false
+      :candidate-integration-ancestry false
+      :report-preservation-across-integration false
+      :supporting-report-preservation-across-integration false
+      :ownership-reservation false
+      :ownership-handoff false
+      :reservation-release false
+      :worktree-removal false
+      :branch-removal false
+      :finally-entered false}
+     :nonclaims nonclaims}))
+
+(def ^:private pre-mask-specs
+  [{:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
+    :load-ordinal 808 :form-ordinal 13
+    :owner 'gravity.bootstrap/p15-s23-sh07-b51-expected-m3-id
+    :rhs-kind :digest-pin}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
+    :load-ordinal 808 :form-ordinal 14
+    :owner 'gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-a-id
+    :rhs-kind :digest-pin}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
+    :load-ordinal 808 :form-ordinal 15
+    :owner 'gravity.bootstrap/p15-s23-sh07-b51-expected-certificate-b-id
+    :rhs-kind :digest-pin}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
+    :load-ordinal 808 :form-ordinal 16
+    :owner 'gravity.bootstrap/p15-s23-sh07-b51-expected-semantic-root
+    :rhs-kind :digest-pin}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj"
+    :load-ordinal 812 :form-ordinal 59
+    :owner
+    'gravity.bootstrap/p15-s23-sh07-b51-authoritative-linked-carrier-value-v4
+    :rhs-kind :quoted-carrier-v4}])
+
+(def ^:private provisional-rhs-bytes
+  (.getBytes ":gravity/provisional-no-authority" StandardCharsets/UTF_8))
+
+(def ^:private masked-rhs-bytes
+  (.getBytes ":gravity/sh07-b51-masked-rhs-v1" StandardCharsets/UTF_8))
+
+;; The PRE and runtime masks are intentionally separate schema families.  PRE
+;; is the four-field C/T-only projection authenticated by Q; runtime carries
+;; the complete dual-image proof after the four digest pins and quoted carrier
+;; have been obtained from fresh execution.  Keep these key sets public so
+;; later phase validators can reuse the closed schemas without reconstructing
+;; them from prose.
+(def pre-masked-root-keys
+  #{:coordinates :preimage-spans :preimage-files :preimage-root})
+
+(def runtime-masked-root-keys
+  #{:coordinates :preimage-spans :postimage-spans :preimage-files
+    :postimage-files :preimage-root :postimage-root :equal})
+
+(def ^:private mask-coordinate-keys
+  #{:path :load-ordinal :form-ordinal :owner :rhs-kind
+    :left-delimiter :right-delimiter :preceding-byte :following-byte
+    :masked-rhs-byte-count})
+
+(def ^:private mask-span-keys
+  #{:coordinate-ordinal :form-start-byte :rhs-start-byte :rhs-end-byte
+    :form-end-byte :rhs-byte-count :rhs-raw-sha256})
+
+(def ^:private mask-file-keys
+  #{:path :masked-byte-count :masked-raw-sha256})
+
+(def runtime-pin-map-keys
+  #{:expected-m3-id :expected-certificate-a-id
+    :expected-certificate-b-id :expected-semantic-root})
+
+(def ^:private runtime-pin-order
+  [:expected-m3-id :expected-certificate-a-id
+   :expected-certificate-b-id :expected-semantic-root])
+
+(def ^:private masked-source-root-domain
+  :gravity/sh07-b51-masked-source-root-v1)
+
+(defn- byte-match-at? [^bytes haystack ^bytes needle offset]
+  (and (<= (+ offset (alength needle)) (alength haystack))
+       (loop [index 0]
+         (or (= index (alength needle))
+             (and (= (aget haystack (+ offset index)) (aget needle index))
+                  (recur (inc index)))))))
+
+(defn- byte-match-offsets [^bytes haystack ^bytes needle]
+  (loop [offset 0 result []]
+    (if (> (+ offset (alength needle)) (alength haystack))
+      result
+      (recur (inc offset)
+             (if (byte-match-at? haystack needle offset)
+               (conj result offset)
+               result)))))
+
+(defn- source-form-at! [text form-ordinal]
+  (with-open [reader (clojure.lang.LineNumberingPushbackReader.
+                      (StringReader. text))]
+    (binding [*read-eval* false *data-readers* {}
+              *default-data-reader-fn*
+              (fn [tag _]
+                (fail! "SH07-B51-GIT-SNAPSHOT" :source-reader-tag
+                       {:tag tag}))]
+      (loop [ordinal 0]
+        (let [form (read {:eof ::eof :read-cond :allow} reader)]
+          (cond
+            (= ::eof form)
+            (fail! "SH07-B51-GIT-SNAPSHOT" :masked-form-ordinal
+                   {:form-ordinal form-ordinal})
+            (= ordinal form-ordinal) form
+            :else (recur (inc ordinal))))))))
+
+(defn- replace-byte-span
+  [^bytes source start end ^bytes replacement]
+  (let [result (byte-array (+ start (alength replacement)
+                              (- (alength source) end)))]
+    (System/arraycopy source 0 result 0 start)
+    (System/arraycopy replacement 0 result start (alength replacement))
+    (System/arraycopy source end result (+ start (alength replacement))
+                      (- (alength source) end))
+    result))
+
+(defn- expected-mask-coordinates []
+  (mapv
+   (fn [{:keys [path load-ordinal form-ordinal owner rhs-kind]}]
+     {:path path
+      :load-ordinal load-ordinal
+      :form-ordinal form-ordinal
+      :owner owner
+      :rhs-kind rhs-kind
+      :left-delimiter (str "(def ^:private " (name owner) "\n  ")
+      :right-delimiter ")"
+      :preceding-byte 10
+      :following-byte 10
+      :masked-rhs-byte-count (alength masked-rhs-bytes)})
+   pre-mask-specs))
+
+(defn- mask-form-bytes
+  [left rhs]
+  (let [left-bytes (.getBytes ^String left StandardCharsets/UTF_8)
+        result (byte-array (+ 1 (alength left-bytes) (alength ^bytes rhs) 2))
+        rhs-start (inc (alength left-bytes))]
+    (aset-byte result 0 (byte 10))
+    (System/arraycopy left-bytes 0 result 1 (alength left-bytes))
+    (System/arraycopy rhs 0 result rhs-start (alength ^bytes rhs))
+    (aset-byte result (+ rhs-start (alength ^bytes rhs))
+               (byte (int \))))
+    (aset-byte result (dec (alength result)) (byte 10))
+    result))
+
+(defn- mask-span-for-rhs!
+  [^bytes source coordinate-ordinal coordinate rhs]
+  (let [full (mask-form-bytes (:left-delimiter coordinate) rhs)
+        offsets (byte-match-offsets source full)]
+    (when-not (= 1 (count offsets))
+      (fail! "SH07-B51-MASKED-ROOT" :masked-occurrence-census
+             {:coordinate-ordinal coordinate-ordinal
+              :count (count offsets)}))
+    (let [form-start (inc (first offsets))
+          left-byte-count
+          (alength (.getBytes ^String (:left-delimiter coordinate)
+                              StandardCharsets/UTF_8))
+          rhs-start (+ form-start left-byte-count)
+          rhs-end (+ rhs-start (alength ^bytes rhs))
+          form-end (inc rhs-end)]
+      {:coordinate-ordinal coordinate-ordinal
+       :form-start-byte form-start
+       :rhs-start-byte rhs-start
+       :rhs-end-byte rhs-end
+       :form-end-byte form-end
+       :rhs-byte-count (alength ^bytes rhs)
+       :rhs-raw-sha256 (codec/R rhs)})))
+
+(defn- validate-mask-span!
+  [span coordinate-ordinal expected-rhs id reason]
+  (exact-keys! span mask-span-keys id reason)
+  (let [{:keys [form-start-byte rhs-start-byte rhs-end-byte form-end-byte
+                rhs-byte-count rhs-raw-sha256]} span]
+    (when-not
+     (and (= coordinate-ordinal (:coordinate-ordinal span))
+          (every? #(and (integer? %) (not (neg? %)))
+                  [form-start-byte rhs-start-byte rhs-end-byte form-end-byte
+                   rhs-byte-count])
+          (<= form-start-byte rhs-start-byte)
+          (< rhs-start-byte rhs-end-byte)
+          (<= rhs-end-byte form-end-byte)
+          (= (alength ^bytes expected-rhs) rhs-byte-count)
+          (= (codec/R expected-rhs) rhs-raw-sha256))
+      (fail! id reason
+             {:coordinate-ordinal coordinate-ordinal :span span}))
+    span))
+
+(defn- validate-mask-coordinates!
+  [coordinates id reason]
+  (when-not (and (vector? coordinates) (= 5 (count coordinates)))
+    (fail! id reason {:coordinates coordinates}))
+  (doseq [[ordinal coordinate] (map-indexed vector coordinates)]
+    (exact-keys! coordinate mask-coordinate-keys id reason)
+    (when-not (= coordinate (nth (expected-mask-coordinates) ordinal))
+      (fail! id reason {:coordinate-ordinal ordinal
+                        :coordinate coordinate})))
+  coordinates)
+
+(defn- validate-mask-files!
+  [files coordinates id reason]
+  (when-not (and (vector? files) (= 2 (count files)))
+    (fail! id reason {:files files}))
+  (let [expected-paths (vec (distinct (map :path coordinates)))]
+    (doseq [[ordinal [expected-path descriptor]]
+            (map-indexed vector (map vector expected-paths files))]
+      (exact-keys! descriptor mask-file-keys id reason)
+      (when-not
+       (and (= expected-path (:path descriptor))
+            (integer? (:masked-byte-count descriptor))
+            (not (neg? (:masked-byte-count descriptor)))
+            (sha256-id? (:masked-raw-sha256 descriptor)))
+        (fail! id reason {:file-ordinal ordinal :descriptor descriptor}))))
+  files)
+
+(defn- masked-source-root
+  [coordinates files]
+  (codec/H [masked-source-root-domain
+            {:coordinates coordinates :files files}]))
+
+(defn validate-pre-masked-root!
+  "Validate the exact acyclic four-field PRE-MASKED-ROOT schema.
+
+  This validator checks the closed coordinate/span/file projections and
+  recomputes PREIMAGE-ROOT.  It does not admit runtime/postimage fields."
+  [root]
+  (exact-keys! root pre-masked-root-keys
+               "SH07-B51-MASKED-ROOT" :pre-masked-root-keys)
+  (validate-mask-coordinates! (:coordinates root)
+                              "SH07-B51-MASKED-ROOT" :pre-masked-root-coordinates)
+  (let [coordinates (:coordinates root)
+        pre-spans (:preimage-spans root)
+        pre-files (:preimage-files root)]
+    (when-not (and (vector? pre-spans) (= 5 (count pre-spans)))
+      (fail! "SH07-B51-MASKED-ROOT" :pre-masked-root-spans
+             {:spans pre-spans}))
+    (doseq [[ordinal span] (map-indexed vector pre-spans)]
+      (validate-mask-span! span ordinal provisional-rhs-bytes
+                           "SH07-B51-MASKED-ROOT" :pre-masked-root-span))
+    (validate-mask-files! pre-files coordinates
+                          "SH07-B51-MASKED-ROOT" :pre-masked-root-files)
+    (when-not (and (sha256-id? (:preimage-root root))
+                   (= (:preimage-root root)
+                      (masked-source-root coordinates pre-files)))
+      (fail! "SH07-B51-MASKED-ROOT" :pre-masked-root-hash
+             {:root (:preimage-root root)})))
+  root)
+
+(defn validate-runtime-masked-root!
+  "Validate the complete eight-field RUNTIME-MASKED-ROOT.
+
+  With PRE supplied, the preimage projection is also compared byte-for-byte
+  with Q's authenticated PRE-MASKED-ROOT.  Runtime roots must carry a true
+  independently recomputed pre/post equality bit; a PRE-only or legacy
+  `:masked-root` map therefore cannot pass this validator."
+  ([root]
+   (validate-runtime-masked-root! root nil))
+  ([root pre-masked-root]
+   (exact-keys! root runtime-masked-root-keys
+                "SH07-B51-MASKED-ROOT" :runtime-masked-root-keys)
+   (validate-mask-coordinates! (:coordinates root)
+                               "SH07-B51-MASKED-ROOT"
+                               :runtime-masked-root-coordinates)
+   (let [projection (select-keys root pre-masked-root-keys)
+         coordinates (:coordinates root)
+         post-spans (:postimage-spans root)
+         post-files (:postimage-files root)]
+     (validate-pre-masked-root! projection)
+     (when (some? pre-masked-root)
+       (validate-pre-masked-root! pre-masked-root)
+       (when-not (Arrays/equals ^bytes (codec/W projection)
+                                ^bytes (codec/W pre-masked-root))
+         (fail! "SH07-B51-MASKED-ROOT" :pre-projection-mismatch)))
+     (when-not (and (vector? post-spans) (= 5 (count post-spans)))
+       (fail! "SH07-B51-MASKED-ROOT" :runtime-masked-root-spans
+              {:spans post-spans}))
+     (doseq [[ordinal span] (map-indexed vector post-spans)]
+       ;; Post RHS bytes are authenticated by the runtime caller.  The root
+       ;; validator checks their observational shape and raw-byte identity;
+       ;; the constructor below additionally checks the exact four pins and
+       ;; quote form before producing these spans.
+       (exact-keys! span mask-span-keys
+                    "SH07-B51-MASKED-ROOT" :runtime-masked-root-span)
+       (when-not
+        (and (= ordinal (:coordinate-ordinal span))
+             (every? #(and (integer? %) (not (neg? %)))
+                     (map span [:form-start-byte :rhs-start-byte
+                                :rhs-end-byte :form-end-byte :rhs-byte-count]))
+             (<= (:form-start-byte span) (:rhs-start-byte span))
+             (< (:rhs-start-byte span) (:rhs-end-byte span))
+             (<= (:rhs-end-byte span) (:form-end-byte span))
+             (sha256-id? (:rhs-raw-sha256 span)))
+         (fail! "SH07-B51-MASKED-ROOT" :runtime-masked-root-span
+                {:coordinate-ordinal ordinal :span span})))
+     (validate-mask-files! post-files coordinates
+                           "SH07-B51-MASKED-ROOT"
+                           :runtime-masked-root-files)
+     (when-not (and (sha256-id? (:postimage-root root))
+                    (= (:postimage-root root)
+                       (masked-source-root coordinates post-files)))
+       (fail! "SH07-B51-MASKED-ROOT" :runtime-masked-root-hash
+              {:root (:postimage-root root)}))
+     (when-not (and (= true (:equal root))
+                    (= (:preimage-root root) (:postimage-root root)))
+       (fail! "SH07-B51-MASKED-ROOT" :runtime-masked-root-equality
+              {:preimage-root (:preimage-root root)
+               :postimage-root (:postimage-root root)
+               :equal (:equal root)})))
+   root))
+
+(defn- validate-runtime-pin-map!
+  [pin-map]
+  (exact-keys! pin-map runtime-pin-map-keys
+               "SH07-B51-MASKED-ROOT" :runtime-pin-map-keys)
+  (when-not (every? sha256-id? (map pin-map runtime-pin-order))
+    (fail! "SH07-B51-MASKED-ROOT" :runtime-pin-map-values
+           {:pin-map pin-map}))
+  pin-map)
+
+(defn- carrier-value
+  [carrier]
+  (if (and (seq? carrier) (= 2 (count carrier))
+           (= 'quote (first carrier)))
+    (second carrier)
+    carrier))
+
+(defn- quoted-carrier-bytes!
+  [carrier]
+  (let [value (carrier-value carrier)]
+    (when-not (map? value)
+      (fail! "SH07-B51-MASKED-ROOT" :quoted-carrier-shape
+             {:carrier carrier}))
+    (let [wire (codec/W (list 'quote value))
+          length (alength ^bytes wire)]
+      (when-not (and (pos? length) (= 10 (aget wire (dec length))))
+        (fail! "SH07-B51-MASKED-ROOT" :quoted-carrier-wire))
+      (Arrays/copyOf ^bytes wire (dec length)))))
+
+(defn- validate-mask-source-input!
+  [bytes-by-path decoded-static]
+  (when-not (and (map? bytes-by-path) (map? decoded-static))
+    (fail! "SH07-B51-MASKED-ROOT" :source-input-shape))
+  (doseq [{:keys [path]} pre-mask-specs]
+    (let [bytes (get bytes-by-path path)
+          text (get decoded-static path)]
+      (when-not (bytes? bytes)
+        (fail! "SH07-B51-MASKED-ROOT" :source-bytes
+               {:path path}))
+      (when-not (string? text)
+        (fail! "SH07-B51-MASKED-ROOT" :decoded-source
+               {:path path}))
+      (when-not (= text (decode-utf8! bytes "SH07-B51-MASKED-ROOT"
+                                       :source-utf8))
+        (fail! "SH07-B51-MASKED-ROOT" :decoded-source-mismatch
+               {:path path}))))
+  [bytes-by-path decoded-static])
+
+(defn- replace-runtime-rhs!
+  [bytes-by-path coordinates pre-spans rhs-bytes]
+  (let [ordinals
+        (sort-by
+         (fn [ordinal]
+           [(:path (nth coordinates ordinal))
+            (:rhs-start-byte (nth pre-spans ordinal))])
+         #(compare %2 %1)
+         (range 5))]
+    (reduce
+     (fn [sources ordinal]
+       (let [coordinate (nth coordinates ordinal)
+             span (nth pre-spans ordinal)
+             path (:path coordinate)
+             source (get sources path)]
+         (when-not (byte-match-at? source provisional-rhs-bytes
+                                    (:rhs-start-byte span))
+           (fail! "SH07-B51-MASKED-ROOT" :runtime-preimage-rhs
+                  {:coordinate-ordinal ordinal :path path}))
+         (assoc sources path
+                (replace-byte-span source (:rhs-start-byte span)
+                                   (:rhs-end-byte span)
+                                   (nth rhs-bytes ordinal)))))
+     bytes-by-path ordinals)))
+
+(defn- build-normalized-mask-files
+  [bytes-by-path coordinates spans]
+  (mapv
+   (fn [path]
+     (let [path-spans
+           (sort-by :rhs-start-byte >
+                    (keep-indexed
+                     (fn [ordinal span]
+                       (when (= path (:path (nth coordinates ordinal))) span))
+                     spans))
+           masked
+           (reduce
+            (fn [bytes {:keys [rhs-start-byte rhs-end-byte]}]
+              (replace-byte-span bytes rhs-start-byte rhs-end-byte
+                                 masked-rhs-bytes))
+            (get bytes-by-path path) path-spans)]
+       {:path path :masked-byte-count (alength ^bytes masked)
+        :masked-raw-sha256 (codec/R masked)}))
+   (vec (distinct (map :path coordinates)))))
+
+(declare build-pre-masked-root)
+
+(defn build-runtime-masked-root
+  "Construct the exact runtime dual-image mask from authenticated C/T bytes.
+
+  Positional arguments are `bytes-by-path`, `decoded-static`, Q's
+  `pre-masked-root`, the exact four-entry `pin-map`, and the raw or already
+  quoted carrier value.  A one-map arity accepts the same values under those
+  five closed keys.  The constructor independently rebuilds PRE, applies all
+  five post RHS replacements in descending byte order, computes post spans and
+  normalized files, and only returns when the pre/post roots and Q projection
+  agree byte-for-byte."
+  ([bytes-by-path decoded-static pre-masked-root pin-map quoted-carrier]
+   (validate-mask-source-input! bytes-by-path decoded-static)
+   (validate-pre-masked-root! pre-masked-root)
+   (validate-runtime-pin-map! pin-map)
+   (let [pre-recomputed (build-pre-masked-root bytes-by-path decoded-static)]
+     (when-not (Arrays/equals ^bytes (codec/W pre-recomputed)
+                              ^bytes (codec/W pre-masked-root))
+       (fail! "SH07-B51-MASKED-ROOT" :pre-masked-root-mismatch))
+     (let [coordinates (:coordinates pre-masked-root)
+           pre-spans (:preimage-spans pre-masked-root)
+           rhs-bytes
+           (conj
+            (mapv (fn [pin-key]
+                    (.getBytes (pr-str (get pin-map pin-key))
+                               StandardCharsets/UTF_8))
+                  runtime-pin-order)
+            (quoted-carrier-bytes! quoted-carrier))
+           post-bytes
+           (replace-runtime-rhs! bytes-by-path coordinates pre-spans rhs-bytes)
+           post-spans
+           (mapv
+            (fn [ordinal]
+              (let [coordinate (nth coordinates ordinal)
+                    source (get post-bytes (:path coordinate))]
+                (mask-span-for-rhs! source ordinal coordinate
+                                    (nth rhs-bytes ordinal))))
+            (range 5))
+           post-files
+           (build-normalized-mask-files post-bytes coordinates post-spans)
+           post-root (masked-source-root coordinates post-files)
+           runtime-root
+           {:coordinates coordinates
+            :preimage-spans (:preimage-spans pre-masked-root)
+            :postimage-spans post-spans
+            :preimage-files (:preimage-files pre-masked-root)
+            :postimage-files post-files
+            :preimage-root (:preimage-root pre-masked-root)
+            :postimage-root post-root
+            :equal (= (:preimage-root pre-masked-root) post-root)}]
+       (validate-runtime-masked-root! runtime-root pre-masked-root)))
+   )
+  ([input]
+   (exact-keys! input
+                #{:bytes-by-path :decoded-static :pre-masked-root :pin-map
+                  :quoted-carrier}
+                "SH07-B51-MASKED-ROOT" :runtime-mask-input-keys)
+   (build-runtime-masked-root
+    (:bytes-by-path input) (:decoded-static input)
+    (:pre-masked-root input) (:pin-map input) (:quoted-carrier input))))
+
+(defn build-runtime-masked-root!
+  "Compatibility bang-form for callers that treat the constructor as an
+  admission operation.  It has the same exact arities and return value."
+  [& arguments]
+  (apply build-runtime-masked-root arguments))
+
+(defn- build-pre-masked-root
+  [bytes-by-path decoded-static]
+  (let [coordinates-and-spans
+        (mapv
+         (fn [coordinate-ordinal spec]
+           (let [{:keys [path form-ordinal owner]} spec
+                 text (get decoded-static path)
+                 form (source-form-at! text form-ordinal)
+                 owner-name (name owner)
+                 _ (when-not
+                    (and (seq? form) (= 'def (first form))
+                         (= owner-name (name (second form)))
+                         (= :gravity/provisional-no-authority (nth form 2 nil))
+                         (= 3 (count form)))
+                     (fail! "SH07-B51-GIT-SNAPSHOT" :masked-form
+                            {:coordinate-ordinal coordinate-ordinal
+                             :form-ordinal form-ordinal :form form}))
+                 left (str "(def ^:private " owner-name "\n  ")
+                 left-bytes (.getBytes left StandardCharsets/UTF_8)
+                 full (byte-array (+ 1 (alength left-bytes)
+                                     (alength provisional-rhs-bytes) 2))
+                 _ (aset-byte full 0 (byte 10))
+                 _ (System/arraycopy left-bytes 0 full 1
+                                     (alength left-bytes))
+                 rhs-in-full (+ 1 (alength left-bytes))
+                 _ (System/arraycopy provisional-rhs-bytes 0 full rhs-in-full
+                                     (alength provisional-rhs-bytes))
+                 _ (aset-byte full (+ rhs-in-full
+                                      (alength provisional-rhs-bytes))
+                              (byte (int \))))
+                 _ (aset-byte full (dec (alength full)) (byte 10))
+                 source (get bytes-by-path path)
+                 offsets (byte-match-offsets source full)
+                 _ (when-not (= 1 (count offsets))
+                     (fail! "SH07-B51-GIT-SNAPSHOT" :masked-occurrence-census
+                            {:coordinate-ordinal coordinate-ordinal
+                             :count (count offsets)}))
+                 form-start (inc (first offsets))
+                 rhs-start (+ form-start (alength left-bytes))
+                 rhs-end (+ rhs-start (alength provisional-rhs-bytes))
+                 form-end (inc rhs-end)
+                 coordinate
+                 (assoc spec
+                        :left-delimiter left :right-delimiter ")"
+                        :preceding-byte 10 :following-byte 10
+                        :masked-rhs-byte-count (alength masked-rhs-bytes))
+                 span
+                 {:coordinate-ordinal coordinate-ordinal
+                  :form-start-byte form-start
+                  :rhs-start-byte rhs-start :rhs-end-byte rhs-end
+                  :form-end-byte form-end
+                  :rhs-byte-count (alength provisional-rhs-bytes)
+                  :rhs-raw-sha256 (codec/R provisional-rhs-bytes)}]
+             {:coordinate coordinate :span span}))
+         (range) pre-mask-specs)
+        coordinates (mapv :coordinate coordinates-and-spans)
+        spans (mapv :span coordinates-and-spans)
+        files
+        (mapv
+         (fn [path]
+           (let [path-spans
+                 (sort-by :rhs-start-byte >
+                          (keep-indexed
+                           (fn [ordinal span]
+                             (when (= path (:path (nth coordinates ordinal)))
+                               span))
+                           spans))
+                 masked
+                 (reduce
+                  (fn [bytes {:keys [rhs-start-byte rhs-end-byte]}]
+                    (replace-byte-span bytes rhs-start-byte rhs-end-byte
+                                       masked-rhs-bytes))
+                  (get bytes-by-path path) path-spans)]
+             {:path path :masked-byte-count (alength ^bytes masked)
+              :masked-raw-sha256 (codec/R masked)}))
+         (vec (distinct (map :path coordinates))))
+        root (codec/H [:gravity/sh07-b51-masked-source-root-v1
+                       {:coordinates coordinates :files files}])]
+    {:coordinates coordinates :preimage-spans spans
+     :preimage-files files :preimage-root root}))
+
+(def ^:private i9-lifecycle-paths
+  (vec
+   (concat
+    owned-c-paths
+    [eligibility-receipt-path
+     "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/i9-integration-receipt.edn"
+     "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/i9-integration-discharge.edn"
+     (governance-path-spec
+      "sh07-b51-git-object-evidence-publication-implementation-v9")])))
+
+(def ^:private g9-lifecycle-paths
+  ["docs/artifacts/phase-15/evidence/sh07-b51-git-object-v9/g9-publication-tuple.edn"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/g9-lifecycle-receipt.edn"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/g9-formal-review.md"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/g9-publication-discharge.edn"
+   (governance-path-spec "sh07-b51-git-object-evidence-publication-g9-v9")])
+
+(def ^:private p9-lifecycle-paths
+  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj"
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/p9-pin-publication-receipt.edn"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/p9-formal-review.md"
+   "docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/p9-final-discharge.edn"
+   (governance-path-spec "sh07-b51-git-object-evidence-publication-p9-v9")])
+
+(def ^:private read-only-paths
+  ["bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+   "bootstrap/gravity/src/gravity/checked_core.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity"
+   "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
+   "contracts/verification-catalog.edn"
+   "contracts/workstream-governance.json"
+   "contracts/workstream-ledger.json"
+   "docs/self-hosting-slice-backlog.md"
+   "docs/self-hosting-slice-ownership.edn"
+   "docs/workstream-governance.md"
+   "docs/workstream-ledger-v2.md"])
+
+(defn- allocation [ordinal stage paths]
+  {:ordinal ordinal :stage stage :owner :master-coordinator :paths paths})
+
+(defn- build-v9-ownership-plan-e1 []
+  (let [base
+        {:schema :gravity/sh07-b51-v9-ownership-plan-e1
+         :allocations
+         [(allocation 0 :a9 a9-paths-e1)
+          (allocation 1 :i9 i9-lifecycle-paths)
+          (allocation 2 :e9 evidence-paths)
+          (allocation 3 :g9 g9-lifecycle-paths)
+          (allocation 4 :p9 p9-lifecycle-paths)]
+         :semantic-review-owner :sh-core
+         :reservation-required-stages [:i9 :e9 :g9 :p9]
+         :handoff-required-stages [:i9 :g9 :p9]
+         :read-only-prerequisite-stages [:a9]
+         :read-only-paths read-only-paths
+         :open-exit-gates
+         [:core :evaluation :arity :mutation :recursion :exception :pattern]
+         :aggregate-sh07-state :partial
+         :self-id-omits [[:plan-id]]}]
+    (assoc base :plan-id
+           (codec/H [:gravity/sh07-b51-v9-ownership-plan-e1 base]))))
+
+(def governance-rules-e1
+  {:permitted-transitions
+   [:draft :frozen :review-pending :accepted :integration-eligible :integrated]
+   :admission-requirements
+   [:exact-base :exact-candidate :clean-named-branch :owned-paths
+    :governing-contracts :validation :independent-acceptance
+    :residual-boundaries :nonclaims]
+   :external-discharge-order
+   [:pre-evidence :runtime :post-i9 :post-g9 :post-p9]
+   :final-cleanup-required-stages [:i9 :g9 :p9]
+   :aggregate-sh07-state :partial})
+
+(defn- fenced-edn-after! [text marker]
+  (let [marker-start (str/index-of text marker)
+        fence-start (when marker-start
+                      (str/index-of text "```clojure\n" marker-start))
+        value-start (when fence-start (+ fence-start 11))
+        value-end (when value-start (str/index-of text "\n```" value-start))]
+    (when-not (and marker-start fence-start value-end)
+      (fail! "SH07-B51-CONTRACT-DISCHARGE" :registry-literal
+             {:marker marker}))
+    (binding [*read-eval* false]
+      (edn/read-string (subs text value-start value-end)))))
+
+(defn- build-registries-e1 [architecture-report]
+  (let [old-tags (fenced-edn-after! architecture-report
+                                      "`V9-TAG-REGISTRY` is")
+        old-domains (fenced-edn-after! architecture-report
+                                         "`H-DOMAIN-REGISTRY` has")
+        member-match
+        (re-find #"(?s)Member kinds are exactly\s+`(\[.*?\])`"
+                 architecture-report)
+        member-kinds
+        (when member-match
+          (binding [*read-eval* false] (edn/read-string (second member-match))))
+        sorted-keywords
+        (fn [values]
+          (vec (sort #(unsigned-utf8-compare (str %1) (str %2)) values)))
+        tags
+        (sorted-keywords
+         (conj (remove #{:gravity/sh07-b51-a9-lifecycle-receipt-v1
+                         :gravity/sh07-b51-v9-ownership-plan-v1}
+                       old-tags)
+               :gravity/sh07-b51-a9-stage-result-e1
+               :gravity/sh07-b51-v9-ownership-plan-e1))
+        domains
+        (sorted-keywords
+         (conj (remove #{:gravity/sh07-b51-a9-lifecycle-receipt-v1
+                         :gravity/sh07-b51-v9-ownership-plan-v1}
+                       old-domains)
+               :gravity/sh07-b51-v9-ownership-plan-e1))]
+    (when-not
+     (and (vector? member-kinds)
+          (= (count tags) (count (distinct tags)))
+          (= (count domains) (count (distinct domains)))
+          (every? (set tags) domains)
+          (contains? (set tags) :gravity/sh07-b51-a9-stage-result-e1)
+          (not (contains? (set domains)
+                          :gravity/sh07-b51-a9-stage-result-e1)))
+      (fail! "SH07-B51-CONTRACT-DISCHARGE" :registry-delta))
+    {:tag-registry tags
+     :identity-domain-registry
+     {:domains domains :member-kinds member-kinds}}))
+
+(defn- read-static-edn! [text reason]
+  (with-open [reader (PushbackReader. (StringReader. text))]
+    (binding [*read-eval* false *data-readers* {}
+              *default-data-reader-fn*
+              (fn [tag _]
+                (fail! "SH07-B51-CONTRACT-DISCHARGE" reason {:tag tag}))]
+      (let [value (read {:eof ::eof :read-cond :allow} reader)
+            trailing (read {:eof ::eof :read-cond :allow} reader)]
+        (when (or (= ::eof value) (not= ::eof trailing))
+          (fail! "SH07-B51-CONTRACT-DISCHARGE" reason))
+        value))))
+
+(def ^:private catalog-route-ids
+  ["sh07-authoritative" "sh07-b10-regression" "sh07-b11-contract"
+   "sh07-b13-accepted" "sh07-b8-regression" "sh07-cached-accepted"
+   "sh07-cached-contract" "sh07-cached-identity" "sh07-cached-rejected"
+   "sh07-cached-verification" "sh07-conformance-parity"
+   "sh07-conformance-table" "sh07-parallel-accepted"
+   "sh07-parallel-b12-contract-accepted"
+   "sh07-parallel-b12-identity-verification"
+   "sh07-parallel-b12-rejected-regression"
+   "sh07-parallel-identity-lineage" "sh07-parallel-regression-a"
+   "sh07-parallel-regression-b" "sh07-parallel-rejected"
+   "sh07-parallel-verification"])
+
+(defn- build-foundation-static [content documents]
+  (let [seven-descriptors (subvec documents 1 8)]
+    {:content content
+     :evidence-kind :validation
+     :canonical-pipeline-contract-id
+     (codec/H [:gravity/sh07-b51-foundation-contract-root-v1
+               seven-descriptors])
+     :safe-semantics
+     {:allowed-outcomes
+      [:proven-safe :runtime-checked :rejected :unsafe-island]
+      :claims []}
+     :replay-key-fields
+     [:content-commit :content-tree :source-root :checker-root
+      :architecture-report-sha256]
+     :invalidation-key-fields
+     [:content-commit :content-tree :source-root :checker-root
+      :architecture-report-sha256 :governing-document-root]}))
+
+(defn- build-catalog-projection
+  [document-read-receipt decoded-static]
+  (let [catalog
+        (read-static-edn!
+         (get decoded-static "contracts/verification-catalog.edn")
+         :verification-catalog-edn)
+        actual-route-ids
+        (->> (:routes catalog)
+             (keep (fn [[id route]]
+                     (when (= "sh07-checked-core" (:module-id route)) id)))
+             (sort unsigned-utf8-compare)
+             vec)]
+    (when-not (= catalog-route-ids actual-route-ids)
+      (fail! "SH07-B51-VERIFY-CATALOG" :applicable-route-census
+             {:expected catalog-route-ids :actual actual-route-ids}))
+    {:schema (:schema catalog)
+     :version (:version catalog)
+     :authority (:authority catalog)
+     :authoritative? (:authoritative? catalog)
+     :source-descriptor
+     (nth (:documents document-read-receipt) 27)
+     :module (get-in catalog [:modules "sh07-checked-core"])
+     :applicable-routes
+     (mapv (fn [id] [id (get-in catalog [:routes id])]) catalog-route-ids)}))
+
+(defn- build-proof-scope [catalog-projection decoded-static]
+  (let [contract
+        (read-static-edn!
+         (get decoded-static
+              "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
+         :proof-contract-edn)
+        boundary (:boundary contract)]
+    {:evidence-kind :validation
+     :formal-proof false
+     :candidate-scope :sh07-b51-git-object-publication
+     :lowering-boundary :verified-core
+     :mir-artifacts []
+     :backend-artifacts []
+     :stage-support-claims []
+     :proof-contract
+     {:artifact (:artifact contract)
+      :schema-version (:schema-version contract)
+      :status (:status contract)
+      :coverage-milestone (:coverage-milestone contract)
+      :task (:task boundary)
+      :input-task (:input-task boundary)
+      :scope (:scope boundary)
+      :application :preserved-out-of-scope}
+     :verification-catalog catalog-projection
+     :adopted-independent-controls
+     [:fresh-authoritative-process :immutable-source-snapshot
+      :immutable-receipts :bounded-execution :finally-cleanup]
+     :b51-proof-contract-revision-required true}))
+
+(defn- build-publication-boundary [content]
+  {:content content
+   :scope :verified-core
+   :created-paths evidence-paths
+   :created-kinds
+   [:checker-identity :checker-identity :checker-output :checker-output
+    :certificate-pair :linked-carrier :identity-receipt]
+   :mir-artifacts [] :backend-artifacts [] :stage-support-claims []})
+
+(def ^:private progress
+  {:slice :SH-07 :status :partial
+   :completed-stage-count 4 :total-stage-count 8})
+
+(defn- pre-evidence-authority []
+  {:phase :pre-evidence
+   :attained [:a9-terminal-record-integrated]
+   :deferred [:c-content-frozen :q-evidence-eligible
+              :fresh-runtime-complete :e9-evidence-immutable
+              :i9-integrated :g9-integrated :p9-integrated
+              :final-cleanup-complete]
+   :grants [:contract-discharge-only]
+   :aggregate-sh07 progress
+   :nonclaims nonclaims})
+
 (defn reconstruct-pre-object-snapshot!
-  "Reconstruct the literal C-object PRE carrier foundation with exactly 77
-  bounded Git operations. The result deliberately has no evidence authority;
-  complete PRE discharge additionally requires the architecture-defined A9
-  lifecycle and non-cyclic masked postimage carriers."
+  "Reconstruct the literal E1 C-object PRE carriers with exactly 77 bounded
+  Git operations.  Terminal A9 and the acyclic pre-mask are authenticated
+  solely from the requested C/T objects.  The result grants no authority."
   [{:keys [repository-root content]}]
   (exact-keys! content #{:commit :tree} "SH07-B51-GIT-SNAPSHOT" :content)
   (require-git-id! (:commit content) :commit "SH07-B51-GIT-SNAPSHOT")
@@ -1630,7 +2812,21 @@
         (build-boot5-compatibility
          content (:parsed-result show-base)
          (get rows-by-path boot5-path) (get bytes-by-path boot5-path)
-         baseline-row (:bytes baseline-cat))]
+         baseline-row (:bytes baseline-cat))
+        a9-stage-result
+        (build-a9-stage-result-e1
+         content rows-by-path bytes-by-path decoded-static)
+        pre-masked-root
+        (build-pre-masked-root bytes-by-path decoded-static)
+        ownership-plan (build-v9-ownership-plan-e1)
+        registries
+        (build-registries-e1 (get decoded-static architecture-report-path))
+        foundation-static
+        (build-foundation-static content (:documents document-read-receipt))
+        catalog-projection
+        (build-catalog-projection document-read-receipt decoded-static)
+        proof-scope (build-proof-scope catalog-projection decoded-static)
+        publication-boundary (build-publication-boundary content)]
     (when-not (and (= 77 (count observations))
                    (= (vec (range 77)) (mapv :ordinal observations))
                    (= 63 (count static-paths))
@@ -1638,7 +2834,9 @@
                    (= 33 (count (:documents document-read-receipt)))
                    (= 33 (count (:events document-read-receipt)))
                    (= 12 (count source-descriptors))
-                   (= 27 (count owned-c-descriptors)))
+                   (= 2 (count (:preimage-files pre-masked-root)))
+                   (= 27 (count owned-c-descriptors))
+                   (= 3 (count (:a9-artifact-descriptors a9-stage-result))))
       (fail! "SH07-B51-CONTRACT-DISCHARGE" :pre-object-census))
     {:content content
      :baseline {:commit pre-baseline-commit :tree base-tree}
@@ -1655,12 +2853,20 @@
      (codec/H [:gravity/sh07-b51-owned-c-descriptors-root-v1
                owned-c-descriptors])
      :boot5-compatibility boot5-compatibility
+     :pre-masked-root pre-masked-root
+     :a9-stage-result a9-stage-result
+     :ownership-plan ownership-plan
+     :governance-rules governance-rules-e1
+     :v9-tag-registry (:tag-registry registries)
+     :identity-domain-registry (:identity-domain-registry registries)
+     :foundation-static foundation-static
+     :catalog-projection catalog-projection
+     :proof-scope proof-scope
+     :publication-boundary publication-boundary
+     :progress progress
      :static-decode-count (count decoded-static)
      :decoded-static decoded-static
-     :completion-gaps
-     [:a9-lifecycle-object-absent-from-authoritative-main
-      :masked-postimage-depends-on-forbidden-future-runtime-values
-      :complete-static-carrier-schema-validation]
+     :completion-gaps []
      :authority :none}))
 
 (defn validate-content-object!
@@ -1682,13 +2888,54 @@
      :observation (assoc observation :ordinal 0)
      :authority :none}))
 
-(def ^:private eligibility-coordinate-keys
+(def eligibility-coordinate-keys
   #{:schema :commit :tree :parents :path :mode :type :blob-oid :byte-count
     :raw-sha256 :receipt-id})
 
+(def evidence-eligibility-keys
+  #{:coordinate :receipt-id :freeze-state :freeze-record-id
+    :source-descriptors-root :pre-masked-root :pre-discharge-id
+    :participant-check-roots})
+
+(def runtime-carrier-keys
+  #{:source-session-a :source-session-b :source-session-m
+    :launcher :coordinator :checker-a :checker-b :runtime-masked-root
+    :foundation-runtime :bootstrap-runtime :differential-runtime
+    :verification-runtime :self-hosting-runtime :semantic-witness-runtime
+    :contract-test-results :proof-scope :progress :nonclaims})
+
+(def runtime-phase-carrier-keys
+  (conj runtime-carrier-keys :content :evidence-eligibility))
+
+(def phase-evidence-keys #{:schema :phase :row-plan-id :carriers})
+
+(def contract-discharge-keys
+  #{:artifact :schema-version :phase :row-plan-id :prior-ref :evidence
+    :resolved-rows :resolved-root :authority :self-id-omits :discharge-id})
+
+(def runtime-prior-ref-keys
+  #{:phase :container :value-path :discharge-id :lifecycle-ref
+    :forbidden-path-observations})
+
+(def ^:private eligibility-check-keys
+  #{:coordinate :observations :pre-discharge-observations :decode-count
+    :receipt-id-check-count :pre-discharge-reconstruction-count
+    :pre-discharge-git-operation-count
+    :pre-discharge-document-descriptor-count
+    :pre-discharge-source-descriptor-count
+    :pre-discharge-pre-masked-file-count
+    :pre-discharge-owned-c-artifact-count
+    :pre-discharge-a9-artifact-count
+    :pre-discharge-baseline-boot5-count
+    :pre-discharge-static-decode-count :content-match
+    :source-descriptors-match :source-descriptors-root-match
+    :pre-masked-root-match :owned-c-root-match :pre-discharge-match})
+
+(def eligibility-participant-order [:l :m :a :b])
+
 (def ^:private eligibility-receipt-keys
   #{:artifact :schema-version :content :freeze :source-descriptors
-    :source-descriptors-root :masked-root :pre-evidence-contract-discharge
+    :source-descriptors-root :pre-masked-root :pre-evidence-contract-discharge
     :review :state :self-id-omits :nonclaims :receipt-id})
 
 (def ^:private pre-discharge-keys
@@ -1697,10 +2944,10 @@
 
 (def ^:private pre-carrier-keys
   #{:content :document-read-receipt :source-descriptors
-    :source-descriptors-root :masked-root :owned-c-descriptors :owned-c-root
+    :source-descriptors-root :pre-masked-root :owned-c-descriptors :owned-c-root
     :row-plan :foundation-static :boot5-compatibility :ownership-plan
     :catalog-projection :governance-rules :identity-domain-registry
-    :publication-boundary :proof-scope :progress :nonclaims :a9-lifecycle})
+    :publication-boundary :proof-scope :progress :nonclaims :a9-stage-result})
 
 (defn- validate-source-descriptors!
   [descriptors]
@@ -1733,11 +2980,10 @@
   (let [carriers (get-in receipt [:evidence :carriers])]
     (exact-keys! carriers pre-carrier-keys
                  "SH07-B51-RECEIPT-JOIN" :pre-carrier-keys)
-    (exact-keys! (:masked-root carriers)
-                 #{:coordinates :preimage-spans :postimage-spans
-                   :preimage-files :postimage-files :preimage-root
-                   :postimage-root :equal}
-                 "SH07-B51-RECEIPT-JOIN" :masked-root-keys)
+    (exact-keys! (:pre-masked-root carriers)
+                 #{:coordinates :preimage-spans :preimage-files
+                   :preimage-root}
+                 "SH07-B51-RECEIPT-JOIN" :pre-masked-root-keys)
     (let [resolved (resolve-contract-phase! :pre-evidence carriers)]
       (when-not
      (and (= :gravity/sh07-b51-pre-evidence-contract-discharge-v1
@@ -1786,11 +3032,10 @@
                  :artifact-raw-sha256 :result :completed-at}
                "SH07-B51-RECEIPT-JOIN" :eligibility-review-keys)
   (validate-source-descriptors! (:source-descriptors receipt))
-  (exact-keys! (:masked-root receipt)
-               #{:coordinates :preimage-spans :postimage-spans
-                 :preimage-files :postimage-files :preimage-root
-                 :postimage-root :equal}
-               "SH07-B51-RECEIPT-JOIN" :masked-root-keys)
+  (exact-keys! (:pre-masked-root receipt)
+               #{:coordinates :preimage-spans :preimage-files
+                 :preimage-root}
+               "SH07-B51-RECEIPT-JOIN" :pre-masked-root-keys)
   (validate-pre-discharge-envelope!
    content (:pre-evidence-contract-discharge receipt))
   (let [expected-id
@@ -1832,18 +3077,775 @@
              (get-in receipt
                      [:pre-evidence-contract-discharge :evidence :carriers
                       :source-descriptors-root]))
-          (= (:masked-root receipt)
+          (= (:pre-masked-root receipt)
              (get-in receipt
                      [:pre-evidence-contract-discharge :evidence :carriers
-                      :masked-root])))
+                      :pre-masked-root])))
       (fail! "SH07-B51-RECEIPT-JOIN" :eligibility-receipt)))
   receipt)
 
+(defn validate-eligibility-coordinate!
+  "Validate the closed Q external-review coordinate without reading Git.
+
+  The two-argument form additionally binds the coordinate's parent to the
+  supplied immutable C/T content.  Git-object replay remains the authority
+  for the five observations in `validate-eligibility-object!`."
+  ([coordinate]
+   (validate-eligibility-coordinate! nil coordinate))
+  ([content coordinate]
+   (exact-keys! coordinate eligibility-coordinate-keys
+                "SH07-B51-RECEIPT-JOIN" :eligibility-coordinate-keys)
+   (doseq [[field value] [[:commit (:commit coordinate)]
+                          [:tree (:tree coordinate)]
+                          [:blob-oid (:blob-oid coordinate)]]]
+     (require-git-id! value field "SH07-B51-RECEIPT-JOIN"))
+   (when-not
+    (and (= :gravity/sh07-b51-external-review-object-v1
+            (:schema coordinate))
+         (vector? (:parents coordinate))
+         (= 1 (count (:parents coordinate)))
+         (git-id? (first (:parents coordinate)))
+         (or (nil? content)
+             (= [(:commit content)] (:parents coordinate)))
+         (safe-relative-path? (:path coordinate))
+         (= eligibility-receipt-path (:path coordinate))
+         (= "100644" (:mode coordinate))
+         (= "blob" (:type coordinate))
+         (integer? (:byte-count coordinate))
+         (not (neg? (:byte-count coordinate)))
+         (sha256-id? (:raw-sha256 coordinate))
+         (sha256-id? (:receipt-id coordinate)))
+     (fail! "SH07-B51-RECEIPT-JOIN" :eligibility-coordinate
+            {:coordinate coordinate}))
+   (when (and content (not= (:commit content) (:commit coordinate)))
+     (fail! "SH07-B51-RECEIPT-JOIN" :eligibility-content-parent
+            {:content content :coordinate coordinate}))
+   coordinate))
+
+(def ^:private eligibility-check-count-values
+  {:decode-count 1
+   :receipt-id-check-count 1
+   :pre-discharge-reconstruction-count 1
+   :pre-discharge-git-operation-count 77
+   :pre-discharge-document-descriptor-count 33
+   :pre-discharge-source-descriptor-count 12
+   :pre-discharge-pre-masked-file-count 2
+   :pre-discharge-owned-c-artifact-count 27
+   :pre-discharge-a9-artifact-count 3
+   :pre-discharge-baseline-boot5-count 1
+   :pre-discharge-static-decode-count 63})
+
+(def ^:private eligibility-check-match-keys
+  [:content-match :source-descriptors-match
+   :source-descriptors-root-match :pre-masked-root-match
+   :owned-c-root-match :pre-discharge-match])
+
+(def ^:private git-observation-keys
+  #{:ordinal :operation :argv :stdin-byte-count :stdin-raw-sha256
+    :exit-code :stdout-byte-count :stdout-raw-sha256 :stderr-byte-count
+    :stderr-raw-sha256 :parsed-result})
+
+(defn- validate-git-observation!
+  [observation ordinal operation reason]
+  (exact-keys! observation git-observation-keys
+               "SH07-B51-RECEIPT-JOIN" reason)
+  (let [argv (:argv observation)
+        parsed (:parsed-result observation)]
+    (when-not
+     (and (= ordinal (:ordinal observation))
+          (= operation (:operation observation))
+          (vector? argv)
+          (<= 3 (count argv))
+          (= git-executable (first argv))
+          (= "-C" (second argv))
+          (string? (nth argv 2 nil))
+          (not (str/blank? (nth argv 2 nil)))
+          (= 0 (:stdin-byte-count observation))
+          (= empty-raw-sha256 (:stdin-raw-sha256 observation))
+          (= 0 (:exit-code observation))
+          (integer? (:stdout-byte-count observation))
+          (not (neg? (:stdout-byte-count observation)))
+          (sha256-id? (:stdout-raw-sha256 observation))
+          (= 0 (:stderr-byte-count observation))
+          (= empty-raw-sha256 (:stderr-raw-sha256 observation))
+          (map? parsed))
+      (fail! "SH07-B51-RECEIPT-JOIN" reason
+             {:ordinal ordinal :operation operation}))
+    (case operation
+      :show-tree
+      (when-not
+       (and (= 7 (count argv))
+            (= ["show" "-s" "--format=%H%n%T%n%P"]
+               (subvec argv 3 6))
+            (git-id? (nth argv 6))
+            (= #{:commit :tree :parents} (set (keys parsed)))
+            (git-id? (:commit parsed))
+            (git-id? (:tree parsed))
+            (vector? (:parents parsed))
+            (every? git-id? (:parents parsed)))
+        (fail! "SH07-B51-RECEIPT-JOIN" reason
+               {:ordinal ordinal :operation operation}))
+
+      :diff-tree-name-status-z
+      (when-not
+       (and (= 10 (count argv))
+            (= ["diff-tree" "--no-commit-id" "--name-status" "-r" "-z"]
+               (subvec argv 3 8))
+            (git-id? (nth argv 8))
+            (git-id? (nth argv 9))
+            (= #{:parent :commit :entries} (set (keys parsed)))
+            (= (nth argv 8) (:parent parsed))
+            (= (nth argv 9) (:commit parsed))
+            (vector? (:entries parsed))
+            (every? #(and (= #{:status :path} (set (keys %)))
+                          (= :added (:status %))
+                          (safe-relative-path? (:path %)))
+                    (:entries parsed)))
+        (fail! "SH07-B51-RECEIPT-JOIN" reason
+               {:ordinal ordinal :operation operation}))
+
+      :ls-tree-z-requested
+      (when-not
+       (and (<= 8 (count argv))
+            (= ["ls-tree" "-z"] (subvec argv 3 5))
+            (git-id? (nth argv 5))
+            (= "--" (nth argv 6))
+            (= (vec (drop 7 argv)) (:requested-paths parsed))
+            (= #{:commit :requested-paths :rows} (set (keys parsed)))
+            (= (nth argv 5) (:commit parsed))
+            (vector? (:requested-paths parsed))
+            (= (count (:requested-paths parsed))
+               (count (distinct (:requested-paths parsed))))
+            (every? safe-relative-path? (:requested-paths parsed))
+            (vector? (:rows parsed))
+            (= (count (:requested-paths parsed)) (count (:rows parsed)))
+            (every?
+             #(and (= #{:path :present :mode :type :oid} (set (keys %)))
+                   (safe-relative-path? (:path %))
+                   (boolean? (:present %))
+                   (if (:present %)
+                     (and (= "100644" (:mode %))
+                          (= "blob" (:type %))
+                          (git-id? (:oid %)))
+                     (and (nil? (:mode %)) (nil? (:type %))
+                          (nil? (:oid %)))))
+             (:rows parsed)))
+        (fail! "SH07-B51-RECEIPT-JOIN" reason
+               {:ordinal ordinal :operation operation}))
+
+      :cat-file-blob
+      (when-not
+       (and (= 6 (count argv))
+            (= ["cat-file" "blob"] (subvec argv 3 5))
+            (git-id? (nth argv 5))
+            (or (= #{:oid :byte-count :raw-sha256} (set (keys parsed)))
+                (= #{:oid :byte-count :raw-sha256 :value}
+                   (set (keys parsed))))
+            (= (nth argv 5) (:oid parsed))
+            (integer? (:byte-count parsed))
+            (not (neg? (:byte-count parsed)))
+            (sha256-id? (:raw-sha256 parsed)))
+        (fail! "SH07-B51-RECEIPT-JOIN" reason
+               {:ordinal ordinal :operation operation}))
+
+      (fail! "SH07-B51-RECEIPT-JOIN" reason
+             {:ordinal ordinal :operation operation})))
+  observation)
+
+(defn- validate-git-observation-sequence!
+  [observations operations reason]
+  (when-not (and (vector? observations)
+                 (= (count operations) (count observations)))
+    (fail! "SH07-B51-RECEIPT-JOIN" reason
+           {:expected-count (count operations)
+            :actual-count (when (vector? observations)
+                            (count observations))}))
+  (mapv (fn [ordinal [observation operation]]
+          (validate-git-observation!
+           observation ordinal operation reason))
+        (range)
+        (map vector observations operations)))
+
+(def ^:private eligibility-object-operation-sequence
+  [:show-tree :diff-tree-name-status-z :ls-tree-z-requested
+   :cat-file-blob :ls-tree-z-requested])
+
+(def ^:private pre-discharge-operation-sequence
+  (vec (concat [:show-tree :ls-tree-z-requested]
+               (repeat (count pre-c-paths) :cat-file-blob)
+               [:show-tree :ls-tree-z-requested :cat-file-blob])))
+
+(declare reject-runtime-back-edges!)
+
+(defn- validate-participant-checks!
+  [coordinate participant-results]
+  (when-not (and (vector? participant-results)
+                 (= eligibility-participant-order
+                    (mapv :participant participant-results)))
+    (fail! "SH07-B51-RECEIPT-JOIN" :participant-order
+           {:participants (when (vector? participant-results)
+                            (mapv :participant participant-results))}))
+  (doseq [[ordinal result] (map-indexed vector participant-results)]
+    (exact-keys! result #{:participant :eligibility-check
+                           :eligibility-check-root}
+                 "SH07-B51-RECEIPT-JOIN" :participant-result-keys)
+    (let [check (:eligibility-check result)]
+      (exact-keys! check eligibility-check-keys
+                   "SH07-B51-RECEIPT-JOIN" :eligibility-check-keys)
+      (validate-git-observation-sequence!
+       (:observations check) eligibility-object-operation-sequence
+       :eligibility-observation-sequence)
+      (validate-git-observation-sequence!
+       (:pre-discharge-observations check)
+       pre-discharge-operation-sequence
+       :pre-discharge-observation-sequence)
+      (when-not
+       (and (= coordinate (:coordinate check))
+            (= eligibility-check-count-values
+               (select-keys check (keys eligibility-check-count-values)))
+            (every? true? (map check eligibility-check-match-keys))
+            (sha256-id? (:eligibility-check-root result))
+            (= (:eligibility-check-root result)
+               (codec/H [:gravity/sh07-b51-eligibility-check-root-v1
+                         check])))
+        (fail! "SH07-B51-RECEIPT-JOIN" :eligibility-check
+               {:participant (:participant result)
+                :ordinal ordinal}))))
+  participant-results)
+
+(defn validate-evidence-eligibility!
+  "Validate the normalized E1 EVIDENCE-ELIGIBILITY carrier.
+
+  The optional context map is used by the builder and strict identity-receipt
+  path to prove every value still equals the independently decoded Q receipt
+  and the ordered L/M/A/B checks.  No runtime or later lifecycle value is
+  accepted in this carrier."
+  ([eligibility]
+   (validate-evidence-eligibility! eligibility nil))
+  ([eligibility {:keys [content receipt participant-results]}]
+   (exact-keys! eligibility evidence-eligibility-keys
+                "SH07-B51-RECEIPT-JOIN" :evidence-eligibility-keys)
+   (let [coordinate (:coordinate eligibility)
+         pre-root (:pre-masked-root eligibility)]
+     (validate-eligibility-coordinate! content coordinate)
+     (validate-pre-masked-root! pre-root)
+     (when-not (and (sha256-id? (:receipt-id eligibility))
+                    (= (:receipt-id coordinate) (:receipt-id eligibility))
+                    (= :frozen (:freeze-state eligibility))
+                    (sha256-id? (:freeze-record-id eligibility))
+                    (sha256-id? (:source-descriptors-root eligibility))
+                    (sha256-id? (:pre-discharge-id eligibility))
+                    (vector? (:participant-check-roots eligibility))
+                    (= 4 (count (:participant-check-roots eligibility)))
+                    (every? sha256-id? (:participant-check-roots eligibility)))
+       (fail! "SH07-B51-RECEIPT-JOIN" :evidence-eligibility-shape))
+     (when receipt
+       (validate-eligibility-receipt! (or content (:content receipt)) receipt)
+       (let [pre-discharge (:pre-evidence-contract-discharge receipt)
+             expected-record-id
+             (get-in receipt [:freeze :active-record-ref :record-id])]
+         (when-not
+          (and (= (:receipt-id receipt) (:receipt-id eligibility))
+               (= :frozen (get-in receipt [:freeze :state]))
+               (= expected-record-id (:freeze-record-id eligibility))
+               (= (:source-descriptors-root receipt)
+                  (:source-descriptors-root eligibility))
+               (= (:pre-masked-root receipt) pre-root)
+               (= (:discharge-id pre-discharge)
+                  (:pre-discharge-id eligibility))
+               (= (:source-descriptors-root receipt)
+                  (codec/H [:gravity/sh07-b51-source-descriptors-root-v1
+                            (:source-descriptors receipt)])))
+           ;; The coordinate/receipt relationship is checked below as a
+           ;; complete map comparison; this branch is intentionally explicit
+           ;; so a missing nested Q field cannot be treated as a nil default.
+           (fail! "SH07-B51-RECEIPT-JOIN" :evidence-eligibility-q-join
+                  {:eligibility eligibility}))
+         (when (and content (not= content (:content receipt)))
+           (fail! "SH07-B51-RECEIPT-JOIN" :evidence-eligibility-content))))
+     (when participant-results
+       (validate-participant-checks! coordinate participant-results)
+       (when-not (= (mapv :eligibility-check-root participant-results)
+                    (:participant-check-roots eligibility))
+         (fail! "SH07-B51-RECEIPT-JOIN"
+                :evidence-eligibility-participant-roots)))
+     (reject-runtime-back-edges! eligibility [])
+     eligibility)))
+
+(defn build-evidence-eligibility
+  "Build E1 EVIDENCE-ELIGIBILITY only from a complete Q receipt and the
+  independently completed L/M/A/B eligibility checks."
+  ([coordinate receipt participant-results]
+   (validate-eligibility-coordinate! (:content receipt) coordinate)
+   (validate-eligibility-receipt! (:content receipt) receipt)
+   (validate-participant-checks! coordinate participant-results)
+   (let [pre-discharge (:pre-evidence-contract-discharge receipt)
+         eligibility
+         {:coordinate coordinate
+          :receipt-id (:receipt-id receipt)
+          :freeze-state (get-in receipt [:freeze :state])
+          :freeze-record-id
+          (get-in receipt [:freeze :active-record-ref :record-id])
+          :source-descriptors-root (:source-descriptors-root receipt)
+          :pre-masked-root (:pre-masked-root receipt)
+          :pre-discharge-id (:discharge-id pre-discharge)
+          :participant-check-roots
+          (mapv :eligibility-check-root participant-results)}]
+     (validate-evidence-eligibility!
+      eligibility {:content (:content receipt)
+                   :receipt receipt
+                   :participant-results participant-results})))
+  ([input]
+   (exact-keys! input #{:coordinate :receipt :participant-results}
+                "SH07-B51-RECEIPT-JOIN" :evidence-eligibility-input-keys)
+   (build-evidence-eligibility (:coordinate input) (:receipt input)
+                               (:participant-results input))))
+
+(defn build-evidence-eligibility!
+  [& arguments]
+  (apply build-evidence-eligibility arguments))
+
+(def ^:private runtime-back-edge-keys
+  #{:identity-receipt :runtime-contract-discharge :enclosing-discharge
+    :enclosing-identity-receipt :enclosing-receipt :enclosing-receipt-id
+    :identity-receipt-id :e9 :e9-identity-receipt :e9-identity-receipt-id
+    :g9 :g9-lifecycle :g9-lifecycle-id :p9 :p9-publication :p9-final-discharge
+    :p9-final-discharge-id :evidence-receipt :evidence-receipt-id
+    :evidence-commit :evidence-tree :discharge :discharge-id})
+
+(defn- reject-runtime-back-edges!
+  ([value] (reject-runtime-back-edges! value []))
+  ([value path]
+   (cond
+     (map? value)
+     (doseq [[key child] value]
+       (when (contains? runtime-back-edge-keys key)
+         (fail! "SH07-B51-RECEIPT-JOIN" :runtime-identity-cycle
+                {:path (conj path key)}))
+       (reject-runtime-back-edges! child (conj path key)))
+
+     (vector? value)
+     (doseq [[ordinal child] (map-indexed vector value)]
+       (reject-runtime-back-edges! child (conj path ordinal)))
+
+     (list? value)
+     (doseq [[ordinal child] (map-indexed vector value)]
+       (reject-runtime-back-edges! child (conj path ordinal)))
+
+     (set? value)
+     (doseq [child value]
+       (reject-runtime-back-edges! child (conj path :member)))
+
+     :else nil)
+   value))
+
+(defn- validate-runtime-content!
+  [content]
+  (exact-keys! content #{:commit :tree}
+               "SH07-B51-CONTRACT-DISCHARGE" :runtime-content-keys)
+  (require-git-id! (:commit content) :commit
+                   "SH07-B51-CONTRACT-DISCHARGE")
+  (require-git-id! (:tree content) :tree
+                   "SH07-B51-CONTRACT-DISCHARGE")
+  content)
+
+(defn- validate-runtime-carrier-pool!
+  [carriers]
+  (exact-keys! carriers runtime-carrier-keys
+               "SH07-B51-CONTRACT-DISCHARGE" :runtime-carrier-keys)
+  (doseq [[key value] carriers]
+    (when (nil? value)
+      (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-carrier-nil
+             {:carrier key})))
+  (validate-runtime-masked-root! (:runtime-masked-root carriers))
+  (reject-runtime-back-edges! carriers [])
+  carriers)
+
+(defn- validate-runtime-phase-carriers!
+  [carriers]
+  (exact-keys! carriers runtime-phase-carrier-keys
+               "SH07-B51-CONTRACT-DISCHARGE"
+               :runtime-phase-carrier-keys)
+  (validate-runtime-content! (:content carriers))
+  (validate-evidence-eligibility! (:evidence-eligibility carriers))
+  (validate-runtime-carrier-pool!
+   (dissoc carriers :content :evidence-eligibility))
+  (reject-runtime-back-edges! carriers [])
+  carriers)
+
+(defn validate-phase-evidence!
+  "Validate the closed runtime PHASE-EVIDENCE wrapper.
+
+  This runtime seam deliberately rejects PRE/POST carrier pools; later G9/P9
+  validators must admit their own exact phase-specific maps."
+  [phase-evidence]
+  (exact-keys! phase-evidence phase-evidence-keys
+               "SH07-B51-CONTRACT-DISCHARGE" :phase-evidence-keys)
+  (when-not (and (= :gravity/sh07-b51-phase-evidence-v1
+                    (:schema phase-evidence))
+                 (= :runtime (:phase phase-evidence))
+                 (= row-plan-id (:row-plan-id phase-evidence)))
+    (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-phase-evidence-header))
+  (validate-runtime-phase-carriers! (:carriers phase-evidence))
+  phase-evidence)
+
+(defn build-runtime-phase-evidence
+  "Build the runtime PHASE-EVIDENCE wrapper from a strict 19-key runtime
+  carrier pool plus its immutable C/T and EVIDENCE-ELIGIBILITY joins."
+  ([content evidence-eligibility runtime-carriers]
+   (validate-runtime-content! content)
+   (validate-evidence-eligibility! evidence-eligibility)
+   (validate-runtime-carrier-pool! runtime-carriers)
+   (validate-phase-evidence!
+    {:schema :gravity/sh07-b51-phase-evidence-v1
+     :phase :runtime
+     :row-plan-id row-plan-id
+     :carriers (merge {:content content
+                       :evidence-eligibility evidence-eligibility}
+                      runtime-carriers)}))
+  ([input]
+   (exact-keys! input #{:content :evidence-eligibility :runtime-carriers}
+                "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-phase-evidence-input-keys)
+   (build-runtime-phase-evidence (:content input)
+                                 (:evidence-eligibility input)
+                                 (:runtime-carriers input))))
+
+(defn build-runtime-phase-evidence!
+  [& arguments]
+  (apply build-runtime-phase-evidence arguments))
+
+(def runtime-authority-attained
+  [:a9-terminal-record-integrated :c-content-frozen
+   :q-evidence-eligible :fresh-runtime-complete])
+
+(def runtime-authority-deferred
+  [:e9-evidence-immutable :i9-integrated :g9-integrated :p9-integrated
+   :final-cleanup-complete])
+
+(defn runtime-authority []
+  {:phase :runtime
+   :attained runtime-authority-attained
+   :deferred runtime-authority-deferred
+   :grants [:contract-discharge-only]
+   :aggregate-sh07 progress
+   :nonclaims nonclaims})
+
+(def ^:private identity-receipt-normalization
+  {:algorithm :gravity/sh07-b51-explicit-semantic-projection-v1
+   :receipt-only :gravity/receipt-only
+   :child-indexes [0 1]
+   :classpath-indexes [0 1 2 3]
+   :coordinator-classpath-phases
+   [:m-entry :pre-a :post-a :pre-b :post-b :pre-source-session
+    :post-source-session :m-exit]
+   :recompute-order
+   [:payload-value-ids :classpath-roots :argv-ids :request-ids
+    :tcb-manifest-ids :response-values-and-transport :process-handle-ids
+    :source-session-ids :coordinator-event-ids :coordinator-event-root
+    :coordinator-receipt :m-response :launcher-validation-input
+    :contract-validation :launcher-receipt-id
+    :contract-document-event-root :contract-row-plan-id
+    :pre-resolved-row-root :pre-discharge-id :runtime-resolved-row-root
+    :runtime-discharge-id :receipt-id]})
+
+(def ^:private prior-ref-container-keys
+  #{:commit :tree :parents :path :mode :type :blob-oid :byte-count
+    :raw-sha256})
+
+(def ^:private runtime-i9-suffix
+  (subvec (vec i9-lifecycle-paths) 27))
+
+(def ^:private runtime-forbidden-path-refs
+  [[:e9 0] [:e9 1] [:e9 2] [:e9 3] [:e9 4] [:e9 5] [:e9 6]
+   [:i9-suffix 1] [:i9-suffix 2] [:i9-suffix 3]
+   [:g9 0] [:g9 1] [:g9 2] [:g9 3] [:g9 4]
+   [:p9 0] [:p9 1] [:p9 2] [:p9 3] [:p9 4] [:p9 5]])
+
+(def ^:private runtime-lifecycle-ref-keys
+  #{:stage :path-ref :container :value-path :required-result :receipt-id})
+
+(def ^:private runtime-forbidden-observation-keys
+  #{:ordinal :path-ref :resolved-path :argv :exit-code
+    :stdout-byte-count :stdout-raw-sha256 :parsed-result})
+
+(defn- validate-reference-container!
+  [container reason]
+  (exact-keys! container prior-ref-container-keys
+               "SH07-B51-CONTRACT-DISCHARGE" reason)
+  (when-not
+   (and (git-id? (:commit container))
+        (git-id? (:tree container))
+        (vector? (:parents container))
+        (every? git-id? (:parents container))
+        (safe-relative-path? (:path container))
+        (= "100644" (:mode container))
+        (= "blob" (:type container))
+        (git-id? (:blob-oid container))
+        (integer? (:byte-count container))
+        (not (neg? (:byte-count container)))
+        (sha256-id? (:raw-sha256 container)))
+    (fail! "SH07-B51-CONTRACT-DISCHARGE" reason
+           {:container container}))
+  container)
+
+(defn- runtime-forbidden-path
+  [path-ref]
+  (let [[domain ordinal] path-ref]
+    (case domain
+      :e9 (nth evidence-paths ordinal nil)
+      :i9-suffix (nth runtime-i9-suffix ordinal nil)
+      :g9 (nth g9-lifecycle-paths ordinal nil)
+      :p9 (nth p9-lifecycle-paths ordinal nil)
+      nil)))
+
+(defn- valid-governance-resolved-path?
+  [spec resolved-path]
+  (and (string? resolved-path)
+       (safe-relative-path? resolved-path)
+       (str/starts-with?
+        resolved-path (str (:directory spec) "/" (:workstream-id spec) "-"))
+       (str/ends-with? resolved-path ".json")))
+
+(defn- validate-runtime-lifecycle-ref!
+  [lifecycle-ref eligibility]
+  (exact-keys! lifecycle-ref runtime-lifecycle-ref-keys
+               "SH07-B51-CONTRACT-DISCHARGE" :runtime-lifecycle-ref-keys)
+  (validate-reference-container!
+   (:container lifecycle-ref) :runtime-lifecycle-ref-container)
+  (let [expected-container
+        (select-keys (:coordinate eligibility) prior-ref-container-keys)
+        expected-path (runtime-forbidden-path [:i9-suffix 0])]
+    (when-not
+     (and (= :pre-evidence (:stage lifecycle-ref))
+          (= [:i9-suffix 0] (:path-ref lifecycle-ref))
+          (= [] (:value-path lifecycle-ref))
+          (= :evidence-eligible (:required-result lifecycle-ref))
+          (sha256-id? (:receipt-id lifecycle-ref))
+          (= expected-container (:container lifecycle-ref))
+          (= expected-path (:path (:container lifecycle-ref)))
+          (= (:freeze-record-id eligibility) (:receipt-id lifecycle-ref)))
+      (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-lifecycle-ref
+             {:lifecycle-ref lifecycle-ref}))
+    lifecycle-ref))
+
+(defn- validate-runtime-forbidden-observations!
+  [observations prior-container]
+  (when-not (and (vector? observations)
+                 (= (count runtime-forbidden-path-refs)
+                    (count observations)))
+    (fail! "SH07-B51-CONTRACT-DISCHARGE"
+           :runtime-forbidden-path-observation-count))
+  (let [repository
+        (atom nil)]
+    (doseq [[ordinal [observation path-ref]]
+            (map-indexed vector
+                         (map vector observations
+                              runtime-forbidden-path-refs))]
+      (exact-keys! observation runtime-forbidden-observation-keys
+                   "SH07-B51-CONTRACT-DISCHARGE"
+                   :runtime-forbidden-path-observation-keys)
+      (let [expected-path (runtime-forbidden-path path-ref)
+            resolved-path (:resolved-path observation)
+            argv (:argv observation)]
+        (when-not
+         (and (= ordinal (:ordinal observation))
+              (= path-ref (:path-ref observation))
+              (or (= expected-path resolved-path)
+                  (and (map? expected-path)
+                       (valid-governance-resolved-path?
+                        expected-path resolved-path)))
+              (vector? argv)
+              (= 8 (count argv))
+              (= git-executable (nth argv 0))
+              (= "-C" (nth argv 1))
+              (string? (nth argv 2))
+              (not (str/blank? (nth argv 2)))
+              (= "ls-tree" (nth argv 3))
+              (= "-z" (nth argv 4))
+              (= (:commit prior-container) (nth argv 5))
+              (= "--" (nth argv 6))
+              (= resolved-path (nth argv 7))
+              (= 0 (:exit-code observation))
+              (= 0 (:stdout-byte-count observation))
+              (= empty-raw-sha256 (:stdout-raw-sha256 observation))
+              (= [] (:parsed-result observation)))
+          (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                 :runtime-forbidden-path-observation
+                 {:ordinal ordinal :path-ref path-ref}))
+        (if (nil? @repository)
+          (reset! repository (nth argv 2))
+          (when-not (= @repository (nth argv 2))
+            (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                   :runtime-forbidden-path-repository
+                   {:ordinal ordinal}))))))
+  observations)
+
+(defn validate-runtime-prior-ref!
+  "Validate the exact Q PRE-DISCHARGE prior reference used by runtime."
+  ([prior-ref]
+   (validate-runtime-prior-ref! prior-ref nil nil))
+  ([prior-ref eligibility]
+   (validate-runtime-prior-ref!
+    prior-ref eligibility
+    (when eligibility (:pre-discharge-id eligibility))))
+  ([prior-ref eligibility pre-discharge-id]
+   (exact-keys! prior-ref runtime-prior-ref-keys
+                "SH07-B51-CONTRACT-DISCHARGE" :runtime-prior-ref-keys)
+   (validate-reference-container!
+    (:container prior-ref) :runtime-prior-ref-container-keys)
+   (let [container (:container prior-ref)]
+     (when-not
+      (and (= :runtime (:phase prior-ref))
+           (= [:pre-evidence-contract-discharge]
+              (:value-path prior-ref))
+           (git-id? (:commit container))
+           (git-id? (:tree container))
+           (vector? (:parents container))
+           (every? git-id? (:parents container))
+           (safe-relative-path? (:path container))
+           (= "100644" (:mode container))
+           (= "blob" (:type container))
+           (git-id? (:blob-oid container))
+           (integer? (:byte-count container))
+           (not (neg? (:byte-count container)))
+           (sha256-id? (:raw-sha256 container))
+           (sha256-id? (:discharge-id prior-ref))
+           (map? (:lifecycle-ref prior-ref))
+           (vector? (:forbidden-path-observations prior-ref)))
+       (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-prior-ref))
+     (when eligibility
+       (validate-evidence-eligibility! eligibility)
+       (when-not (= (select-keys (:coordinate eligibility)
+                                  prior-ref-container-keys)
+                    container)
+         (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-prior-ref-container-eligibility))
+       (validate-runtime-lifecycle-ref!
+        (:lifecycle-ref prior-ref) eligibility)
+       (when-not (= (:discharge-id prior-ref)
+                    (:pre-discharge-id eligibility))
+         (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-prior-ref-eligibility-id)))
+     (when pre-discharge-id
+       (when-not (= (:discharge-id prior-ref) pre-discharge-id)
+         (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-prior-ref-discharge-id)))
+     (validate-runtime-forbidden-observations!
+      (:forbidden-path-observations prior-ref) container)
+     (reject-runtime-back-edges! (:lifecycle-ref prior-ref) [:lifecycle-ref])
+     prior-ref)))
+
+(defn validate-runtime-contract-discharge!
+  "Validate the complete runtime discharge, including its Q prior-ref,
+  resolved dense row vector/root, authority prefix, and self-ID equation."
+  ([discharge]
+   (validate-runtime-contract-discharge! discharge nil))
+  ([discharge {:keys [content evidence-eligibility runtime-carriers prior-ref]}]
+   (exact-keys! discharge contract-discharge-keys
+                "SH07-B51-CONTRACT-DISCHARGE" :runtime-discharge-keys)
+   (when-not (and (= :gravity/sh07-b51-runtime-contract-discharge-v1
+                     (:artifact discharge))
+                  (= 1 (:schema-version discharge))
+                  (= :runtime (:phase discharge))
+                  (= row-plan-id (:row-plan-id discharge))
+                  (= [[:discharge-id]] (:self-id-omits discharge))
+                  (sha256-id? (:resolved-root discharge))
+                  (sha256-id? (:discharge-id discharge)))
+     (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-discharge-header))
+   (validate-runtime-prior-ref! (:prior-ref discharge)
+                                (:evidence-eligibility
+                                 (get-in discharge [:evidence :carriers]))
+                                (get-in discharge
+                                        [:evidence :carriers
+                                         :evidence-eligibility
+                                         :pre-discharge-id]))
+   (validate-phase-evidence! (:evidence discharge))
+   (let [carriers (get-in discharge [:evidence :carriers])
+         resolved (resolve-contract-phase! :runtime carriers)
+         expected-without-id (dissoc discharge :discharge-id)
+         expected-id
+         (codec/H [:gravity/sh07-b51-runtime-contract-discharge-v1
+                   expected-without-id])]
+     (when-not
+      (and (= (:resolved-rows resolved) (:resolved-rows discharge))
+           (= (:resolved-root resolved) (:resolved-root discharge))
+           (= (runtime-authority) (:authority discharge))
+           (= expected-id (:discharge-id discharge)))
+       (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-discharge-identity))
+     (when content
+       (validate-runtime-content! content)
+       (when-not (= content (:content carriers))
+         (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-content-join)))
+     (when evidence-eligibility
+       (validate-evidence-eligibility! evidence-eligibility)
+       (when-not (= evidence-eligibility
+                    (:evidence-eligibility carriers))
+         (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-eligibility-join)))
+     (when runtime-carriers
+       (validate-runtime-carrier-pool! runtime-carriers)
+       (when-not (= runtime-carriers
+                    (dissoc carriers :content :evidence-eligibility))
+         (fail! "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-carrier-join)))
+     (when prior-ref
+       (validate-runtime-prior-ref! prior-ref evidence-eligibility)
+       (when-not (= prior-ref (:prior-ref discharge))
+         (fail! "SH07-B51-CONTRACT-DISCHARGE" :runtime-prior-ref-join)))
+     discharge)))
+
+(defn build-runtime-contract-discharge
+  "Construct RUNTIME-CONTRACT-DISCHARGE only after the complete Q-derived
+  eligibility and closed runtime carrier pool are available.  The caller must
+  supply the complete PRIOR-REF, including its immutable lifecycle and
+  forbidden-path observations; this function never fabricates those facts."
+  ([content evidence-eligibility runtime-carriers prior-ref]
+   (validate-runtime-content! content)
+   (validate-evidence-eligibility! evidence-eligibility)
+   (validate-runtime-carrier-pool! runtime-carriers)
+   (validate-runtime-prior-ref! prior-ref evidence-eligibility)
+   (let [evidence (build-runtime-phase-evidence
+                   content evidence-eligibility runtime-carriers)
+         resolved (resolve-contract-phase! :runtime (:carriers evidence))
+         without-id
+         {:artifact :gravity/sh07-b51-runtime-contract-discharge-v1
+          :schema-version 1
+          :phase :runtime
+          :row-plan-id row-plan-id
+          :prior-ref prior-ref
+          :evidence evidence
+          :resolved-rows (:resolved-rows resolved)
+          :resolved-root (:resolved-root resolved)
+          :authority (runtime-authority)
+          :self-id-omits [[:discharge-id]]}
+         discharge
+         (assoc without-id :discharge-id
+                (codec/H [:gravity/sh07-b51-runtime-contract-discharge-v1
+                          without-id]))]
+     (validate-runtime-contract-discharge!
+      discharge {:content content
+                 :evidence-eligibility evidence-eligibility
+                 :runtime-carriers runtime-carriers
+                 :prior-ref prior-ref})))
+  ([input]
+   (exact-keys! input #{:content :evidence-eligibility :runtime-carriers
+                         :prior-ref}
+                "SH07-B51-CONTRACT-DISCHARGE"
+                :runtime-discharge-input-keys)
+   (build-runtime-contract-discharge (:content input)
+                                     (:evidence-eligibility input)
+                                     (:runtime-carriers input)
+                                     (:prior-ref input))))
+
+(defn build-runtime-contract-discharge!
+  [& arguments]
+  (apply build-runtime-contract-discharge arguments))
+
 (defn validate-eligibility-object!
   "Validate Q/TQ as the direct sibling-lineage child of C using exactly five
-  Git object operations.  This checks the immutable coordinate and receipt
-  identity; it does not pretend to perform the separately owned 77-operation
-  pre-discharge reconstruction."
+  Git object operations, then independently reconstruct and byte-compare the
+  E1 PRE discharge with exactly 77 further Git object operations."
   [{:keys [repository-root content eligibility-coordinate]}]
   (exact-keys! content #{:commit :tree} "SH07-B51-GIT-SNAPSHOT" :content)
   (exact-keys! eligibility-coordinate eligibility-coordinate-keys
@@ -1905,24 +3907,98 @@
       (fail! "SH07-B51-RECEIPT-JOIN" :eligibility-object-join))
     (let [pre (reconstruct-pre-object-snapshot!
                {:repository-root repository :content content})
+          received-discharge (:pre-evidence-contract-discharge receipt)
           pre-carriers
           (get-in receipt
-                  [:pre-evidence-contract-discharge :evidence :carriers])]
+                  [:pre-evidence-contract-discharge :evidence :carriers])
+          expected-carriers
+          (assoc pre-carriers
+                 :content content
+                 :document-read-receipt (:document-read-receipt pre)
+                 :source-descriptors (:source-descriptors pre)
+                 :source-descriptors-root (:source-descriptors-root pre)
+                 :pre-masked-root (:pre-masked-root pre)
+                 :owned-c-descriptors (:owned-c-descriptors pre)
+                 :owned-c-root (:owned-c-root pre)
+                 :row-plan row-plan
+                 :foundation-static (:foundation-static pre)
+                 :boot5-compatibility (:boot5-compatibility pre)
+                 :ownership-plan (:ownership-plan pre)
+                 :catalog-projection (:catalog-projection pre)
+                 :governance-rules (:governance-rules pre)
+                 :identity-domain-registry (:identity-domain-registry pre)
+                 :publication-boundary (:publication-boundary pre)
+                 :proof-scope (:proof-scope pre)
+                 :progress (:progress pre)
+                 :nonclaims nonclaims
+                 :a9-stage-result (:a9-stage-result pre))
+          expected-evidence
+          (assoc (:evidence received-discharge) :carriers expected-carriers)
+          expected-resolved (resolve-contract-phase! :pre-evidence
+                                                      expected-carriers)
+          expected-without-id
+          (-> received-discharge
+              (assoc :evidence expected-evidence
+                     :resolved-rows (:resolved-rows expected-resolved)
+                     :resolved-root (:resolved-root expected-resolved)
+                     :authority (pre-evidence-authority))
+              (dissoc :discharge-id))
+          expected-discharge
+          (assoc expected-without-id :discharge-id
+                 (codec/H
+                  [:gravity/sh07-b51-pre-evidence-contract-discharge-v1
+                   expected-without-id]))
+          content-match
+          (and (= content (:content receipt))
+               (= content (:content pre-carriers))
+               (= content (get-in pre-carriers [:a9-stage-result :content])))
+          source-match (= (:source-descriptors pre)
+                          (:source-descriptors receipt)
+                          (:source-descriptors pre-carriers))
+          source-root-match (= (:source-descriptors-root pre)
+                               (:source-descriptors-root receipt)
+                               (:source-descriptors-root pre-carriers))
+          pre-mask-match (= (:pre-masked-root pre)
+                            (:pre-masked-root receipt)
+                            (:pre-masked-root pre-carriers))
+          owned-root-match (= (:owned-c-root pre) (:owned-c-root pre-carriers))
+          pre-discharge-match
+          (Arrays/equals ^bytes (codec/W expected-discharge)
+                         ^bytes (codec/W received-discharge))
+          eligibility-check
+          {:coordinate eligibility-coordinate
+           :observations observations
+           :pre-discharge-observations (:observations pre)
+           :decode-count 1
+           :receipt-id-check-count 1
+           :pre-discharge-reconstruction-count 1
+           :pre-discharge-git-operation-count 77
+           :pre-discharge-document-descriptor-count 33
+           :pre-discharge-source-descriptor-count 12
+           :pre-discharge-pre-masked-file-count 2
+           :pre-discharge-owned-c-artifact-count 27
+           :pre-discharge-a9-artifact-count 3
+           :pre-discharge-baseline-boot5-count 1
+           :pre-discharge-static-decode-count 63
+           :content-match content-match
+           :source-descriptors-match source-match
+           :source-descriptors-root-match source-root-match
+           :pre-masked-root-match pre-mask-match
+           :owned-c-root-match owned-root-match
+           :pre-discharge-match pre-discharge-match}
+          check-root
+          (codec/H [:gravity/sh07-b51-eligibility-check-root-v1
+                    eligibility-check])]
       (when-not
-       (and (= (:source-descriptors pre) (:source-descriptors receipt))
-            (= (:source-descriptors-root pre)
-               (:source-descriptors-root receipt))
+       (and content-match source-match source-root-match pre-mask-match
+            owned-root-match pre-discharge-match
             (= (:document-read-receipt pre)
                (:document-read-receipt pre-carriers))
-            (= (:source-descriptors pre)
-               (:source-descriptors pre-carriers))
-            (= (:source-descriptors-root pre)
-               (:source-descriptors-root pre-carriers))
             (= (:owned-c-descriptors pre)
                (:owned-c-descriptors pre-carriers))
-            (= (:owned-c-root pre) (:owned-c-root pre-carriers))
             (= (:boot5-compatibility pre)
-               (:boot5-compatibility pre-carriers)))
+               (:boot5-compatibility pre-carriers))
+            (= (pre-evidence-authority) (:authority received-discharge)))
         (fail! "SH07-B51-RECEIPT-JOIN" :pre-object-carrier-join))
       {:coordinate eligibility-coordinate
        :receipt receipt
@@ -1931,8 +4007,10 @@
        :pre-object-snapshot pre
        :pre-discharge-observations (:observations pre)
        :pre-discharge-git-operation-count 77
-       :scope :immutable-q-coordinate-and-pre-foundation
-       :remaining-gaps (:completion-gaps pre)
+       :scope :immutable-q-coordinate-and-pre-discharge
+       :eligibility-check eligibility-check
+       :eligibility-check-root check-root
+       :remaining-gaps []
        :authority :none})))
 
 (defn- status-clean-operation!
@@ -2136,7 +4214,9 @@
                          [:eligibility-tree (:tree eligibility-coordinate)]
                          [:eligibility-blob (:blob-oid eligibility-coordinate)]]]
     (require-git-id! value field "SH07-B51-CHECKER-PROCESS"))
-  (when-not (and (= [(:commit content)] (:parents eligibility-coordinate))
+  (when-not (and (= :gravity/sh07-b51-external-review-object-v1
+                    (:schema eligibility-coordinate))
+                 (= [(:commit content)] (:parents eligibility-coordinate))
                  (= eligibility-receipt-path
                     (:path eligibility-coordinate))
                  (= "100644" (:mode eligibility-coordinate))
@@ -2220,23 +4300,132 @@
     :evidence-eligibility :pre-discharge-id :runtime-contract-discharge
     :receipt-id-normalization :self-id-omits :receipt-id :nonclaims})
 
+(declare validate-runtime-identity-receipt!)
+
 (defn- validate-identity-receipt-envelope!
-  [content receipt]
-  (exact-keys! receipt identity-receipt-keys
-               "SH07-B51-RECEIPT-JOIN" :identity-receipt-keys)
-  (when-not
-   (and (= :gravity/sh07-b51-checker-process-identity-receipt-v1
-           (:artifact receipt))
-        (= 1 (:schema-version receipt))
-        (= content (:content receipt))
-        (= (vec (range 11)) (:semantic-ordinals receipt))
-        (= [[:receipt-id]] (:self-id-omits receipt))
-        (sha256-id? (:coordinator-event-root receipt))
-        (sha256-id? (:pre-discharge-id receipt))
-        (sha256-id? (:receipt-id receipt))
-        (= nonclaims (:nonclaims receipt)))
-    (fail! "SH07-B51-RECEIPT-JOIN" :identity-receipt-envelope))
-  receipt)
+  ([content receipt]
+   (validate-identity-receipt-envelope! content receipt false))
+  ([content receipt strict?]
+   (exact-keys! receipt identity-receipt-keys
+                "SH07-B51-RECEIPT-JOIN" :identity-receipt-keys)
+   (when-not
+    (and (= :gravity/sh07-b51-checker-process-identity-receipt-v1
+            (:artifact receipt))
+         (= 1 (:schema-version receipt))
+         (= content (:content receipt))
+         (= (vec (range 11)) (:semantic-ordinals receipt))
+         (= [[:receipt-id]] (:self-id-omits receipt))
+         (sha256-id? (:coordinator-event-root receipt))
+         (sha256-id? (:pre-discharge-id receipt))
+         (sha256-id? (:receipt-id receipt))
+         (= nonclaims (:nonclaims receipt)))
+     (fail! "SH07-B51-RECEIPT-JOIN" :identity-receipt-envelope))
+   (when strict?
+     (validate-runtime-identity-receipt! content receipt))
+   receipt))
+
+(defn validate-runtime-identity-receipt!
+  "Validate an identity receipt only after its complete runtime joins exist.
+
+  Existing-object replay intentionally uses the two-argument envelope helper
+  above because replay fixtures predate the runtime discharge.  This public
+  path is the authority-bearing validation: it requires complete E1
+  EVIDENCE-ELIGIBILITY and RUNTIME-CONTRACT-DISCHARGE values, recomputes both
+  nested identities, and rejects later-phase or enclosing receipt cycles.
+
+  The context must provide the independently decoded Q eligibility receipt and
+  the ordered L/M/A/B participant checks.  This path never invents missing Q
+  or participant values."
+  ([content receipt]
+   (fail! "SH07-B51-RECEIPT-JOIN"
+          :runtime-identity-context-required))
+  ([content receipt context]
+   (validate-identity-receipt-envelope! content receipt)
+   (let [allowed-context-keys #{:eligibility-receipt :participant-results}]
+     (exact-keys! context allowed-context-keys
+                  "SH07-B51-RECEIPT-JOIN"
+                  :runtime-identity-context-keys)
+     (let [eligibility (:evidence-eligibility receipt)
+           discharge (:runtime-contract-discharge receipt)
+           q-receipt (:eligibility-receipt context)
+           participant-results (:participant-results context)]
+       (let [events (:coordinator-events receipt)
+             children (:child-process-receipts receipt)
+             payload-joins (:payload-joins receipt)]
+         (when-not (and (vector? events) (= 11 (count events))
+                        (every? #(and (map? %) (seq %)) events)
+                        (vector? children) (= 2 (count children))
+                        (every? #(and (map? %) (seq %)) children)
+                        (map? (:launcher-receipt receipt))
+                        (seq (:launcher-receipt receipt))
+                        (map? (:coordinator-receipt receipt))
+                        (seq (:coordinator-receipt receipt)))
+           (fail! "SH07-B51-RECEIPT-JOIN"
+                  :runtime-identity-process-joins))
+         (exact-keys! payload-joins
+                      #{:checker-identity-raw-sha256s
+                        :checker-output-raw-sha256s
+                        :certificate-pair-raw-sha256
+                        :linked-carrier-raw-sha256}
+                      "SH07-B51-RECEIPT-JOIN"
+                      :runtime-identity-payload-joins)
+         (when-not
+          (and (vector? (:checker-identity-raw-sha256s payload-joins))
+               (= 2 (count (:checker-identity-raw-sha256s payload-joins)))
+               (every? sha256-id? (:checker-identity-raw-sha256s payload-joins))
+               (vector? (:checker-output-raw-sha256s payload-joins))
+               (= 2 (count (:checker-output-raw-sha256s payload-joins)))
+               (every? sha256-id? (:checker-output-raw-sha256s payload-joins))
+               (sha256-id? (:certificate-pair-raw-sha256 payload-joins))
+               (sha256-id? (:linked-carrier-raw-sha256 payload-joins))
+               (= (:coordinator-event-root receipt)
+                  (codec/H [:gravity/sh07-b51-coordinator-event-root-v1
+                            events])))
+           (fail! "SH07-B51-RECEIPT-JOIN"
+                  :runtime-identity-process-joins))
+         (reject-runtime-back-edges! events [:coordinator-events])
+         (reject-runtime-back-edges! children [:child-process-receipts])
+         (reject-runtime-back-edges! (:launcher-receipt receipt)
+                                     [:launcher-receipt])
+         (reject-runtime-back-edges! (:coordinator-receipt receipt)
+                                     [:coordinator-receipt])
+         (reject-runtime-back-edges! payload-joins [:payload-joins]))
+       (when-not (and (map? eligibility) (map? discharge))
+         (fail! "SH07-B51-RECEIPT-JOIN"
+                :runtime-identity-missing-joins))
+       (when-not (and (map? q-receipt) (vector? participant-results))
+         (fail! "SH07-B51-RECEIPT-JOIN"
+                :runtime-identity-missing-q-joins))
+       (validate-evidence-eligibility!
+        eligibility {:content content
+                     :receipt q-receipt
+                     :participant-results participant-results})
+       (validate-runtime-contract-discharge! discharge)
+       (let [carriers (get-in discharge [:evidence :carriers])
+             expected-id
+             (codec/H
+              [:gravity/sh07-b51-checker-process-identity-receipt-id-v1
+               (dissoc receipt :receipt-id)])]
+         (when-not
+          (and (= (:pre-discharge-id eligibility)
+                  (:pre-discharge-id receipt))
+               (= (:pre-discharge-id eligibility)
+                  (get-in discharge [:prior-ref :discharge-id]))
+               (= eligibility (:evidence-eligibility carriers))
+               (= content (:content carriers))
+               (= identity-receipt-normalization
+                  (:receipt-id-normalization receipt))
+               (= expected-id (:receipt-id receipt)))
+           (fail! "SH07-B51-RECEIPT-JOIN"
+                  :runtime-identity-join))
+         ;; The enclosing discharge and its prior-ref are required above, but
+         ;; only the non-enclosing carrier values are traversed here.  This
+         ;; keeps their required Q prior-ref/discharge IDs legal while making
+         ;; E/B/G/P and enclosing identity/discharge back-edges impossible.
+         (reject-runtime-back-edges! eligibility [:evidence-eligibility])
+         (reject-runtime-back-edges!
+          carriers [:runtime-contract-discharge :evidence :carriers])
+         receipt)))))
 
 (defn- existing-object-descriptor
   [path row blob]

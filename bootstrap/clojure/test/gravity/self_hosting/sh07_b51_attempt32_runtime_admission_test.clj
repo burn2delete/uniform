@@ -10,6 +10,14 @@
 (defn- v9-sha [c]
   (str "sha256:" (apply str (repeat 64 c))))
 
+(defn- rejection-reason
+  [thunk]
+  (try
+    (thunk)
+    nil
+    (catch clojure.lang.ExceptionInfo error
+      (:reason (ex-data error)))))
+
 (deftest obsolete-same-jvm-materializer-publication-is-unreachable
   (let [namespace-symbol 'gravity.tools.sh07-b51-attempt32-materialize
         publics (ns-publics namespace-symbol)
@@ -45,7 +53,7 @@
   (let [content {:commit (apply str (repeat 40 "1"))
                  :tree (apply str (repeat 40 "2"))}
         eligibility-coordinate
-        {:schema :gravity/sh07-b51-evidence-eligibility-coordinate-v1
+        {:schema :gravity/sh07-b51-external-review-object-v1
          :commit (apply str (repeat 40 "3"))
          :tree (apply str (repeat 40 "4"))
          :parents [(:commit content)]
@@ -100,7 +108,31 @@
     (is (not-any? #{"--mode" "--publication-worktree"
                     "--existing-evidence-commit"
                     "--existing-evidence-tree"}
-                  argv))))
+                  argv))
+    (testing "the external-review object coordinate is an exact closed schema"
+      (let [invoke
+            (fn [coordinate]
+              (git-evidence/coordinator-argv
+               {:classpath classpath
+                :content content
+                :staging-root staging-root
+                :eligibility-coordinate coordinate}))
+            mutations
+            [(assoc eligibility-coordinate :schema
+                    :gravity/sh07-b51-evidence-eligibility-coordinate-v1)
+             (dissoc eligibility-coordinate :receipt-id)
+             (assoc eligibility-coordinate :candidate-tree
+                    (apply str (repeat 40 "0")))
+             (assoc eligibility-coordinate :parents [])
+             (assoc eligibility-coordinate :path "foreign.edn")
+             (assoc eligibility-coordinate :mode "100755")
+             (assoc eligibility-coordinate :type "tree")
+             (assoc eligibility-coordinate :byte-count -1)
+             (assoc eligibility-coordinate :raw-sha256 "sha256:bad")
+             (assoc eligibility-coordinate :receipt-id "sha256:bad")]]
+        (doseq [coordinate mutations]
+          (is (= :eligibility-coordinate
+                 (rejection-reason #(invoke coordinate)))))))))
 
 (deftest runtime-carrier-pair-join-is-role-neutral-and-witness-exact
   (let [common {:architecture-report-sha256 (v9-sha "0")
