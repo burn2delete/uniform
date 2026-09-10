@@ -1188,10 +1188,14 @@
 
 (defn p15-s23-sh07-b51-build-linked-carrier-v4-candidate
   [products certificates]
-  (let [products (p15-s23-sh07-b51-v4-normalize-products products)]
+  (let [receipted-e3-products?
+        (p15-s23-sh07-b51-exact-keys?
+         products p15-s23-sh07-b51-v9-receipted-product-keys)
+        products (p15-s23-sh07-b51-v4-normalize-products products)]
     (when-not
      (and (p15-s23-sh07-b51-v4-products-closed-joins? products)
-          (every? p15-s23-sh07-b51-v9-certificate-shell? certificates)
+          (or (not receipted-e3-products?)
+              (every? p15-s23-sh07-b51-v9-certificate-shell? certificates))
           (p15-s23-sh07-b51-compile-census-certificate-pair-v1-valid?
            certificates)
           (every? #(p15-s23-sh07-b51-v4-certificate-inputs-match-products?
@@ -1241,7 +1245,9 @@
   (let [pin-map (p15-s23-sh07-b51-v4-host-pin-map)
         carrier p15-s23-sh07-b51-authoritative-linked-carrier-value-v4]
     (when (and (every? p15-s23-sh07-b51-digest-id? (vals pin-map))
-               (map? carrier))
+               (map? carrier)
+               (every? p15-s23-sh07-b51-v9-certificate-shell?
+                       (:compile-census-certificates carrier)))
       (let [base-products (p15-s23-sh07-b51-current-bundle-core-products)
             reconstructed-carrier
             (p15-s23-sh07-b51-build-linked-carrier-v4-candidate
