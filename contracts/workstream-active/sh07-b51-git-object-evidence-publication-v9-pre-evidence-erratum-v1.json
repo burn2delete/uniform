@@ -2,17 +2,57 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
   "author": "master-coordinator",
   "base_commit": "8c39712c80e7da66c23a23a6c1f01ba1f970b682",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "5443066c888016ae1f55754329f3722610a627e3",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Draft report-only architecture correction for the absent A9 lifecycle input and the cyclic PRE masked-root requirement. No implementation, evidence, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority is established.",
+  "disposition": "Frozen exact report-only architecture correction candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080. It corrects only the absent A9 lifecycle input and cyclic PRE masked-root requirement and grants no implementation, evidence, integration, aggregate SH-07, self-hosting, release, performance, or seed-retirement authority.",
   "evidence": {
-    "accepted_fixtures": [],
-    "rejected_fixtures": [],
-    "stable_diagnostics": [],
-    "validation_commands": []
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+      "contracts/workstream-records/terminal/sh07-b51-git-object-evidence-publication-architecture-v9-461e2300fb893cbc2b60fb23e51b7242608a1aefd0bb15c8af4d72219a2b3ef1.json"
+    ],
+    "rejected_fixtures": [
+      "missing path:docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+      "PRE/Q complete MASKED-ROOT containing runtime-only postimage spans, files, roots, digest RHS values, or final carrier"
+    ],
+    "stable_diagnostics": [
+      "SH07-B51-GIT-INPUT-BLOB",
+      "SH07-B51-IDENTITY-CYCLE"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 8c39712c80e7da66c23a23a6c1f01ba1f970b682..5443066c888016ae1f55754329f3722610a627e3",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git ls-tree -r --name-only 8c39712c80e7da66c23a23a6c1f01ba1f970b682 -- docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git log --all --format=%H -- docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
   },
   "governing_contracts": [
     "AGENTS.md",
@@ -42,6 +82,12 @@
       "at": "2026-09-10T08:40:57Z",
       "reason": "register a separately governed report-only correction after immutable-main inspection proved the V9 PRE input path absent from all history and static analysis proved the complete PRE masked-root depends on forbidden future A/B/M and publication values; reserve only the correction report without claiming a candidate, acceptance, implementation authority, or integration",
       "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T08:44:41Z",
+      "reason": "freeze exact report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080 after documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks; no implementation or SH-07 authority is claimed",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -63,6 +109,6 @@
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
