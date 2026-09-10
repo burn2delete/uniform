@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Frozen exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. The repair defines an exact terminal-derived A9 stage result, separates PRE-MASKED-ROOT from RUNTIME-MASKED-ROOT, scopes ownership and cleanup without inventing A9 history, and enumerates every V9 clause superseded. It grants no implementation dependency, acceptance, integration, or SH-07 authority.",
+  "disposition": "Fresh independent exact review is pending for repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. Review must verify the terminal-derived A9 schema, exact 3/72/77/63 counts, acyclic pre/runtime mask split, stage-scoped ownership and cleanup, exhaustive supersession map, unchanged V9 laws, and all authority nonclaims. No implementation dependency, acceptance, integration, or SH-07 authority is granted.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
@@ -106,6 +106,12 @@
       "at": "2026-09-10T09:46:43Z",
       "reason": "freeze exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 after pre-freeze exact-schema review and documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks passed; no independent candidate acceptance, implementation authority, integration, or SH-07 authority is claimed",
       "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:50:10Z",
+      "reason": "request fresh independent exact review of repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32: verify authentic terminal-derived A9 inputs and honest unavailable-history booleans, exact 3/72/77/63 counts, acyclic PRE/runtime mask split, exact eligibility schemas, stage-scoped ownership and cleanup, exhaustive V9 supersession, unchanged V9 laws, report-only scope, and all authority nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -133,6 +139,6 @@
       "reviewer": "/root/v9_source_read_closure_fix@5443066c"
     }
   ],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
