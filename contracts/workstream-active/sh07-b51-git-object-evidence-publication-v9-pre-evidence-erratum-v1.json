@@ -7,7 +7,7 @@
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9"
   ],
-  "disposition": "Independently accepted exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. Review authenticated the terminal-derived A9 schema, exact 3/72/77/63 counts, acyclic pre/runtime mask split, stage-scoped ownership and cleanup, exhaustive supersession map, unchanged V9 laws, and all authority nonclaims. Acceptance grants only authority to perform exact integration preflight; it does not grant implementation, integration, or SH-07 completion authority.",
+  "disposition": "Integration-eligible exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32. Clean preflight proved authoritative main remains exact base 8c39712c80e7da66c23a23a6c1f01ba1f970b682, the integrated V9 dependency remains terminal, candidate lineage and one-file scope are exact, and no upstream drift or conflict exists. Authority is limited to integrating this exact report candidate; it grants no implementation or SH-07 completion authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
@@ -128,6 +128,12 @@
       "at": "2026-09-10T10:07:27Z",
       "reason": "ACCEPT exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 after fresh independent review authenticated the terminal A9 record and manifest, closed E1 schemas, exact counts, acyclic mask split, stage-scoped ownership and cleanup, exhaustive supersession, unchanged V9 requirements, validation results, and nonclaims with no fatal blocker",
       "state": "accepted"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T10:09:00Z",
+      "reason": "advance independently accepted exact candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8 to integration-eligible after clean preflight proved authoritative main is unchanged exact base 8c39712c80e7da66c23a23a6c1f01ba1f970b682, the V9 dependency remains terminal integrated, candidate ancestry and exact tree/report identities hold, and the diff remains one report-only path with no upstream drift",
+      "state": "integration-eligible"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -160,6 +166,6 @@
       "reviewer": "/root/v9_source_read_closure_fix@5ce69f8c"
     }
   ],
-  "state": "accepted",
+  "state": "integration-eligible",
   "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
 }
