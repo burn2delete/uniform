@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Exact V9 architecture candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, is frozen after two independent exact-byte PASS-FOR-FREEZE reviews. It grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority until the governed review and admission transitions complete.",
+  "disposition": "Exact frozen V9 architecture candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, is under independent C/T, report-byte, dependency, lifecycle, implementation-closure, and nonclaim review. It grants no implementation or downstream authority before accepted and integration-eligible transitions.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -130,6 +130,12 @@
       "at": "2026-09-10T00:35:57Z",
       "reason": "freeze exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, architecture SHA-256 a7d44d8a81412bc941a859e70cc2e0a12f829529b919deddaaeea78c15ee50d4, companion SHA-256 2e06c2fc7f9296fbfaffc4212540dfed77d4ee6480c904e0ec8fb4d9d1c69235, and two owned paths after independent full and formal PASS-FOR-FREEZE reviews",
       "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T00:39:04Z",
+      "reason": "request fresh independent review of exact frozen C/T 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326/af0ab97c1c7b903199b057168bd6642114fd72f3, both owned report hashes, integrated dependency floor, governed lifecycle, complete implementation contract, evidence topology, and nonclaims",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -162,6 +168,6 @@
       "reviewer": "/root/v9_prefreeze_formal"
     }
   ],
-  "state": "frozen",
+  "state": "review-pending",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
