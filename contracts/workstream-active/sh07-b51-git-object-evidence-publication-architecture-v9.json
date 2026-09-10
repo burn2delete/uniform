@@ -2,8 +2,8 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
   "author": "uniform-coordinator",
   "base_commit": "09c795f0c0854d2d8ab542c92b2116515e096406",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-vector-destructuring-carrier-collection-bound-architecture-v18-attempt-32",
     "sh07-b51-first-eval-nested-validation-architecture-v3",
@@ -11,7 +11,7 @@
     "sh07-b51-binding-replay-index-implementation-review-erratum-v1",
     "c2-pass-cache-capacity-withholding-v1"
   ],
-  "disposition": "Returned to draft after two independent reviews rejected exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25. Revision must close codec preflight, existing-mode publication, immutable eligibility input, literal contract discharge, source-closure H-domain, and companion-count consistency before another freeze. No implementation or downstream authority is granted.",
+  "disposition": "Exact V9 architecture candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, is frozen after two independent exact-byte PASS-FOR-FREEZE reviews. It grants no implementation, evidence, integration, SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority until the governed review and admission transitions complete.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
@@ -51,7 +51,17 @@
         "result": "passed"
       },
       {
-        "command": "git diff --check 3a42550183781bef741969f27fd9b284a7f8f2c4..ea9ae281dce2249f779a9777c75517bebdbbad25",
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 09c795f0c0854d2d8ab542c92b2116515e096406..8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326",
         "exit_code": 0,
         "result": "passed"
       }
@@ -114,6 +124,12 @@
       "at": "2026-09-09T15:26:45Z",
       "reason": "return V9 to draft after independent feasibility review rejected exact candidate ea9ae281dce2249f779a9777c75517bebdbbad25 for the codec preflight dependency cycle, the clean-C versus existing-E9 filesystem contradiction, and the absence of an immutable route for the external evidence-eligibility receipt",
       "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-10T00:35:57Z",
+      "reason": "freeze exact candidate 8ea2c2ddc94b4bf0df90c4c467ed13c1eb547326, tree af0ab97c1c7b903199b057168bd6642114fd72f3, architecture SHA-256 a7d44d8a81412bc941a859e70cc2e0a12f829529b919deddaaeea78c15ee50d4, companion SHA-256 2e06c2fc7f9296fbfaffc4212540dfed77d4ee6480c904e0ec8fb4d9d1c69235, and two owned paths after independent full and formal PASS-FOR-FREEZE reviews",
+      "state": "frozen"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
@@ -146,6 +162,6 @@
       "reviewer": "/root/v9_prefreeze_formal"
     }
   ],
-  "state": "draft",
+  "state": "frozen",
   "title": "SH-07 B51 Git-object evidence publication architecture version 9"
 }
