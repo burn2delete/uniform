@@ -1,0 +1,80 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "e79a01b0af146ad277f505e0cd8b7c4b4c757c35",
+  "candidate_commit": null,
+  "clean_worktree": false,
+  "dependencies": [
+    "sh07-b51-git-object-evidence-publication-architecture-v9",
+    "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1",
+    "sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1"
+  ],
+  "disposition": "Draft report-only authority-context architecture correction for authenticated SH06 carrier transport, authentic owner selection, and authorized external-edge admission. It establishes no implementation correctness, evidence acceptance, candidate acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
+  "evidence": {
+    "accepted_fixtures": [],
+    "rejected_fixtures": [],
+    "stable_diagnostics": [],
+    "validation_commands": []
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C2",
+    "C6",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-sh06-external-binding-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1.md"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-11T05:37:44Z",
+      "reason": "register a separately governed report-only correction after independent implementation audit established that the accepted V9 handoff cannot carry the complete authenticated SH06 authority carrier and that current owner and external-edge admission checks accept coherently rehashed unauthorized content; reserve only the correction report and retain all implementation, acceptance, integration, aggregate SH-07, self-hosting, release, performance, hostile-host, and seed-retirement nonclaims",
+      "state": "draft"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-git-object-evidence-publication-v9-authority-context-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v1.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "the correction is architecture authority only and does not establish implementation correctness, evidence eligibility, candidate acceptance, or integration eligibility",
+    "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9 and its integrated errata",
+    "the draft I9 implementation cannot freeze until this correction receives independent acceptance, integration, and exact current-main reconciliation",
+    "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [],
+  "state": "draft",
+  "title": "SH-07 B51 Git-object publication V9 authority-context architecture erratum version 1"
+}
