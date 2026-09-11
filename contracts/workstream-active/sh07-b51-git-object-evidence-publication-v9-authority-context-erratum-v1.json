@@ -11,7 +11,7 @@
     "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1",
     "sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1"
   ],
-  "disposition": "Frozen exact report-only authority-context architecture correction candidate b623be12fdf35277eace645e923e933c8b5d0344, tree 8ff97f8a95d3dd4c38bce069c4eda542f22df948, and report SHA-256 f622a070ce52070f2efd12757f43dcab65522dcf838cc7b777c353cc758c9066 are pending independent review. It establishes no implementation correctness, evidence acceptance, candidate acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
+  "disposition": "Rejected exact report-only candidate b623be12fdf35277eace645e923e933c8b5d0344 after independent review confirmed that its seven-key context authenticates L2 only while omitting a separately dominating E3 full 21-key pre-certificate reconstruction and equality at M, runtime, and reviewer boundaries. This terminal review result confers no implementation correctness, evidence acceptance, candidate acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v1.md"
@@ -109,6 +109,12 @@
       "at": "2026-09-11T05:47:07Z",
       "reason": "request fresh independent review of exact candidate b623be12fdf35277eace645e923e933c8b5d0344, tree 8ff97f8a95d3dd4c38bce069c4eda542f22df948, report SHA-256 f622a070ce52070f2efd12757f43dcab65522dcf838cc7b777c353cc758c9066, authenticated carrier transport, context-bearing semantic admission, owner and edge tamper rejection, lifecycle, and nonclaims",
       "state": "review-pending"
+    },
+    {
+      "actor": "/root/sh07_e5_independent_review",
+      "at": "2026-09-11T06:01:13Z",
+      "reason": "REJECT exact candidate b623be12fdf35277eace645e923e933c8b5d0344 after independent review confirmed the whole-certificate authority blocker: the seven-key context authenticates L2 only, but the report omits a separately dominating E3 full 21-key pre-certificate reconstruction and equality at M, runtime, and reviewer boundaries",
+      "state": "rejected"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v1",
@@ -129,7 +135,13 @@
     "the draft I9 implementation cannot freeze until this correction receives independent acceptance, integration, and exact current-main reconciliation",
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
-  "reviews": [],
-  "state": "review-pending",
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/sh07_e5_independent_review"
+    }
+  ],
+  "state": "rejected",
   "title": "SH-07 B51 Git-object publication V9 authority-context architecture erratum version 1"
 }
