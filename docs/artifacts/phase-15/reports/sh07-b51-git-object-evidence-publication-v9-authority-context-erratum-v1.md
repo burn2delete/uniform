@@ -221,6 +221,11 @@ bundle-core ID to the sibling checker inputs and seven
 `MODULE-TRANSACTIONS` rows. A digest-only reconstruction, a detached C5
 vector, or an E2 carrier built without byte-equal complete C5 members rejects.
 
+There is no second new top-level `:external-binding-authorities` field in
+either E5 map. That ordered vector occurs exactly once inside the complete
+`:sh06-authority-carrier`; adding a detached sibling copy rejects the 11-key or
+21-key schema.
+
 This handoff performs no new source acquisition, source decode, source event,
 session finalization, PRE Git operation, or G9 operation. It carries one
 already-constructed field across two existing same-process maps.
@@ -750,8 +755,19 @@ unsigned-UTF-8-sorted vector:
 ```
 
 `SOURCE-ONLY-PATHS-E5` is byte-for-byte the exact eight-path
-`SOURCE-ONLY-PATHS-E4`, including
-`bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity`.
+`SOURCE-ONLY-PATHS-E4`:
+
+```clojure
+["bootstrap/gravity/p15_s23/compiler.gravity"
+ "bootstrap/gravity/p15_s23/emitter.gravity"
+ "bootstrap/gravity/src/gravity/resolution.gravity"
+ "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
+ "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
+ "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity"
+ "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity"
+ "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"]
+```
+
 `READ-ONLY-PATHS-E5` is byte-for-byte `READ-ONLY-PATHS-E4`.
 `I9-LIFECYCLE-PATHS-E5` is the same 42 paths followed by the unchanged
 eligibility receipt, I9 integration receipt, I9 integration discharge, and
