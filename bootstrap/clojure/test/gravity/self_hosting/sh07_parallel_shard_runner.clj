@@ -12,64 +12,25 @@
   []
   (execution-plan/legacy-mechanism-projection legacy-mechanism))
 
-(defn- route-id
-  [shard-name]
-  (when (string? shard-name)
-    (let [{:keys [route-ids labels]} (parallel-projection)]
-      (some (fn [[route-id label]]
-              (when (= shard-name label) route-id))
-            (map vector route-ids labels)))))
-
 (defn shard-names
   []
   (:labels (parallel-projection)))
 
-(defn- resolve-shard
-  [shard-name]
-  (let [route-id (route-id shard-name)
-        route (when route-id (execution-plan/route route-id))]
-    (when-not route
-      (throw
-       (ex-info
-        "Unknown SH-07 parallel test shard"
-        {:id "SH07-PARALLEL-SHARD"
-         :shard shard-name
-         :available (shard-names)})))
-    (let [{:keys [namespace selectors]} (:selection route)
-          namespace (symbol namespace)
-          test-symbols (mapv symbol selectors)]
-      (require namespace)
-      [{:namespace namespace
-        :test-vars
-        (mapv
-         (fn [test-symbol]
-           (let [test-var (ns-resolve namespace test-symbol)]
-             (when-not (and (var? test-var) (:test (meta test-var)))
-               (throw
-                (ex-info
-                 "SH-07 parallel shard references an absent test"
-                 {:id "SH07-PARALLEL-SHARD-TEST"
-                  :shard shard-name
-                  :namespace namespace
-                  :test test-symbol})))
-             test-var))
-         test-symbols)}])))
-
 (defn check-shards
   []
-  (into
-   (sorted-map)
-   (map
-    (fn [shard-name]
-      [shard-name
-       (reduce + (map #(count (:test-vars %))
-                      (resolve-shard shard-name)))])
-    (shard-names))))
+  ((requiring-resolve 'gravity.self-hosting.unified-execution-cli/check-legacy-shards)
+   legacy-mechanism))
 
 (defn run-shard
   [shard-name]
-  (let [routes (resolve-shard shard-name)
-        test-vars (vec (mapcat :test-vars routes))
+  ;; Reject bad names before loading the shared CLI's execution substrates.
+  (when-not (and (string? shard-name) (some #{shard-name} (shard-names)))
+    (throw (ex-info "Unknown SH-07 parallel test shard"
+                    {:id "SH07-PARALLEL-SHARD"
+                     :shard shard-name :available (shard-names)})))
+  (let [{:keys [test-vars]}
+        ((requiring-resolve 'gravity.self-hosting.unified-execution-cli/resolve-legacy-shard)
+         legacy-mechanism shard-name)
         counters (ref test/*initial-report-counters*)]
     (binding [test/*report-counters* counters]
       (test/test-vars test-vars))
