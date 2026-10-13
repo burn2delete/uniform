@@ -136,6 +136,7 @@
    :execution-bundle-core-id sha-a :source-forms (vec (repeat 7 []))
    :module-transactions (vec (repeat 7 {}))
    :sh06-resolution-plan-authority {}
+   :sh06-authority-carrier {}
    :source-semantic-carrier {}
    :source-read-receipt (source-receipt role)})
 
@@ -190,7 +191,8 @@
                      'p15-s23-sh07-b51-v9-receipted-product-keys))]
     (is (= #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
              :source-forms :module-transactions
-             :sh06-resolution-plan-authority :source-semantic-carrier
+             :sh06-resolution-plan-authority :sh06-authority-carrier
+             :source-semantic-carrier
              :source-read-receipt}
            bootstrap-product-keys
            (set (keys values))))
@@ -202,6 +204,24 @@
            (codec/H
             [:gravity/sh07-b51-semantic-algorithm-source-root-v1
              (:semantic-algorithm-source-descriptors envelope)])))))
+
+(deftest handoff-schema-rejects-every-missing-key-and-detached-extra
+  (let [value (products :producer-census)
+        invalids (concat (map #(dissoc value %) (keys value))
+                         [(assoc value :unexpected true)
+                          (assoc value :external-binding-authorities [])])]
+    (is (= 11 (count value)))
+    (doseq [invalid invalids]
+      (doseq [operation
+              [#(child/validate-receipted-products!
+                 :producer-census (request :producer-census) invalid)
+               #(child/build-checker-envelope codec/H :producer-census
+                 (request :producer-census) invalid
+                 {:checker {} :dependencies {}} (algorithm-preflight))]]
+        (is (= :source-session
+               (try (operation) nil
+                    (catch clojure.lang.ExceptionInfo e
+                      (:reason (ex-data e))))))))))
 
 (deftest checker-child-never-promotes-a-legacy-census-certificate-to-v9
   (let [valid?
@@ -330,8 +350,11 @@
                     :producer-census (request :producer-census)
                     (:source-read-receipt
                      (mutate (products :producer-census))))))))
-  (testing "the ten-key product boundary validates the same-session carrier"
-    (with-redefs [bootstrap/p15-s23-sh07-b51-source-semantic-carrier-valid?
+  (testing "the eleven-key unit transport boundary invokes both validators"
+    (with-redefs [bootstrap/p15-s23-sh07-b51-sh06-authority-carrier-valid?
+                  (fn [_ _ products carrier]
+                    (= carrier (:sh06-authority-carrier products)))
+                  bootstrap/p15-s23-sh07-b51-source-semantic-carrier-valid?
                   (fn [_ receipt transactions carrier]
                     (and (= receipt (:source-read-receipt
                                      (products :producer-census)))

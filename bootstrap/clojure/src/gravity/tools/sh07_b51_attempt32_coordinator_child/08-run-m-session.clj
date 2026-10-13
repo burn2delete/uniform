@@ -28,7 +28,11 @@
           (source-carrier-valid?
            content receipt (:module-transactions products)
            (:source-semantic-carrier products))
-          (true? (:finalized receipt)))
+          (true? (:finalized receipt))
+          ((resolve-public! bootstrap-namespace
+             "p15-s23-sh07-b51-sh06-authority-carrier-valid?")
+           (:commit content) (:tree content) products
+           (:sh06-authority-carrier products)))
       (reject! :m-source-session))
     {:products products
      :source-read-receipt receipt

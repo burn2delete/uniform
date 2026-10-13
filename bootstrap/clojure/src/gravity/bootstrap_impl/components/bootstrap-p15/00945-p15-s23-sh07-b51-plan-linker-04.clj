@@ -104,6 +104,11 @@
 
 (defn- p15-s23-sh07-b51-acquire-source-entry
   [commit tree spec]
+  (when (and *p15-s23-sh07-b51-governed-source-session*
+             (true? @(get-in *p15-s23-sh07-b51-governed-source-session*
+                            [:state :finalized] (atom false))))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :acquisition-after-finalize {:path (:path spec)}))
   (let [{:keys [ordinal path]} spec]
     (let [{:keys [content-object-proof source-object-proof
                   leaf-oid leaf-bytes]}

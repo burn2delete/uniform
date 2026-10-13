@@ -58,6 +58,9 @@
       (p15-s23-sh07-b51-source-semantic-carrier-valid?
        content receipt (:module-transactions products)
        source-semantic-carrier)
+      (p15-s23-sh07-b51-sh06-authority-carrier-valid?
+       (:commit content) (:tree content) products
+       (:sh06-authority-carrier products))
       (p15-s23-sh07-b51-replay-returned-source-authority-events!
        (:m0s products) (:m1 products) plan-authority receipt)
       (p15-s23-sh07-b51-exact-keys?

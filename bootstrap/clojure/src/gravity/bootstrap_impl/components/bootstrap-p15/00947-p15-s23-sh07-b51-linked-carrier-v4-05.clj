@@ -219,7 +219,7 @@
 (def ^:private p15-s23-sh07-b51-v9-receipted-product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
     :module-transactions :sh06-resolution-plan-authority
-    :source-semantic-carrier :source-read-receipt})
+    :sh06-authority-carrier :source-semantic-carrier :source-read-receipt})
 
 (def ^:private p15-s23-sh07-b51-v9-source-receipt-keys
   #{:schema :role :commit :tree :source-descriptors

@@ -201,6 +201,10 @@
         :template-status (:status raw)
         :template-verification (:status template-verification)
         :resolution (:status resolution)}))
+    (p15-s23-sh07-b51-cache-session-product!
+     [:sh06-handoff module-ordinal]
+     {:authority c5-authority :verification resolution-verification
+      :request request})
     {:module-ordinal module-ordinal
      :source-descriptor descriptor
      :resolution-artifact resolution-artifact

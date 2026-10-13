@@ -97,7 +97,8 @@
 (def ^:private p15-s23-sh07-b51-v9-builder-receipted-product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
     :source-forms :module-transactions :source-read-receipt
-    :sh06-resolution-plan-authority :source-semantic-carrier})
+    :sh06-resolution-plan-authority :sh06-authority-carrier
+    :source-semantic-carrier})
 
 (def ^:private p15-s23-sh07-b51-c2-unit-keys
   #{:ordinal :path :extension :project-relative-path :encoding :source-id
@@ -225,3 +226,8 @@
        :source-semantic-carrier-unit-descriptor
        {:ordinal (:ordinal descriptor) :path (:path descriptor)}))
     projected))
+
+(declare ^:private p15-s23-sh07-b51-assemble-sh06-authority-carrier
+         ^:private p15-s23-sh07-b51-sh06-authority-carrier-from-session!
+         p15-s23-sh07-b51-build-sh06-authority-carrier
+         p15-s23-sh07-b51-sh06-authority-carrier-valid?)

@@ -10,6 +10,17 @@
 (defn- digest [digit]
   (str "sha256:" (apply str (repeat 64 digit))))
 
+(deftest e5-checker-rejects-every-missing-or-extra-input-key
+  (is (= 21 (count census/input-keys)))
+  (is (= census/input-keys materialize/checker-semantic-input-keys-e3))
+  (let [input (zipmap census/input-keys (repeat nil))]
+    (doseq [invalid (concat (map #(dissoc input %) census/input-keys)
+                           [(assoc input :unexpected true)
+                            (assoc input :external-binding-authorities [])])]
+      (is (= :input-schema
+             (get-in (census/produce-certificate invalid)
+                     [:rejection-evidence :reason]))))))
+
 (defn- unit-precertificate [input]
   (let [product-id (h [:unit-lowering-product (:snapshot-tree input)])
         operations
@@ -251,6 +262,7 @@
      :source-forms source-forms
      :module-transactions []
      :sh06-resolution-plan-authority {}
+     :sh06-authority-carrier {}
      :source-semantic-carrier {}
      :semantic-algorithm-source-descriptors []
      :semantic-algorithm-source-root (digest \c)

@@ -36,6 +36,16 @@
   (with-redefs [materialize/build-checker-precertificate unit-precertificate]
     (census/produce-certificate input)))
 
+(deftest e5-checker-rejects-every-missing-or-extra-input-key
+  (is (= 21 (count census/input-keys)))
+  (is (= census/input-keys materialize/checker-semantic-input-keys-e3))
+  (let [input (zipmap census/input-keys (repeat nil))]
+    (doseq [invalid (concat (map #(dissoc input %) census/input-keys)
+                           [(assoc input :unexpected true)
+                            (assoc input :external-binding-authorities [])])]
+      (is (= :input-schema
+             (:reason (census/produce-certificate invalid)))))))
+
 (defn- definition [form]
   (let [[_ name params & body] form]
     {:name name :params params :body body :arity (count params)}))
@@ -340,6 +350,7 @@
      :source-forms forms
      :module-transactions []
      :sh06-resolution-plan-authority {}
+     :sh06-authority-carrier {}
      :source-semantic-carrier {}
      :semantic-algorithm-source-descriptors []
      :semantic-algorithm-source-root (digest :algorithm-root)

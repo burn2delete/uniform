@@ -71,7 +71,7 @@
     receipt)))
 
 (defn validate-receipted-products!
-  "Validate the exact ten-key E3 builder return and its same-session semantic
+  "Validate the exact eleven-key E5 return and its same-session semantic
   carrier before either selected checker receives the receipt-free handoff."
   ([role request products]
    (validate-receipted-products! (:H (load-codec!)) role request products))
@@ -102,6 +102,7 @@
                       (:module-transactions products)
                       (:source-semantic-carrier products))
        (reject! :source-semantic-carrier {:role role})))
+   (validate-sh06-handoff! role request products)
    products))
 
 (defn- source-session-id [H receipt]
@@ -215,6 +216,7 @@
 (defn build-checker-envelope
   "Build the semantic checker input only inside the selected child process."
   [H role request products checker-manifest preflight]
+  (when-not (exact-keys? products product-keys) (reject! :source-session))
   (let [m0s (:m0s products)
         {:keys [emitter-source-id emitter-semantic-id]}
         (receipted-product-emitter-identities! products)
@@ -237,6 +239,7 @@
      :module-transactions (:module-transactions products)
      :sh06-resolution-plan-authority
      (:sh06-resolution-plan-authority products)
+     :sh06-authority-carrier (:sh06-authority-carrier products)
      :source-semantic-carrier (:source-semantic-carrier products)
      :semantic-algorithm-source-descriptors (:descriptors algorithm)
      :semantic-algorithm-source-root (:root algorithm)

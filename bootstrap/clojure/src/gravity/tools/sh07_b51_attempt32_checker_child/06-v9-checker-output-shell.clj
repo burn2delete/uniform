@@ -1,3 +1,10 @@
+(defn- validate-sh06-handoff! [role request products]
+  (let [valid? (resolve-public! bootstrap-namespace
+                "p15-s23-sh07-b51-sh06-authority-carrier-valid?")
+        content (:content request)]
+    (when-not (valid? (:commit content) (:tree content) products
+                     (:sh06-authority-carrier products))
+      (reject! :sh06-authority-carrier {:role role}))))
 
 (defn- v9-checker-output-shell? [output]
   (let [certificate (:certificate output)]

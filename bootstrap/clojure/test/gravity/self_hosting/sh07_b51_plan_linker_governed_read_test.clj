@@ -334,6 +334,10 @@
                :cursor (atom 0) :events (atom [])
                :checked-products (atom {}) :finalized (atom false)}]
     (with-bindings {session-var {:token token :state state}}
+      (testing "early finalization rejects without closing the session"
+        (is (= :session-finalize
+               (:reason (c5-failure-data finalize))))
+        (is (false? @(:finalized state))))
       (testing "reordered first event rejects without consuming it"
         (let [failure
               (try (dispatch :l2-contract 1 nil
@@ -359,7 +363,14 @@
              (:reason
               (ex-data
                (try (finalize) nil
-                    (catch clojure.lang.ExceptionInfo error error)))))))))
+                    (catch clojure.lang.ExceptionInfo error error))))))
+      (testing "no source acquisition can occur after closure"
+        (let [acquire (var-get
+                       (private-var 'p15-s23-sh07-b51-acquire-source-entry))]
+          (is (= :acquisition-after-finalize
+                 (:reason (c5-failure-data
+                           #(acquire (:commit state) (:tree state)
+                                     (first descriptors)))))))))))
 
 (deftest returned-m0-m1-values-replay-source-authority-event-products
   (let [event-plan
@@ -559,10 +570,11 @@
          (:arglists
           (meta #'bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products)))))
 
-(deftest e3-receipted-builder-return-has-exactly-ten-keys
+(deftest e5-receipted-builder-return-has-exactly-eleven-keys
   (is (= #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id
            :source-forms :module-transactions :source-read-receipt
-           :sh06-resolution-plan-authority :source-semantic-carrier}
+           :sh06-resolution-plan-authority :sh06-authority-carrier
+           :source-semantic-carrier}
          (var-get
           (private-var 'p15-s23-sh07-b51-v9-builder-receipted-product-keys)))))
 
@@ -616,6 +628,7 @@
          :source-forms (vec (repeat 7 []))
          :module-transactions (vec (repeat 7 {}))
          :sh06-resolution-plan-authority authority
+         :sh06-authority-carrier {}
          :source-semantic-carrier :complete-same-session-carrier
          :source-read-receipt receipt}
         expected
@@ -630,6 +643,8 @@
         (fn [candidate]
           (with-redefs-fn
             {plan-validator (constantly true)
+             #'bootstrap/p15-s23-sh07-b51-sh06-authority-carrier-valid?
+             (constantly true)
              source-carrier-validator (constantly true)
              replay (constantly true)}
             #(normalize candidate)))]
