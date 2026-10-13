@@ -56,7 +56,7 @@ full-precertificate gate is likewise verifier-internal and nonserialized.
   "invariant_family": "architecture/self-hosting-sh07-b51-git-object-evidence-publication-v9-authority-context-v1",
   "report_path": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v2.md",
   "status": "draft",
-  "base_commit": "e79a01b0af146ad277f505e0cd8b7c4b4c757c35",
+  "base_commit": "d885c3cff09e8efc1693404dfa9303a3050663f9",
   "dependencies": [
     {
       "id": "sh07-b51-git-object-evidence-publication-architecture-v9",
