@@ -100,8 +100,9 @@ batch while retaining the explicit instruction not to rerun the full suite.
 Integration preparation uses scoped validation under that user-directed
 exception; it does not claim a successful full suite or fresh full-suite
 integration receipt. The reconciled main base is
-`56fe67c092ce900a6fe80b1314b974be7589f84c`. Changes from that main revision are
-governance records only; the reviewed retirement code is unchanged.
+`6a5f403df2c47c3977bbf0877948e44b13820c20`. Reconciliation incorporates main's
+separately consolidated bootstrap changes; the retirement's runtime and test
+files remain unchanged. Scoped verification is repeated against this base.
 
 The development receipt above records the earlier dirty-tree comparison and
 local review. It does not itself grant committed-candidate acceptance. The

@@ -3,7 +3,7 @@
 ;; independently reviewed.  Candidate constructors establish schemas and
 ;; joins; they do not confer authority.
 (def p15-s23-sh07-b51-attempt32-architecture-report-sha256
-  "sha256:b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db")
+  "sha256:34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd")
 
 ;; Compatibility names retained for the Attempt-30 evidence harness.  Their
 ;; values are the superseding Attempt-32 authorities, never stale Attempt-30
@@ -391,14 +391,24 @@
 
 (defn p15-s23-sh07-b51-v4-certificate-preflight? [certificate]
   (try
-    (let [profile
+    (let [v9? (contains? certificate :semantic-witness)
+          compact (if v9? (dissoc certificate :semantic-witness) certificate)
+          profile
           (p15-s23-sh07-b51-v4-bounded-value-profile
-           certificate
+           compact
            {:maximum-nodes 2048 :maximum-depth 12 :maximum-width 35
-            :maximum-collection-count 64 :maximum-scalar-utf8 4096})]
+            :maximum-collection-count 64 :maximum-scalar-utf8 4096})
+          witness-profile
+          (when v9?
+            (p15-s23-sh07-b51-v4-bounded-value-profile
+             (:semantic-witness certificate)
+             (p15-s23-sh07-b51-v4-carrier-profile-limits
+              (:carrier-maximum-collection-count
+               p15-s23-sh07-b51-attempt32-profile-bounds))))]
       (and profile
+           (or (not v9?) witness-profile)
            (<= (p15-s23-sh07-b51-v4-bounded-utf8-count
-                (pr-str (reader-canonical-value certificate)) 262144)
+                (pr-str (reader-canonical-value compact)) 262144)
                262144)))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
@@ -557,8 +567,10 @@
             :record-root (:record-root descriptor)}))))
 
 (defn- p15-s23-sh07-b51-v4-inputs-valid? [inputs]
-  (and (p15-s23-sh07-b51-exact-keys?
-        inputs p15-s23-sh07-b51-v4-input-keys)
+  (let [v9? (contains? inputs :lowering-product-id)]
+    (and (p15-s23-sh07-b51-exact-keys?
+          inputs (cond-> p15-s23-sh07-b51-v4-input-keys
+                   v9? (conj :lowering-product-id)))
        (= p15-s23-sh07-b51-attempt32-architecture-report-sha256
           (:architecture-report-sha256 inputs))
        (p15-s23-sh07-b51-v4-git-id? (:snapshot-commit inputs))
@@ -576,7 +588,9 @@
        (p15-s23-sh07-b51-v4-digest-vector? (:m0-ids inputs) 7)
        (p15-s23-sh07-b51-digest-id? (:m1-id inputs))
        (p15-s23-sh07-b51-v4-digest-vector? (:m2-ids inputs) 7)
-       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))))
+       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))
+       (or (not v9?)
+           (p15-s23-sh07-b51-digest-id? (:lowering-product-id inputs))))))
 
 (defn- p15-s23-sh07-b51-v4-checker-valid? [checker algorithm-role]
   (and (p15-s23-sh07-b51-exact-keys?
@@ -637,6 +651,8 @@
           provenance (:provenance certificate)
           raw (:raw-source-transcript certificate)
           m2 (:m2-transcript certificate)
+          v9? (contains? certificate :semantic-witness)
+          witness (:semantic-witness certificate)
           commitments (:category-commitments claim)
           normalized-preimage
           {:domain :gravity/sh07-b51-normalized-census-id-v1
@@ -659,7 +675,8 @@
            :profile-bounds (:profile-bounds certificate)}]
       (and (p15-s23-sh07-b51-v4-certificate-preflight? certificate)
            (p15-s23-sh07-b51-exact-keys?
-            certificate p15-s23-sh07-b51-v4-certificate-keys)
+            certificate (cond-> p15-s23-sh07-b51-v4-certificate-keys
+                          v9? (conj :semantic-witness)))
            (= :gravity/sh07-b51-compile-census-certificate
               (:artifact certificate))
            (= role-domain (:domain certificate))
@@ -698,6 +715,37 @@
               assumptions)
            (p15-s23-sh07-b51-v4-checker-valid? checker algorithm-role)
            (p15-s23-sh07-b51-v4-inputs-valid? inputs)
+           (= v9? (contains? inputs :lowering-product-id))
+           (or
+            (not v9?)
+            (and
+             (p15-s23-sh07-b51-exact-keys?
+              witness
+              #{:schema :content :operation-manifest :operation-schedule-id
+                :fuel-receipts :l1 :l2 :c2 :c6 :boot2 :boot3 :boot4
+                :witness-id})
+             (= :gravity/sh07-b51-authentic-lowering-witness-v1
+                (:schema witness))
+             (= {:commit (:snapshot-commit inputs)
+                 :tree (:snapshot-tree inputs)}
+                (:content witness))
+             (p15-s23-sh07-b51-digest-id?
+              (:operation-schedule-id witness))
+             (p15-s23-sh07-b51-digest-id? (:witness-id witness))
+             (vector? (:operation-manifest witness))
+             (= 7 (count (:operation-manifest witness)))
+             (= (vec (range 7)) (mapv :ordinal (:operation-manifest witness)))
+             (= (vec (repeat 7 (:lowering-product-id inputs)))
+                (mapv :lowering-product-id (:operation-manifest witness)))
+             (vector? (:fuel-receipts witness))
+             (= 7 (count (:fuel-receipts witness)))
+             (= (mapv :operation-id (:operation-manifest witness))
+                (mapv :operation-id (:fuel-receipts witness)))
+             (every? true? (map :within-bounds (:fuel-receipts witness)))
+             (= (:witness-id witness)
+                (p15-s23-sh07-b51-canonical-id
+                 [:gravity/sh07-b51-authentic-lowering-witness-v1
+                  (dissoc witness :witness-id)]))))
            (p15-s23-sh07-b51-v4-result-valid? result claim)
            (p15-s23-sh07-b51-exact-keys?
             provenance p15-s23-sh07-b51-v4-provenance-keys)
@@ -738,14 +786,17 @@
           checker-b (:checker certificate-b)
           checker-identity-keys
           [:source-sha256 :semantic-id :executable-id :dependency-closure-id]
+          v9? (contains? certificate-a :semantic-witness)
           common-keys
-          [:architecture-report-sha256 :claim-id :claim :assumptions
-           :inputs :profile-bounds]]
+          (cond-> [:architecture-report-sha256 :claim-id :claim :assumptions
+                   :inputs :profile-bounds]
+            v9? (conj :semantic-witness))]
       (and (vector? certificates) (= 2 (count certificates))
            (= [:producer-census :independent-verifier-census]
               (mapv :role certificates))
            (every? p15-s23-sh07-b51-compile-census-certificate-v1-valid?
                    certificates)
+           (= v9? (contains? certificate-b :semantic-witness))
            (= (select-keys certificate-a common-keys)
               (select-keys certificate-b common-keys))
            (not= (:certificate-id certificate-a)
@@ -927,46 +978,7 @@
   (p15-s23-sh07-b51-build-execution-bundle-v2
    products (mapv :certificate-id certificates)))
 
-(defn p15-s23-sh07-b51-build-linked-carrier-v4-candidate
-  [products certificates]
-  (when-not (and (p15-s23-sh07-b51-v4-products-closed-joins? products)
-                 (p15-s23-sh07-b51-compile-census-certificate-pair-v1-valid?
-                  certificates)
-                 (every? #(p15-s23-sh07-b51-v4-certificate-inputs-match-products?
-                            % products)
-                         certificates)
-                 (every? #(p15-s23-sh07-b51-v4-physical-census-match-products?
-                            % products)
-                         certificates))
-    (throw (ex-info "invalid Attempt32 carrier candidate inputs"
-                    {:id "L2-UNKNOWN-CORE-FORM"
-                     :reason :unauthenticated-b51-linked-carrier})))
-  (let [execution-bundle
-        (p15-s23-sh07-b51-v4-build-execution-bundle products certificates)
-        semantic
-        (p15-s23-sh07-b51-build-semantic-manifest-v4
-         products execution-bundle certificates)
-        root-preimage
-        {:domain :gravity/sh07-b51-v18-linked-semantic-root-v4
-         :schema-version 4 :semantic-manifest semantic}
-        physical (get-in certificates [0 :claim :physical-census])]
-    (array-map
-     :domain :gravity/sh07-b51-v18-linked-executable-closure-carrier-v4
-     :schema-version 4
-     :predecessor-executable-descriptor-id p15-s23-sh07-b51-v4-predecessor-id
-     :semantic-manifest semantic
-     :semantic-root-hash (p15-s23-sh07-b51-canonical-id root-preimage)
-     :module-source-descriptors (:module-source-descriptors products)
-     :link-manifest (:link-manifest products)
-     :module-plan-carriers
-     (mapv (fn [descriptor plan]
-             {:module-ordinal (:module-ordinal descriptor)
-              :module-source-id (:module-source-id descriptor)
-              :plan-id (:plan-id plan) :plan plan})
-           (:module-source-descriptors products) (:module-plans products))
-     :execution-bundle execution-bundle
-     :physical-census physical
-     :compile-census-certificates certificates)))
+(declare p15-s23-sh07-b51-build-linked-carrier-v4-candidate)
 
 (defn- p15-s23-sh07-b51-linked-carrier-v4-valid-after-preflight?
   [carrier]
@@ -1067,6 +1079,162 @@
 (def ^:private p15-s23-sh07-b51-authoritative-linked-carrier-value-v4
   :gravity/provisional-no-authority)
 
+(def ^:private p15-s23-sh07-b51-v4-linked-product-keys
+  #{:artifact :module-source-descriptors :link-manifest :module-plans
+    :emitter-source-id :emitter-semantic-id :execution-bundle-core
+    :execution-bundle-core-id})
+
+(def ^:private p15-s23-sh07-b51-v9-receipted-product-keys
+  #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
+    :module-transactions :sh06-resolution-plan-authority
+    :source-semantic-carrier :source-read-receipt})
+
+(def ^:private p15-s23-sh07-b51-v9-source-receipt-keys
+  #{:schema :role :commit :tree :source-descriptors
+    :source-descriptors-root :events :event-root :counters :finalized})
+
+(defn- p15-s23-sh07-b51-v4-receipted-products->linked-products
+  [products]
+  (let [receipt (:source-read-receipt products)
+        source-descriptors (:source-descriptors receipt)
+        events (:events receipt)
+        plans (:m2s products)
+        source-ids (mapv #(get-in % [:compiler :source-content-hash]) plans)
+        semantic-ids (mapv #(get-in % [:compiler :semantic-hash]) plans)
+        emitter-source-id (first source-ids)
+        emitter-semantic-id (first semantic-ids)
+        plan-authority (:sh06-resolution-plan-authority products)
+        source-semantic-carrier (:source-semantic-carrier products)
+        content (select-keys receipt [:commit :tree])
+        linked-products
+        {:artifact :gravity/sh07-b51-linked-plan-products-v2
+         :module-source-descriptors (:m0s products)
+         :link-manifest (:m1 products)
+         :module-plans plans
+         :emitter-source-id emitter-source-id
+         :emitter-semantic-id emitter-semantic-id
+         :execution-bundle-core (:bundle-core products)
+         :execution-bundle-core-id (:execution-bundle-core-id products)}]
+    (when-not
+     (and
+      (p15-s23-sh07-b51-exact-keys?
+       products p15-s23-sh07-b51-v9-receipted-product-keys)
+      (p15-s23-sh07-b51-exact-keys?
+       receipt p15-s23-sh07-b51-v9-source-receipt-keys)
+      (= :gravity/sh07-b51-source-read-receipt-v3 (:schema receipt))
+      (contains? #{:producer-census :independent-verifier-census :m}
+                 (:role receipt))
+      (vector? source-descriptors) (= 13 (count source-descriptors))
+      (= (:source-descriptors-root receipt)
+         (p15-s23-sh07-b51-canonical-id
+          [:gravity/sh07-b51-source-descriptors-root-v1 source-descriptors]))
+      (vector? events) (= 40 (count events))
+      (= (:event-root receipt)
+         (p15-s23-sh07-b51-canonical-id
+          [:gravity/sh07-b51-source-event-root-v1 events]))
+      (= {:acquire-count 13 :decode-count 13
+          :event-count 40 :finalize-count 1}
+         (:counters receipt))
+      (true? (:finalized receipt))
+      (vector? (:source-forms products))
+      (= 7 (count (:source-forms products)))
+      (vector? (:module-transactions products))
+      (= 7 (count (:module-transactions products)))
+      (vector? plans) (= 7 (count plans))
+      (p15-s23-sh07-b51-digest-id? emitter-source-id)
+      (p15-s23-sh07-b51-digest-id? emitter-semantic-id)
+      (= (vec (repeat 7 emitter-source-id)) source-ids)
+      (= (vec (repeat 7 emitter-semantic-id)) semantic-ids)
+      (p15-s23-sh07-b51-resolution-plan-authority-valid? plan-authority)
+      (= content (:content plan-authority))
+      (= (nth source-descriptors 12 nil)
+         (:source-descriptor plan-authority))
+      (p15-s23-sh07-b51-source-semantic-carrier-valid?
+       content receipt (:module-transactions products)
+       source-semantic-carrier)
+      (p15-s23-sh07-b51-replay-returned-source-authority-events!
+       (:m0s products) (:m1 products) plan-authority receipt)
+      (p15-s23-sh07-b51-exact-keys?
+       linked-products p15-s23-sh07-b51-v4-linked-product-keys))
+      (throw (ex-info "invalid Attempt32 receipted product boundary"
+                      {:id "L2-UNKNOWN-CORE-FORM"
+                       :reason :unauthenticated-b51-linked-carrier})))
+    linked-products))
+
+(defn- p15-s23-sh07-b51-v4-normalize-products [products]
+  (cond
+    (p15-s23-sh07-b51-exact-keys?
+     products p15-s23-sh07-b51-v4-linked-product-keys)
+    products
+
+    (p15-s23-sh07-b51-exact-keys?
+     products p15-s23-sh07-b51-v9-receipted-product-keys)
+    (p15-s23-sh07-b51-v4-receipted-products->linked-products products)
+
+    :else
+    (throw (ex-info "invalid Attempt32 linked product shape"
+                    {:id "L2-UNKNOWN-CORE-FORM"
+                     :reason :unauthenticated-b51-linked-carrier}))))
+
+(defn- p15-s23-sh07-b51-v9-certificate-shell? [certificate]
+  (and (contains? certificate :semantic-witness)
+       (contains? (:inputs certificate) :lowering-product-id)
+       (= :gravity/sh07-b51-authentic-lowering-witness-v1
+          (get-in certificate [:semantic-witness :schema]))
+       (p15-s23-sh07-b51-digest-id?
+        (get-in certificate [:semantic-witness :witness-id]))
+       (p15-s23-sh07-b51-digest-id?
+        (get-in certificate [:inputs :lowering-product-id]))))
+
+(defn p15-s23-sh07-b51-build-linked-carrier-v4-candidate
+  [products certificates]
+  (let [receipted-e3-products?
+        (p15-s23-sh07-b51-exact-keys?
+         products p15-s23-sh07-b51-v9-receipted-product-keys)
+        products (p15-s23-sh07-b51-v4-normalize-products products)]
+    (when-not
+     (and (p15-s23-sh07-b51-v4-products-closed-joins? products)
+          (or (not receipted-e3-products?)
+              (every? p15-s23-sh07-b51-v9-certificate-shell? certificates))
+          (p15-s23-sh07-b51-compile-census-certificate-pair-v1-valid?
+           certificates)
+          (every? #(p15-s23-sh07-b51-v4-certificate-inputs-match-products?
+                     % products)
+                  certificates)
+          (every? #(p15-s23-sh07-b51-v4-physical-census-match-products?
+                     % products)
+                  certificates))
+      (throw (ex-info "invalid Attempt32 carrier candidate inputs"
+                      {:id "L2-UNKNOWN-CORE-FORM"
+                       :reason :unauthenticated-b51-linked-carrier})))
+    (let [execution-bundle
+          (p15-s23-sh07-b51-v4-build-execution-bundle products certificates)
+          semantic
+          (p15-s23-sh07-b51-build-semantic-manifest-v4
+           products execution-bundle certificates)
+          root-preimage
+          {:domain :gravity/sh07-b51-v18-linked-semantic-root-v4
+           :schema-version 4 :semantic-manifest semantic}
+          physical (get-in certificates [0 :claim :physical-census])]
+      (array-map
+       :domain :gravity/sh07-b51-v18-linked-executable-closure-carrier-v4
+       :schema-version 4
+       :predecessor-executable-descriptor-id
+       p15-s23-sh07-b51-v4-predecessor-id
+       :semantic-manifest semantic
+       :semantic-root-hash (p15-s23-sh07-b51-canonical-id root-preimage)
+       :module-source-descriptors (:module-source-descriptors products)
+       :link-manifest (:link-manifest products)
+       :module-plan-carriers
+       (mapv (fn [descriptor plan]
+               {:module-ordinal (:module-ordinal descriptor)
+                :module-source-id (:module-source-id descriptor)
+                :plan-id (:plan-id plan) :plan plan})
+             (:module-source-descriptors products) (:module-plans products))
+       :execution-bundle execution-bundle
+       :physical-census physical
+       :compile-census-certificates certificates))))
+
 (defn- p15-s23-sh07-b51-v4-host-pin-map []
   {:expected-m3-id p15-s23-sh07-b51-expected-m3-id
    :expected-certificate-a-id p15-s23-sh07-b51-expected-certificate-a-id
@@ -1077,7 +1245,9 @@
   (let [pin-map (p15-s23-sh07-b51-v4-host-pin-map)
         carrier p15-s23-sh07-b51-authoritative-linked-carrier-value-v4]
     (when (and (every? p15-s23-sh07-b51-digest-id? (vals pin-map))
-               (map? carrier))
+               (map? carrier)
+               (every? p15-s23-sh07-b51-v9-certificate-shell?
+                       (:compile-census-certificates carrier)))
       (let [base-products (p15-s23-sh07-b51-current-bundle-core-products)
             reconstructed-carrier
             (p15-s23-sh07-b51-build-linked-carrier-v4-candidate

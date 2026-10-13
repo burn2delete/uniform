@@ -1,10 +1,19 @@
 
 
 (defn- sh06-resolution-finalize-candidate
-  [source-path artifact-with-envelope]
+  ([source-path artifact-with-envelope]
+   (sh06-resolution-finalize-candidate
+    source-path artifact-with-envelope ::legacy))
+  ([source-path artifact-with-envelope context]
   (let [proof
-        (sh06-resolution-capability-based-proof-for-construction
-         artifact-with-envelope)
+        (if (= ::legacy context)
+          (sh06-resolution-capability-based-proof-for-construction
+           artifact-with-envelope)
+          (do
+            (when (nil? context)
+              (sh06-resolution-c5-fail! source-path :missing-context {}))
+            (sh06-resolution-capability-based-proof-for-construction
+             artifact-with-envelope context)))
         artifact
         (assoc artifact-with-envelope :capability-based-proof proof)]
     ;; The construction report above already replayed the exact authenticated
@@ -25,7 +34,7 @@
          (assoc :carrier-validation
                 (:carrier-validation proof)))
        {}))
-    artifact))
+    artifact)))
 
 (defn sh06-resolution-source-artifact
   [source-path source-text]
@@ -52,7 +61,16 @@
     (sh06-resolution-finalize-candidate
      source-path
      (sh06-resolution-source-artifact-candidate
-      source-path sh05-artifact false)))))
+      source-path sh05-artifact false))))
+  ([source-path sh05-artifact context]
+   (when (nil? context)
+     (sh06-resolution-c5-fail! source-path :missing-context {}))
+   (with-sh06-resolution-transport-bounds
+    (sh06-resolution-finalize-candidate
+     source-path
+     (sh06-resolution-source-artifact-candidate
+      source-path sh05-artifact false context)
+     context))))
 
 (defn sh06-resolution-file-artifact
   [source-path]

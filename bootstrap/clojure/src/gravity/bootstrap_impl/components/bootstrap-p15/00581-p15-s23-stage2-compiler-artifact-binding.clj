@@ -1,17 +1,15 @@
 
 
-(defn p15-s23-stage2-compiler-artifact-binding!
-  [emitter source-path target]
-  (let [artifact-source (p15-s23-stage2-compiler-artifact-source-path)]
-    (when-not (.isFile (java.io.File. artifact-source))
+(defn- p15-s23-stage2-compiler-artifact-binding-from-source!
+  [emitter source-path target artifact-source artifact-text]
+  (when-not (and (string? artifact-source) (string? artifact-text))
       (p15-s23-stage2-plan-emitter-fail!
        "P15S23Q001" artifact-source nil
        {:requested-source source-path
         :target target
         :missing-fields [:compiler-artifact-source]
         :missing-fact :stage2-expression-lowering-artifact}))
-    (let [artifact-text (slurp artifact-source)
-          plan
+  (let [plan
           (try
             (p15-s23-stage2-compiler-artifact-plan
              emitter artifact-source artifact-text)
@@ -99,7 +97,29 @@
        :invoked? true
        :generic-bridge-residual? true
        :clojure-seed-boundary? true
-       :self-hosted? false})))
+       :self-hosted? false}))
+
+(defn p15-s23-stage2-compiler-artifact-binding!
+  [emitter source-path target]
+  (if *p15-s23-sh07-b51-governed-source-session*
+    (let [module-ordinal
+          (p15-s23-sh07-b51-active-module-ordinal source-path)]
+      (when-not (integer? module-ordinal)
+        (p15-s23-stage2-plan-emitter-fail!
+         "SH07-B51-00945-GOVERNED-READ" source-path module-ordinal
+         {:target target
+          :missing-fact :governed-module-ordinal}))
+      (p15-s23-sh07-b51-governed-source-event!
+       :compiler-artifact-binding 11 module-ordinal
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding
+       (fn [{:keys [descriptor text]}]
+         (p15-s23-stage2-compiler-artifact-binding-from-source!
+          emitter source-path target (:path descriptor) text))))
+    (let [{:keys [path text]}
+          (p15-s23-sh07-b51-compatibility-source-record
+           (p15-s23-stage2-compiler-artifact-source-path))]
+      (p15-s23-stage2-compiler-artifact-binding-from-source!
+       emitter source-path target path text))))
 
 (defn p15-s23-stage2-compiler-artifact-invoke
   [function args]
