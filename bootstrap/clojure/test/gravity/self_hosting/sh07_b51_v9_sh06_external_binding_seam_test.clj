@@ -255,7 +255,7 @@
                                            :source-descriptors 0 :byte-count] inc)
                                (update-in [:external-binding-authority :preimage
                                            :module-source-inputs 0 :descriptor :byte-count] inc))]]
-                (is (c5-failure? #(check-context bad)))))))
+                (is (c5-failure? #(check-context bad))))))
           (doseq [key (keys products)]
             (is (false? (valid? (dissoc products key))) key))
           (doseq [key (keys carrier)]
