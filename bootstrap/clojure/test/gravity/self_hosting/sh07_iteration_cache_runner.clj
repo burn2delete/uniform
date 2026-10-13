@@ -937,7 +937,7 @@
                 {:id "SH07-ITERATION-CACHE-ARGUMENT"
                  :option option :value value})))))
 
-(defn parse-arguments
+(defn- parse-explicit-arguments
   [arguments]
   (loop [remaining (vec arguments)
          result {:namespaces []
@@ -1046,6 +1046,68 @@
                      :option option
                      :supported ["--namespace" "--test-var"
                                  "--max-cache-entries" "--fail-fast"]})))))))
+
+(defn- route-test-vars [route-selection]
+  (let [{:keys [namespace selectors]} (get-in route-selection [:plan :selection])]
+    (mapv #(symbol namespace %) selectors)))
+
+(defn parse-arguments
+  "Expand one catalog route label through the existing exact-var parser."
+  [arguments]
+  (if-not (some #{"--route"} arguments)
+    (parse-explicit-arguments arguments)
+    (loop [remaining (vec arguments) label nil forwarded []]
+      (if (empty? remaining)
+        (let [route-selection
+              ((requiring-resolve
+                'gravity.self-hosting.unified-execution-plan/legacy-route-selection)
+               :iteration-cache-runner label)
+              test-vars (route-test-vars route-selection)
+              selection (parse-explicit-arguments
+                         (into forwarded
+                               (mapcat #(vector "--test-var" (str %)) test-vars)))]
+          (assoc selection :route-selection route-selection))
+        (let [option (first remaining)]
+          (case option
+            "--route"
+            (let [value (second remaining)]
+              (when label
+                (throw (ex-info "Only one iteration route may be selected"
+                                {:id "SH07-ITERATION-CACHE-DUPLICATE-ROUTE"})))
+              (when (nil? value)
+                (throw (ex-info "Iteration cache option requires a value"
+                                {:id "SH07-ITERATION-CACHE-USAGE"
+                                 :option option})))
+              (recur (subvec remaining 2) value forwarded))
+            ("--namespace" "--test-var")
+            (throw (ex-info "Route and explicit selections cannot be combined"
+                            {:id "SH07-ITERATION-CACHE-SELECTION-CONFLICT"}))
+            "--fail-fast"
+            (recur (subvec remaining 1) label (conj forwarded option))
+            "--max-cache-entries"
+            (let [value (second remaining)]
+              (when (nil? value)
+                (throw (ex-info "Iteration cache option requires a value"
+                                {:id "SH07-ITERATION-CACHE-USAGE"
+                                 :option option})))
+              (recur (subvec remaining 2) label (conj forwarded option value)))
+            (throw (ex-info "Unsupported iteration cache option"
+                            {:id "SH07-ITERATION-CACHE-USAGE" :option option
+                             :supported ["--route" "--namespace" "--test-var"
+                                         "--max-cache-entries" "--fail-fast"]}))))))))
+
+(defn- validate-route-selection! [selection]
+  (when-let [route-selection (:route-selection selection)]
+    ((requiring-resolve
+      'gravity.self-hosting.unified-execution-plan/validate-legacy-route-selection)
+     route-selection)
+    (when-not (and (= :iteration-cache-runner (:mechanism route-selection))
+                   (empty? (:namespaces selection))
+                   (= (route-test-vars route-selection)
+                      (if (:test-var selection) [(:test-var selection)]
+                          (:test-vars selection))))
+      (throw (ex-info "Expanded iteration route selection was altered"
+                      {:id "SH07-ITERATION-CACHE-ROUTE-SELECTION"})))))
 
 (defn- cache-snapshot
   []
@@ -1220,6 +1282,17 @@
                    :namespace namespace-symbol})))
       resolved)))
 
+(defn resolve-route
+  "Resolve a catalog label using the iteration runner's exact ownership rule."
+  [label]
+  (let [selection (parse-arguments ["--route" label])
+        test-vars (route-test-vars (:route-selection selection))]
+    (validate-route-selection! selection)
+    {:route-id (get-in selection [:route-selection :plan :route-id])
+     :shard label
+     :namespace (symbol (namespace (first test-vars)))
+     :test-vars (mapv resolve-test-var test-vars)}))
+
 (defn run-test-var
   [{:keys [test-var maximum-entries]}]
   (let [resolved (resolve-test-var test-var)
@@ -1353,6 +1426,7 @@
 
 (defn run-selection
   [selection]
+  (validate-route-selection! selection)
   (cond
     (:test-var selection) (run-test-var selection)
     (seq (:test-vars selection)) (run-test-vars selection)

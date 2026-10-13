@@ -97,7 +97,8 @@
 (def ^:private legacy-mechanism-keys
   #{:route-ids :label-policy :membership-semantics})
 (def ^:private legacy-label-policy-keys #{:kind :prefix})
-(def ^:private allowed-legacy-mechanisms #{:parallel-shard-runner})
+(def ^:private allowed-legacy-mechanisms
+  #{:iteration-cache-runner :parallel-shard-runner})
 (def ^:private maximum-legacy-routes 64)
 (def ^:private allowed-legacy-label-kinds #{:strip-prefix})
 (def ^:private route-keys
@@ -698,10 +699,12 @@
                [:legacy-mechanisms mechanism])
   (let [route-ids (:route-ids declaration)
         label-policy (:label-policy declaration)]
-    (ensure! (= :exact-historical-membership
+    (ensure! (= (case mechanism
+                 :iteration-cache-runner :explicit-catalog-selection
+                 :parallel-shard-runner :exact-historical-membership)
                 (:membership-semantics declaration))
              "UEP-CATALOG-LEGACY-MEMBERSHIP"
-             "Legacy mechanism membership semantics are not the reviewed historical projection"
+             "Legacy mechanism membership semantics do not match its reviewed contract"
              {:mechanism mechanism
               :membership-semantics (:membership-semantics declaration)})
     (non-empty-vector! route-ids "UEP-CATALOG-LEGACY-ROUTES"
@@ -2095,6 +2098,33 @@
       (assoc base :plan-id (identity-of base)))))
 
 (def build-plan plan)
+
+(defn legacy-route-selection
+  "Bind one catalog label to a normal fast plan without executing it.
+
+  This transport retains the full catalog identity and all existing plan
+  policy. Explicit iteration membership is new selection, not historical
+  runnable parity or replacement authority."
+  [mechanism label]
+  (let [{:keys [route-ids labels]} (legacy-mechanism-projection mechanism)
+        route-id (when (string? label)
+                   (some (fn [[id candidate]] (when (= label candidate) id))
+                         (map vector route-ids labels)))]
+    (ensure! route-id "UEP-LEGACY-LABEL" "Unknown catalog route label"
+             {:mechanism mechanism :label label :available labels})
+    {:mechanism mechanism :label label
+     :plan (plan {:route-id route-id :lane :fast})}))
+
+(defn validate-legacy-route-selection
+  "Authenticate a label selection against the current complete catalog."
+  [selection]
+  (exact-keys! selection #{:mechanism :label :plan}
+               "UEP-LEGACY-SELECTION-KEYS" [:legacy-selection])
+  (validate-plan (:plan selection))
+  (ensure! (= selection (legacy-route-selection (:mechanism selection)
+                                               (:label selection)))
+           "UEP-LEGACY-SELECTION" "Catalog label selection was altered" {})
+  selection)
 
 (defn artifact-plan
   "Build a fast artifact operation as an extension of one ordinary plan.
