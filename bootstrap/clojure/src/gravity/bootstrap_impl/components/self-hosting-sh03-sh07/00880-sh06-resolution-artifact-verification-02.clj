@@ -150,7 +150,8 @@
      ;; the C2 bytes-hash below joins that exact blob to the reader product.
      (let [source-bytes (sh06-resolution-source-proof-bytes!
                          source-path content descriptor source-proof)
-           expected-count (or (:byte-count source-unit) (count source-bytes))]
+           expected-count (if (contains? source-unit :byte-count)
+                            (:byte-count source-unit) (count source-bytes))]
        (when-not
         (and (not legacy?) descriptor input
              (= descriptor (:descriptor input))

@@ -234,9 +234,28 @@
             (is (= (get-in transaction [:source-descriptor :byte-count])
                    (:byte-count (snapshot c2))))
             (doseq [bad [(assoc-in c2 [:source-unit-record :byte-count] -1)
+                         (assoc-in c2 [:source-unit-record :byte-count] nil)
+                         (assoc-in c2 [:source-unit-record :byte-count] false)
                          (assoc-in c2 [:source-unit-record :bytes-hash] (codec/H :wrong))
                          (assoc-in c2 [:source-unit-record :path] "wrong.gravity")]]
-              (is (c5-failure? #(snapshot bad)))))
+              (is (c5-failure? #(snapshot bad))))
+            (let [proof-path [:external-binding-authority :preimage
+                              :module-source-inputs 0 :source-object-proof]
+                  check-context (fn [bad]
+                                  (invoke-private 'sh06-authenticated-source-snapshot!
+                                                  path c2 :test false bad))]
+              (doseq [bad [(assoc-in context (conj proof-path :path) "wrong.gravity")
+                           (assoc-in context (conj proof-path :root-tree) commit)
+                           (assoc-in context (into proof-path [:tree-chain 0 :tree-oid]) commit)
+                           (assoc-in context (into proof-path [:tree-chain 0 :selected-oid]) commit)
+                           (update-in context (into proof-path [:tree-chain 0 :tree-bytes 0]) bit-xor 1)
+                           (update-in context (into proof-path [:blob-bytes 0]) bit-xor 1)
+                           (-> context
+                               (update-in [:external-binding-authority :preimage
+                                           :source-descriptors 0 :byte-count] inc)
+                               (update-in [:external-binding-authority :preimage
+                                           :module-source-inputs 0 :descriptor :byte-count] inc))]]
+                (is (c5-failure? #(check-context bad)))))))
           (doseq [key (keys products)]
             (is (false? (valid? (dissoc products key))) key))
           (doseq [key (keys carrier)]
@@ -249,11 +268,15 @@
                    (assoc-in products [:source-read-receipt :finalized] false)
                    (assoc-in products [:source-read-receipt :counters :finalize-count] 2)
                    (assoc-in products [:source-read-receipt :tree] commit)
+                   (assoc-in products [:source-read-receipt :role] :invalid-role)
                    (assoc-in products [:sh06-resolution-plan-authority :content :tree] commit)
                    (coherent-event-mutation products 17)
                    (coherent-event-mutation products 25)
                    (coherent-event-mutation products 39)]]
             (is (false? (valid? invalid))))
+          (is (thrown? clojure.lang.ExceptionInfo
+                (child/validate-receipted-products!
+                  codec/H :independent-verifier-census request products)))
           (is (= 13 @acquisitions)))))))
 
 (defn- c5-failure? [thunk]
