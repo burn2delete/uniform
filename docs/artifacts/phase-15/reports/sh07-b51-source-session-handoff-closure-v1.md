@@ -172,8 +172,9 @@ fallback, authenticity flag, or relaxed proof predicate is introduced.
 The real proof positive and missing/extra/corrupt-proof negatives pass. The
 first resumed seam run reports 5 tests / 30 assertions, with 29 passed and the
 snapshot defect as its one error. A second producer probe has crossed that
-snapshot guard and is executing the unmodified Gravity SH06 resolver; it has
-not yet supplied completion evidence.
+snapshot guard but reached its 600-second watchdog while executing the
+unmodified Gravity SH06 resolver, before finalization. It supplies no completion
+or performance evidence.
 
 The refreshed ordinary scoped run passes 106 tests / 744 assertions with zero
 skipped namespaces. LOC, documents, roadmap, and governance validators pass.
@@ -182,6 +183,17 @@ The next authentic fixture keeps seven modules and exactly 1,480 edges, with
 calls. Cached real Git algorithm objects and actual selected JAR source records
 are used to construct the twenty-one-key envelope after closure. This tests
 envelope construction, not full child classpath/PRE admission or checker proof.
+
+Both preliminary independent reviewers support the two owning repairs. Their
+feedback required presence-sensitive optional count checking, an exact envelope
+key-set assertion, and direct authentic target-proof/fragment mutations. These
+are now included. Explicit nil, false, and negative target counts reject. The
+distributed fixture's first attempt correctly rejected duplicate caller names
+across modules; fixture names now include the module ordinal. One later probe
+was cancelled to incorporate the complete reviewed matrix before the fresh
+bounded run; it supplies no acceptance evidence. A temporary test-parenthesis
+compile error was corrected and the namespace compiles. None of these fixture
+changes relaxes a producer, validator, authority, schema, or counter.
 
 A preliminary full-JAR test-helper attempt encountered the inherited trusted
 source reader's unresolved `::s/invalid` alias in a dependency source. It is not

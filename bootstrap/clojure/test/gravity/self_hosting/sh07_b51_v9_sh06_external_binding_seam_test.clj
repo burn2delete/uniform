@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [gravity.tools.sh07-b51-attempt32-checker-child :as child]
             [gravity.tools.sh07-b51-attempt32-checker-identity :as identity]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]
             [gravity.tools.sh07-b51-git-evidence :as git-evidence]
             [gravity.tools.sh07-b51-v9-codec :as codec]
             [gravity.bootstrap :as bootstrap]))
@@ -219,9 +220,23 @@
           (let [envelope (child/build-checker-envelope
                            codec/H :producer-census request products manifest preflight)]
             (is (= 21 (count envelope)))
+            (is (= materialize/checker-semantic-input-keys-e3 (set (keys envelope))))
             (is (= carrier (:sh06-authority-carrier envelope)))
             (is (= 7 (count (:semantic-algorithm-source-descriptors envelope))))
             (is (= (:checker manifest) (:checker envelope))))
+          (let [authority (:source-authority preflight)
+                path (get-in identity/checker-specs [:producer-census :source-relative-path])
+                product (identity/source-product authority path)
+                fragment (get-in product [:records 0 :relative-path])
+                fragment-object (get-in authority [:source-objects fragment])
+                corrupt (aclone ^bytes (:bytes fragment-object))]
+            (aset-byte corrupt 0 (unchecked-byte (bit-xor 1 (aget corrupt 0))))
+            (is (seq (:records product)))
+            (doseq [bad [(update authority :source-objects dissoc fragment)
+                         (assoc-in authority [:source-objects fragment :bytes] corrupt)
+                         (update-in authority [:source-objects fragment :byte-count] inc)
+                         (assoc-in authority [:source-objects fragment :blob-oid] "invalid")]]
+              (is (thrown? clojure.lang.ExceptionInfo (identity/source-product bad path)))))
           (let [transaction (first (:module-transactions products))
                 c2 (:c2-reader-artifact transaction)
                 path (get-in transaction [:source-descriptor :path])
@@ -268,6 +283,7 @@
                    (assoc-in products [:source-read-receipt :finalized] false)
                    (assoc-in products [:source-read-receipt :counters :finalize-count] 2)
                    (assoc-in products [:source-read-receipt :tree] commit)
+                   (assoc-in products [:source-read-receipt :source-descriptors-root] (codec/H :wrong))
                    (assoc-in products [:source-read-receipt :role] :invalid-role)
                    (assoc-in products [:sh06-resolution-plan-authority :content :tree] commit)
                    (coherent-event-mutation products 17)
