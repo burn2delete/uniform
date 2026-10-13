@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh07-b51-attempt32-tier0-materializer-test
   (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
@@ -36,6 +37,10 @@
            root :independent-verifier-census)
         coordinates [:source-sha256 :semantic-id :executable-id
                      :dependency-closure-id]
+        b-fragments
+        (->> (file-seq (io/file (.toFile root) "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt30_independent_census"))
+             (filter #(.isFile %))
+             (map #(str (.relativize root (.toPath %)))))
         local-paths
         #(mapv :relative-path (get-in % [:dependencies :local-source-records]))]
     (is (= :source-first-exhaustive
@@ -49,11 +54,31 @@
               root :independent-verifier-census)))
     (is (every? #(not (.startsWith ^String % "/"))
                 (concat (local-paths a) (local-paths b))))
-    (is (= ["bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
-            "bootstrap/clojure/src/gravity/digest.clj"]
+    (is (= (vec (sort (concat
+                      ["bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
+                       "bootstrap/clojure/src/gravity/digest.clj"]
+                      b-fragments)))
            (local-paths b)))
     (is (not (some #{"bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"}
                    (local-paths a))))))
+
+(deftest checker-identity-rejects-implementation-file-substitution
+  (let [root (repository-root)
+        fragment (.resolve root "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt30_independent_census/01-input-keys.clj")
+        read-var (ns-resolve 'gravity.tools.sh07-b51-attempt32-checker-identity
+                             'read-bytes)
+        read-bytes (var-get read-var)]
+    (clojure.core/with-redefs-fn
+      {read-var (fn [path]
+                  (let [bytes (read-bytes path)]
+                    (if (= fragment path)
+                      (.getBytes (str (String. bytes StandardCharsets/UTF_8)
+                                      "\n; substituted implementation\n")
+                                 StandardCharsets/UTF_8)
+                      bytes)))}
+      #(is (thrown-with-msg?
+            clojure.lang.ExceptionInfo #"classpath resource differs from checkout"
+            (identity/checker-identity-manifest root :independent-verifier-census))))))
 
 (defn- checker [role]
   (let [prefix (case role :producer-census "a" "b")
@@ -191,9 +216,10 @@
         (is (not= base-id changed-id)))))
 
 (deftest materializer-bootstrap-call-surface-is-exact-and-pin-free
-  (let [path
-        "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_tier0_materializer.clj"
-        forms (bootstrap/read-forms path (slurp path))
+  (let [paths
+        ["bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_tier0_materializer/01-predecessor-executable-descriptor-id.clj"
+         "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_tier0_materializer/02-validate-reloaded-evidence.clj"]
+        forms (mapcat #(bootstrap/read-forms % (slurp %)) paths)
         symbols (->> (tree-seq coll? seq forms)
                      (filter symbol?)
                      (filter #(= "bootstrap" (namespace %)))
@@ -419,7 +445,7 @@
 
 (deftest final-snapshot-recheck-is-between-staged-reload-and-atomic-move
   (let [path
-        "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_materialize.clj"
+        "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_materialize/02-reload-validate-output.clj"
         forms (bootstrap/read-forms path (slurp path))
         publish (first (filter #(and (seq? %) (= 'defn- (first %))
                                      (= 'publish-files! (second %)))
