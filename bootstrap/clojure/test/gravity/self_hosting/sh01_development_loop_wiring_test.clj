@@ -207,8 +207,11 @@
   (let [first-snapshot (wiring/repository-snapshot ".")
         second-snapshot (wiring/repository-snapshot ".")]
     (is (= first-snapshot second-snapshot))
-    (is (= :gravity/sh01-complete-repository-snapshot-v1
+    (is (= :gravity/sh01-incremental-repository-snapshot-v2
            (:schema first-snapshot)))
+    (is (= :git-index-overlay-v2 (:snapshot-engine first-snapshot)))
+    (is (<= (:hashed-path-count first-snapshot)
+            (:overlay-path-count first-snapshot)))
     (is (pos? (:path-count first-snapshot)))
     (is (boolean
          (re-matches #"sha256:[0-9a-f]{64}"
@@ -229,14 +232,30 @@
                    (make-array java.nio.file.OpenOption 0))
       (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
                                   :dir (str repository-root)))))
+      (is (zero? (:exit (shell/sh "git" "-c" "user.name=Gravity"
+                                  "-c" "user.email=gravity@example.invalid"
+                                  "commit" "-qm" "fixture"
+                                  :dir (str repository-root)))))
       (let [first-snapshot (wiring/repository-snapshot repository-root)
             original-time (Files/getLastModifiedTime tracked no-links)]
+        (is (= :git-index-overlay-v2 (:snapshot-engine first-snapshot)))
+        (is (zero? (:overlay-path-count first-snapshot)))
+        (is (zero? (:hashed-path-count first-snapshot)))
+        (is (zero? (:hashed-byte-count first-snapshot)))
         (Files/write tracked (.getBytes "other" "UTF-8")
                      (make-array java.nio.file.OpenOption 0))
         (Files/setLastModifiedTime tracked original-time)
         (let [content-snapshot (wiring/repository-snapshot repository-root)]
+          (is (= 1 (:overlay-path-count content-snapshot)))
+          (is (= 1 (:hashed-path-count content-snapshot)))
+          (is (= 5 (:hashed-byte-count content-snapshot)))
           (is (not= (:repository-identity first-snapshot)
                     (:repository-identity content-snapshot)))
+          (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
+                                      :dir (str repository-root)))))
+          (let [staged-snapshot (wiring/repository-snapshot repository-root)]
+            (is (not= (:repository-identity content-snapshot)
+                      (:repository-identity staged-snapshot))))
           (Files/write untracked (.getBytes "inventory" "UTF-8")
                        (make-array java.nio.file.OpenOption 0))
           (let [inventory-snapshot
@@ -244,7 +263,143 @@
             (is (= (inc (:path-count content-snapshot))
                    (:path-count inventory-snapshot)))
             (is (not= (:repository-identity content-snapshot)
-                      (:repository-identity inventory-snapshot)))))))))
+                      (:repository-identity inventory-snapshot)))
+            (Files/delete tracked)
+            (let [deleted-snapshot
+                  (wiring/repository-snapshot repository-root)]
+              (is (not= (:repository-identity inventory-snapshot)
+                        (:repository-identity deleted-snapshot)))
+              (is (= 1 (:hashed-path-count deleted-snapshot))))))))))
+
+(deftest repository-snapshot-falls-back-for-index-flags
+  (with-coordination-root [base]
+    (let [repository-root (.resolve (.toRealPath base no-links) "repository")
+          tracked (.resolve repository-root "tracked.txt")]
+      (Files/createDirectories repository-root no-file-attributes)
+      (is (zero? (:exit (shell/sh "git" "init" "-q"
+                                  :dir (str repository-root)))))
+      (Files/write tracked (.getBytes "tracked" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
+                                  :dir (str repository-root)))))
+      (is (zero? (:exit (shell/sh "git" "update-index" "--skip-worktree"
+                                  "tracked.txt" :dir (str repository-root)))))
+      (let [snapshot (wiring/repository-snapshot repository-root)
+            alternate-blob
+            (str/trim
+             (:out (shell/sh "git" "hash-object" "-w" "--stdin"
+                             :in "alternate" :dir (str repository-root))))]
+        (is (= :gravity/sh01-incremental-repository-snapshot-v2
+               (:schema snapshot)))
+        (is (= :git-index-full-content-v2 (:snapshot-engine snapshot)))
+        (is (= 1 (:hashed-path-count snapshot)))
+        (is (= 7 (:hashed-byte-count snapshot)))
+        (is (zero? (:exit (shell/sh "git" "update-index"
+                                    "--no-skip-worktree" "tracked.txt"
+                                    :dir (str repository-root)))))
+        (is (zero? (:exit (shell/sh "git" "update-index" "--cacheinfo"
+                                    "100644" alternate-blob "tracked.txt"
+                                    :dir (str repository-root)))))
+        (is (zero? (:exit (shell/sh "git" "update-index" "--skip-worktree"
+                                    "tracked.txt" :dir (str repository-root)))))
+        (is (not= (:repository-identity snapshot)
+                  (:repository-identity
+                  (wiring/repository-snapshot repository-root))))))))
+
+(deftest repository-snapshot-falls-back-when-git-ignores-file-mode
+  (with-coordination-root [base]
+    (let [repository-root (.resolve (.toRealPath base no-links) "repository")
+          tracked (.resolve repository-root "tracked.txt")]
+      (Files/createDirectories repository-root no-file-attributes)
+      (is (zero? (:exit (shell/sh "git" "init" "-q"
+                                  :dir (str repository-root)))))
+      (Files/write tracked (.getBytes "tracked" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (Files/setPosixFilePermissions
+       tracked (PosixFilePermissions/fromString "rw-------"))
+      (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
+                                  :dir (str repository-root)))))
+      (is (zero? (:exit (shell/sh "git" "config" "core.filemode" "false"
+                                  :dir (str repository-root)))))
+      (let [before (wiring/repository-snapshot repository-root)]
+        (is (= :git-index-full-content-v2 (:snapshot-engine before)))
+        (Files/setPosixFilePermissions
+         tracked (PosixFilePermissions/fromString "rwx------"))
+        (let [after (wiring/repository-snapshot repository-root)]
+          (is (not= (:repository-identity before)
+                    (:repository-identity after))))))))
+
+(deftest repository-snapshot-falls-back-for-clean-checkout-transforms
+  (with-coordination-root [base]
+    (let [repository-root (.resolve (.toRealPath base no-links) "repository")
+          tracked (.resolve repository-root "tracked.txt")
+          attributes (.resolve repository-root ".gitattributes")]
+      (Files/createDirectories repository-root no-file-attributes)
+      (is (zero? (:exit (shell/sh "git" "init" "-q"
+                                  :dir (str repository-root)))))
+      (Files/write tracked (.getBytes "line-one\nline-two\n" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (is (zero? (:exit (shell/sh "git" "add" "tracked.txt"
+                                  :dir (str repository-root)))))
+      (let [plain (wiring/repository-snapshot repository-root)]
+        (is (= :git-index-overlay-v2 (:snapshot-engine plain)))
+        (is (zero? (:exit (shell/sh "git" "config" "core.autocrlf" "input"
+                                    :dir (str repository-root)))))
+        (is (= :git-index-full-content-v2
+               (:snapshot-engine
+                (wiring/repository-snapshot repository-root))))
+        (is (zero? (:exit (shell/sh "git" "config" "core.autocrlf" "true"
+                                    :dir (str repository-root)))))
+        (Files/delete tracked)
+        (is (zero? (:exit (shell/sh "git" "checkout" "--" "tracked.txt"
+                                    :dir (str repository-root)))))
+        (let [crlf (wiring/repository-snapshot repository-root)]
+          (is (= :git-index-full-content-v2 (:snapshot-engine crlf)))
+          (is (not= (:repository-identity plain)
+                    (:repository-identity crlf)))))
+      (is (zero? (:exit (shell/sh "git" "config" "core.autocrlf" "false"
+                                  :dir (str repository-root)))))
+      (Files/write attributes (.getBytes "*.txt text eol=crlf\n" "UTF-8")
+                   (make-array java.nio.file.OpenOption 0))
+      (is (zero? (:exit (shell/sh "git" "add" ".gitattributes"
+                                  :dir (str repository-root)))))
+      (is (= :git-index-full-content-v2
+             (:snapshot-engine
+              (wiring/repository-snapshot repository-root)))))))
+
+(deftest repository-snapshot-rejects-invalid-git-path-encoding-and-early-limit
+  (let [nul-separated-paths
+        (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                    'nul-separated-paths)
+        repository-paths
+        (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                    'repository-paths)
+        run-git-bytes!
+        (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                    'run-git-bytes!)
+        enforce-limit
+        (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                    'enforce-nul-entry-limit!)
+        invalid-path (byte-array [(unchecked-byte 0xff) (byte 0)])
+        over-limit (byte-array 100001)]
+    (is (= "SH01-DEVELOPMENT-LOOP-GIT"
+           (:id (exception-data #(nul-separated-paths invalid-path)))))
+    (is (= "SH01-DEVELOPMENT-LOOP-GIT"
+           (:id
+            (with-redefs-fn
+              {run-git-bytes! (fn [_ _] invalid-path)}
+              #(exception-data (fn [] (repository-paths ".")))))))
+    (is (= "SH01-DEVELOPMENT-LOOP-SNAPSHOT-LIMIT"
+           (:id (exception-data #(enforce-limit over-limit)))))))
+
+(deftest repository-snapshot-wraps-git-input-failures
+  (let [run-git-bytes!
+        (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring
+                    'run-git-bytes!)]
+    (is (= "SH01-DEVELOPMENT-LOOP-GIT"
+           (:id (exception-data
+                 #(run-git-bytes! "." ["version"]
+                                  (byte-array (* 4 1024 1024)))))))))
 
 (deftest external-classpath-command-bytes-and-mode-affect-identities
   (with-coordination-root [base]

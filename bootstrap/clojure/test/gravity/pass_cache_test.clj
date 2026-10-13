@@ -1,6 +1,7 @@
 (ns gravity.pass-cache-test
   (:require [clojure.test :refer [deftest is]]
-            [gravity.pass-cache :as cache])
+            [gravity.pass-cache :as cache]
+            [gravity.pass-cache.receipt-validation :as receipt-validation])
   (:import [java.nio.file Files LinkOption Path Paths StandardOpenOption]
            [java.util.concurrent TimeUnit]
            [java.nio.file.attribute PosixFilePermissions]))
@@ -234,6 +235,37 @@
     (is (false? (get-in contract [:authority :proof-authority?])))
     (is (false? (get-in contract [:authority :equivalence-authority?])))
     (is (false? (get-in contract [:authority :self-hosting-authority?])))))
+
+(deftest cache-operation-schema-preserves-generic-clients-and-closes-c2-roles
+  (let [ordinary (operations (atom {}))
+        recovery (fn [artifact _ _] artifact)
+        artifact-client (-> ordinary
+                            (dissoc :validate-output!)
+                            (assoc :validate-artifact! recovery))
+        requested (fn [artifact _ _ _] artifact)
+        output (:validate-output! ordinary)
+        handoff (fn [error _] (throw error))
+        split (assoc ordinary
+                     :validate-artifact! recovery
+                     :validate-requested-retained-artifact! requested
+                     :capacity-failure-handoff! handoff)]
+    (is (identical? ordinary
+                    (receipt-validation/validate-cache-operations! ordinary)))
+    (is (identical?
+         artifact-client
+         (receipt-validation/validate-cache-operations! artifact-client)))
+    (is (identical? split
+                    (receipt-validation/validate-cache-operations! split)))
+    (doseq [invalid [(dissoc split :validate-artifact!)
+                     (dissoc split :validate-requested-retained-artifact!)
+                     (dissoc split :validate-output!)
+                     (assoc split :validate-requested-retained-artifact!
+                            recovery)
+                     (assoc ordinary
+                            :validate-requested-retained-artifact! requested)
+                     (assoc ordinary :invocation-token (Object.))]]
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (receipt-validation/validate-cache-operations! invalid))))))
 
 (deftest key-binds-contract-and-c16-invalidators
   (let [base (request) key (cache/stage-cache-key base)

@@ -1,14 +1,25 @@
 (ns gravity.development-test-runner
   "Namespace-lazy, deterministic feedback runner for reviewed compatibility tests.
 
-  The static catalog is the complete require authority. Selection changes only
-  the vars passed through clojure.test's normal namespace and fixture pipeline."
-  (:require [clojure.string :as str]
+  The legacy catalog remains an independently reviewed compatibility oracle.
+  A validated UEP projection adds only fast exact-variable warm routes; the
+  two views are read together without granting acceptance authority."
+  (:require [clojure.set :as set]
+            [clojure.string :as str]
             [clojure.test :as test])
   (:import [java.lang.management ManagementFactory]))
 
 (def ^:private runner-loaded-at-epoch-ms (System/currentTimeMillis))
 (def ^:dynamic *timing-events* nil)
+(def ^:dynamic *machine-result-sink*
+  "Optional sink for one closed, non-authoritative execution result.
+
+  The normal CLI remains an integer-returning human-facing API.  The bounded
+  warm worker binds this sink so it can transport the counters produced by
+  `clojure.test` instead of inferring them from captured text or selectors."
+  nil)
+
+(def machine-result-schema :gravity/development-test-result-v1)
 
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
@@ -89,23 +100,165 @@
     :path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c18_test.clj"}])
 
 (def ^:private default-test-namespace 'gravity.bootstrap-test)
+;; Keep this binding as the immutable compatibility oracle.  It is deliberately
+;; not rewritten when the manifest projection is read.
+(def ^:private legacy-namespace-catalog namespace-catalog)
 (def ^:private catalog-by-namespace
   (into {} (map (juxt :namespace identity) namespace-catalog)))
+
+(def ^:private maximum-namespace-authority-entries 256)
+
+(defn- authority-failure
+  [id message data]
+  (throw (ex-info message (assoc data :id id))))
+
+(defn- generated-namespace-authority
+  "Read and validate the manifest projection at the consumer boundary.
+
+  Binding the projection to `uep/catalog` here keeps a stale or independently
+  fabricated projection from becoming namespace authority."
+  []
+  (let [stable-exception? (fn [error]
+                            (let [id (:id (ex-data error))]
+                              (and (string? id)
+                                   (or (str/starts-with? id "UEP-")
+                                       (str/starts-with? id "DEV-")))))
+        invoke-authority (fn [id message data f]
+                           (try
+                             (f)
+                             (catch clojure.lang.ExceptionInfo error
+                               (if (stable-exception? error)
+                                 (throw error)
+                                 (authority-failure id message
+                                                    (assoc data :class (.getName (class error))))))
+                             (catch Exception error
+                               (authority-failure id message
+                                                  (assoc data :class (.getName (class error)))))))
+        resolve-var (fn [symbol]
+                      (or (invoke-authority
+                           "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                           "manifest namespace authority could not be loaded"
+                           {:symbol symbol}
+                           #(requiring-resolve symbol))
+                          (authority-failure
+                           "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                           "manifest namespace authority function is unavailable"
+                           {:symbol symbol})))
+        resolved-value (fn [symbol]
+                         (let [resolved (resolve-var symbol)]
+                           (if (var? resolved)
+                             (invoke-authority
+                              "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                              "manifest namespace authority could not be evaluated"
+                              {:symbol symbol}
+                              #(var-get resolved))
+                             resolved)))]
+    (let [projection-fn (resolved-value
+                         'gravity.self-hosting.unified-execution-plan/namespace-authority-projection)
+          validator-fn (resolved-value
+                        'gravity.self-hosting.unified-execution-plan/validate-namespace-authority-projection)
+          catalog (resolved-value
+                   'gravity.self-hosting.unified-execution-plan/catalog)]
+      (when-not (fn? projection-fn)
+        (authority-failure "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                           "manifest projection resolver returned a non-callable value" {}))
+      (when-not (fn? validator-fn)
+        (authority-failure "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                           "manifest projection validator returned a non-callable value" {}))
+      (let [projection (invoke-authority
+                        "DEV-NAMESPACE-AUTHORITY-RESOLVE"
+                        "manifest namespace authority could not be evaluated"
+                        {}
+                        projection-fn)]
+        (let [validated (invoke-authority
+                         "DEV-NAMESPACE-AUTHORITY-VALIDATION"
+                         "manifest namespace authority validation failed"
+                         {}
+                         #(validator-fn catalog projection))]
+          (when-not (= validated projection)
+            (authority-failure
+             "DEV-NAMESPACE-AUTHORITY-VALIDATION"
+             "manifest namespace authority validator returned a different projection"
+             {})))
+        projection))))
+
+(defn- equivalent-namespace-entry?
+  [legacy generated]
+  (= (select-keys legacy [:namespace :path :selectors])
+     (select-keys generated [:namespace :path :selectors])))
+
+(defn- ensure-legacy-catalog-unchanged!
+  []
+  (when-not (= namespace-catalog legacy-namespace-catalog)
+    (authority-failure
+     "DEV-NAMESPACE-CATALOG-DRIFT"
+     "public legacy namespace catalog differs from its reviewed oracle"
+     {:expected-count (count legacy-namespace-catalog)
+      :actual-count (count namespace-catalog)})))
+
+(defn namespace-authority
+  "Return the compatibility catalog plus validated fast-route entries.
+
+  Existing legacy entries retain their ordering and shape.  On an intentional
+  namespace overlap, the generated route ownership is merged only after the
+  legacy path and selector set match exactly; otherwise admission fails closed.
+  The result is non-authoritative and is used solely for bounded development
+  selection and warm-worker admission."
+  []
+  (let [_ (ensure-legacy-catalog-unchanged!)
+        live-legacy-namespace-catalog namespace-catalog
+        generated (generated-namespace-authority)
+        generated-by (into {} (map (juxt :namespace identity) (:entries generated)))
+        legacy-by (into {} (map (juxt :namespace identity)
+                                live-legacy-namespace-catalog))
+        overlaps (set/intersection (set (keys legacy-by)) (set (keys generated-by)))]
+    (doseq [namespace (sort-by str overlaps)]
+      (when-not (equivalent-namespace-entry? (get legacy-by namespace)
+                                              (get generated-by namespace))
+        (authority-failure
+         "DEV-NAMESPACE-AUTHORITY-PARITY"
+         "legacy and manifest namespace authority entries disagree"
+         {:namespace namespace
+          :legacy (get legacy-by namespace)
+          :generated (get generated-by namespace)})))
+    (let [entries
+          (vec
+           (concat
+            (mapv (fn [legacy]
+                    (if-let [generated-entry (get generated-by (:namespace legacy))]
+                      (merge legacy generated-entry)
+                      legacy))
+                  live-legacy-namespace-catalog)
+            (->> (:entries generated)
+                 (remove #(contains? legacy-by (:namespace %)))
+                 (sort-by #(str (:namespace %))))))]
+      (when-not (<= 1 (count entries) maximum-namespace-authority-entries)
+        (authority-failure "DEV-NAMESPACE-AUTHORITY-BOUNDS"
+                           "namespace authority entry count exceeds bound"
+                           {:count (count entries)}))
+      {:projection generated
+       :entries entries
+       :generated-namespaces
+       (->> (:entries generated)
+            (map :namespace)
+            (map str)
+            sort
+            vec)})))
 
 (def ^:private usage-text
   (str
    "Usage: clojure -M:<alias> -m gravity.development-test-runner [options]\n"
    "\n"
-   "Runs gravity.bootstrap-test by default, or selected static catalog namespaces.\n"
+   "Runs gravity.bootstrap-test by default, or selected reviewed catalog namespaces.\n"
    "With no selector, all tests in the selected namespace set run.\n"
    "\n"
    "Options (repeatable):\n"
-   "  --namespace NS    select an allowed static-catalog namespace\n"
+   "  --namespace NS    select an allowed reviewed-catalog namespace\n"
    "  --exact NAME      select NAME or a selected namespace/NAME exactly\n"
    "  --regex REGEX     select names matching REGEX\n"
    "  --prefix PREFIX   select names beginning with PREFIX\n"
    "  --list            print selected qualified names without running tests\n"
-   "  --catalog         print the static namespace/path catalog without loading tests\n"
+   "  --catalog         print the reviewed namespace/path catalog without loading tests\n"
    "  --fail-fast       stop after the first test failure or error\n"
    "  --timing-receipt FILE\n"
    "                    write non-authoritative machine-readable EDN timing telemetry\n"
@@ -185,13 +338,68 @@
                  (update options :exact conj
                          (selector-value "selector" argument))))))))
 
-(defn- selected-namespace-records [{:keys [namespaces]}]
-  (let [requested (if (seq namespaces) (set namespaces) #{default-test-namespace})]
-    (doseq [namespace requested]
-      (when-not (contains? catalog-by-namespace namespace)
-        (throw (ex-info (str "unknown test namespace: " namespace)
-                        {:type ::unknown-namespace :namespace namespace}))))
-    (filterv #(contains? requested (:namespace %)) namespace-catalog)))
+(defn- selector-in-generated-entry?
+  [entry selector]
+  (let [namespace-prefix (str (:namespace entry) "/")
+        normalized (cond
+                     (str/starts-with? selector namespace-prefix)
+                     (subs selector (count namespace-prefix))
+
+                     (str/includes? selector "/") nil
+                     :else selector)]
+    (and normalized (some #{normalized} (:selectors entry)))))
+
+(defn- validate-generated-selection!
+  [generated-entries {:keys [exact regex prefix]}]
+  (when (seq generated-entries)
+    (when (or (seq regex) (seq prefix) (not (seq exact)))
+      (authority-failure
+       "DEV-NAMESPACE-SELECTION"
+       "manifest-generated namespaces require exact selectors"
+       {:namespaces (vec (sort (map #(str (:namespace %)) generated-entries)))
+        :exact (vec exact)
+        :regex (vec regex)
+        :prefix (vec prefix)}))
+    (doseq [selector exact]
+      (when-not (some #(selector-in-generated-entry? % selector)
+                      generated-entries)
+        (authority-failure
+         "DEV-NAMESPACE-SELECTOR"
+         "selector is outside manifest namespace authority"
+         {:selector selector
+          :namespaces (vec (sort (map #(str (:namespace %)) generated-entries)))})))))
+
+(defn- selected-namespace-records [{:keys [namespaces] :as options}]
+  (let [requested (if (seq namespaces) (set namespaces) #{default-test-namespace})
+        legacy-by-namespace (set (keys catalog-by-namespace))]
+    ;; Keep the default and legacy-only development path byte-for-byte static:
+    ;; requiring the manifest projection is reserved for generated selection,
+    ;; catalog display, and the explicitly warm worker.
+    (if (set/subset? requested legacy-by-namespace)
+      (do
+        (ensure-legacy-catalog-unchanged!)
+        (filterv #(contains? requested (:namespace %)) legacy-namespace-catalog))
+      (let [authority (namespace-authority)
+            entries (:entries authority)
+            by-namespace (into {} (map (juxt :namespace identity) entries))
+            generated-namespaces (set (map symbol (:generated-namespaces authority)))
+            generated-requested (->> requested
+                                    (filter generated-namespaces)
+                                    (map #(get by-namespace %))
+                                    vec)
+            legacy-requested (set/intersection requested legacy-by-namespace)]
+        (doseq [namespace requested]
+          (when-not (contains? by-namespace namespace)
+            (throw (ex-info (str "unknown test namespace: " namespace)
+                            {:type ::unknown-namespace :namespace namespace}))))
+        (when (and (seq generated-requested) (seq legacy-requested))
+          (authority-failure
+           "DEV-NAMESPACE-SELECTION"
+           "legacy and manifest-generated namespaces cannot be mixed"
+           {:legacy (vec (sort (map str legacy-requested)))
+            :generated (vec (sort (map #(str (:namespace %)) generated-requested)))}))
+        (validate-generated-selection! generated-requested options)
+        (filterv #(contains? requested (:namespace %)) entries)))))
 
 (defn- load-selected-namespaces! [namespace-records]
   (doseq [{:keys [namespace]} namespace-records]
@@ -393,7 +601,7 @@
   (flush))
 
 (defn- print-catalog []
-  (doseq [{:keys [namespace path]} namespace-catalog]
+  (doseq [{:keys [namespace path]} (:entries (namespace-authority))]
     (println (str namespace "\t" path)))
   (flush))
 
@@ -422,11 +630,26 @@
                   (write-timing-receipt! path options namespace-records
                                          selected-records @timing-events summary
                                          elapsed-ns))
-                (if (and (zero? (:fail summary))
-                         (zero? (:error summary))
-                         (= (:test summary) (count selected-records)))
-                  0
-                  1)))))))))
+                (let [passed? (and (zero? (:fail summary))
+                                   (zero? (:error summary))
+                                   (= (:test summary) (count selected-records)))
+                      exit-code (if passed? 0 1)
+                      result {:schema machine-result-schema
+                              :authority :non-authoritative
+                              :authoritative? false
+                              :selection {:namespaces
+                                          (mapv (comp str :namespace)
+                                                namespace-records)
+                                          :test-vars
+                                          (mapv :qualified-name selected-records)
+                                          :fail-fast? (:fail-fast? options)}
+                              :summary (select-keys summary
+                                                    [:test :pass :fail :error])
+                              :outcome (if passed? :passed :failed)
+                              :exit-code exit-code}]
+                  (when *machine-result-sink*
+                    (*machine-result-sink* result))
+                  exit-code)))))))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]

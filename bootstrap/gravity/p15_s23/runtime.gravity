@@ -373,7 +373,10 @@
      p15-s23-runtime-evaluate-bindings
      p15-s23-runtime-evaluate-sequence
      p15-s23-runtime-evaluate-closed-instruction
-     p15-s23-runtime-execute-closed-plan}
+     p15-s23-runtime-execute-closed-plan
+     p15-s23-runtime-b51-machine-action-shape?
+     p15-s23-runtime-b51-machine-frame-shape?
+     p15-s23-runtime-b51-machine-state}
    :edges
    {main #{p15-s23-runtime-format-value}
     p15-s23-runtime-format-value #{}
@@ -398,7 +401,11 @@
       p15-s23-runtime-evaluate-sequence
       p15-s23-runtime-evaluate-closed-instruction}
     p15-s23-runtime-execute-closed-plan
-    #{p15-s23-runtime-evaluate-sequence}}
+    #{p15-s23-runtime-evaluate-sequence}
+    p15-s23-runtime-b51-machine-action-shape? #{}
+    p15-s23-runtime-b51-machine-frame-shape? #{}
+    p15-s23-runtime-b51-machine-state
+    #{p15-s23-runtime-b51-machine-action-shape?}}
    :function-to-scc
    {main :scc-main
     p15-s23-runtime-format-value :scc-format
@@ -410,7 +417,10 @@
     p15-s23-runtime-evaluate-sequence :scc-evaluator
     p15-s23-runtime-evaluate-closed-instruction :scc-evaluator
     p15-s23-runtime-println-output :scc-println-output
-    p15-s23-runtime-execute-closed-plan :scc-execute}
+    p15-s23-runtime-execute-closed-plan :scc-execute
+    p15-s23-runtime-b51-machine-action-shape? :scc-b51-action
+    p15-s23-runtime-b51-machine-frame-shape? :scc-b51-frame
+    p15-s23-runtime-b51-machine-state :scc-b51-state}
    :sccs
    [{:scc-id :scc-main :functions #{main} :recursive? false}
     {:scc-id :scc-format
@@ -437,11 +447,21 @@
      :recursive? true}
     {:scc-id :scc-execute
      :functions #{p15-s23-runtime-execute-closed-plan}
+     :recursive? false}
+    {:scc-id :scc-b51-action
+     :functions #{p15-s23-runtime-b51-machine-action-shape?}
+     :recursive? false}
+    {:scc-id :scc-b51-frame
+     :functions #{p15-s23-runtime-b51-machine-frame-shape?}
+     :recursive? false}
+    {:scc-id :scc-b51-state
+     :functions #{p15-s23-runtime-b51-machine-state}
      :recursive? false}]
    :condensation-edges
    #{[:scc-main :scc-format]
      [:scc-evaluator :scc-println-output]
-     [:scc-execute :scc-evaluator]}
+     [:scc-execute :scc-evaluator]
+     [:scc-b51-state :scc-b51-action]}
    :recursive-scc-ids #{:scc-evaluator :scc-println-output}
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
@@ -460,8 +480,8 @@
     :builtin/assoc :assoc
     :builtin/rest :rest}
    :proven-allocation-operation-counts
-   {:str 11 :vector 10 :map 2 :conj 1 :assoc 1}
-   :proven-allocation-count 25
+   {:str 11 :vector 10 :map 9 :conj 1 :assoc 1}
+   :proven-allocation-count 32
    :allocation-unproven-operation-counts {:rest 4}
    :allocation-unproven-count 4
    :functions
@@ -476,6 +496,58 @@
      :direct-allocation-sites #{}
      :proven-allocation-operation-counts {}
      :proven-allocation-sites []
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? true
+     :ordering :sequence}
+    p15-s23-runtime-b51-machine-action-shape?
+    {:direct-effects #{}
+     :transitive-effects #{}
+     :handled-effects #{}
+     :escaping-effects #{}
+     :residual-effects #{}
+     :source-required-capabilities #{}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{}
+     :proven-allocation-operation-counts {}
+     :proven-allocation-sites []
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? false
+     :ordering :sequence}
+    p15-s23-runtime-b51-machine-frame-shape?
+    {:direct-effects #{}
+     :transitive-effects #{}
+     :handled-effects #{}
+     :escaping-effects #{}
+     :residual-effects #{}
+     :source-required-capabilities #{}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{}
+     :proven-allocation-operation-counts {}
+     :proven-allocation-sites []
+     :allocation-unproven-operation-counts {}
+     :allocation-unproven-sites []
+     :transitive-allocation? false
+     :ordering :sequence}
+    p15-s23-runtime-b51-machine-state
+    {:direct-effects #{:memory/allocate}
+     :transitive-effects #{:memory/allocate}
+     :handled-effects #{}
+     :escaping-effects #{:memory/allocate}
+     :residual-effects #{:memory/allocate}
+     :source-required-capabilities #{:memory/allocator}
+     :handler-required-capabilities #{}
+     :direct-allocation-sites #{:literal/map}
+     :proven-allocation-operation-counts {:map 7}
+     :proven-allocation-sites
+     [{:operation :map :ordinal 0}
+      {:operation :map :ordinal 1}
+      {:operation :map :ordinal 2}
+      {:operation :map :ordinal 3}
+      {:operation :map :ordinal 4}
+      {:operation :map :ordinal 5}
+      {:operation :map :ordinal 6}]
      :allocation-unproven-operation-counts {}
      :allocation-unproven-sites []
      :transitive-allocation? true
@@ -665,6 +737,22 @@
      :residual #{:memory/allocate} :handled #{}
      :escaping #{:memory/allocate} :ordering :sequence
      :source {:module gravity.bootstrap.p15-s23.runtime :function main}}
+    p15-s23-runtime-b51-machine-action-shape?
+    {:direct #{} :latent #{} :transitive #{}
+     :residual #{} :handled #{} :escaping #{} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-b51-machine-action-shape?}}
+    p15-s23-runtime-b51-machine-frame-shape?
+    {:direct #{} :latent #{} :transitive #{}
+     :residual #{} :handled #{} :escaping #{} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-b51-machine-frame-shape?}}
+    p15-s23-runtime-b51-machine-state
+    {:direct #{:memory/allocate} :latent #{}
+     :transitive #{:memory/allocate} :residual #{:memory/allocate}
+     :handled #{} :escaping #{:memory/allocate} :ordering :sequence
+     :source {:module gravity.bootstrap.p15-s23.runtime
+              :function p15-s23-runtime-b51-machine-state}}
     p15-s23-runtime-format-value
     {:direct #{:memory/allocate} :latent #{}
      :transitive #{:memory/allocate} :residual #{:memory/allocate}
@@ -734,6 +822,19 @@
               :function p15-s23-runtime-execute-closed-plan}}}
    :functions
    {main
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{:memory/allocate}
+     :latent #{:memory/allocate} :throws #{}
+     :handled #{} :escaping #{:memory/allocate}}
+    p15-s23-runtime-b51-machine-action-shape?
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{} :latent #{} :throws #{}
+     :handled #{} :escaping #{}}
+    p15-s23-runtime-b51-machine-frame-shape?
+    {:declared #{:memory/allocate :io/write}
+     :inferred #{} :latent #{} :throws #{}
+     :handled #{} :escaping #{}}
+    p15-s23-runtime-b51-machine-state
     {:declared #{:memory/allocate :io/write}
      :inferred #{:memory/allocate}
      :latent #{:memory/allocate} :throws #{}
@@ -1788,6 +1889,79 @@
      :status :complete
      :clojure-seed-boundary? true
      :self-hosted? false}))
+
+; Attempt-24 fixes the cross-plan execution schedule independently of the
+; remaining host interpreter bridge.  The host must replay these exact bounds
+; and state transitions; it may not replace an external edge with a recursive
+; host-language function call.
+(def p15-s23-runtime-b51-machine-contract
+  {:artifact :gravity/sh07-b51-runtime-machine-contract-v1
+   :schema-version 1
+   :action-keys #{:kind :plan-id :environment :instruction}
+   :frame-keys #{:kind :plan-id :environment :remaining :values}
+   :maximum-steps 8388608
+   :maximum-frames 4096
+   :maximum-external-calls 65536
+   :external-route-authentication :before-argument-evaluation
+   :argument-order :left-to-right
+   :external-dispatch :explicit-continuation
+   :host-recursion :forbidden
+   :route-failure-commit :none})
+
+(defn p15-s23-runtime-b51-machine-action-shape?
+  [action]
+  (if (map? action)
+    (if (= #{:kind :plan-id :environment :instruction}
+           (set (keys action)))
+      (if (contains? #{:evaluate :return} (get action :kind))
+        true
+        false)
+      false)
+    false))
+
+(defn p15-s23-runtime-b51-machine-frame-shape?
+  [frame]
+  (if (map? frame)
+    (if (= #{:kind :plan-id :environment :remaining :values}
+           (set (keys frame)))
+      (if (vector? (get frame :remaining))
+        (vector? (get frame :values))
+        false)
+      false)
+    false))
+
+(defn p15-s23-runtime-b51-machine-state
+  [action frames steps trace]
+  (if (p15-s23-runtime-b51-machine-action-shape? action)
+    (if (vector? frames)
+      (if (vector? trace)
+        (if (<= (count frames) 4096)
+          (if (<= (count trace) 65536)
+            (if (<= steps 8388608)
+              {:artifact :gravity/sh07-b51-runtime-machine-state-v1
+               :action action
+               :frames frames
+               :steps steps
+               :external-call-trace trace
+               :status :running}
+              {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+               :reason :runtime-step-bound
+               :status :rejected})
+            {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+             :reason :external-call-trace-bound
+             :status :rejected})
+          {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+           :reason :continuation-frame-bound
+           :status :rejected})
+        {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+         :reason :malformed-trace
+         :status :rejected})
+      {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+       :reason :malformed-continuation
+       :status :rejected})
+    {:artifact :gravity/sh07-b51-runtime-machine-boundary-v1
+     :reason :malformed-action
+     :status :rejected}))
 
 (defn main
   []

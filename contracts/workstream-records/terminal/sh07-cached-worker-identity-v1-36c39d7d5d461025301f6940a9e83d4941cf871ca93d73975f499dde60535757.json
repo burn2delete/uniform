@@ -1,0 +1,166 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "41d55e94c1e01acbe4cea401eb6b70209a512a59",
+  "candidate_commit": "51942552433fe89feacc7486c792f626f1e198fa",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-cached-operation-manifest-v1",
+    "sh07-warm-worker-cached-protocol-v1"
+  ],
+  "disposition": "Integrated the exact independently accepted reconciled whole candidate onto canonical local main at merge commit e1fae42d6452a91a88976b408d8444b97d98ddb5. This binds cached worker requests and responses to locally validated route, plan, catalog, closure, shard, and result-contract identities while preserving lazy generic worker loading and exact/shutdown compatibility. It wires no parent lane, retires no runner, and grants no SH roadmap credit or acceptance authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj",
+      "five locally plan-derived cached requests",
+      "closed cached identity response with exact raw result"
+    ],
+    "rejected_fixtures": [
+      "stale plan, catalog, or closure identity",
+      "route, lane, shard, or result-contract mismatch",
+      "post-execution catalog or plan drift",
+      "cached output truncation or raw result tampering",
+      "direct or causally wrapped interruption and fatal failure"
+    ],
+    "stable_diagnostics": [
+      "WARM-CACHED-REQUEST-IDENTITY",
+      "WARM-CACHED-CATALOG",
+      "WARM-CACHED-OUTPUT",
+      "WARM-CACHED-RESULT",
+      "WARM-CACHED-AUTHORITY"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure focused gravity.self-hosting.sh01-exact-tree-warm-worker-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure focused gravity.self-hosting.sh01-language-boundary-test namespace",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "lazy worker namespace probe leaves unified execution plan unloaded",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 41d55e94c1e01acbe4cea401eb6b70209a512a59..51942552433fe89feacc7486c792f626f1e198fa",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 41d55e94c1e01acbe4cea401eb6b70209a512a59 --candidate-commit 51942552433fe89feacc7486c792f626f1e198fa --candidate-tree 3bd25369978f63823d09486a6c95388cf251d32c",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "focused post-merge worker and language-boundary namespaces; governance; diff check; reconciled candidate ancestry",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "BOOT7",
+    "BOOT8",
+    "TEST13",
+    "contracts/verification-catalog.edn",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:28:00Z",
+      "reason": "start the operation-specific worker identity protocol without parent lane or receipt changes",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:48:00Z",
+      "reason": "freeze the amended cached worker identity candidate after causal interruption and fatal propagation repair",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:50:00Z",
+      "reason": "reconcile the whole candidate onto advanced canonical main 41d55e94c1e01acbe4cea401eb6b70209a512a59 rather than replaying source commits",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:52:00Z",
+      "reason": "freeze reconciled candidate 51942552433fe89feacc7486c792f626f1e198fa, tree 3bd25369978f63823d09486a6c95388cf251d32c, on the exact new base",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:53:00Z",
+      "reason": "request fresh independent semantic and security review of the reconciled exact tuple",
+      "state": "review-pending"
+    },
+    {
+      "actor": "exact_conformance_migration_analysis",
+      "at": "2026-09-02T03:55:00Z",
+      "reason": "accept lazy generic compatibility, closed cached identity validation and echo, raw result bounds, drift termination, and causal interruption and fatal propagation on the reconciled tuple",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:56:00Z",
+      "reason": "advance the exact independently accepted reconciled candidate after clean latest-main integration preflight",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T03:58:00Z",
+      "reason": "integrate the exact accepted reconciled whole candidate onto canonical local main at merge commit e1fae42d6452a91a88976b408d8444b97d98ddb5 and repeat focused verification",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh07-cached-worker-identity-v1",
+  "invariant_family": "tooling/sh07-unified-execution-cache-transport",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj"
+  ],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary cached worker identity and execution boundary",
+    "the worker accepts the authenticated operation but execution_lanes does not yet construct, validate, or normalize the cached request and response",
+    "canonical route policy is locally rebuilt; policy-tightened fast plans remain on the generic exact path until their complete identity is explicitly supported",
+    "cached result context and six counters are preserved in the raw worker result but are not yet transported into a unified receipt or honest hit or miss decision",
+    "fresh authoritative acceptance remains cache-free and independently replayable and was not changed or run",
+    "no real cached shard, cache execution, broad B13 namespace, or authoritative SH-07 suite was run",
+    "no runner or helper is retired; exact parent-lane execution and receipt parity remain required",
+    "tooling simplification grants no SH roadmap credit and does not change recorded SH-07 slice counts"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "exact_conformance_migration_analysis"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-07 cached worker plan identity protocol version 1"
+}

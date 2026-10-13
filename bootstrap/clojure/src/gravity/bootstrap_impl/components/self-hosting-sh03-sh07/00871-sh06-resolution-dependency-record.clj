@@ -185,3 +185,32 @@
         names (mapv :name binding-paths)]
     (when (= (count names) (count (set names)))
       binding-paths)))
+
+(defn sh06-let-loop-binding-paths
+  [pattern path]
+  (if (vector? pattern)
+    (:bindings
+     (letfn [(walk [value current-path state]
+               (cond
+                 (vector? value)
+                 (reduce-kv
+                  (fn [next-state index item]
+                    (walk item (conj current-path index) next-state))
+                  state
+                  value)
+
+                 (and (symbol? value)
+                      (not= '_ value)
+                      (not= '& value)
+                      (not (contains? (:seen state) value)))
+                 (-> state
+                     (update :seen conj value)
+                     (update :bindings conj
+                             {:name value :path current-path}))
+
+                 :else
+                 state))]
+       (walk pattern path {:seen #{} :bindings []})))
+    (if (symbol? pattern)
+      [{:name pattern :path path}]
+      [])))

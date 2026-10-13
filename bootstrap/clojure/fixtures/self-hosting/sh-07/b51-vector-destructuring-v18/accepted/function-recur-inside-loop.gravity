@@ -1,0 +1,16 @@
+; The inner function, rather than the enclosing loop, owns its recur.
+(ns self-hosting.sh07-b51-v18.function-recur-inside-loop
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (loop [[initial] input]
+    (let [advance (fn [value]
+                    (if (< value 1)
+                      (recur (+ value 1))
+                      value))]
+      (advance initial))))

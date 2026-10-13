@@ -7,19 +7,19 @@
         (:emitter
          (c-backend-stage2-plan-emitter-source-rule!
           (:source-path source) :jvm))
-        plan
+        raw-plan
         (p15-s23-stage2-compiler-artifact-plan
          emitter (:source-path source) (:source-text source))
-        identities (sh04-syntax-plan-identities plan)]
+        identities (sh04-syntax-plan-identities raw-plan)]
     (when-not
-     (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
-          (true? (:compiler-artifact-plan? plan))
-          (= 'gravity.bootstrap.syntax (get-in plan [:module :module]))
-          (= :meta (get-in plan [:module :profile]))
-          (= :jvm (get-in plan [:module :target]))
-          (= #{} (get-in plan [:module :effects]))
-          (= #{} (get-in plan [:module :capabilities]))
-          (= :safe (get-in plan [:module :safety]))
+     (and (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+          (true? (:compiler-artifact-plan? raw-plan))
+          (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
+          (= :meta (get-in raw-plan [:module :profile]))
+          (= :jvm (get-in raw-plan [:module :target]))
+          (= #{} (get-in raw-plan [:module :effects]))
+          (= #{} (get-in raw-plan [:module :capabilities]))
+          (= :safe (get-in raw-plan [:module :safety]))
           (= sh04-syntax-expected-plan-semantic-hash
              (:plan-semantic-hash identities))
           (= sh04-syntax-expected-functions-semantic-hash
@@ -37,15 +37,25 @@
       (sh04-syntax-boundary-fail!
        "C3-ID" request-source :pinned-syntax-plan-and-functions
        identities {}))
-    (merge source identities
-           {:artifact :gravity/sh04-pinned-syntax-plan-binding
-            :status :complete
-            :semantic-authority :gravity-source
-            :compiled-by :clojure-stage0-seed
-            :executed-by :clojure-stage2-generic-rule-runner
-            :generic-bridge-residual? true
-            :self-hosted? false
-            :plan plan})))
+    (let [authenticated-plan-base
+          (assoc-in (dissoc raw-plan :plan-id)
+                    [:source :byte-count] (:source-byte-count source))
+          plan
+          (assoc authenticated-plan-base :plan-id
+                 (str "sha256:"
+                      (sha256-hex
+                       (pr-str
+                        (c-backend-canonical-value
+                         authenticated-plan-base)))))]
+      (merge source identities
+             {:artifact :gravity/sh04-pinned-syntax-plan-binding
+              :status :complete
+              :semantic-authority :gravity-source
+              :compiled-by :clojure-stage0-seed
+              :executed-by :clojure-stage2-generic-rule-runner
+              :generic-bridge-residual? true
+              :self-hosted? false
+              :plan plan}))))
 
 (def ^:private sh04-syntax-cached-binding
   (delay (sh04-syntax-build-binding! "<sh04-syntax-bootstrap>")))

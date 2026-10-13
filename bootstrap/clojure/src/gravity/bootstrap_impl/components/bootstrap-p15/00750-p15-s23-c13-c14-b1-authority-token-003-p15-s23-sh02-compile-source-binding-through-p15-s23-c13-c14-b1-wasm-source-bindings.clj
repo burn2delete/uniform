@@ -52,17 +52,27 @@
         :observed-functions-semantic-hash functions-hash
         :observed-builder-semantic-hash builder-hash
         :observed-verifier-semantic-hash verifier-hash}))
-    {:owner :gravity.compiler/authenticated-envelope
-     :source-path compilation-source-path
-     :source-byte-count (:source-byte-count inputs)
-     :source-content-hash (:source-content-hash inputs)
-     :plan-semantic-hash plan-hash
-     :functions-semantic-hash functions-hash
-     :builder-semantic-hash builder-hash
-     :verifier-function p15-s23-sh02-verifier-function
-     :verifier-semantic-hash verifier-hash
-     :function-shapes complete-shapes
-     :plan plan}))
+    (let [authenticated-plan-base
+          (assoc-in (dissoc plan :plan-id)
+                    [:source :byte-count] (:source-byte-count inputs))
+          authenticated-plan
+          (assoc authenticated-plan-base :plan-id
+                 (str "sha256:"
+                      (sha256-hex
+                       (pr-str
+                        (c-backend-canonical-value
+                         authenticated-plan-base)))))]
+      {:owner :gravity.compiler/authenticated-envelope
+       :source-path compilation-source-path
+       :source-byte-count (:source-byte-count inputs)
+       :source-content-hash (:source-content-hash inputs)
+       :plan-semantic-hash plan-hash
+       :functions-semantic-hash functions-hash
+       :builder-semantic-hash builder-hash
+       :verifier-function p15-s23-sh02-verifier-function
+       :verifier-semantic-hash verifier-hash
+       :function-shapes complete-shapes
+       :plan authenticated-plan})))
 
 (defn- p15-s23-sh02-source-binding-cache-key
   [request]

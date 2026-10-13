@@ -1,0 +1,13 @@
+(ns self-hosting.sh06.b51-vector-leaves.duplicate-loop
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :checkpoint :B51-A :fixture :duplicate-vector-loop}))
+
+(defn exercise [input]
+  (loop [[value [value _ & tail] tail] input
+         total (+ value tail)]
+    (+ total value tail)))

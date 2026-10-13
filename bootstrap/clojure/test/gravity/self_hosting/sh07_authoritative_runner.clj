@@ -3,7 +3,9 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.authenticated-artifact-pipeline :as pipeline])
+  (:import (java.nio.file Files LinkOption Path Paths)))
 
 (def ^:private contract-resource
   "gravity/self_hosting/sh07_proof_contract.edn")
@@ -451,7 +453,9 @@
           source-binding-before (source-bytes-sha256 path)
           _ (validate-source-binding!
              contract module-name source-binding-before)
-          proof-run (bootstrap/sh07-core-file-proof-transaction path)
+          proof-run
+          (bootstrap/sh07-core-file-proof-transaction
+           path pipeline/fresh-checked-core-artifact)
           artifact (:artifact proof-run)
           verification (:verification proof-run)
           proof-transaction (:proof-transaction proof-run)
@@ -727,6 +731,308 @@
      :modules results
      :elapsed-ms
      (long (/ (- (System/nanoTime) started) 1000000))}))
+
+(def ^:private authoritative-run-result-keys
+  #{:artifact :schema-version :status :coverage-census-policy
+    :authority-scope :counts-precommitted? :independent-count-oracle?
+    :aggregate-authoritative? :unsupported-claims :attestation-required?
+    :fresh-process-required? :persistent-iteration-cache-used?
+    :proof-receipt-reuse-used? :proof-receipt-reuse-count :modules
+    :elapsed-ms})
+
+(def ^:private authoritative-module-result-keys
+  #{:module :source-path :source-byte-count :source-bytes-sha256
+    :source-revision-id :status :artifact-id :coverage-census
+    :schema-version :fragment-count :form-count :resolution-count
+    :keyword-lookup-count :function-record-count :call-edge-count
+    :recursion-component-count :verification-status
+    :capability-proof-status :proof-transaction :failed-checks
+    :contract-checks :elapsed-ms})
+
+(def ^:private authoritative-contract-check-keys
+  #{:coverage-census-policy-current?
+    :counts-precommitted-policy-current?
+    :independent-count-oracle-policy-current?
+    :unsupported-claims-explicit?
+    :request-schema-current?
+    :task-current?
+    :scope-current?
+    :adapter-current?
+    :fresh-process-required?
+    :iteration-cache-non-authoritative?
+    :coverage-milestone-current?
+    :target-source-reread-disabled?
+    :source-snapshot-stable?
+    :source-revision-bound-to-bytes?
+    :authoritative-coverage-census-current?
+    :required-request-products-present?
+    :required-core-products-present?
+    :required-core-product-counts-exact?
+    :required-verification-checks-present-and-passed?
+    :capability-proof-complete?
+    :independent-verification-passed?
+    :proof-transaction-current?})
+
+(def ^:private proof-transaction-result-keys
+  #{:artifact :schema-version :status :thread-confined? :owner-thread-id
+    :phase-order :phases :source-snapshot :checked-core-revision
+    :check-catalog-bindings :maximum-receipts :artifact-id
+    :verification-report-id :construction-receipts-cleared?
+    :final-snapshot-rechecked? :cross-epoch-reuse-count
+    :cross-epoch-reuse? :failed-report-executions
+    :failed-report-reuse-count :failed-report-reuse? :cleanup-complete?
+    :retained-receipt-count})
+
+(def ^:private proof-phase-result-keys
+  #{:phase :epoch :verification-executions :verification-reuses
+    :receipt-count})
+
+(defn- sha256-id?
+  [value]
+  (and (string? value)
+       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+
+(defn- nonnegative-integer?
+  [value]
+  (and (integer? value) (not (neg? value))))
+
+(defn- receipt-failure!
+  [message data]
+  (throw (ex-info message (assoc data :id "SH07-AUTHORITATIVE-RECEIPT"))))
+
+(defn- exported-source-binding!
+  "Authenticate one contract-owned source beneath the isolated export root."
+  [source-root source-path]
+  (when-not (and (string? source-root) (not (string/blank? source-root))
+                 (string? source-path) (not (string/blank? source-path)))
+    (receipt-failure! "Authoritative source root or path is absent"
+                      {:source-root source-root :source-path source-path}))
+  (let [^Path lexical-root (.normalize
+                            (.toAbsolutePath
+                             (Paths/get source-root (make-array String 0))))
+        ^Path relative (Paths/get source-path (make-array String 0))
+        _ (when-not (and (Files/isDirectory lexical-root
+                                      (into-array LinkOption
+                                                  [LinkOption/NOFOLLOW_LINKS]))
+                           (not (Files/isSymbolicLink lexical-root)))
+            (receipt-failure! "Authoritative source root is not a safe directory"
+                              {:source-root source-root}))
+        ^Path root (.toRealPath lexical-root (make-array LinkOption 0))
+        ^Path candidate (.normalize (.resolve root relative))]
+    (when-not (and (not (.isAbsolute relative))
+                   (.startsWith candidate root))
+      (receipt-failure! "Authoritative source path escapes its export root"
+                        {:source-root source-root :source-path source-path}))
+    (loop [current root
+           names (seq (iterator-seq (.iterator relative)))]
+      (when-let [name (first names)]
+        (let [next-path (.resolve ^Path current ^Path name)]
+          (when (or (Files/isSymbolicLink next-path)
+                    (and (next names)
+                         (not (Files/isDirectory
+                               next-path
+                               (into-array LinkOption
+                                           [LinkOption/NOFOLLOW_LINKS])))))
+            (receipt-failure! "Authoritative source path contains an unsafe component"
+                              {:source-path source-path}))
+          (recur next-path (next names)))))
+    (when-not (and (Files/isRegularFile
+                    candidate (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+                   (not (Files/isSymbolicLink candidate)))
+      (receipt-failure! "Authoritative source is not a regular non-symlink"
+                        {:source-path source-path}))
+    (let [first-pass (source-bytes-sha256 (str candidate))
+          second-pass (source-bytes-sha256 (str candidate))]
+      (when-not (= first-pass second-pass)
+        (receipt-failure! "Authoritative source changed during receipt validation"
+                          {:source-path source-path}))
+      {:source-byte-count (:byte-count first-pass)
+       :source-bytes-sha256 (:sha256 first-pass)})))
+
+(defn- valid-proof-transaction-result?
+  [contract module-result actual-binding]
+  (let [proof (:proof-transaction module-result)
+        proof-contract (:proof-transaction contract)
+        phases (:phases proof)
+        independent-audit (some #(when (= :independent-audit (:phase %)) %)
+                                phases)
+        revision (:checked-core-revision proof)
+        revision-hash-fields
+        [:source-content-hash :plan-semantic-hash :functions-semantic-hash
+         :function-names-hash :function-shapes-hash]
+        valid-revision?
+        (fn [value]
+          (and (map? value)
+               (every? #(sha256-id? (get value %)) revision-hash-fields)
+               (nonnegative-integer? (:source-byte-count value))
+               (nonnegative-integer? (:function-count value))
+               (string? (:observed-source-path value))))]
+    (and (map? proof)
+         (= proof-transaction-result-keys (set (keys proof)))
+         (= :gravity/sh07-proof-transaction-receipt (:artifact proof))
+         (= (:schema-version proof-contract) (:schema-version proof))
+         (= :passed (:status proof))
+         (true? (:thread-confined? proof))
+         (integer? (:owner-thread-id proof))
+         (pos? (:owner-thread-id proof))
+         (= (:phase-order proof-contract) (:phase-order proof))
+         (vector? phases)
+         (= (:phase-order proof) (mapv :phase phases))
+         (= [0 1] (mapv :epoch phases))
+         (every? #(and (= proof-phase-result-keys (set (keys %)))
+                       (map? (:verification-executions %))
+                       (map? (:verification-reuses %))
+                       (every? nonnegative-integer?
+                               (vals (:verification-executions %)))
+                       (every? nonnegative-integer?
+                               (vals (:verification-reuses %)))
+                       (nonnegative-integer? (:receipt-count %))
+                       (<= (:receipt-count %)
+                           (:maximum-receipts-per-phase proof-contract)))
+                 phases)
+         (every? (fn [[stage minimum]]
+                   (<= minimum
+                       (get-in independent-audit
+                               [:verification-executions stage] 0)))
+                 (:minimum-independent-audit-executions proof-contract))
+         (= {:source-path (:source-path module-result)
+             :source-byte-count (:source-byte-count actual-binding)
+             :source-content-hash (:source-bytes-sha256 actual-binding)}
+            (:source-snapshot proof))
+         (valid-revision? revision)
+         (valid-revision? (:sh05-macro-revision revision))
+         (valid-revision? (:sh06-resolution-revision revision))
+         (= #{[:sh05 :construction] [:sh05 :final]
+              [:sh06 :final] [:sh07 :final]}
+            (set (keys (:check-catalog-bindings proof))))
+         (every? sha256-id? (vals (:check-catalog-bindings proof)))
+         (= (:maximum-receipts-per-phase proof-contract)
+            (:maximum-receipts proof))
+         (= (:artifact-id module-result) (:artifact-id proof))
+         (sha256-id? (:verification-report-id proof))
+         (true? (:construction-receipts-cleared? proof))
+         (true? (:final-snapshot-rechecked? proof))
+         (zero? (:cross-epoch-reuse-count proof))
+         (false? (:cross-epoch-reuse? proof))
+         (zero? (:failed-report-executions proof))
+         (zero? (:failed-report-reuse-count proof))
+         (false? (:failed-report-reuse? proof))
+         (true? (:cleanup-complete? proof))
+         (zero? (:retained-receipt-count proof)))))
+
+(defn- validate-authoritative-module-result!
+  [contract source-root module-name module-result]
+  (let [{:keys [source-path source-binding]}
+        (get (module-source-contracts-for contract) module-name)
+        actual-binding (exported-source-binding! source-root source-path)
+        census (:coverage-census module-result)
+        contract-checks (:contract-checks module-result)
+        nonnegative-count-keys
+        [:fragment-count :form-count :resolution-count :keyword-lookup-count
+         :function-record-count :call-edge-count :recursion-component-count
+         :elapsed-ms]]
+    (when-not
+     (and (= authoritative-module-result-keys (set (keys module-result)))
+          (= module-name (:module module-result))
+          (= source-path (:source-path module-result))
+          (= source-binding actual-binding)
+          (= (:source-byte-count actual-binding)
+             (:source-byte-count module-result)
+             (get-in census [:source-binding :source-byte-count]))
+          (= (:source-bytes-sha256 actual-binding)
+             (:source-bytes-sha256 module-result)
+             (:source-revision-id module-result)
+             (:source-revision-id census)
+             (get-in census [:source-binding :source-bytes-sha256]))
+          (= :accepted (:status module-result))
+          (sha256-id? (:artifact-id module-result))
+          (= (:artifact-id module-result) (:sh07-artifact-id census))
+          (= (get-in contract [:boundary :request-schema-version])
+             (:schema-version module-result))
+          (every? #(let [value (get module-result %)]
+                     (and (integer? value) (not (neg? value))))
+                  nonnegative-count-keys)
+          (= :passed (:verification-status module-result))
+          (= :complete (:capability-proof-status module-result))
+          (valid-proof-transaction-result?
+           contract module-result actual-binding)
+          (= [] (:failed-checks module-result))
+          (= authoritative-contract-check-keys (set (keys contract-checks)))
+          (every? true? (vals contract-checks))
+          (= (:fragment-count module-result)
+             (get-in census [:request-counts :fragment-count]))
+          (= (:form-count module-result)
+             (get-in census [:request-counts :form-count]))
+          (= (:resolution-count module-result)
+             (get-in census [:request-counts :resolution-count]))
+          (= (:keyword-lookup-count module-result)
+             (get-in census [:core-counts :keyword-lookup-count]))
+          (authoritative-coverage-census-valid?
+           contract module-name census))
+      (receipt-failure! "Authoritative module receipt failed validation"
+                        {:module module-name}))
+    module-result))
+
+(defn validate-authoritative-run-result!
+  "Canonical fail-closed validator for fresh lane child receipts.
+
+  The child report is not trusted to describe its source. Every selected
+  module is rebound to the proof contract and hashed twice from the isolated
+  export before a caller may issue a pass receipt."
+  [requested result source-root]
+  (let [contract (validate-coverage-census-contract! (proof-contract))
+        catalog (modules contract)
+        expected-modules (cond
+                           (= requested "all")
+                           (receipt-failure!
+                            "Aggregate authoritative receipts are unsupported"
+                            {:requested requested
+                             :unsupported-claim :aggregate})
+
+                           (contains? catalog requested) [requested]
+
+                           :else
+                           (receipt-failure!
+                            "Unknown authoritative receipt module"
+                            {:requested requested}))
+        result-modules (:modules result)
+        policy (coverage-census-policy contract)
+        derived? (= :source-bound-derived policy)]
+    (when-not
+     (and (map? result)
+          (= authoritative-run-result-keys (set (keys result)))
+          (= :gravity/sh07-authoritative-proof-run (:artifact result))
+          (= 3 (:schema-version result))
+          (= :passed (:status result))
+          (= policy (:coverage-census-policy result))
+          (= (if derived?
+               :individual-source-bound-derived
+               :individual-existing-runner-output-only)
+             (:authority-scope result))
+          (= (not derived?) (:counts-precommitted? result))
+          (= (not derived?) (:independent-count-oracle? result))
+          (false? (:aggregate-authoritative? result))
+          (= (if derived? derived-census-unsupported-claims [])
+             (:unsupported-claims result))
+          (= derived? (:attestation-required? result))
+          (true? (:fresh-process-required? result))
+          (false? (:persistent-iteration-cache-used? result))
+          (boolean? (:proof-receipt-reuse-used? result))
+          (integer? (:proof-receipt-reuse-count result))
+          (not (neg? (:proof-receipt-reuse-count result)))
+          (= (pos? (:proof-receipt-reuse-count result))
+             (:proof-receipt-reuse-used? result))
+          (vector? result-modules)
+          (= expected-modules (mapv :module result-modules))
+          (integer? (:elapsed-ms result))
+          (not (neg? (:elapsed-ms result))))
+      (receipt-failure! "Authoritative proof receipt failed validation"
+                        {:requested requested}))
+    (doseq [[module-name module-result]
+            (map vector expected-modules result-modules)]
+      (validate-authoritative-module-result!
+       contract source-root module-name module-result))
+    result))
 
 (defn -main
   [& arguments]

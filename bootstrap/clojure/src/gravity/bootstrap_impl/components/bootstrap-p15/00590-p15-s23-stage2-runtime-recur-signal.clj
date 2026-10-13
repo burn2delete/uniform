@@ -49,13 +49,20 @@
      plan nil (count (p15-s23-stage2-runtime-recur-values value)) reason))
   value)
 
-(defn- p15-s23-stage2-runtime-execute-value
-  [runtime plan env instruction reason]
+(declare ^:private p15-s23-stage2-runtime-execute-instruction-scoped)
+
+(defn- p15-s23-stage2-runtime-execute-value-scoped
+  [runtime plan env instruction reason public-invocation-scope]
   (p15-s23-stage2-runtime-nontail-value!
    plan
-   (p15-s23-stage2-runtime-execute-instruction
-    runtime plan env instruction)
+   (p15-s23-stage2-runtime-execute-instruction-scoped
+    runtime plan env instruction public-invocation-scope)
    reason))
+
+(defn- p15-s23-stage2-runtime-execute-value
+  [runtime plan env instruction reason]
+  (p15-s23-stage2-runtime-execute-value-scoped
+   runtime plan env instruction reason nil))
 
 (defn- p15-s23-stage2-runtime-bind-values
   [base names values]
@@ -73,32 +80,43 @@
              (nth names 2) (nth values 2))
     (merge base (zipmap names values))))
 
-(defn p15-s23-stage2-runtime-execute-values
-  [runtime plan env instructions reason]
+(defn- p15-s23-stage2-runtime-execute-values-scoped
+  [runtime plan env instructions reason public-invocation-scope]
   ;; Builtin and function calls overwhelmingly carry zero to three arguments.
   ;; `mapv` allocates a transient vector root/tail even for those tiny
   ;; collections, which accounted for most allocation in a live B47 profile.
   ;; Preserve the generic path for larger carriers.
   (case (count instructions)
     0 []
-    1 [(p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 0) reason)]
-    2 [(p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 0) reason)
-       (p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 1) reason)]
-    3 [(p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 0) reason)
-       (p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 1) reason)
-       (p15-s23-stage2-runtime-execute-value
-        runtime plan env (nth instructions 2) reason)]
+    1 [(p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)]
+    2 [(p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)
+       (p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 1) reason
+        public-invocation-scope)]
+    3 [(p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)
+       (p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 1) reason
+        public-invocation-scope)
+       (p15-s23-stage2-runtime-execute-value-scoped
+        runtime plan env (nth instructions 2) reason
+        public-invocation-scope)]
     (mapv (fn [instruction]
-            (p15-s23-stage2-runtime-execute-value
-             runtime plan env instruction reason))
+            (p15-s23-stage2-runtime-execute-value-scoped
+             runtime plan env instruction reason public-invocation-scope))
           instructions)))
 
-(defn- p15-s23-stage2-runtime-execute-map-entries
+(defn p15-s23-stage2-runtime-execute-values
+  [runtime plan env instructions reason]
+  (p15-s23-stage2-runtime-execute-values-scoped
+   runtime plan env instructions reason nil))
+
+(defn- p15-s23-stage2-runtime-execute-map-entries-scoped
   "Evaluate map-literal entries without allocating an intermediate pair.
 
   Compiler plans represent entries as a vector of {:key ... :value ...}
@@ -110,7 +128,7 @@
   associating directly into one transient map. The sequence branch preserves
   the public helper's established behavior for direct list callers.
   "
-  [runtime plan env entries]
+  [runtime plan env entries public-invocation-scope]
   (if (vector? entries)
     (let [entry-count (count entries)]
       (loop [index 0
@@ -120,14 +138,14 @@
                 evaluated-key
                 (p15-s23-stage2-runtime-nontail-value!
                  plan
-                 (p15-s23-stage2-runtime-execute-instruction
-                  runtime plan env key)
+                 (p15-s23-stage2-runtime-execute-instruction-scoped
+                  runtime plan env key public-invocation-scope)
                  :recur-inside-map-key)
                 evaluated-value
                 (p15-s23-stage2-runtime-nontail-value!
                  plan
-                 (p15-s23-stage2-runtime-execute-instruction
-                  runtime plan env value)
+                 (p15-s23-stage2-runtime-execute-instruction-scoped
+                  runtime plan env value public-invocation-scope)
                  :recur-inside-map-value)]
             (recur (inc index)
                    (assoc! result evaluated-key evaluated-value)))
@@ -139,21 +157,26 @@
               evaluated-key
               (p15-s23-stage2-runtime-nontail-value!
                plan
-               (p15-s23-stage2-runtime-execute-instruction
-                runtime plan env key)
+               (p15-s23-stage2-runtime-execute-instruction-scoped
+                runtime plan env key public-invocation-scope)
                :recur-inside-map-key)
               evaluated-value
               (p15-s23-stage2-runtime-nontail-value!
                plan
-               (p15-s23-stage2-runtime-execute-instruction
-                runtime plan env value)
+               (p15-s23-stage2-runtime-execute-instruction-scoped
+                runtime plan env value public-invocation-scope)
                :recur-inside-map-value)]
           (recur (next remaining)
                  (assoc! result evaluated-key evaluated-value)))
         (persistent! result)))))
 
-(defn p15-s23-stage2-runtime-execute-instructions
-  [runtime plan env instructions]
+(defn- p15-s23-stage2-runtime-execute-map-entries
+  [runtime plan env entries]
+  (p15-s23-stage2-runtime-execute-map-entries-scoped
+   runtime plan env entries nil))
+
+(defn- p15-s23-stage2-runtime-execute-instructions-scoped
+  [runtime plan env instructions public-invocation-scope]
   (if (vector? instructions)
     ;; Compiler plans use vectors. Indexing avoids constructing a chunked seq
     ;; and calling `next` for every interpreted function body.
@@ -161,8 +184,9 @@
       (loop [index 0
              result nil]
         (if (< index instruction-count)
-          (let [value (p15-s23-stage2-runtime-execute-instruction
-                       runtime plan env (nth instructions index))
+          (let [value (p15-s23-stage2-runtime-execute-instruction-scoped
+                       runtime plan env (nth instructions index)
+                       public-invocation-scope)
                 more? (< (inc index) instruction-count)]
             (if (and (p15-s23-stage2-runtime-recur-signal? value) more?)
               (p15-s23-stage2-runtime-recur-fail!
@@ -174,8 +198,8 @@
     (loop [remaining (seq instructions)
            result nil]
       (if-let [instruction (first remaining)]
-        (let [value (p15-s23-stage2-runtime-execute-instruction
-                     runtime plan env instruction)
+        (let [value (p15-s23-stage2-runtime-execute-instruction-scoped
+                     runtime plan env instruction public-invocation-scope)
               more (next remaining)]
           (if (and (p15-s23-stage2-runtime-recur-signal? value) more)
             (p15-s23-stage2-runtime-recur-fail!
@@ -184,11 +208,16 @@
             (recur more value)))
         result))))
 
-(defn- p15-s23-stage2-runtime-execute-generic-builtin-call
-  [runtime plan env instruction function]
-  (let [args (p15-s23-stage2-runtime-execute-values
+(defn p15-s23-stage2-runtime-execute-instructions
+  [runtime plan env instructions]
+  (p15-s23-stage2-runtime-execute-instructions-scoped
+   runtime plan env instructions nil))
+
+(defn- p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
+  [runtime plan env instruction function public-invocation-scope]
+  (let [args (p15-s23-stage2-runtime-execute-values-scoped
               runtime plan env (:args instruction)
-              :recur-inside-builtin-argument)]
+              :recur-inside-builtin-argument public-invocation-scope)]
     (if (and (= 'str function)
              (:runtime-artifact-plan runtime))
       (case (count args)
@@ -198,4 +227,13 @@
            runtime p15-s23-stage2-runtime-artifact-concat-function args)
         (p15-s23-stage2-runtime-fail-call-arity!
          "L2-BUILTIN-ARITY" plan function args "1 or 2"))
-      (p15-s23-stage2-runtime-invoke-builtin plan function args))))
+      (if (contains? instruction :compiler-internal-caller)
+        (p15-s23-sh07-runtime-invoke-compiler-internal-builtin
+         runtime plan instruction args public-invocation-scope)
+        (p15-s23-stage2-runtime-invoke-builtin
+         runtime plan function args)))))
+
+(defn- p15-s23-stage2-runtime-execute-generic-builtin-call
+  [runtime plan env instruction function]
+  (p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
+   runtime plan env instruction function nil))

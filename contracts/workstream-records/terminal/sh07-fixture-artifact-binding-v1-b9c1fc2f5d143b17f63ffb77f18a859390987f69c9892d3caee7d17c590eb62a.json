@@ -1,0 +1,43 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "0565b642d46fc2504412177bbd55b8e970804c4f",
+  "candidate_commit": "7ce07b48736fdd52e88a562fd917a94d9697490b",
+  "clean_worktree": true,
+  "dependencies": ["sh07-artifact-request-plan-projection-v1"],
+  "disposition": "Integrated the exact independently accepted static fixture-to-artifact binding projection onto canonical local main at merge 69a110a2bcde031b57dad4d437b4d34d509c9084. It content-binds one closure-owned reviewed pair and requested earliest stage without executing a compiler, cache, worker, receipt, or authority path.",
+  "evidence": {
+    "accepted_fixtures": ["closed conformance fixture pair content binding", "closed UEP fixture source binding for SH-07-B15 rejected row", "source and checked-core earliest-stage identities", "closure-owned row and module ownership"],
+    "rejected_fixtures": ["unknown or out-of-closure row", "unknown or later-than-declared stage", "malformed pair contract, hash, byte count, status, suite, or row", "more-than-policy-bound fixture closure"],
+    "stable_diagnostics": ["SH07-CONFORMANCE-FIXTURE-ROW", "SH07-CONFORMANCE-FIXTURE-BINDING-KEYS", "UEP-FIXTURE-BINDING-CLOSURE", "UEP-FIXTURE-BINDING-BOUND", "UEP-FIXTURE-BINDING-ROW", "UEP-FIXTURE-BINDING-STAGE", "UEP-FIXTURE-BINDING-PATH", "UEP-FIXTURE-BINDING-OWNER", "UEP-FIXTURE-BINDING-PAIR", "UEP-FIXTURE-BINDING-KEYS", "UEP-FIXTURE-BINDING-ID"],
+    "validation_commands": [
+      {"command": "clojure -J-Xmx1g -M:test --namespace gravity.self-hosting.unified-execution-plan-test --namespace gravity.self-hosting.sh07-conformance-table-test --namespace gravity.self-hosting.sh07-parallel-shard-manifest-test on candidate; 57 tests, 509 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -J-Xmx1g -M:test --namespace gravity.self-hosting.sh01-language-boundary-test on candidate; 6 tests, 11 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_workstream_governance.clj on candidate; 144 workstreams", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj on candidate", "exit_code": 0, "result": "passed"},
+      {"command": "git diff --check 0565b642d46fc2504412177bbd55b8e970804c4f..7ce07b48736fdd52e88a562fd917a94d9697490b", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref main --candidate-base 0565b642d46fc2504412177bbd55b8e970804c4f --candidate-commit 7ce07b48736fdd52e88a562fd917a94d9697490b --candidate-tree 0d52b6e02a75239071fedb0ac3e9a27a9727bc6a", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -J-Xmx1g -M:test --namespace gravity.self-hosting.unified-execution-plan-test --namespace gravity.self-hosting.sh07-conformance-table-test --namespace gravity.self-hosting.sh07-parallel-shard-manifest-test after merge 69a110a2bcde031b57dad4d437b4d34d509c9084; 57 tests, 509 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -J-Xmx1g -M:test --namespace gravity.self-hosting.sh01-language-boundary-test after merge; 6 tests, 11 assertions", "exit_code": 0, "result": "passed"},
+      {"command": "git merge-base --is-ancestor 7ce07b48736fdd52e88a562fd917a94d9697490b 69a110a2bcde031b57dad4d437b4d34d509c9084", "exit_code": 0, "result": "passed"}
+    ]
+  },
+  "governing_contracts": ["AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "C1", "C2", "C3", "C16", "BOOT7", "BOOT8", "TEST13", "contracts/verification-catalog.edn", "contracts/workstream-governance.json"],
+  "history": [
+    {"actor": "uniform-coordinator", "at": "2026-09-02T08:40:00Z", "reason": "register the isolated static fixture artifact binding candidate", "state": "draft"},
+    {"actor": "uniform-coordinator", "at": "2026-09-02T08:40:01Z", "reason": "freeze exact base 0565b642d46fc2504412177bbd55b8e970804c4f, candidate 7ce07b48736fdd52e88a562fd917a94d9697490b, tree 0d52b6e02a75239071fedb0ac3e9a27a9727bc6a, and four owned paths", "state": "frozen"},
+    {"actor": "uniform-coordinator", "at": "2026-09-02T08:40:02Z", "reason": "request independent semantic and security review of content binding, closure ownership, stage bounds, path handling, mutation residuals, and authority nonclaims", "state": "review-pending"},
+    {"actor": "parallel_manifest_review", "at": "2026-09-02T08:40:03Z", "reason": "accept the exact static projection and content-bound identity while requiring child-side path-component and byte snapshots before any Stage-B execution", "state": "accepted"},
+    {"actor": "uniform-coordinator", "at": "2026-09-02T08:40:04Z", "reason": "advance the exact independently accepted static candidate after clean canonical-main preflight", "state": "integration-eligible"},
+    {"actor": "uniform-coordinator", "at": "2026-09-02T08:50:00Z", "reason": "integrate the exact independently accepted whole candidate onto canonical local main at merge 69a110a2bcde031b57dad4d437b4d34d509c9084 tree 2aca2384faf16396383cb39e58ea104c1d176546", "state": "integrated"}
+  ],
+  "id": "sh07-fixture-artifact-binding-v1",
+  "invariant_family": "tooling/authenticated-artifact-pipeline",
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+  "owned_paths": ["bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj", "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table_test.clj", "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj", "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan_test.clj"],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": ["Clojure and the JVM remain the temporary conformance-table and UEP binding boundary", "authenticated? denotes static table-time pair content authentication only and is not runtime mutation or path-rebinding authentication", "Stage B must rederive the binding in the canonical child, snapshot root, family, file attributes and pair bytes before and after, compare content hash, byte count, closure and catalog identity, and fail closed before pipeline invocation", "the binding performs no compiler pipeline invocation, cache lookup, worker transport, receipt generation, or fresh isolation", "fresh acceptance remains isolated, cache-free, authoritative, and independently replayable but was not executed", "no runner, helper, route, test, or contract is retired", "the fast lane confers no integration, proof, release, self-hosting, seed-retirement, safety, or performance authority", "tooling simplification does not complete an architecture objective by itself"],
+  "reviews": [{"kind": "independent", "result": "accepted", "reviewer": "parallel_manifest_review"}],
+  "state": "integrated",
+  "title": "SH-07 static fixture artifact binding version 1"
+}

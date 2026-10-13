@@ -1,0 +1,94 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-29.md",
+  "author": "sh07-b51-census-certificate-architecture",
+  "base_commit": "fd43aef695c8b4ed494c305f98ef298af56e8cd8",
+  "candidate_commit": "54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8",
+  "clean_worktree": true,
+  "dependencies": ["sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28"],
+  "disposition": "REJECTED by independent reviewer /root/attempt29_arch_review for exact immutable report candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1. Three blockers: undefined/cyclic P29 certificate transport under the retained closed Attempt-28 carrier; missing D9 assumptions and result fields; and contradictory complete-carrier equality ordering around bounded preflight. No implementation or integration authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-28",
+      "authoritative architecture base:fd43aef695c8b4ed494c305f98ef298af56e8cd8 tree:ee98fc5cf8a7311c6f9cc1c7514df5445ce1ed7d",
+      "report candidate:54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8 tree:a02eb66a84067a5276cdd15c288829feafeaaa15 report-sha256:fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1",
+      "67M diagnostic snapshot:069ec1a3eb8df510e7c0fd77b115789d162e618c tree:d2ca38aee43fa7822140e9bdaefbfb7728fa906b",
+      "67M terminal measurement:67108884 transitions, 415 frames, 64765 external calls, no result/output, Root1 stopped in M2 census after all 1451 source definitions",
+      "hot-path census:about 191232 raw-source nodes and 128712 M2 nodes; projected 41.9M plus 52.9M transitions before later proof phases",
+      "external-only prototype:14157688a545e7596179d5a783d66889120c050a tree:af43461b84e7fb0c4371366fb3b3be1c5c233df3 retained 1423 external rows and rejected at 8388608",
+      "scalar-specialized prototype:05af1a6e155500612c92556c8ec136bed7ec6f7d tree:c8471792698d898033c18a18b9b53fa723fa72de retained 1423 external rows and rejected at 8388608",
+      "local batching prototype:b3922749 tree:d34a22ce15633847a1914d40e53d58c2eaff76aa coherent 1418-edge bundle with unchanged 32507 semantic rows, negative evidence only",
+      "lifecycle identity audit:immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger"
+    ],
+    "rejected_fixtures": [
+      "Attempt28 exhaustive raw-source and M2 replay is claimed to fit the unchanged public runtime bounds",
+      "a larger transition or external-call ceiling is selected from one observed run without a whole-domain proof",
+      "path-directed M1 witnesses, Merkle roots, caller-recomputed digests, M3 equality alone, or Root1/Root6 agreement are treated as negative-space completeness",
+      "checker A and checker B share traversal, normalization, reachability, ordering, row, or digest-schedule implementation",
+      "certificate, expected M3, expected certificate id, expected root, sealer, runtime token, ownership, route, or external-link authority is caller supplied",
+      "whole-value carrier equality occurs before bounded iterative shape/size preflight",
+      "certificate transport selects request-specific success/rejection or replaces Gravity-owned Root1/Root6 compact verification"
+      ,"independent-review:undefined-or-cyclic-P29-and-no-admitted-certificate-value-location"
+      ,"independent-review:D9-certificate-lacks-named-assumptions-and-result"
+      ,"independent-review:carrier-equality-order-contradicts-bounded-preflight"
+    ],
+    "stable_diagnostics": ["AA001", "AA002", "AA003", "AA004", "AA005", "AA006", "AA007", "AA008", "C6-VERIFY", "L2-UNKNOWN-CORE-FORM", "L2-FUNCTION-ARITY", "L2-BUILTIN-ARITY", "L2-BUILTIN-ERROR"],
+    "validation_commands": [
+      {"command": "clojure -M tools/validate_gravity_docs.clj", "exit_code": 0, "result": "passed"},
+      {"command": "git diff --check fd43aef695c8b4ed494c305f98ef298af56e8cd8..54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_full_language_roadmap.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_workstream_governance.clj", "exit_code": 0, "result": "passed"},
+      {"command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-29.md", "exit_code": 0, "result": "passed"}
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md", "D1", "D2", "D3", "D6", "D8", "D9", "L1", "L2", "C5", "C6", "C11", "BOOT7", "BOOT8", "TEST10", "TEST11", "TEST13",
+    "docs/self-hosting-slice-backlog.md", "docs/self-hosting-slice-ownership.edn", "docs/workstream-governance.md", "docs/workstream-ledger-v2.md", "contracts/workstream-governance.json", "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-28.md",
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj",
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00946-p15-s23-sh07-b51-runtime-machine.clj",
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v3.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity", "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-census-certificate-architecture",
+      "at": "2026-09-02T17:40:00Z",
+      "reason": "register exact architecture-only Attempt-29 report candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1, base fd43aef695c8b4ed494c305f98ef298af56e8cd8: replace infeasible repeated census replay with dual independently produced M3-bound compact certificate authority under unchanged runtime ceilings; no freeze or architecture review is requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:48:00Z",
+      "reason": "freeze immutable architecture-only Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1 after documentation, roadmap, strict authority, governance, exact diff, JSON, ASCII, and negative sizing evidence checks; no implementation is authorized",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-census-certificate-architecture-coordinator",
+      "at": "2026-09-02T17:50:00Z",
+      "reason": "request fresh independent review of exact immutable Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1: infeasibility evidence, unseen-node attack, D9 authority relocation, acyclic bundle-core/certificate/M3/S29/root chain, checker independence, bounded preflight, unchanged runtime ceilings, mutations, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "/root/attempt29_arch_review",
+      "at": "2026-09-02T18:02:00Z",
+      "reason": "REJECT exact Attempt-29 candidate 54e2de21bd81dac8b63b3eb3deff6d01d8c3d3a8, tree a02eb66a84067a5276cdd15c288829feafeaaa15, report SHA-256 fc3926c6a91f6e844fa5a2f8272f962f5d405074f6a5cbbc19e886cf0ed751b1: the retained closed Attempt-28 carrier has no defined certificate-value location and undefined P29 is cyclic or unconstructible; the closed D9 certificate omits named assumptions and result; and complete-carrier equality is required both before and after bounded preflight. All other reviewed architecture properties passed.",
+      "state": "rejected"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-census-certificate-architecture-v18-attempt-29",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {"integration_only": true, "release": false, "seed_retirement": false, "self_hosting": false},
+  "owned_paths": ["docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-census-certificate-erratum-v18-attempt-29.md"],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain source readers, independent checker hosts, canonical encoder and SHA-256 substrate, current-emitter executor, immutable pin boundary, bounded runtime machine, and observer",
+    "the two offline checker implementations, their independent review, and SHA-256 collision resistance are explicit trusted assumptions for the exact frozen snapshot",
+    "Root1 and Root6 validate role-distinct compact certificates and rebuild S29/root separately; neither runtime root claims to re-derive full negative-space completeness",
+    "Attempt29 grants no implementation, checker, certificate, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [
+    {"kind": "independent", "result": "rejected", "reviewer": "/root/attempt29_arch_review"}
+  ],
+  "state": "rejected",
+  "title": "SH-07 B51 dual census certificate architecture v18 attempt 29"
+}

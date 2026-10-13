@@ -35,6 +35,10 @@
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting.sh01-exact-tree-warm-worker"]}
 
+  :unified-execution
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.self-hosting.unified-execution-cli"]}
+
   :project-structure-test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.project-structure-test-runner"]}

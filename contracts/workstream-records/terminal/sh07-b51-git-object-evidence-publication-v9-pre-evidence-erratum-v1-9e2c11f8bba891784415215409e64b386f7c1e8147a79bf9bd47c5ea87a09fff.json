@@ -1,0 +1,187 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+  "author": "master-coordinator",
+  "base_commit": "8c39712c80e7da66c23a23a6c1f01ba1f970b682",
+  "candidate_commit": "5ce69f8cbe00c82e6ac004ed0f51189e11c207c8",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-git-object-evidence-publication-architecture-v9"
+  ],
+  "disposition": "Integrated exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 onto authoritative main through exact-candidate merge aa62f19bd2f651507be15f2ea0b18ca8978fee38 and governed lifecycle merge eaabe8c283b7bf62b6c172fd8fee532052ce29f4, tree c7e86bd13e92a3606097fac510b4897598bf3462. Candidate ancestry and report-byte preservation are exact. Integration grants architecture authority only; it does not establish implementation correctness or SH-07 completion.",
+  "evidence": {
+    "accepted_fixtures": [
+      "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+      "contracts/workstream-records/terminal/sh07-b51-git-object-evidence-publication-architecture-v9-461e2300fb893cbc2b60fb23e51b7242608a1aefd0bb15c8af4d72219a2b3ef1.json"
+    ],
+    "rejected_fixtures": [
+      "missing path:docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+      "PRE/Q complete MASKED-ROOT containing runtime-only postimage spans, files, roots, digest RHS values, or final carrier"
+    ],
+    "stable_diagnostics": [
+      "SH07-B51-GIT-INPUT-BLOB",
+      "SH07-B51-IDENTITY-CYCLE"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 8c39712c80e7da66c23a23a6c1f01ba1f970b682..5ce69f8cbe00c82e6ac004ed0f51189e11c207c8",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git ls-tree -r --name-only 8c39712c80e7da66c23a23a6c1f01ba1f970b682 -- docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git log --all --format=%H -- docs/artifacts/phase-15/reviews/sh07-b51-git-object-v9/a9-lifecycle-receipt.edn",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git merge-base --is-ancestor 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8 eaabe8c283b7bf62b6c172fd8fee532052ce29f4",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "test \"$(git rev-parse 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8:docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md)\" = \"$(git rev-parse eaabe8c283b7bf62b6c172fd8fee532052ce29f4:docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md)\"",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "BOOT6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-architecture-v9.md"
+  ],
+  "history": [
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T08:40:57Z",
+      "reason": "register a separately governed report-only correction after immutable-main inspection proved the V9 PRE input path absent from all history and static analysis proved the complete PRE masked-root depends on forbidden future A/B/M and publication values; reserve only the correction report without claiming a candidate, acceptance, implementation authority, or integration",
+      "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T08:44:41Z",
+      "reason": "freeze exact report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080 after documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks; no implementation or SH-07 authority is claimed",
+      "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:07:19Z",
+      "reason": "request fresh independent exact review of report-only candidate 5443066c888016ae1f55754329f3722610a627e3, tree 26e95fc9ac0d87dce262364709436b94d7ca1e76, report SHA-256 7689e69a3bd3770cfaccdf8946c3d4de27ba6af29bfe63b85f6456a6004e6080: verify the absent A9 path and extant terminal record, the PRE/future-value identity cycle, exact three-path substitution preserving 72/77/3/63 counts, PRE-MASKED-ROOT and RUNTIME-MASKED-ROOT split, unchanged V9 laws, report-only scope, and all authority nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:19:10Z",
+      "reason": "return exact candidate 5443066c888016ae1f55754329f3722610a627e3 to draft after independent reviewer /root/v9_source_read_closure_fix rejected it: the generic terminal record cannot supply V9's unchanged structured A9-RESULT review, integration, preservation, ownership, and cleanup preimages, and the PRE-MASKED-ROOT rename left EVIDENCE-ELIGIBILITY and counter schemas inconsistent; preserve all verified contradiction and count findings without granting authority",
+      "state": "draft"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:46:43Z",
+      "reason": "freeze exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 after pre-freeze exact-schema review and documentation, roadmap, language-boundary, exact-diff, missing-path, and all-history absence checks passed; no independent candidate acceptance, implementation authority, integration, or SH-07 authority is claimed",
+      "state": "frozen"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T09:50:10Z",
+      "reason": "request fresh independent exact review of repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32: verify authentic terminal-derived A9 inputs and honest unavailable-history booleans, exact 3/72/77/63 counts, acyclic PRE/runtime mask split, exact eligibility schemas, stage-scoped ownership and cleanup, exhaustive V9 supersession, unchanged V9 laws, report-only scope, and all authority nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T10:07:27Z",
+      "reason": "ACCEPT exact repaired report-only candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8, tree cfccb66e24cc8dcec69e905c859a3d22d2f030bd, report SHA-256 477d602f7b4ffad999f2b96f913eb8445a109480ecea376793fcaa0f3379fd32 after fresh independent review authenticated the terminal A9 record and manifest, closed E1 schemas, exact counts, acyclic mask split, stage-scoped ownership and cleanup, exhaustive supersession, unchanged V9 requirements, validation results, and nonclaims with no fatal blocker",
+      "state": "accepted"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T10:09:00Z",
+      "reason": "advance independently accepted exact candidate 5ce69f8cbe00c82e6ac004ed0f51189e11c207c8 to integration-eligible after clean preflight proved authoritative main is unchanged exact base 8c39712c80e7da66c23a23a6c1f01ba1f970b682, the V9 dependency remains terminal integrated, candidate ancestry and exact tree/report identities hold, and the diff remains one report-only path with no upstream drift",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "master-coordinator",
+      "at": "2026-09-10T10:11:32Z",
+      "reason": "integrate exact accepted report candidate through merge aa62f19bd2f651507be15f2ea0b18ca8978fee38 and its governed lifecycle through merge eaabe8c283b7bf62b6c172fd8fee532052ce29f4, tree c7e86bd13e92a3606097fac510b4897598bf3462, with candidate ancestry, exact report blob preservation, clean main reconciliation, integrated dependency, and all nonclaims intact",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
+  "invariant_family": "architecture/self-hosting-sh07-b51-pin-free-publication-v1",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "the correction is architecture authority only and does not establish implementation correctness, evidence eligibility, or candidate acceptance",
+    "Clojure, the JVM, and Git remain the temporary bounded codec, immutable-object, process, publication, and observation boundary defined by V9",
+    "the draft I9 implementation cannot freeze until this correction receives independent acceptance, integration, and exact current-main reconciliation",
+    "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "/root/v9_source_read_closure_fix@5443066c"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "/root/v9_source_read_closure_fix@5ce69f8c"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-07 B51 Git-object publication V9 pre-evidence architecture erratum version 1"
+}

@@ -38,6 +38,9 @@
   (into-array OpenOption [StandardOpenOption/READ
                           StandardOpenOption/WRITE
                           LinkOption/NOFOLLOW_LINKS]))
+(def ^:private read-only-options
+  (into-array OpenOption [StandardOpenOption/READ
+                          LinkOption/NOFOLLOW_LINKS]))
 (def ^:private file-permissions
   (PosixFilePermissions/asFileAttribute
    (PosixFilePermissions/fromString "rw-------")))
@@ -679,6 +682,292 @@
                  (semantic-receipt resource-class :rejected
                                    "SH01-BROKER-IO")}
                 error)))))
+
+(def ^:private lease-keys
+  #{:schema :resource-class :coordination-root :owner-thread-id :slots
+    :receipt :telemetry :released? :options})
+
+(def ^:private receipt-keys
+  #{:schema :resource-class :capacity :outcome :diagnostic-id})
+
+(def ^:private admitted-telemetry-keys
+  #{:schema :authority :authoritative? :resource-class :capacity :outcome
+    :queue-position :queue-length :recovered-stale-tickets :ticket :wait-ms
+    :coordination-root})
+
+(def ^:private slot-keys
+  #{:file-name :channel :lock :local-lock})
+
+(def ^:private accepted-option-keys
+  #{:coordination-root :timeout-ms :on-event})
+
+(defn- invalid-lease!
+  ([reason] (invalid-lease! reason {}))
+  ([reason data]
+   (fail! "SH01-BROKER-LEASE-INVALID"
+          "SH-01 broker live lease failed validation"
+          (assoc data :reason reason))))
+
+(defn- lease-ensure!
+  [value reason data]
+  (when-not value
+    (invalid-lease! reason data))
+  true)
+
+(defn- bounded-read-once
+  [^Path path maximum-bytes]
+  (with-open [channel (FileChannel/open path read-only-options)]
+    (let [buffer (java.nio.ByteBuffer/allocate 1024)
+          output (java.io.ByteArrayOutputStream.)]
+      (loop [total 0]
+        (.clear buffer)
+        (let [read (.read channel buffer)]
+          (cond
+            (= -1 read)
+            (.toByteArray output)
+
+            (> (+ total read) maximum-bytes)
+            ::too-large
+
+            :else
+            (do
+              (.flip buffer)
+              (let [chunk (byte-array (.remaining buffer))]
+                (.get buffer chunk)
+                (.write output chunk 0 (alength chunk)))
+              (recur (+ total read)))))))))
+
+(defn- read-reviewed-policy
+  [^Path root]
+  (let [path (regular-direct-child! root "policy.edn")]
+    (lease-ensure! (Files/exists path no-follow-links)
+                   :policy-missing
+                   {:path "policy.edn"})
+    (lease-ensure! (Files/isRegularFile path no-follow-links)
+                   :policy-shape
+                   {:path "policy.edn"})
+    (let [size-before
+          (.size ^java.nio.file.attribute.BasicFileAttributes
+                 (Files/readAttributes path
+                                       java.nio.file.attribute.BasicFileAttributes
+                                       no-follow-links))]
+      (lease-ensure! (<= size-before 4096)
+                     :policy-bound
+                     {:path "policy.edn" :size size-before})
+      (let [bytes (bounded-read-once path 4096)
+            bytes-again (bounded-read-once path 4096)
+            size-after
+            (.size ^java.nio.file.attribute.BasicFileAttributes
+                   (Files/readAttributes path
+                                         java.nio.file.attribute.BasicFileAttributes
+                                         no-follow-links))]
+        (lease-ensure! (and (not= ::too-large bytes)
+                            (not= ::too-large bytes-again)
+                            (= size-before size-after)
+                            (java.util.Arrays/equals ^bytes bytes
+                                                      ^bytes bytes-again))
+                       :policy-mutated
+                       {:path "policy.edn"})
+        (let [eof (Object.)
+              observed
+              (try
+                (with-open [reader
+                            (PushbackReader.
+                             (StringReader.
+                              (String. ^bytes bytes StandardCharsets/UTF_8)))]
+                  (let [value (edn/read {:eof eof} reader)
+                        trailing (edn/read {:eof eof} reader)]
+                    (when (and (not (identical? eof value))
+                               (identical? eof trailing))
+                      value)))
+                (catch Throwable _ nil))]
+          (lease-ensure! (= policy-record observed)
+                         :policy-mismatch
+                         {:path "policy.edn"})
+          observed)))))
+
+(defn- validate-slot!
+  [^Path root resource-class slot]
+  (lease-ensure! (and (map? slot)
+                      (= slot-keys (set (keys slot))))
+                 :slot-shape
+                 {:resource-class resource-class})
+  (let [file-name (:file-name slot)
+        allowed (set (if (= :exclusive resource-class)
+                       (slot-file-names)
+                       (class-slot-file-names resource-class)))]
+    (lease-ensure! (and (string? file-name)
+                        (contains? allowed file-name))
+                   :slot-name
+                   {:resource-class resource-class :file-name file-name})
+    (let [path (regular-direct-child! root file-name)
+          attributes
+          (when (Files/exists path no-follow-links)
+            (Files/readAttributes path
+                                  java.nio.file.attribute.BasicFileAttributes
+                                  no-follow-links))]
+      (lease-ensure! (and attributes
+                          (.isRegularFile ^java.nio.file.attribute.BasicFileAttributes
+                                          attributes)
+                          (zero? (.size ^java.nio.file.attribute.BasicFileAttributes
+                                        attributes)))
+                     :slot-file
+                     {:resource-class resource-class :file-name file-name})
+      (let [channel (:channel slot)
+            lock (:lock slot)
+            local-lock (:local-lock slot)]
+        (lease-ensure! (instance? FileChannel channel)
+                       :slot-channel
+                       {:file-name file-name})
+        (lease-ensure! (and (.isOpen ^FileChannel channel)
+                            (instance? FileLock lock)
+                            (.isValid ^FileLock lock)
+                            (identical? channel (.channel ^FileLock lock))
+                            (not (.isShared ^FileLock lock)))
+                       :slot-lock
+                       {:file-name file-name})
+        (lease-ensure! (and (instance? ReentrantLock local-lock)
+                            (.isFair ^ReentrantLock local-lock)
+                            (.isLocked ^ReentrantLock local-lock)
+                            (.isHeldByCurrentThread ^ReentrantLock local-lock)
+                            (= 1 (.getHoldCount ^ReentrantLock local-lock)))
+                       :slot-local-lock
+                       {:file-name file-name})
+        slot))))
+
+(defn validate-live-lease!
+  "Validates one live broker lease without granting or mutating authority.
+
+  Validation is deliberately stricter than the public release transition:
+  every schema and observation is checked, every slot must still be locked by
+  the current thread, and the expected root and resource class are supplied by
+  the caller.  A validated lease is returned unchanged; every invalid value
+  fails with the stable `SH01-BROKER-LEASE-INVALID` diagnostic."
+  [lease expected-root expected-class]
+  (try
+    (lease-ensure! (map? lease) :lease-shape {})
+    (lease-ensure! (= lease-keys (set (keys lease)))
+                   :lease-keys
+                   {:keys (set (keys lease))})
+    (lease-ensure! (= :gravity/sh01-host-resource-lease-v1 (:schema lease))
+                   :lease-schema
+                   {:schema (:schema lease)})
+    (lease-ensure! (contains? supported-classes expected-class)
+                   :expected-resource-class
+                   {:resource-class expected-class})
+    (lease-ensure! (= expected-class (:resource-class lease))
+                   :resource-class
+                   {:expected expected-class
+                    :observed (:resource-class lease)})
+    (let [root (trusted-root expected-root)
+          root-string (str root)
+          lease-root (:coordination-root lease)
+          options (:options lease)]
+      (lease-ensure! (and (string? lease-root)
+                          (= root-string lease-root))
+                     :coordination-root
+                     {:expected root-string :observed lease-root})
+      (lease-ensure! (map? options) :options-shape {})
+      (lease-ensure! (every? accepted-option-keys (keys options))
+                     :options-keys
+                     {:keys (set (keys options))})
+      (let [option-root (:coordination-root options)
+            timeout-ms (positive-timeout (:timeout-ms options))]
+        (lease-ensure! (= root-string (str (trusted-root option-root)))
+                       :options-root
+                       {:expected root-string :observed option-root})
+        (lease-ensure! (or (not (contains? options :on-event))
+                           (nil? (:on-event options))
+                           (ifn? (:on-event options)))
+                       :options-callback
+                       {})
+        (lease-ensure! (= timeout-ms (positive-timeout (:timeout-ms options)))
+                       :options-timeout
+                       {:timeout-ms (:timeout-ms options)}))
+      (lease-ensure! (= (.getId (Thread/currentThread))
+                        (:owner-thread-id lease))
+                     :owner-thread
+                     {:owner-thread-id (:owner-thread-id lease)})
+      (lease-ensure! (and (instance? clojure.lang.Atom (:released? lease))
+                          (false? @(:released? lease)))
+                     :released-state
+                     {})
+      (read-reviewed-policy root)
+      (let [slots (:slots lease)
+            expected-names (if (= :exclusive expected-class)
+                             (set (slot-file-names))
+                             nil)
+            expected-count (if (= :exclusive expected-class)
+                            (count (slot-file-names))
+                            1)
+            slot-names (when (vector? slots) (mapv :file-name slots))]
+        (lease-ensure! (and (vector? slots)
+                            (= expected-count (count slots))
+                            (= (count slot-names) (count (distinct slot-names)))
+                            (if expected-names
+                              (= expected-names (set slot-names))
+                              (every? #(contains? (set (class-slot-file-names expected-class)) %)
+                                      slot-names)))
+                       :slots
+                       {:resource-class expected-class
+                        :slot-names slot-names})
+        (doseq [slot slots]
+          (validate-slot! root expected-class slot)))
+      (let [receipt (:receipt lease)
+            expected-capacity (get reviewed-capacities expected-class)]
+        (lease-ensure! (and (map? receipt)
+                            (= receipt-keys (set (keys receipt)))
+                            (= :gravity/sh01-host-resource-non-authoritative-receipt-v1
+                               (:schema receipt))
+                            (= expected-class (:resource-class receipt))
+                            (= expected-capacity (:capacity receipt))
+                            (= :admitted (:outcome receipt))
+                            (nil? (:diagnostic-id receipt)))
+                       :receipt
+                       {:resource-class expected-class}))
+      (let [telemetry (:telemetry lease)
+            expected-capacity (get reviewed-capacities expected-class)
+            timeout-ms (positive-timeout (get-in lease [:options :timeout-ms]))]
+        (lease-ensure! (and (map? telemetry)
+                            (= admitted-telemetry-keys (set (keys telemetry)))
+                            (= :gravity/sh01-host-resource-telemetry-v1
+                               (:schema telemetry))
+                            (= :non-authoritative (:authority telemetry))
+                            (false? (:authoritative? telemetry))
+                            (= expected-class (:resource-class telemetry))
+                            (= expected-capacity (:capacity telemetry))
+                            (= :admitted (:outcome telemetry))
+                            (integer? (:queue-position telemetry))
+                            (pos? (long (:queue-position telemetry)))
+                            (<= (long (:queue-position telemetry)) maximum-ticket-count)
+                            (integer? (:queue-length telemetry))
+                            (pos? (long (:queue-length telemetry)))
+                            (<= (long (:queue-length telemetry)) maximum-ticket-count)
+                            (<= (long (:queue-position telemetry))
+                                (long (:queue-length telemetry)))
+                            (integer? (:recovered-stale-tickets telemetry))
+                            (<= 0 (long (:recovered-stale-tickets telemetry)))
+                            (<= (long (:recovered-stale-tickets telemetry))
+                                maximum-ticket-count)
+                            (string? (:ticket telemetry))
+                            (let [[_ _ class-name]
+                                  (re-matches ticket-pattern (:ticket telemetry))]
+                              (= (name expected-class) class-name))
+                            (integer? (:wait-ms telemetry))
+                            (<= 0 (long (:wait-ms telemetry)))
+                            (<= (long (:wait-ms telemetry)) timeout-ms)
+                            (= (str (trusted-root expected-root))
+                               (:coordination-root telemetry)))
+                       :telemetry
+                       {:resource-class expected-class}))
+      lease)
+    (catch clojure.lang.ExceptionInfo error
+      (if (= "SH01-BROKER-LEASE-INVALID" (:id (ex-data error)))
+        (throw error)
+        (invalid-lease! :validation-error
+                        {:cause-id (:id (ex-data error))})))
+    (catch Throwable _
+      (invalid-lease! :validation-error {}))))
 
 (defn release!
   "Releases a lease exactly once."

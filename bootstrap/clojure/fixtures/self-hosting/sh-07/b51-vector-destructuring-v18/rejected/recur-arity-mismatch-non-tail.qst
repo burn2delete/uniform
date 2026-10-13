@@ -1,0 +1,14 @@
+(ns self-hosting.sh07-b51-v18.recur-arity-mismatch-non-tail
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (loop [[value] input
+         total 0]
+    (do
+      (recur [value])
+      total)))

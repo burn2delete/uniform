@@ -9,18 +9,45 @@
     clojure -Sdeps '{:paths [\"bootstrap/clojure/src\"
                             \"bootstrap/clojure/test\"]}'
       -M -m gravity.self-hosting.sh07-contract-shard-runner"
-  (:require [clojure.test :as test]
-            [gravity.self-hosting.sh07-vector-pattern-test]))
+  (:require [clojure.string :as str]
+            [clojure.test :as test]
+            [gravity.self-hosting.unified-execution-plan :as execution-plan]))
 
-(def ^:private test-namespace
-  'gravity.self-hosting.sh07-vector-pattern-test)
+(def ^:private contract-route-id
+  "sh07-b11-contract")
 
-(def ^:private test-symbols
-  '[sh07-b11-fixtures-are-paired-byte-identical-and-bounded-in-scope
-    sh07-b11-gravity-contract-names-l7])
+(defn- manifest-selection
+  []
+  (let [route (execution-plan/route contract-route-id)
+        selection (:selection route)]
+    (when-not (= :exact-vars (:kind selection))
+      (throw
+       (ex-info
+        "SH-07 contract route must select exact test vars"
+        {:id "SH07-CONTRACT-SHARD-SELECTION"
+         :route contract-route-id
+         :kind (:kind selection)})))
+    (when-not (and (string? (:namespace selection))
+                   (boolean
+                    (re-matches #"gravity\.self-hosting\.[A-Za-z0-9][A-Za-z0-9._-]*"
+                                (:namespace selection)))
+                   (vector? (:selectors selection))
+                   (seq (:selectors selection))
+                   (every? #(and (string? %)
+                                 (not (str/blank? %))
+                                 (nil? (namespace (symbol %))))
+                           (:selectors selection)))
+      (throw
+       (ex-info
+        "SH-07 contract route selection has an invalid namespace or selector"
+        {:id "SH07-CONTRACT-SHARD-SELECTION"
+         :route contract-route-id
+         :selection selection})))
+    {:namespace (symbol (:namespace selection))
+     :test-symbols (mapv symbol (:selectors selection))}))
 
 (defn- resolve-test
-  [test-symbol]
+  [test-namespace test-symbol]
   (let [test-var (ns-resolve test-namespace test-symbol)]
     (when-not (and (var? test-var) (:test (meta test-var)))
       (throw
@@ -33,7 +60,9 @@
 
 (defn run-contract-shard
   []
-  (let [test-vars (mapv resolve-test test-symbols)
+  (let [{:keys [namespace test-symbols]} (manifest-selection)
+        _ (require namespace)
+        test-vars (mapv #(resolve-test namespace %) test-symbols)
         counters (ref test/*initial-report-counters*)]
     (binding [test/*report-counters* counters]
       (test/test-vars test-vars))

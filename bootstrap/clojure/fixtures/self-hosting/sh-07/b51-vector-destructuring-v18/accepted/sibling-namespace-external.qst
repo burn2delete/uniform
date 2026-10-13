@@ -1,0 +1,13 @@
+(ns self-hosting.sh07-b51-v18.sibling-namespace-external
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def sibling-pair [20 22])
+
+(defn exercise []
+  (let [[left right] sibling-pair]
+    (+ left right)))

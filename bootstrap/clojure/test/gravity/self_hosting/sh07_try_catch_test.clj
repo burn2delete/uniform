@@ -2,7 +2,9 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh07-iteration-cache-runner :as cache-runner]
+            [gravity.self-hosting.sh07-semantic-carrier :as semantic-carrier]))
 
 (defn- repository-root
   []
@@ -556,6 +558,132 @@
                   (get-in right [:provenance :source-path]))))
       (finally
         (delete-tree! temp-root)))))
+
+(deftest sh07-b8-semantic-carrier-authentic-acceptance-evidence
+  (if-not (= "1" (System/getenv "GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC"))
+    (is true "set GRAVITY_SH07_SEMANTIC_CACHE_AUTHENTIC=1 for authentic evidence")
+    (let [accepted-bytes
+        (source-bytes
+         (fixture-path "accepted" "top-level-typed-catch" ".gravity"))
+        rejected-bytes
+        (source-bytes (fixture-path "rejected" "missing-catch" ".gravity"))
+        left-root (java.nio.file.Files/createTempDirectory
+                   "gravity-sh07-b8-semantic-left-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        right-root (java.nio.file.Files/createTempDirectory
+                    "gravity-sh07-b8-semantic-right-"
+                    (make-array java.nio.file.attribute.FileAttribute 0))
+        left-path (.resolve left-root "accepted.gravity")
+        right-path (.resolve right-root "accepted.gravity")
+        rejected-left (.resolve left-root "rejected.gravity")
+        rejected-right (.resolve right-root "rejected.gravity")]
+    (try
+      (doseq [target [left-path right-path]]
+        (java.nio.file.Files/write
+         target accepted-bytes (make-array java.nio.file.OpenOption 0)))
+      (doseq [target [rejected-left rejected-right]]
+        (java.nio.file.Files/write
+         target rejected-bytes (make-array java.nio.file.OpenOption 0)))
+      (let [file-builder @(required-var 'sh07-core-file-artifact)
+            verifier @(required-var 'sh07-core-artifact-verification)
+            original-from-resolution
+            @(required-var 'sh07-core-from-resolution-artifact)
+            ordinary-right (file-builder (str right-path))
+            admission-builds (atom 0)
+            admission-verifications (atom 0)
+            left
+            (with-redefs [bootstrap/sh07-core-from-resolution-artifact
+                          (fn [resolution]
+                            (swap! admission-builds inc)
+                            (original-from-resolution resolution))]
+              (file-builder (str left-path)))
+            left-report
+            (with-redefs [bootstrap/sh07-core-artifact-verification
+                          (fn [artifact]
+                            (swap! admission-verifications inc)
+                            (verifier artifact))]
+              (bootstrap/sh07-core-artifact-verification left))
+            left-resolution (:sh06-resolution-artifact left)
+            right-resolution (:sh06-resolution-artifact ordinary-right)
+            left-request (request left)
+            right-request (request ordinary-right)
+            left-source (String. ^bytes accepted-bytes
+                                  java.nio.charset.StandardCharsets/UTF_8)
+            right-source left-source
+            left-snapshot
+            (#'cache-runner/strict-source-snapshot
+             (str left-path) left-source left-resolution)
+            right-snapshot
+            (#'cache-runner/strict-source-snapshot
+             (str right-path) right-source right-resolution)
+            carrier
+            (semantic-carrier/construct-carrier
+             left-snapshot left-resolution left-request
+             (#'cache-runner/run-product-from-artifact left))
+            right-upstream
+            (bootstrap/sh06-resolution-artifact-verification right-resolution)
+            resolver-leaves (atom [])
+            forbidden-calls (atom {})
+            original-execute bootstrap/sh07-core-execute!
+            bound
+            (with-redefs
+              [bootstrap/sh07-core-execute!
+               (fn [source-path function arguments]
+                 (swap! resolver-leaves conj function)
+                 (original-execute source-path function arguments))
+               bootstrap/sh07-core-run-request-for-test
+               (fn [& _] (swap! forbidden-calls update :run-request (fnil inc 0)))
+               bootstrap/sh07-core-run-structural-request-for-test
+               (fn [& _] (swap! forbidden-calls update :structural-request (fnil inc 0)))
+               bootstrap/sh07-core-from-authenticated-request
+               (fn [& _] (swap! forbidden-calls update :authenticated-request (fnil inc 0)))
+               bootstrap/sh07-core-from-resolution-artifact
+               (fn [& _] (swap! forbidden-calls update :resolution-artifact (fnil inc 0)))
+               bootstrap/sh07-core-artifact-verification
+               (fn [& _] (swap! forbidden-calls update :artifact-verification (fnil inc 0)))
+               bootstrap/sh07-core-verification-session
+               (fn [& _] (swap! forbidden-calls update :verification-session (fnil inc 0)))]
+              (semantic-carrier/bind-carrier
+               carrier right-snapshot right-resolution right-upstream right-request
+               (#'cache-runner/semantic-seams
+                (str right-path) carrier right-resolution right-upstream)))]
+        (is (= 1 @admission-builds))
+        (is (= 1 @admission-verifications))
+        (is (= :passed (:status left-report)))
+        (is (= :accepted (:status left) (:status ordinary-right)))
+        (is (= ordinary-right (:sh07-artifact bound)))
+        (is (= (str left-path) (get-in left [:provenance :source-path])))
+        (is (= (str right-path)
+               (get-in bound [:sh07-artifact :provenance :source-path])))
+        (is (not= (get-in left [:provenance :source-path])
+                  (get-in bound [:sh07-artifact :provenance :source-path])))
+        (is (#'cache-runner/aggregate-identities-disjoint?
+             left (:sh07-artifact bound)))
+        (is (= :passed (get-in bound [:supplied-verification :status])))
+        (is (= ['sh07-resolve-identity-preimage
+                'sh07-resolve-provenance-preimage]
+               @resolver-leaves))
+        (is (= {} @forbidden-calls)))
+      (let [left-result
+            (diagnostic-result
+             #((required-var 'sh07-core-file-artifact) (str rejected-left)))
+            right-result
+            (diagnostic-result
+             #((required-var 'sh07-core-file-artifact) (str rejected-right)))
+            left-diagnostic (diagnostic-data left-result)
+            right-diagnostic (diagnostic-data right-result)
+            parity-keys [:artifact :rule :severity :stage :facts :remediation]]
+        (is (nil? (:raw-host-error left-result)))
+        (is (nil? (:raw-host-error right-result)))
+        (is (= (select-keys left-diagnostic parity-keys)
+               (select-keys right-diagnostic parity-keys)))
+        (is (= (str rejected-left)
+               (get-in left-diagnostic [:source-span :source])))
+        (is (= (str rejected-right)
+               (get-in right-diagnostic [:source-span :source]))))
+      (finally
+        (delete-tree! left-root)
+        (delete-tree! right-root))))))
 
 (deftest sh07-b8-rejections-are-structured-and-oracle-bound
   (doseq [[basename oracle] rejected-oracles

@@ -1,0 +1,13 @@
+; A recur is tail only in a match branch, never in its scrutinee or pattern.
+(ns self-hosting.sh07-b51-v18.function-recur-match-tail
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [advance])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn advance [value]
+  (match value
+    0 (recur (+ value 1))
+    _ value))

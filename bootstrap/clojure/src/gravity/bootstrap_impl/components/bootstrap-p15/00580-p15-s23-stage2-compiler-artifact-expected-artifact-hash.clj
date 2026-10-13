@@ -95,7 +95,13 @@
         module (assoc (:module macro-artifact)
                       :forms (:expanded-forms macro-artifact))
         function-table (stage0-function-table module)
-        module (assoc module :function-table function-table)
+        source-authority
+        (when (= 'gravity.checked-core (:module module))
+          (p15-s23-sh07-compiler-source-authority
+           artifact-source artifact-text module function-table))
+        module (cond-> (assoc module :function-table function-table)
+                 source-authority
+                 (assoc :p15-s23-sh07-source-authority source-authority))
         artifact-emitter
         (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
         functions
@@ -118,7 +124,13 @@
          :compiler {:owner :gravity-source
                     :stage :p15-s23-stage2-expression-lowering
                     :compiled-by :clojure-stage0-seed
-                    :generic-bridge-residual? true}
+                    :generic-bridge-residual? true
+                    :artifact-hash
+                    (p15-s23-stage2-compiler-artifact-expected-artifact-hash)
+                    :source-content-hash
+                    p15-s23-stage2-compiler-artifact-expected-source-content-hash
+                    :semantic-hash
+                    p15-s23-stage2-compiler-artifact-expected-semantic-hash}
          :module (select-keys module
                               [:module :profile :target :effects
                                :capabilities :exports :safety])

@@ -223,6 +223,152 @@
                                               :catalog-delay (delay catalog))})]
         (is (= "SH01-IMPACT-ROUTE-CONTRACT" (:id data)) data)))))
 
+(deftest sh07-b8-route-projection-preserves-uep-selection-and-closure
+  (let [manifest-route
+        ((requiring-resolve
+          'gravity.self-hosting.unified-execution-plan/route)
+         "sh07-b8-regression")
+        route (planner/exact-test-var-route "b8-regression")
+        oracle
+        {:slice "SH-07"
+         :owner :sh-core
+         :path "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+         :namespace 'gravity.self-hosting.sh07-try-catch-test
+         :test-vars
+         '[gravity.self-hosting.sh07-try-catch-test/sh07-b8-authenticated-input-substitution-fails-before-lowering
+           gravity.self-hosting.sh07-try-catch-test/sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts]
+         :selection-mode :exact-test-vars
+         :resource-class :memory-heavy}
+        namespace (get-in manifest-route [:selection :namespace])
+        selectors (get-in manifest-route [:selection :selectors])
+        closure (get-in manifest-route [:dependency-closure])]
+    (is (= oracle route))
+    (is (= (symbol namespace) (:namespace route)))
+    (is (= (mapv #(symbol (str namespace "/" %)) selectors)
+           (:test-vars route)))
+    (is (= "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
+           (:path route)))
+    (is (= :memory-heavy (:resource-class route)))
+    (is (true? (:complete? closure)))
+    (is (contains? (set (:paths closure)) (:path route)))))
+
+(deftest sh07-b8-route-owner-remains-reviewed-and-plan-rejects-drift
+  (let [owner-var #'gravity.self-hosting.sh01-impact-test-planner/ownership-record
+        route (with-redefs-fn
+                {owner-var (fn [] {:slice-owners
+                                   {"SH-07" {:leaf-owner :forged-owner
+                                              :integration-owner :forged-owner}}})}
+                #(planner/exact-test-var-route "b8-regression"))
+        context (planner/planning-context)
+        drifted-context
+        (assoc-in context [:ownership :slice-owners "SH-07" :leaf-owner]
+                  :forged-owner)
+        drift-data
+        (try
+          (planner/build-test-var-plan "b8-regression"
+                                       {:context drifted-context})
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= :sh-core (:owner route)))
+    (is (= "SH01-IMPACT-ROUTE-OWNER" (:id drift-data)))
+    (is (= :owner-drift (:reason drift-data)))))
+
+(deftest sh07-b8-route-projection-tamper-fails-closed
+  (let [route-fn
+        (requiring-resolve
+         'gravity.self-hosting.unified-execution-plan/route)
+        manifest-route (route-fn "sh07-b8-regression")
+        route-symbol 'gravity.self-hosting.unified-execution-plan/route
+        projection-error
+        (fn [candidate]
+          (try
+            (with-redefs [clojure.core/requiring-resolve
+                          (fn [symbol]
+                            (if (= route-symbol symbol)
+                              (fn [_] candidate)
+                              (fn [& _] nil)))]
+              (planner/exact-test-var-route "b8-regression"))
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (ex-data error))))]
+    (doseq [[label candidate]
+            [["missing canonical test path"
+             (update-in manifest-route [:dependency-closure :paths]
+                         #(vec (remove
+                                #{"bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"}
+                                %)))]
+             ["non-vector closure paths"
+              (assoc-in manifest-route [:dependency-closure :paths]
+                        #{"bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"})]
+             ["non-string closure path"
+              (update-in manifest-route [:dependency-closure :paths]
+                         #(conj % :forged-path))]
+             ["incomplete closure"
+              (assoc-in manifest-route [:dependency-closure :complete?] false)]
+             ["wrong resource class"
+              (assoc manifest-route :resource-class :normal)]
+             ["wrong maximum vars"
+              (assoc-in manifest-route [:bounds :max-test-vars] 1)]
+             ["fresh execution mode"
+              (assoc manifest-route :execution-mode :fresh-isolated-process)]
+             ["authoritative ceiling"
+              (assoc manifest-route :authority-ceiling :acceptance-only)]
+             ["duplicate selector"
+              (assoc-in manifest-route [:selection :selectors]
+                        [(first (get-in manifest-route [:selection :selectors]))
+                         (first (get-in manifest-route [:selection :selectors]))])]]]
+      (is (= "SH01-IMPACT-ROUTE-CONTRACT"
+             (:id (projection-error candidate)))
+          label))))
+
+(deftest sh07-b8-route-listing-keeps-uep-namespace-lazy
+  (is (= "[\"b8-regression\"]|false"
+         (run-process!
+          (System/getProperty "user.dir")
+          "clojure"
+          "-Sdeps"
+          "{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}"
+          "-M"
+          "-e"
+          "(require '[gravity.self-hosting.sh01-impact-test-planner :as planner]) (print (str (pr-str (planner/exact-test-var-route-names)) \"|\" (boolean (find-ns 'gravity.self-hosting.unified-execution-plan))))"))))
+
+(deftest sh07-b8-route-manifest-resolution-failures-are-stable
+  (let [route-symbol 'gravity.self-hosting.unified-execution-plan/route
+        error-id
+        (fn [thunk]
+          (try
+            (thunk)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              (:id (ex-data error)))))]
+    (testing "resolver failure"
+      (is (= "SH01-IMPACT-ROUTE"
+             (error-id
+              #(with-redefs [clojure.core/requiring-resolve
+                             (fn [_]
+                               (throw (IllegalStateException. "resolver")))]
+                 (planner/exact-test-var-route "b8-regression"))))))
+    (testing "invocation failure"
+      (is (= "SH01-IMPACT-ROUTE"
+             (error-id
+              #(with-redefs [clojure.core/requiring-resolve
+                             (fn [symbol]
+                               (if (= route-symbol symbol)
+                                 (fn [_]
+                                   (throw (IllegalStateException. "invoke")))
+                                 (fn [& _] nil)))]
+                 (planner/exact-test-var-route "b8-regression")))))))
+    (testing "fatal resolver errors propagate"
+      (is (= :propagated
+             (try
+               (with-redefs [clojure.core/requiring-resolve
+                             (fn [_] (throw (Error. "fatal")))]
+                 (planner/exact-test-var-route "b8-regression"))
+               :returned
+               (catch Error _
+                 :propagated))))))
+
 (deftest reviewed-component-sources-select-declared-tests-without-changing-governance
   (doseq [[path expected-component expected-tests direct-count affected-count]
           [["bootstrap/clojure/src/gravity/compiler_pass_manifest.clj"
@@ -887,7 +1033,7 @@
         general (set (runner/dedicated-test-namespaces))
         catalog (@catalog-var)]
     (testing "the reviewed exclusions are explicit and discoverable"
-      (is (= 25 (count reviewed)))
+      (is (= 30 (count reviewed)))
       (is (contains? reviewed
                      'gravity.self-hosting.a1-canonical-schema-test))
       (is (contains? reviewed
@@ -900,6 +1046,12 @@
                      'gravity.self-hosting.macro-operations-normalization-test))
       (is (contains? reviewed
                      'gravity.self-hosting.w5-c16-incremental-executor-test))
+      (doseq [namespace ['gravity.self-hosting.artifact-parent-consumption-test
+                         'gravity.self-hosting.authenticated-artifact-pipeline-test
+                         'gravity.self-hosting.execution-lanes-test
+                         'gravity.self-hosting.unified-execution-cli-test
+                         'gravity.self-hosting.unified-execution-plan-test]]
+        (is (contains? reviewed namespace)))
       (is (every? #(contains? general %) reviewed))
       (is (= (- (count general) (count reviewed))
              (count catalog))))

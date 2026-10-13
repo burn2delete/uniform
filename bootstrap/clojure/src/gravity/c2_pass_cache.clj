@@ -29,4 +29,5 @@
 (load "/gravity/c2_pass_cache/lookup")
 (load "/gravity/c2_pass_cache/publication")
 (load "/gravity/c2_pass_cache/adapter_request")
+(load "/gravity/c2_pass_cache/requested_hit_binding")
 (load "/gravity/c2_pass_cache/adapter_projection")

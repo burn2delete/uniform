@@ -1,0 +1,180 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-25.md",
+  "author": "sh07-b51-carrier-architecture",
+  "base_commit": "0a93cc6954e1cc85173d9094ce4c77241093de5d",
+  "candidate_commit": "e00e6a63be2640461f8429568d993aa9ecb8decb",
+  "clean_worktree": true,
+  "dependencies": [
+    "sh07-b51-vector-destructuring-architecture-v18-attempt-24"
+  ],
+  "disposition": "REJECTED by independent reviewer attempt25-independent-review for immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785. Blocker one: h25 sends a qualified :functions vector with at least 984 entries through preserved C11 pr-str despite C11's exact maximum collection width of 512, so the carrier is unconstructible. Blocker two: the exact eleven-key raw request changes its domain, schema version, and :v18-executable-descriptor type, leaving eight rather than the reported nine other payload fields unchanged. No implementation acceptance, integration eligibility, pin, SH-07 completion, self-hosting, release, performance, or seed-retirement authority is conferred.",
+  "evidence": {
+    "accepted_fixtures": [
+      "integrated dependency:sh07-b51-vector-destructuring-architecture-v18-attempt-24",
+      "authoritative main:0a93cc6954e1cc85173d9094ce4c77241093de5d",
+      "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-25.md",
+      "report-sha256:bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785",
+      "candidate-tree:2589364bcc680a0743192f092ed942c0eaa46f1a",
+      "carrier contradiction audit:Attempt5 P requires one checked_core source, one plan/function map, one physical census, and one fourteen-export module contract while Attempt24 freezes checked_core as B47 and routes B51 through seven M2 plans",
+      "linked carrier audit:P25 transports and joins seven exact M0 values, M1, seven complete real M2 plans, M3, qualified S25/h25, and seven physical census rows without a merged source or plan",
+      "authority preservation audit:B47 source, plan, functions, contracts, and f473 descriptor remain immutable and separate; Attempt24 placement, M0-M3, 2440 bound, roots, source binding semantics, and diagnostics remain exact",
+      "lifecycle identity audit:the immutable report-only candidate precedes this separate draft registration and cannot self-reference the ledger"
+    ],
+    "rejected_fixtures": [
+      "the historical monolithic B51 executable carrier or raw-request domain is silently reinterpreted or admitted at the new carrier boundary",
+      "a fabricated fourteen-export module, combined source path/hash, merged plan/function map, rewritten external instruction, or synthetic merged carrier enters authentic evidence",
+      "checked_core, an immutable B47/f473 value, or any Attempt24 M0-M3 schema, placement, export, route, bound, or source authority rule changes",
+      "P25 omits or duplicates a module, plan, manifest edge, route, public root, qualified member, function, builtin, census row, or complete identity join",
+      "coherent downstream rehashing around an unpinned source, plan, bundle, carrier, public sealer, token, registry mutation, caller plan, or nil expected pin grants authority",
+      "Root8 has zero or multiple implementations, calls Root1 zero or multiple times after admission, changes its byte-identical request, exposes caller identity, retries, bypasses, or commits after route failure",
+      "R6 uses a producer/Root8 edge or producer result as authority, source oracle O enters executable plans, or an M1 edge is confused with Attempt5 source external-binding authority",
+      "a 2441 occupancy, malformed if, rem, mod, fourth internal builtin, unbounded host recursion, dynamic lookup, or unauthorized source/link edge is admitted",
+      "independent-review#h25-complete-qualified-functions-vector-has-at-least-984-elements-and-exceeds-preserved-C11-maximum-collection-width-512",
+      "independent-review#eleven-key-raw-request-changes-domain-schema-and-v18-executable-descriptor-so-eight-not-nine-other-payload-fields-remain-unchanged"
+    ],
+    "stable_diagnostics": [
+      "AA001",
+      "AA002",
+      "AA003",
+      "AA004",
+      "AA005",
+      "AA006",
+      "AA007",
+      "AA008",
+      "C6-VERIFY",
+      "L2-UNKNOWN-CORE-FORM",
+      "L2-FUNCTION-ARITY",
+      "L2-BUILTIN-ARITY",
+      "L2-BUILTIN-ERROR"
+    ],
+    "validation_commands": [
+      {
+        "command": "read-only Attempt5 P versus integrated Attempt24 M0-M3 carrier conformance audit",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-25.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-sharding-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-workstream-ledger-transaction-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-architecture-authority-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check 0a93cc6954e1cc85173d9094ce4c77241093de5d..e00e6a63be2640461f8429568d993aa9ecb8decb",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "L1",
+    "L2",
+    "C5",
+    "C6",
+    "BOOT7",
+    "BOOT8",
+    "TEST10",
+    "TEST11",
+    "TEST13",
+    "docs/self-hosting-slice-backlog.md",
+    "docs/self-hosting-slice-ownership.edn",
+    "docs/workstream-governance.md",
+    "docs/workstream-ledger-v2.md",
+    "contracts/workstream-governance.json",
+    "tools/validate_architecture_authority.clj",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-5.md",
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-24.md",
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_b16_binding_bound_test.clj",
+    "bootstrap/gravity/p15_s23/compiler.gravity",
+    "bootstrap/gravity/src/gravity/checked_core.gravity"
+  ],
+  "history": [
+    {
+      "actor": "sh07-b51-carrier-architecture",
+      "at": "2026-09-02T02:33:07Z",
+      "reason": "register exact architecture-only Attempt-25 report candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d: correct the monolithic carrier contradiction with a new closed linked-bundle carrier/raw domain over exact Attempt24 M0-M3 identities; preserve immutable B47/f473, seven bounded modules, qualified ownership and routing, Root1/Root8 law, independent R6, source external-binding authority, mutations, and pin cascade; no freeze or review is requested",
+      "state": "draft"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T02:36:48Z",
+      "reason": "freeze exact immutable architecture-only Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d after strict authority, governance, sharding, transaction, architecture-authority, documentation, roadmap, JSON, ASCII, candidate-diff, shard-hash, aggregate-digest, ownership, and EOF checks; report content and candidate identity remain byte-identical; the old monolithic carrier/raw domain must reject and no implementation or pin acceptance is inferred",
+      "state": "frozen"
+    },
+    {
+      "actor": "sh07-b51-carrier-architecture-coordinator",
+      "at": "2026-09-02T02:37:44Z",
+      "reason": "request fresh independent exact carrier-architecture review of immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785, base 0a93cc6954e1cc85173d9094ce4c77241093de5d: verify exact Attempt24 dependency, immutable B47/f473, seven M0-M3 plans and 2440 bound, qualified S25/h25/P25 joins, distinct raw domain and old-domain rejection, logical fourteen-symbol surface without a false module contract, Root1/Root8 law, independent R6, source/link authority separation, bounded routing, mutation matrix, pin cascade, and nonclaims",
+      "state": "review-pending"
+    },
+    {
+      "actor": "attempt25-independent-review",
+      "at": "2026-09-02T02:43:57Z",
+      "reason": "REJECT exact immutable Attempt-25 candidate e00e6a63be2640461f8429568d993aa9ecb8decb, tree 2589364bcc680a0743192f092ed942c0eaa46f1a, report SHA-256 bac819a7e8053b198bbf7ecf607aae37a74331c0ce9b6e61464c1e5ba6df9785. Blocker one: S25 has a complete qualified :functions vector with at least 984 reachable entries and h25 hashes S25 through preserved C11 pr-str, but C11's exact maximum collection width is 512; no required bounded partition or fold is defined, so authentic h25 and P25 cannot be constructed. Blocker two: the report's exact eleven-key linked raw request changes :artifact, :schema-version, and :v18-executable-descriptor, leaving eight other payload fields unchanged, not the claimed nine. The B47/f473 separation, seven M0-M3 topology, old-domain rejection, Root1/Root8 law, R1/O/R6 independence, source/link separation, mutations, and nonclaims do not cure these exact defects.",
+      "state": "rejected"
+    }
+  ],
+  "id": "sh07-b51-vector-destructuring-carrier-topology-architecture-v18-attempt-25",
+  "invariant_family": "architecture/self-hosting-sh07-b51-vector-destructuring-v18",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-carrier-topology-erratum-v18-attempt-25.md"
+  ],
+  "owner": "sh-core-architecture",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain source readers, SH06/B16 census hosts, Stage2 compiler/runtime substrates, digest transport, and observers, not B51 semantic or carrier authority",
+    "the host coordinator may load only the independently pinned P25/M3 authority, verify closed joins, select an exact public root, and route exact edge ordinals; it may not merge plans, interpret results, select source ownership, repair fragments, or manufacture resolutions",
+    "synthetic merged plans, fixture carriers, public sealers, alternate registries, direct function calls, with-redefs, and nil expected-pin bindings are test observations only and cannot enter accepted evidence",
+    "Attempt25 grants no implementation, pin, fixture, proof-contract, aggregate SH07 completion, self-hosting, release, performance, or seed-retirement authority"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "rejected",
+      "reviewer": "attempt25-independent-review"
+    }
+  ],
+  "state": "rejected",
+  "title": "SH-07 B51 linked-bundle executable carrier topology erratum v18 attempt 25"
+}

@@ -1,0 +1,12 @@
+(ns self-hosting.sh07-b51-v18.repeated-sibling-core-occurrences
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn exercise [input]
+  (do
+    (+ input 1)
+    (+ input 1)))

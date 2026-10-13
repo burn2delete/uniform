@@ -14,30 +14,49 @@
 
     (seq? form)
     (let [callee (first form)
+          parent-path (:p15-s23-sh07-callsite-path module [])
+          child-module (fn [index]
+                         (assoc module :p15-s23-sh07-callsite-path
+                                (conj parent-path index)))
           special-rule (get-in emitter [:special-form-rules callee])
           builtin-functions (set (get-in emitter
-                                         [:call-rules :builtin-functions]))]
+                                         [:call-rules :builtin-functions]))
+          internal-arities
+          (get-in emitter [:call-rules
+                           :compiler-internal-builtin-arities])]
       (cond
         (= callee 'println)
         {:op (:op special-rule)
          :effect (:effect special-rule)
          :capability (:capability special-rule)
-         :args (mapv #(p15-s23-stage2-seed-compile-expr
-                       emitter module locals %)
-                     (rest form))}
+         :args (mapv (fn [index argument]
+                       (p15-s23-stage2-seed-compile-expr
+                        emitter (child-module index) locals argument))
+                     (range 1 (count form)) (rest form))}
 
         (= callee 'do)
         {:op (:op special-rule)
-         :body (mapv #(p15-s23-stage2-seed-compile-expr
-                       emitter module locals %)
-                     (rest form))}
+         :body (mapv (fn [index body-form]
+                       (p15-s23-stage2-seed-compile-expr
+                        emitter (child-module index) locals body-form))
+                     (range 1 (count form)) (rest form))}
 
         (= callee 'if)
-        (let [[_ test then else] form]
+        (let [actual-arity (count (rest form))]
+          (when-not (= 3 actual-arity)
+            (fail! "L2-UNKNOWN-CORE-FORM"
+                   "if requires exactly test, then, and else operands"
+                   {:source-span {:source (:source-path module)}
+                    :operator 'if
+                    :expected-arity 3
+                    :actual-arity actual-arity
+                    :remediation
+                    "Use exactly (if test then else) in the stage2 hosted-core subset."}))
+          (let [[_ test then else] form]
           {:op (:op special-rule)
-           :test (p15-s23-stage2-seed-compile-expr emitter module locals test)
-           :then (p15-s23-stage2-seed-compile-expr emitter module locals then)
-           :else (p15-s23-stage2-seed-compile-expr emitter module locals else)})
+           :test (p15-s23-stage2-seed-compile-expr emitter (child-module 1) locals test)
+           :then (p15-s23-stage2-seed-compile-expr emitter (child-module 2) locals then)
+           :else (p15-s23-stage2-seed-compile-expr emitter (child-module 3) locals else)}))
 
         (= callee 'let)
         (let [[_ bindings & body] form]
@@ -49,9 +68,10 @@
 
         (= callee 'recur)
         {:op :recur
-         :args (mapv #(p15-s23-stage2-seed-compile-expr
-                       emitter module locals %)
-                     (rest form))}
+         :args (mapv (fn [index argument]
+                       (p15-s23-stage2-seed-compile-expr
+                        emitter (child-module index) locals argument))
+                     (range 1 (count form)) (rest form))}
 
         (= callee 'quote)
         {:op (:op special-rule) :value (second form)}
@@ -62,19 +82,68 @@
                {:source-span {:source (:source-path module)}
                 :remediation "Remove host reflection from the stage2 executable subset."})
 
+        (contains? internal-arities callee)
+        (let [caller (:p15-s23-sh07-enclosing-function module)
+              definition (:p15-s23-sh07-enclosing-definition module)
+              expected-arity (get internal-arities callee)]
+          (when-not (= expected-arity (count (rest form)))
+            (fail! "L2-BUILTIN-ARITY"
+                   "compiler-internal builtin call has the wrong arity"
+                   {:source-span {:source (:source-path module)}
+                    :function callee
+                    :expected-arity expected-arity
+                    :actual-arity (count (rest form))}))
+          (when-not
+           (p15-s23-sh07-compiler-internal-caller-authorized?
+            module definition callee caller)
+            (fail! "L2-UNKNOWN-CORE-FORM"
+                   "compiler-internal builtin caller is not authorized"
+                   {:source-span {:source (:source-path module)}
+                    :function callee
+                    :caller caller}))
+          {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
+           :function callee
+           :compiler-internal-caller caller
+           :compiler-internal-provenance
+           (p15-s23-sh07-compiler-internal-provenance
+            module definition callee caller)
+           :args (mapv (fn [index argument]
+                         (p15-s23-stage2-seed-compile-expr
+                          emitter (child-module index) locals argument))
+                       (range 1 (count form)) (rest form))})
+
         (contains? builtin-functions callee)
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
          :function callee
-         :args (mapv #(p15-s23-stage2-seed-compile-expr
-                       emitter module locals %)
-                     (rest form))}
+         :args (mapv (fn [index argument]
+                       (p15-s23-stage2-seed-compile-expr
+                        emitter (child-module index) locals argument))
+                     (range 1 (count form)) (rest form))}
 
         (contains? (:function-table module) callee)
         {:op (get-in emitter [:call-rules :function-op] :function-call)
          :function callee
-         :args (mapv #(p15-s23-stage2-seed-compile-expr
-                       emitter module locals %)
-                     (rest form))}
+         :args (mapv (fn [index argument]
+                       (p15-s23-stage2-seed-compile-expr
+                        emitter (child-module index) locals argument))
+                     (range 1 (count form)) (rest form))}
+
+        (contains? (set (map :symbol
+                             (get-in module
+                                     [:p15-s23-sh07-module-source-descriptor
+                                      :external-bindings])))
+                   callee)
+        (let [external-link
+              (p15-s23-sh07-b51-external-instruction
+               module (:p15-s23-sh07-enclosing-function module) callee
+               (count (rest form)) parent-path)]
+          {:op (get-in emitter [:call-rules :function-op] :function-call)
+           :function callee
+           :args (mapv (fn [index argument]
+                         (p15-s23-stage2-seed-compile-expr
+                          emitter (child-module index) locals argument))
+                       (range 1 (count form)) (rest form))
+           :external-link external-link})
 
         :else
         (fail! (get-in emitter
@@ -113,9 +182,16 @@
                                    :stage2-local)
                      :effects (:effects module)
                      :capabilities (:capabilities module)}
-           :instructions (mapv #(p15-s23-stage2-seed-compile-expr
-                                 emitter module (set params) %)
-                               body))))
+           :instructions
+           (mapv (fn [body-index body-form]
+                   (p15-s23-stage2-seed-compile-expr
+                    emitter
+                    (assoc module
+                           :p15-s23-sh07-enclosing-function name
+                           :p15-s23-sh07-enclosing-definition definition
+                           :p15-s23-sh07-callsite-path [body-index])
+                    (set params) body-form))
+                 (range) body))))
 
 (def p15-s23-stage2-compiler-artifact-source-relative-path
   "bootstrap/gravity/p15_s23/emitter.gravity")
@@ -136,8 +212,11 @@
   'p15-s23-assemble-plan-products)
 
 (def p15-s23-stage2-compiler-artifact-builtins
-  '#{symbol? keyword? char? number? list? seq? vector? map? set? string? contains? even? set sort-by-pr-str
-     vec quot subvec integer? boolean? keys})
+  '#{symbol? keyword? char? number? list? seq? vector? map? set? string?
+     contains? even? set sort-by-pr-str vec quot subvec integer? boolean? keys
+     sh07-canonical-text-compare sh07-declared-digest-hash
+     sh07-observe-utf8-byte-count
+     sh07-b51-admitted-executable-carrier-validation?})
 
 (def p15-s23-stage2-compiler-artifact-required-functions
   {'p15-s23-compile-collection
@@ -166,7 +245,7 @@
 ;; compiled below.  This is intentionally pinned rather than merely recorded:
 ;; a changed compiler function cannot silently become production lowering.
 (def p15-s23-stage2-compiler-artifact-expected-semantic-hash
-  "sha256:5743c5415a9d35c13fc45baf85323c943f9dc6d156eb194de63b1bbdacc75446")
+  "sha256:2004f388034a182483d7b9c28f4e6d6baa76126d29867c50183b0329fa5e0ddc")
 
 (def p15-s23-stage2-compiler-artifact-expected-source-content-hash
-  "sha256:3543311198f6bfe43fc2c9d33b9ccddf575789e286df4576cf31fb77836130e7")
+  "sha256:e273535bc06e5f67eb5a54ddcba0ef726814bc9dbe484df73bf7d3ab56d1e949")

@@ -20,9 +20,14 @@
     (let [manifest (governance/load-json manifest-path)]
       (is (= 2 (get manifest "schema_version")))
       (is (= "gravity/workstream-ledger-v2" (get manifest "contract_id")))
-      (is (= 114 (get manifest "record_count")))
-      (is (= 110 (get manifest "terminal_count")))
-      (is (= 4 (get manifest "active_count")))
+      (is (= (count (get manifest "records"))
+             (get manifest "record_count")))
+      (is (= (count (filter #(get % "terminal")
+                            (get manifest "records")))
+             (get manifest "terminal_count")))
+      (is (= (count (remove #(get % "terminal")
+                            (get manifest "records")))
+             (get manifest "active_count")))
       (is (= "exact" (get-in manifest ["migration" "parity"])))
       (is (= 114 (get-in manifest ["migration" "decoded_record_count"]))))
     (is (empty? (governance/validate-documents contract-path manifest-path)))))
@@ -30,7 +35,7 @@
 (deftest active-reservations-retain-family-exclusivity
   (let [manifest (governance/load-json manifest-path)
         active (filter #(not (get % "terminal")) (get manifest "records"))]
-    (is (= 4 (count active)))
+    (is (= (get manifest "active_count") (count active)))
     (is (= (count active)
            (count (set (map #(get % "id") active)))))
     (is (= (count active)

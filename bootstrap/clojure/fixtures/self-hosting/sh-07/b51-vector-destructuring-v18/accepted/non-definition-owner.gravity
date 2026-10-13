@@ -1,0 +1,10 @@
+(ns self-hosting.sh07-b51-v18.non-definition-owner
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(let [[left right] [20 22]]
+  (+ left right))

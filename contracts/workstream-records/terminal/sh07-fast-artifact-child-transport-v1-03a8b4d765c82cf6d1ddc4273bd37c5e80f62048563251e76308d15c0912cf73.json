@@ -1,0 +1,196 @@
+{
+  "architecture_decision": "docs/artifacts/phase-15/reports/sh07-unified-execution-plan-architecture-v1.md",
+  "author": "uniform-coordinator",
+  "base_commit": "e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50",
+  "candidate_commit": "8e906ff8a4e2aeda074f9c808bb54254f64fb88d",
+  "clean_worktree": true,
+  "dependencies": ["sh07-fixture-artifact-binding-v1", "sh07-warm-worker-cached-protocol-v1"],
+  "disposition": "Integrated the exact independently accepted Stage-B fast artifact child transport onto canonical local main at merge 1b738861f5c2827d25f881ae0a5ff1e7485be9dc. It rederives the reviewed execution plan and fixture binding in the exact-tree child, authenticates path components and fixture peers before and after execution, returns a bounded content-addressed stage projection, and grants no acceptance authority.",
+  "evidence": {
+    "accepted_fixtures": [
+      "closed fast artifact request without caller-controlled source paths or compiler arguments",
+      "bounded nonblank row and closed earliest-stage selection before plan traversal",
+      "secure no-follow peer snapshots with exact bytes, hashes, sizes, path components, and post-execution revalidation",
+      "accepted source-to-requested-stage ancestry with canonical provenance and projection identities",
+      "bounded stdout and stderr capture that preserves worker framing"
+    ],
+    "rejected_fixtures": [
+      "unknown, blank, oversized, or out-of-closure fixture row",
+      "unknown or later-than-reviewed compiler stage",
+      "changed plan, catalog, closure, binding, path component, peer bytes, provenance, or artifact ancestry",
+      "explicit non-success pipeline or stage-envelope status",
+      "malformed, oversized, truncated, or authority-escalating worker response"
+    ],
+    "stable_diagnostics": [
+      "UEP-ARTIFACT-ROW",
+      "UEP-ARTIFACT-STAGE",
+      "UEP-ARTIFACT-LANE",
+      "UEP-ARTIFACT-CACHE",
+      "UEP-ARTIFACT-BINDING",
+      "UEP-ARTIFACT-SNAPSHOT",
+      "WARM-ARTIFACT-ROW",
+      "WARM-ARTIFACT-STAGE",
+      "WARM-ARTIFACT-PATH",
+      "WARM-ARTIFACT-SYMLINK",
+      "WARM-ARTIFACT-PATH-MUTATION",
+      "WARM-ARTIFACT-PAIR",
+      "WARM-ARTIFACT-BINDING",
+      "WARM-ARTIFACT-PIPELINE",
+      "WARM-ARTIFACT-PROVENANCE",
+      "WARM-ARTIFACT-PROJECTION",
+      "WARM-ARTIFACT-MUTATED"
+    ],
+    "validation_commands": [
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-exact-tree-warm-worker-test on candidate 8e906ff8a4e2aeda074f9c808bb54254f64fb88d; 22 tests, 172 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.execution-lanes-test on candidate; 39 tests, 221 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.unified-execution-plan-test on candidate; 42 tests, 305 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.authenticated-artifact-pipeline-test on candidate; 12 tests, 50 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50..8e906ff8a4e2aeda074f9c808bb54254f64fb88d",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/check_worktree_preflight.clj --mode integration --base-ref e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50 --candidate-base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50 --candidate-commit 8e906ff8a4e2aeda074f9c808bb54254f64fb88d --candidate-tree 6c26298b0f2f73026983dd1d05f392a3bd76566c",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-exact-tree-warm-worker-test after merge 1b738861f5c2827d25f881ae0a5ff1e7485be9dc; 22 tests, 172 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.execution-lanes-test after merge; 39 tests, 221 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.unified-execution-plan-test after merge; 42 tests, 305 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.authenticated-artifact-pipeline-test after merge; 12 tests, 50 assertions",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git merge-base --is-ancestor 8e906ff8a4e2aeda074f9c808bb54254f64fb88d 1b738861f5c2827d25f881ae0a5ff1e7485be9dc",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
+  },
+  "governing_contracts": [
+    "AGENTS.md",
+    "D1",
+    "D2",
+    "D3",
+    "D6",
+    "D8",
+    "D9",
+    "C1",
+    "C2",
+    "C3",
+    "C16",
+    "BOOT7",
+    "BOOT8",
+    "TEST13",
+    "contracts/verification-catalog.edn",
+    "contracts/workstream-governance.json"
+  ],
+  "history": [
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T22:40:00Z",
+      "reason": "register the isolated fast artifact child transport candidate",
+      "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T22:40:01Z",
+      "reason": "freeze exact base e4b85b7a4f7bbf1e2f8287ec8052240ffa106f50, candidate 8e906ff8a4e2aeda074f9c808bb54254f64fb88d, tree 6c26298b0f2f73026983dd1d05f392a3bd76566c, and four owned paths",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T22:40:02Z",
+      "reason": "request independent semantic and security review of exact transport, authentication, mutation, framing, stage ancestry, and authority boundaries",
+      "state": "review-pending"
+    },
+    {
+      "actor": "fast_transport_final_semantic",
+      "at": "2026-09-02T22:40:03Z",
+      "reason": "accept exact declarative request binding, stage ancestry, diagnostic compatibility, framing, and nonauthority semantics",
+      "state": "accepted"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T22:40:04Z",
+      "reason": "advance the exact candidate after independent semantic and security acceptance and clean focused evidence",
+      "state": "integration-eligible"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-09-02T22:46:28Z",
+      "reason": "integrate the exact whole candidate onto canonical local main at merge 1b738861f5c2827d25f881ae0a5ff1e7485be9dc tree 9917d3d43e1766ec04df4873316052d90bffe1e1 and revalidate focused transport, lane, plan, and pipeline behavior",
+      "state": "integrated"
+    }
+  ],
+  "id": "sh07-fast-artifact-child-transport-v1",
+  "invariant_family": "tooling/authenticated-artifact-pipeline",
+  "no_overclaim_authority": {
+    "integration_only": true,
+    "release": false,
+    "seed_retirement": false,
+    "self_hosting": false
+  },
+  "owned_paths": [
+    "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/execution_lanes_test.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj",
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker_test.clj"
+  ],
+  "owner": "uniform-coordinator",
+  "residual_host_boundaries": [
+    "Clojure and the JVM remain the temporary execution-plan, warm-worker, snapshot, and compiler-artifact transport boundary",
+    "the same-JVM fast child is incremental, bounded, warm, cacheable, and explicitly non-authoritative",
+    "fresh acceptance remains isolated, cache-free, authoritative, and independently replayable but was not executed",
+    "this transport foundation is not yet the public execute-plan artifact route and publishes no unified execution receipt",
+    "only one statically reviewed fixture binding was exercised through fake bounded transport seams; real fixture compiler and diagnostic parity remain required",
+    "no runner, helper, route, test, or contract is retired by this candidate",
+    "the fast lane confers no integration, proof, release, self-hosting, seed-retirement, safety, or performance authority",
+    "tooling simplification does not complete an architecture objective or grant roadmap credit by itself"
+  ],
+  "reviews": [
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "fast_transport_final_semantic"
+    },
+    {
+      "kind": "independent",
+      "result": "accepted",
+      "reviewer": "transport_security_review"
+    }
+  ],
+  "state": "integrated",
+  "title": "SH-07 fast authenticated artifact child transport version 1"
+}

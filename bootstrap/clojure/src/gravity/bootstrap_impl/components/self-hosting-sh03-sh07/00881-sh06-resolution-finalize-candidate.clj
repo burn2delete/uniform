@@ -32,7 +32,27 @@
   (with-sh06-resolution-transport-bounds
    (sh06-resolution-finalize-candidate
     source-path
-    (sh06-resolution-source-artifact-candidate source-path source-text))))
+    (sh06-resolution-source-artifact-candidate
+     source-path
+     (sh05-macro-source-artifact source-path source-text)
+     true))))
+
+(defn sh06-resolution-artifact-from-sh05-artifact
+  "Resolve an already authenticated SH-05 artifact without rebuilding C3/SH-05.
+
+  The one-argument form derives the source path from the authenticated parent;
+  callers with a path-scoped snapshot should use the two-argument form so the
+  parent provenance is joined to that exact path.
+  "
+  ([sh05-artifact]
+   (sh06-resolution-artifact-from-sh05-artifact
+    (get-in sh05-artifact [:provenance :source-path]) sh05-artifact))
+  ([source-path sh05-artifact]
+   (with-sh06-resolution-transport-bounds
+    (sh06-resolution-finalize-candidate
+     source-path
+     (sh06-resolution-source-artifact-candidate
+      source-path sh05-artifact false)))))
 
 (defn sh06-resolution-file-artifact
   [source-path]

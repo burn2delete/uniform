@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh07-conformance-table :as conformance]))
 
 (defn- repository-root
   []
@@ -277,20 +278,17 @@
   (is (not-any? nil? values)))
 
 (deftest sh07-b13-fixtures-are-dynamically-discovered-paired-and-bounded
-  (let [accepted (accepted-fixtures)
-        rejected (rejected-fixtures)]
+  (let [{:keys [accepted rejected directory-accepted directory-rejected pairs]}
+        (conformance/fixture-census "sh07-b13")]
+    ;; Keep the legacy selector and its exact twelve assertions for cached
+    ;; runner parity; the reviewed table now owns discovery and authentication.
     (is (seq accepted))
     (is (seq rejected))
-    (is (= accepted (fixture-basenames "accepted" ".qst")))
-    (is (= rejected (fixture-basenames "rejected" ".qst")))
-    (doseq [family ["accepted" "rejected"]
-            basename (sort
-                      (if (= family "accepted") accepted rejected))]
-      (testing (str family "/" basename)
-        (is (= (seq (source-bytes
-                     (fixture-path family basename ".gravity")))
-               (seq (source-bytes
-                     (fixture-path family basename ".qst")))))))
+    (is (= accepted directory-accepted))
+    (is (= rejected directory-rejected))
+    (doseq [pair pairs]
+      (testing (:id pair)
+        (is (true? (:authenticated? pair)))))
     (doseq [required
             ["deterministic-top-level-fragments"
              "cross-fragment-reference"

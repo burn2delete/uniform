@@ -1,0 +1,14 @@
+(ns self-hosting.sh06.b51-vector-leaves.nested-loop
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :checkpoint :B51-A :fixture :nested-vector-loop}))
+
+(defn exercise [input empty-input]
+  (loop [[head [_ [tail]] []] input
+         [] empty-input
+         total (+ head tail)]
+    (+ total head tail)))

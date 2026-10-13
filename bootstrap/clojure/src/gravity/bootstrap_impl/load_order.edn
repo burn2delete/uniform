@@ -806,6 +806,12 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00550-p15-s23-seed-readable-scalar-bytes.clj", :reader-line 81654, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-scalar-bytes!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00551-p15-s23-seed-readable-preflight.clj", :reader-line 81783, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-preflight!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00552-p15-s23-seed-readable-instant-text.clj", :reader-line 81999, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-instant-text"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00943-p15-s23-sh07-host-builtins-and-oracle.clj", :reader-line 82220, :owner :bootstrap-p15, :first-form "p15-s23-sh07-declared-builtin-exact-arities"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker.clj", :reader-line 82500, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-module-specs"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00945a-p15-s23-sh07-b51-receipt-context.clj", :reader-line 82501, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-receipt-keys"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00945b-p15-s23-sh07-b51-pending-entry.clj", :reader-line 82502, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-pending-entry-seal"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00945c-p15-s23-sh07-b51-receipt-consumption.clj", :reader-line 82503, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-consume-admitted-carrier-validation!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00947-p15-s23-sh07-b51-linked-carrier-v4.clj", :reader-line 87519, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-attempt32-architecture-report-sha256"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00553-p15-s23-seed-readable-pr-str.clj", :reader-line 82207, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-pr-str"}
  {:resource "gravity/bootstrap_impl/components/foundation/00554-invoke-stage0-builtin.clj", :reader-line 82261, :owner :foundation, :first-form "invoke-stage0-builtin"}
  {:resource "gravity/bootstrap_impl/components/foundation/00555-compile-stage0-expr.clj", :reader-line 82455, :owner :foundation, :first-form "compile-stage0-expr"}
@@ -842,11 +848,13 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00586-p15-s23-stage2-plan-emitter-source-artifact.clj", :reader-line 86915, :owner :bootstrap-p15, :first-form "p15-s23-stage2-plan-emitter-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00587-p15-s23-stage2-runtime-executor-rule-record.clj", :reader-line 87122, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-executor-rule-record"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-runtime-invoke-builtin.clj", :reader-line 87302, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-invoke-builtin"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00944-p15-s23-sh07-runtime-internal-builtins.clj", :reader-line 87520, :owner :bootstrap-p15, :first-form "p15-s23-sh07-runtime-invoke-compiler-internal-builtin"}
  {:resource "gravity/bootstrap_impl/components/foundation/00589-p15s23stage2runtimerecursignal.clj", :reader-line 87522, :owner :foundation, :first-form "P15S23Stage2RuntimeRecurSignal"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00590-p15-s23-stage2-runtime-recur-signal.clj", :reader-line 87524, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-recur-signal"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00591-p15-s23-stage2-runtime-invoke-unary-or-generic-builtin.clj", :reader-line 87724, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-invoke-unary-or-generic-builtin"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00592-p15-s23-stage2-runtime-execute-instruction.clj", :reader-line 87866, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-instruction", :stage :complete-form}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj", :reader-line 88115, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-function"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00946-p15-s23-sh07-b51-runtime-machine.clj", :reader-line 88200, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-runtime-machine-maximum-steps"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00594-p15-s23-stage2-runtime-kernel-rejected-plan-fixtures.clj", :reader-line 88351, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-kernel-rejected-plan-fixtures"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00595-p15-s23-stage2-runtime-kernel-diagnostics.clj", :reader-line 88502, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-kernel-diagnostics"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00596-p15-s23-stage2-runtime-kernel-proof.clj", :reader-line 88688, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-kernel-proof"}

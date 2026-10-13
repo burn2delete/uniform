@@ -1,8 +1,8 @@
 (ns gravity.self-hosting.sh07-keyword-map-lookup-test
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh07-conformance-table :as table]))
 
 (defn- repository-root
   []
@@ -60,18 +60,6 @@
 (defn- fixture-path
   [family basename extension]
   (path (str fixture-root "/" family "/" basename extension)))
-
-(defn- fixture-basenames
-  [family extension]
-  (let [directory (io/file (path (str fixture-root "/" family)))]
-    (if-not (.isDirectory directory)
-      #{}
-      (->> (.listFiles directory)
-           (filter #(.isFile %))
-           (map #(.getName %))
-           (filter #(str/ends-with? % extension))
-           (map #(subs % 0 (- (count %) (count extension))))
-           set))))
 
 (defn- source-bytes
   [source-path]
@@ -300,20 +288,20 @@
     lookups))
 
 (deftest sh07-b15-fixtures-are-complete-paired-and-byte-identical
-  (doseq [extension extensions]
-    (is (= accepted-fixtures
-           (fixture-basenames "accepted" extension)))
-    (is (= rejected-fixtures
-           (fixture-basenames "rejected" extension))))
-  (doseq [family ["accepted" "rejected"]
-          basename (if (= family "accepted")
-                     accepted-fixtures
-                     rejected-fixtures)]
-    (testing (str family "/" basename)
-      (is (= (seq (source-bytes
-                   (fixture-path family basename ".gravity")))
-             (seq (source-bytes
-                   (fixture-path family basename ".qst"))))))))
+  ;; Pair discovery, no-follow checks, bounded reads, byte identity, and
+  ;; reviewed-row ownership are shared with every SH-07 table suite.  Keep
+  ;; this B15 assertion as a compatibility projection so the old executable
+  ;; namespace still proves its exact six-row scope without duplicating that
+  ;; authentication implementation.
+  (let [census (table/fixture-census "sh07-b15")
+        pairs (:pairs census)]
+    (is (= accepted-fixtures (:accepted census)))
+    (is (= rejected-fixtures (:rejected census)))
+    (is (= 6 (count pairs)))
+    (is (true? (:exact-directory? census)))
+    (doseq [pair pairs]
+      (testing (:id pair)
+        (is (true? (:authenticated? pair)))))))
 
 (deftest sh07-b15-accepted-lookups-are-distinct-ordered-core-products
   (doseq [basename (sort accepted-fixtures)

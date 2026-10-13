@@ -1,12 +1,32 @@
 
 
+(declare p15-s23-stage2-runtime-artifact-expected-source-content-hash)
+
 (defn p15-s23-stage2-construct-emitted-core-plan
   "Construct the stage2 plan envelope from an already parsed module and its
   authoritative function table.  Policy/admission validation deliberately
   remains in the public emitted-core wrapper below; authenticated private
   compiler stages use this construction seam so Gravity owns later policy."
   [emitter source-path source-text module function-table]
-  (let [module (assoc module :function-table function-table)
+  (let [runtime-artifact-source?
+        (and (= 'gravity.bootstrap.p15-s23.runtime (:module module))
+             (= p15-s23-stage2-runtime-artifact-expected-source-content-hash
+                (str "sha256:" (sha256-hex source-text))))
+        ;; Attempt24's bounded cross-plan machine is part of the exact pinned
+        ;; runtime artifact and uses the same closed collection/predicate
+        ;; surface as compiler artifacts.  Do not expose that augmentation to
+        ;; another runtime spelling or an ordinary hosted module.
+        emitter (if runtime-artifact-source?
+                  (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
+                  emitter)
+        module (assoc module :function-table function-table)
+        source-authority
+        (when (:p15-s23-sh07-module-source-descriptor module)
+          (p15-s23-sh07-compiler-source-authority
+           source-path source-text module function-table))
+        module (cond-> module
+                 source-authority
+                 (assoc :p15-s23-sh07-source-authority source-authority))
         compiler-artifact-binding
         (or *p15-s23-stage2-compiler-artifact-binding*
             (p15-s23-stage2-compiler-artifact-binding!

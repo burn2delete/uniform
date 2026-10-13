@@ -1,0 +1,14 @@
+(ns self-hosting.sh06.b51-vector-leaves.nested-let
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-06 :checkpoint :B51-A :fixture :nested-vector-let}))
+
+(defn exercise [input empty-input]
+  (let [[first [_ [second]] []] input
+        [] empty-input
+        total (+ first second)]
+    (+ total first second)))

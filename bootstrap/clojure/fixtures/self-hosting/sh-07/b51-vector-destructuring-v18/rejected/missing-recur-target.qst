@@ -1,0 +1,11 @@
+(ns self-hosting.sh07-b51-v18.missing-recur-target
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [exercise])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def exercise
+  (let [[value] [1]]
+    (recur value)))
