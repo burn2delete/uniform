@@ -1,7 +1,7 @@
 # Parallel Shard Resolver Retirement v1
 
-Status: independently reviewed local draft; no committed-candidate acceptance
-or integration eligibility.
+Status: independently reviewed tooling candidate; exact lifecycle authority is
+recorded separately in the workstream ledger. Full-suite acceptance is unclaimed.
 
 ## Purpose and Scope
 
@@ -100,13 +100,16 @@ batch while retaining the explicit instruction not to rerun the full suite.
 Integration preparation uses scoped validation under that user-directed
 exception; it does not claim a successful full suite or fresh full-suite
 integration receipt. The reconciled main base is
-`33c7cda250d1bd359f5068d3ef2ef33958eddbde`. Changes from that main revision are
+`56fe67c092ce900a6fe80b1314b974be7589f84c`. Changes from that main revision are
 governance records only; the reviewed retirement code is unchanged.
 
-The workstream remains draft. This local working-tree evidence does not supply
-the exact committed candidate, clean named branch, fresh integration receipt,
-or exact-commit independent acceptance required for integration. No terminal record is
-published, and no executable retirement or catalog replacement is admitted.
+The development receipt above records the earlier dirty-tree comparison and
+local review. It does not itself grant committed-candidate acceptance. The
+ledger must bind subsequent independent acceptance to the exact reconciled
+base and committed candidate; integration preflight must pass from its clean
+named branch. The stopped full-suite command remains historical evidence in
+the receipt, while this user-directed admission uses successful scoped checks.
+No executable retirement or catalog replacement is admitted by this report.
 
 Clojure, the JVM, the existing test loader, and fixture execution remain host
 boundaries. The change claims no SH completion, roadmap credit, release,
