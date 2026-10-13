@@ -100,6 +100,12 @@ before finalization. It grants no production or performance evidence. The
 smaller fixture's initial over-wide form correctly rejected with `C6-VERIFY`
 before calls were divided into bounded functions.
 
+The committed authentic seam namespace was also run under the shared
+memory-heavy broker with an 8 GiB heap and a 600-second watchdog. It reports
+4 tests / 20 assertions: 19 passed and one error in the same SH06 C5 path.
+Its post-finalization mutation assertions did not execute. A duplicate heavy
+launch was cancelled before testing; it supplies no validation evidence.
+
 The contract-discharge namespace independently fails on both clean main and
 the candidate at `e1-pre-mask-is-acyclic-and-runtime-mask-remains-distinct`:
 its fixture still supplies the old two facade paths instead of the accepted
@@ -108,6 +114,16 @@ error. The fixture is preserved; this increment does not repair unrelated
 contract-discharge or runtime/algorithm failures.
 
 ## Acceptance gate and residual boundaries
+
+Independent reviewer `handoff_review` returned **HOLD / changes requested at
+the exit gate** for frozen candidate
+`446d6960064f06fb705ff0cd61d56ca34a7f8e25`, tree
+`4ec0e4829f1a4807f6db7330ed5f9bf3e2c51b9b`, over the main base above. Review
+confirmed the in-scope construction, retained-value replay, exact schemas,
+call-path wiring, and exact 25-path ownership. It found no additional in-scope
+blocker and did not accept the candidate. Subsequent changes record review and
+HOLD metadata only. The clean named exact preflight passes identity and
+reconciliation checks; it is not workstream integration eligibility.
 
 HOLD remains until the real producer returns the complete eleven-key product
 and the normal retained-value validators pass while the acquisition sentinel
