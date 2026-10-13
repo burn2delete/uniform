@@ -7,13 +7,17 @@
   reachability, row, normalization, or digest-schedule implementation."
   (:require [clojure.set :as set]
             [gravity.c2-artifact-identity.canonical :as canonical]
-            [gravity.digest :as digest]))
+            [gravity.digest :as digest]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]))
 
 (def input-keys
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0s :m1 :m2s :bundle-core :source-forms :checker :provenance})
+    :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
+    :sh06-resolution-plan-authority :source-semantic-carrier
+    :semantic-algorithm-source-descriptors :semantic-algorithm-source-root
+    :checker :provenance})
 
 (def checker-keys
   #{:artifact-id :source-sha256 :semantic-id :executable-id
@@ -31,12 +35,12 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0-ids :m1-id :m2-ids :bundle-core-id})
+    :m0-ids :m1-id :m2-ids :bundle-core-id :lowering-product-id})
 
 (def certificate-keys
   #{:artifact :domain :schema-version :status :role
     :architecture-report-sha256 :claim-id :claim :assumptions :checker
-    :inputs :result :provenance :raw-source-transcript :m2-transcript
+    :inputs :result :semantic-witness :provenance :raw-source-transcript :m2-transcript
     :profile-bounds :evidence-root :certificate-id})
 
 (def claim-keys
@@ -273,6 +277,15 @@
            (:certificate-maximum-scalar-utf8 profile-bounds))
        (<= (:canonical-reader-bytes profile)
            (:certificate-maximum-canonical-reader-bytes profile-bounds))))
+
+(defn- semantic-witness-profile-within-bounds? [profile]
+  (and (<= (:nodes profile) (:carrier-maximum-nodes profile-bounds))
+       (<= (:depth profile) (:carrier-maximum-depth profile-bounds))
+       (<= (:width profile) (:carrier-maximum-width profile-bounds))
+       (<= (:collection-count profile)
+           (:carrier-maximum-collection-count profile-bounds))
+       (<= (:scalar-utf8 profile)
+           (:carrier-maximum-scalar-utf8 profile-bounds))))
 
 (defn offline-transcript-within-bounds? [metrics]
   (and (exact-keys? metrics
@@ -1708,7 +1721,8 @@
        (digest-vector? (:m0-ids inputs) 7)
        (sha256-id? (:m1-id inputs))
        (digest-vector? (:m2-ids inputs) 7)
-       (sha256-id? (:bundle-core-id inputs))))
+       (sha256-id? (:bundle-core-id inputs))
+       (sha256-id? (:lowering-product-id inputs))))
 
 (defn- checker-valid? [checker]
   (and (exact-keys? checker checker-keys)
@@ -1776,6 +1790,7 @@
           assumptions (:assumptions certificate)
           inputs (:inputs certificate)
           result (:result certificate)
+          witness (:semantic-witness certificate)
           provenance (:provenance certificate)
           raw (:raw-source-transcript certificate)
           m2 (:m2-transcript certificate)
@@ -1810,6 +1825,20 @@
             (= 1 (:schema-version certificate))
             (= :accepted (:status certificate) (:status result))
             (= :producer-census (:role certificate))
+            (exact-keys?
+             witness
+             #{:schema :content :operation-manifest :operation-schedule-id
+               :fuel-receipts :l1 :l2 :c2 :c6 :boot2 :boot3 :boot4
+               :witness-id})
+            (= :gravity/sh07-b51-authentic-lowering-witness-v1
+               (:schema witness))
+            (= {:commit (:snapshot-commit inputs)
+                :tree (:snapshot-tree inputs)}
+               (:content witness))
+            (= (:witness-id witness)
+               (canonical-hash
+                [:gravity/sh07-b51-authentic-lowering-witness-v1
+                 (dissoc witness :witness-id)]))
             (sha256-id? (:architecture-report-sha256 certificate))
             (= (:architecture-report-sha256 certificate)
                (:architecture-report-sha256 inputs))
@@ -1850,7 +1879,9 @@
                                  :provenance-complete :ordering-complete
                                  :reachability-complete) result))
             (= (accepted-assumptions) assumptions)
-            (certificate-profile-within-bounds? (value-profile certificate))
+            (certificate-profile-within-bounds?
+             (value-profile (dissoc certificate :semantic-witness)))
+            (semantic-witness-profile-within-bounds? (value-profile witness))
             (= (:certificate-id certificate)
                (canonical-hash (dissoc certificate :certificate-id))))))
     (catch Throwable _ false)))
@@ -1862,6 +1893,7 @@
   [output]
   (try
     (let [certificate (:certificate output)
+          lowering-product (:lowering-product output)
           raw-evidence (:raw-source-transcript-evidence output)
           m2-evidence (:m2-transcript-evidence output)
           valid-transcript?
@@ -1910,19 +1942,29 @@
       (boolean
        (and (exact-keys? output
                          #{:artifact :schema-version :status :certificate
+                           :lowering-product
                            :raw-source-transcript-evidence
                            :m2-transcript-evidence :commitment-evidence})
             (= :gravity/sh07-b51-producer-census-checker-output-v1
                (:artifact output))
             (= 1 (:schema-version output))
             (= :accepted (:status output))
+            (= (get-in certificate [:inputs :lowering-product-id])
+               (:product-id lowering-product))
             (certificate-valid? certificate)
             (valid-transcript? raw-evidence true)
             (valid-transcript? m2-evidence false))))
     (catch Throwable _ false)))
 
 (defn- produce-accepted [input]
-  (let [{:keys [indexes certificate-inputs]} (validate-envelope! input)
+  (let [{:keys [indexes] legacy-certificate-inputs :certificate-inputs}
+        (validate-envelope! input)
+        {:keys [lowering-product semantic-witness measurement-count]}
+        (materialize/build-checker-precertificate input)
+        _ (require! (= 34 measurement-count) :fixed-fuel-measurement-count)
+        certificate-inputs
+        (assoc legacy-certificate-inputs
+               :lowering-product-id (:product-id lowering-product))
         raw (scan-raw-source (:source-forms input) (:m0s input))
         _ (require! (= indexes (:indexes raw)) :source-index-stability)
         m2 (scan-m2 (:m2s input) indexes)
@@ -1994,6 +2036,7 @@
          :checker (:checker input)
          :inputs certificate-inputs
          :result result
+         :semantic-witness semantic-witness
          :provenance provenance
          :raw-source-transcript (:descriptor raw-evidence)
          :m2-transcript (:descriptor m2-evidence)
@@ -2006,6 +2049,7 @@
          :schema-version 1
          :status :accepted
          :certificate certificate
+         :lowering-product lowering-product
          :raw-source-transcript-evidence raw-evidence
          :m2-transcript-evidence m2-evidence
          :commitment-evidence

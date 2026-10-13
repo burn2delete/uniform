@@ -1,9 +1,40 @@
 (ns gravity.self-hosting.sh07-b51-attempt30-producer-census-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.tools.sh07-b51-attempt30-producer-census :as census]))
+            [gravity.tools.sh07-b51-attempt30-producer-census :as census]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]))
 
 (defn- digest [value]
   (census/canonical-hash {:fixture value}))
+
+(defn- unit-precertificate [input]
+  (let [product-id (census/canonical-hash
+                    [:unit-lowering-product (:snapshot-tree input)])
+        operations
+        (mapv (fn [ordinal]
+                {:ordinal ordinal
+                 :operation-id (census/canonical-hash
+                                [:unit-operation ordinal])
+                 :lowering-product-id product-id}) (range 7))
+        receipts (mapv (fn [operation]
+                         {:operation-id (:operation-id operation)
+                          :within-bounds true}) operations)
+        base {:schema :gravity/sh07-b51-authentic-lowering-witness-v1
+              :content {:commit (:snapshot-commit input)
+                        :tree (:snapshot-tree input)}
+              :operation-manifest operations
+              :operation-schedule-id
+              (census/canonical-hash [:unit-operation-schedule operations])
+              :fuel-receipts receipts
+              :l1 {} :l2 {} :c2 {} :c6 {} :boot2 {} :boot3 {} :boot4 {}}
+        witness (assoc base :witness-id
+                       (census/canonical-hash
+                        [:gravity/sh07-b51-authentic-lowering-witness-v1 base]))]
+    {:lowering-product {:product-id product-id}
+     :semantic-witness witness :measurement-count 34}))
+
+(defn- produce [input]
+  (with-redefs [materialize/build-checker-precertificate unit-precertificate]
+    (census/produce-certificate input)))
 
 (defn- definition [form]
   (let [[_ name params & body] form]
@@ -307,6 +338,11 @@
      :m2s m2s
      :bundle-core bundle
      :source-forms forms
+     :module-transactions []
+     :sh06-resolution-plan-authority {}
+     :source-semantic-carrier {}
+     :semantic-algorithm-source-descriptors []
+     :semantic-algorithm-source-root (digest :algorithm-root)
      :checker {:artifact-id (digest :checker-a-artifact)
                :source-sha256 (digest :checker-a-source)
                :semantic-id (digest :checker-a-semantics)
@@ -320,7 +356,7 @@
                   :completed-at "2026-09-02T00:00:00Z"}}))
 
 (deftest producer-census-emits-the-closed-source-first-certificate
-  (let [output (census/produce-certificate (fixture-input))
+  (let [output (produce (fixture-input))
         certificate (:certificate output)
         claim (:claim certificate)
         raw-records (get-in output [:raw-source-transcript-evidence :records])]
@@ -361,7 +397,7 @@
                                    (= 'count (:function instruction))) %)))]
     (doseq [candidate [changed-source changed-m2
                        (assoc input :unexpected true)]]
-      (let [result (census/produce-certificate candidate)]
+      (let [result (produce candidate)]
         (is (= :rejected (:status result)))
         (is (= :gravity/sh07-b51-census-checker-rejection-evidence-v1
                (:artifact result)))
@@ -370,8 +406,8 @@
 
 (deftest producer-census-is-deterministic-and-validator-rejects-rehash-gaps
   (let [input (fixture-input)
-        left (census/produce-certificate input)
-        right (census/produce-certificate input)
+        left (produce input)
+        right (produce input)
         certificate (:certificate left)]
     (is (= left right))
     (is (false? (census/certificate-valid?

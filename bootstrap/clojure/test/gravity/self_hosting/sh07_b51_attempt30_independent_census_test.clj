@@ -1,13 +1,39 @@
 (ns gravity.self-hosting.sh07-b51-attempt30-independent-census-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.tools.sh07-b51-attempt30-independent-census :as census]))
+            [gravity.tools.sh07-b51-attempt30-independent-census :as census]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]))
 
 (defn- h [value]
   (bootstrap/reader-canonical-hash value))
 
 (defn- digest [digit]
   (str "sha256:" (apply str (repeat 64 digit))))
+
+(defn- unit-precertificate [input]
+  (let [product-id (h [:unit-lowering-product (:snapshot-tree input)])
+        operations
+        (mapv (fn [ordinal]
+                {:ordinal ordinal :operation-id (h [:unit-operation ordinal])
+                 :lowering-product-id product-id}) (range 7))
+        receipts (mapv (fn [operation]
+                         {:operation-id (:operation-id operation)
+                          :within-bounds true}) operations)
+        base {:schema :gravity/sh07-b51-authentic-lowering-witness-v1
+              :content {:commit (:snapshot-commit input)
+                        :tree (:snapshot-tree input)}
+              :operation-manifest operations
+              :operation-schedule-id (h [:unit-operation-schedule operations])
+              :fuel-receipts receipts
+              :l1 {} :l2 {} :c2 {} :c6 {} :boot2 {} :boot3 {} :boot4 {}}
+        witness (assoc base :witness-id
+                       (h [:gravity/sh07-b51-authentic-lowering-witness-v1 base]))]
+    {:lowering-product {:product-id product-id}
+     :semantic-witness witness :measurement-count 34}))
+
+(defn- produce [input]
+  (with-redefs [materialize/build-checker-precertificate unit-precertificate]
+    (census/produce-certificate input)))
 
 (def source-forms
   [[(list 'ns 'test.m0)
@@ -223,6 +249,11 @@
      :m0s m0s :m1 m1 :m2s m2s
      :bundle-core (build-bundle m0s m1 m2s)
      :source-forms source-forms
+     :module-transactions []
+     :sh06-resolution-plan-authority {}
+     :source-semantic-carrier {}
+     :semantic-algorithm-source-descriptors []
+     :semantic-algorithm-source-root (digest \c)
      :checker {:artifact-id (digest \1) :source-sha256 (digest \2)
                :semantic-id (digest \3) :executable-id (digest \4)
                :dependency-closure-id (digest \5)
@@ -236,7 +267,7 @@
 
 (deftest checker-b-produces-the-exact-closed-certificate-and-transcripts
   (let [input (envelope)
-        output (census/produce-certificate input)
+        output (produce input)
         certificate (:certificate output)
         raw (:raw-source-transcript-artifact output)
         m2 (:m2-transcript-artifact output)]
@@ -265,8 +296,8 @@
 
 (deftest checker-b-is-deterministic-and-own-ids-are-not-in-preimages
   (let [input (envelope)
-        left (census/produce-certificate input)
-        right (census/produce-certificate input)
+        left (produce input)
+        right (produce input)
         certificate (:certificate left)
         raw (:raw-source-transcript-artifact left)]
     (is (= left right))
@@ -284,7 +315,7 @@
           mutated (assoc-in input [:source-forms 0 1]
                             '(defn a0 [] (quote (b0))
                                (sh07-declared-digest-hash :x)))
-          output (census/produce-certificate mutated)]
+          output (produce mutated)]
       (is (= :rejected (:status output)))
       (is (= :source-m2-call-parity
              (get-in output [:rejection-evidence :reason])))
@@ -309,7 +340,7 @@
               (assoc-in [:bundle-core :routes 0 :caller-plan-id] new-plan-id)
               (assoc-in [:bundle-core :public-roots 0 :plan-id] new-plan-id)
               (assoc-in [:bundle-core :public-roots 1 :plan-id] new-plan-id))
-          output (census/produce-certificate mutated)]
+          output (produce mutated)]
       (is (= :rejected (:status output)))
       (is (= :m2-provenance-presence-mismatch
              (get-in output [:rejection-evidence :reason])))

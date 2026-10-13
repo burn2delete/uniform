@@ -1,15 +1,13 @@
 (ns gravity.tools.sh07-b51-attempt32-checker-identity
   "Deterministic checker identities for the governed SH-07 Attempt-32 snapshot."
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io ByteArrayInputStream InputStreamReader]
-           [java.nio.charset StandardCharsets]
-           [java.nio.file Files LinkOption Path]))
+           [java.nio.charset StandardCharsets]))
 
 (def checker-specs
   {:producer-census
@@ -49,35 +47,30 @@
 (defn- sha256-bytes [bytes]
   (str "sha256:" (digest/sha256-bytes-hex bytes)))
 
-(defn- read-bytes [^Path path]
-  (Files/readAllBytes path))
-
 (defn- safe-relative-path? [value]
   (and (string? value) (not (str/blank? value))
        (not (str/starts-with? value "/"))
        (not (str/includes? value "\\"))
        (not-any? #{"" "." ".."} (str/split value #"/"))))
 
-(defn symlink-free-path?
-  "Return true only when the absolute path and every ancestor are not links."
-  [^Path path]
-  (loop [current (.normalize (.toAbsolutePath path))]
-    (cond
-      (nil? current) true
-      (Files/isSymbolicLink current) false
-      :else (recur (.getParent current)))))
-
-(defn- resolve-file [^Path root relative]
+(defn- source-object!
+  [source-authority relative]
   (when-not (safe-relative-path? relative)
     (throw (ex-info "unsafe checker source path" {:path relative})))
-  (let [path (.normalize (.resolve root relative))]
-    (when-not (and (.startsWith path root)
-                   (Files/isRegularFile
-                    path (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
-                   (symlink-free-path? path))
-      (throw (ex-info "checker dependency source is unavailable"
+  (let [record (get (:source-objects source-authority) relative)
+        bytes (:bytes record)
+        expected-keys #{:path :mode :blob-oid :byte-count :raw-sha256 :bytes}]
+    (when-not
+     (and (= expected-keys (set (keys record)))
+          (= relative (:path record))
+          (= "100644" (:mode record))
+          (boolean (re-matches #"[0-9a-f]{40}" (or (:blob-oid record) "")))
+          (bytes? bytes)
+          (= (:byte-count record) (alength ^bytes bytes))
+          (= (:raw-sha256 record) (sha256-bytes bytes)))
+      (throw (ex-info "C-derived checker source object is unavailable"
                       {:path relative})))
-    path))
+    record))
 
 (defn- read-forms [bytes]
   (with-open [reader
@@ -153,41 +146,21 @@
        (-> (str namespace) (str/replace "." "/") (str/replace "-" "_"))
        ".clj"))
 
-(defn- local-source-record [root relative]
-  (let [bytes (read-bytes (resolve-file root relative))
-        classpath-prefix "bootstrap/clojure/src/"
-        classpath-resource
-        (when (str/starts-with? relative classpath-prefix)
-          (subs relative (count classpath-prefix)))]
-    (when classpath-resource
-      (let [selected (io/resource classpath-resource)]
-        (when-not selected
-          (throw (ex-info "checker dependency classpath resource is unavailable"
-                          {:path relative :resource classpath-resource})))
-        (with-open [input (io/input-stream selected)]
-          (when-not (java.util.Arrays/equals bytes (.readAllBytes input))
-            (throw
-             (ex-info "checker dependency classpath resource differs from checkout"
-                      {:path relative :resource classpath-resource}))))))
-    {:relative-path relative :byte-count (alength bytes)
-     :source-sha256 (sha256-bytes bytes)}))
+(defn- local-source-record [source-authority relative]
+  (let [record (source-object! source-authority relative)]
+    {:relative-path relative
+     :byte-count (:byte-count record)
+     :source-sha256 (:raw-sha256 record)}))
 
-(defn- resource-record [namespace]
-  (let [relative (-> (str namespace) (str/replace "." "/")
-                     (str/replace "-" "_"))
-        candidates [(str relative ".clj") (str relative ".cljc")]
-        selected (first (keep #(when (io/resource %) %) candidates))]
-    (if selected
-      (with-open [input (io/input-stream (io/resource selected))]
-        (let [bytes (.readAllBytes input)]
-          {:namespace namespace :resource selected :byte-count (alength bytes)
-           :source-sha256 (sha256-bytes bytes)}))
-      {:namespace namespace :resource :host-provided})))
+(defn- resource-record [source-authority namespace]
+  (or (get (:external-source-records source-authority) namespace)
+      {:namespace namespace :resource :host-provided}))
 
-(defn- load-order-paths [root]
+(defn- load-order-paths [source-authority]
   (let [relative "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
         entries (edn/read-string {:readers {}}
-                                 (String. (read-bytes (resolve-file root relative))
+                                 (String. (:bytes (source-object!
+                                                  source-authority relative))
                                           StandardCharsets/UTF_8))
         component-paths
         (mapv #(str "bootstrap/clojure/src/" (:resource %)) entries)
@@ -195,7 +168,8 @@
         (->> component-paths
              (mapcat
               (fn [path]
-                (let [forms (read-forms (read-bytes (resolve-file root path)))]
+                (let [forms (read-forms
+                             (:bytes (source-object! source-authority path)))]
                   (->> (tree-seq coll? seq forms)
                        (keep
                         (fn [form]
@@ -211,46 +185,58 @@
       (throw (ex-info "bootstrap loader data-resource closure is incomplete"
                       {:expected 118 :actual (count data-resources)})))
     (vec
-     (concat ["deps.edn" relative]
+     (concat [relative]
              component-paths
              (map #(str "bootstrap/clojure/src/" %) data-resources)))))
 
-(defn- dependency-manifest [root checker-forms]
+(defn- dependency-manifest [source-authority checker-forms]
   (loop [pending (source-dependencies checker-forms)
          seen #{} local {} external {}]
     (if (empty? pending)
       (let [bootstrap? (contains? seen 'gravity.bootstrap)
-            component-paths (if bootstrap? (load-order-paths root) [])
-            local (reduce #(assoc %1 %2 (local-source-record root %2))
+            component-paths
+            (if bootstrap? (load-order-paths source-authority) [])
+            local (reduce #(assoc %1 %2
+                                  (local-source-record source-authority %2))
                           local component-paths)]
         {:local-source-records (mapv val (sort-by key local))
          :external-runtime-records (mapv val (sort-by (comp str key) external))})
-      (let [namespace (first pending) remaining (subvec (vec pending) 1)]
+          (let [namespace (first pending) remaining (subvec (vec pending) 1)]
         (if (contains? seen namespace)
           (recur remaining seen local external)
           (let [relative (namespace-relative-path namespace)
-                path (.resolve root relative)]
-            (if (Files/isRegularFile path (make-array LinkOption 0))
-              (let [bytes (read-bytes (resolve-file root relative))
+                source-record (get (:source-objects source-authority) relative)]
+            (if source-record
+              (let [bytes (:bytes (source-object! source-authority relative))
                     forms (read-forms bytes)]
                 (recur (into remaining (source-dependencies forms))
                        (conj seen namespace)
                        (assoc local relative
-                              (local-source-record root relative)) external))
+                              (local-source-record source-authority relative))
+                       external))
               (recur remaining (conj seen namespace) local
-                     (assoc external namespace (resource-record namespace))))))))))
+                     (assoc external namespace
+                            (resource-record source-authority namespace))))))))))
 
 (defn source-closure-manifest
-  "Bind entry sources and their complete transitive namespace dependencies."
-  [root relative-paths]
-  (let [root (.normalize (.toAbsolutePath ^Path root))
-        roots
+  "Bind entry sources and dependencies from authenticated C-object bytes only."
+  [source-authority relative-paths]
+  (when-not
+   (and (map? source-authority)
+        (= #{:content :source-objects :external-source-records}
+           (set (keys source-authority)))
+        (map? (:source-objects source-authority))
+        (map? (:external-source-records source-authority)))
+    (throw (ex-info "invalid C-derived checker source authority" {})))
+  (let [roots
         (mapv (fn [relative]
-                (let [bytes (read-bytes (resolve-file root relative))]
-                  {:record (local-source-record root relative)
+                (let [bytes (:bytes (source-object!
+                                     source-authority relative))]
+                  {:record (local-source-record source-authority relative)
                    :forms (read-forms bytes)}))
               relative-paths)
-        dependencies (mapv #(dependency-manifest root (:forms %)) roots)
+        dependencies
+        (mapv #(dependency-manifest source-authority (:forms %)) roots)
         local (->> (concat (map :record roots)
                            (mapcat :local-source-records dependencies))
                    (reduce (fn [records record]
@@ -275,12 +261,24 @@
    :os-name (System/getProperty "os.name")
    :os-arch (System/getProperty "os.arch")})
 
-(defn checker-identity-manifest [root role]
+(defn checker-identity-manifest
+  "Derive one role identity from bytes already authenticated against C/T.
+
+  The caller must pass the internal source-authority returned by the child
+  classpath preflight.  A checkout path, classpath resource lookup, or missing
+  C object is deliberately not accepted as a fallback."
+  [source-authority role]
   (let [{:keys [algorithm-role namespace entrypoint source-relative-path domains]}
         (or (get checker-specs role)
             (throw (ex-info "unknown SH-07 checker role" {:role role})))
-        root (.normalize (.toAbsolutePath ^Path root))
-        bytes (read-bytes (resolve-file root source-relative-path))
+        _ (when-not
+           (and (map? source-authority)
+                (= #{:commit :tree} (set (keys (:content source-authority))))
+                (map? (:source-objects source-authority))
+                (map? (:external-source-records source-authority)))
+            (throw (ex-info "missing authenticated C-derived source input"
+                            {:role role})))
+        bytes (:bytes (source-object! source-authority source-relative-path))
         forms (read-forms bytes)
         source-sha (sha256-bytes bytes)
         semantic-id (canonical-id {:domain (:semantic domains) :schema-version 1
@@ -294,7 +292,7 @@
                                    :source-relative-path source-relative-path
                                    :source-byte-count (alength bytes)
                                    :source-sha256 source-sha})
-        dependencies (dependency-manifest root forms)
+        dependencies (dependency-manifest source-authority forms)
         runtime (runtime-fingerprint)
         closure-id (canonical-id {:domain (:dependency domains) :schema-version 1
                                   :role role :dependencies dependencies
