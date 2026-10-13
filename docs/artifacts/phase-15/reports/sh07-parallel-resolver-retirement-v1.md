@@ -95,6 +95,14 @@ The ledger's closed command-result schema records the terminated command as
 
 ## Admission and Nonclaims
 
+The user subsequently authorized merging and pushing this bounded tooling
+batch while retaining the explicit instruction not to rerun the full suite.
+Integration preparation uses scoped validation under that user-directed
+exception; it does not claim a successful full suite or fresh full-suite
+integration receipt. The reconciled main base is
+`33c7cda250d1bd359f5068d3ef2ef33958eddbde`. Changes from that main revision are
+governance records only; the reviewed retirement code is unchanged.
+
 The workstream remains draft. This local working-tree evidence does not supply
 the exact committed candidate, clean named branch, fresh integration receipt,
 or exact-commit independent acceptance required for integration. No terminal record is
