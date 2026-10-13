@@ -52,7 +52,7 @@
                     (mapv #(definition % 1 0)
                           (remove #{'sh07-b51-build-template} callees)))
                   (mapv (fn [n]
-                          (definition (symbol (str "fixture-caller-" n)) 0
+                          (definition (symbol (str "fixture-caller-" ordinal "-" n)) 0
                             (cons 'do (repeat (if (= n 11) 15 32)
                                               (list (provider (mod (inc ordinal) 4)))))))
                         (range 12))) [])]
