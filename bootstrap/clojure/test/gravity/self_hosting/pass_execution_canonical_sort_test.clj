@@ -32,8 +32,8 @@
              (seq (canonical/canonical-bytes candidate)))))))
 
 (deftest canonical-bytes-and-diagnostics-match-the-prior-production-path
-  (doseq [value [nil [] #{} {} '(1 1N 1/2) [\a "quoted\"" "line\n"]
-                 {:nested {:set #{:b :a} :list '(nil true false)}
+  (doseq [value [nil [] #{} {} (list 1 1N 1/2) [\a "quoted\"" "line\n"]
+                 {:nested {:set #{:b :a} :list (list nil true false)}
                   :integrals [(byte 1) (short 1) (int 1) (long 1) 1N]}
                  (into {} (map (fn [i] [(keyword (str "k" i)) (hash-set i (- i))])
                                (range 128)))]]
