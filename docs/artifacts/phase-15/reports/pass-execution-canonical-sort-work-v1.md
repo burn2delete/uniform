@@ -14,6 +14,29 @@ producer order, verifier execution, evidence checks, and authority ceiling
 remain active. This is a measured leaf optimization, with no demonstrated
 full-SH-07 or full-suite speedup.
 
+The closed record below binds this report's immutable draft authority tuple.
+It permits only a request for governed integration after exact independent
+acceptance and all admission gates; it grants no proof or performance authority.
+
+```json gravity-architecture-authority-v1
+{
+  "schema": "gravity/architecture-authority-v1",
+  "workstream_id": "pass-execution-canonical-sort-work-v1",
+  "invariant_family": "verification/pass-execution-canonical-sort-work",
+  "report_path": "docs/artifacts/phase-15/reports/pass-execution-canonical-sort-work-v1.md",
+  "status": "draft",
+  "base_commit": "6c402d3f97cfe6acf07346997af90de3b1e3a10b",
+  "dependencies": [],
+  "historical_references": [],
+  "authority": {
+    "integration_only": true,
+    "release": false,
+    "self_hosting": false,
+    "seed_retirement": false
+  }
+}
+```
+
 ## Pinned observations
 
 Baseline commit/tree:
