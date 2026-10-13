@@ -1113,7 +1113,11 @@
                :seed-retirement :safety :performance]}}
 
  :legacy-mechanisms
- {:parallel-shard-runner
+ {:iteration-cache-runner
+  {:route-ids ["sh07-b13-accepted" "sh07-conformance-table"]
+   :membership-semantics :explicit-catalog-selection
+   :label-policy {:kind :strip-prefix :prefix "sh07-"}}
+  :parallel-shard-runner
   {:route-ids ["sh07-parallel-accepted"
                "sh07-parallel-b12-contract-accepted"
                "sh07-parallel-b12-identity-verification"

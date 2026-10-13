@@ -222,7 +222,10 @@
 (defn resolve-legacy-shard
   "Resolve the reviewed compatibility selection without executing tests."
   [mechanism shard-name]
-  (let [route-id (legacy-shard-route mechanism shard-name)
+  (if (= :iteration-cache-runner mechanism)
+    ((requiring-resolve 'gravity.self-hosting.sh07-iteration-cache-runner/resolve-route)
+     shard-name)
+    (let [route-id (legacy-shard-route mechanism shard-name)
         route (*route-fn* route-id)
         selection (:selection route)
         namespace-value (:namespace selection)
@@ -252,7 +255,7 @@
                       :namespace namespace-symbol
                       :test test-symbol}))
             test-var))
-        test-symbols)})))
+        test-symbols)}))))
 
 (defn- legacy-list-text [mechanism]
   (str (str/join "\n" (:labels (legacy-projection mechanism))) "\n"))
