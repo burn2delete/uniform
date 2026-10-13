@@ -219,7 +219,8 @@
              {:shard shard-name :available labels}))
     route-id))
 
-(defn- resolve-legacy-shard
+(defn resolve-legacy-shard
+  "Resolve the reviewed compatibility selection without executing tests."
   [mechanism shard-name]
   (let [route-id (legacy-shard-route mechanism shard-name)
         route (*route-fn* route-id)
@@ -256,16 +257,19 @@
 (defn- legacy-list-text [mechanism]
   (str (str/join "\n" (:labels (legacy-projection mechanism))) "\n"))
 
-(defn- legacy-check-text [mechanism]
+(defn check-legacy-shards
+  "Return compatibility shard counts using the shared resolver."
+  [mechanism]
   (let [{:keys [labels]} (legacy-projection mechanism)]
-    (str (pr-str
-          (into (sorted-map)
-                (map (fn [shard-name]
-                       [shard-name
-                        (count (:test-vars
-                                (resolve-legacy-shard mechanism shard-name)))])
-                     labels)))
-         "\n")))
+    (into (sorted-map)
+          (map (fn [shard-name]
+                 [shard-name
+                  (count (:test-vars
+                          (resolve-legacy-shard mechanism shard-name)))])
+               labels))))
+
+(defn- legacy-check-text [mechanism]
+  (str (pr-str (check-legacy-shards mechanism)) "\n"))
 (defn- request-for
   [{:keys [route-id lane timeout-ms max-output-bytes cache-mode]}]
   (let [requested (cond-> {}

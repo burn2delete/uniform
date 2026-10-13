@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh07-parallel-shard-manifest-test
   (:require [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :as test :refer [deftest is testing]]
             [gravity.self-hosting.sh07-parallel-shard-runner :as runner]
+            [gravity.self-hosting.unified-execution-cli :as cli]
             [gravity.self-hosting.unified-execution-plan :as plan]))
 
 (def ^:private route-prefix
@@ -297,3 +298,62 @@
 (deftest list-output-preserves-shard-order-and-newline
   (is (= (str (str/join "\n" (runner/shard-names)) "\n")
          (with-out-str (runner/-main "--list")))))
+
+(deftest shared-resolution-preserves-every-shards-ordered-test-vars
+  (doseq [[shard {:keys [namespace selectors]}] expected-shards]
+    (let [selected (atom nil)
+          result (with-redefs [test/test-vars #(reset! selected %)]
+                   (runner/run-shard shard))]
+      (is (= (mapv #(str (ns-name (:ns (meta %))) "/" (:name (meta %)))
+                   @selected)
+             (mapv #(str namespace "/" %) selectors)))
+      (is (= {:test 0 :pass 0 :fail 0 :error 0
+              :shard shard :test-vars (count selectors)} result)))))
+
+(deftest shared-resolution-preserves-missing-var-diagnostic-before-execution
+  (let [missing "sh07-b11-missing-retirement-test"
+        altered (assoc-in plan/catalog [:routes "sh07-parallel-accepted"
+                                        :selection :selectors 0] missing)
+        executed (atom false)
+        details (with-redefs [plan/catalog altered
+                              test/test-vars #(reset! executed true)]
+                  (try (runner/run-shard "accepted") nil
+                       (catch clojure.lang.ExceptionInfo error
+                         [(ex-message error) (ex-data error)])))]
+    (is (= ["SH-07 parallel shard references an absent test"
+            {:id "SH07-PARALLEL-SHARD-TEST" :shard "accepted"
+             :namespace 'gravity.self-hosting.sh07-vector-pattern-test
+             :test (symbol missing)}] details))
+    (is (false? @executed))))
+
+(deftest delegated-selection-retains-fixtures-counters-and-exception-cleanup
+  (let [ns-name 'gravity.self-hosting.parallel-retirement-fixture
+        fixture-ns (create-ns ns-name)
+        events (atom [])
+        fixture (fn [label]
+                  (fn [f]
+                    (swap! events conj [label :before])
+                    (try (f) (finally (swap! events conj [label :after])))))
+        vars (mapv (fn [[name body]]
+                     (let [v (intern fixture-ns name (fn []))]
+                       (alter-meta! v assoc :test body)
+                       v))
+                   [['pass #(test/is true)]
+                    ['error #(throw (ex-info "fixture error" {}))]])]
+    (try
+      (binding [*ns* fixture-ns]
+        (test/use-fixtures :once (fixture :once))
+        (test/use-fixtures :each (fixture :each)))
+      (let [result (binding [*out* (java.io.StringWriter.)
+                            test/*test-out* (java.io.StringWriter.)]
+                     (with-redefs [cli/resolve-legacy-shard
+                                   (fn [mechanism shard]
+                                     (is (= :parallel-shard-runner mechanism))
+                                     (is (= "accepted" shard))
+                                     {:test-vars vars})]
+                       (runner/run-shard "accepted")))]
+        (is (= {:test 2 :pass 1 :fail 0 :error 1
+                :shard "accepted" :test-vars 2} result))
+        (is (= [[:once :before] [:each :before] [:each :after]
+                [:each :before] [:each :after] [:once :after]] @events)))
+      (finally (remove-ns ns-name)))))
