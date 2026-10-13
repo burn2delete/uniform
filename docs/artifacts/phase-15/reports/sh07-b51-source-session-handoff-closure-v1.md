@@ -4,10 +4,11 @@
 
 This increment prepares the first ordered V9 completion slice: return the
 complete SH06 authority carrier from the same private source session that
-produces the module transactions. It is held, not accepted or integrated.
-The real bounded producer currently fails before finalization in an inherited
-SH06 C5 proof-shape check. The eleven-key normal return has therefore not been
-observed, and this increment receives no completion credit.
+produces the module transactions. It has resumed as draft under explicit human
+authorization to repair its demonstrated SH06 prerequisite. It is not accepted
+or integrated. Prior immutable HOLD evidence remains in commits `446d696` and
+`b978a476`; the historical observations below are preserved. A finalized normal
+return and fresh independent acceptance remain required for completion credit.
 
 Authoritative GitHub and local main were both observed at
 `6c402d3f97cfe6acf07346997af90de3b1e3a10b`, tree
@@ -55,6 +56,9 @@ SH06 carrier is an in-memory source-handoff value, not a new certificate or
 runtime admission token.
 
 ## Validation and conformance observations
+
+The observations in this section describe the original held candidate. The
+resumed prerequisite repair is recorded separately below.
 
 The final ordinary scoped Clojure run passed **106 tests / 744 assertions** in
 14 namespaces, with zero skipped namespaces. It covers the governed source
@@ -125,7 +129,7 @@ blocker and did not accept the candidate. Subsequent changes record review and
 HOLD metadata only. The clean named exact preflight passes identity and
 reconciliation checks; it is not workstream integration eligibility.
 
-HOLD remains until the real producer returns the complete eleven-key product
+Acceptance remains blocked until the real producer returns the complete eleven-key product
 and the normal retained-value validators pass while the acquisition sentinel
 is armed. Then the authentic in-memory mutation matrix must execute, followed
 by fresh exact independent review and governed admission. Source-layout and
@@ -146,3 +150,41 @@ retirement authority is claimed. Progress remains 7/30 completed slices,
 6 executable slices, 7 Clojure-boundary slices, 4 blocked slices, prefix
 SH-00 through SH-06; SH-07 remains partial/recorded4-of8 and full-language
 acceptance remains recorded0/240.
+
+## Resumed prerequisite repair
+
+Real Git-produced commit proofs pass the producer's object authentication on
+both clean main and the branch. The SH06 consumer's exact-key helper instead
+always rejects nonempty schemas: its `keys` argument shadows `clojure.core/keys`.
+Renaming that argument restores the existing exact-key check without changing
+any accepted key set, proof requirement, or diagnostic.
+
+Passing that guard exposed a second owning join defect. The strict contextual
+snapshot compared the target module descriptor's byte count to the reader
+compiler's `:source-revision :source-byte-count`. The real C2 target source-unit
+record has a target path and bytes hash, but no byte-count field. The observed
+target was 29,989 bytes; the reader compiler was 257,161 bytes. The strict
+consumer now verifies the complete retained Git inclusion proof, obtains the
+target count from its authenticated blob, and joins the blob's hash to C2. An
+explicit source-unit count, when present, must still match. No live source
+fallback, authenticity flag, or relaxed proof predicate is introduced.
+
+The real proof positive and missing/extra/corrupt-proof negatives pass. The
+first resumed seam run reports 5 tests / 30 assertions, with 29 passed and the
+snapshot defect as its one error. A second producer probe has crossed that
+snapshot guard and is executing the unmodified Gravity SH06 resolver; it has
+not yet supplied completion evidence.
+
+The refreshed ordinary scoped run passes 106 tests / 744 assertions with zero
+skipped namespaces. LOC, documents, roadmap, and governance validators pass.
+The next authentic fixture keeps seven modules and exactly 1,480 edges, with
+367 producer-internal calls per producer module and twelve normative root8
+calls. Cached real Git algorithm objects and actual selected JAR source records
+are used to construct the twenty-one-key envelope after closure. This tests
+envelope construction, not full child classpath/PRE admission or checker proof.
+
+A preliminary full-JAR test-helper attempt encountered the inherited trusted
+source reader's unresolved `::s/invalid` alias in a dependency source. It is not
+repaired here and is not bypassed in a production preflight. The bounded
+envelope fixture reads only the actual dependency source records its identity
+requires; it grants no full classpath admission claim.

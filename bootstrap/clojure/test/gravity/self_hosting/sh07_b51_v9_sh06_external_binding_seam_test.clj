@@ -2,6 +2,9 @@
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
+            [gravity.tools.sh07-b51-attempt32-checker-child :as child]
+            [gravity.tools.sh07-b51-attempt32-checker-identity :as identity]
+            [gravity.tools.sh07-b51-git-evidence :as git-evidence]
             [gravity.tools.sh07-b51-v9-codec :as codec]
             [gravity.bootstrap :as bootstrap]))
 
@@ -41,15 +44,18 @@
                  [(definition 'sh07-b51-finalize-rejection 1
                               (cons 'do (map #(list % nil) callees)))]
                  (mapv #(definition % (arities %) 0) (:exports spec)))
-        extra (case ordinal
-                0 (into (mapv #(definition % 1 0)
-                              (remove #{'sh07-b51-build-template} callees))
-                        (mapv (fn [n]
-                                (definition (symbol (str "fixture-caller-" n)) 0
-                                  (cons 'do (repeat (if (= n 45) 28 32)
-                                                    '(fixture-provider)))))
-                              (range 46)))
-                1 [(definition 'fixture-provider 0 0)] [])]
+        provider (fn [n] (symbol (str "fixture-provider-" n)))
+        extra (if (< ordinal 4)
+                (concat
+                  [(definition (provider ordinal) 0 0)]
+                  (when (zero? ordinal)
+                    (mapv #(definition % 1 0)
+                          (remove #{'sh07-b51-build-template} callees)))
+                  (mapv (fn [n]
+                          (definition (symbol (str "fixture-caller-" n)) 0
+                            (cons 'do (repeat (if (= n 11) 15 32)
+                                              (list (provider (mod (inc ordinal) 4)))))))
+                        (range 12))) [])]
     (str (str/join "\n" (map pr-str (concat [header] public extra))) "\n")))
 
 (defn- bounded-content! []
@@ -103,10 +109,69 @@
         (assoc-in [:source-semantic-carrier :c2-snapshot :event-root] root)
         (assoc :sh06-authority-carrier carrier))))
 
+(defn- checker-source-preflight! [content]
+  ;; Cache real C/T objects before session closure. This is envelope evidence,
+  ;; not a PRE discharge or whole-object admission claim.
+  (let [paths (distinct (concat
+                         (filter #(str/ends-with? % ".clj") git-evidence/owned-c-paths)
+                         [git-evidence/architecture-report-path
+                          "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj"
+                          "bootstrap/clojure/src/gravity/digest.clj"]))
+        objects
+        (into {}
+          (for [path paths
+                :let [row (fixture-git! ["ls-tree" (:tree content) "--" path] nil {})
+                      [_ mode oid observed-path]
+                      (re-matches #"([0-9]+) blob ([0-9a-f]{40})\t(.+)" row)
+                      {:keys [exit out]} (shell/sh "/usr/bin/git" "cat-file" "blob" oid)
+                      bytes (.getBytes ^String out java.nio.charset.StandardCharsets/UTF_8)]]
+            (do
+              (when-not (and (= path observed-path) (= "100644" mode) (zero? exit))
+                (throw (ex-info "missing authentic checker source" {:path path})))
+              [path {:path path :mode mode :blob-oid oid :byte-count (alength bytes)
+                     :raw-sha256 (codec/R bytes) :bytes bytes}])))
+        specs @(ns-resolve 'gravity.tools.sh07-b51-attempt32-checker-child
+                          'external-classpath-specs)
+        classpath (str/split (System/getProperty "java.class.path")
+                            (re-pattern java.io.File/pathSeparator))
+        external
+        (reduce merge {}
+          (for [spec specs
+                :let [path (first (filter #(str/ends-with? % (str (:version spec) ".jar"))
+                                          classpath))]]
+            (with-open [jar (java.util.jar.JarFile. path)]
+              (into {}
+                (for [entry (enumeration-seq (.entries jar))
+                      :when (and (not (.isDirectory entry))
+                                 (contains? #{"clojure/core.clj" "clojure/set.clj"
+                                              "clojure/string.clj" "clojure/walk.clj"
+                                              "clojure/edn.clj"} (.getName entry)))
+                      :let [bytes (with-open [input (.getInputStream jar entry)]
+                                    (.readAllBytes input))
+                            namespace (-> (.getName entry) (str/replace #"\.clj$" "")
+                                          (str/replace "/" ".") symbol)]]
+                  [namespace {:namespace namespace :resource (.getName entry)
+                              :byte-count (alength bytes)
+                              :source-sha256 (codec/R bytes)}])))))]
+    {:source-authority {:content content :source-objects objects
+                        :external-source-records external}
+     :pre-object-snapshot
+     {:owned-c-descriptors (mapv #(dissoc % :bytes) (vals objects))}}))
+
+(declare c5-failure?)
+
 (deftest bounded-authentic-producer-closes-without-source-reacquisition
   ;; This exercises real source production. The role seam is test-only;
   ;; no semantic product or authenticity validator is replaced.
   (let [{:keys [commit tree]} (bounded-content!)
+        content {:commit commit :tree tree}
+        preflight (checker-source-preflight! content)
+        manifest (identity/checker-identity-manifest (:source-authority preflight)
+                                                    :producer-census)
+        request {:content content
+                 :evidence {:architecture-report-sha256
+                            (codec/R (get-in preflight [:source-authority :source-objects
+                                                        git-evidence/architecture-report-path :bytes]))}}
         closed? (atom false) acquisitions (atom 0)
         acquire-var (required-var 'p15-s23-sh07-b51-acquire-source-entry)
         git-var (required-var 'p15-s23-sh07-b51-git-bytes)
@@ -123,7 +188,7 @@
                  (bootstrap/p15-s23-sh07-b51-sh06-authority-carrier-valid?
                   commit tree products (:sh06-authority-carrier products)))]
     (with-redefs-fn
-      {(required-var 'p15-s23-sh07-b51-process-role) (constantly :m)
+      {(required-var 'p15-s23-sh07-b51-process-role) (constantly :producer-census)
        acquire-var (guard (fn [& args] (swap! acquisitions inc)
                             (apply acquire args)))
        git-var (guard git) live-var (guard live)
@@ -133,6 +198,12 @@
         (let [products (bootstrap/p15-s23-sh07-b51-build-receipted-bundle-core-products
                         commit tree)
               carrier (:sh06-authority-carrier products)]
+          (println :authentic-handoff-observation
+                   {:content content :product-count (count products)
+                    :carrier-count (count carrier)
+                    :edge-count (count (:expected-edge-census carrier))
+                    :role (get-in products [:source-read-receipt :role])
+                    :counters (get-in products [:source-read-receipt :counters])})
           (is (= 11 (count products)))
           (is (= 16 (count carrier)))
           (is (= 7 (count (:external-binding-authorities carrier))))
@@ -143,6 +214,29 @@
                  (get-in products [:source-read-receipt :counters])))
           (is (true? @closed?))
           (is (true? (valid? products)))
+          (is (= products (child/validate-receipted-products!
+                           codec/H :producer-census request products)))
+          (let [envelope (child/build-checker-envelope
+                           codec/H :producer-census request products manifest preflight)]
+            (is (= 21 (count envelope)))
+            (is (= carrier (:sh06-authority-carrier envelope)))
+            (is (= 7 (count (:semantic-algorithm-source-descriptors envelope))))
+            (is (= (:checker manifest) (:checker envelope))))
+          (let [transaction (first (:module-transactions products))
+                c2 (:c2-reader-artifact transaction)
+                path (get-in transaction [:source-descriptor :path])
+                context (invoke-private 'p15-s23-sh07-b51-sh06-context
+                                        (first (:external-binding-authorities carrier))
+                                        (:sh06-resolution-plan-authority products))
+                snapshot (fn [artifact]
+                           (invoke-private 'sh06-authenticated-source-snapshot!
+                                           path artifact :test false context))]
+            (is (= (get-in transaction [:source-descriptor :byte-count])
+                   (:byte-count (snapshot c2))))
+            (doseq [bad [(assoc-in c2 [:source-unit-record :byte-count] -1)
+                         (assoc-in c2 [:source-unit-record :bytes-hash] (codec/H :wrong))
+                         (assoc-in c2 [:source-unit-record :path] "wrong.gravity")]]
+              (is (c5-failure? #(snapshot bad)))))
           (doseq [key (keys products)]
             (is (false? (valid? (dissoc products key))) key))
           (doseq [key (keys carrier)]
@@ -168,6 +262,28 @@
     false
     (catch clojure.lang.ExceptionInfo error
       (= "C5-UNRESOLVED" (:id (ex-data error))))))
+
+(deftest proof-shape-consumer-verifies-authentic-git-proof
+  (let [commit (fixture-git! ["rev-parse" "HEAD"] nil {})
+        tree (fixture-git! ["rev-parse" "HEAD^{tree}"] nil {})
+        content {:commit commit :tree tree}
+        spec (first @(required-var 'p15-s23-sh07-b51-source-specs))
+        entry (invoke-private 'p15-s23-sh07-b51-acquire-source-entry commit tree spec)
+        proof (:content-object-proof entry)
+        check (fn [c p]
+                (invoke-private 'sh06-resolution-content-proof-tree! (:path spec) c p))]
+    (is (true? (invoke-private 'p15-s23-sh07-b51-validate-content-object-proof!
+                               content proof)))
+    (is (true? (check content proof)))
+    (doseq [key (keys content)]
+      (is (c5-failure? #(check (dissoc content key) proof))))
+    (doseq [key (keys proof)]
+      (is (c5-failure? #(check content (dissoc proof key)))))
+    (doseq [[c p] [[(assoc content :unexpected true) proof]
+                   [content (assoc proof :unexpected true)]
+                   [content (update-in proof [:raw-bytes 0] bit-xor 1)]
+                   [(assoc content :tree commit) proof]]]
+      (is (c5-failure? #(check c p))))))
 
 (deftest strict-context-arities-are-explicit-and-nil-fails-closed
   (testing "the governed lexical arities are present"
