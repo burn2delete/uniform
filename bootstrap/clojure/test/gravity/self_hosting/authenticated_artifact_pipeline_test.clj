@@ -1,11 +1,24 @@
 (ns gravity.self-hosting.authenticated-artifact-pipeline-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.java.io :as io]
+            [clojure.test :refer [deftest is testing]]
             [gravity.authenticated-artifact-pipeline :as pipeline]
-            [gravity.digest :as digest])
+            [gravity.digest :as digest]
+            [gravity.tooling.strict-json :as json])
   (:import [java.nio.charset StandardCharsets]
            [java.nio.file Files LinkOption OpenOption StandardOpenOption]))
 
 (def ^:private fixture "examples/hello.gravity")
+
+(deftest governing-contracts-resolve-to-the-canonical-inventory
+  (let [contracts (var-get (ns-resolve 'gravity.authenticated-artifact-pipeline
+                                       'contract-binding))
+        inventory (json/load-json
+                   (.toPath (io/file "docs/document-inventory.json")))]
+    (doseq [[key id] [[:pipeline-contract "C1"] [:artifact-contract "PKG3"]]]
+      (let [path (get contracts key)
+            entry (first (filter #(= id (get % "id")) inventory))]
+        (is (.isFile (io/file path)) path)
+        (is (= path (get entry "path")) path)))))
 
 (defn- temp-source!
   [text]

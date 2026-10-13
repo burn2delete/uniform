@@ -243,8 +243,8 @@
             :byte-count 77209
             :raw-sha256
             "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56"}))
-    (is (= 42 (count evidence/owned-c-paths)))
-    (is (= 86 (count evidence/pre-c-paths)))
+    (is (= 160 (count evidence/owned-c-paths)))
+    (is (= 204 (count evidence/pre-c-paths)))
     (is (= {:sessions
             [{:participant :a :acquire-count 13 :decode-count 13
               :event-count 40 :finalize-count 1}
@@ -265,8 +265,8 @@
                    :m (update evidence/source-session-counters-e2
                               :event-count dec)}))))
     (is (= :gravity/sh07-b51-v9-ownership-plan-e4-v1 (:schema plan)))
-    (is (= 46 (count (get-in plan [:allocations 1 :paths]))))
-    (is (= 42 (- (count (get-in plan [:allocations 1 :paths])) 4)))
+    (is (= 164 (count (get-in plan [:allocations 1 :paths]))))
+    (is (= 160 (- (count (get-in plan [:allocations 1 :paths])) 4)))
     (is (= (codec/H [:gravity/sh07-b51-v9-ownership-plan-e4-v1
                      (dissoc plan :plan-id)])
            (:plan-id plan)))))
@@ -456,7 +456,7 @@
         runtime-i9-suffix
         (subvec (vec (var-get
                       (ns-resolve 'gravity.tools.sh07-b51-git-evidence
-                                  'i9-lifecycle-paths))) 42)
+                                  'i9-lifecycle-paths))) 160)
         g9-paths (vec (var-get
                        (ns-resolve 'gravity.tools.sh07-b51-git-evidence
                                    'g9-lifecycle-paths)))

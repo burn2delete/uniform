@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh07-b51-v9-codec-tcb-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.tools.sh07-b51-v9-codec :as codec]))
 
@@ -55,7 +56,14 @@
            (:authority contract)))))
 
 (deftest codec-source-has-no-facade-or-participant-load-edge
-  (let [source (slurp (io/resource "gravity/tools/sh07_b51_v9_codec.clj"))]
+  (let [facade (slurp (io/resource "gravity/tools/sh07_b51_v9_codec.clj"))
+        resources (map second (re-seq #"\"(/gravity/[^\"]+)\"" facade))
+        source (str (str/replace facade #"(?s)\(load\s.*\)\s*$" "")
+                    (str/join "\n" (map #(slurp (io/resource
+                                                (str (subs % 1) ".clj")))
+                                           resources)))]
+    (is (seq resources))
+    (is (every? #(str/starts-with? % "/gravity/tools/sh07_b51_v9_codec/") resources))
     (testing "the codec uses the canonical and digest leaves directly"
       (is (re-find
            #"\[gravity\.c2-artifact-identity\.canonical :as canonical\]"
