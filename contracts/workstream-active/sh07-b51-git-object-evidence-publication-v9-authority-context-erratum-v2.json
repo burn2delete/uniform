@@ -2,8 +2,8 @@
   "architecture_decision": "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v2.md",
   "author": "uniform-coordinator",
   "base_commit": "d885c3cff09e8efc1693404dfa9303a3050663f9",
-  "candidate_commit": null,
-  "clean_worktree": false,
+  "candidate_commit": "508e5e18b6b7e54d19d3d7e09e51ebf3a40c77c2",
+  "clean_worktree": true,
   "dependencies": [
     "sh07-b51-git-object-evidence-publication-architecture-v9",
     "sh07-b51-git-object-evidence-publication-v9-pre-evidence-erratum-v1",
@@ -11,7 +11,7 @@
     "sh07-b51-git-object-evidence-publication-v9-fixture-cycle-erratum-v1",
     "sh07-b51-git-object-evidence-publication-v9-root-verifier-e3-erratum-v1"
   ],
-  "disposition": "Draft report-only V2 architecture correction reconciled to current authoritative main d885c3cff09e8efc1693404dfa9303a3050663f9, whose tree equals the prior e79a01b0 base. The old 7c1f81b7 candidate checks are stale after reconciliation and are cleared pending fresh validation and freezing. V1 remains rejected history only, never dependency authority. This establishes no implementation correctness, evidence acceptance, candidate acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
+  "disposition": "Frozen reconciled report-only V2 authority-context architecture correction candidate 508e5e18b6b7e54d19d3d7e09e51ebf3a40c77c2, tree 8ee1d82eaaece14818689e0301942da68eeae02f, and report SHA-256 dc2abde57789b9fd9673a802040ec0e8cd280b1f5d9ed2bcaeaee83f4b1f8732 on authoritative base d885c3cff09e8efc1693404dfa9303a3050663f9 are pending fresh independent review. Prior 7c1f81b7 review does not transfer to this exact tuple. V1 remains rejected history only, never dependency authority. This establishes no implementation correctness, evidence acceptance, candidate acceptance, integration eligibility, aggregate SH-07 completion, self-hosting, release, performance, hostile-host, or seed-retirement authority.",
   "evidence": {
     "accepted_fixtures": [
       "docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v2.md"
@@ -30,7 +30,38 @@
       "SH07-B51-GIT-INPUT-BLOB",
       "SH07-B51-GIT-FUEL"
     ],
-    "validation_commands": []
+    "validation_commands": [
+      {
+        "command": "clojure -M tools/validate_architecture_authority.clj --report docs/artifacts/phase-15/reports/sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v2.md",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_workstream_governance.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_gravity_docs.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M tools/validate_full_language_roadmap.clj",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+        "exit_code": 0,
+        "result": "passed"
+      },
+      {
+        "command": "git diff --check d885c3cff09e8efc1693404dfa9303a3050663f9..508e5e18b6b7e54d19d3d7e09e51ebf3a40c77c2",
+        "exit_code": 0,
+        "result": "passed"
+      }
+    ]
   },
   "governing_contracts": [
     "AGENTS.md",
@@ -88,6 +119,18 @@
       "at": "2026-10-13T18:42:10Z",
       "reason": "reopen V2 from review-pending as draft after merging current authoritative main d885c3cff09e8efc1693404dfa9303a3050663f9; preserve prior freeze and review request as historical events only, update the report base tuple, clear the old candidate identity and stale validation commands, and require a new immutable report candidate with fresh independent review",
       "state": "draft"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-10-13T18:43:47Z",
+      "reason": "freeze reconciled exact report-only V2 candidate 508e5e18b6b7e54d19d3d7e09e51ebf3a40c77c2, tree 8ee1d82eaaece14818689e0301942da68eeae02f, and report SHA-256 dc2abde57789b9fd9673a802040ec0e8cd280b1f5d9ed2bcaeaee83f4b1f8732 on authoritative base d885c3cff09e8efc1693404dfa9303a3050663f9 after observed architecture-authority, governance, document, roadmap, language-boundary, and exact-diff validation; candidate worktree was clean before the governance-only freeze update",
+      "state": "frozen"
+    },
+    {
+      "actor": "uniform-coordinator",
+      "at": "2026-10-13T18:44:00Z",
+      "reason": "request fresh independent review of reconciled exact V2 candidate 508e5e18b6b7e54d19d3d7e09e51ebf3a40c77c2, tree 8ee1d82eaaece14818689e0301942da68eeae02f, report SHA-256 dc2abde57789b9fd9673a802040ec0e8cd280b1f5d9ed2bcaeaee83f4b1f8732, and base d885c3cff09e8efc1693404dfa9303a3050663f9; prior review does not transfer, the report remains immutable, V1 remains rejection history only, and no acceptance or integration authority is recorded",
+      "state": "review-pending"
     }
   ],
   "id": "sh07-b51-git-object-evidence-publication-v9-authority-context-erratum-v2",
@@ -109,6 +152,6 @@
     "aggregate SH-07 completion, self-hosting, release, hostile-host proof, performance authority, and seed retirement remain unclaimed"
   ],
   "reviews": [],
-  "state": "draft",
+  "state": "review-pending",
   "title": "SH-07 B51 Git-object publication V9 authority-context architecture erratum version 2"
 }
