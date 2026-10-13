@@ -459,7 +459,9 @@
              :integrity :fresh-replayable? :required-evidence :nonclaims
              :fresh-authoritative-gate-required? :receipt-id}
            (set (keys receipt))))
-    (is (= "sha256:560657c66294ae325a97af63d627844c5496ab47f813081bb2a24ed54674f5f6"
+    ;; The additive iteration declaration changes the complete catalog identity.
+    ;; Selection metadata stays authenticated; no identity-input exclusion.
+    (is (= "sha256:c1f543003e1c90b41ca869bd03598bdc4900e618658b937b6581445215fd86d5"
            (:receipt-id receipt)))
     (is (= receipt (plan/verify-receipt p receipt)))))
 
