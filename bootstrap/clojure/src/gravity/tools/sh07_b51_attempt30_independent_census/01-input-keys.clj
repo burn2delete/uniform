@@ -8,7 +8,10 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0s :m1 :m2s :bundle-core :source-forms :checker :provenance})
+    :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
+    :sh06-resolution-plan-authority :source-semantic-carrier
+    :semantic-algorithm-source-descriptors :semantic-algorithm-source-root
+    :checker :provenance})
 
 (def checker-keys
   #{:artifact-id :source-sha256 :semantic-id :executable-id
@@ -18,7 +21,7 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0-ids :m1-id :m2-ids :bundle-core-id})
+    :m0-ids :m1-id :m2-ids :bundle-core-id :lowering-product-id})
 
 (def provenance-input-keys
   #{:invocation-id :tool-closure-id :reproduction-command-id
@@ -32,7 +35,7 @@
 (def certificate-keys
   #{:artifact :domain :schema-version :status :role
     :architecture-report-sha256 :claim-id :claim :assumptions :checker
-    :inputs :result :provenance :raw-source-transcript :m2-transcript
+    :inputs :result :semantic-witness :provenance :raw-source-transcript :m2-transcript
     :profile-bounds :evidence-root :certificate-id})
 
 (def claim-keys
@@ -61,7 +64,7 @@
 
 (def accepted-output-keys
   #{:status :certificate :raw-source-transcript-artifact
-    :m2-transcript-artifact})
+    :m2-transcript-artifact :lowering-product})
 
 (def rejection-output-keys #{:status :rejection-evidence})
 
@@ -234,15 +237,3 @@
                (inc nodes) (max depth level) (max width item-width)
                (if collection? (inc collections) collections)
                (max scalar-utf8 scalar-size))))))
-
-(defn certificate-profile-within? [profile]
-  (and (map? profile)
-       (<= (:nodes profile) (:certificate-maximum-nodes profile-bounds))
-       (<= (:depth profile) (:certificate-maximum-depth profile-bounds))
-       (<= (:width profile) (:certificate-maximum-width profile-bounds))
-       (<= (:collection-count profile)
-           (:certificate-maximum-collection-count profile-bounds))
-       (<= (:scalar-utf8 profile)
-           (:certificate-maximum-scalar-utf8 profile-bounds))
-       (<= (:canonical-reader-bytes profile)
-           (:certificate-maximum-canonical-reader-bytes profile-bounds))))

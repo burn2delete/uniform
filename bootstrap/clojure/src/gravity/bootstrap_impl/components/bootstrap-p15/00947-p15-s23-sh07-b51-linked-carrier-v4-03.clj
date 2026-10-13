@@ -97,8 +97,10 @@
             :record-root (:record-root descriptor)}))))
 
 (defn- p15-s23-sh07-b51-v4-inputs-valid? [inputs]
-  (and (p15-s23-sh07-b51-exact-keys?
-        inputs p15-s23-sh07-b51-v4-input-keys)
+  (let [v9? (contains? inputs :lowering-product-id)]
+    (and (p15-s23-sh07-b51-exact-keys?
+          inputs (cond-> p15-s23-sh07-b51-v4-input-keys
+                   v9? (conj :lowering-product-id)))
        (= p15-s23-sh07-b51-attempt32-architecture-report-sha256
           (:architecture-report-sha256 inputs))
        (p15-s23-sh07-b51-v4-git-id? (:snapshot-commit inputs))
@@ -116,7 +118,9 @@
        (p15-s23-sh07-b51-v4-digest-vector? (:m0-ids inputs) 7)
        (p15-s23-sh07-b51-digest-id? (:m1-id inputs))
        (p15-s23-sh07-b51-v4-digest-vector? (:m2-ids inputs) 7)
-       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))))
+       (p15-s23-sh07-b51-digest-id? (:bundle-core-id inputs))
+       (or (not v9?)
+           (p15-s23-sh07-b51-digest-id? (:lowering-product-id inputs))))))
 
 (defn- p15-s23-sh07-b51-v4-checker-valid? [checker algorithm-role]
   (and (p15-s23-sh07-b51-exact-keys?

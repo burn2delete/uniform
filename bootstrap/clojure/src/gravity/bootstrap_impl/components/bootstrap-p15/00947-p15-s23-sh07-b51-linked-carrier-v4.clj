@@ -3,7 +3,7 @@
 ;; independently reviewed.  Candidate constructors establish schemas and
 ;; joins; they do not confer authority.
 (def p15-s23-sh07-b51-attempt32-architecture-report-sha256
-  "sha256:b105b395ba03a29e5bbd75ded681f21cdbb0375e4df73df9f9fbccf9aafa78db")
+  "sha256:34ee9b302f78d88743c3c8ba91cd9bd47c31bc1b4d814afc9e0a892f70e3b0dd")
 
 ;; Compatibility names retained for the Attempt-30 evidence harness.  Their
 ;; values are the superseding Attempt-32 authorities, never stale Attempt-30

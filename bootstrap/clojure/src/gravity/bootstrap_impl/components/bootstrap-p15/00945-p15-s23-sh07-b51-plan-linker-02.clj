@@ -1,248 +1,235 @@
 
-(defn- p15-s23-sh07-b51-remove-runtime-context!
-  [token context]
-  (locking p15-s23-sh07-b51-admitted-runtime-contexts
-    (let [query (p15-s23-sh07-b51-token-query token)
-          context-ref
-          (.get ^java.util.HashMap
-                p15-s23-sh07-b51-admitted-runtime-contexts query)
-          registered-context
-          (when context-ref (.get ^java.lang.ref.WeakReference context-ref))]
-      (when (identical? context registered-context)
-        (.remove ^java.util.HashMap
-                 p15-s23-sh07-b51-admitted-runtime-contexts query)
-        true))))
+;; This marker is denial-only: it grants no source or product authority.  The
+;; V9 object-mode wrapper binds it before opening its private C/T session so a
+;; legacy compatibility branch can never fall through to a checked-out path,
+;; even if a later refactor accidentally reaches that branch.  The session's
+;; unforgeable token remains the positive authority for every governed read.
+(def ^:dynamic ^:private
+  *p15-s23-sh07-b51-v9-receipted-bundle-construction* false)
 
-(defn- p15-s23-sh07-b51-unadmitted-runtime-context [runtime]
-  (assoc (apply dissoc (if (map? runtime) runtime {})
-                p15-s23-sh07-b51-runtime-authority-keys)
-         :sh07-b51-external-call-trace (atom [])))
+(defn- p15-s23-sh07-b51-governed-read-fail!
+  [reason details]
+  (throw (ex-info "SH-07 B51 governed source read rejected"
+                  {:id "SH07-B51-00945-GOVERNED-READ"
+                   :reason reason
+                   :details details})))
 
-(defn- p15-s23-sh07-b51-register-admitted-runtime-context
-  [linked-products carrier raw route args runtime]
-  (let [token (Object.)
-        trace (atom [])
-        top-level-invocation (Object.)
-        top-level-owner
-        (java.util.concurrent.atomic.AtomicReference. {:state :entering})
-        receipt-slot
-        (java.util.concurrent.atomic.AtomicReference. {:state :available})
-        admitted-runtime
-        (merge
-         (apply dissoc (if (map? runtime) runtime {})
-                p15-s23-sh07-b51-runtime-authority-keys)
-         {:sh07-b51-runtime-context-token token
-          :sh07-b51-runtime-token-boundary-id
-          p15-s23-sh07-b51-runtime-token-boundary-id
-          :sh07-b51-linked-carrier-v4 carrier
-          ;; The Stage2 V2 builtin bridge still reads this historical key.
-          ;; It holds the same carrier-v4 object; no carrier-v3 is admitted.
-          :sh07-b51-linked-carrier-v3 carrier
-          :sh07-b51-module-source-descriptors
-          (:module-source-descriptors linked-products)
-          :sh07-b51-link-manifest (:link-manifest linked-products)
-          :sh07-b51-module-plans (:module-plans linked-products)
-         :sh07-b51-execution-bundle (:execution-bundle linked-products)
-         :sh07-b51-external-call-trace trace})
-        context
-        {:token-ref (java.lang.ref.WeakReference. token)
-         :runtime-ref (java.lang.ref.WeakReference. admitted-runtime)
-         :carrier carrier
-         :module-source-descriptors
-         (:module-source-descriptors linked-products)
-         :link-manifest (:link-manifest linked-products)
-         :module-plans (:module-plans linked-products)
-         :execution-bundle (:execution-bundle linked-products)
-         :external-call-trace trace
-         :authority-ref {:carrier carrier :products linked-products}
-         :raw-ref raw
-         :selected-root-ref (:root route)
-         :selected-plan-ref (:plan route)
-         :arguments-ref args
-         :top-level-invocation-ref top-level-invocation
-         :top-level-owner-ref top-level-owner
-         :receipt-slot-ref receipt-slot
-         :thread-ref (Thread/currentThread)}]
-    (when (contains? #{1 6 8} (get-in route [:root :root-ordinal]))
-      (when-not (and (vector? args)
-                     (pos? (count args))
-                     (identical? raw (nth args 0))
-                     (identical? carrier
-                                 (:v18-executable-descriptor raw)))
-        (throw (ex-info "selected SH-07 root arguments are not admission-bound"
-                        {:id "L2-UNKNOWN-CORE-FORM"
-                         :reason :unauthenticated-b51-invocation-identity}))))
-    (try
-      (p15-s23-sh07-b51-issue-top-level-validation-receipt! context)
-      (p15-s23-sh07-b51-register-runtime-context! context)
-      {:runtime admitted-runtime :context-lease context}
-      (catch Throwable failure
-        (p15-s23-sh07-b51-retire-admitted-runtime-context! context)
-        (p15-s23-sh07-b51-remove-runtime-context! token context)
-        (throw failure)))))
+(def ^:private p15-s23-sh07-b51-git-limits
+  {:stdout-max-bytes 1073741824
+   :stderr-max-bytes 1048576
+   :deadline-ms 3600000})
 
-(defn- p15-s23-sh07-b51-admitted-runtime-context [runtime]
-  (when (map? runtime)
-    (let [token (:sh07-b51-runtime-context-token runtime)
-          context
-          (when token
-            (p15-s23-sh07-b51-runtime-context-by-token token))]
-      (when
-       (and context
-            (identical? token
-                        (.get ^java.lang.ref.WeakReference
-                              (:token-ref context)))
-            (identical? runtime
-                        (.get ^java.lang.ref.WeakReference
-                              (:runtime-ref context)))
-            (identical? (Thread/currentThread) (:thread-ref context))
-            (= p15-s23-sh07-b51-runtime-token-boundary-id
-               (:sh07-b51-runtime-token-boundary-id runtime))
-            (identical? (:carrier context)
-                        (:sh07-b51-linked-carrier-v4 runtime))
-            (identical? (:carrier context)
-                        (:sh07-b51-linked-carrier-v3 runtime))
-            (identical? (:module-source-descriptors context)
-                        (:sh07-b51-module-source-descriptors runtime))
-            (identical? (:link-manifest context)
-                        (:sh07-b51-link-manifest runtime))
-            (identical? (:module-plans context)
-                        (:sh07-b51-module-plans runtime))
-            (identical? (:execution-bundle context)
-                        (:sh07-b51-execution-bundle runtime))
-            (identical? (:external-call-trace context)
-                        (:sh07-b51-external-call-trace runtime)))
-        context))))
+(def ^:private p15-s23-sh07-b51-checker-entrypoint
+  "gravity.tools.sh07-b51-attempt32-checker-child")
 
-(defn p15-s23-sh07-b51-runtime-admitted-products-match?
-  [runtime carrier descriptors manifest plans bundle]
-  (boolean
-   (when-let [context
-              (p15-s23-sh07-b51-admitted-runtime-context runtime)]
-     (and (identical? carrier (:carrier context))
-          (identical? descriptors (:module-source-descriptors context))
-          (identical? manifest (:link-manifest context))
-          (identical? plans (:module-plans context))
-          (identical? bundle (:execution-bundle context))))))
+(def ^:private p15-s23-sh07-b51-coordinator-entrypoint
+  "gravity.tools.sh07-b51-attempt32-coordinator-child")
 
-(def ^:private p15-s23-sh07-b51-effective-builtins
-  '#{* + - / < <= = > >= assoc conj count first get hash-map list pr-str
-     rest second str vector symbol? keyword? char? number? list? seq? vector?
-     map? set? string? contains? even? set sort-by-pr-str vec quot subvec
-     integer? boolean? keys sh07-canonical-text-compare
-     sh07-declared-digest-hash sh07-observe-utf8-byte-count
-     sh07-b51-admitted-executable-carrier-validation?})
+(def ^:private p15-s23-sh07-b51-coordinator-option-names
+  ["--snapshot-commit"
+   "--snapshot-tree"
+   "--completed-at"
+   "--evidence-relative-root"
+   "--staging-root"
+   "--eligibility-review-commit"
+   "--eligibility-review-tree"
+   "--eligibility-receipt-path"
+   "--eligibility-receipt-blob"
+   "--eligibility-receipt-byte-count"
+   "--eligibility-receipt-raw-sha256"
+   "--eligibility-receipt-id"])
 
-(defn p15-s23-sh07-b51-exact-keys? [value expected-keys]
-  (and (map? value) (= expected-keys (set (keys value)))))
+(defn- p15-s23-sh07-b51-read-stream-bytes
+  [^java.io.InputStream stream maximum coordinate]
+  (let [output (java.io.ByteArrayOutputStream.)
+        buffer (byte-array 8192)]
+    (loop [byte-count 0]
+      (let [count (.read stream buffer)]
+        (if (neg? count)
+          (.toByteArray output)
+          (let [next-count (+ byte-count count)]
+            (when (> next-count maximum)
+              (p15-s23-sh07-b51-governed-read-fail!
+               :git-stream-overflow
+               {:coordinate coordinate
+                :maximum maximum
+                :observed-at-least next-count}))
+            (.write output buffer 0 count)
+            (recur next-count)))))))
 
-(defn p15-s23-sh07-b51-digest-id? [value]
-  (and (string? value)
-       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+(defn- p15-s23-sh07-b51-strict-utf8
+  [bytes coordinate]
+  (try
+    (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                    (.onMalformedInput
+                     java.nio.charset.CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter
+                     java.nio.charset.CodingErrorAction/REPORT))]
+      (str (.decode decoder (java.nio.ByteBuffer/wrap bytes))))
+    (catch java.nio.charset.CharacterCodingException _
+      (p15-s23-sh07-b51-governed-read-fail!
+       :malformed-utf8 {:coordinate coordinate}))))
 
-(defn p15-s23-sh07-b51-canonical-id [value]
-  (reader-canonical-hash value))
+(defn- p15-s23-sh07-b51-raw-sha256
+  [bytes]
+  (str "sha256:" (sha256-bytes-hex bytes)))
 
-(defn p15-s23-sh07-b51-owner-edge-kind
-  [caller-owner callee-owner]
-  (cond
-    (= caller-owner callee-owner)
-    (case caller-owner
-      :r1-producer :producer-internal
-      :r6-independent-verifier :root6-internal
-      nil)
+(def ^:private p15-s23-sh07-b51-byte-array-class
+  (Class/forName "[B"))
 
-    (and (= :r8-finalizer caller-owner)
-         (= :r1-producer callee-owner))
-    :root8-to-producer-interface
+(defn- p15-s23-sh07-b51-byte-array?
+  [value]
+  (instance? p15-s23-sh07-b51-byte-array-class value))
 
-    :else nil))
+(defn- p15-s23-sh07-b51-unsigned-byte-vector
+  [bytes]
+  (when-not (p15-s23-sh07-b51-byte-array? bytes)
+    (p15-s23-sh07-b51-governed-read-fail!
+     :object-proof-bytes {:observed-type (some-> bytes class .getName)}))
+  (mapv #(bit-and 0xff (int %)) ^bytes bytes))
 
-(defn p15-s23-sh07-b51-binding-census [source-path module module-ordinal]
-  (let [syntax-stream
-        (mapv (fn [ordinal form]
-                {:form form
-                 :syntax/id
-                 (p15-s23-sh07-b51-canonical-id
-                  {:domain :gravity/sh07-b51-attempt24-syntax-v1
-                   :module-ordinal module-ordinal :form-ordinal ordinal})
-                 :span {:source source-path :form-index ordinal}})
-              (range) (:forms module))
-        sh05
-        {:artifact-id
-         (p15-s23-sh07-b51-canonical-id
-          {:domain :gravity/sh07-b51-attempt24-sh05-census-v1
-           :module-ordinal module-ordinal})
-         :expanded-syntax-stream syntax-stream}
-        definitions (sh06-resolution-definition-records module sh05)
-        core (sh06-resolution-core-records)
-        analysis (sh06-resolution-analysis-inputs module sh05 {})
-        lexical (vec (mapcat :bindings (:lexical-scopes analysis)))]
-    {:definition-count (count definitions)
-     :core-binding-count (count core)
-     :lexical-binding-count (count lexical)}))
+(defn- p15-s23-sh07-b51-unsigned-byte-array
+  [value coordinate]
+  (when-not (and (vector? value)
+                 (every? #(and (integer? %) (<= 0 % 255)) value))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :object-proof-bytes {:coordinate coordinate}))
+  (byte-array (map unchecked-byte value)))
 
-(defn p15-s23-sh07-b51-builtin-call-census [function-table]
-  (vec
-   (mapcat
-    (fn [caller]
-      (let [definition (get function-table caller)
-            caller-hash (p15-s23-sh07-source-definition-hash definition)]
-        (mapcat
-         (fn [body-form]
-           (letfn [(walk [value]
-                     (cond
-                       (seq? value)
-                       (if (= 'quote (first value))
-                         []
-                         (let [callee (first value)
-                               row
-                               (when (contains? p15-s23-sh07-b51-effective-builtins
-                                                callee)
-                                 [{:caller caller
-                                   :caller-function-source-hash caller-hash
-                                   :builtin callee
-                                   :arity (count (rest value))
-                                   :compiler-internal?
-                                   (contains?
-                                    p15-s23-sh07-declared-builtin-exact-arities
-                                    callee)}])]
-                           (into (or row []) (mapcat walk value))))
-                       (map? value)
-                       (mapcat walk
-                               (mapcat identity
-                                       (sort-by #(pr-str
-                                                  (reader-canonical-value %))
-                                                value)))
-                       (coll? value) (mapcat walk value)
-                       :else []))]
-             (walk body-form)))
-         (:body definition))))
-    (sort-by str (keys function-table)))))
+(defn- p15-s23-sh07-b51-byte-array-equal?
+  [left right]
+  (and (p15-s23-sh07-b51-byte-array? left)
+       (p15-s23-sh07-b51-byte-array? right)
+       (java.util.Arrays/equals ^bytes left ^bytes right)))
 
-(defn p15-s23-sh07-b51-module-spec [ordinal]
-  (when (and (integer? ordinal) (<= 0 ordinal 6))
-    (nth p15-s23-sh07-b51-module-specs ordinal)))
+(defn- p15-s23-sh07-b51-hex-bytes
+  [bytes]
+  (let [digits "0123456789abcdef"]
+    (apply str
+           (mapcat (fn [value]
+                     (let [unsigned (bit-and 0xff (int value))]
+                       [(.charAt digits (unsigned-bit-shift-right unsigned 4))
+                        (.charAt digits (bit-and unsigned 0x0f))]))
+                   ^bytes bytes))))
 
-(defn p15-s23-sh07-b51-definition-row-valid? [row]
-  (and (p15-s23-sh07-b51-exact-keys?
-        row p15-s23-sh07-b51-definition-keys)
-       (symbol? (:name row))
-       (integer? (:arity row)) (<= 0 (:arity row))
-       (contains? #{:public :private} (:visibility row))
-       (p15-s23-sh07-b51-digest-id? (:source-hash row))))
+(defn- p15-s23-sh07-b51-git-object-id
+  [kind bytes]
+  (when-not (and (contains? #{"blob" "tree" "commit"} kind)
+                 (p15-s23-sh07-b51-byte-array? bytes))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :git-object-id-input {:kind kind}))
+  (let [digest (java.security.MessageDigest/getInstance "SHA-1")
+        header (.getBytes (str kind " " (alength ^bytes bytes) "\u0000")
+                          java.nio.charset.StandardCharsets/US_ASCII)]
+    (.update digest ^bytes header)
+    (.update digest ^bytes bytes)
+    (p15-s23-sh07-b51-hex-bytes (.digest digest))))
 
-(defn p15-s23-sh07-b51-external-binding-row-valid? [row]
-  (and (p15-s23-sh07-b51-exact-keys?
-        row p15-s23-sh07-b51-external-binding-keys)
-       (symbol? (:symbol row))
-       (integer? (:callee-module-ordinal row))
-       (<= 0 (:callee-module-ordinal row) 6)
-       (symbol? (:callee-module row))
-       (p15-s23-sh07-b51-digest-id? (:callee-source-sha256 row))
-       (p15-s23-sh07-b51-digest-id?
-        (:callee-definition-source-hash row))
-       (integer? (:arity row)) (<= 0 (:arity row))
-       (contains? #{:producer-internal :root6-internal
-                    :root8-to-producer-interface}
-                  (:owner-edge row))))
+(defn- p15-s23-sh07-b51-safe-proof-path-segments
+  [path]
+  (let [segments (when (string? path) (str/split path #"/" -1))]
+    (when-not (and (vector? segments)
+                   (not (str/blank? path))
+                   (not (str/starts-with? path "/"))
+                   (every? #(and (not (str/blank? %))
+                                 (not (contains? #{"." ".."} %))
+                                 (not (str/includes? % "\\"))
+                                 (not (str/includes? % "\u0000")))
+                           segments))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :object-proof-path {:path path}))
+    segments))
+
+(defn- p15-s23-sh07-b51-parse-commit-tree!
+  [raw-bytes coordinate]
+  (let [text (p15-s23-sh07-b51-strict-utf8 raw-bytes coordinate)
+        lines (str/split text #"\n" -1)
+        first-line (first lines)
+        tree (when first-line
+               (second (re-matches #"tree ([0-9a-f]{40})" first-line)))
+        later-tree-lines (filter #(str/starts-with? % "tree ") (rest lines))]
+    (when-not (and tree (empty? later-tree-lines))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :commit-object-tree-header
+       {:coordinate coordinate :first-line first-line
+        :later-tree-header-count (count later-tree-lines)}))
+    tree))
+
+(defn- p15-s23-sh07-b51-unsigned-bytes-compare
+  [left right]
+  (loop [index 0]
+    (cond
+      (= index (count left) (count right)) 0
+      (= index (count left)) -1
+      (= index (count right)) 1
+      :else
+      (let [comparison (compare (nth left index) (nth right index))]
+        (if (zero? comparison)
+          (recur (inc index))
+          comparison)))))
+
+(defn- p15-s23-sh07-b51-tree-sort-key
+  [{:keys [name mode]}]
+  (cond-> (p15-s23-sh07-b51-unsigned-byte-vector
+           (.getBytes ^String name java.nio.charset.StandardCharsets/UTF_8))
+    (= "40000" mode) (conj (int \/))))
+
+(defn- p15-s23-sh07-b51-parse-tree-object!
+  [raw-bytes coordinate]
+  (let [length (alength ^bytes raw-bytes)
+        entries
+        (loop [index 0 result []]
+          (if (= index length)
+            result
+            (let [space
+                  (loop [cursor index]
+                    (cond
+                      (>= cursor length) nil
+                      (= 32 (bit-and 0xff (aget ^bytes raw-bytes cursor))) cursor
+                      :else (recur (inc cursor))))
+                  nul
+                  (when space
+                    (loop [cursor (inc space)]
+                      (cond
+                        (>= cursor length) nil
+                        (zero? (bit-and 0xff (aget ^bytes raw-bytes cursor))) cursor
+                        :else (recur (inc cursor)))))
+                  oid-start (when nul (inc nul))
+                  oid-end (when oid-start (+ oid-start 20))]
+              (when-not (and space (< index space) nul (< space nul)
+                             (<= oid-end length))
+                (p15-s23-sh07-b51-governed-read-fail!
+                 :tree-object-grammar {:coordinate coordinate :offset index}))
+              (let [mode-bytes (java.util.Arrays/copyOfRange
+                                ^bytes raw-bytes index space)
+                    name-bytes (java.util.Arrays/copyOfRange
+                                ^bytes raw-bytes (inc space) nul)
+                    oid-bytes (java.util.Arrays/copyOfRange
+                               ^bytes raw-bytes oid-start oid-end)
+                    mode (p15-s23-sh07-b51-strict-utf8
+                          mode-bytes [coordinate :mode])
+                    name (p15-s23-sh07-b51-strict-utf8
+                          name-bytes [coordinate :name])]
+                (when-not (and (contains? #{"40000" "100644"} mode)
+                               (not (str/blank? name))
+                               (not (contains? #{"." ".."} name))
+                               (not (str/includes? name "/"))
+                               (not (str/includes? name "\u0000")))
+                  (p15-s23-sh07-b51-governed-read-fail!
+                   :tree-object-entry
+                   {:coordinate coordinate :mode mode :name name}))
+                (recur oid-end
+                       (conj result
+                             {:mode mode :name name
+                              :oid (p15-s23-sh07-b51-hex-bytes oid-bytes)}))))))]
+    (when-not (and (= (count entries) (count (set (map :name entries))))
+                   (every?
+                    neg?
+                    (map (fn [[left right]]
+                           (p15-s23-sh07-b51-unsigned-bytes-compare
+                            (p15-s23-sh07-b51-tree-sort-key left)
+                            (p15-s23-sh07-b51-tree-sort-key right)))
+                         (partition 2 1 entries))))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :tree-object-order {:coordinate coordinate}))
+    entries))

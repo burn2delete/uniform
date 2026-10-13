@@ -1,4 +1,63 @@
 
+(defn- p15-s23-sh07-o-decimal-authentic-key? [key]
+  (and (map? key)
+       (= #{:kind :sign :coefficient :decimal-power} (set (keys key)))
+       (= :decimal (:kind key))
+       (contains? #{-1 1} (:sign key))
+       (vector? (:coefficient key))
+       (<= (count (:coefficient key)) 257)
+       (p15-s23-sh07-o-decimal-digits? (:coefficient key))
+       (if (= [48] (:coefficient key))
+         (and (= 1 (:sign key)) (= 0 (:decimal-power key)))
+         (and (not= 48 (first (:coefficient key)))
+              (not= 48 (last (:coefficient key)))))
+       (some? (p15-s23-sh07-o-decimal-power (:decimal-power key)))))
+
+(defn- p15-s23-sh07-o-decimal-encoded-power [signed]
+  (if (= [48] (:digits signed)) 0
+      (if (<= (count (:digits signed)) 18)
+        (let [magnitude
+              (loop [remaining (:digits signed) result 0]
+                (if (empty? remaining) result
+                    (recur (rest remaining)
+                           (+ (* result 10) (- (first remaining) 48)))))]
+          (if (= :negative (:sign signed)) (- magnitude) magnitude))
+        {:artifact :gravity/signed-decimal-power
+         :sign (:sign signed) :digit-codepoints (:digits signed)})))
+
+(defn p15-s23-sh07-o-decimal-spell [key]
+  (when-not (p15-s23-sh07-o-decimal-authentic-key? key)
+    (throw (ex-info "source oracle rejected decimal key"
+                    {:reason :unsupported-decimal-readable-spelling})))
+  (if (= [48] (:coefficient key)) "0E+0"
+      (let [coefficient (:coefficient key)
+            base (p15-s23-sh07-o-decimal-power (:decimal-power key))
+            shift (p15-s23-sh07-o-decimal-normal-signed
+                   :positive
+                   (p15-s23-sh07-o-decimal-count-digits
+                    (dec (count coefficient))))
+            exponent (p15-s23-sh07-o-decimal-sum base shift)
+            anticipated-count
+            (+ (if (= -1 (:sign key)) 1 0)
+               (count coefficient)
+               (if (= 1 (count coefficient)) 0 1)
+               2
+               (count (:digits exponent)))
+            _
+            (when (> anticipated-count 261)
+              (throw (ex-info "source oracle decimal exceeds bound"
+                              {:reason :unsupported-decimal-readable-spelling})))
+            result (str (if (= -1 (:sign key)) "-" "")
+                        (char (first coefficient))
+                        (if (= 1 (count coefficient)) ""
+                            (str "." (apply str (map char (rest coefficient)))))
+                        "E" (if (= :negative (:sign exponent)) "-" "+")
+                        (apply str (map char (:digits exponent))))]
+        (when (> (count result) 261)
+          (throw (ex-info "source oracle decimal exceeds bound"
+                          {:reason :unsupported-decimal-readable-spelling})))
+        result)))
+
 (defn p15-s23-sh07-o-decimal-inverse [text]
   (let [chars (when (string? text) (vec text))]
     (when-not (and chars (<= 1 (count chars) 261)
@@ -171,56 +230,3 @@
       (throw (ex-info "source oracle decimal branch lost semantic identity"
                       {:reason :unsupported-decimal-readable-spelling})))
     text))
-
-(defn- p15-s23-sh07-o-scalar-kind
-  [value]
-  (cond
-    (nil? value) :nil
-    (instance? java.lang.Boolean value) :boolean
-    (or (instance? java.lang.Byte value)
-        (instance? java.lang.Short value)
-        (instance? java.lang.Integer value)
-        (instance? java.lang.Long value)
-        (instance? java.math.BigInteger value)
-        (instance? clojure.lang.BigInt value)) :integer
-    (instance? clojure.lang.Ratio value) :ratio
-    (instance? java.math.BigDecimal value) :decimal
-    (instance? java.lang.Double value) :floating
-    (instance? java.lang.String value) :string
-    (instance? java.lang.Character value) :character
-    (instance? clojure.lang.Keyword value) :keyword
-    (instance? clojure.lang.Symbol value) :symbol
-    (instance? java.util.Date value) :instant
-    (instance? java.util.UUID value) :uuid
-    (vector? value) :vector
-    (list? value) :list
-    (map? value) :map
-    (set? value) :set
-    :else nil))
-
-(defn- p15-s23-sh07-o-scalar-writer
-  []
-  {:builder (StringBuilder.) :bytes (volatile! 0)})
-
-(defn- p15-s23-sh07-o-append-scalar-fragment!
-  [writer fragment]
-  (let [observation
-        (p15-s23-sh07-observe-utf8-byte-count
-         fragment @(:bytes writer) 32768)]
-    (when-not (= :accepted (:status observation))
-      (throw
-       (ex-info "source oracle scalar exceeded its G20 boundary"
-                {:reason
-                 (if (= :invalid-unicode-scalar-sequence
-                        (:reason observation))
-                   :invalid-unicode-scalar :scalar-byte-limit)})))
-    ;; G20 admission is prospective: allocation into the output builder occurs
-    ;; only after the exact observation accepts this fragment.
-    (.append ^StringBuilder (:builder writer) ^String fragment)
-    (vreset! (:bytes writer) (:observed-after observation))
-    writer))
-
-(defn- p15-s23-sh07-o-finish-scalar
-  [writer]
-  {:text (.toString ^StringBuilder (:builder writer))
-   :output-utf8-bytes @(:bytes writer)})

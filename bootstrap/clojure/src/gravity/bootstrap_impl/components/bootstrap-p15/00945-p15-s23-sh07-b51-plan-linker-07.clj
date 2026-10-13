@@ -1,220 +1,250 @@
 
-(defn- p15-s23-sh07-b51-execution-bundle-core-valid*
-  [descriptors manifest plans bundle-core bundle-core-id]
-  (let [plans-by-id (into {} (map (juxt :plan-id identity)) plans)
-        edge-by-ordinal (into {} (map (juxt :ordinal identity))
-                              (:edges manifest))
-        module-plans (:module-plans bundle-core)
-        routes (:routes bundle-core)
-        roots (:public-roots bundle-core)]
-    (and (p15-s23-sh07-b51-link-manifest-valid? descriptors manifest)
-         (= 7 (count plans))
-         (every? (fn [descriptor]
-                   (let [plan (nth plans (:module-ordinal descriptor))]
-                     (and (p15-s23-sh07-b51-plan-valid-structure?
-                           descriptor manifest plan)
-                          (p15-s23-sh07-b51-plan-links-valid-structure?
-                           descriptor manifest plan))))
-                 descriptors)
-         (p15-s23-sh07-b51-exact-keys?
-          bundle-core p15-s23-sh07-b51-bundle-core-keys)
-         (= :gravity/sh07-b51-execution-bundle-core-id-v1
-            (:domain bundle-core))
-         (= 1 (:schema-version bundle-core))
-         (= (:manifest-id manifest) (:manifest-id bundle-core))
-         (= (vec (range 7)) (mapv :module-ordinal module-plans))
-         (= (mapv (fn [descriptor plan]
-                    {:module-ordinal (:module-ordinal descriptor)
-                     :module-source-id (:module-source-id descriptor)
-                     :plan-id (:plan-id plan)})
-                  descriptors plans)
-            module-plans)
-         (= (vec (range (count routes))) (mapv :edge-ordinal routes))
-         (= (count routes) (count (:edges manifest)))
-         (every?
-          (fn [route]
-            (and (= #{:edge-ordinal :caller-plan-id :callee-plan-id}
-                    (set (keys route)))
-                 (let [edge (get edge-by-ordinal (:edge-ordinal route))
-                       caller-plan (get plans-by-id (:caller-plan-id route))
-                       callee-plan (get plans-by-id (:callee-plan-id route))]
-                   (and edge caller-plan callee-plan
-                        (= (:caller-module-source-id edge)
-                           (:sh07-b51-module-source-id caller-plan))
-                        (= (:callee-module-source-id edge)
-                           (:sh07-b51-module-source-id callee-plan))))))
-          routes)
-         (= 8 (count roots))
-         (= (vec (range 1 9)) (mapv :root-ordinal roots))
-         (every?
-          (fn [expected]
-            (let [root (nth roots (dec (:root-ordinal expected)))
-                  descriptor (nth descriptors (:module-ordinal expected))
-                  plan (nth plans (:module-ordinal expected))
-                  definition (get-in plan [:functions (:function expected)])]
-              (and (= #{:root-ordinal :function :arity :plan-id}
-                      (set (keys root)))
-                   (= (select-keys expected [:root-ordinal :function :arity])
-                      (select-keys root [:root-ordinal :function :arity]))
-                   (= (:plan-id plan) (:plan-id root))
-                   (= (:module-source-id descriptor)
-                      (:sh07-b51-module-source-id plan))
-                   (= (:arity expected) (:arity definition)))))
-          p15-s23-sh07-b51-public-root-specs)
-         (= bundle-core-id
-            (p15-s23-sh07-b51-canonical-id bundle-core)))))
+(defn- p15-s23-sh07-b51-module-input-record
+  [spec {:keys [descriptor bytes text]}]
+  (let [path (:logical-source-path spec)
+        module (parse-module path (read-forms path text))
+        table (stage0-function-table module)]
+    (when-not
+     (and (= path (:path descriptor))
+          (= (:module spec) (:module module))
+          (= :meta (:profile module))
+          (= :jvm (:target module))
+          (= #{} (:effects module))
+          (= #{} (:capabilities module))
+          (= :safe (:safety module)))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-source-contract
+       {:module-ordinal (:module-ordinal spec) :path path}))
+    {:spec spec :path path :text text :bytes bytes
+     :source-descriptor descriptor :module module :table table
+     :source-sha256 (p15-s23-sh07-b51-raw-sha256 bytes)}))
 
-(defn- p15-s23-sh07-b51-execution-bundle-valid*
-  [descriptors manifest plans bundle]
-  (let [bundle-core
-        (select-keys bundle
-                     [:manifest-id :module-plans :routes :public-roots])
-        bundle-core
-        (assoc bundle-core
-               :domain :gravity/sh07-b51-execution-bundle-core-id-v1
-               :schema-version 1)
-        certificate-ids (:compile-census-certificate-ids bundle)]
-    (and (p15-s23-sh07-b51-exact-keys? bundle p15-s23-sh07-b51-m3-keys)
-         (= :gravity/sh07-b51-execution-bundle-v2 (:artifact bundle))
-         (= 2 (:schema-version bundle))
-         (vector? certificate-ids)
-         (= 2 (count certificate-ids))
-         (every? p15-s23-sh07-b51-digest-id? certificate-ids)
-         (= 2 (count (set certificate-ids)))
-         (p15-s23-sh07-b51-execution-bundle-core-valid*
-          descriptors manifest plans bundle-core (:bundle-core-id bundle))
-         (= (:bundle-id bundle)
-            (p15-s23-sh07-b51-canonical-id
-             {:domain :gravity/sh07-b51-execution-bundle-id-v2
-              :schema-version 1
-              :bundle (dissoc bundle :bundle-id)})))))
+(defn- p15-s23-sh07-b51-validate-module-input!
+  [module-ordinal]
+  (let [spec (p15-s23-sh07-b51-module-spec module-ordinal)
+        validated?
+        (p15-s23-sh07-b51-governed-source-event!
+         :module-validation (+ 3 module-ordinal) module-ordinal
+         'gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*
+         (fn [entry]
+           (p15-s23-sh07-b51-cache-session-product!
+            [:module-input module-ordinal]
+            (p15-s23-sh07-b51-module-input-record spec entry))
+           true))]
+    (when-not (true? validated?)
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-validation {:module-ordinal module-ordinal}))
+    (p15-s23-sh07-b51-session-checked-product
+     [:module-input module-ordinal])))
 
-(defn- p15-s23-sh07-b51-execution-bundle-core-valid-structure?
-  [descriptors manifest plans bundle-core bundle-core-id]
+(defn- p15-s23-sh07-b51-compatibility-module-input
+  [spec]
+  (let [{:keys [path bytes text]}
+        (p15-s23-sh07-b51-compatibility-source-record
+         (:logical-source-path spec))
+        descriptor {:path (:logical-source-path spec)}]
+    (assoc (p15-s23-sh07-b51-module-input-record
+            spec {:descriptor descriptor :bytes bytes :text text})
+           :compatibility-path path)))
+
+(defn- p15-s23-sh07-b51-module-source-valid-with-input?
+  [descriptor source]
+  (let [spec (:spec source)
+        definitions (:definitions descriptor)
+        external-bindings (:external-bindings descriptor)
+        builtin-calls (:builtin-calls descriptor)
+        lexical-count (:lexical-binding-count descriptor)
+        aggregate (when (and (vector? definitions)
+                             (integer? (:core-binding-count descriptor))
+                             (integer? lexical-count)
+                             (vector? external-bindings))
+                    (+ (:core-binding-count descriptor)
+                       (count definitions) lexical-count
+                       (count external-bindings)))
+        source-bytes (:bytes source)
+        source-module (:module source)
+        source-table (:table source)
+        source-path (:path source)
+        expected-binding-census
+        (when source-module
+          (p15-s23-sh07-b51-binding-census
+           source-path source-module
+           (:module-ordinal spec)))
+        expected-builtin-calls
+        (when source-table
+          (p15-s23-sh07-b51-builtin-call-census source-table))
+        expected-definitions
+        (when source-table
+          (mapv (fn [form]
+                  (let [definition
+                        (function-definition-form source-path form)
+                        definition (assoc definition :arity
+                                          (count (:params definition)))]
+                    {:name (:name definition) :arity (:arity definition)
+                     :visibility
+                     (if (contains? (set (:exports spec)) (:name definition))
+                       :public :private)
+                     :source-hash
+                     (p15-s23-sh07-source-definition-hash definition)}))
+                (filter #(function-definition-form source-path %)
+                        (:forms source-module))))]
+    (and (p15-s23-sh07-b51-exact-keys? descriptor
+                                              p15-s23-sh07-b51-m0-keys)
+         (= :gravity/sh07-b51-module-source-v1 (:artifact descriptor))
+         (= 1 (:schema-version descriptor))
+         (= (select-keys spec [:module-ordinal :module :logical-source-path
+                               :owner :exports])
+            (select-keys descriptor
+                         [:module-ordinal :module :logical-source-path
+                          :owner :exports]))
+         (integer? (:source-byte-count descriptor))
+         (<= 0 (:source-byte-count descriptor))
+         (p15-s23-sh07-b51-digest-id? (:source-sha256 descriptor))
+         (= (:source-byte-count descriptor) (alength source-bytes))
+         (= (:source-sha256 descriptor)
+            (str "sha256:" (sha256-bytes-hex source-bytes)))
+         (= :meta (:profile descriptor))
+         (= :jvm (:target descriptor))
+         (= #{} (:effects descriptor))
+         (= #{} (:capabilities descriptor))
+         (= :safe (:safety descriptor))
+         (vector? definitions)
+         (every? p15-s23-sh07-b51-definition-row-valid? definitions)
+         (= expected-definitions definitions)
+         (= (count definitions) (count (set (map :name definitions))))
+         (= (:exports descriptor)
+            (vec (filter (set (:exports descriptor))
+                         (map :name definitions))))
+         (every? #(= (contains? (set (:exports descriptor)) (:name %))
+                      (= :public (:visibility %)))
+                 definitions)
+         (= (:core-binding-count expected-binding-census)
+            (:core-binding-count descriptor))
+         (integer? (:lexical-binding-count descriptor))
+         (<= 0 (:lexical-binding-count descriptor))
+         (= (:lexical-binding-count expected-binding-census)
+            (:lexical-binding-count descriptor))
+         (= (:definition-count expected-binding-census)
+            (count definitions))
+         (vector? external-bindings)
+         (every? p15-s23-sh07-b51-external-binding-row-valid?
+                 external-bindings)
+         (= (count external-bindings)
+            (count (set (map :symbol external-bindings))))
+         (vector? builtin-calls)
+         (every? p15-s23-sh07-b51-builtin-call-row-valid? builtin-calls)
+         (= expected-builtin-calls builtin-calls)
+         (= aggregate (:aggregate-binding-count descriptor))
+         (<= aggregate 2440)
+         (= (:module-source-id descriptor)
+            (p15-s23-sh07-b51-module-source-id descriptor)))))
+
+(defn- p15-s23-sh07-b51-module-source-valid* [descriptor]
+  (when-let [spec (p15-s23-sh07-b51-module-spec
+                   (:module-ordinal descriptor))]
+    (let [source
+          (if *p15-s23-sh07-b51-governed-source-session*
+            (p15-s23-sh07-b51-session-checked-product
+             [:module-input (:module-ordinal descriptor)])
+            (p15-s23-sh07-b51-compatibility-module-input spec))]
+      (and source
+           (p15-s23-sh07-b51-module-source-valid-with-input?
+            descriptor source)))))
+
+(defn p15-s23-sh07-b51-module-source-valid? [descriptor]
   (try
-    (boolean (p15-s23-sh07-b51-execution-bundle-core-valid*
-              descriptors manifest plans bundle-core bundle-core-id))
+    (boolean (p15-s23-sh07-b51-module-source-valid* descriptor))
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
     (catch Throwable _ false)))
 
-(defn- p15-s23-sh07-b51-execution-bundle-valid-structure?
-  [descriptors manifest plans bundle]
-  (try
-    (boolean (p15-s23-sh07-b51-execution-bundle-valid*
-              descriptors manifest plans bundle))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch Throwable _ false)))
-
-(defn p15-s23-sh07-b51-build-execution-bundle-v2
-  [products certificate-ids]
-  (let [bundle-core (:execution-bundle-core products)
-        base
-        {:artifact :gravity/sh07-b51-execution-bundle-v2
-         :schema-version 2
-         :manifest-id (:manifest-id bundle-core)
-         :module-plans (:module-plans bundle-core)
-         :routes (:routes bundle-core)
-         :public-roots (:public-roots bundle-core)
-         :bundle-core-id (:execution-bundle-core-id products)
-         :compile-census-certificate-ids certificate-ids}
-        bundle
-        (assoc base :bundle-id
-               (p15-s23-sh07-b51-canonical-id
-                {:domain :gravity/sh07-b51-execution-bundle-id-v2
-                 :schema-version 1
-                 :bundle base}))]
-    (when-not (p15-s23-sh07-b51-execution-bundle-valid-structure?
-               (:module-source-descriptors products)
-               (:link-manifest products) (:module-plans products) bundle)
-      (throw (ex-info "invalid SH-07 B51 M3-v2 construction"
+(defn p15-s23-sh07-b51-seal-module-source [descriptor]
+  (let [sealed (assoc descriptor :module-source-id
+                      (p15-s23-sh07-b51-module-source-id descriptor))]
+    (when-not (p15-s23-sh07-b51-module-source-valid? sealed)
+      (throw (ex-info "invalid SH-07 B51 M0 descriptor"
                       {:id "L2-UNKNOWN-CORE-FORM"
                        :reason :unauthenticated-b51-external-link})))
-    bundle))
+    sealed))
 
-(def ^:private p15-s23-sh07-b51-authoritative-bundle-core-products
-  (delay (p15-s23-sh07-b51-build-execution-bundle)))
-
-(defn p15-s23-sh07-b51-current-bundle-core-products []
-  @p15-s23-sh07-b51-authoritative-bundle-core-products)
-
-(def ^:private p15-s23-sh07-b51-authoritative-linked-products
-  (delay (p15-s23-sh07-b51-current-authoritative-linked-products-v4)))
-
-(defn p15-s23-sh07-b51-plan-valid? [descriptor manifest plan]
-  (try
-    (let [products @p15-s23-sh07-b51-authoritative-bundle-core-products
-          ordinal (:module-ordinal descriptor)]
-      (and (integer? ordinal) (<= 0 ordinal 6)
-           (= descriptor
-              (nth (:module-source-descriptors products) ordinal nil))
-           (= manifest (:link-manifest products))
-           (= plan (nth (:module-plans products) ordinal nil))))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch Throwable _ false)))
-
-(defn p15-s23-sh07-b51-plan-links-valid? [descriptor manifest plan]
-  (and (p15-s23-sh07-b51-plan-valid? descriptor manifest plan)
-       (p15-s23-sh07-b51-plan-links-valid-structure?
-        descriptor manifest plan)))
-
-(defn p15-s23-sh07-b51-execution-bundle-valid?
-  [descriptors manifest plans bundle]
-  (try
-    (let [products @p15-s23-sh07-b51-authoritative-linked-products]
-      (and (= descriptors (:module-source-descriptors products))
-           (= manifest (:link-manifest products))
-           (= plans (:module-plans products))
-           (= bundle (:execution-bundle products))))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch Throwable _ false)))
-
-(defn p15-s23-sh07-b51-execution-bundle-authorized?
-  [descriptors manifest plans bundle]
-  (and (p15-s23-sh07-b51-digest-id? p15-s23-sh07-b51-expected-m3-id)
-       (= p15-s23-sh07-b51-expected-m3-id
-          (:bundle-id bundle))
-       (p15-s23-sh07-b51-execution-bundle-valid?
-        descriptors manifest plans bundle)))
-
-(defn p15-s23-sh07-b51-external-instruction
-  [module caller callee arity callsite-path]
-  (let [descriptor (:p15-s23-sh07-module-source-descriptor module)
-        manifest (:p15-s23-sh07-link-manifest module)
-        rows (filter #(and (= (:module-source-id descriptor)
-                             (:caller-module-source-id %))
-                           (= caller (:caller-function %))
-                           (= callee (:callee-function %))
-                           (= arity (:arity %))
-                           (= callsite-path (:callsite-path %)))
-                     (:edges manifest))]
-    (when-not (and (p15-s23-sh07-b51-module-source-valid? descriptor)
-                   (= (:manifest-id manifest)
-                      (p15-s23-sh07-b51-manifest-id manifest))
-                   (= 1 (count rows)))
-      (throw (ex-info "unauthenticated SH-07 B51 external call"
+(defn p15-s23-sh07-b51-build-module-source
+  [source-path source-text module binding-census external-bindings
+   builtin-calls]
+  (let [spec (first (filter #(= (:module module) (:module %))
+                            p15-s23-sh07-b51-module-specs))
+        source-bytes (.getBytes ^String source-text
+                                java.nio.charset.StandardCharsets/UTF_8)
+        function-table (stage0-function-table module)
+        definitions
+        (mapv (fn [form]
+                (when-let [definition (function-definition-form source-path form)]
+                  (let [definition (assoc definition
+                                          :arity (count (:params definition)))]
+                    {:name (:name definition)
+                     :arity (:arity definition)
+                     :visibility
+                     (if (contains? (set (:exports spec)) (:name definition))
+                       :public :private)
+                     :source-hash
+                     (p15-s23-sh07-source-definition-hash definition)})))
+              (filter #(function-definition-form source-path %)
+                      (:forms module)))
+        base
+        {:artifact :gravity/sh07-b51-module-source-v1
+         :schema-version 1
+         :module-source-id nil
+         :module-ordinal (:module-ordinal spec)
+         :module (:module spec)
+         :logical-source-path (:logical-source-path spec)
+         :owner (:owner spec)
+         :source-byte-count (alength source-bytes)
+         :source-sha256 (str "sha256:" (sha256-bytes-hex source-bytes))
+         :profile (:profile module)
+         :target (:target module)
+         :effects (:effects module)
+         :capabilities (:capabilities module)
+         :safety (:safety module)
+         :definitions definitions
+         :exports (:exports spec)
+         :core-binding-count (:core-binding-count binding-census)
+         :lexical-binding-count (:lexical-binding-count binding-census)
+         :external-bindings external-bindings
+         :aggregate-binding-count
+         (+ (:core-binding-count binding-census)
+            (:definition-count binding-census)
+            (:lexical-binding-count binding-census)
+            (count external-bindings))
+         :builtin-calls builtin-calls}]
+    (when-not (and spec
+                   (= source-path (:logical-source-path spec))
+                   (= (set (keys function-table))
+                      (set (map :name definitions)))
+                   (= (count definitions)
+                      (:definition-count binding-census)))
+      (throw (ex-info "invalid SH-07 B51 module source input"
                       {:id "L2-UNKNOWN-CORE-FORM"
-                       :reason :unauthenticated-b51-external-link
-                       :caller caller :callee callee
-                       :callsite-path callsite-path})))
-    {:artifact :gravity/sh07-b51-external-call-v1
-     :manifest-id (:manifest-id manifest)
-     :edge-ordinal (:ordinal (first rows))}))
+                       :reason :unauthenticated-b51-external-link})))
+    (p15-s23-sh07-b51-seal-module-source base)))
 
-(defn- p15-s23-sh07-b51-runtime-link-fail! [plan instruction]
-  (fail! "L2-UNKNOWN-CORE-FORM"
-         "stage2 runtime rejected an unauthenticated B51 external link"
-         {:source-span {:source (get-in plan [:source :path])}
-          :operator (:function instruction)
-          :reason :unauthenticated-b51-external-link
-          :result-committed? false
-          :output-committed? false
-          :remediation
-          "Execute only the independently pinned seven-module M3 bundle."}))
+(defn p15-s23-sh07-b51-edge-row-valid? [row]
+  (and (p15-s23-sh07-b51-exact-keys? row p15-s23-sh07-b51-edge-keys)
+       (integer? (:ordinal row)) (<= 0 (:ordinal row))
+       (p15-s23-sh07-b51-digest-id? (:caller-module-source-id row))
+       (symbol? (:caller-function row))
+       (p15-s23-sh07-b51-digest-id?
+        (:caller-function-source-hash row))
+       (vector? (:callsite-path row))
+       (every? #(and (integer? %) (<= 0 %)) (:callsite-path row))
+       (p15-s23-sh07-b51-digest-id? (:callee-module-source-id row))
+       (symbol? (:callee-function row))
+       (p15-s23-sh07-b51-digest-id?
+        (:callee-function-source-hash row))
+       (integer? (:arity row)) (<= 0 (:arity row))
+       (contains? #{:producer-internal :root6-internal
+                    :root8-to-producer-interface}
+                  (:owner-edge row))
+       (= :authenticated-b51-namespace-external (:authorization row))))
+
+(defn p15-s23-sh07-b51-manifest-id [manifest]
+  (p15-s23-sh07-b51-canonical-id (dissoc manifest :manifest-id)))

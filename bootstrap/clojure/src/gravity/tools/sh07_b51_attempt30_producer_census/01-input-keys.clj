@@ -3,7 +3,10 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0s :m1 :m2s :bundle-core :source-forms :checker :provenance})
+    :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
+    :sh06-resolution-plan-authority :source-semantic-carrier
+    :semantic-algorithm-source-descriptors :semantic-algorithm-source-root
+    :checker :provenance})
 
 (def checker-keys
   #{:artifact-id :source-sha256 :semantic-id :executable-id
@@ -21,12 +24,12 @@
   #{:architecture-report-sha256 :snapshot-commit :snapshot-tree
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
-    :m0-ids :m1-id :m2-ids :bundle-core-id})
+    :m0-ids :m1-id :m2-ids :bundle-core-id :lowering-product-id})
 
 (def certificate-keys
   #{:artifact :domain :schema-version :status :role
     :architecture-report-sha256 :claim-id :claim :assumptions :checker
-    :inputs :result :provenance :raw-source-transcript :m2-transcript
+    :inputs :result :semantic-witness :provenance :raw-source-transcript :m2-transcript
     :profile-bounds :evidence-root :certificate-id})
 
 (def claim-keys
@@ -210,41 +213,3 @@
 
 (defn- require! [condition reason & [context]]
   (when-not condition (fail! reason context)))
-
-(defn value-profile [root]
-  (loop [pending [[root 0]]
-         nodes 0
-         depth 0
-         width 0
-         collections 0
-         scalar-utf8 0]
-    (if (empty? pending)
-      {:nodes nodes
-       :depth depth
-       :width width
-       :collection-count collections
-       :scalar-utf8 scalar-utf8
-       :canonical-reader-bytes
-       (alength (.getBytes
-                 (binding [*print-length* nil *print-level* nil *print-meta* true]
-                   (pr-str (canonical-value root)))
-                 java.nio.charset.StandardCharsets/UTF_8))}
-      (let [[[value level] & remaining] pending
-            collection? (coll? value)
-            children (cond
-                       (map? value) (mapcat identity value)
-                       collection? value
-                       :else [])
-            item-width (if collection? (count value) 0)
-            scalar-bytes
-            (if collection?
-              0
-              (alength (.getBytes (pr-str value)
-                                  java.nio.charset.StandardCharsets/UTF_8)))]
-        (recur (into (vec remaining)
-                     (map #(vector % (inc level)) children))
-               (inc nodes)
-               (max depth level)
-               (max width item-width)
-               (if collection? (inc collections) collections)
-               (max scalar-utf8 scalar-bytes))))))

@@ -1,4 +1,65 @@
 
+(defn p15-s23-sh07-compiler-source-authority
+  [source-path source-text module function-table]
+  (if-let [descriptor (:p15-s23-sh07-module-source-descriptor module)]
+    (if *p15-s23-sh07-b51-governed-source-session*
+      (p15-s23-sh07-b51-governed-source-event!
+       :source-authority (+ 3 (:module-ordinal descriptor))
+       (:module-ordinal descriptor)
+       'gravity.bootstrap/p15-s23-sh07-b51-current-module-source-authority
+       (fn [{cached-descriptor :descriptor cached-text :text}]
+         (when-not (and (= (:logical-source-path descriptor)
+                            (:path cached-descriptor))
+                        (= source-path (:path cached-descriptor))
+                        (= source-text cached-text))
+           (p15-s23-sh07-source-authority-fail!
+            "compiler-internal builtins require the authenticated C object"
+            source-path))
+         (p15-s23-sh07-b51-current-module-source-authority
+          source-path cached-text module function-table)))
+      (let [{:keys [path text]}
+            (p15-s23-sh07-b51-compatibility-source-record
+             (:logical-source-path descriptor))]
+        (when-not (= source-text text)
+          (p15-s23-sh07-source-authority-fail!
+           "compiler-internal builtins require authenticated B51 source"
+           source-path))
+        (p15-s23-sh07-b51-current-module-source-authority
+         (:logical-source-path descriptor) text module function-table)))
+    (let [{:keys [path bytes text]}
+          (if *p15-s23-sh07-b51-governed-source-session*
+            (let [{:keys [descriptor bytes text]}
+                  (p15-s23-sh07-b51-governed-source-entry 2)]
+              {:path (:path descriptor) :bytes bytes :text text})
+            (p15-s23-sh07-b51-compatibility-source-record
+             p15-s23-sh07-checked-core-source-relative-path))
+          source-bytes (.getBytes ^String source-text
+                                  java.nio.charset.StandardCharsets/UTF_8)
+          source-sha256 (str "sha256:" (sha256-bytes-hex source-bytes))]
+      (when-not
+       (and (= source-text text)
+            (if *p15-s23-sh07-b51-governed-source-session*
+              (= source-path path)
+              (= (.getCanonicalFile (java.io.File. source-path))
+                 (.getCanonicalFile (java.io.File. path))))
+            (= 'gravity.checked-core (:module module))
+            (= :meta (:profile module)) (= :jvm (:target module))
+            (= #{} (:effects module)) (= #{} (:capabilities module))
+            (= :safe (:safety module)))
+        (p15-s23-sh07-source-authority-fail!
+         "compiler-internal builtins require checked-core source"
+         source-path))
+      {:artifact :gravity/sh07-compiler-source-authority-v1
+       :source-relative-path p15-s23-sh07-checked-core-source-relative-path
+       :source-sha256 source-sha256
+       :source-byte-count (alength source-bytes)
+       :module 'gravity.checked-core
+       :function-source-hashes
+       (into (sorted-map)
+             (map (fn [[name definition]]
+                    [name (p15-s23-sh07-source-definition-hash definition)]))
+             function-table)})))
+
 (defn- p15-s23-sh07-form-contains-symbol?
   [form wanted]
   (cond
@@ -175,67 +236,3 @@
           (< left-scalar right-scalar) -1
           (> left-scalar right-scalar) 1
           :else (recur next-left next-right))))))
-
-(defn p15-s23-sh07-observe-utf8-byte-count
-  [text observed-before maximum]
-  (when-not
-   (and (string? text)
-        (integer? observed-before)
-        (integer? maximum)
-        (<= 0 observed-before maximum 1073741824))
-    (throw
-     (IllegalArgumentException.
-      "sh07-observe-utf8-byte-count requires a string and governed counters")))
-  (let [length (.length ^String text)
-        record
-        (fn [status reason observed-after prospective units scalars]
-          {:artifact :gravity/sh07-utf8-byte-observation-v1
-           :status status
-           :reason reason
-           :maximum maximum
-           :observed-before observed-before
-           :observed-after observed-after
-           :prospective-after prospective
-           :utf16-units-scanned units
-           :unicode-scalars-scanned scalars})]
-    (loop [index 0 observed-after observed-before scalars 0]
-      (if (= index length)
-        (record :accepted nil observed-after observed-after index scalars)
-        (let [unit (int (.charAt ^String text index))]
-          (cond
-            (<= 0xd800 unit 0xdbff)
-            (if (and (< (inc index) length)
-                     (let [low (int (.charAt ^String text (inc index)))]
-                       (<= 0xdc00 low 0xdfff)))
-              (let [width 4
-                    remaining (- maximum observed-after)
-                    prospective (+ observed-after width)]
-                (if (<= width remaining)
-                  (recur (+ index 2) prospective (inc scalars))
-                  (record :rejected :utf8-byte-limit observed-after
-                          prospective index scalars)))
-              (record :rejected :invalid-unicode-scalar-sequence
-                      observed-after nil index scalars))
-
-            (<= 0xdc00 unit 0xdfff)
-            (record :rejected :invalid-unicode-scalar-sequence
-                    observed-after nil index scalars)
-
-            :else
-            (let [width (cond (<= unit 0x7f) 1
-                              (<= unit 0x7ff) 2
-                              :else 3)
-                  remaining (- maximum observed-after)
-                  prospective (+ observed-after width)]
-              (if (<= width remaining)
-                (recur (inc index) prospective (inc scalars))
-                (record :rejected :utf8-byte-limit observed-after
-                        prospective index scalars)))))))))
-
-;; G19 keeps decimal text out of the generic seed printer.  These two closures
-;; consume only the authenticated four-key C2 semantic value.  They are
-;; deliberately duplicated: the C11/producer model and the source oracle must
-;; not share decimal grammar, arithmetic, inversion, or rendering authority.
-(defn- p15-s23-sh07-p-decimal-digits? [digits]
-  (and (vector? digits) (seq digits)
-       (every? #(and (integer? %) (<= 48 % 57)) digits)))

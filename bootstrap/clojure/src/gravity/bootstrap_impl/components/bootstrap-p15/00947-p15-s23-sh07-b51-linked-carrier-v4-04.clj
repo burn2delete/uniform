@@ -28,6 +28,8 @@
           provenance (:provenance certificate)
           raw (:raw-source-transcript certificate)
           m2 (:m2-transcript certificate)
+          v9? (contains? certificate :semantic-witness)
+          witness (:semantic-witness certificate)
           commitments (:category-commitments claim)
           normalized-preimage
           {:domain :gravity/sh07-b51-normalized-census-id-v1
@@ -50,7 +52,8 @@
            :profile-bounds (:profile-bounds certificate)}]
       (and (p15-s23-sh07-b51-v4-certificate-preflight? certificate)
            (p15-s23-sh07-b51-exact-keys?
-            certificate p15-s23-sh07-b51-v4-certificate-keys)
+            certificate (cond-> p15-s23-sh07-b51-v4-certificate-keys
+                          v9? (conj :semantic-witness)))
            (= :gravity/sh07-b51-compile-census-certificate
               (:artifact certificate))
            (= role-domain (:domain certificate))
@@ -89,6 +92,37 @@
               assumptions)
            (p15-s23-sh07-b51-v4-checker-valid? checker algorithm-role)
            (p15-s23-sh07-b51-v4-inputs-valid? inputs)
+           (= v9? (contains? inputs :lowering-product-id))
+           (or
+            (not v9?)
+            (and
+             (p15-s23-sh07-b51-exact-keys?
+              witness
+              #{:schema :content :operation-manifest :operation-schedule-id
+                :fuel-receipts :l1 :l2 :c2 :c6 :boot2 :boot3 :boot4
+                :witness-id})
+             (= :gravity/sh07-b51-authentic-lowering-witness-v1
+                (:schema witness))
+             (= {:commit (:snapshot-commit inputs)
+                 :tree (:snapshot-tree inputs)}
+                (:content witness))
+             (p15-s23-sh07-b51-digest-id?
+              (:operation-schedule-id witness))
+             (p15-s23-sh07-b51-digest-id? (:witness-id witness))
+             (vector? (:operation-manifest witness))
+             (= 7 (count (:operation-manifest witness)))
+             (= (vec (range 7)) (mapv :ordinal (:operation-manifest witness)))
+             (= (vec (repeat 7 (:lowering-product-id inputs)))
+                (mapv :lowering-product-id (:operation-manifest witness)))
+             (vector? (:fuel-receipts witness))
+             (= 7 (count (:fuel-receipts witness)))
+             (= (mapv :operation-id (:operation-manifest witness))
+                (mapv :operation-id (:fuel-receipts witness)))
+             (every? true? (map :within-bounds (:fuel-receipts witness)))
+             (= (:witness-id witness)
+                (p15-s23-sh07-b51-canonical-id
+                 [:gravity/sh07-b51-authentic-lowering-witness-v1
+                  (dissoc witness :witness-id)]))))
            (p15-s23-sh07-b51-v4-result-valid? result claim)
            (p15-s23-sh07-b51-exact-keys?
             provenance p15-s23-sh07-b51-v4-provenance-keys)
@@ -129,14 +163,17 @@
           checker-b (:checker certificate-b)
           checker-identity-keys
           [:source-sha256 :semantic-id :executable-id :dependency-closure-id]
+          v9? (contains? certificate-a :semantic-witness)
           common-keys
-          [:architecture-report-sha256 :claim-id :claim :assumptions
-           :inputs :profile-bounds]]
+          (cond-> [:architecture-report-sha256 :claim-id :claim :assumptions
+                   :inputs :profile-bounds]
+            v9? (conj :semantic-witness))]
       (and (vector? certificates) (= 2 (count certificates))
            (= [:producer-census :independent-verifier-census]
               (mapv :role certificates))
            (every? p15-s23-sh07-b51-compile-census-certificate-v1-valid?
                    certificates)
+           (= v9? (contains? certificate-b :semantic-witness))
            (= (select-keys certificate-a common-keys)
               (select-keys certificate-b common-keys))
            (not= (:certificate-id certificate-a)
@@ -206,38 +243,3 @@
          (= (:callee-definition-source-hash external)
             (:source-hash callee-definition))
          (= (:arity external) (:arity edge) (:arity callee-definition)))))
-
-(defn- p15-s23-sh07-b51-v4-products-closed-joins? [products]
-  (let [descriptors (:module-source-descriptors products)
-        manifest (:link-manifest products)
-        plans (:module-plans products)
-        core (p15-s23-sh07-b51-v4-bundle-core-preimage products)]
-    (and (vector? descriptors) (= 7 (count descriptors))
-         (= (vec (range 7)) (mapv :module-ordinal descriptors))
-         (every? p15-s23-sh07-b51-digest-id?
-                 (map :module-source-id descriptors))
-         (vector? plans) (= 7 (count plans))
-         (= (mapv :module-source-id descriptors)
-            (mapv :sh07-b51-module-source-id plans))
-         (= (mapv :plan-id plans) (mapv :plan-id (:module-plans core)))
-         (= #{:artifact :schema-version :manifest-id :module-source-ids :edges}
-            (set (keys manifest)))
-         (= :gravity/sh07-b51-link-manifest-v1 (:artifact manifest))
-         (= 1 (:schema-version manifest))
-         (= (mapv :module-source-id descriptors)
-            (:module-source-ids manifest))
-         (= (:manifest-id manifest)
-            (p15-s23-sh07-b51-manifest-id manifest))
-         (vector? (:edges manifest))
-         (= (vec (range (count (:edges manifest))))
-            (mapv :ordinal (:edges manifest)))
-         (every? #(p15-s23-sh07-b51-v4-declared-edge-valid?
-                   descriptors %)
-                 (:edges manifest))
-         (= 8 (count (:public-roots core)))
-         (= (:execution-bundle-core products) core)
-         (= (:execution-bundle-core-id products)
-            (p15-s23-sh07-b51-canonical-id core))
-         (p15-s23-sh07-b51-execution-bundle-core-valid-structure?
-          descriptors manifest plans core
-          (:execution-bundle-core-id products)))))

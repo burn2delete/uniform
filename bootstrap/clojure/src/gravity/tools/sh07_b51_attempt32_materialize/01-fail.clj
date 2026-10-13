@@ -3,208 +3,233 @@
   (throw (ex-info "SH-07 Attempt32 evidence publication rejected"
                   {:reason reason :context (or context {})})))
 
-(defn- command-output [^Path directory arguments]
-  (let [process (-> (ProcessBuilder. ^java.util.List (vec arguments))
-                    (.directory (.toFile directory))
-                    (.redirectErrorStream true)
-                    (.start))
-        output (with-open [stream (.getInputStream process)]
-                 (String. (.readAllBytes stream) StandardCharsets/UTF_8))
-        exit (.waitFor process)]
-    (when-not (zero? exit)
-      (fail! :git-command-failed {:arguments arguments :exit exit}))
-    (str/trim output)))
+(def ^:private edge-endpoint-keys
+  [:consumer-module-ordinal :consumer-source-id :consumer-fragment-id
+   :consumer-binding-id :provider-module-ordinal :provider-source-id
+   :provider-fragment-id :provider-binding-id])
 
-(defn- repository-root []
-  (let [cwd (.normalize (.toAbsolutePath (Paths/get "." (make-array String 0))))
-        output (command-output cwd ["git" "rev-parse" "--show-toplevel"])
-        root (.normalize (.toAbsolutePath (Paths/get output (make-array String 0))))]
-    (when-not (and (Files/isDirectory root (make-array LinkOption 0))
-                   (identity/symlink-free-path? root))
-      (fail! :repository-root))
-    root))
+(def bad-actual-keyset
+  #{:status :code :rule :reason :input-id :mutated-id :expected :actual
+    :committed-row :output})
 
-(defn validate-snapshot!
-  "Require a clean checkout at the exact explicit snapshot commit and tree."
-  ([root snapshot] (validate-snapshot! root snapshot nil))
-  ([^Path root {:keys [commit tree] :as snapshot} ^Path excluded-stage]
-   (when-not (identity/symlink-free-path? root)
-     (fail! :snapshot-symlink-ancestor))
-   (when-not (and (= #{:commit :tree} (set (keys snapshot)))
-                  (string? commit) (re-matches #"[0-9a-f]{40}" commit)
-                  (string? tree) (re-matches #"[0-9a-f]{40}" tree))
-     (fail! :snapshot-shape))
-   (let [excluded-relative
-         (when excluded-stage
-           (let [stage (.normalize (.toAbsolutePath excluded-stage))]
-             (when-not (and (.startsWith stage root)
-                            (identity/symlink-free-path? stage))
-               (fail! :snapshot-stage-path))
-             (str (.relativize root stage))))
-         head (command-output root ["git" "rev-parse" "HEAD"])
-         head-tree (command-output root ["git" "rev-parse" "HEAD^{tree}"])
-         snapshot-tree
-         (command-output root ["git" "rev-parse" (str commit "^{tree}")])
-         status-arguments
-         (cond-> ["git" "status" "--porcelain=v1" "--untracked-files=all"]
-           excluded-relative
-           (into ["--" "." (str ":(exclude)" excluded-relative)]))
-         status (command-output root status-arguments)]
-     (when-not (= commit head)
-       (fail! :snapshot-commit-mismatch {:actual head}))
-     (when-not (= tree head-tree snapshot-tree)
-       (fail! :snapshot-tree-mismatch
-              {:head-tree head-tree :snapshot-tree snapshot-tree}))
-     (when-not (str/blank? status)
-       (fail! :dirty-worktree {:status status}))
-     snapshot)))
+(defn consumer-endpoint
+  "Project the exact consumer endpoint used by the V9 edge-authority check."
+  [edge]
+  {:module-ordinal (:consumer-module-ordinal edge)
+   :source-id (:consumer-source-id edge)
+   :fragment-id (:consumer-fragment-id edge)
+   :binding-id (:consumer-binding-id edge)})
 
-(defn- option-map [arguments]
-  (when-not (and (even? (count arguments)) (= 8 (count arguments)))
-    (fail! :arguments))
-  (let [options (apply hash-map arguments)
-        expected #{"--snapshot-commit" "--snapshot-tree" "--completed-at"
-                   "--evidence-relative-root"}]
-    (when-not (= expected (set (keys options))) (fail! :arguments))
-    {:snapshot {:commit (get options "--snapshot-commit")
-                :tree (get options "--snapshot-tree")}
-     :completed-at (get options "--completed-at")
-     :evidence-relative-root (get options "--evidence-relative-root")}))
+(defn provider-endpoint
+  "Project the exact provider endpoint used by the V9 edge-authority check."
+  [edge]
+  {:module-ordinal (:provider-module-ordinal edge)
+   :source-id (:provider-source-id edge)
+   :fragment-id (:provider-fragment-id edge)
+   :binding-id (:provider-binding-id edge)})
 
-(defn- ordered-value [value]
-  (let [sort-key #(pr-str (identity/canonical-value %))
-        comparator #(compare (sort-key %1) (sort-key %2))]
-    (cond
-      (map? value) (into (sorted-map-by comparator)
-                         (map (fn [[key item]]
-                                [(ordered-value key) (ordered-value item)]))
-                         value)
-      (set? value) (into (sorted-set-by comparator) (map ordered-value) value)
-      (vector? value) (mapv ordered-value value)
-      (seq? value) (apply list (map ordered-value value))
-      :else value)))
+(defn semantic-witness-member-id
+  "Construct the architecture-defined MID(KIND, ENTRY)."
+  [kind entry]
+  (codec/H
+   [:gravity/sh07-b51-semantic-witness-member-id-v1
+    {:kind kind :entry entry}]))
 
-(defn deterministic-edn-bytes [value]
-  (.getBytes (str (binding [*print-length* nil *print-level* nil
-                            *print-meta* true]
-                    (pr-str (ordered-value value)))
-                  "\n")
-             StandardCharsets/UTF_8))
+(defn semantic-witness-member-root
+  "Construct the architecture-defined MR(KIND, ENTRIES)."
+  [kind entries]
+  (codec/H
+   [:gravity/sh07-b51-semantic-witness-member-root-v1
+    {:kind kind :entries entries}]))
 
-(defn- byte-id [bytes]
-  (str "sha256:" (digest/sha256-bytes-hex bytes)))
+(defn- unique-where! [predicate rows reason]
+  (let [matches (filterv predicate rows)]
+    (when-not (= 1 (count matches))
+      (fail! reason {:match-count (count matches)}))
+    (first matches)))
 
-(defn- artifact-descriptor [root name bytes]
-  {:relative-path (str root "/" name)
-   :byte-count (alength bytes) :sha256 (byte-id bytes)})
+(def ^:private cross-fragment-context-keys
+  #{:carrier-valid? :pairing-valid? :expected-valid? :authentic-qs
+    :authentic-m0 :authentic-m1 :owner-registry :expected-authority})
 
-(defn- product-identities [products]
-  {:module-source-identities
-   (mapv :source-sha256 (:module-source-descriptors products))
-   :module-source-byte-counts
-   (mapv :source-byte-count (:module-source-descriptors products))
-   :m0-ids (mapv :module-source-id (:module-source-descriptors products))
-   :m1-id (get-in products [:link-manifest :manifest-id])
-   :m2-ids (mapv :plan-id (:module-plans products))
-   :emitter-source-id (:emitter-source-id products)
-   :emitter-semantic-id (:emitter-semantic-id products)
-   :bundle-core-id (:execution-bundle-core-id products)})
+(def ^:dynamic ^:private *cross-fragment-authority-context* nil)
 
-(defn- identity-receipt [materialized descriptors]
-  (let [certificates (:certificates materialized)
-        a (first certificates) b (second certificates)
-        carrier (:carrier materialized)
-        base
-        {:artifact :gravity/sh07-b51-binding-replay-identity-receipt-v1
-         :schema-version 2 :status :materialized-candidate
-         :attempt32-architecture-report-sha256
-         (:architecture-report-sha256 (:inputs a))
-         :binding-replay-architecture-report
-         (:binding-replay-architecture-report materialized)
-         :snapshot (:snapshot materialized)
-         :completed-at (:completed-at materialized)
-         :evidence-relative-root (:evidence-relative-root materialized)
-         :product-identities (product-identities (:products materialized))
-         :checker-identities
-         {:producer-census (:checker a)
-          :independent-verifier-census (:checker b)}
-         :checker-identity-manifest-ids
-         {:producer-census
-          (get-in materialized
-                  [:identities :producer-census :identity-manifest-id])
-          :independent-verifier-census
-          (get-in materialized
-                  [:identities :independent-verifier-census
-                   :identity-manifest-id])}
-         :census-identities
-         {:claim-id (:claim-id a)
-          :normalized-census-id (get-in a [:claim :normalized-census-id])
-          :physical-census (get-in a [:claim :physical-census])
-          :category-schedule (get-in a [:claim :category-schedule])
-          :category-commitments (get-in a [:claim :category-commitments])
-          :certificate-ids [(:certificate-id a) (:certificate-id b)]}
-         :candidate-semantic-coordinates (:pin-map materialized)
-         :candidate-carrier-observation
-         {:artifact-descriptor (:carrier descriptors)
-          :location-sensitive-physical-fields true
-          :carrier-descriptor-in-identity-receipt-id true
-          :semantic-root-hash (:semantic-root-hash carrier)}
-         :materializer-dependency-closure
-         (:materializer-dependency-closure materialized)
-         :identity-artifacts descriptors
-         :authority false
-         :nonclaims [:implementation-acceptance :integration-eligibility
-                     :sh07-completion :self-hosting :release
-                     :seed-retirement]}]
-    (assoc base :identity-receipt-id (identity/canonical-id base))))
+(defn verify-unauthorized-cross-fragment
+  "Run the exact receipt-free V9 BAD-BASE verifier.
 
-(defn- output-values [materialized]
-  (let [identities (:identities materialized)
-        outputs (:outputs materialized)]
-    {:producer-identity (:producer-census identities)
-     :independent-identity (:independent-verifier-census identities)
-     :producer-output (:producer-census outputs)
-     :independent-output (:independent-verifier-census outputs)
-     :certificate-pair (:certificates materialized)
-     :carrier (:carrier materialized)}))
+  The authenticated values are closed over by
+  `build-unauthorized-cross-fragment-verifier`; callers provide only the six
+  architecture inputs. No receipt, diagnostic, fixture, witness, path, or
+  process value participates in this decision."
+  [qs m0 m1 owner expected-authority candidate]
+  (let [{:keys [carrier-valid? pairing-valid? expected-valid? authentic-qs
+                authentic-m0 authentic-m1 owner-registry]
+         closed-expected :expected-authority
+         :as context}
+        *cross-fragment-authority-context*]
+    (when-not (= cross-fragment-context-keys (set (keys context)))
+      (fail! :cross-fragment-authority-context))
+    (let [m1-row
+          (unique-where! #(= % (:m1-edge candidate)) (:edges m1)
+                         :cross-fragment-m1-row)
+          expected-row
+          (unique-where! #(= (:m1-edge %) m1-row) expected-authority
+                         :cross-fragment-expected-row)
+          authorized-base (dissoc expected-row :edge-id)
+          candidate-id
+          (semantic-witness-member-id :l2-expected-edge-census candidate)
+          expected-ids (set (map :edge-id expected-authority))
+          unchanged-candidate (apply dissoc candidate edge-endpoint-keys)
+          unchanged-authorized (apply dissoc authorized-base edge-endpoint-keys)]
+      (when-not
+       (and (true? carrier-valid?)
+            (true? pairing-valid?)
+            (true? expected-valid?)
+            (= qs authentic-qs)
+            (= m0 authentic-m0)
+            (= m1 authentic-m1)
+            (= owner owner-registry)
+            (= expected-authority closed-expected)
+            (= (set (keys candidate)) (set (keys authorized-base)))
+            (= (:edge-id expected-row)
+               (semantic-witness-member-id :l2-expected-edge-census
+                                           authorized-base))
+            (= unchanged-candidate unchanged-authorized)
+            (not= (consumer-endpoint authorized-base)
+                  (provider-endpoint authorized-base))
+            (= (consumer-endpoint candidate)
+               (provider-endpoint authorized-base))
+            (= (provider-endpoint candidate)
+               (consumer-endpoint authorized-base))
+            (not= candidate authorized-base)
+            (not= candidate-id (:edge-id expected-row))
+            (not (contains? expected-ids candidate-id)))
+        (fail! :unauthorized-cross-fragment-verifier-precondition))
+      {:status :rejected
+       :code "SH07-B51-EDGE-AUTHORITY"
+       :rule "L2-UNKNOWN-CORE-FORM"
+       :reason :unauthenticated-b51-external-link
+       :input-id (:edge-id expected-row)
+       :mutated-id candidate-id
+       :expected (consumer-endpoint authorized-base)
+       :actual (consumer-endpoint candidate)
+       :committed-row nil
+       :output nil})))
 
-(defn- read-evidence [bytes]
-  (with-open [reader
-              (PushbackReader.
-               (StringReader. (String. bytes StandardCharsets/UTF_8)))]
-    (binding [*read-eval* false]
-      (let [eof (Object.)
-            options {:eof eof :readers {}
-                     :default (fn [tag _]
-                                (fail! :tagged-evidence-value {:tag tag}))}
-            value (edn/read options reader)
-            trailing (edn/read options reader)]
-        (when (or (identical? eof value) (not (identical? eof trailing)))
-          (fail! :evidence-edn-cardinality))
-        value))))
+(defn build-unauthorized-cross-fragment-verifier
+  "Close the exact authentic V9 authority facts over the six-input verifier."
+  [context]
+  (when-not (and (= cross-fragment-context-keys (set (keys context)))
+                 (true? (:carrier-valid? context))
+                 (true? (:pairing-valid? context))
+                 (true? (:expected-valid? context)))
+    (fail! :cross-fragment-authority-context))
+  (fn [qs m0 m1 owner expected-authority candidate]
+    (binding [*cross-fragment-authority-context* context]
+      (verify-unauthorized-cross-fragment
+       qs m0 m1 owner expected-authority candidate))))
 
-(defn- existing-file-names [^Path directory]
-  (with-open [stream (Files/list directory)]
-    (set (map #(str (.getFileName ^Path %)) (iterator-seq (.iterator stream))))))
+(defn swap-edge-endpoints
+  "Construct V9 BAD-BASE by swapping only the four endpoint pairs."
+  [edge-base]
+  (assoc edge-base
+         :consumer-module-ordinal (:provider-module-ordinal edge-base)
+         :consumer-source-id (:provider-source-id edge-base)
+         :consumer-fragment-id (:provider-fragment-id edge-base)
+         :consumer-binding-id (:provider-binding-id edge-base)
+         :provider-module-ordinal (:consumer-module-ordinal edge-base)
+         :provider-source-id (:consumer-source-id edge-base)
+         :provider-fragment-id (:consumer-fragment-id edge-base)
+         :provider-binding-id (:consumer-binding-id edge-base)))
 
-(defn- existing-output-identical? [^Path target files]
-  (and (Files/isDirectory target (make-array LinkOption 0))
-       (identity/symlink-free-path? target)
-       (= (set (keys files)) (existing-file-names target))
-       (every? (fn [[name bytes]]
-                 (let [path (.resolve target name)]
-                   (and (Files/isRegularFile
-                         path (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
-                        (identity/symlink-free-path? path)
-                        (java.util.Arrays/equals bytes (Files/readAllBytes path)))))
-               files)))
+(defn construct-negative-edge-evidence
+  "Construct BAD-ACTUAL before selecting the L2 fuel receipt and deriving
+  diagnostics/fixtures. This preserves the architecture's receipt-free
+  rejection boundary and one-way identity DAG."
+  [{:keys [authentic-qs authentic-m0 authentic-m1 owner-registry
+           expected-authority]
+    :as context}
+   edge-bases operation-manifest fuel-receipts]
+  (when-not (seq edge-bases)
+    (fail! :cross-fragment-empty-edge-census))
+  (let [seed (first edge-bases)
+        bad-base (swap-edge-endpoints seed)
+        bad-edge-id
+        (semantic-witness-member-id :l2-expected-edge-census bad-base)
+        verifier (build-unauthorized-cross-fragment-verifier context)
+        ;; The verifier must run before any fuel receipt is selected.
+        bad-actual
+        (verifier authentic-qs authentic-m0 authentic-m1 owner-registry
+                  expected-authority bad-base)
+        bad-actual-expected
+        {:status :rejected
+         :code "SH07-B51-EDGE-AUTHORITY"
+         :rule "L2-UNKNOWN-CORE-FORM"
+         :reason :unauthenticated-b51-external-link
+         :input-id (:edge-id (first expected-authority))
+         :mutated-id bad-edge-id
+         :expected (consumer-endpoint seed)
+         :actual (consumer-endpoint bad-base)
+         :committed-row nil
+         :output nil}]
+    (when-not (and (= bad-actual bad-actual-expected)
+                   (= bad-actual-keyset (set (keys bad-actual)))
+                   (nil? (:committed-row bad-actual))
+                   (nil? (:output bad-actual)))
+      (fail! :cross-fragment-bad-actual))
+    (let [diagnostic-observation-keys
+          [:code :status :rule :reason :input-id :mutated-id :expected :actual]
+          diagnostic-base
+          (select-keys bad-actual diagnostic-observation-keys)
+          diagnostic-id
+          (semantic-witness-member-id :l2-edge-diagnostics diagnostic-base)
+          diagnostic (assoc diagnostic-base :diagnostic-id diagnostic-id)
+          l2-diagnostics
+          {:entries [diagnostic]
+           :root (semantic-witness-member-root :l2-edge-diagnostics
+                                               [diagnostic])}
+          l2-operation
+          (unique-where! #(= :l2 (:owner %)) operation-manifest
+                         :cross-fragment-l2-operation)
+          l2-fuel-receipt
+          (unique-where! #(= (:operation-id l2-operation) (:operation-id %))
+                         fuel-receipts :cross-fragment-l2-fuel-receipt)
+          fixture-base
+          {:input-id (:input-id bad-actual)
+           :mutation {:operation :swap-endpoints
+                      :paths (mapv vector edge-endpoint-keys)
+                      :before [(consumer-endpoint seed)
+                               (provider-endpoint seed)]
+                      :after [(consumer-endpoint bad-base)
+                              (provider-endpoint bad-base)]}
+           :mutated-id (:mutated-id bad-actual)
+           :diagnostic-id diagnostic-id
+           :status (:status bad-actual)
+           :fuel-receipt-id (:receipt-id l2-fuel-receipt)}
+          fixture-id
+          (semantic-witness-member-id :l2-edge-negative-fixtures fixture-base)
+          fixture (assoc fixture-base :fixture-id fixture-id)
+          l2-negative-fixtures
+          {:entries [fixture]
+           :root (semantic-witness-member-root :l2-edge-negative-fixtures
+                                               [fixture])}]
+      {:seed seed
+       :bad-base bad-base
+       :bad-edge-id bad-edge-id
+       :bad-actual bad-actual
+       :bad-actual-expected bad-actual-expected
+       :diagnostic diagnostic
+       :l2-diagnostics l2-diagnostics
+       :l2-fuel-receipt l2-fuel-receipt
+       :fixture fixture
+       :l2-negative-fixtures l2-negative-fixtures
+       :rejected-edge-ids []})))
 
-(def ^:private receipt-keys
-  #{:artifact :schema-version :status
-    :attempt32-architecture-report-sha256
-    :binding-replay-architecture-report :snapshot :completed-at
-    :evidence-relative-root :product-identities :checker-identities
-    :checker-identity-manifest-ids :census-identities
-    :candidate-semantic-coordinates :candidate-carrier-observation
-    :materializer-dependency-closure :identity-artifacts :authority
-    :nonclaims :identity-receipt-id})
+(def fixed-fuel-executable-aliases
+  {:maximum-module-forms :maximum-forms
+   :maximum-fragment-resolutions :maximum-resolutions
+   :maximum-module-carrier-nodes :maximum-carrier-nodes
+   :maximum-module-carrier-depth :maximum-carrier-depth
+   :maximum-module-carrier-width :maximum-carrier-width
+   :maximum-module-scalar-bytes :maximum-scalar-bytes
+   :maximum-module-digest-requests :maximum-digest-requests})

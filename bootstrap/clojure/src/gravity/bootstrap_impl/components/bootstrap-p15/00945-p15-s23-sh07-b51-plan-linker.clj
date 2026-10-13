@@ -3,15 +3,31 @@
          p15-s23-compiler-def-value
          p15-s23-stage2-compiler-artifact-augmented-emitter
          sh06-resolution-definition-records sh06-resolution-core-records
-         sh06-resolution-analysis-inputs
+         sh06-resolution-analysis-inputs sh06-resolution-package
+         sh06-resolution-request
+         sh06-resolution-artifact-from-sh05-artifact
+         sh06-resolution-artifact-verification
+         sh06-resolution-plan-identities
+         sh06-resolution-source-relative-path
+         sh06-resolution-expected-source-byte-count
+         sh06-resolution-expected-source-content-hash
+         sh06-resolution-expected-plan-semantic-hash
+         sh06-resolution-expected-plan-id
+         sh06-resolution-expected-functions-semantic-hash
+         sh06-resolution-expected-function-count
+         sh06-resolution-expected-function-names-hash
+         sh06-resolution-expected-function-shapes-hash
+         sh06-resolution-public-function-hashes
+         sh06-resolution-public-function-shapes
+         sh07-core-authenticated-request
          p15-s23-sh07-b51-derive-callsite-census
          p15-s23-stage2-construct-emitted-core-plan
+         p15-s23-sh07-b51-resolution-plan-authority-valid?
          p15-s23-sh07-b51-plan-valid-structure?
          p15-s23-sh07-b51-plan-links-valid-structure?
          p15-s23-sh07-b51-execution-bundle-core-valid-structure?
          p15-s23-sh07-b51-execution-bundle-valid-structure?
          p15-s23-sh07-b51-execution-bundle-authorized?
-         p15-s23-sh07-b51-authoritative-linked-products
          p15-s23-sh07-b51-current-authoritative-linked-products-v4
          ^:private p15-s23-sh07-b51-issue-top-level-validation-receipt!
          ^:private p15-s23-sh07-b51-retire-admitted-runtime-context!
@@ -153,91 +169,77 @@
 (def ^:private p15-s23-sh07-b51-expected-semantic-root
   :gravity/provisional-no-authority)
 
-;; Historical public name retained only so older host code fails closed rather
-;; than resolving a removed Var.  It is not an accepted M3-v1 pin.
-(def p15-s23-sh07-b51-expected-execution-bundle-id
-  p15-s23-sh07-b51-expected-m3-id)
+(def ^:private p15-s23-sh07-b51-source-specs
+  (vec
+   (concat
+    [{:ordinal 0 :kind :l1-contract :module-ordinal nil
+      :path "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"}
+     {:ordinal 1 :kind :l2-contract :module-ordinal nil
+      :path "docs/phase-01-core-language/012-l2-core-language-semantics.md"}
+     {:ordinal 2 :kind :checked-core :module-ordinal nil
+      :path "bootstrap/gravity/src/gravity/checked_core.gravity"}]
+    (mapv (fn [{:keys [module-ordinal logical-source-path]}]
+            {:ordinal (+ 3 module-ordinal)
+             :kind :module
+             :module-ordinal module-ordinal
+             :path logical-source-path})
+          p15-s23-sh07-b51-module-specs)
+    [{:ordinal 10 :kind :compiler :module-ordinal nil
+      :path "bootstrap/gravity/p15_s23/compiler.gravity"}
+     {:ordinal 11 :kind :emitter :module-ordinal nil
+      :path "bootstrap/gravity/p15_s23/emitter.gravity"}
+     {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
+      :path "bootstrap/gravity/src/gravity/resolution.gravity"}])))
 
-(def p15-s23-sh07-b51-host-pin-boundary-id
-  "sha256:ecae8acf77cf8c64588aef4cad380c0a7873baab1b282398b03f532ae94b0a6e")
-
-(def p15-s23-sh07-b51-runtime-token-boundary-id
-  "sha256:844b3ea1b9bd75f416bfb51ff2c40e9a8aed1803813d6a11b3e54e44e75809ad")
-
-(def ^:private p15-s23-sh07-b51-admitted-runtime-contexts
-  (java.util.HashMap.))
-(def ^:private p15-s23-sh07-b51-admitted-runtime-context-queue
-  (java.lang.ref.ReferenceQueue.))
-(def ^:private p15-s23-sh07-b51-registry-prune-maximum 16)
-(def ^:private p15-s23-sh07-b51-maximum-external-calls 65536)
-
-(def ^:private p15-s23-sh07-b51-runtime-authority-keys
-  #{:sh07-b51-runtime-context-token
-    :sh07-b51-runtime-token-boundary-id
-    :sh07-b51-linked-carrier-v4
-    :sh07-b51-linked-carrier-v3
-    :sh07-b51-module-source-descriptors
-    :sh07-b51-link-manifest
-    :sh07-b51-module-plans
-    :sh07-b51-execution-bundle
-    :sh07-b51-external-call-trace})
-
-(deftype ^:private P15S23Sh07B51IdentityTokenQuery
-  [token ^int identity-hash]
-  Object
-  (hashCode [_] identity-hash)
-  (equals [_ other]
-    (and (instance? java.lang.ref.WeakReference other)
-         (identical? token
-                     (.get ^java.lang.ref.WeakReference other)))))
-
-(alter-meta! #'->P15S23Sh07B51IdentityTokenQuery assoc :private true)
-
-(defn- p15-s23-sh07-b51-weak-identity-token-key [token]
-  (let [identity-hash (System/identityHashCode token)]
-    (proxy [java.lang.ref.WeakReference]
-      [token p15-s23-sh07-b51-admitted-runtime-context-queue]
-      (hashCode [] identity-hash)
-      (equals [other]
-        (let [registered-token (proxy-super get)]
-          (and registered-token
-               (instance? java.lang.ref.WeakReference other)
-               (identical?
-                registered-token
-                (.get ^java.lang.ref.WeakReference other))))))))
-
-(defn- p15-s23-sh07-b51-token-query [token]
-  (P15S23Sh07B51IdentityTokenQuery.
-   token (System/identityHashCode token)))
-
-(defn- p15-s23-sh07-b51-prune-admitted-runtime-contexts! []
-  (loop [remaining p15-s23-sh07-b51-registry-prune-maximum]
-    (when (pos? remaining)
-      (when-let [key (.poll ^java.lang.ref.ReferenceQueue
-                            p15-s23-sh07-b51-admitted-runtime-context-queue)]
-        (.remove ^java.util.HashMap
-                 p15-s23-sh07-b51-admitted-runtime-contexts key)
-        (recur (dec remaining))))))
-
-(defn- p15-s23-sh07-b51-register-runtime-context! [context]
-  (locking p15-s23-sh07-b51-admitted-runtime-contexts
-    (p15-s23-sh07-b51-prune-admitted-runtime-contexts!)
-    (let [token (.get ^java.lang.ref.WeakReference (:token-ref context))]
-      (.put ^java.util.HashMap p15-s23-sh07-b51-admitted-runtime-contexts
-            (p15-s23-sh07-b51-weak-identity-token-key token)
-            (java.lang.ref.WeakReference. context))))
-  context)
-
-(defn- p15-s23-sh07-b51-runtime-context-by-token [token]
-  (locking p15-s23-sh07-b51-admitted-runtime-contexts
-    (p15-s23-sh07-b51-prune-admitted-runtime-contexts!)
-    (let [query (p15-s23-sh07-b51-token-query token)
-          context-ref
-          (.get ^java.util.HashMap
-                p15-s23-sh07-b51-admitted-runtime-contexts query)
-          context (when context-ref
-                    (.get ^java.lang.ref.WeakReference context-ref))]
-      (when (and context-ref (nil? context))
-        (.remove ^java.util.HashMap
-                 p15-s23-sh07-b51-admitted-runtime-contexts query))
-      context)))
+(def ^:private p15-s23-sh07-b51-source-event-plan
+  (vec
+   (concat
+    [{:ordinal 0 :domain :l1-contract :source-ordinal 0
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-l1-contract}
+     {:ordinal 1 :domain :l2-contract :source-ordinal 1
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-l2-contract}
+     {:ordinal 2 :domain :checked-core-revision :source-ordinal 2
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-checked-core-contract}]
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 3 module-ordinal)
+       :domain :module-validation
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer 'gravity.bootstrap/p15-s23-sh07-b51-module-source-valid*})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 10 module-ordinal)
+       :domain :callsite-census
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer 'gravity.bootstrap/p15-s23-sh07-b51-derive-callsite-census})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 17 module-ordinal)
+       :domain :link-authority
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-sh07-b51-build-link-authority-from-census})
+    [{:ordinal 24 :domain :compiler-emitter :source-ordinal 10
+      :module-ordinal nil
+      :consumer 'gravity.bootstrap/p15-s23-sh07-b51-current-emitter}]
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 25 module-ordinal)
+       :domain :source-authority
+       :source-ordinal (+ 3 module-ordinal)
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-sh07-b51-current-module-source-authority})
+    (for [module-ordinal (range 7)]
+      {:ordinal (+ 32 module-ordinal)
+       :domain :compiler-artifact-binding
+       :source-ordinal 11
+       :module-ordinal module-ordinal
+       :consumer
+       'gravity.bootstrap/p15-s23-stage2-compiler-artifact-binding})
+    [{:ordinal 39 :domain :sh06-resolution-binding :source-ordinal 12
+      :module-ordinal nil
+      :consumer
+      'gravity.bootstrap/p15-s23-sh07-b51-current-sh06-resolution-binding}])))

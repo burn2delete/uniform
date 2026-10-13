@@ -1,239 +1,249 @@
 
-(defn p15-s23-sh07-b51-build-execution-bundle
-  ([]
-   (p15-s23-sh07-b51-build-execution-bundle
-    (p15-s23-sh07-b51-current-emitter)))
-  ([emitter]
-  (when-not (= emitter (p15-s23-sh07-b51-current-emitter))
-    (throw (ex-info "unauthenticated SH-07 B51 compiler identity"
-                    {:id "L2-UNKNOWN-CORE-FORM"
-                     :reason :unauthenticated-b51-external-link})))
-  (let [{:keys [module-source-descriptors link-manifest sources]}
-        (p15-s23-sh07-b51-build-link-authority)
-        compilation-emitter
-        (p15-s23-stage2-compiler-artifact-augmented-emitter emitter)
-        raw-plans
-        (mapv
-         (fn [descriptor source]
-           (let [module
-                 (assoc (:module source)
-                        :p15-s23-sh07-module-source-descriptor descriptor
-                        :p15-s23-sh07-link-manifest link-manifest)]
-             (p15-s23-stage2-construct-emitted-core-plan
-              compilation-emitter (:path source) (:text source)
-              module (:table source))))
-         module-source-descriptors sources)
-        ;; M2 identity is constructed lexically from the seven plans emitted
-        ;; immediately above.  There is deliberately no Var that accepts an
-        ;; arbitrary plan and returns an M2 product or id.
-        plans
-        (mapv
-         (fn [descriptor raw-plan]
-           (let [emitter-source-id
-                 (get-in raw-plan
-                         [:compiler :expression-lowering-source-content-hash])
-                 emitter-semantic-id
-                 (get-in raw-plan
-                         [:compiler :expression-lowering-semantic-hash])
-                 base
-                 (-> (dissoc raw-plan :plan-id)
-                     (assoc :sh07-b51-module-source-id
-                            (:module-source-id descriptor)
-                            :sh07-b51-link-manifest-id
-                            (:manifest-id link-manifest))
-                     ;; Attempt30 makes the already authenticated compiler
-                     ;; binding coordinates explicit in every M2.  The two
-                     ;; census implementations join these aliases without
-                     ;; depending on a lower-level compiler-field spelling.
-                     (assoc-in [:compiler :source-content-hash]
-                               emitter-source-id)
-                     (assoc-in [:compiler :semantic-hash]
-                               emitter-semantic-id))
-                 identity
-                 (-> base
-                     (update :source dissoc :path)
-                     (update :module dissoc :source-path))]
-             (assoc base :plan-id
-                    (c4-artifact-id
-                     (c-backend-canonical-value identity)))))
-         module-source-descriptors raw-plans)
-        plan-by-source
-        (into {} (map (juxt :sh07-b51-module-source-id identity)) plans)
-        bundle-core
-        {:domain :gravity/sh07-b51-execution-bundle-core-id-v1
-         :schema-version 1
-         :manifest-id (:manifest-id link-manifest)
-         :module-plans
-         (mapv (fn [descriptor plan]
-                 {:module-ordinal (:module-ordinal descriptor)
-                  :module-source-id (:module-source-id descriptor)
-                  :plan-id (:plan-id plan)})
-               module-source-descriptors plans)
-         :routes
-         (mapv (fn [edge]
-                 {:edge-ordinal (:ordinal edge)
-                  :caller-plan-id
-                  (:plan-id
-                   (get plan-by-source (:caller-module-source-id edge)))
-                  :callee-plan-id
-                  (:plan-id
-                   (get plan-by-source (:callee-module-source-id edge)))})
-               (:edges link-manifest))
-         :public-roots
-         (mapv (fn [root]
-                 {:root-ordinal (:root-ordinal root)
-                  :function (:function root)
-                  :arity (:arity root)
-                  :plan-id (:plan-id
-                            (nth plans (:module-ordinal root)))})
-               p15-s23-sh07-b51-public-root-specs)}
-        bundle-core-id (p15-s23-sh07-b51-canonical-id bundle-core)
-        emitter-source-id (get-in (first plans)
-                                  [:compiler :source-content-hash])
-        emitter-semantic-id (get-in (first plans)
-                                    [:compiler :semantic-hash])
-        products
-        {:artifact :gravity/sh07-b51-linked-plan-products-v2
-         :module-source-descriptors module-source-descriptors
-         :link-manifest link-manifest
-         :module-plans plans
-         :emitter-source-id emitter-source-id
-         :emitter-semantic-id emitter-semantic-id
-         :execution-bundle-core bundle-core
-         :execution-bundle-core-id bundle-core-id}]
-    (when-not (and
-               (p15-s23-sh07-b51-digest-id? emitter-source-id)
-               (p15-s23-sh07-b51-digest-id? emitter-semantic-id)
-               (every? #(and (= emitter-source-id
-                                 (get-in % [:compiler :source-content-hash]))
-                              (= emitter-semantic-id
-                                 (get-in % [:compiler :semantic-hash])))
-                       plans)
-               (p15-s23-sh07-b51-execution-bundle-core-valid-structure?
-                module-source-descriptors link-manifest plans bundle-core
-                bundle-core-id))
-      (throw (ex-info "invalid fresh-source SH-07 B51 bundle-core products"
-                      {:id "L2-UNKNOWN-CORE-FORM"
-                       :reason :unauthenticated-b51-external-link
-                       :emitter-source-id emitter-source-id
-                       :emitter-semantic-id emitter-semantic-id
-                       :manifest-valid?
-                       (p15-s23-sh07-b51-link-manifest-valid?
-                        module-source-descriptors link-manifest)
-                       :plan-valid?
-                       (mapv #(p15-s23-sh07-b51-plan-valid-structure?
-                               %1 link-manifest %2)
-                             module-source-descriptors plans)
-                       :plan-links-valid?
-                       (mapv #(p15-s23-sh07-b51-plan-links-valid-structure?
-                               %1 link-manifest %2)
-                             module-source-descriptors plans)
-                       :bundle-core-id bundle-core-id
-                       :computed-bundle-core-id
-                       (p15-s23-sh07-b51-canonical-id bundle-core)})))
-    products)))
+(defn- p15-s23-sh07-b51-register-admitted-runtime-context
+  [linked-products carrier raw route args runtime]
+  (let [token (Object.)
+        trace (atom [])
+        top-level-invocation (Object.)
+        top-level-owner
+        (java.util.concurrent.atomic.AtomicReference. {:state :entering})
+        receipt-slot
+        (java.util.concurrent.atomic.AtomicReference. {:state :available})
+        admitted-runtime
+        (merge
+         (apply dissoc (if (map? runtime) runtime {})
+                p15-s23-sh07-b51-runtime-authority-keys)
+         {:sh07-b51-runtime-context-token token
+          :sh07-b51-runtime-token-boundary-id
+          p15-s23-sh07-b51-runtime-token-boundary-id
+          :sh07-b51-linked-carrier-v4 carrier
+          ;; The Stage2 V2 builtin bridge still reads this historical key.
+          ;; It holds the same carrier-v4 object; no carrier-v3 is admitted.
+          :sh07-b51-linked-carrier-v3 carrier
+          :sh07-b51-module-source-descriptors
+          (:module-source-descriptors linked-products)
+          :sh07-b51-link-manifest (:link-manifest linked-products)
+          :sh07-b51-module-plans (:module-plans linked-products)
+         :sh07-b51-execution-bundle (:execution-bundle linked-products)
+         :sh07-b51-external-call-trace trace})
+        context
+        {:token-ref (java.lang.ref.WeakReference. token)
+         :runtime-ref (java.lang.ref.WeakReference. admitted-runtime)
+         :carrier carrier
+         :module-source-descriptors
+         (:module-source-descriptors linked-products)
+         :link-manifest (:link-manifest linked-products)
+         :module-plans (:module-plans linked-products)
+         :execution-bundle (:execution-bundle linked-products)
+         :external-call-trace trace
+         :authority-ref {:carrier carrier :products linked-products}
+         :raw-ref raw
+         :selected-root-ref (:root route)
+         :selected-plan-ref (:plan route)
+         :arguments-ref args
+         :top-level-invocation-ref top-level-invocation
+         :top-level-owner-ref top-level-owner
+         :receipt-slot-ref receipt-slot
+         :thread-ref (Thread/currentThread)}]
+    (when (contains? #{1 6 8} (get-in route [:root :root-ordinal]))
+      (when-not (and (vector? args)
+                     (pos? (count args))
+                     (identical? raw (nth args 0))
+                     (identical? carrier
+                                 (:v18-executable-descriptor raw)))
+        (throw (ex-info "selected SH-07 root arguments are not admission-bound"
+                        {:id "L2-UNKNOWN-CORE-FORM"
+                         :reason :unauthenticated-b51-invocation-identity}))))
+    (try
+      (p15-s23-sh07-b51-issue-top-level-validation-receipt! context)
+      (p15-s23-sh07-b51-register-runtime-context! context)
+      {:runtime admitted-runtime :context-lease context}
+      (catch Throwable failure
+        (p15-s23-sh07-b51-retire-admitted-runtime-context! context)
+        (p15-s23-sh07-b51-remove-runtime-context! token context)
+        (throw failure)))))
 
-(defn p15-s23-sh07-b51-runtime-context [linked-products runtime]
-  ;; Historical host compatibility surface.  It deliberately cannot attach a
-  ;; runtime token: Attempt32 admits invocation only through bounded carrier-v4
-  ;; preflight, local authority, equality/joins, and root/route/arity checks.
-  (let [_ linked-products]
-    (p15-s23-sh07-b51-unadmitted-runtime-context runtime)))
+(defn- p15-s23-sh07-b51-admitted-runtime-context [runtime]
+  (when (map? runtime)
+    (let [token (:sh07-b51-runtime-context-token runtime)
+          context
+          (when token
+            (p15-s23-sh07-b51-runtime-context-by-token token))]
+      (when
+       (and context
+            (identical? token
+                        (.get ^java.lang.ref.WeakReference
+                              (:token-ref context)))
+            (identical? runtime
+                        (.get ^java.lang.ref.WeakReference
+                              (:runtime-ref context)))
+            (identical? (Thread/currentThread) (:thread-ref context))
+            (= p15-s23-sh07-b51-runtime-token-boundary-id
+               (:sh07-b51-runtime-token-boundary-id runtime))
+            (identical? (:carrier context)
+                        (:sh07-b51-linked-carrier-v4 runtime))
+            (identical? (:carrier context)
+                        (:sh07-b51-linked-carrier-v3 runtime))
+            (identical? (:module-source-descriptors context)
+                        (:sh07-b51-module-source-descriptors runtime))
+            (identical? (:link-manifest context)
+                        (:sh07-b51-link-manifest runtime))
+            (identical? (:module-plans context)
+                        (:sh07-b51-module-plans runtime))
+            (identical? (:execution-bundle context)
+                        (:sh07-b51-execution-bundle runtime))
+            (identical? (:external-call-trace context)
+                        (:sh07-b51-external-call-trace runtime)))
+        context))))
 
-(defn p15-s23-sh07-b51-runtime-augmented-plan-authorized?
-  [runtime plan]
-  (try
-    (let [context (p15-s23-sh07-b51-admitted-runtime-context runtime)
-          plans (:module-plans context)]
-      (boolean
-       (and (map? runtime) (map? plan)
-            context
-            (some #(identical? plan %) plans))))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch Throwable _ false)))
+(defn p15-s23-sh07-b51-runtime-admitted-products-match?
+  [runtime carrier descriptors manifest plans bundle]
+  (boolean
+   (when-let [context
+              (p15-s23-sh07-b51-admitted-runtime-context runtime)]
+     (and (identical? carrier (:carrier context))
+          (identical? descriptors (:module-source-descriptors context))
+          (identical? manifest (:link-manifest context))
+          (identical? plans (:module-plans context))
+          (identical? bundle (:execution-bundle context))))))
 
-(defn p15-s23-sh07-b51-execute-public-root
-  [root-ordinal args runtime]
-  (let [_ [root-ordinal args runtime]]
-    (throw
-     (ex-info "Attempt32 public roots require linked carrier-v4 admission"
-              {:id "L2-UNKNOWN-CORE-FORM"
-               :reason :unauthenticated-b51-linked-carrier
-               :result-committed? false
-               :output-committed? false}))))
+(def ^:private p15-s23-sh07-b51-effective-builtins
+  '#{* + - / < <= = > >= assoc conj count first get hash-map list pr-str
+     rest second str vector symbol? keyword? char? number? list? seq? vector?
+     map? set? string? contains? even? set sort-by-pr-str vec quot subvec
+     integer? boolean? keys sh07-canonical-text-compare
+     sh07-declared-digest-hash sh07-observe-utf8-byte-count
+     sh07-b51-admitted-executable-carrier-validation?})
 
-(defn- p15-s23-sh07-b51-plan-valid-structure?
-  [descriptor manifest plan]
-  (let [plan-functions (:functions plan)
-        descriptor-functions (:definitions descriptor)
-        exports (set (:exports descriptor))]
-  (and (p15-s23-sh07-b51-module-source-valid? descriptor)
-       (map? plan-functions)
-       (= (set (map :name descriptor-functions))
-          (set (keys plan-functions)))
-       (every? (fn [row]
-                 (let [definition (get plan-functions (:name row))]
-                   (and (= (:arity row) (:arity definition))
-                        (= (:source-hash row)
-                           (p15-s23-sh07-source-definition-hash definition))
-                        (= (case (:visibility row)
-                             :public :public
-                             :private (if (empty? exports)
-                                        :stage2-local
-                                        :private)
-                             ::invalid)
-                           (get-in definition [:binding :visibility])))))
-               descriptor-functions)
-       (= (:module-source-id descriptor)
-          (:sh07-b51-module-source-id plan))
-       (= (:manifest-id manifest) (:sh07-b51-link-manifest-id plan))
-       (= (:module descriptor) (get-in plan [:module :module]))
-       (= (:source-sha256 descriptor) (get-in plan [:source :sha256]))
-       (= (:plan-id plan)
-          (c4-artifact-id
-           (c-backend-canonical-value
-            (-> plan
-                (dissoc :plan-id)
-                (update :source dissoc :path)
-                (update :module dissoc :source-path))))))))
+(defn p15-s23-sh07-b51-exact-keys? [value expected-keys]
+  (and (map? value) (= expected-keys (set (keys value)))))
 
-(defn- p15-s23-sh07-b51-plan-external-links [plan]
+(defn p15-s23-sh07-b51-digest-id? [value]
+  (and (string? value)
+       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+
+(defn p15-s23-sh07-b51-canonical-id [value]
+  (reader-canonical-hash value))
+
+(defn p15-s23-sh07-b51-owner-edge-kind
+  [caller-owner callee-owner]
+  (cond
+    (= caller-owner callee-owner)
+    (case caller-owner
+      :r1-producer :producer-internal
+      :r6-independent-verifier :root6-internal
+      nil)
+
+    (and (= :r8-finalizer caller-owner)
+         (= :r1-producer callee-owner))
+    :root8-to-producer-interface
+
+    :else nil))
+
+(defn p15-s23-sh07-b51-binding-census [source-path module module-ordinal]
+  (let [syntax-stream
+        (mapv (fn [ordinal form]
+                {:form form
+                 :syntax/id
+                 (p15-s23-sh07-b51-canonical-id
+                  {:domain :gravity/sh07-b51-attempt24-syntax-v1
+                   :module-ordinal module-ordinal :form-ordinal ordinal})
+                 :span {:source source-path :form-index ordinal}})
+              (range) (:forms module))
+        sh05
+        {:artifact-id
+         (p15-s23-sh07-b51-canonical-id
+          {:domain :gravity/sh07-b51-attempt24-sh05-census-v1
+           :module-ordinal module-ordinal})
+         :expanded-syntax-stream syntax-stream}
+        definitions (sh06-resolution-definition-records module sh05)
+        core (sh06-resolution-core-records)
+        analysis (sh06-resolution-analysis-inputs module sh05 {})
+        lexical (vec (mapcat :bindings (:lexical-scopes analysis)))]
+    {:definition-count (count definitions)
+     :core-binding-count (count core)
+     :lexical-binding-count (count lexical)}))
+
+(defn p15-s23-sh07-b51-builtin-call-census [function-table]
   (vec
-   (for [[caller definition] (:functions plan)
-         instruction (tree-seq coll? seq (:instructions definition))
-         :when (and (map? instruction) (= :function-call (:op instruction))
-                    (contains? instruction :external-link))]
-     (let [ordinal (get-in instruction [:external-link :edge-ordinal])]
-       {:caller caller
-        :callee (:function instruction)
-        :arity (count (:args instruction))
-        :edge-ordinal ordinal
-        :external-link (:external-link instruction)}))))
+   (mapcat
+    (fn [caller]
+      (let [definition (get function-table caller)
+            caller-hash (p15-s23-sh07-source-definition-hash definition)]
+        (mapcat
+         (fn [body-form]
+           (letfn [(walk [value]
+                     (cond
+                       (seq? value)
+                       (if (= 'quote (first value))
+                         []
+                         (let [callee (first value)
+                               row
+                               (when (contains? p15-s23-sh07-b51-effective-builtins
+                                                callee)
+                                 [{:caller caller
+                                   :caller-function-source-hash caller-hash
+                                   :builtin callee
+                                   :arity (count (rest value))
+                                   :compiler-internal?
+                                   (contains?
+                                    p15-s23-sh07-declared-builtin-exact-arities
+                                    callee)}])]
+                           (into (or row []) (mapcat walk value))))
+                       (map? value)
+                       (mapcat walk
+                               (mapcat identity
+                                       (sort-by #(pr-str
+                                                  (reader-canonical-value %))
+                                                value)))
+                       (coll? value) (mapcat walk value)
+                       :else []))]
+             (walk body-form)))
+         (:body definition))))
+    (sort-by str (keys function-table)))))
 
-(defn- p15-s23-sh07-b51-plan-links-valid-structure?
-  [descriptor manifest plan]
-  (let [expected
-        (filter #(= (:module-source-id descriptor)
-                    (:caller-module-source-id %)) (:edges manifest))
-        edge-by-ordinal (into {} (map (juxt :ordinal identity)) expected)
-        actual
-        (mapv (fn [row]
-                (assoc row :callsite-path
-                       (:callsite-path
-                        (get edge-by-ordinal (:edge-ordinal row)))))
-              (p15-s23-sh07-b51-plan-external-links plan))]
-    (and (= (count expected) (count actual))
-         (= (set (map (fn [row]
-                        [(:caller-function row) (:callee-function row)
-                         (:arity row) (:ordinal row)
-                         (:callsite-path row)]) expected))
-            (set (map (fn [row]
-                        [(:caller row) (:callee row) (:arity row)
-                         (:edge-ordinal row) (:callsite-path row)]) actual)))
-         (every? #(= {:artifact :gravity/sh07-b51-external-call-v1
-                      :manifest-id (:manifest-id manifest)
-                      :edge-ordinal
-                   (get-in % [:external-link :edge-ordinal])}
-                     (:external-link %)) actual))))
+(defn p15-s23-sh07-b51-module-spec [ordinal]
+  (when (and (integer? ordinal) (<= 0 ordinal 6))
+    (nth p15-s23-sh07-b51-module-specs ordinal)))
+
+(defn p15-s23-sh07-b51-definition-row-valid? [row]
+  (and (p15-s23-sh07-b51-exact-keys?
+        row p15-s23-sh07-b51-definition-keys)
+       (symbol? (:name row))
+       (integer? (:arity row)) (<= 0 (:arity row))
+       (contains? #{:public :private} (:visibility row))
+       (p15-s23-sh07-b51-digest-id? (:source-hash row))))
+
+(defn p15-s23-sh07-b51-external-binding-row-valid? [row]
+  (and (p15-s23-sh07-b51-exact-keys?
+        row p15-s23-sh07-b51-external-binding-keys)
+       (symbol? (:symbol row))
+       (integer? (:callee-module-ordinal row))
+       (<= 0 (:callee-module-ordinal row) 6)
+       (symbol? (:callee-module row))
+       (p15-s23-sh07-b51-digest-id? (:callee-source-sha256 row))
+       (p15-s23-sh07-b51-digest-id?
+        (:callee-definition-source-hash row))
+       (integer? (:arity row)) (<= 0 (:arity row))
+       (contains? #{:producer-internal :root6-internal
+                    :root8-to-producer-interface}
+                  (:owner-edge row))))
+
+(defn p15-s23-sh07-b51-builtin-call-row-valid? [row]
+  (and (p15-s23-sh07-b51-exact-keys?
+        row p15-s23-sh07-b51-builtin-call-keys)
+       (symbol? (:caller row))
+       (p15-s23-sh07-b51-digest-id?
+        (:caller-function-source-hash row))
+       (contains? p15-s23-sh07-b51-effective-builtins (:builtin row))
+       (integer? (:arity row)) (<= 0 (:arity row))
+       (= (contains? p15-s23-sh07-declared-builtin-exact-arities
+                     (:builtin row))
+          (:compiler-internal? row))
+       (or (not (:compiler-internal? row))
+           (= (get p15-s23-sh07-declared-builtin-exact-arities
+                   (:builtin row))
+              (:arity row)))))
+
+(defn p15-s23-sh07-b51-module-source-id [descriptor]
+  (p15-s23-sh07-b51-canonical-id
+   (dissoc descriptor :module-source-id)))

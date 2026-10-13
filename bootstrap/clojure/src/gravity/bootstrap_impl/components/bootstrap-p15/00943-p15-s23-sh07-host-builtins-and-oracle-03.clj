@@ -1,4 +1,68 @@
 
+(defn p15-s23-sh07-observe-utf8-byte-count
+  [text observed-before maximum]
+  (when-not
+   (and (string? text)
+        (integer? observed-before)
+        (integer? maximum)
+        (<= 0 observed-before maximum 1073741824))
+    (throw
+     (IllegalArgumentException.
+      "sh07-observe-utf8-byte-count requires a string and governed counters")))
+  (let [length (.length ^String text)
+        record
+        (fn [status reason observed-after prospective units scalars]
+          {:artifact :gravity/sh07-utf8-byte-observation-v1
+           :status status
+           :reason reason
+           :maximum maximum
+           :observed-before observed-before
+           :observed-after observed-after
+           :prospective-after prospective
+           :utf16-units-scanned units
+           :unicode-scalars-scanned scalars})]
+    (loop [index 0 observed-after observed-before scalars 0]
+      (if (= index length)
+        (record :accepted nil observed-after observed-after index scalars)
+        (let [unit (int (.charAt ^String text index))]
+          (cond
+            (<= 0xd800 unit 0xdbff)
+            (if (and (< (inc index) length)
+                     (let [low (int (.charAt ^String text (inc index)))]
+                       (<= 0xdc00 low 0xdfff)))
+              (let [width 4
+                    remaining (- maximum observed-after)
+                    prospective (+ observed-after width)]
+                (if (<= width remaining)
+                  (recur (+ index 2) prospective (inc scalars))
+                  (record :rejected :utf8-byte-limit observed-after
+                          prospective index scalars)))
+              (record :rejected :invalid-unicode-scalar-sequence
+                      observed-after nil index scalars))
+
+            (<= 0xdc00 unit 0xdfff)
+            (record :rejected :invalid-unicode-scalar-sequence
+                    observed-after nil index scalars)
+
+            :else
+            (let [width (cond (<= unit 0x7f) 1
+                              (<= unit 0x7ff) 2
+                              :else 3)
+                  remaining (- maximum observed-after)
+                  prospective (+ observed-after width)]
+              (if (<= width remaining)
+                (recur (inc index) prospective (inc scalars))
+                (record :rejected :utf8-byte-limit observed-after
+                        prospective index scalars)))))))))
+
+;; G19 keeps decimal text out of the generic seed printer.  These two closures
+;; consume only the authenticated four-key C2 semantic value.  They are
+;; deliberately duplicated: the C11/producer model and the source oracle must
+;; not share decimal grammar, arithmetic, inversion, or rendering authority.
+(defn- p15-s23-sh07-p-decimal-digits? [digits]
+  (and (vector? digits) (seq digits)
+       (every? #(and (integer? %) (<= 48 % 57)) digits)))
+
 (defn- p15-s23-sh07-p-decimal-magnitude-compare [left right]
   (cond
     (< (count left) (count right)) -1
@@ -142,105 +206,3 @@
         (throw (ex-info "producer decimal spelling exceeds G19 domain"
                         {:reason :unsupported-decimal-readable-spelling})))
       text)))
-
-(defn p15-s23-sh07-p-decimal-inverse [text]
-  (when-not (and (string? text) (<= 1 (count text) 261)
-                 (every? #(<= (int %) 127) text))
-    (throw (ex-info "malformed producer decimal inverse input"
-                    {:reason :unsupported-decimal-readable-spelling})))
-  (if (= text "0E+0")
-    {:kind :decimal :sign 1 :coefficient [48] :decimal-power 0}
-    (let [characters (vec text)
-          negative? (= \- (first characters))
-          start (if negative? 1 0)
-          first-digit (get characters start)
-          e-index (.indexOf ^java.util.List characters \E)]
-      (when-not (and first-digit (<= (int \1) (int first-digit) (int \9))
-                     (> e-index start) (= e-index (.lastIndexOf ^java.util.List characters \E)))
-        (throw (ex-info "noncanonical producer decimal mantissa"
-                        {:reason :unsupported-decimal-readable-spelling})))
-      (let [mantissa (subvec characters start e-index)
-            exponent-part (subvec characters (inc e-index))
-            dotted? (and (> (count mantissa) 1) (= \. (second mantissa)))
-            coefficient-chars (if dotted? (into [(first mantissa)] (subvec mantissa 2)) mantissa)
-            exponent-sign (first exponent-part)
-            exponent-chars (subvec exponent-part 1)]
-        (when-not
-         (and (or (= 1 (count mantissa))
-                  (and dotted? (> (count mantissa) 2)))
-              (every? #(<= (int \0) (int %) (int \9)) coefficient-chars)
-              (not= \0 (last coefficient-chars))
-              (contains? #{\- \+} exponent-sign)
-              (seq exponent-chars)
-              (every? #(<= (int \0) (int %) (int \9)) exponent-chars)
-              (or (= 1 (count exponent-chars)) (not= \0 (first exponent-chars))))
-          (throw (ex-info "noncanonical producer decimal grammar"
-                          {:reason :unsupported-decimal-readable-spelling})))
-        (let [coefficient (mapv int coefficient-chars)
-              exponent
-              (p15-s23-sh07-p-decimal-signed
-               (= \- exponent-sign) (mapv int exponent-chars))
-              adjustment
-              (p15-s23-sh07-p-decimal-signed
-               true (p15-s23-sh07-p-decimal-small-digits (dec (count coefficient))))
-              key {:kind :decimal
-                   :sign (if negative? -1 1)
-                   :coefficient coefficient
-                   :decimal-power
-                   (p15-s23-sh07-p-decimal-power-value
-                    (p15-s23-sh07-p-decimal-signed-add exponent adjustment))}]
-          (when-not (= text (p15-s23-sh07-p-decimal-spell key))
-            (throw (ex-info "producer decimal inverse does not respell"
-                            {:reason :unsupported-decimal-readable-spelling})))
-          key)))))
-
-(declare c2-reader-artifact-id
-         sh03-reader-final-decimal-occurrence-projection-valid?)
-
-(defn- p15-s23-sh07-p-decimal-occurrence
-  [evidence]
-  (when-not (and (map? evidence)
-                 (= #{:c2-reader-artifact :adapted-form-id
-                      :adapted-token-id}
-                    (set (keys evidence))))
-    (throw (ex-info "producer decimal projection evidence is malformed"
-                    {:reason :unsupported-decimal-readable-spelling})))
-  (let [artifact (:c2-reader-artifact evidence)
-        form-id (:adapted-form-id evidence)
-        token-id (:adapted-token-id evidence)
-        projection (:sh07-decimal-occurrence-projection artifact)
-        selected
-        (filterv #(and (= form-id (:adapted-form-id %))
-                       (= token-id (:adapted-token-id %)))
-                 (:occurrences projection))]
-    (when-not
-     (and (= (:artifact-id artifact) (c2-reader-artifact-id artifact))
-          (sh03-reader-final-decimal-occurrence-projection-valid? artifact)
-          (= 1 (count selected)))
-      (throw (ex-info "producer decimal projection authentication failed"
-                      {:reason :unsupported-decimal-readable-spelling})))
-    (first selected)))
-
-(defn- p15-s23-sh07-p-decimal-occurrence-raw
-  [evidence occurrence]
-  (let [form-id (:adapted-form-id occurrence)
-        token-id (:adapted-token-id occurrence)
-        forms
-        (filterv #(and (= form-id (:form-id %))
-                       (= token-id (:open-token %)))
-                 (get-in evidence [:c2-reader-artifact :form-tree]))
-        literals
-        (filterv #(= form-id (:form-id %))
-                 (get-in evidence
-                         [:c2-reader-artifact :literal-decoding-records]))]
-    (when-not (and (= 1 (count forms)) (= 1 (count literals))
-                   (= (:raw (first forms)) (:raw (first literals))))
-      (throw (ex-info "producer decimal occurrence text is not unique"
-                      {:reason :unsupported-decimal-readable-spelling})))
-    (:raw (first forms))))
-
-(defn- p15-s23-sh07-p-decimal-occurrence-identity
-  [evidence occurrence]
-  [(get-in evidence [:c2-reader-artifact :artifact-id])
-   (:adapted-form-id occurrence)
-   (:adapted-token-id occurrence)])

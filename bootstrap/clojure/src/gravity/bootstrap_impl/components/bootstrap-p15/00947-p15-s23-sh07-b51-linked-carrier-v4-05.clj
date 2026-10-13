@@ -1,4 +1,39 @@
 
+(defn- p15-s23-sh07-b51-v4-products-closed-joins? [products]
+  (let [descriptors (:module-source-descriptors products)
+        manifest (:link-manifest products)
+        plans (:module-plans products)
+        core (p15-s23-sh07-b51-v4-bundle-core-preimage products)]
+    (and (vector? descriptors) (= 7 (count descriptors))
+         (= (vec (range 7)) (mapv :module-ordinal descriptors))
+         (every? p15-s23-sh07-b51-digest-id?
+                 (map :module-source-id descriptors))
+         (vector? plans) (= 7 (count plans))
+         (= (mapv :module-source-id descriptors)
+            (mapv :sh07-b51-module-source-id plans))
+         (= (mapv :plan-id plans) (mapv :plan-id (:module-plans core)))
+         (= #{:artifact :schema-version :manifest-id :module-source-ids :edges}
+            (set (keys manifest)))
+         (= :gravity/sh07-b51-link-manifest-v1 (:artifact manifest))
+         (= 1 (:schema-version manifest))
+         (= (mapv :module-source-id descriptors)
+            (:module-source-ids manifest))
+         (= (:manifest-id manifest)
+            (p15-s23-sh07-b51-manifest-id manifest))
+         (vector? (:edges manifest))
+         (= (vec (range (count (:edges manifest))))
+            (mapv :ordinal (:edges manifest)))
+         (every? #(p15-s23-sh07-b51-v4-declared-edge-valid?
+                   descriptors %)
+                 (:edges manifest))
+         (= 8 (count (:public-roots core)))
+         (= (:execution-bundle-core products) core)
+         (= (:execution-bundle-core-id products)
+            (p15-s23-sh07-b51-canonical-id core))
+         (p15-s23-sh07-b51-execution-bundle-core-valid-structure?
+          descriptors manifest plans core
+          (:execution-bundle-core-id products)))))
+
 (defn- p15-s23-sh07-b51-v4-certificate-inputs-match-products?
   [certificate products]
   (let [inputs (:inputs certificate)
@@ -75,46 +110,7 @@
   (p15-s23-sh07-b51-build-execution-bundle-v2
    products (mapv :certificate-id certificates)))
 
-(defn p15-s23-sh07-b51-build-linked-carrier-v4-candidate
-  [products certificates]
-  (when-not (and (p15-s23-sh07-b51-v4-products-closed-joins? products)
-                 (p15-s23-sh07-b51-compile-census-certificate-pair-v1-valid?
-                  certificates)
-                 (every? #(p15-s23-sh07-b51-v4-certificate-inputs-match-products?
-                            % products)
-                         certificates)
-                 (every? #(p15-s23-sh07-b51-v4-physical-census-match-products?
-                            % products)
-                         certificates))
-    (throw (ex-info "invalid Attempt32 carrier candidate inputs"
-                    {:id "L2-UNKNOWN-CORE-FORM"
-                     :reason :unauthenticated-b51-linked-carrier})))
-  (let [execution-bundle
-        (p15-s23-sh07-b51-v4-build-execution-bundle products certificates)
-        semantic
-        (p15-s23-sh07-b51-build-semantic-manifest-v4
-         products execution-bundle certificates)
-        root-preimage
-        {:domain :gravity/sh07-b51-v18-linked-semantic-root-v4
-         :schema-version 4 :semantic-manifest semantic}
-        physical (get-in certificates [0 :claim :physical-census])]
-    (array-map
-     :domain :gravity/sh07-b51-v18-linked-executable-closure-carrier-v4
-     :schema-version 4
-     :predecessor-executable-descriptor-id p15-s23-sh07-b51-v4-predecessor-id
-     :semantic-manifest semantic
-     :semantic-root-hash (p15-s23-sh07-b51-canonical-id root-preimage)
-     :module-source-descriptors (:module-source-descriptors products)
-     :link-manifest (:link-manifest products)
-     :module-plan-carriers
-     (mapv (fn [descriptor plan]
-             {:module-ordinal (:module-ordinal descriptor)
-              :module-source-id (:module-source-id descriptor)
-              :plan-id (:plan-id plan) :plan plan})
-           (:module-source-descriptors products) (:module-plans products))
-     :execution-bundle execution-bundle
-     :physical-census physical
-     :compile-census-certificates certificates)))
+(declare p15-s23-sh07-b51-build-linked-carrier-v4-candidate)
 
 (defn- p15-s23-sh07-b51-linked-carrier-v4-valid-after-preflight?
   [carrier]
@@ -215,35 +211,16 @@
 (def ^:private p15-s23-sh07-b51-authoritative-linked-carrier-value-v4
   :gravity/provisional-no-authority)
 
-(defn- p15-s23-sh07-b51-v4-host-pin-map []
-  {:expected-m3-id p15-s23-sh07-b51-expected-m3-id
-   :expected-certificate-a-id p15-s23-sh07-b51-expected-certificate-a-id
-   :expected-certificate-b-id p15-s23-sh07-b51-expected-certificate-b-id
-   :expected-semantic-root p15-s23-sh07-b51-expected-semantic-root})
+(def ^:private p15-s23-sh07-b51-v4-linked-product-keys
+  #{:artifact :module-source-descriptors :link-manifest :module-plans
+    :emitter-source-id :emitter-semantic-id :execution-bundle-core
+    :execution-bundle-core-id})
 
-(defn- p15-s23-sh07-b51-load-local-authority-v4 []
-  (let [pin-map (p15-s23-sh07-b51-v4-host-pin-map)
-        carrier p15-s23-sh07-b51-authoritative-linked-carrier-value-v4]
-    (when (and (every? p15-s23-sh07-b51-digest-id? (vals pin-map))
-               (map? carrier))
-      (let [base-products (p15-s23-sh07-b51-current-bundle-core-products)
-            reconstructed-carrier
-            (p15-s23-sh07-b51-build-linked-carrier-v4-candidate
-             base-products
-             (:compile-census-certificates carrier))
-            products
-            (assoc base-products :execution-bundle (:execution-bundle carrier))]
-        (when (and (= carrier reconstructed-carrier)
-                   (p15-s23-sh07-b51-linked-carrier-v4-valid? carrier)
-                   (p15-s23-sh07-b51-v4-candidate-matches-pin-map?
-                    carrier pin-map))
-          {:carrier carrier :products products})))))
+(def ^:private p15-s23-sh07-b51-v9-receipted-product-keys
+  #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
+    :module-transactions :sh06-resolution-plan-authority
+    :source-semantic-carrier :source-read-receipt})
 
-(defn p15-s23-sh07-b51-current-linked-carrier-v4 []
-  (if-let [authority (p15-s23-sh07-b51-load-local-authority-v4)]
-    (:carrier authority)
-    (throw (ex-info "Attempt32 authority is not frozen"
-                    {:id "L2-UNKNOWN-CORE-FORM"
-                     :reason :provisional-no-authority
-                     :result-committed? false
-                     :output-committed? false}))))
+(def ^:private p15-s23-sh07-b51-v9-source-receipt-keys
+  #{:schema :role :commit :tree :source-descriptors
+    :source-descriptors-root :events :event-root :counters :finalized})

@@ -28,200 +28,208 @@
              :source-span (source-span source-path 0)}))
         explicit))))))
 
-(defn sh06-resolution-request
-  [source-path sh05-artifact]
-  (let [verification (sh05-macro-artifact-verification sh05-artifact)
-        _ (when-not (= :passed (:status verification))
-            (c5-resolution-fail!
-             "C5-UNRESOLVED" source-path
-             {:stage :name-resolution}
-             {:missing-fields [:verified-sh05-macro-artifact]}))
-        forms (mapv :form (:expanded-syntax-stream sh05-artifact))
-        module (parse-module source-path forms)
-        overrides (sh06-resolution-request-overrides module)
-        imports (sh06-resolution-import-records
-                 source-path module overrides)
-        explicit-definitions
-        (sh06-resolution-explicit-candidate-records
-         module sh05-artifact overrides)
-        analysis-inputs
-        (sh06-resolution-analysis-inputs
-         module sh05-artifact overrides)
-        source-revision-id
-        (sh06-resolution-source-revision-id sh05-artifact)]
-    {:artifact :gravity/sh06-authenticated-c4-resolution-request
-     :schema-version 1
-     :module
-     {:namespace (:module module)
-      :package (sh06-resolution-package (:module module))
-      :profile (:profile module)
-      :target (:target module)
-      :safety (:safety module)
-      :effects (vec (sort (:effects module)))
-      :capabilities (vec (sort (:capabilities module)))
-      :exports (vec (:exports module))
-      :source-revision-id source-revision-id
-      :c4-artifact-id (:artifact-id sh05-artifact)}
-     :definitions
-     (vec (concat
-           (sh06-resolution-definition-records module sh05-artifact)
-           explicit-definitions))
-     :imports imports
-     :import-bindings
-     (sh06-resolution-import-binding-records module imports overrides)
-     :lexical-scopes (:lexical-scopes analysis-inputs)
-     :references (:references analysis-inputs)
-     :core-bindings (sh06-resolution-core-records)
-     :dependency-edges
-     (sh06-resolution-dependency-edges source-path module imports overrides)
-     :macro-expansion-binding
-     {:artifact :gravity/sh05-macro-expansion-binding
-      :schema-version 1
-      :c4-artifact-id (:artifact-id sh05-artifact)
-      :source-revision-id source-revision-id
-      :macro-result-id (:expanded-syntax-stream-id sh05-artifact)
-      :authenticated-envelope-id
-      (sh06-resolution-envelope-id sh05-artifact)}
-     :provenance {:actual-source-path source-path}}))
+(declare sh06-resolution-boundary-fail!)
 
-(def sh06-resolution-source-relative-path
-  "bootstrap/gravity/src/gravity/resolution.gravity")
-(def sh06-resolution-facade-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")
-(def sh06-resolution-adapter-contract
-  :gravity/sh06-to-c5-resolution-products-v1)
-(def sh06-resolution-envelope-stage :c5-resolution)
-(def sh06-resolution-sealed-artifact-kind
-  :gravity/sh06-resolution-products)
+(def ^:private sh06-resolution-b51-module-specs
+  [{:module-ordinal 0 :module 'gravity.sh07-b51.producer-a
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
+    :owner :r1-producer :exports []}
+   {:module-ordinal 1 :module 'gravity.sh07-b51.producer-b
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity"
+    :owner :r1-producer :exports []}
+   {:module-ordinal 2 :module 'gravity.sh07-b51.producer-c
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity"
+    :owner :r1-producer :exports '[sh07-b51-resolve-digest-preimage]}
+   {:module-ordinal 3 :module 'gravity.sh07-b51.producer-d
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity"
+    :owner :r1-producer
+    :exports '[sh07-b51-build-template sh07-b51-verify-template
+               sh07-b51-resolve-template sh07-b51-verify-resolved
+               sh07-b51-build-final-artifact]}
+   {:module-ordinal 4 :module 'gravity.sh07-b51.root6-a
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity"
+    :owner :r6-independent-verifier :exports []}
+   {:module-ordinal 5 :module 'gravity.sh07-b51.root6-b
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity"
+    :owner :r6-independent-verifier
+    :exports '[sh07-b51-build-independent-verifier-binding]}
+   {:module-ordinal 6 :module 'gravity.sh07-b51.root8
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity"
+    :owner :r8-finalizer :exports '[sh07-b51-finalize-rejection]}])
 
-;; Final source/plan pins are filled only after the leaf's semantic matrix is
-;; stable.  A nil pin is rejected, so an in-progress leaf cannot accidentally
-;; receive integration credit.
-(def sh06-resolution-expected-source-byte-count 77209)
-(def sh06-resolution-expected-source-content-hash
-  "sha256:001ef59741f17b98b37ee5bdb21e698cb1e6e56ce76c5f5fdd5f1fc9a4caeb56")
-(def sh06-resolution-expected-plan-semantic-hash
-  "sha256:ba8c292ffe3c703bbc220af0a7121496c134793d1e80a012f6fb0a0d9dc6b6fa")
-(def sh06-resolution-expected-plan-id
-  "sha256:a85dd6c53929b8a9f9b4fdf9d7b8b3b5c92fd06bacccf282ea036f9738cc13ee")
-(def sh06-resolution-expected-functions-semantic-hash
-  "sha256:a1445872cda26a9aa0fb8959165eada593619de7a03f527a8ea8a8c216237b91")
-(def sh06-resolution-expected-function-count 94)
-(def sh06-resolution-expected-function-names-hash
-  "sha256:1a12e29aea416d4df7c2904d366975ce240f5ecaee0b2b9c5aa95b1aa83d1ba4")
-(def sh06-resolution-expected-function-shapes-hash
-  "sha256:62aec401ab663019a10b63c1b91487f70b9756503d59e43879283afae8c02f57")
-(def sh06-resolution-public-function-hashes
-  {'sh06-build-resolution-template
-   "sha256:154d52c95bc0488e5ec302ce9219b57d72995f5f54f137816ca980d97bf71f38"
-   'sh06-verify-resolution-template
-   "sha256:de579ce14c12644979fe636d5f7b32d02c505753b85463b8a1994eb9de7a03ec"
-   'sh06-verify-resolution-resolved
-   "sha256:80e3c1e5313ffb38805eba60110dc80edccb50218eaabd5edba98b2025e99342"})
-(def sh06-resolution-public-function-shapes
-  {'sh06-build-resolution-template {:arity 1 :params ['request]}
-   'sh06-verify-resolution-template
-   {:arity 2 :params ['analysis 'digest-requests]}
-   'sh06-verify-resolution-resolved
-   {:arity 3
-    :params ['analysis 'digest-requests 'resolved-digests]}})
+(def ^:private sh06-resolution-b51-effective-builtins
+  '#{* + - / < <= = > >= assoc conj count first get hash-map list pr-str
+     rest second str vector symbol? keyword? char? number? list? seq? vector?
+     map? set? string? contains? even? set sort-by-pr-str vec quot subvec
+     integer? boolean? keys sh07-canonical-text-compare
+     sh07-declared-digest-hash sh07-observe-utf8-byte-count
+     sh07-b51-admitted-executable-carrier-validation?})
 
-(defn sh06-resolution-boundary-fail!
-  [rule source-path missing-field observed facts]
-  (c5-resolution-fail!
-   rule source-path
-   {:source-span (source-span source-path 0)
-    :symbol (:symbol facts)
-    :syntax-id (:syntax-id facts)
-    :namespace (:namespace facts)
-    :profile (:profile facts)
-    :target (:target facts)
-    :candidate-bindings (:candidate-bindings facts)
-    :dependency-edge (:dependency-edge facts)}
-   {:severity :error
-    :profile (:profile facts)
-    :missing-fields [missing-field]
-    :facts (merge {:sh06-boundary :gravity-resolution-plan} facts)
-    :observed observed}))
+(def ^:private sh06-resolution-b51-declared-builtin-arities
+  {'sh07-canonical-text-compare 2
+   'sh07-declared-digest-hash 1
+   'sh07-observe-utf8-byte-count 3
+   'sh07-b51-admitted-executable-carrier-validation? 1})
 
-(defn sh06-resolution-resolve-source-path
-  []
-  (let [anchor (java.io.File.
-                (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate
-               (java.io.File. directory sh06-resolution-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh06-resolution-source-relative-path)))
+(def ^:private sh06-resolution-b51-m0-keys
+  #{:artifact :schema-version :module-source-id :module-ordinal :module
+    :logical-source-path :owner :source-byte-count :source-sha256 :profile
+    :target :effects :capabilities :safety :definitions :exports
+    :core-binding-count :lexical-binding-count :external-bindings
+    :aggregate-binding-count :builtin-calls})
 
-(defn sh06-resolution-read-pinned-source!
-  [request-source]
-  (let [source-path (sh06-resolution-resolve-source-path)
-        nio-path (.toPath (java.io.File. source-path))
-        nofollow (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        attributes
-        (try
-          (java.nio.file.Files/readAttributes
-           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-readable
-             source-path {:cause-message (.getMessage error)})))
-        bytes
-        (try
-          (java.nio.file.Files/readAllBytes nio-path)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-bytes
-             source-path {:cause-message (.getMessage error)})))
-        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
+(def ^:private sh06-resolution-b51-m1-keys
+  #{:artifact :schema-version :manifest-id :module-source-ids :edges})
+
+(defn- sh06-resolution-c5-fail!
+  [source-path reason observed]
+  (sh06-resolution-boundary-fail!
+   "C5-UNRESOLVED" source-path :authenticated-b51-external-binding-authority
+   (assoc observed :reason reason)
+   {:required [:complete-git-object-proof :complete-m0-m1-rederivation
+               :authorized-cross-fragment-edge :lexical-authority]}))
+
+(defn- sh06-resolution-exact-keys?
+  [value keys]
+  (and (map? value) (= keys (set (keys value)))))
+
+(defn- sh06-resolution-sha256-id?
+  [value]
+  (and (string? value)
+       (boolean (re-matches #"sha256:[0-9a-f]{64}" value))))
+
+(defn- sh06-resolution-git-oid?
+  [value]
+  (and (string? value)
+       (boolean (re-matches #"[0-9a-f]{40}" value))))
+
+(defn- sh06-resolution-byte-vector?
+  [value]
+  (and (vector? value)
+       (every? #(and (integer? %) (<= 0 % 255)) value)))
+
+(defn- sh06-resolution-byte-array
+  [value]
+  (byte-array (map #(unchecked-byte (int %)) value)))
+
+(defn- sh06-resolution-hex
+  [bytes]
+  (apply str (map #(format "%02x" (bit-and 0xff %)) bytes)))
+
+(defn- sh06-resolution-git-object-id
+  [kind payload]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-1")
+        header (.getBytes (str kind " " (alength ^bytes payload) "\u0000")
+                          java.nio.charset.StandardCharsets/US_ASCII)]
+    (.update digest header)
+    (.update digest ^bytes payload)
+    (sh06-resolution-hex (.digest digest))))
+
+(defn- sh06-resolution-strict-utf8
+  [source-path value]
+  (try
+    (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                    (.onMalformedInput
+                     java.nio.charset.CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter
+                     java.nio.charset.CodingErrorAction/REPORT))]
+      (str (.decode decoder
+                    (java.nio.ByteBuffer/wrap
+                     (sh06-resolution-byte-array value)))))
+    (catch Throwable error
+      (sh06-resolution-c5-fail!
+       source-path :malformed-utf8
+       {:contained-host-error (.getName (class error))}))))
+
+(defn- sh06-resolution-content-proof-tree!
+  [source-path content proof]
+  (when-not
+   (and (sh06-resolution-exact-keys? content #{:commit :tree})
+        (sh06-resolution-git-oid? (:commit content))
+        (sh06-resolution-git-oid? (:tree content))
+        (sh06-resolution-exact-keys? proof #{:oid :raw-bytes})
+        (= (:commit content) (:oid proof))
+        (sh06-resolution-byte-vector? (:raw-bytes proof)))
+    (sh06-resolution-c5-fail!
+     source-path :content-object-proof-shape {:content content}))
+  (let [raw (sh06-resolution-byte-array (:raw-bytes proof))
+        text (String. raw java.nio.charset.StandardCharsets/ISO_8859_1)
+        split (.indexOf text "\n\n")
+        header-text (if (neg? split) text (.substring text 0 split))
+        headers (vec (.split header-text "\n" -1))
+        tree-headers (filterv #(.startsWith ^String % "tree ") headers)
+        leading (first headers)]
     (when-not
-     (and (number? sh06-resolution-expected-source-byte-count)
-          (string? sh06-resolution-expected-source-content-hash)
-          attributes (.isRegularFile attributes)
-          (= (long sh06-resolution-expected-source-byte-count)
-             (.size attributes))
-          (= sh06-resolution-expected-source-byte-count (alength bytes))
-          (= sh06-resolution-expected-source-content-hash content-hash))
-      (sh06-resolution-boundary-fail!
-       "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
-       {:source-path source-path
-        :source-byte-count (alength bytes)
-        :source-content-hash content-hash}
-       {:expected-byte-count sh06-resolution-expected-source-byte-count
-        :expected-content-hash
-        sh06-resolution-expected-source-content-hash}))
-    {:source-path source-path
-     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-     :source-byte-count (alength bytes)
-     :source-content-hash content-hash}))
+     (and (= (:commit content)
+             (sh06-resolution-git-object-id "commit" raw))
+          (= 1 (count tree-headers))
+          (= (str "tree " (:tree content)) leading)
+          (= leading (first tree-headers)))
+      (sh06-resolution-c5-fail!
+       source-path :commit-object-proof
+       {:expected-commit (:commit content)
+        :expected-tree (:tree content)})))
+  true)
 
-(defn sh06-resolution-plan-identities
-  [plan]
-  (let [functions (:functions plan)
-        shapes
-        (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash
-     (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh06-resolution-public-function-shapes))
-     :public-function-shapes
-     (select-keys shapes (keys sh06-resolution-public-function-shapes))}))
+(defn- sh06-resolution-compare-byte-vectors
+  [left right]
+  (loop [index 0]
+    (cond
+      (= index (min (count left) (count right)))
+      (compare (count left) (count right))
+
+      (= (nth left index) (nth right index))
+      (recur (inc index))
+
+      :else (compare (nth left index) (nth right index)))))
+
+(defn- sh06-resolution-tree-sort-key
+  [{:keys [name-bytes mode]}]
+  (cond-> name-bytes (= "40000" mode) (conj 47)))
+
+(defn- sh06-resolution-parse-tree!
+  [source-path tree-bytes]
+  (let [size (count tree-bytes)]
+    (loop [offset 0 rows []]
+      (if (= offset size)
+        (let [keys (mapv sh06-resolution-tree-sort-key rows)]
+          (when-not
+           (and (= (count rows) (count (set (map :name rows))))
+                (every? neg?
+                        (map sh06-resolution-compare-byte-vectors
+                             keys (subvec keys 1))))
+            (sh06-resolution-c5-fail!
+             source-path :noncanonical-git-tree-order {}))
+          rows)
+        (let [space (first (filter #(= 32 (nth tree-bytes %))
+                                   (range offset size)))
+              nul (when space
+                    (first (filter #(= 0 (nth tree-bytes %))
+                                   (range (inc space) size))))
+              oid-end (when nul (+ nul 21))]
+          (when-not (and space nul (<= oid-end size) (< offset space)
+                         (< (inc space) nul))
+            (sh06-resolution-c5-fail!
+             source-path :malformed-git-tree {:offset offset}))
+          (let [mode (apply str (map char (subvec tree-bytes offset space)))
+                name-bytes (subvec tree-bytes (inc space) nul)
+                name (sh06-resolution-strict-utf8 source-path name-bytes)
+                oid (sh06-resolution-hex
+                     (sh06-resolution-byte-array
+                      (subvec tree-bytes (inc nul) oid-end)))]
+            (when-not
+             (and (contains? #{"40000" "100644" "100755"} mode)
+                  (not (or (empty? name) (= "." name) (= ".." name)
+                           (.contains ^String name "/"))))
+              (sh06-resolution-c5-fail!
+               source-path :unsafe-git-tree-entry {:mode mode :name name}))
+            (recur oid-end
+                   (conj rows {:mode mode :name name
+                               :name-bytes name-bytes :oid oid}))))))))

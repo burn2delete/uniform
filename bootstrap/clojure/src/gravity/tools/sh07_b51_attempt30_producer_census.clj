@@ -7,16 +7,18 @@
   reachability, row, normalization, or digest-schedule implementation."
   (:require [clojure.set :as set]
             [gravity.c2-artifact-identity.canonical :as canonical]
-            [gravity.digest :as digest]))
+            [gravity.digest :as digest]
+            [gravity.tools.sh07-b51-attempt32-materialize :as materialize]))
 
 ;; Ordered implementation files retain this namespace and its API.
 (load
  "/gravity/tools/sh07_b51_attempt30_producer_census/01-input-keys"
- "/gravity/tools/sh07_b51_attempt30_producer_census/02-certificate-profile-within-bounds"
- "/gravity/tools/sh07_b51_attempt30_producer_census/03-scan-raw-source"
- "/gravity/tools/sh07_b51_attempt30_producer_census/04-validate-checker"
- "/gravity/tools/sh07_b51_attempt30_producer_census/05-m2-call-records"
- "/gravity/tools/sh07_b51_attempt30_producer_census/06-coordinate"
- "/gravity/tools/sh07_b51_attempt30_producer_census/07-physical-census"
- "/gravity/tools/sh07_b51_attempt30_producer_census/08-common-claim-id"
- "/gravity/tools/sh07_b51_attempt30_producer_census/09-checker-output-valid")
+ "/gravity/tools/sh07_b51_attempt30_producer_census/02-value-profile"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/03-source-indexes"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/04-scan-m2"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/05-validate-envelope"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/06-validate-builtin-parity"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/07-category-product"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/08-builtin-commitments"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/09-certificate-valid"
+ "/gravity/tools/sh07_b51_attempt30_producer_census/10-produce-accepted")

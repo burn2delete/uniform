@@ -1,209 +1,239 @@
 
-(defn- p15-s23-sh07-b51-link-manifest-valid*
-  [descriptors manifest]
-  (let [by-id (into {} (map (juxt :module-source-id identity)) descriptors)
-        ordinal-by-id (into {} (map (juxt :module-source-id :module-ordinal))
-                            descriptors)
-        edges (:edges manifest)
-        ordered
-        (vec (sort-by (fn [row]
-                        [(get ordinal-by-id (:caller-module-source-id row))
-                         (str (:caller-function row))
-                         (count (:callsite-path row))
-                         (:callsite-path row)])
-                      edges))
-        root8 (when (and (vector? descriptors) (= 7 (count descriptors)))
-                (nth descriptors 6))
-        root8-edges
-        (filter #(= (:module-source-id root8)
-                    (:caller-module-source-id %)) edges)
-        root8-root1-edges
-        (filter #(and (= 'sh07-b51-finalize-rejection
-                         (:caller-function %))
-                      (= 'sh07-b51-build-template
-                         (:callee-function %))) root8-edges)
-        root6-source-ids
-        (if (and (vector? descriptors) (= 7 (count descriptors)))
-          (set (map :module-source-id (subvec descriptors 4 6)))
-          #{})
-        root6-cross-edges
-        (filter #(and (contains? root6-source-ids
-                                 (:caller-module-source-id %))
-                      (not (contains? root6-source-ids
-                                      (:callee-module-source-id %))))
-                edges)
-        source-census (p15-s23-sh07-b51-derive-callsite-census)
-        projected-census
-        (mapv (fn [edge]
-                (let [caller (get by-id (:caller-module-source-id edge))
-                      callee (get by-id (:callee-module-source-id edge))]
-                  {:ordinal (:ordinal edge)
-                   :caller-module-ordinal (:module-ordinal caller)
-                   :caller-module (:module caller)
-                   :caller-function (:caller-function edge)
-                   :callsite-path (:callsite-path edge)
-                   :callee-module-ordinal (:module-ordinal callee)
-                   :callee-module (:module callee)
-                   :callee-function (:callee-function edge)
-                   :arity (:arity edge)
-                   :owner-edge (:owner-edge edge)}))
-              edges)]
-    (and (= 7 (count descriptors))
-         (= (range 7) (map :module-ordinal descriptors))
-         (every? p15-s23-sh07-b51-module-source-valid? descriptors)
-         (p15-s23-sh07-b51-exact-keys? manifest p15-s23-sh07-b51-m1-keys)
-         (= :gravity/sh07-b51-link-manifest-v1 (:artifact manifest))
-         (= 1 (:schema-version manifest))
-         (= (mapv :module-source-id descriptors)
-            (:module-source-ids manifest))
-         (vector? edges)
-         (= ordered edges)
-         (= (vec (range (count edges))) (mapv :ordinal edges))
-         (= source-census projected-census)
-         (= (count edges)
-            (count (set (map (juxt :caller-module-source-id
-                                   :caller-function :callsite-path)
-                             edges))))
-         (= p15-s23-sh07-b51-root8-external-callees
-            (mapv :symbol (:external-bindings root8)))
-         (= 1 (count root8-root1-edges))
-         (empty? root6-cross-edges)
-         (every? (fn [descriptor]
-                   (= (set (map :symbol (:external-bindings descriptor)))
-                      (set (map :callee-function
-                                (filter #(= (:module-source-id descriptor)
-                                            (:caller-module-source-id %))
-                                        edges)))))
-                 descriptors)
-         (every?
-          (fn [row]
-            (let [caller (get by-id (:caller-module-source-id row))
-                  callee (get by-id (:callee-module-source-id row))
-                  caller-definition
-                  (p15-s23-sh07-b51-definition-by-name
-                   caller (:caller-function row))
-                  callee-definition
-                  (p15-s23-sh07-b51-definition-by-name
-                   callee (:callee-function row))
-                  external (first (filter
-                                   #(= (:callee-function row) (:symbol %))
-                                   (:external-bindings caller)))
-                  expected-owner-edge
-                  (p15-s23-sh07-b51-owner-edge-kind
-                   (:owner caller) (:owner callee))]
-              (and (p15-s23-sh07-b51-edge-row-valid? row)
-                   caller callee caller-definition callee-definition external
-                   (= (:caller-function-source-hash row)
-                      (:source-hash caller-definition))
-                   (= (:callee-function-source-hash row)
-                      (:source-hash callee-definition))
-                   (= (:arity row) (:arity callee-definition) (:arity external))
-                   (= (:module-ordinal callee)
-                      (:callee-module-ordinal external))
-                   (= (:module callee) (:callee-module external))
-                   (= (:source-sha256 callee)
-                      (:callee-source-sha256 external))
-                   (= (:source-hash callee-definition)
-                      (:callee-definition-source-hash external))
-                   (= expected-owner-edge
-                      (:owner-edge row) (:owner-edge external)))))
-          edges)
-         (= (:manifest-id manifest)
-            (p15-s23-sh07-b51-manifest-id manifest)))))
+(defn- p15-s23-sh07-b51-assert-content-coordinate!
+  [commit tree phase ordinal]
+  (let [actual-commit
+        (p15-s23-sh07-b51-single-lf-line
+         (p15-s23-sh07-b51-git-bytes
+          ["rev-parse" "--verify" (str commit "^{commit}")])
+         [phase ordinal :commit])
+        actual-tree
+        (p15-s23-sh07-b51-single-lf-line
+         (p15-s23-sh07-b51-git-bytes
+          ["rev-parse" "--verify" (str commit "^{tree}")])
+         [phase ordinal :tree])]
+    (when-not (and (= commit actual-commit) (= tree actual-tree))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :content-coordinate
+       {:phase phase :ordinal ordinal
+        :expected {:commit commit :tree tree}
+        :actual {:commit actual-commit :tree actual-tree}}))))
 
-(defn p15-s23-sh07-b51-link-manifest-valid? [descriptors manifest]
-  (try
-    (boolean (p15-s23-sh07-b51-link-manifest-valid* descriptors manifest))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch Throwable _ false)))
+(defn- p15-s23-sh07-b51-ls-tree-row
+  [commit path]
+  (let [bytes (p15-s23-sh07-b51-git-bytes
+               ["ls-tree" "-z" commit "--" path])
+        text (p15-s23-sh07-b51-strict-utf8 bytes [:ls-tree path])]
+    (when-not (and (pos? (count text))
+                   (= \u0000 (last text))
+                   (= 1 (count (filter #(= \u0000 %) text))))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :ls-tree-record {:path path}))
+    (let [record (subs text 0 (dec (count text)))
+          tab (.indexOf ^String record "\t")
+          header (when (pos? tab) (subs record 0 tab))
+          observed-path (when (pos? tab) (subs record (inc tab)))
+          fields (when header (str/split header #" " -1))]
+      (when-not (and (= 3 (count fields))
+                     (= "100644" (nth fields 0 nil))
+                     (= "blob" (nth fields 1 nil))
+                     (boolean (re-matches #"[0-9a-f]{40}"
+                                          (nth fields 2 "")))
+                     (= path observed-path))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :ls-tree-projection {:path path :record record}))
+      {:mode (nth fields 0) :type (nth fields 1)
+       :blob-oid (nth fields 2)})))
 
-(defn p15-s23-sh07-b51-seal-link-manifest [descriptors edges]
-  (let [ordinal-by-id
-        (into {} (map (juxt :module-source-id :module-ordinal)) descriptors)
-        ordered
-        (vec (sort-by (fn [row]
-                        [(get ordinal-by-id (:caller-module-source-id row))
-                         (str (:caller-function row))
-                         (count (:callsite-path row))
-                         (:callsite-path row)])
-                      edges))
-        base {:artifact :gravity/sh07-b51-link-manifest-v1
-              :schema-version 1
-              :module-source-ids (mapv :module-source-id descriptors)
-              :edges (mapv #(assoc %1 :ordinal %2) ordered (range))}
-        manifest (assoc base :manifest-id
-                        (p15-s23-sh07-b51-manifest-id base))]
-    (when-not (p15-s23-sh07-b51-link-manifest-valid?
-               descriptors manifest)
-      (let [by-id (into {} (map (juxt :module-source-id identity)) descriptors)
-            projected
-            (mapv (fn [edge]
-                    (let [caller (get by-id (:caller-module-source-id edge))
-                          callee (get by-id (:callee-module-source-id edge))]
-                      {:ordinal (:ordinal edge)
-                       :caller-module-ordinal (:module-ordinal caller)
-                       :caller-module (:module caller)
-                       :caller-function (:caller-function edge)
-                       :callsite-path (:callsite-path edge)
-                       :callee-module-ordinal (:module-ordinal callee)
-                       :callee-module (:module callee)
-                       :callee-function (:callee-function edge)
-                       :arity (:arity edge)
-                       :owner-edge (:owner-edge edge)}))
-                  (:edges manifest))
-            source-census (p15-s23-sh07-b51-derive-callsite-census)]
-        (throw (ex-info "invalid SH-07 B51 M1 manifest"
-                        {:id "L2-UNKNOWN-CORE-FORM"
-                         :reason :unauthenticated-b51-external-link
-                         :descriptor-valid?
-                         (mapv p15-s23-sh07-b51-module-source-valid?
-                               descriptors)
-                         :source-census-match? (= source-census projected)
-                         :source-census-count (count source-census)
-                         :projected-count (count projected)
-                         :root8-external-symbols
-                         (mapv :symbol
-                               (:external-bindings (nth descriptors 6)))}))))
-    manifest))
+(defn- p15-s23-sh07-b51-acquire-object-proofs
+  [commit tree path]
+  (let [commit-bytes
+        (p15-s23-sh07-b51-git-bytes ["cat-file" "commit" commit])
+        content {:commit commit :tree tree}
+        content-proof
+        {:oid commit
+         :raw-bytes
+         (p15-s23-sh07-b51-unsigned-byte-vector commit-bytes)}
+        _ (p15-s23-sh07-b51-validate-content-object-proof!
+           content content-proof)
+        segments (p15-s23-sh07-b51-safe-proof-path-segments path)
+        {:keys [tree-chain leaf-oid leaf-bytes]}
+        (loop [index 0 tree-oid tree result []]
+          (let [component (nth segments index)
+                tree-bytes
+                (p15-s23-sh07-b51-git-bytes ["cat-file" "tree" tree-oid])
+                entries
+                (p15-s23-sh07-b51-parse-tree-object!
+                 tree-bytes [path index :acquisition])
+                matches (filterv #(= component (:name %)) entries)
+                selected (first matches)
+                final? (= index (dec (count segments)))]
+            (when-not
+             (and (= tree-oid
+                     (p15-s23-sh07-b51-git-object-id "tree" tree-bytes))
+                  (= 1 (count matches))
+                  (= (if final? "100644" "40000") (:mode selected)))
+              (p15-s23-sh07-b51-governed-read-fail!
+               :source-object-proof-acquisition
+               {:path path :index index :component component}))
+            (let [row {:tree-oid tree-oid
+                       :tree-bytes
+                       (p15-s23-sh07-b51-unsigned-byte-vector tree-bytes)
+                       :component component
+                       :selected-mode (:mode selected)
+                       :selected-oid (:oid selected)}
+                  next-result (conj result row)]
+              (if final?
+                (let [blob-bytes
+                      (p15-s23-sh07-b51-git-bytes
+                       ["cat-file" "blob" (:oid selected)])]
+                  {:tree-chain next-result
+                   :leaf-oid (:oid selected)
+                   :leaf-bytes blob-bytes})
+                (recur (inc index) (:oid selected) next-result)))))
+        source-proof
+        {:schema :gravity/sh07-b51-git-tree-inclusion-proof-v1
+         :path path
+         :root-tree tree
+         :tree-chain tree-chain
+         :blob-bytes
+         (p15-s23-sh07-b51-unsigned-byte-vector leaf-bytes)}]
+    {:content-object-proof content-proof
+     :source-object-proof source-proof
+     :leaf-oid leaf-oid
+     :leaf-bytes leaf-bytes}))
 
-(defn p15-s23-sh07-b51-enrich-census-edges
-  [descriptors census-edges]
-  (let [by-ordinal (into {} (map (juxt :module-ordinal identity)) descriptors)]
-    (when-not (and (vector? census-edges)
-                   (= (vec (range (count census-edges)))
-                      (mapv :ordinal census-edges))
-                   (every? #(p15-s23-sh07-b51-exact-keys?
-                             % p15-s23-sh07-b51-census-edge-keys)
-                           census-edges))
-      (throw (ex-info "invalid SH-07 B51 callsite census"
-                      {:id "L2-UNKNOWN-CORE-FORM"
-                       :reason :unauthenticated-b51-external-link})))
-    (mapv
-     (fn [row]
-       (let [caller (get by-ordinal (:caller-module-ordinal row))
-             callee (get by-ordinal (:callee-module-ordinal row))
-             caller-definition
-             (p15-s23-sh07-b51-definition-by-name caller (:caller-function row))
-             callee-definition
-             (p15-s23-sh07-b51-definition-by-name callee (:callee-function row))]
-         (when-not (and caller callee caller-definition callee-definition
-                        (= (:caller-module row) (:module caller))
-                        (= (:callee-module row) (:module callee)))
-           (throw (ex-info "callsite census does not join module sources"
-                           {:id "L2-UNKNOWN-CORE-FORM"
-                            :reason :unauthenticated-b51-external-link
-                            :ordinal (:ordinal row)})))
-         {:ordinal (:ordinal row)
-          :caller-module-source-id (:module-source-id caller)
-          :caller-function (:caller-function row)
-          :caller-function-source-hash (:source-hash caller-definition)
-          :callsite-path (:callsite-path row)
-          :callee-module-source-id (:module-source-id callee)
-          :callee-function (:callee-function row)
-          :callee-function-source-hash (:source-hash callee-definition)
-          :arity (:arity row)
-          :owner-edge (:owner-edge row)
-          :authorization :authenticated-b51-namespace-external}))
-     census-edges)))
+(defn- p15-s23-sh07-b51-acquire-source-entry
+  [commit tree spec]
+  (let [{:keys [ordinal path]} spec]
+    (let [{:keys [content-object-proof source-object-proof
+                  leaf-oid leaf-bytes]}
+          (p15-s23-sh07-b51-acquire-object-proofs commit tree path)]
+    (p15-s23-sh07-b51-assert-content-coordinate!
+     commit tree :pre-acquisition ordinal)
+    (let [tree-row (p15-s23-sh07-b51-ls-tree-row commit path)
+          bytes (p15-s23-sh07-b51-git-bytes
+                 ["cat-file" "blob" (:blob-oid tree-row)])
+          text (p15-s23-sh07-b51-strict-utf8 bytes [:source ordinal path])
+          descriptor
+          {:ordinal ordinal
+           :kind (:kind spec)
+           :module-ordinal (:module-ordinal spec)
+           :path path
+           :mode (:mode tree-row)
+           :blob-oid (:blob-oid tree-row)
+           :byte-count (alength bytes)
+           :raw-sha256 (p15-s23-sh07-b51-raw-sha256 bytes)}]
+      (when-not (and (= (:blob-oid tree-row) leaf-oid)
+                     (p15-s23-sh07-b51-byte-array-equal?
+                      bytes leaf-bytes))
+        (p15-s23-sh07-b51-governed-read-fail!
+         :object-and-ls-tree-route-mismatch {:path path :ordinal ordinal}))
+      (p15-s23-sh07-b51-validate-source-object-proof!
+       {:commit commit :tree tree} descriptor source-object-proof)
+      (p15-s23-sh07-b51-assert-content-coordinate!
+       commit tree :post-acquisition ordinal)
+      {:descriptor descriptor :bytes bytes :text text
+       :content-object-proof content-object-proof
+       :source-object-proof source-object-proof}))))
+
+(defn- p15-s23-sh07-b51-process-role-fail!
+  [reason details]
+  (throw (ex-info "SH-07 B51 process role rejected"
+                  {:id "SH07-B51-TRUSTED-TCB"
+                   :reason reason
+                   :details details})))
+
+(defn- p15-s23-sh07-b51-process-role-for-observation
+  [{:keys [arguments loaded-project-namespaces]}]
+  (let [arguments (when (vector? arguments) arguments)
+        loaded (set loaded-project-namespaces)
+        checker-child
+        'gravity.tools.sh07-b51-attempt32-checker-child
+        coordinator
+        'gravity.tools.sh07-b51-attempt32-coordinator-child
+        producer
+        'gravity.tools.sh07-b51-attempt30-producer-census
+        independent
+        'gravity.tools.sh07-b51-attempt30-independent-census
+        bootstrap 'gravity.bootstrap
+        checker-tail (when (and arguments (<= 5 (count arguments)))
+                       (subvec arguments (- (count arguments) 5)))
+        coordinator-tail-count
+        (+ 3 (* 2 (count p15-s23-sh07-b51-coordinator-option-names)))
+        coordinator-tail
+        (when (and arguments
+                   (<= coordinator-tail-count (count arguments)))
+          (subvec arguments (- (count arguments) coordinator-tail-count)))
+        coordinator-option-names
+        (when coordinator-tail
+          (mapv first (partition 2 (subvec coordinator-tail 3))))
+        producer-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-checker-entrypoint
+                 "--role" "producer-census"]
+                checker-tail)
+             (every? loaded [bootstrap checker-child producer])
+             (not-any? loaded [coordinator independent]))
+        independent-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-checker-entrypoint
+                 "--role" "independent-verifier-census"]
+                checker-tail)
+             (every? loaded [bootstrap checker-child independent])
+             (not-any? loaded [coordinator producer]))
+        coordinator-process?
+        (and (= ["clojure.main" "-m" p15-s23-sh07-b51-coordinator-entrypoint]
+                (when coordinator-tail (subvec coordinator-tail 0 3)))
+             (= p15-s23-sh07-b51-coordinator-option-names
+                coordinator-option-names)
+             (every? loaded [bootstrap coordinator])
+             (not-any? loaded [checker-child producer independent]))]
+    (cond
+      producer-process? :producer-census
+      independent-process? :independent-verifier-census
+      coordinator-process? :m
+      :else
+      (p15-s23-sh07-b51-process-role-fail!
+       :unauthenticated-process-role
+       {:argument-count (count arguments)
+        :loaded-project-namespaces (vec (sort-by str loaded))}))))
+
+(defn- p15-s23-sh07-b51-process-role
+  []
+  (let [info (.info (java.lang.ProcessHandle/current))
+        argument-value (.arguments info)
+        arguments (when (.isPresent argument-value)
+                    (vec (.get argument-value)))
+        loaded-project-namespaces
+        (->> (loaded-libs)
+             (filter #(str/starts-with? (str %) "gravity."))
+             set)]
+    (p15-s23-sh07-b51-process-role-for-observation
+     {:arguments arguments
+      :loaded-project-namespaces loaded-project-namespaces})))
+
+(defn- p15-s23-sh07-b51-open-source-session
+  [commit tree]
+  (when-not (and (string? commit)
+                 (boolean (re-matches #"[0-9a-f]{40}" commit))
+                 (string? tree)
+                 (boolean (re-matches #"[0-9a-f]{40}" tree)))
+    (p15-s23-sh07-b51-governed-read-fail!
+     :content-coordinate-shape {:commit commit :tree tree}))
+  (let [entries (mapv #(p15-s23-sh07-b51-acquire-source-entry
+                        commit tree %)
+                      p15-s23-sh07-b51-source-specs)
+        descriptors (mapv :descriptor entries)
+        token (Object.)
+        state {:token token
+               :thread (Thread/currentThread)
+               :role (p15-s23-sh07-b51-process-role)
+               :commit commit :tree tree
+               :entries entries
+               :descriptors descriptors
+               :descriptors-root
+               (reader-canonical-hash
+                [:gravity/sh07-b51-source-descriptors-root-v1 descriptors])
+               :cursor (atom 0)
+               :events (atom [])
+               :checked-products (atom {})
+               :finalized (atom false)}]
+    {:token token :state state}))

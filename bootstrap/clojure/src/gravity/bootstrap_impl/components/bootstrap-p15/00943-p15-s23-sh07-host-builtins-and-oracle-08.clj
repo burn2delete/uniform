@@ -1,4 +1,200 @@
 
+(defn- p15-s23-sh07-o-c2-decoration
+  [carrier]
+  (try
+    (let [artifact (:c2-reader-artifact carrier)
+          forms (:form-tree artifact)
+          adapted-forms
+          (mapv #(-> %
+                     (assoc :child-form-ids (:children %))
+                     (dissoc :children))
+                forms)
+          forms-by-id (into {} (map (juxt :form-id identity)) adapted-forms)
+          root-id (:root-adapted-form-id carrier)
+          replays (:decimal-replay-evidence carrier)
+          limits p15-s23-sh07-canonical-decoration-limits]
+      (when-not
+       (and (= (:artifact-id artifact) (c2-reader-artifact-id artifact))
+            (sh03-reader-final-decimal-occurrence-projection-valid? artifact)
+            (= (count adapted-forms) (count forms-by-id))
+            (map? (get forms-by-id root-id)))
+        (throw (ex-info "source oracle C2 carrier is unauthenticated"
+                        {:reason :source-integrity-mismatch})))
+      (letfn
+          [(decorate-scalar [form depth]
+             (let [kind (:kind form)
+                   rendered
+                   (if (= :decimal kind)
+                     (let [source-evidence
+                           {:c2-reader-artifact artifact
+                            :adapted-form-id (:form-id form)
+                            :adapted-token-id (:open-token form)}
+                           source-occurrence
+                           (p15-s23-sh07-o-decimal-occurrence source-evidence)
+                           source-entry
+                           (:semantic-value-entry source-occurrence)
+                           source-key (:semantic-key source-entry)
+                           _
+                           (when-not
+                            (p15-s23-sh07-o-decimal-authentic-key? source-key)
+                             (throw
+                              (ex-info
+                               "source State C has no exact current-C2 key"
+                               {:reason
+                                :unsupported-decimal-readable-spelling})))
+                           key source-key
+                           replay-evidence
+                           (get replays [(:form-id form) (:open-token form)])
+                           replay-occurrence
+                           (p15-s23-sh07-o-decimal-occurrence replay-evidence)]
+                       (when (= (p15-s23-sh07-o-decimal-occurrence-identity
+                                 source-evidence source-occurrence)
+                                (p15-s23-sh07-o-decimal-occurrence-identity
+                                 replay-evidence replay-occurrence))
+                         (throw (ex-info "source oracle replay is not fresh"
+                                         {:reason
+                                          :unsupported-decimal-readable-spelling})))
+                       (let [text (p15-s23-sh07-o-decimal-decoration
+                                   key replay-evidence)
+                             observation
+                             (p15-s23-sh07-observe-utf8-byte-count
+                              text 0 (:maximum-scalar-bytes limits))]
+                         (when-not (= :accepted (:status observation))
+                           (throw (ex-info "decimal scalar G20 rejection"
+                                           {:reason :scalar-byte-limit})))
+                         {:text text
+                          :output-utf8-bytes
+                          (:observed-after observation)}))
+                     (p15-s23-sh07-o-scalar-text (:value form)))
+                   text (:text rendered)]
+               {:status :decorated :text text :node-occurrences 1
+                :maximum-depth depth
+                :output-utf8-bytes (:output-utf8-bytes rendered)}))
+           (decorate-form [form-id depth node-budget active]
+             (if (<= node-budget 0)
+               (p15-s23-sh07-decoration-failed :node-count-limit)
+               (if (> depth (:maximum-depth limits))
+                 (p15-s23-sh07-decoration-failed :depth-limit)
+                 (let [form (get forms-by-id form-id)
+                       collection-kind (or (:collection-kind form)
+                                           (when (contains? #{:vector :list
+                                                              :set :map}
+                                                            (:kind form))
+                                             (:kind form)))
+                       child-ids (:child-form-ids form)]
+                   (if-not form
+                     (p15-s23-sh07-decoration-failed
+                      :source-integrity-mismatch)
+                     (if-not collection-kind
+                       (decorate-scalar form depth)
+                       (if (contains? active form-id)
+                         (p15-s23-sh07-decoration-failed :cyclic-value)
+                         (if (> (count child-ids)
+                                (:maximum-collection-width limits))
+                           (p15-s23-sh07-decoration-failed
+                            :collection-width-limit)
+                           (let [next-active (conj active form-id)
+                                 decorated
+                                 (mapv #(decorate-form
+                                         % (inc depth) (dec node-budget)
+                                         next-active)
+                                       child-ids)
+                                 failed? (some #(not= :decorated (:status %))
+                                               decorated)]
+                             (if failed?
+                               (p15-s23-sh07-decoration-failed
+                                (if (contains? #{:set :map} collection-kind)
+                                  :unordered-decoration-failure
+                                  (:reason (first
+                                            (filter #(not= :decorated
+                                                           (:status %))
+                                                    decorated)))))
+                               (case collection-kind
+                                 :vector
+                                 (p15-s23-sh07-combine-decorations
+                                  depth node-budget "[" " " "]" decorated)
+                                 :list
+                                 (p15-s23-sh07-combine-decorations
+                                  depth node-budget "(" " " ")" decorated)
+                                 :set
+                                 (let [ordered
+                                       (p15-s23-sh07-stable-order-by
+                                        #(p15-s23-sh07-canonical-text-compare
+                                          (:text %1) (:text %2))
+                                        decorated)]
+                                   (if (some true?
+                                             (map #(= (:text %1) (:text %2))
+                                                  ordered (rest ordered)))
+                                     (p15-s23-sh07-decoration-failed
+                                      :source-integrity-mismatch)
+                                     (p15-s23-sh07-combine-decorations
+                                      depth node-budget "#{" " " "}" ordered)))
+                                 :map
+                                 (if (odd? (count decorated))
+                                   (p15-s23-sh07-decoration-failed
+                                    :source-integrity-mismatch)
+                                   (let [entries
+                                         (mapv (fn [[key-result value-result]]
+                                                 {:key-result key-result
+                                                  :value-result value-result})
+                                               (partition 2 decorated))
+                                         ordered
+                                         (p15-s23-sh07-stable-order-by
+                                          (fn [left right]
+                                            (let [key-order
+                                                  (p15-s23-sh07-canonical-text-compare
+                                                   (get-in left
+                                                           [:key-result :text])
+                                                   (get-in right
+                                                           [:key-result :text]))]
+                                              (if (zero? key-order)
+                                                (p15-s23-sh07-canonical-text-compare
+                                                 (get-in left
+                                                         [:value-result :text])
+                                                 (get-in right
+                                                         [:value-result :text]))
+                                                key-order)))
+                                          entries)
+                                         collisions?
+                                         (some true?
+                                               (map #(= (get-in %1
+                                                                [:key-result
+                                                                 :text])
+                                                        (get-in %2
+                                                                [:key-result
+                                                                 :text]))
+                                                    ordered (rest ordered)))]
+                                     (if collisions?
+                                       (p15-s23-sh07-decoration-failed
+                                        :source-integrity-mismatch)
+                                       (p15-s23-sh07-combine-decorations
+                                        depth node-budget "{" ", " "}"
+                                        (mapv
+                                         (fn [entry]
+                                           {:text
+                                            (str (get-in entry
+                                                         [:key-result :text])
+                                                 " "
+                                                 (get-in entry
+                                                         [:value-result :text]))
+                                            :node-occurrences
+                                            (+ (:node-occurrences
+                                                (:key-result entry))
+                                               (:node-occurrences
+                                                (:value-result entry)))
+                                            :maximum-depth
+                                            (max (:maximum-depth
+                                                  (:key-result entry))
+                                                 (:maximum-depth
+                                                  (:value-result entry)))})
+                                         ordered))))))))))))))))]
+        (decorate-form root-id 0 (:maximum-nodes limits) #{})))
+    (catch clojure.lang.ExceptionInfo error
+      (p15-s23-sh07-decoration-failed
+       (or (:reason (ex-data error)) :contained-decoration-failure)))
+    (catch Exception _
+      (p15-s23-sh07-decoration-failed :contained-decoration-failure))))
+
 (defn- p15-s23-sh07-probe-child
   [source-path child depth active node-budget decimal-occurrences]
   (try
@@ -10,215 +206,3 @@
        (or (:reason (ex-data error)) :contained-decoration-failure)))
     (catch Exception _
       (p15-s23-sh07-decoration-failed :contained-decoration-failure))))
-
-(defn p15-s23-sh07-canonical-decoration
-  ([source-path value]
-   (p15-s23-sh07-canonical-decoration
-    source-path value 0 (java.util.IdentityHashMap.)
-    (:maximum-nodes p15-s23-sh07-canonical-decoration-limits) []))
-  ([source-path value decimal-occurrences]
-   (if (p15-s23-sh07-o-c2-carrier? decimal-occurrences)
-     (p15-s23-sh07-o-c2-decoration decimal-occurrences)
-     (p15-s23-sh07-canonical-decoration
-      source-path value 0 (java.util.IdentityHashMap.)
-      (:maximum-nodes p15-s23-sh07-canonical-decoration-limits)
-      decimal-occurrences)))
-  ([source-path value depth ^java.util.IdentityHashMap active]
-   (p15-s23-sh07-canonical-decoration
-    source-path value depth active
-    (:maximum-nodes p15-s23-sh07-canonical-decoration-limits) []))
-  ([source-path value depth ^java.util.IdentityHashMap active node-budget]
-   (p15-s23-sh07-canonical-decoration
-    source-path value depth active node-budget []))
-  ([source-path value depth ^java.util.IdentityHashMap active node-budget
-    decimal-occurrences]
-   (let [{:keys [maximum-depth maximum-collection-width
-                 maximum-scalar-bytes]}
-         p15-s23-sh07-canonical-decoration-limits]
-     (if (<= node-budget 0)
-       (p15-s23-sh07-decoration-failed :node-count-limit)
-       (if (> depth maximum-depth)
-       (p15-s23-sh07-decoration-failed :depth-limit)
-       (let [host-decimal? (instance? java.math.BigDecimal value)
-             kind
-             (try
-               ;; A host decimal does not identify a source occurrence.  G19
-               ;; admission is available only through the producer/oracle
-               ;; entry points that require authenticated adapted form/token
-               ;; identities.
-               (when-not host-decimal?
-                 (p15-s23-sh07-o-scalar-kind value))
-               (catch Exception _ nil))
-             collection? (contains? #{:vector :list :map :set} kind)]
-         (if (= kind nil)
-           (p15-s23-sh07-decoration-failed
-            (if host-decimal?
-              :unsupported-decimal-readable-spelling
-              :unsupported-value-carrier))
-           (if-not collection?
-             (try
-               (let [rendered (p15-s23-sh07-o-scalar-text value)]
-                 {:status :decorated :text (:text rendered)
-                  :node-occurrences 1
-                  :maximum-depth depth
-                  :output-utf8-bytes (:output-utf8-bytes rendered)})
-               (catch clojure.lang.ExceptionInfo error
-                 (p15-s23-sh07-decoration-failed
-                  (or (:reason (ex-data error))
-                      :contained-decoration-failure)))
-               (catch Exception _
-                 (p15-s23-sh07-decoration-failed
-                  :contained-decoration-failure)))
-             (if (.containsKey active value)
-               (p15-s23-sh07-decoration-failed :cyclic-value)
-               (let [width (count value)]
-                 (if (> width maximum-collection-width)
-                   (p15-s23-sh07-decoration-failed
-                    :collection-width-limit)
-                   (let [next-active (p15-s23-sh07-active-copy active)]
-                     (.put next-active value Boolean/TRUE)
-                     (case kind
-                       :vector
-                       (loop [remaining (vec value) decorations [] used 1]
-                         (if (empty? remaining)
-                           (p15-s23-sh07-combine-decorations
-                            depth node-budget "[" " " "]" decorations)
-                           (let [decorated
-                                 (p15-s23-sh07-probe-child
-                                  source-path (first remaining)
-                                  (inc depth) next-active
-                                  (- node-budget used) decimal-occurrences)]
-                             (if (= :decorated (:status decorated))
-                               (recur (rest remaining)
-                                      (conj decorations decorated)
-                                      (+ used (:node-occurrences decorated)))
-                               decorated))))
-
-                       :list
-                       (loop [remaining (seq value) decorations [] used 1]
-                         (if (nil? remaining)
-                           (p15-s23-sh07-combine-decorations
-                            depth node-budget "(" " " ")" decorations)
-                           (let [decorated
-                                 (p15-s23-sh07-probe-child
-                                 source-path (first remaining)
-                                  (inc depth) next-active
-                                  (- node-budget used) decimal-occurrences)]
-                             (if (= :decorated (:status decorated))
-                               (recur (next remaining)
-                                      (conj decorations decorated)
-                                      (+ used (:node-occurrences decorated)))
-                               decorated))))
-
-                       :set
-                       (let [results
-                             (mapv
-                              #(p15-s23-sh07-probe-child
-                                source-path % (inc depth) next-active
-                                (dec node-budget) decimal-occurrences)
-                              (vec value))
-                             any-failed?
-                             (reduce
-                              (fn [failed? result]
-                                (or failed?
-                                    (not= :decorated (:status result))))
-                              false results)]
-                         (if any-failed?
-                           (p15-s23-sh07-decoration-failed
-                            :unordered-decoration-failure)
-                           (let [ordered
-                                 (p15-s23-sh07-stable-order-by
-                                  (fn [left right]
-                                    (p15-s23-sh07-canonical-text-compare
-                                     (:text left) (:text right)))
-                                  results)]
-                             (if (some true?
-                                       (map #(= (:text %1) (:text %2))
-                                            ordered (rest ordered)))
-                               (p15-s23-sh07-decoration-failed
-                                :source-integrity-mismatch)
-                               (p15-s23-sh07-combine-decorations
-                                depth node-budget "#{" " " "}" ordered)))))
-
-                       :map
-                       (let [results
-                             (mapv
-                              (fn [entry]
-                                {:key-result
-                                 (p15-s23-sh07-probe-child
-                                  source-path (key entry)
-                                  (inc depth) next-active (dec node-budget)
-                                  decimal-occurrences)
-                                 :value-result
-                                 (p15-s23-sh07-probe-child
-                                  source-path (val entry)
-                                  (inc depth) next-active (dec node-budget)
-                                  decimal-occurrences)
-                                 :key (key entry)})
-                              (vec value))
-                             any-failed?
-                             (reduce
-                              (fn [failed? entry]
-                                (or failed?
-                                    (not= :decorated
-                                          (get-in entry [:key-result :status]))
-                                    (not= :decorated
-                                          (get-in entry
-                                                  [:value-result :status]))))
-                              false results)]
-                         (if any-failed?
-                           (p15-s23-sh07-decoration-failed
-                            :unordered-decoration-failure)
-                           (let [ordered
-                                 (p15-s23-sh07-stable-order-by
-                                  (fn [left right]
-                                    (let [key-order
-                                          (p15-s23-sh07-canonical-text-compare
-                                           (get-in left [:key-result :text])
-                                           (get-in right [:key-result :text]))]
-                                      (if (zero? key-order)
-                                        (p15-s23-sh07-canonical-text-compare
-                                         (get-in left [:value-result :text])
-                                         (get-in right [:value-result :text]))
-                                        key-order)))
-                                  results)
-                                 key-collision?
-                                 (some
-                                  true?
-                                  (map
-                                   #(and
-                                     (= (get-in %1 [:key-result :text])
-                                        (get-in %2 [:key-result :text]))
-                                     (not= (:key %1) (:key %2)))
-                                   ordered (rest ordered)))]
-                             (if key-collision?
-                               (p15-s23-sh07-decoration-failed
-                                :source-integrity-mismatch)
-                               (let [entries
-                                     (mapv
-                                      (fn [entry]
-                                        (let [key-result (:key-result entry)
-                                              value-result
-                                              (:value-result entry)
-                                              pair
-                                              (p15-s23-sh07-combine-decorations
-                                               (min (:maximum-depth key-result)
-                                                    (:maximum-depth value-result))
-                                               (+ 1
-                                                  (:node-occurrences key-result)
-                                                  (:node-occurrences value-result))
-                                               "" " " ""
-                                               [key-result value-result])]
-                                          (if (= :decorated (:status pair))
-                                            (update pair :node-occurrences dec)
-                                            pair)))
-                                      ordered)]
-                                 (if-let [failed
-                                          (first
-                                           (filter #(not= :decorated
-                                                          (:status %))
-                                                   entries))]
-                                   failed
-                                   (p15-s23-sh07-combine-decorations
-                                    depth node-budget "{" ", " "}"
-                                    entries))))))))))))))))))))

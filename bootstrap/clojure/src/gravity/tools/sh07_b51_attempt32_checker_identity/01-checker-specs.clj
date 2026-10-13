@@ -37,35 +37,30 @@
 (defn- sha256-bytes [bytes]
   (str "sha256:" (digest/sha256-bytes-hex bytes)))
 
-(defn- read-bytes [^Path path]
-  (Files/readAllBytes path))
-
 (defn- safe-relative-path? [value]
   (and (string? value) (not (str/blank? value))
        (not (str/starts-with? value "/"))
        (not (str/includes? value "\\"))
        (not-any? #{"" "." ".."} (str/split value #"/"))))
 
-(defn symlink-free-path?
-  "Return true only when the absolute path and every ancestor are not links."
-  [^Path path]
-  (loop [current (.normalize (.toAbsolutePath path))]
-    (cond
-      (nil? current) true
-      (Files/isSymbolicLink current) false
-      :else (recur (.getParent current)))))
-
-(defn- resolve-file [^Path root relative]
+(defn- source-object!
+  [source-authority relative]
   (when-not (safe-relative-path? relative)
     (throw (ex-info "unsafe checker source path" {:path relative})))
-  (let [path (.normalize (.resolve root relative))]
-    (when-not (and (.startsWith path root)
-                   (Files/isRegularFile
-                    path (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
-                   (symlink-free-path? path))
-      (throw (ex-info "checker dependency source is unavailable"
+  (let [record (get (:source-objects source-authority) relative)
+        bytes (:bytes record)
+        expected-keys #{:path :mode :blob-oid :byte-count :raw-sha256 :bytes}]
+    (when-not
+     (and (= expected-keys (set (keys record)))
+          (= relative (:path record))
+          (= "100644" (:mode record))
+          (boolean (re-matches #"[0-9a-f]{40}" (or (:blob-oid record) "")))
+          (bytes? bytes)
+          (= (:byte-count record) (alength ^bytes bytes))
+          (= (:raw-sha256 record) (sha256-bytes bytes)))
+      (throw (ex-info "C-derived checker source object is unavailable"
                       {:path relative})))
-    path))
+    record))
 
 (defn- read-forms [bytes]
   (with-open [reader
@@ -141,41 +136,21 @@
        (-> (str namespace) (str/replace "." "/") (str/replace "-" "_"))
        ".clj"))
 
-(defn- local-source-record [root relative]
-  (let [bytes (read-bytes (resolve-file root relative))
-        classpath-prefix "bootstrap/clojure/src/"
-        classpath-resource
-        (when (str/starts-with? relative classpath-prefix)
-          (subs relative (count classpath-prefix)))]
-    (when classpath-resource
-      (let [selected (io/resource classpath-resource)]
-        (when-not selected
-          (throw (ex-info "checker dependency classpath resource is unavailable"
-                          {:path relative :resource classpath-resource})))
-        (with-open [input (io/input-stream selected)]
-          (when-not (java.util.Arrays/equals bytes (.readAllBytes input))
-            (throw
-             (ex-info "checker dependency classpath resource differs from checkout"
-                      {:path relative :resource classpath-resource}))))))
-    {:relative-path relative :byte-count (alength bytes)
-     :source-sha256 (sha256-bytes bytes)}))
+(defn- local-source-record [source-authority relative]
+  (let [record (source-object! source-authority relative)]
+    {:relative-path relative
+     :byte-count (:byte-count record)
+     :source-sha256 (:raw-sha256 record)}))
 
-(defn- resource-record [namespace]
-  (let [relative (-> (str namespace) (str/replace "." "/")
-                     (str/replace "-" "_"))
-        candidates [(str relative ".clj") (str relative ".cljc")]
-        selected (first (keep #(when (io/resource %) %) candidates))]
-    (if selected
-      (with-open [input (io/input-stream (io/resource selected))]
-        (let [bytes (.readAllBytes input)]
-          {:namespace namespace :resource selected :byte-count (alength bytes)
-           :source-sha256 (sha256-bytes bytes)}))
-      {:namespace namespace :resource :host-provided})))
+(defn- resource-record [source-authority namespace]
+  (or (get (:external-source-records source-authority) namespace)
+      {:namespace namespace :resource :host-provided}))
 
-(defn- load-order-paths [root]
+(defn- load-order-paths [source-authority]
   (let [relative "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
         entries (edn/read-string {:readers {}}
-                                 (String. (read-bytes (resolve-file root relative))
+                                 (String. (:bytes (source-object!
+                                                  source-authority relative))
                                           StandardCharsets/UTF_8))
         component-paths
         (mapv #(str "bootstrap/clojure/src/" (:resource %)) entries)
@@ -183,7 +158,8 @@
         (->> component-paths
              (mapcat
               (fn [path]
-                (let [forms (read-forms (read-bytes (resolve-file root path)))]
+                (let [forms (read-forms
+                             (:bytes (source-object! source-authority path)))]
                   (->> (tree-seq coll? seq forms)
                        (keep
                         (fn [form]
@@ -199,6 +175,6 @@
       (throw (ex-info "bootstrap loader data-resource closure is incomplete"
                       {:expected 118 :actual (count data-resources)})))
     (vec
-     (concat ["deps.edn" relative]
+     (concat [relative]
              component-paths
              (map #(str "bootstrap/clojure/src/" %) data-resources)))))

@@ -1,3 +1,34 @@
+;; The load manifest places SH-07 before the late compiler-artifact components.
+;; Define the private dynamic seam here so every later component resolves the
+;; same Var.  Only the arity-two wrapper in 00945 ever installs a non-nil root.
+(def ^:dynamic ^:private *p15-s23-sh07-b51-governed-source-session* nil)
+
+(declare ^:private p15-s23-sh07-b51-governed-source-event!)
+(declare ^:private p15-s23-sh07-b51-governed-source-entry)
+(declare ^:private p15-s23-sh07-b51-active-module-ordinal)
+(declare ^:private p15-s23-sh07-b51-compatibility-source-record)
+(declare compiler-c2-reader-source-artifact)
+(declare compiler-c3-syntax-source-artifact)
+(declare ^:private sh03-reader-internal-product-authority)
+(declare ^:private sh05-macro-artifact-from-c3-artifact*)
+(declare ^:private sh06-resolution-source-artifact-candidate)
+(declare ^:private sh06-resolution-finalize-candidate)
+(declare sh07-core-authenticated-request)
+(declare sh07-core-execute!)
+(declare sh07-core-digest-requests)
+(declare sh07-core-plan-identities)
+(declare sh07-core-expected-source-byte-count)
+(declare sh07-core-expected-source-content-hash)
+(declare sh07-core-expected-plan-semantic-hash)
+(declare sh07-core-expected-functions-semantic-hash)
+(declare sh07-core-expected-function-count)
+(declare sh07-core-expected-function-names-hash)
+(declare sh07-core-expected-function-shapes-hash)
+(declare sh07-core-public-function-hashes)
+(declare sh07-core-public-function-shapes)
+(declare p15-s23-stage2-compiler-artifact-plan)
+(declare p15-s23-stage2-compiler-artifact-binding!)
+
 (def p15-s23-sh07-declared-builtin-exact-arities
   {'sh07-canonical-text-compare 2
    'sh07-declared-digest-hash 1
@@ -159,19 +190,10 @@
                    :source-path source-path})))
 
 (defn- p15-s23-sh07-b51-source-input-authentic?
-  [source-path supplied-file supplied-bytes source-sha256 module descriptor
-   manifest]
+  [source-path supplied-bytes source-sha256 module descriptor manifest]
   (try
-    (let [logical-source-path (:logical-source-path descriptor)
-          trusted-file
-          (p15-s23-sh07-governed-source-file logical-source-path)]
-      (and trusted-file
-           (.equals trusted-file supplied-file)
-           (= source-sha256
-              (str "sha256:"
-                   (sha256-bytes-hex
-                    (java.nio.file.Files/readAllBytes
-                     (.toPath trusted-file)))))
+    (let [logical-source-path (:logical-source-path descriptor)]
+      (and (= logical-source-path source-path)
            (p15-s23-sh07-b51-module-source-valid? descriptor)
            (map? manifest)
            (= (:manifest-id manifest)
@@ -192,59 +214,28 @@
       (throw interrupted))
     (catch Throwable _ false)))
 
-(defn p15-s23-sh07-compiler-source-authority
+(defn- p15-s23-sh07-b51-current-module-source-authority
   [source-path source-text module function-table]
   (let [descriptor (:p15-s23-sh07-module-source-descriptor module)
         manifest (:p15-s23-sh07-link-manifest module)
-        supplied-file (.getCanonicalFile (java.io.File. source-path))
         supplied-bytes (.getBytes ^String source-text
                                   java.nio.charset.StandardCharsets/UTF_8)
         source-sha256 (str "sha256:" (sha256-bytes-hex supplied-bytes))]
-    (if descriptor
-      (let [logical-source-path (:logical-source-path descriptor)
-            authentic?
-            (p15-s23-sh07-b51-source-input-authentic?
-             source-path supplied-file supplied-bytes source-sha256 module
-             descriptor manifest)]
-       (when-not authentic?
-         (p15-s23-sh07-source-authority-fail!
-          "compiler-internal builtins require authenticated B51 source"
-          source-path))
-       {:artifact :gravity/sh07-compiler-source-authority-v2
-        :manifest-id (:manifest-id manifest)
-        :module-source-id (:module-source-id descriptor)
-        :logical-source-path logical-source-path
-        :source-sha256 source-sha256
-        :module (:module descriptor)
-        :function-source-hashes
-        (into (sorted-map)
-              (map (fn [[name definition]]
-                     [name (p15-s23-sh07-source-definition-hash definition)]))
-              function-table)})
-      (let [checked-file
-            (p15-s23-sh07-governed-source-file
-             p15-s23-sh07-checked-core-source-relative-path)]
-        (when-not
-         (and checked-file (.equals checked-file supplied-file)
-              (= source-sha256
-                 (str "sha256:"
-                      (sha256-bytes-hex
-                       (java.nio.file.Files/readAllBytes
-                        (.toPath checked-file)))))
-              (= 'gravity.checked-core (:module module))
-              (= :meta (:profile module)) (= :jvm (:target module))
-              (= #{} (:effects module)) (= #{} (:capabilities module))
-              (= :safe (:safety module)))
-          (p15-s23-sh07-source-authority-fail!
-           "compiler-internal builtins require checked-core source"
-           source-path))
-        {:artifact :gravity/sh07-compiler-source-authority-v1
-         :source-relative-path p15-s23-sh07-checked-core-source-relative-path
-         :source-sha256 source-sha256
-         :source-byte-count (alength supplied-bytes)
-         :module 'gravity.checked-core
-         :function-source-hashes
-         (into (sorted-map)
-               (map (fn [[name definition]]
-                      [name (p15-s23-sh07-source-definition-hash definition)]))
-               function-table)}))))
+    (when-not
+     (and descriptor
+          (p15-s23-sh07-b51-source-input-authentic?
+           source-path supplied-bytes source-sha256 module descriptor manifest))
+      (p15-s23-sh07-source-authority-fail!
+       "compiler-internal builtins require authenticated B51 source"
+       source-path))
+    {:artifact :gravity/sh07-compiler-source-authority-v2
+     :manifest-id (:manifest-id manifest)
+     :module-source-id (:module-source-id descriptor)
+     :logical-source-path (:logical-source-path descriptor)
+     :source-sha256 source-sha256
+     :module (:module descriptor)
+     :function-source-hashes
+     (into (sorted-map)
+           (map (fn [[name definition]]
+                  [name (p15-s23-sh07-source-definition-hash definition)]))
+           function-table)}))

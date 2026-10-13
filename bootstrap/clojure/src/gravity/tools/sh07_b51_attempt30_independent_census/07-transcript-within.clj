@@ -30,7 +30,12 @@
 (defn- accepted-products [envelope]
   ;; Deliberately M2-first: no source form is traversed until the complete M2
   ;; instruction space has been scanned under the closed rules above.
-  (let [inputs (check-and-derive-inputs envelope)
+  (let [legacy-inputs (check-and-derive-inputs envelope)
+        {:keys [lowering-product semantic-witness measurement-count]}
+        (materialize/build-checker-precertificate envelope)
+        _ (ensure! (= 34 measurement-count) :fixed-fuel-measurement-count)
+        inputs (assoc legacy-inputs
+                      :lowering-product-id (:product-id lowering-product))
         m0s (:m0s envelope) m1 (:m1 envelope) m2s (:m2s envelope)
         bundle-core (:bundle-core envelope) checker (:checker envelope)
         m2-scan (scan-m2 m2s)
@@ -130,14 +135,19 @@
          (:architecture-report-sha256 envelope)
          :claim-id claim-id :claim claim :assumptions assumptions-value
          :checker checker :inputs inputs :result result
+         :semantic-witness semantic-witness
          :provenance provenance :raw-source-transcript raw-descriptor
          :m2-transcript m2-descriptor :profile-bounds profile-bounds
          :evidence-root evidence-root}
         certificate (assoc certificate-base :certificate-id
                            (h certificate-base))]
-    (ensure! (certificate-profile-within? (value-profile certificate))
+    (ensure! (and (certificate-profile-within?
+                   (value-profile (dissoc certificate :semantic-witness)))
+                  (semantic-witness-profile-within?
+                   (value-profile semantic-witness)))
              :certificate-profile-bound)
     {:status :accepted :certificate certificate
+     :lowering-product lowering-product
      :raw-source-transcript-artifact raw-artifact
      :m2-transcript-artifact m2-artifact}))
 
