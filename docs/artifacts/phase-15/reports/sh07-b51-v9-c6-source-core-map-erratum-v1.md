@@ -72,6 +72,14 @@ here. RC means the actual resolved core carrier. Source graph coverage, real
 node identity, generated origins, and all unchanged V9 transaction equations
 remain mandatory. The `forms + 4` digest bound is preserved.
 
+It also narrowly supersedes V9's inherited declared-digest restriction that
+any purpose/preimage-resolver change rejects: add only the
+`:sh07-source-core-map-id` purpose and the exact sidecar resolver grammar
+below. All existing declared purposes, their preimage resolution rules, the
+prior-Z prefix, outer domain, and canonical hash remain unchanged. Unknown
+purposes reject; no raw-preimage default is an authority path. No additional
+domain or purpose is authorized by this supersession.
+
 Register exactly one new checked-core purpose, `:sh07-source-core-map-id`, and
 its inner sidecar domain `:gravity/sh07-source-core-map-v1`. This is an explicit
 extension of the inherited checked-core `:gravity/sh07-declared-digest-v1`
@@ -174,15 +182,26 @@ Module, lineage, projection binding, fragments, coverage, assembly, and roots
 are byte-for-byte copies from authenticated Q. Node module/profile/target and
 preserved effects/capabilities/safety must equal that Q module. Core root and
 fragment-node associations must equal RC's real root/fragment values.
+Specifically, sidecar `:root-form-ids` equals Q's `:top-level-form-ids` exactly,
+and its fragment manifest is the raw authenticated Q manifest.
 
 Records are a vector with contiguous ordinals in Q form-vector order. Row
 `:source` has exactly `:form-id :syntax-id :semantic-span :origin-chain
-:generated-origin`, and `:semantic-span` equals the source-map row's
-`:source-span`. An emitted row has a nonempty unique ordered emitted vector,
+:generated-origin`. Every row's `:semantic-span` equals its authenticated Q
+form's `:source-span`. For emitted rows it additionally equals every joined
+node/source-map span. Consumed forms have no emitted source-map row; their
+owner anchors instead join the owner's node/source-map and Q source tuple.
+An emitted row has a nonempty unique ordered emitted vector,
 owner equal to itself, and anchors equal to that vector. A consumed row has
 an empty emitted vector and nonempty owner/anchor joins. No row has a nil
 owner; root expressions own themselves. Generated nodes without a request
 form row reject. Existing generated-origin values are preserved, not widened.
+
+Every row's `:parent-form-id` equals that Q form's parent ID byte-for-byte.
+Roots have exactly nil parents. Every non-root parent exists, lists the form
+in its child vector, and belongs to the same authenticated fragment. Parent
+and child joins are reciprocal; cycles, duplicate traversal, unreachable
+forms, and cross-fragment reparenting reject before disposition admission.
 
 The source-child role table is closed:
 
@@ -262,6 +281,13 @@ core-node membership at this immediate D/RC join. The core reference must
 point to the exact prior `:sh07-core-artifact-id` request, every node anchor to
 a `:sh07-core-node-id` request, and every controlled reference backward from
 the sidecar. A valid ordinal or SHA shape alone is insufficient.
+
+Arithmetic preflight requires exactly `count(D) = count(RC[:nodes]) + 3`:
+one request per actual core node, then the existing core/provenance requests,
+then exactly one sidecar request. It must also require
+`count(D) <= count(Q[:forms]) + 4 <= 65540` before admission. Multiple nodes
+per source form remain legal only while that unchanged bound holds. A source
+count prediction or fixture count cannot substitute for these actual values.
 
 Its `resolved-core` argument is exactly RC, the `:value` returned by
 `sh07-resolve-core-template(T, Z)`, with its real core ID in
