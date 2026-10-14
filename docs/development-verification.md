@@ -151,6 +151,21 @@ complete SH-07 namespace and fresh integration lane for acceptance evidence.
 
 ## Bounded P15 Profiling Receipt
 
+The bounded pass-execution serialization observation uses its existing accepted
+receipt fixture and one widened metadata fixture:
+
+```bash
+clojure -J-Xmx512m -Sdeps '{:paths ["bootstrap/clojure/src" "bootstrap/clojure/test"]}' -M tools/profile_pass_execution_sort.clj
+```
+
+It uses the shared normal-resource broker, a 120-second process watchdog,
+separate serialization accounting, and seven warm timing rounds per fixture.
+Exact source, tree, file, harness, classpath, JVM, and heap identities accompany
+its non-authoritative output. See the [comparison report](artifacts/phase-15/reports/pass-execution-canonical-sort-work-v1.md)
+for two-process baseline/candidate receipts, variance, profiler limitations,
+preservation tests, and the ranked remaining bottlenecks. This observation
+does not establish full-suite or SH-07 performance or verification authority.
+
 The fixed P15 stage2 profiling slice is a development-only observation over
 `bootstrap/clojure/fixtures/accepted/core-app.gravity`. It returns an EDN
 receipt with static stage2 instruction/function-call counts, finite static

@@ -1,0 +1,23 @@
+Execution error (ExceptionInfo) at gravity.self-hosting.sh01-host-resource-broker/fail! (sh01_host_resource_broker.clj:50).
+SH-01 broker timed out waiting for host-wide capacity
+
+Full report at:
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/clojure-12770151201411940653.edn
+       10.89 real         3.76 user         0.35 sys
+           198803456  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               14493  page reclaims
+                   8  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   9  signals received
+                   0  voluntary context switches
+               11967  involuntary context switches
+         26584688952  instructions retired
+         12463483322  cycles elapsed
+           174900256  peak memory footprint
