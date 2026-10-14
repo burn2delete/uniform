@@ -37,6 +37,15 @@ for this bounded source-handoff slice. Its exact metadata successor still
 requires independent review and serialized current-main/GitHub admission.
 Parent I9, Gate H/L2/F, propagation and full proof remain open.
 
+## Verified implementation integration
+
+PR #14 merged as `da6e1e70d7be28a92574cedb9de8950b20cfcc6b` after exact source/evidence and
+eligibility-head reviews plus serialized admission. This closes only the
+source-session handoff increment. The guarded terminal publisher and a
+separate independently reviewed publication PR preserve lifecycle provenance;
+the canonical ledger owns the terminal disposition. Parent I9 stays draft,
+with no aggregate SH-07, full proof, performance or release credit.
+
 ## Governing requirements and ownership
 
 D0, D1, D2, D3, D6, D8, D9, C5, C6, and BOOT1-BOOT8 govern the increment.
