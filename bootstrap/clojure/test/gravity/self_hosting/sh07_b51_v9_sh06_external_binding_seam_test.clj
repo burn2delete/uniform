@@ -56,7 +56,9 @@
                           (definition (symbol (str "fixture-caller-" ordinal "-" n)) 0
                             (cons 'do (repeat (if (= n 11) 15 32)
                                               (list (provider (mod (inc ordinal) 4)))))))
-                        (range 12))) [])]
+                        (range 12)))
+                (if (= ordinal 4)
+                  [(definition 'fixture-root6-private 0 0)] []))]
     (str (str/join "\n" (map pr-str (concat [header] public extra))) "\n")))
 
 (defn- bounded-content! []
