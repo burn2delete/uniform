@@ -11077,18 +11077,35 @@
                (assoc groups form-id
                       (conj (if (= prior nil) [] prior) (get node :node-id))))))))
 
-(defn sh07-source-core-map-rows-join? [records groups rows]
-  (loop [remaining records]
+(defn sh07-source-core-map-owner-anchors [request row group nodes]
+  (if (= (get row :disposition) :emitted) group
+    (loop [remaining group result []]
+      (if (= (count remaining) 0) result
+        (let [id (first remaining) node (get nodes id)
+              matches (if (= (get row :reason) :core-operator)
+                        (let [form (sh07-find-form (get request :internal-indexes)
+                                                   (get (get row :source) :form-id))]
+                          (= (get node :core-form) (sh07-source-core-special-kind (get form :value))))
+                        (sh07-source-core-map-owner-kind? row node))]
+          (recur (rest remaining) (if matches (conj result id) result)))))))
+
+(defn sh07-source-core-map-rows-join? [request records groups rows nodes]
+  (let [check (sh07-input-check request)
+        indexed (assoc request :internal-indexes (get check :indexes))]
+   (if (= (get check :status) :accepted)
+    (loop [remaining records]
     (if (= (count remaining) 0) true
       (let [row (first remaining)
             form-id (get (get row :source) :form-id)
             owner (get rows (get row :owner-form-id))
-            anchors (get groups (get row :owner-form-id))]
-        (if (= [true true true true true]
+            anchors (sh07-source-core-map-owner-anchors indexed row
+                     (get groups (get row :owner-form-id)) nodes)]
+        (if (= [true true true true true true]
                [(= (get row :owner-syntax-id) (get (get owner :source) :syntax-id))
                 (= (get owner :disposition) :emitted)
                 (= (get row :anchor-node-ids) anchors)
                 (> (count anchors) 0)
+                (sh07-all-unique? anchors)
                 (if (= (get row :disposition) :emitted)
                   (= [true true true]
                      [(= (get row :reason) :core-node-source)
@@ -11098,7 +11115,7 @@
                      [(= (count (get row :emitted-node-ids)) 0)
                       (= (get groups form-id) nil)
                       (if (= (get row :reason) :core-node-source) false true)]))])
-          (recur (rest remaining)) false)))))
+          (recur (rest remaining)) false)))) false)))
 
 (defn sh07-source-core-map-nodes-join? [nodes source-map rows module]
   (if (= (count nodes) (count source-map))
@@ -11196,14 +11213,18 @@
 
 ; Index existing semantic records once, then join each source role directly.
 (defn sh07-source-core-map-record-index [records owner-key form-key]
-  (loop [remaining records result {}]
-    (if (= (count remaining) 0) result
-      (let [record (first remaining)]
-        (recur (rest remaining)
-               (assoc result [(get record owner-key) (get record form-key)] record))))))
+  (if (vector? records)
+    (loop [remaining records result {}]
+      (if (= (count remaining) 0) result
+        (let [record (first remaining)
+              key [(get record owner-key) (get record form-key)]]
+          (if (contains? result key) {:source-core-map-index-error :duplicate-record-key}
+            (recur (rest remaining) (assoc result key record))))))
+    {:source-core-map-index-error :record-vector-required}))
 
 (defn sh07-source-core-map-semantic-indexes [core]
-  {:definitions (sh07-source-core-map-record-index (get core :definitions) :core-node-id nil)
+  {:nodes (sh07-source-core-map-record-index (get core :nodes) :node-id nil)
+   :definitions (sh07-source-core-map-record-index (get core :definitions) :core-node-id nil)
    :functions (sh07-source-core-map-record-index (get core :function-records) :function-core-node-id nil)
    :lexical (sh07-source-core-map-record-index (get core :lexical-bindings) :let-core-node-id :definition-form-id)
    :loops (sh07-source-core-map-record-index (get core :loop-bindings) :loop-core-node-id :definition-form-id)
@@ -11212,6 +11233,22 @@
    :handlers (sh07-source-core-map-record-index (get core :error-handlers) :core-node-id :catch-clause-form-id)
    :patterns (sh07-source-core-map-record-index (get core :match-pattern-records) :core-node-id :pattern-form-id)
    :branches (sh07-source-core-map-record-index (get core :match-branch-records) :core-node-id :clause-ordinal)})
+
+(defn sh07-source-core-map-semantic-indexes-valid? [indexes]
+  (loop [families (keys indexes)]
+    (if (= (count families) 0) true
+      (if (contains? (get indexes (first families)) :source-core-map-index-error) false
+        (recur (rest families))))))
+
+; Exact correspondence preserves all existing C6 record metadata. Expected
+; records come from the freshly rebuilt and resolved core, never supplied RC.
+(defn sh07-source-core-map-semantic-record-joins? [actual fresh-expected]
+  (let [actual-indexes (sh07-source-core-map-semantic-indexes actual)
+        expected-indexes (sh07-source-core-map-semantic-indexes fresh-expected)]
+    (if (sh07-source-core-map-semantic-indexes-valid? actual-indexes)
+      (if (sh07-source-core-map-semantic-indexes-valid? expected-indexes)
+        (if (= actual-indexes expected-indexes)
+          (= actual fresh-expected) false) false) false)))
 
 (defn sh07-source-core-map-position [ids id]
   (loop [remaining ids ordinal 0]
@@ -11445,7 +11482,8 @@
         indexed (assoc request :internal-indexes (get check :indexes))
         nodes (sh07-source-core-map-node-index (get core :nodes))
         indexes (sh07-source-core-map-semantic-indexes core)]
-    (if (= (get check :status) :accepted)
+    (if (if (= (get check :status) :accepted)
+          (sh07-source-core-map-semantic-indexes-valid? indexes) false)
       (loop [remaining records]
         (if (= (count remaining) 0) true
           (let [row (first remaining)
@@ -11453,7 +11491,9 @@
                         (if (= (count ids) 0) true
                           (let [node (get nodes (first ids))]
                             (if (if (sh07-source-core-map-role-join? indexed row node indexes)
-                                  (if (= (get row :disposition) :emitted)
+                                  (if (if (= (get row :disposition) :emitted)
+                                        (= (first ids) (get (get row :emitted-node-ids)
+                                                        (- (count (get row :emitted-node-ids)) 1))) false)
                                     (sh07-source-core-map-children-join? indexed
                                      (sh07-find-form (get indexed :internal-indexes)
                                        (get (get row :source) :form-id)) node nodes) true) false)
@@ -11507,7 +11547,7 @@
                               records (get base :records)
                               rows (sh07-source-core-map-row-index records)
                               groups (sh07-source-core-map-node-groups (get resolved-core :nodes))]
-                          (if (= [true true true true true true true true true true]
+                          (if (= [true true true true true true true true true true true]
                                  [(= (get base :core-artifact-id) (get resolved-core :artifact-id-request))
                                   (= (count rows) (count (get request :forms)))
                                   (= (count records) (count (get request :forms)))
@@ -11519,7 +11559,9 @@
                                   (sh07-source-core-map-owner-kinds?
                                    records (sh07-source-core-map-node-index (get resolved-core :nodes)))
                                   (sh07-source-core-map-semantic-joins? request records resolved-core)
-                                  (sh07-source-core-map-rows-join? records groups rows)
+                                  (sh07-source-core-map-semantic-record-joins? resolved-core (get expected :value))
+                                  (sh07-source-core-map-rows-join? request records groups rows
+                                    (sh07-source-core-map-node-index (get resolved-core :nodes)))
                                   (sh07-source-core-map-nodes-join?
                                    (get resolved-core :nodes) (get resolved-core :source-map)
                                    rows (get request :module))])

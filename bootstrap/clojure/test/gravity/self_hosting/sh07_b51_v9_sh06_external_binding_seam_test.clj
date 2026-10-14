@@ -297,6 +297,21 @@
         (is (= :accepted (:status artifact)) name)
         (is (= :passed (:status pass)) name)
         (is (= (count (:forms q)) (count rows)) name)
+        (is (true? (bootstrap/sh07-core-execute! path 'sh07-source-core-map-semantic-record-joins? [rc rc])) name)
+        (doseq [field-path (case family
+                            "sh-07-b3" [[:lexical-bindings 0 :binding-scope-id]]
+                            "sh-07-b4" [[:loop-bindings 0 :binding-scope-id]]
+                            "sh-07-b5" [[:var-references 0 :symbol] [:var-references 0 :binding-class]
+                                        [:var-references 0 :definition-kind] [:var-references 0 :resolution-order]]
+                            "sh-07-b6" [[:mutations 0 :target-binding-class]]
+                            "sh-07-b9" [[:error-handlers 0 :protected-core-node-id] [:error-handlers 0 :handler-child-index]
+                                        [:error-handlers 0 :clause-count] [:error-handlers 0 :catch-clause-syntax-id]]
+                            "sh-07-b11" [[:match-pattern-records 0 :parent-ordinal] [:match-pattern-records 0 :root-ordinal]
+                                         [:match-pattern-records 0 :pattern-binding-scope-id]
+                                         [:match-pattern-records 0 :pattern-binding-use-syntax-ids]] [])]
+          (is (contains? (get-in rc (pop field-path)) (peek field-path)) (str name " " field-path))
+          (is (false? (bootstrap/sh07-core-execute! path 'sh07-source-core-map-semantic-record-joins?
+                        [(assoc-in rc field-path :altered-record-field) rc])) (str name " " field-path)))
         (swap! roles into (map :reason rows))
         (when mutation-path
           (is (false? (bootstrap/sh07-core-execute!
@@ -361,3 +376,48 @@
     (is (= "SH07-B51-00945-GOVERNED-READ" (:id (mapping-rejection q rc [] []))))
     (is (= :source-core-map-digest-recomputation
            (get-in (mapping-rejection q rc d (assoc z (dec (count z)) (digest \0))) [:details :reason])))))
+
+(deftest c6-map-full-fresh-record-correspondence-and-duplicate-keys-are-exact
+  (let [{:keys [q rc d z]} (mapping-values)
+        invoke #(bootstrap/sh07-core-execute! mapping-fixture %1 %2)
+        base (:value (invoke 'sh07-resolve-source-core-map-preimage [(:preimage (last d)) (pop z)]))
+        rows (:records base)
+        duplicate (update rc :definitions #(conj % (first %)))
+        index (invoke 'sh07-source-core-map-record-index [(:definitions duplicate) :core-node-id nil])
+        empty-key (assoc rc :var-references nil)]
+    (is (true? (invoke 'sh07-source-core-map-semantic-record-joins? [rc rc])))
+    (is (> (count (:nodes rc)) 1))
+    (is (false? (invoke 'sh07-source-core-map-semantic-record-joins?
+                        [(update rc :nodes #(vec (reverse %))) rc])))
+    (is (contains? rc :evaluation-order))
+    (is (false? (invoke 'sh07-source-core-map-semantic-record-joins?
+                        [(assoc rc :evaluation-order [:foreign-evaluation-record]) rc])))
+    (is (false? (invoke 'sh07-source-core-map-semantic-record-joins?
+                        [(assoc-in rc [:function-records 0 :definition-kind] :foreign) rc])))
+    (is (= {:source-core-map-index-error :duplicate-record-key} index))
+    (is (false? (invoke 'sh07-source-core-map-semantic-record-joins? [duplicate duplicate])))
+    (is (false? (invoke 'sh07-source-core-map-semantic-joins? [q rows duplicate])))
+    (is (false? (invoke 'sh07-source-core-map-semantic-record-joins? [empty-key rc])))))
+
+(deftest c6-map-mixed-emission-owner-filtering-keeps-order-and-rejects-empty-or-duplicate-anchors
+  ;; Synthetic grouping exercises the relation helper with genuine node IDs.
+  ;; It does not claim that this grouping is an authenticated producer output.
+  (let [{:keys [q rc d z]} (mapping-values)
+        invoke #(bootstrap/sh07-core-execute! mapping-fixture %1 %2)
+        base (:value (invoke 'sh07-resolve-source-core-map-preimage [(:preimage (last d)) (pop z)]))
+        rows (:records base)
+        row (first (filter #(= :definition-name (:reason %)) rows))
+        owner-id (:owner-form-id row)
+        def-id (first (:anchor-node-ids row))
+        fn-id (:node-id (first (filter #(= :fn (:core-form %)) (:nodes rc))))
+        index (invoke 'sh07-source-core-map-row-index [rows])
+        nodes (invoke 'sh07-source-core-map-node-index [(:nodes rc)])
+        check (invoke 'sh07-input-check [q])
+        indexed (assoc q :internal-indexes (:indexes check))
+        mixed {owner-id [fn-id def-id]}]
+    (is (= [def-id] (invoke 'sh07-source-core-map-owner-anchors [indexed row [fn-id def-id] nodes])))
+    (is (true? (invoke 'sh07-source-core-map-rows-join? [q [row] mixed index nodes])))
+    (is (false? (invoke 'sh07-source-core-map-rows-join? [q [row] {owner-id [fn-id]} index nodes])))
+    (is (false? (invoke 'sh07-source-core-map-rows-join?
+                        [q [(assoc row :anchor-node-ids [def-id def-id])]
+                         {owner-id [fn-id def-id def-id]} index nodes])))))

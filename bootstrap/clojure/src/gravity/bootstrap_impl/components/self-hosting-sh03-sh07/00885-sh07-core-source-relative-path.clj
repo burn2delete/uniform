@@ -26,20 +26,20 @@
    'sh07-verify-source-core-map
    {:arity 4 :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 495529)
+(def sh07-core-expected-source-byte-count 498219)
 (def sh07-core-expected-source-content-hash
-  "sha256:12e00273b87c475a02d4d2d54bb88814ec1ea17c5808f9145347b334830e350f")
+  "sha256:34371eb78cbe9d1feabf421c70ced3b9a89bbb6879fab671203ca29a70672ebe")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:ff810cc3b799eb470a6a84a26a846e20f2253d10cc8cde071ed243116dc260da")
+  "sha256:bf16573f21fd7efb26549ce958fc3e6b672e1d49d5f8c9a2c72a7b60fb986829")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:b81296d8e8065ca256b63d8a1656ab1ecf634213eef6bb915d3be79710aef386")
-(def sh07-core-expected-function-count 357)
+  "sha256:df91ea3bc30dee03968640777a62c6ef210748921649c291caa328da0af94d63")
+(def sh07-core-expected-function-count 360)
 (def sh07-core-expected-function-names-hash
-  "sha256:9af1c3f06332f51ca42ac68b36349ab59882e97b9c299f7b00f65aa6c7300960")
+  "sha256:0d70635e77175d450e0d6d0505d70f95ecb8ada5fb9ca242a3648ccabbbec85c")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:fb9b4d5c75c00d572750ce187f349d8da530b29b0cdc756c92bc662257264ebc")
+  "sha256:9af96f01a73b2f1c61c1e8dcea71b5ae49cfcfdd2934d932e333e4c91462b68a")
 (def sh07-core-public-function-hashes
-  '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:bef4354b0ec61beb87561d27e91ceac57c8f0eaa2ff06449464497422b8ffd23"})
+  '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:30b77009004032faa6306970676d9bf7e3a01c33d51006c9b69811a20cae1637"})
 
 (defn sh07-core-source-path
   []
