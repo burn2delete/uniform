@@ -6,11 +6,11 @@ This increment prepares the first ordered V9 completion slice: return the
 complete SH06 authority carrier from the same private source session that
 produces the module transactions. The human resumed the existing owner after
 the governed C6 mapping prerequisite was independently accepted and integrated
-through PRs #19/#20. Current-base reconciliation and fresh normal exit evidence
-are now in progress; this handoff is not accepted or integrated. Prior
+through PRs #19/#20. Current-base reconciliation and the fresh authentic normal/mutation gate
+have completed. This handoff is not yet accepted or integrated. Prior
 immutable HOLD evidence remains in commits `446d696` and `b978a476`; the
-historical observations below are preserved. A finalized normal return and
-fresh independent acceptance remain required for completion credit.
+historical observations below are preserved. Fresh exact independent acceptance and governed admission remain required
+for completion credit.
 
 The historical HOLD sections below retain their original observations. The
 current reconciliation base is `aa7eccc35f1329d6f848bb84326a34eb8ccf1bd7`, tree
@@ -22,7 +22,7 @@ integrated C6 mapping architecture and producer/consumer prerequisite. Fresh
 eleven-key products, 13/13/40/1 finalization, twenty-one-key inputs, post-final
 mutations and both exact independent reviews remain mandatory.
 
-Authoritative GitHub and local main were both observed at
+At the original reservation, authoritative GitHub and local main were observed at
 `6c402d3f97cfe6acf07346997af90de3b1e3a10b`, tree
 `085cd393a75bd45a997b7d3a9a588467bbb8f9ba`. Work occurs in the isolated
 `codex/sh07-source-handoff` branch. The saved project checkout and authoritative
@@ -67,7 +67,98 @@ certificate input, and serialized E9 schemas remain unchanged. The complete
 SH06 carrier is an in-memory source-handoff value, not a new certificate or
 runtime admission token.
 
-## Validation and conformance observations
+## Current resumed exit-gate evidence
+
+The authentic gate on reconciled source `f42c98cc5eb01f48c32a8efe115fccde5919d941`,
+tree `f64682d143f64280922438a7a106f57628e77080`, completed normally with
+exit 0: **2 tests / 84 assertions**, zero failures and errors.
+All seven real module transactions crossed accepted C6 mapping admission.
+The actual fixture C/T is `a653a1d94ec1dddf9286d5e76739a48f248ab9dc` /
+`6a748c20f3e18498fa46eb7c362498708c136f6d`.
+
+The normal producer returned eleven exact product keys and the complete
+sixteen-key SH06 carrier with seven authorities and 1,480 external edges.
+The carrier was assembled before the sole finalizer; the observed receipt
+has 13 acquisitions, 13 decodes, 40 events, and one finalization. Pure
+retained validation, immediate child validation, and the exact twenty-one-key
+checker envelope passed with source/Git/live acquisition sentinels armed.
+
+The executed matrix rejects every missing product/carrier key, extra keys,
+transaction ordinal/shape changes, false finalization, repeated finalization,
+mixed content/tree/plan identity, wrong roles, descriptor roots, and coherently
+rehashed events 17/25/39. Authentic C2 target proof, absent optional target
+count, and physical fragment positives pass; explicit nil/false/negative
+counts, substituted path/hash/tree/blob/descriptor proofs, missing fragments,
+and corrupted bytes/counts/OIDs reject. Acquisitions remain thirteen after
+the complete matrix. Authentic commit-proof missing/extra/corrupt/tree
+mutations also reject. No semantic or authenticity producer was replaced.
+
+The current ordinary run passes 106 tests / 744 assertions in fourteen
+namespaces with no skips. Current LOC, documents, roadmap, governance,
+C6 architecture-authority and diff checks pass. Literal160owned-C,
+PRE204paths/209operations/196decodes, seven logical algorithm descriptors,
+physical-fragment closure, and the 250-line production Clojure ceiling
+are preserved. The role seam and selected real dependency records establish
+bounded producer/envelope evidence, not authentic A/B/M execution or full
+PRE/classpath/checker proof. Gate H/L2/F and full I9 remain open.
+
+Raw evidence remains outside the worktree at `/Users/matt/.codex/artifacts/sh07-source-handoff-repair-20261013/`.
+`resumed-handoff-results.edn` SHA256: `7ee56ae35f6291c5b10f949ce3551a2a51c5d38c1f09eccbf2b427e141de7ab3`;
+`resumed-handoff.log` SHA256: `64d06f5071e866b31a003a7942e60e23d95bdb9e70da675eaa93fabc60bb46ab`.
+The first reconciled run at8629bbb0 stopped at module4 with2tests/10pass/1error.
+The bounded fixture had emitted only a namespace for the nonexporting
+root6_a module. Retained actual Q had zero forms/fragments and C6 correctly
+returned a request-shape diagnostic. Both independent reviewers confirmed
+this fixture defect. One deterministic private nullary literal function
+was added in the owned test path without calls, public arity changes or
+production validator changes. The completed fresh gate supersedes that
+failed fixture attempt, whose raw log/results remain preserved separately.
+
+The corrected 40-minute supervised run returned the authentic normal
+11/16/1480 shape and13/13/40/1 finalized receipt, then reached its procedural
+watchdog during retained SH06 verification before completing the matrix.
+Its log remains at `resumed-handoff-finalized-40min.log`; it grants no
+matrix acceptance or performance credit. If the completed gate uses the
+90-minute harness, that harness changes only the finite supervisor budget
+and adds transparent real-function replay logging and actual-product
+retention. It keeps the same validators, two test vars, 8GiB heap,
+canonical lock and shared broker. The longer harness was independently
+reviewed before use and grants no additional semantic authority.
+
+Earlier failures below are immutable historical observations, not the
+current acceptance result. Fresh exact independent review and governed
+admission remain required.
+
+The completed harness is `test-resumed-handoff-long.clj`, SHA256
+`f19914fb3b9a814a6c71940b18aa8ce64812a405981f6c5b39ee416386b1d352`.
+The producing implementation C/T is the `f42c98cc` / `f64682d1` tuple above;
+the separate fixture C/T is `a653a1d9` / `6a748c20`. The actual returned
+products are retained in `normal-returned-products.edn`: 414,455,240 bytes,
+SHA256 `9163f3ef519f20c57e8eb910d6714a752b9fa2149f552f2afc982b5b9b05c608`.
+The same-file stat/size/hash and process exit 0 are recorded in
+`completed-input-release-receipt.json`. Its observation confirms no matching
+gate survivor and both canonical/heavy-slot locks free at that instant.
+
+The read-only `performance-observations.json` snapshot preserves exact source,
+fixture, harness and log identities, all seven module spans, 42 retained replay
+calls (two completed positive reconstructions; 40 rejection calls), CPU/RSS
+samples and native stack samples. Completed module work totals 1,382.323
+seconds; the post-module-to-retention interval is 660.454 seconds and combines
+source-semantic construction, carrier assembly, return checks and harness
+serialization. Successful fresh retained replays take 447.879 and 437.808
+seconds. These are diagnostic observations, not benchmark or speedup credit.
+Existing observers do not identify the module ordinal inside each replay.
+
+No compact module-4 fixture was retained before the producer process ended.
+The performance lane may use independently reviewed external streaming
+selection of transaction 4's resolution artifact and authority 4 plus the
+retained plan authority to construct its exact SH06 context. The original
+414 MB input must retain its same-file provenance; no full hydration, bound
+increase, truncation, older-diagnosis substitution or accepted-verification
+result reuse is authorized by this data handoff. Fresh verification remains
+required. Performance and source-handoff correctness remain separate lanes.
+
+## Historical validation and conformance observations
 
 The observations in this section describe the original held candidate. The
 resumed prerequisite repair is recorded separately below.
@@ -129,7 +220,7 @@ physical pin-mask paths. Both runs report 31 tests / 334 assertions with one
 error. The fixture is preserved; this increment does not repair unrelated
 contract-discharge or runtime/algorithm failures.
 
-## Acceptance gate and residual boundaries
+## Historical acceptance gate and residual boundaries
 
 Independent reviewer `handoff_review` returned **HOLD / changes requested at
 the exit gate** for frozen candidate
@@ -213,7 +304,7 @@ repaired here and is not bypassed in a production preflight. The bounded
 envelope fixture reads only the actual dependency source records its identity
 requires; it grants no full classpath admission claim.
 
-## Distinct C6 prerequisite and resumed exit gate
+## Historical distinct C6 prerequisite and held exit gate
 
 The exact clean repair candidate is
 `01885f2491dbb011cc14ce64d58d1a444e0ea994`, tree
