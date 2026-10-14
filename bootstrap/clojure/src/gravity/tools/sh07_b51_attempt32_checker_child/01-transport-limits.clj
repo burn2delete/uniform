@@ -65,7 +65,8 @@
 (def ^:private product-keys
   #{:m0s :m1 :m2s :bundle-core :execution-bundle-core-id :source-forms
     :module-transactions :sh06-resolution-plan-authority
-    :source-semantic-carrier :source-read-receipt})
+    :sh06-authority-carrier :source-semantic-carrier :source-read-receipt})
+(declare ^:private validate-sh06-handoff!)
 (def ^:private source-receipt-keys
   #{:schema :role :commit :tree :source-descriptors
     :source-descriptors-root :events :event-root :counters :finalized})

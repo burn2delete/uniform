@@ -1,135 +1,97 @@
 
 (defn p15-s23-sh07-b51-build-sh06-authority-carrier
+  "Reconstruct retained SH06 authority without acquiring a source. This is
+  source-handoff validation only; it grants no whole-object admission."
   [commit tree products]
-  (let [expected-product-keys p15-s23-sh07-b51-v9-builder-receipted-product-keys
-        receipt (:source-read-receipt products)
-        source-descriptors (:source-descriptors receipt)
-        module-descriptors (:m0s products)
-        manifest (:m1 products)
-        transactions (:module-transactions products)
-        resolution-plan-authority (:sh06-resolution-plan-authority products)
-        source-semantic-carrier (:source-semantic-carrier products)
-        content {:commit commit :tree tree}
-        entries
-        (mapv
-         (fn [module-ordinal]
-           (p15-s23-sh07-b51-acquire-source-entry
-            commit tree (nth p15-s23-sh07-b51-source-specs
-                             (+ 3 module-ordinal))))
-         (range 7))
-        sources
-        (mapv
-         (fn [module-ordinal entry]
-           (p15-s23-sh07-b51-module-input-record
-            (p15-s23-sh07-b51-module-spec module-ordinal) entry))
-         (range 7) entries)
-        preimage
-        {:schema :gravity/sh07-b51-c5-authority-preimage-v1
-         :content content
-         :content-object-proof (:content-object-proof (first entries))
-         :source-descriptors (mapv :descriptor entries)
-         :module-source-inputs
-         (mapv #(select-keys % [:descriptor :source-object-proof]) entries)
-         :module-source-descriptors module-descriptors
-         :link-manifest manifest}
-        _ (p15-s23-sh07-b51-validate-c5-authority-preimage! preimage)
-        c5-authorities
-        (mapv
-         (fn [module-ordinal source transaction]
-           (let [resolution (:resolution-artifact transaction)
-                 sh05 (:sh05-macro-artifact resolution)
-                 base (sh06-resolution-request (:path source) sh05)]
-             (p15-s23-sh07-b51-c5-external-binding-authority
-              module-ordinal source sh05 base preimage)))
-         (range 7) sources transactions)
-        contexts
-        (mapv #(p15-s23-sh07-b51-sh06-context
-                % resolution-plan-authority)
-              c5-authorities)
-        resolution-artifacts (mapv :resolution-artifact transactions)
-        resolution-artifact-ids (mapv :artifact-id resolution-artifacts)
-        resolution-verifications
-        (mapv sh06-resolution-artifact-verification
-              resolution-artifacts contexts)
-        replayed-requests
-        (mapv sh07-core-authenticated-request
-              resolution-artifacts contexts)
-        semantic-projection-ids
-        (mapv #(get-in % [:authenticated-core-request :lineage
-                          :sh06-semantic-projection-id])
-              transactions)
-        resolution-artifact-paths
-        (mapv #(vector :resolution-artifacts %) (range 7))
-        semantic-projection-paths
-        (mapv #(vector :semantic-projection-ids %) (range 7))
-        link-authority-event-product-ids
-        (mapv :product-id (subvec (:events receipt) 17 24))
-        link-authority-id
-        (p15-s23-sh07-b51-canonical-id
-         [:gravity/sh07-b51-sh06-link-authority-id-e2-v1
-          {:resolution-artifact-ids resolution-artifact-ids
-           :semantic-projection-ids semantic-projection-ids
-           :event-product-ids link-authority-event-product-ids
-           :manifest-id (:manifest-id manifest)
-           :resolution-plan-authority resolution-plan-authority
-           :external-binding-authorities c5-authorities}])
-        base
-        {:content content
-         :source-descriptors (subvec source-descriptors 3 10)
-         :bundle-core-id (:execution-bundle-core-id products)
-         :resolution-artifact-paths resolution-artifact-paths
-         :resolution-artifacts resolution-artifacts
-         :resolution-verifications resolution-verifications
-         :semantic-projection-paths semantic-projection-paths
-         :semantic-projection-ids semantic-projection-ids
-         :module-source-descriptors module-descriptors
-         :link-manifest manifest
-         :link-authority-event-product-ids link-authority-event-product-ids
-         :link-authority-id link-authority-id
-         :expected-edge-census (:edges manifest)
-         :resolution-plan-authority resolution-plan-authority
-         :external-binding-authorities c5-authorities}
-        carrier
-        (assoc base :carrier-id
-               (p15-s23-sh07-b51-canonical-id
-                [:gravity/sh07-b51-sh06-authority-carrier-id-e2-v1 base]))]
+  (let [receipt (:source-read-receipt products)
+        retained (get-in products [:sh06-authority-carrier
+                                  :external-binding-authorities])
+        preimage (:preimage (first retained))
+        content {:commit commit :tree tree}]
     (when-not
-     (and (p15-s23-sh07-b51-exact-keys? products expected-product-keys)
-          (= content (select-keys receipt [:commit :tree]))
-          (= 13 (count source-descriptors))
-          (= {:acquire-count 13 :decode-count 13
-              :event-count 40 :finalize-count 1}
-             (:counters receipt))
-          (= (:source-descriptors preimage) (subvec source-descriptors 3 10))
-          (= content (:content resolution-plan-authority))
-          (p15-s23-sh07-b51-resolution-plan-authority-valid?
-           resolution-plan-authority)
-          (p15-s23-sh07-b51-source-semantic-carrier-valid?
-           content receipt transactions source-semantic-carrier)
-          (= 7 (count module-descriptors) (count transactions)
-             (count c5-authorities) (count resolution-artifacts)
-             (count resolution-verifications)
-             (count semantic-projection-ids))
-          (= (:module-source-ids manifest)
-             (mapv :module-source-id module-descriptors))
-          (= (:manifest-id manifest) (:manifest-id (:bundle-core products)))
-          (= (:execution-bundle-core-id products)
-             (p15-s23-sh07-b51-canonical-id (:bundle-core products)))
-          (= replayed-requests
-             (mapv :authenticated-core-request transactions))
-          (every? #(= :passed (:status %)) resolution-verifications)
-          (every? p15-s23-sh07-b51-digest-id? semantic-projection-ids)
+     (and (p15-s23-sh07-b51-exact-keys?
+           products p15-s23-sh07-b51-v9-builder-receipted-product-keys)
           (p15-s23-sh07-b51-exact-keys?
-           base p15-s23-sh07-b51-sh06-authority-carrier-base-keys)
-          (= (conj p15-s23-sh07-b51-sh06-authority-carrier-base-keys
-                   :carrier-id)
-             (set (keys carrier))))
-      (p15-s23-sh07-b51-c5-authority-fail!
-       :sh06-authority-carrier-join
-       {:transaction-count (count transactions)
-        :source-descriptor-count (count source-descriptors)}))
-    carrier))
-
+           (:sh06-authority-carrier products)
+           (conj p15-s23-sh07-b51-sh06-authority-carrier-base-keys :carrier-id))
+          (= content (select-keys receipt [:commit :tree]))
+          (p15-s23-sh07-b51-exact-keys?
+           receipt #{:schema :role :commit :tree :source-descriptors
+                     :source-descriptors-root :events :event-root
+                     :counters :finalized})
+          (= :gravity/sh07-b51-source-read-receipt-v3 (:schema receipt))
+          (contains? #{:producer-census :independent-verifier-census :m}
+                     (:role receipt))
+          (true? (:finalized receipt))
+          (= {:acquire-count 13 :decode-count 13
+              :event-count 40 :finalize-count 1} (:counters receipt))
+          (vector? retained) (= 7 (count retained))
+          (= (vec (range 7)) (mapv :module-ordinal retained))
+          (= (vec (repeat 7 preimage)) (mapv :preimage retained))
+          (= content (:content preimage))
+          (= (nth (:source-descriptors receipt) 12 nil)
+             (get-in products [:sh06-resolution-plan-authority
+                               :source-descriptor]))
+          (= (:source-descriptors preimage)
+             (subvec (:source-descriptors receipt) 3 10))
+          (= (:m0s products) (:module-source-descriptors preimage))
+          (= (:m1 products) (:link-manifest preimage))
+          (vector? (:module-transactions products))
+          (= 7 (count (:module-transactions products)))
+          (= (vec (range 7))
+             (mapv :module-ordinal (:module-transactions products)))
+          (= (:source-descriptors preimage)
+             (mapv :source-descriptor (:module-transactions products)))
+          (every? #(p15-s23-sh07-b51-exact-keys?
+                    % #{:module-ordinal :source-descriptor :resolution-artifact
+                        :c2-reader-artifact :authenticated-core-request
+                        :resolved-digests :module-core :template-carrier
+                        :generated-digest-carrier :resolved-core-carrier
+                        :module-digest-requests})
+                  (:module-transactions products))
+          (p15-s23-sh07-b51-source-semantic-carrier-valid?
+           content receipt (:module-transactions products)
+           (:source-semantic-carrier products)))
+      (p15-s23-sh07-b51-c5-authority-fail! :retained-carrier-join {}))
+    (p15-s23-sh07-b51-replay-returned-source-authority-events!
+     (:m0s products) (:m1 products)
+     (:sh06-resolution-plan-authority products) receipt)
+    (doseq [ordinal (range 17 24)]
+      (let [event (nth (:events receipt) ordinal)
+            plan (nth p15-s23-sh07-b51-source-event-plan ordinal)]
+        (when-not (and (= plan (select-keys event (keys plan)))
+                       (= (:source-raw-sha256 event)
+                          (:raw-sha256 (nth (:source-descriptors receipt)
+                                           (:source-ordinal plan))))
+                       (= (:product-id event)
+                          (p15-s23-sh07-b51-source-event-product-id event true)))
+          (p15-s23-sh07-b51-c5-authority-fail!
+           :retained-link-event {:ordinal ordinal}))))
+    (let [sources (:sources
+                   (p15-s23-sh07-b51-validate-c5-authority-preimage! preimage))
+          transactions (:module-transactions products)
+          authorities
+          (mapv (fn [ordinal source transaction]
+                  (let [sh05 (get-in transaction
+                                     [:resolution-artifact :sh05-macro-artifact])]
+                    (p15-s23-sh07-b51-c5-external-binding-authority
+                     ordinal source sh05
+                     (sh06-resolution-request (:path source) sh05) preimage)))
+                (range 7) sources transactions)
+          contexts (mapv #(p15-s23-sh07-b51-sh06-context
+                           % (:sh06-resolution-plan-authority products))
+                         authorities)
+          artifacts (mapv :resolution-artifact transactions)]
+      (when-not (= (:source-forms products)
+                   (mapv (comp vec :forms :module) sources))
+        (p15-s23-sh07-b51-c5-authority-fail! :retained-source-forms {}))
+      (when-not (= retained authorities)
+        (p15-s23-sh07-b51-c5-authority-fail! :retained-c5-authorities {}))
+      (p15-s23-sh07-b51-assemble-sh06-authority-carrier
+       commit tree products (:source-descriptors receipt) (:events receipt)
+       authorities
+       (mapv sh06-resolution-artifact-verification artifacts contexts)
+       (mapv sh07-core-authenticated-request artifacts contexts)))))
 (defn p15-s23-sh07-b51-sh06-authority-carrier-valid?
   [commit tree products carrier]
   (try

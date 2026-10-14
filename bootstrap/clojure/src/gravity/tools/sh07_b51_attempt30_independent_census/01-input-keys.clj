@@ -9,7 +9,7 @@
     :predecessor-executable-descriptor-id :module-source-identities
     :module-source-byte-counts :emitter-source-id :emitter-semantic-id
     :m0s :m1 :m2s :bundle-core :source-forms :module-transactions
-    :sh06-resolution-plan-authority :source-semantic-carrier
+    :sh06-resolution-plan-authority :sh06-authority-carrier :source-semantic-carrier
     :semantic-algorithm-source-descriptors :semantic-algorithm-source-root
     :checker :provenance})
 

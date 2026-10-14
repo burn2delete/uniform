@@ -140,31 +140,31 @@
          ordinal (:module-ordinal authority)
          input (when (and (integer? ordinal) (<= 0 ordinal 6))
                  (nth (:module-source-inputs preimage) ordinal nil))
-         expected-count
-         (or (:byte-count source-unit)
-             (get-in c2-artifact
-                     [:gravity-reader-boundary
-                      :authenticated-envelope-descriptor
-                      :source-revision :source-byte-count]))]
+         source-proof (:source-object-proof input)]
      (when (nil? context)
        (sh06-resolution-c5-fail! source-path :missing-context {:phase phase}))
      (sh06-resolution-content-proof-tree!
       source-path content (:content-object-proof preimage))
-     (when-not
-      (and (not legacy?) descriptor input
-           (= descriptor (:descriptor input))
-           (= source-path (:path source-unit) (:path descriptor))
-           (= (:raw-sha256 descriptor) (:bytes-hash source-unit))
-           (= (:byte-count descriptor) expected-count))
-       (sh06-resolution-c5-fail!
-        source-path :contextual-source-snapshot
-        {:phase phase :module-ordinal ordinal}))
-     (sh06-resolution-source-proof-bytes!
-      source-path content descriptor (:source-object-proof input))
-     {:canonical-path source-path
-      :byte-count (:byte-count descriptor)
-      :bytes-hash (:raw-sha256 descriptor)
-      :immutable-git-object? true})))
+     ;; The envelope's source-revision describes the reader compiler, not
+     ;; this target module. Its count comes from the authenticated Git blob;
+     ;; the C2 bytes-hash below joins that exact blob to the reader product.
+     (let [source-bytes (sh06-resolution-source-proof-bytes!
+                         source-path content descriptor source-proof)
+           expected-count (if (contains? source-unit :byte-count)
+                            (:byte-count source-unit) (count source-bytes))]
+       (when-not
+        (and (not legacy?) descriptor input
+             (= descriptor (:descriptor input))
+             (= source-path (:path source-unit) (:path descriptor))
+             (= (:raw-sha256 descriptor) (:bytes-hash source-unit))
+             (= (:byte-count descriptor) expected-count))
+         (sh06-resolution-c5-fail!
+          source-path :contextual-source-snapshot
+          {:phase phase :module-ordinal ordinal}))
+       {:canonical-path source-path
+        :byte-count (:byte-count descriptor)
+        :bytes-hash (:raw-sha256 descriptor)
+        :immutable-git-object? true}))))
 
 (defn- sh06-source-snapshot-stable!
   ([source-path before c2-artifact legacy?]

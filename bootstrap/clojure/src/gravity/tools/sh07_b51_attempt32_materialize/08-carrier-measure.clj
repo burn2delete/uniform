@@ -137,6 +137,34 @@
                   :status :passed}))]
     (assoc base :witness-id (codec/H [(get stage-schema stage-key) base]))))
 
+(defn- validate-sh06-carrier-joins! [input]
+  ;; Retained-value joins only. Source-origin and whole-object gates are later.
+  (let [carrier (:sh06-authority-carrier input)
+        authorities (:external-binding-authorities carrier)
+        base (dissoc carrier :carrier-id)]
+    (when-not
+     (and (= #{:content :source-descriptors :bundle-core-id
+               :resolution-artifact-paths :resolution-artifacts
+               :resolution-verifications :semantic-projection-paths
+               :semantic-projection-ids :module-source-descriptors :link-manifest
+               :link-authority-event-product-ids :link-authority-id
+               :expected-edge-census :resolution-plan-authority
+               :external-binding-authorities :carrier-id} (set (keys carrier)))
+          (= {:commit (:snapshot-commit input) :tree (:snapshot-tree input)}
+             (:content carrier))
+          (= (:sh06-resolution-plan-authority input) (:resolution-plan-authority carrier))
+          (= (:m0s input) (:module-source-descriptors carrier))
+          (= (:m1 input) (:link-manifest carrier))
+          (= (codec/H (:bundle-core input)) (:bundle-core-id carrier))
+          (= (mapv :source-descriptor (:module-transactions input)) (:source-descriptors carrier))
+          (= (mapv :resolution-artifact (:module-transactions input)) (:resolution-artifacts carrier))
+          (vector? authorities) (= 7 (count authorities))
+          (= (vec (range 7)) (mapv :module-ordinal authorities))
+          (= (codec/H [:gravity/sh07-b51-sh06-authority-carrier-id-e2-v1 base])
+             (:carrier-id carrier)))
+      (fail! :sh06-authority-carrier))
+    carrier))
+
 (defn build-checker-precertificate
   "Build one complete E3 lowering product, all 34 bounded measurements and
   seven stage witnesses from authenticated checker-local inputs. No product,
@@ -144,6 +172,7 @@
   [input]
   (when-not (= checker-semantic-input-keys-e3 (set (keys input)))
     (fail! :checker-semantic-input))
+  (validate-sh06-carrier-joins! input)
   (let [content {:commit (:snapshot-commit input) :tree (:snapshot-tree input)}
         carrier (validate-source-semantic-carrier!
                  content (:source-semantic-carrier input))
@@ -165,8 +194,7 @@
          :semantic-algorithm-source-root
          (:semantic-algorithm-source-root input)
          :sh06-authority-carrier-id
-         (codec/H [:gravity/sh07-b51-sh06-authority-carrier-input-v1
-                   (:sh06-resolution-plan-authority input)])
+         (get-in input [:sh06-authority-carrier :carrier-id])
          :bundle-core-id (codec/H (:bundle-core input))}
         subjects (build-fuel-subjects source-roots stages collections)
         product-base

@@ -97,8 +97,8 @@
                :authorized-cross-fragment-edge :lexical-authority]}))
 
 (defn- sh06-resolution-exact-keys?
-  [value keys]
-  (and (map? value) (= keys (set (keys value)))))
+  [value expected-keys]
+  (and (map? value) (= expected-keys (set (keys value)))))
 
 (defn- sh06-resolution-sha256-id?
   [value]
