@@ -20,27 +20,26 @@
    {:arity 3 :params '[request template digest-requests]}
    'sh07-verify-core-resolved
    {:arity 4
-    :params '[request resolved-core digest-requests resolved-digests]}})
+    :params '[request resolved-core digest-requests resolved-digests]}
+   'sh07-resolve-source-core-map-preimage
+   {:arity 2 :params '[preimage resolved-digests]}
+   'sh07-verify-source-core-map
+   {:arity 4 :params '[request resolved-core digest-requests resolved-digests]}})
 
-(def sh07-core-expected-source-byte-count 444325)
+(def sh07-core-expected-source-byte-count 495529)
 (def sh07-core-expected-source-content-hash
-  "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092")
+  "sha256:12e00273b87c475a02d4d2d54bb88814ec1ea17c5808f9145347b334830e350f")
 (def sh07-core-expected-plan-semantic-hash
-  "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd")
+  "sha256:ff810cc3b799eb470a6a84a26a846e20f2253d10cc8cde071ed243116dc260da")
 (def sh07-core-expected-functions-semantic-hash
-  "sha256:6942122229f13d1bb14ae01ffdb37ca52cc555fd68f819cca76f30284fa791db")
-(def sh07-core-expected-function-count 305)
+  "sha256:b81296d8e8065ca256b63d8a1656ab1ecf634213eef6bb915d3be79710aef386")
+(def sh07-core-expected-function-count 357)
 (def sh07-core-expected-function-names-hash
-  "sha256:4e7bbfcd94db26a468920a87917005eee97a85f8f0448ba32cd689cafc9d02e5")
+  "sha256:9af1c3f06332f51ca42ac68b36349ab59882e97b9c299f7b00f65aa6c7300960")
 (def sh07-core-expected-function-shapes-hash
-  "sha256:61d6a743d65973ec4cb357c7285fae622c25f42b04a7de6aa8bf0fd0f1c02ee4")
+  "sha256:fb9b4d5c75c00d572750ce187f349d8da530b29b0cdc756c92bc662257264ebc")
 (def sh07-core-public-function-hashes
-  {'sh07-build-core-template
-   "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
-   'sh07-verify-core-template
-   "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791"
-   'sh07-verify-core-resolved
-   "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba"})
+  '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:bef4354b0ec61beb87561d27e91ceac57c8f0eaa2ff06449464497422b8ffd23"})
 
 (defn sh07-core-source-path
   []
