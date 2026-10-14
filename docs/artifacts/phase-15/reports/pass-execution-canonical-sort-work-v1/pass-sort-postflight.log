@@ -1,0 +1,16 @@
+
+Testing gravity.self-hosting.pass-execution-canonical-sort-test
+
+Ran 5 tests containing 115 assertions.
+0 failures, 0 errors.
+
+Testing gravity.self-hosting.sh01-clojure-loc-test
+
+Ran 5 tests containing 12 assertions.
+0 failures, 0 errors.
+
+Testing gravity.self-hosting.sh01-language-boundary-test
+
+Ran 6 tests containing 11 assertions.
+0 failures, 0 errors.
+Clojure validation passed: 16 tests, 138 assertions, 3 attempted namespaces, 0 skipped namespaces
