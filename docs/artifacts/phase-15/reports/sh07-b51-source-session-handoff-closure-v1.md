@@ -4,11 +4,13 @@
 
 This increment prepares the first ordered V9 completion slice: return the
 complete SH06 authority carrier from the same private source session that
-produces the module transactions. It has resumed as draft under explicit human
-authorization to repair its demonstrated SH06 prerequisite. It is not accepted
-or integrated. Prior immutable HOLD evidence remains in commits `446d696` and
-`b978a476`; the historical observations below are preserved. A finalized normal
-return and fresh independent acceptance remain required for completion credit.
+produces the module transactions. Explicit human authorization resumed the
+demonstrated SH06 prerequisite repair. Those owning joins now pass on the real
+producer path, but a distinct inherited C6 module-transaction mapping check
+still rejects before finalization. It is not accepted or integrated. Prior
+immutable HOLD evidence remains in commits `446d696` and `b978a476`; the
+historical observations below are preserved. A finalized normal return and
+fresh independent acceptance remain required for completion credit.
 
 Authoritative GitHub and local main were both observed at
 `6c402d3f97cfe6acf07346997af90de3b1e3a10b`, tree
@@ -200,3 +202,91 @@ source reader's unresolved `::s/invalid` alias in a dependency source. It is not
 repaired here and is not bypassed in a production preflight. The bounded
 envelope fixture reads only the actual dependency source records its identity
 requires; it grants no full classpath admission claim.
+
+## Distinct C6 prerequisite and resumed exit gate
+
+The exact clean repair candidate is
+`01885f2491dbb011cc14ce64d58d1a444e0ea994`, tree
+`86c6113e782080872a5d82c3df30a6c723885887`, over the same main base. The real
+seven-module, 1,480-edge seam was run serially under the shared memory-heavy
+broker with an 8 GiB heap and a 1,800-second watchdog. It ended normally with
+exit 1, reporting 5 tests / 30 assertions: 29 passed, one error at module 0,
+`SH07-B51-00945-GOVERNED-READ`, reason `:module-transaction`. This is not a
+watchdog timeout or a SH06 rejection.
+
+A separate bounded observational run used the unchanged real builder and
+validators, with wrappers that only record and delegate actual calls. For its
+actual fixture content `97b22f38da8f99564f6b91ce6144386341591ea2`, tree
+`8a9420c01d9dc2bf077ade796c89b7afd541af75`, it isolated exactly three failed
+predicates in the inherited `00945...plan-linker-14.clj` transaction consumer:
+
+- Request-form/core-node count equality: 925 request forms, 806 core nodes.
+- Equality of the request form-ID set and top-level node `:form-id` set.
+- Uniqueness of those top-level node `:form-id` values.
+
+The C2 source hash, path, project-root and root-record joins passed. SH06
+verification passed; the core template and resolution were accepted, template
+verification passed, and the exact positive schema-16 resolved verifier passed.
+The hostile namespace mutation returned the exact schema-16 `C6-VERIFY`
+rejection. Diagnostics were empty and the digest bound passed: 808 requests
+against the existing limit of 929. The active session had thirteen source
+entries, forty events, and `:finalized false`.
+
+The failed predicates are byte-for-byte unchanged from main. The C6 producer
+puts each node's form origin at `[:source :form-id]`, not top-level `:form-id`.
+Its semantic lowering also does not emit a separate node for every projected
+C2 form. C6 requires a surface-to-core map and generated-origin preservation;
+it does not require an all-form/all-node bijection. The next prerequisite is a
+governed C6 source-to-core coverage and identity join in this transaction
+consumer, with positive and negative evidence. This repair does not delete or
+relax those checks, alter C6 lowering, or guess a replacement authority rule.
+
+No finalized eleven-key product, completed 13/13/40/1 receipt, authentic
+twenty-one-key envelope, or post-final mutation result has been observed. The
+complete authentic mutation matrix remains in the test and is not counted as
+executed acceptance evidence. The process-role observation is rebound in this
+producer-role test seam; it is not real A/B/M child-execution evidence. Separate
+A/B/M topology remains preservation-test evidence.
+No source-handoff completion, integration eligibility, or full I9 credit is
+granted. The distinct prerequisite remains ahead of handoff closure, while
+Gate H/L2/F and later authority propagation remain outside this repair.
+
+Raw diagnostic scripts and logs are preserved outside the clean worktree at
+`/Users/matt/.codex/artifacts/sh07-source-handoff-repair-20261013/`. The owning
+implementation, complete test matrix, and this report remain on PR #14; no
+merge, terminal publication, authoritative-main synchronization, or worktree
+archive is appropriate while the normal exit gate is blocked.
+
+The minimum prerequisite ownership is the existing module-transaction consumer
+in `00945...plan-linker-14.clj`, its existing authentic seam test, and the
+governed evidence/coordination records. C6, C3-C5 provenance, D1, D3, D9, and the
+V9 source-handoff contract govern it. The producer already accepts and verifies
+the core; changing `checked_core.gravity`, its bounds, profile/safety rules, or
+the source-session allocation is not justified by this evidence. Existing C6
+source-coverage evidence also records 29,231 forms and 24,597 core nodes. The
+required replacement must validate source-to-core coverage and generated
+origins, preserve core-node identity checks, and reject missing or altered
+mappings. Merely dropping the three failing predicates is not an accepted fix.
+
+Independent reviewers `handoff_review` and `handoff_adversarial` reviewed the
+exact repair source candidate and the actual bounded diagnostic evidence. Both
+returned HOLD / changes requested at the exit gate. They identified the same
+distinct inherited consumer prerequisite and granted no acceptance. The held
+lifecycle receipt preserves the prior reviews and immutable source tuple.
+
+During this held review, PR #15 advanced authoritative main to
+`cb0f21b7f8cd4fc60255d834533015812a8b9cd3`, tree
+`727470a5f72581181dd5bd31f096c8da7436835d`. PR #14 now conflicts with main. The
+candidate retains its original base and immutable review lineage; no merge,
+rebase, conflict resolution, ledger overwrite, or authoritative-main edit was
+performed for reconciliation.
+
+After the governed C6 prerequisite is accepted, reconcile only the reserved
+slice onto then-current main. Preserve main's terminal shards, active
+reservations, and histories; combine the relevant child/parent records rather
+than selecting the stale ledger wholesale, then recompute the manifest from
+the reconciled records. Revalidate source allocation and the exact new
+base/candidate/tree, rerun the authentic normal and post-final gates plus the
+scoped checks, and obtain fresh independent semantic/adversarial review before
+admission. This is a future reconciliation requirement, not authorization to
+integrate this held candidate now.
