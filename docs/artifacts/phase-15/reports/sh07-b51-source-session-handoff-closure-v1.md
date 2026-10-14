@@ -7,10 +7,10 @@ complete SH06 authority carrier from the same private source session that
 produces the module transactions. The human resumed the existing owner after
 the governed C6 mapping prerequisite was independently accepted and integrated
 through PRs #19/#20. Current-base reconciliation and the fresh authentic normal/mutation gate
-have completed. This handoff is not yet accepted or integrated. Prior
+have completed. The bounded source/evidence has independent acceptance; the ledger owns the current admission state. Prior
 immutable HOLD evidence remains in commits `446d696` and `b978a476`; the
-historical observations below are preserved. Fresh exact independent acceptance and governed admission remain required
-for completion credit.
+historical observations below are preserved. The ledger owns bounded completion credit after exact independent review
+and governed admission.
 
 The historical HOLD sections below retain their original observations. The
 current reconciliation base is `aa7eccc35f1329d6f848bb84326a34eb8ccf1bd7`, tree
@@ -27,6 +27,15 @@ At the original reservation, authoritative GitHub and local main were observed a
 `085cd393a75bd45a997b7d3a9a588467bbb8f9ba`. Work occurs in the isolated
 `codex/sh07-source-handoff` branch. The saved project checkout and authoritative
 main are not edited.
+
+## Independent acceptance disposition
+
+Both fresh independent semantic and adversarial reviewers accepted exact
+source/evidence candidate `c65b521a2b79ae7d9a3283526cb03dd824827e3f` and its
+clean frozen lifecycle successor. The ledger records integration eligibility
+for this bounded source-handoff slice. Its exact metadata successor still
+requires independent review and serialized current-main/GitHub admission.
+Parent I9, Gate H/L2/F, propagation and full proof remain open.
 
 ## Governing requirements and ownership
 
