@@ -7,7 +7,9 @@
              sh07-core-diagnostic-catalog
              sh07-build-core-template
              sh07-verify-core-template
-             sh07-verify-core-resolved])
+             sh07-verify-core-resolved
+             sh07-resolve-source-core-map-preimage
+             sh07-verify-source-core-map])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -2140,6 +2142,8 @@
    :evaluation-owner-function-syntax-id nil
    :definition-context :top-level
    :source-map []
+   :form-dispositions {}
+   :form-disposition-error nil
    :definitions []})
 
 (defn sh07-add-digest-request [state purpose preimage]
@@ -2162,6 +2166,350 @@
    :semantic-span (get form :source-span)
    :origin-chain (get form :origin-chain)
    :generated-origin (get form :generated-origin)})
+
+(defn sh07-source-core-record-state
+  [state form disposition reason owner node-id]
+  (let [form-id (get form :form-id)
+        records (get state :form-dispositions)
+        prior (get records form-id)
+        row
+        {:source (sh07-node-source form)
+         :parent-form-id (get form :parent-form-id)
+         :disposition disposition
+         :reason reason
+         :owner-form-id (get owner :form-id)
+         :owner-syntax-id (get owner :syntax-id)
+         :emitted-node-ids (if (= disposition :emitted) [node-id] [])
+         :anchor-node-ids [node-id]}]
+    (if (= prior nil)
+      (assoc state :form-dispositions (assoc records form-id row))
+      (if (if (= (get prior :source) (get row :source))
+            (if (= (get prior :parent-form-id) (get row :parent-form-id))
+              (if (= (get prior :disposition) disposition)
+                (if (= (get prior :reason) reason)
+                  (if (= (get prior :owner-form-id) (get row :owner-form-id))
+                    (= (get prior :owner-syntax-id) (get row :owner-syntax-id))
+                    false)
+                  false)
+                false)
+              false)
+            false)
+        (assoc state :form-dispositions
+               (assoc records form-id
+                      (assoc
+                       (assoc prior :anchor-node-ids
+                              (conj (get prior :anchor-node-ids) node-id))
+                       :emitted-node-ids
+                       (if (= disposition :emitted)
+                         (conj (get prior :emitted-node-ids) node-id)
+                         []))))
+        (assoc state :form-disposition-error
+               {:reason :conflicting-form-disposition :form-id form-id})))))
+
+(defn sh07-source-core-consume-tree
+  [request state root-id owner node-id reason subtree?]
+  (loop [frontier [root-id] current state visits 0]
+    (if (= (count frontier) 0)
+      current
+      (if (>= visits (get (sh07-bounds-value) :maximum-forms))
+        (assoc current :form-disposition-error
+               {:reason :form-disposition-traversal-bound :form-id root-id})
+        (let [form (sh07-find-form (get request :internal-indexes)
+                                   (first frontier))
+              next-state
+              (sh07-source-core-record-state
+               current form :consumed reason owner node-id)]
+          (if (map? form)
+            (recur
+             (if subtree?
+               (sh07-append-vector (get form :child-form-ids)
+                                   (vec (rest frontier)))
+               (vec (rest frontier)))
+             next-state (+ visits 1))
+            (assoc current :form-disposition-error
+                   {:reason :missing-consumed-form :form-id (first frontier)})))))))
+
+(defn sh07-source-core-binding-events [request binding-id]
+  (let [binding (sh07-find-form (get request :internal-indexes) binding-id)]
+    (loop [remaining (get binding :child-form-ids)
+           events [[binding-id :binding-vector false]]]
+      (if (= (count remaining) 0)
+        events
+        (recur (rest (rest remaining))
+               (conj events [(first remaining) :binding-name false]))))))
+
+(defn sh07-source-core-parameter-events [request parameter-id]
+  (let [parameters (sh07-find-form (get request :internal-indexes) parameter-id)]
+    (loop [remaining (get parameters :child-form-ids)
+           events [[parameter-id :parameter-vector false]]]
+      (if (= (count remaining) 0)
+        events
+        (recur (rest remaining)
+               (conj events [(first remaining) :parameter false]))))))
+
+(defn sh07-source-core-handler-events [request clause-ids]
+  (loop [remaining clause-ids events []]
+    (if (= (count remaining) 0)
+      events
+      (let [clause-id (first remaining)
+            clause (sh07-find-form (get request :internal-indexes) clause-id)
+            children (get clause :child-form-ids)]
+        (recur (rest remaining)
+               (sh07-append-vector
+                events
+                [[clause-id :catch-clause false]
+                 [(get children 0) :catch-operator false]
+                 [(get children 1) :catch-type false]
+                 [(get children 2) :catch-binding false]]))))))
+
+(defn sh07-source-core-pattern-events [pattern-body-ids]
+  (loop [remaining pattern-body-ids events []]
+    (if (= (count remaining) 0)
+      events
+      (recur (rest (rest remaining))
+             (conj events [(first remaining) :match-pattern true])))))
+
+(defn sh07-source-core-special-kind [operator]
+  (get '{quote :quote if :if do :do let :let fn :fn loop :loop
+         recur :recur def :def var :var set! :set! try :try
+         throw :throw match :match} operator))
+
+(defn sh07-source-core-consumed-events [request form core-form]
+  (let [children (get form :child-form-ids)
+        operator (sh07-find-form (get request :internal-indexes)
+                                (first children))]
+    (if (if (= (get form :kind) :list)
+          (= (sh07-source-core-special-kind (get operator :value)) core-form)
+          false)
+      (sh07-append-vector
+       [[(first children) :core-operator false]]
+       (if (= core-form :def)
+         [[(get children 1) :definition-name false]]
+         (if (= core-form :fn)
+           (sh07-source-core-parameter-events request (get children 1))
+           (if (contains? #{:let :loop} core-form)
+             (sh07-source-core-binding-events request (get children 1))
+             (if (= core-form :quote)
+               [[(get children 1) :quoted-data true]]
+               (if (= core-form :var)
+                 [[(get children 1) :var-target false]]
+                 (if (= core-form :set!)
+                   [[(get children 1) :mutation-target false]]
+                   (if (= core-form :try)
+                     (sh07-source-core-handler-events
+                      request (subvec children 2 (count children)))
+                     (if (= core-form :match)
+                       (sh07-source-core-pattern-events
+                        (subvec children 2 (count children)))
+                       [])))))))))
+      [])))
+
+(defn sh07-source-core-node-state [request state form core-form node-id]
+  (loop [events (sh07-source-core-consumed-events request form core-form)
+         current
+         (sh07-source-core-record-state
+          state form :emitted :core-node-source form node-id)]
+    (if (= (count events) 0)
+      current
+      (let [event (first events)]
+        (recur (rest events)
+               (sh07-source-core-consume-tree
+                request current (get event 0) form node-id
+                (get event 1) (get event 2)))))))
+
+(defn sh07-source-core-expression-intents [ids]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result [(first remaining) :core-node-source (first remaining)])))))
+
+(defn sh07-source-core-data-intents [ids reason owner-id]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest remaining)
+             (conj result [(first remaining) reason owner-id])))))
+
+(defn sh07-source-core-alternating-intents [ids reason owner-id]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0)
+      result
+      (recur (rest (rest remaining))
+             (sh07-append-vector
+              result [[(first remaining) reason owner-id]
+                      [(first (rest remaining)) :core-node-source
+                       (first (rest remaining))]])))))
+
+; This source-intent audit is independent of the actual emission event ledger.
+; Data contexts retain precedence over operator-looking forms inside them.
+(defn sh07-source-core-intent-children [request form reason owner-id]
+  (let [children (get form :child-form-ids)
+        form-id (get form :form-id)]
+    (if (contains? #{:quoted-data :match-pattern} reason)
+      (sh07-source-core-data-intents children reason owner-id)
+      (if (= reason :parameter-vector)
+        (sh07-source-core-data-intents children :parameter owner-id)
+        (if (= reason :binding-vector)
+          (sh07-source-core-alternating-intents children :binding-name owner-id)
+          (if (= reason :catch-clause)
+            [[(get children 0) :catch-operator owner-id]
+             [(get children 1) :catch-type owner-id]
+             [(get children 2) :catch-binding owner-id]
+             [(get children 3) :core-node-source (get children 3)]]
+            (if (= reason :core-node-source)
+              (if (= (get form :kind) :list)
+                (let [operator (sh07-find-form (get request :internal-indexes)
+                                               (get children 0))
+                      special (sh07-source-core-special-kind (get operator :value))
+                      head [[(get children 0) :core-operator form-id]]]
+                  (if (= special nil)
+                    (sh07-source-core-expression-intents children)
+                    (sh07-append-vector
+                     head
+                     (if (= special :quote)
+                       [[(get children 1) :quoted-data form-id]]
+                       (if (= special :def)
+                         [[(get children 1) :definition-name form-id]
+                          [(get children 2) :core-node-source (get children 2)]]
+                         (if (= special :fn)
+                           [[(get children 1) :parameter-vector form-id]
+                            [(get children 2) :core-node-source (get children 2)]]
+                           (if (contains? #{:let :loop} special)
+                             (sh07-append-vector
+                              [[(get children 1) :binding-vector form-id]]
+                              (sh07-source-core-expression-intents
+                               (vec (rest (rest children)))))
+                             (if (= special :var)
+                               [[(get children 1) :var-target form-id]]
+                               (if (= special :set!)
+                                 [[(get children 1) :mutation-target form-id]
+                                  [(get children 2) :core-node-source (get children 2)]]
+                                 (if (= special :try)
+                                   (sh07-append-vector
+                                    [[(get children 1) :core-node-source (get children 1)]]
+                                    (sh07-source-core-data-intents
+                                     (vec (rest (rest children))) :catch-clause form-id))
+                                   (if (= special :match)
+                                     (sh07-append-vector
+                                      [[(get children 1) :core-node-source (get children 1)]]
+                                      (sh07-source-core-alternating-intents
+                                       (vec (rest (rest children))) :match-pattern form-id))
+                                     (sh07-source-core-expression-intents
+                                      (vec (rest children))))))))))))))
+                (sh07-source-core-expression-intents children))
+              [])))))))
+
+(defn sh07-source-core-intents [request]
+  (loop [frontier (sh07-source-core-expression-intents
+                  (get request :top-level-form-ids))
+         intents {} visits 0]
+    (if (= (count frontier) 0)
+      {:status :accepted :intents intents}
+      (if (>= visits (get (sh07-bounds-value) :maximum-forms))
+        {:status :rejected :reason :source-intent-traversal-bound}
+        (let [entry (first frontier)
+              form-id (get entry 0)
+              reason (get entry 1)
+              owner-id (get entry 2)
+              form (sh07-find-form (get request :internal-indexes) form-id)]
+          (if (map? form)
+            (if (contains? intents form-id)
+              {:status :rejected :reason :duplicate-source-intent :form-id form-id}
+              (recur
+               (sh07-append-vector
+                (sh07-source-core-intent-children request form reason owner-id)
+                (vec (rest frontier)))
+               (assoc intents form-id
+                      {:reason reason :owner-form-id owner-id
+                       :disposition (if (= reason :core-node-source) :emitted :consumed)})
+               (+ visits 1)))
+            {:status :rejected :reason :missing-source-intent-form :form-id form-id}))))))
+
+(defn sh07-source-core-ordered-records [request dispositions intents]
+  (loop [remaining (get request :forms) ordinal 0 result []]
+    (if (= (count remaining) 0)
+      {:status :accepted :records result}
+      (let [form (first remaining)
+            form-id (get form :form-id)
+            row (get dispositions form-id)
+            intent (get intents form-id)
+            owner (sh07-find-form (get request :internal-indexes)
+                                  (get intent :owner-form-id))]
+        (if (if (map? row)
+              (if (map? intent)
+                (if (= (get row :source) (sh07-node-source form))
+                  (if (= (get row :parent-form-id) (get form :parent-form-id))
+                    (if (= (get row :disposition) (get intent :disposition))
+                      (if (= (get row :reason) (get intent :reason))
+                        (if (= (get row :owner-form-id) (get intent :owner-form-id))
+                          (= (get row :owner-syntax-id) (get owner :syntax-id))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+          (recur (rest remaining) (+ ordinal 1)
+                 (conj result (assoc row :ordinal ordinal)))
+          {:status :rejected :reason :unclassified-or-invalid-form-disposition
+           :form-id form-id :ordinal ordinal})))))
+
+(defn sh07-source-core-fragment-parents? [request]
+  (loop [fragments (get request :fragment-manifest)]
+    (if (= (count fragments) 0)
+      true
+      (let [fragment (first fragments)
+            members (set (get fragment :form-ids))
+            roots (set (get fragment :root-form-ids))
+            valid
+            (loop [ids (get fragment :form-ids)]
+              (if (= (count ids) 0)
+                true
+                (let [form (sh07-find-form (get request :internal-indexes) (first ids))
+                      parent (get form :parent-form-id)]
+                  (if (if (= parent nil)
+                        (contains? roots (get form :form-id))
+                        (if (contains? roots (get form :form-id)) false
+                          (contains? members parent)))
+                    (recur (rest ids)) false))))]
+        (if valid (recur (rest fragments)) false)))))
+
+(defn sh07-source-core-node-identities-unique? [nodes]
+  (loop [remaining nodes seen #{}]
+    (if (= (count remaining) 0) true
+      (let [id (get (first remaining) :node-id)]
+        (if (contains? seen id) false
+          (recur (rest remaining) (conj seen id)))))))
+
+(defn sh07-source-core-finalize [request lowered]
+  (let [state (get lowered :state)
+        dispositions (get state :form-dispositions)
+        intent-result (sh07-source-core-intents request)
+        intents (get intent-result :intents)
+        ordered (sh07-source-core-ordered-records request dispositions intents)]
+    (if (if (= (get state :form-disposition-error) nil)
+          (if (if (sh07-source-core-node-identities-unique? (get state :nodes))
+                (sh07-source-core-fragment-parents? request) false)
+           (if (= (get intent-result :status) :accepted)
+            (if (= (count dispositions) (count (get request :forms)))
+              (if (= (count intents) (count (get request :forms)))
+                (= (get ordered :status) :accepted)
+                false)
+              false)
+            false)
+           false)
+          false)
+      (assoc lowered :state
+             (assoc state :source-core-map-records (get ordered :records)))
+      {:status :rejected :rule "C6-ORIGIN" :form nil
+       :facts {:reason :source-core-disposition-coverage
+               :event-error (get state :form-disposition-error)
+               :intent-status (get intent-result :status)
+               :intent-reason (get intent-result :reason)
+               :record-reason (get ordered :reason)
+               :form-id (get ordered :form-id)}})))
 
 (defn sh07-evaluated-children [evaluation-kind children]
   (if (= evaluation-kind :function-creation)
@@ -2280,7 +2628,8 @@
            :origin-chain (get form :origin-chain)
            :generated-origin (get form :generated-origin)}))]
     {:status :accepted
-     :state next-state
+     :state (sh07-source-core-node-state
+             request next-state form core-form node-id)
      :node-id node-id}))
 
 (defn sh07-literal-kind? [kind]
@@ -6314,9 +6663,12 @@
         lowered))))
 
 (defn sh07-lower-top-level [request]
-  (sh07-lower-fragments
-   request (get request :fragment-manifest)
-   (sh07-empty-state) []))
+  (let [lowered (sh07-lower-fragments
+                 request (get request :fragment-manifest)
+                 (sh07-empty-state) [])]
+    (if (= (get lowered :status) :accepted)
+      (sh07-source-core-finalize request lowered)
+      lowered)))
 
 (defn sh07-b13-assembled-fragment-manifest
   [fragments roots]
@@ -6403,6 +6755,22 @@
          (get added :state)
          :sh07-core-provenance-binding-id
          provenance-preimage)
+        mapping-added
+        (sh07-add-digest-request
+         (get provenance-added :state)
+         :sh07-source-core-map-id
+         {:artifact :gravity/sh07-source-core-map
+          :schema-version 1
+          :rule-version :sh07-source-core-map-v1
+          :domain :gravity/sh07-source-core-map-v1
+          :module module :lineage lineage
+          :projection-binding (get request :projection-binding)
+          :fragment-manifest (get request :fragment-manifest)
+          :fragment-coverage (get request :fragment-coverage)
+          :module-assembly-manifest (get request :module-assembly-manifest)
+          :root-form-ids (get request :top-level-form-ids)
+          :core-artifact-id (get added :reference)
+          :records (get state :source-core-map-records)})
         template
         {:artifact :gravity/sh07-canonical-core-template
          :schema-version 16
@@ -6459,7 +6827,7 @@
          :provenance (get request :provenance)
          :diagnostics []}
         digest-requests
-        (get (get provenance-added :state) :digest-requests)
+        (get (get mapping-added :state) :digest-requests)
         template-carrier
         (sh07-template-carrier-preflight template)
         digest-carrier
@@ -6692,6 +7060,86 @@
             resolved))))
     (sh07-resolution-failure
      :controlled-reference-vector-required)))
+
+; V9 C6 mapping erratum V1: only these reference slots are resolved.
+(defn sh07-source-core-map-row-shape? [row]
+  (if (sh07-exact-keys?
+       row #{:ordinal :source :parent-form-id :disposition :reason
+             :owner-form-id :owner-syntax-id :emitted-node-ids :anchor-node-ids})
+    (let [source (get row :source)]
+      (if (sh07-exact-keys?
+           source #{:form-id :syntax-id :semantic-span :origin-chain :generated-origin})
+        (= [true true true true true true true true true true true true]
+           [(integer? (get row :ordinal))
+            (sh07-sha256-id? (get source :form-id))
+            (sh07-sha256-id? (get source :syntax-id))
+            (sh07-span-shape? (get source :semantic-span))
+            (sh07-origins-shape? (get source :origin-chain))
+            (sh07-origins-shape? (get source :generated-origin))
+            (if (= (get row :parent-form-id) nil) true
+              (sh07-sha256-id? (get row :parent-form-id)))
+            (sh07-sha256-id? (get row :owner-form-id))
+            (sh07-sha256-id? (get row :owner-syntax-id))
+            (contains? #{:emitted :consumed} (get row :disposition))
+            (contains? #{:core-node-source :core-operator :definition-name
+                         :parameter-vector :parameter :binding-vector :binding-name
+                         :quoted-data :var-target :mutation-target :catch-clause
+                         :catch-operator :catch-type :catch-binding :match-pattern}
+                       (get row :reason))
+            (if (sh07-bounded-vector? (get row :emitted-node-ids) 65536)
+              (sh07-bounded-vector? (get row :anchor-node-ids) 65536) false)])
+        false))
+    false))
+
+(defn sh07-resolve-source-core-map-rows [records resolved-digests]
+  (loop [remaining records ordinal 0 result []]
+    (if (= (count remaining) 0)
+      (sh07-resolution-success result)
+      (let [row (first remaining)]
+        (if (sh07-source-core-map-row-shape? row)
+          (if (= ordinal (get row :ordinal))
+            (let [emitted (sh07-resolve-reference-vector
+                           (get row :emitted-node-ids) resolved-digests)
+                  anchors (sh07-resolve-reference-vector
+                           (get row :anchor-node-ids) resolved-digests)]
+              (if (= (get emitted :status) :accepted)
+                (if (= (get anchors :status) :accepted)
+                  (recur (rest remaining) (+ ordinal 1)
+                         (conj result (assoc
+                                       (assoc row :emitted-node-ids (get emitted :value))
+                                       :anchor-node-ids (get anchors :value))))
+                  anchors)
+                emitted))
+            (sh07-resolution-failure :source-core-map-row-order))
+          (sh07-resolution-failure :source-core-map-row-shape))))))
+
+(defn sh07-resolve-source-core-map-preimage [preimage resolved-digests]
+  (if (= (get (sh07-generated-digest-carrier-preflight preimage) :status) :accepted)
+    (if (sh07-exact-keys?
+         preimage #{:artifact :schema-version :rule-version :domain :module :lineage
+                    :projection-binding :fragment-manifest :fragment-coverage
+                    :module-assembly-manifest :root-form-ids :core-artifact-id :records})
+      (if (= [true true true true true true]
+             [(= (get preimage :artifact) :gravity/sh07-source-core-map)
+              (= (get preimage :schema-version) 1)
+              (= (get preimage :rule-version) :sh07-source-core-map-v1)
+              (= (get preimage :domain) :gravity/sh07-source-core-map-v1)
+              (sh07-bounded-vector? (get preimage :records) 65536)
+              (vector? resolved-digests)])
+        (let [core (sh07-resolve-controlled-reference
+                    (get preimage :core-artifact-id) resolved-digests)
+              rows (sh07-resolve-source-core-map-rows
+                    (get preimage :records) resolved-digests)]
+          (if (= (get core :status) :accepted)
+            (if (= (get rows :status) :accepted)
+              (sh07-resolution-success
+               (assoc (assoc preimage :core-artifact-id (get core :value))
+                      :records (get rows :value)))
+              rows)
+            core))
+        (sh07-resolution-failure :source-core-map-schema))
+      (sh07-resolution-failure :source-core-map-shape))
+    (sh07-resolution-failure :source-core-map-carrier-bound)))
 
 (defn sh07-resolve-node-order [order resolved-digests]
   (if (vector? order)
@@ -10602,3 +11050,529 @@
          :schema-version 16 :status :rejected :rule "C6-VERIFY"})
       {:artifact :gravity/sh07-core-resolved-verification
        :schema-version 16 :status :rejected :rule "C6-VERIFY"})))
+
+; The exact fresh producer transcript validates role-specific semantic records;
+; the independent intent audit cannot consume an executable source child.
+(defn sh07-source-core-map-verdict [reason]
+  {:artifact :gravity/sh07-source-core-map-verification
+   :schema-version 1
+   :status (if (= reason nil) :passed :rejected)
+   :rule (if (= reason nil) nil "C6-VERIFY")
+   :reason reason :details {}})
+
+(defn sh07-source-core-map-row-index [records]
+  (loop [remaining records result {}]
+    (if (= (count remaining) 0) result
+      (let [row (first remaining)]
+        (recur (rest remaining)
+               (assoc result (get (get row :source) :form-id) row))))))
+
+(defn sh07-source-core-map-node-groups [nodes]
+  (loop [remaining nodes groups {}]
+    (if (= (count remaining) 0) groups
+      (let [node (first remaining)
+            form-id (get (get node :source) :form-id)
+            prior (get groups form-id)]
+        (recur (rest remaining)
+               (assoc groups form-id
+                      (conj (if (= prior nil) [] prior) (get node :node-id))))))))
+
+(defn sh07-source-core-map-owner-anchors [request row group nodes]
+  (if (= (get row :disposition) :emitted) group
+    (loop [remaining group result []]
+      (if (= (count remaining) 0) result
+        (let [id (first remaining) node (get nodes id)
+              matches (if (= (get row :reason) :core-operator)
+                        (let [form (sh07-find-form (get request :internal-indexes)
+                                                   (get (get row :source) :form-id))]
+                          (= (get node :core-form) (sh07-source-core-special-kind (get form :value))))
+                        (sh07-source-core-map-owner-kind? row node))]
+          (recur (rest remaining) (if matches (conj result id) result)))))))
+
+(defn sh07-source-core-map-rows-join? [request records groups rows nodes]
+  (let [check (sh07-input-check request)
+        indexed (assoc request :internal-indexes (get check :indexes))]
+   (if (= (get check :status) :accepted)
+    (loop [remaining records]
+    (if (= (count remaining) 0) true
+      (let [row (first remaining)
+            form-id (get (get row :source) :form-id)
+            owner (get rows (get row :owner-form-id))
+            anchors (sh07-source-core-map-owner-anchors indexed row
+                     (get groups (get row :owner-form-id)) nodes)]
+        (if (= [true true true true true true]
+               [(= (get row :owner-syntax-id) (get (get owner :source) :syntax-id))
+                (= (get owner :disposition) :emitted)
+                (= (get row :anchor-node-ids) anchors)
+                (> (count anchors) 0)
+                (sh07-all-unique? anchors)
+                (if (= (get row :disposition) :emitted)
+                  (= [true true true]
+                     [(= (get row :reason) :core-node-source)
+                      (= (get row :owner-form-id) form-id)
+                      (= (get row :emitted-node-ids) (get groups form-id))])
+                  (= [true true true]
+                     [(= (count (get row :emitted-node-ids)) 0)
+                      (= (get groups form-id) nil)
+                      (if (= (get row :reason) :core-node-source) false true)]))])
+          (recur (rest remaining)) false)))) false)))
+
+(defn sh07-source-core-map-nodes-join? [nodes source-map rows module]
+  (if (= (count nodes) (count source-map))
+    (loop [remaining nodes maps source-map seen #{}]
+      (if (= (count remaining) 0) true
+        (let [node (first remaining)
+              source (get node :source)
+              row (get rows (get source :form-id))
+              id (get node :node-id)]
+          (if (= [true true true true true true true true true]
+                 [(= source (get row :source))
+                  (= (get row :disposition) :emitted)
+                  (if (contains? seen id) false true)
+                  (= (get node :generated?) (> (count (get source :generated-origin)) 0))
+                  (= (get (get node :module) :namespace) (get module :namespace))
+                  (= (get (get node :module) :profile) (get module :profile))
+                  (= (get (get node :module) :target) (get module :target))
+                  (= (get node :preserved-declarations)
+                     {:effects (get module :effects) :capabilities (get module :capabilities)
+                      :safety (get module :safety)})
+                  (= (first maps)
+                     {:core-node-id id :syntax-id (get source :syntax-id)
+                      :form-id (get source :form-id)
+                      :source-span (get source :semantic-span)
+                      :origin-chain (get source :origin-chain)
+                      :generated-origin (get source :generated-origin)})])
+            (recur (rest remaining) (rest maps) (conj seen id)) false))))
+    false))
+
+(defn sh07-source-core-map-transcript? [resolved-core digest-requests]
+  (let [nodes (get resolved-core :nodes)
+        n (count nodes)]
+    (if (= (count digest-requests) (+ n 3))
+      (if (= [true true true]
+             [(= (get (get digest-requests n) :purpose) :sh07-core-artifact-id)
+              (= (get (get digest-requests (+ n 1)) :purpose) :sh07-core-provenance-binding-id)
+              (= (get (get digest-requests (+ n 2)) :purpose) :sh07-source-core-map-id)])
+        (loop [ordinal 0]
+          (if (= ordinal n) true
+            (if (= (get (get digest-requests ordinal) :purpose) :sh07-core-node-id)
+              (recur (+ ordinal 1)) false)))
+        false)
+      false)))
+
+(defn sh07-source-core-map-source-joins? [request base rows]
+  (let [check (sh07-input-check request)]
+    (if (= (get check :status) :accepted)
+      (let [indexed (assoc request :internal-indexes (get check :indexes))
+            intents (sh07-source-core-intents indexed)
+            ordered (sh07-source-core-ordered-records indexed rows (get intents :intents))]
+        (= [true true true true true true true true true true]
+           [(= (get base :module) (get request :module))
+            (= (get base :lineage) (get request :lineage))
+            (= (get base :projection-binding) (get request :projection-binding))
+            (= (get base :fragment-manifest) (get request :fragment-manifest))
+            (= (get base :fragment-coverage) (get request :fragment-coverage))
+            (= (get base :module-assembly-manifest) (get request :module-assembly-manifest))
+            (= (get base :root-form-ids) (get request :top-level-form-ids))
+            (sh07-source-core-fragment-parents? indexed)
+            (= (get intents :status) :accepted)
+            (if (= (get ordered :status) :accepted)
+              (= (get ordered :records) (get base :records)) false)]))
+      false)))
+
+(defn sh07-source-core-map-node-index [nodes]
+  (loop [remaining nodes result {}]
+    (if (= (count remaining) 0) result
+      (let [node (first remaining)]
+        (recur (rest remaining) (assoc result (get node :node-id) node))))))
+
+(defn sh07-source-core-map-owner-kind? [row node]
+  (let [reason (get row :reason) kind (get node :core-form)]
+    (if (= reason :core-node-source) true
+      (if (= reason :core-operator)
+        (contains? #{:quote :if :do :let :fn :loop :recur :def :var :set! :try :throw :match} kind)
+        (if (= reason :definition-name) (= kind :def)
+          (if (contains? #{:parameter-vector :parameter} reason) (= kind :fn)
+            (if (contains? #{:binding-vector :binding-name} reason) (contains? #{:let :loop} kind)
+              (if (= reason :quoted-data) (= kind :quote)
+                (if (= reason :var-target) (= kind :var)
+                  (if (= reason :mutation-target) (= kind :set!)
+                    (if (contains? #{:catch-clause :catch-operator :catch-type :catch-binding} reason)
+                      (= kind :try)
+                      (if (= reason :match-pattern) (= kind :match) false))))))))))))
+
+(defn sh07-source-core-map-owner-kinds? [records nodes]
+  (loop [remaining records]
+    (if (= (count remaining) 0) true
+      (let [row (first remaining)
+            valid (loop [ids (get row :anchor-node-ids)]
+                    (if (= (count ids) 0) true
+                      (if (sh07-source-core-map-owner-kind? row (get nodes (first ids)))
+                        (recur (rest ids)) false)))]
+        (if valid (recur (rest remaining)) false)))))
+
+; Index existing semantic records once, then join each source role directly.
+(defn sh07-source-core-map-record-index [records owner-key form-key]
+  (if (vector? records)
+    (loop [remaining records result {}]
+      (if (= (count remaining) 0) result
+        (let [record (first remaining)
+              key [(get record owner-key) (get record form-key)]]
+          (if (contains? result key) {:source-core-map-index-error :duplicate-record-key}
+            (recur (rest remaining) (assoc result key record))))))
+    {:source-core-map-index-error :record-vector-required}))
+
+(defn sh07-source-core-map-semantic-indexes [core]
+  {:nodes (sh07-source-core-map-record-index (get core :nodes) :node-id nil)
+   :definitions (sh07-source-core-map-record-index (get core :definitions) :core-node-id nil)
+   :functions (sh07-source-core-map-record-index (get core :function-records) :function-core-node-id nil)
+   :lexical (sh07-source-core-map-record-index (get core :lexical-bindings) :let-core-node-id :definition-form-id)
+   :loops (sh07-source-core-map-record-index (get core :loop-bindings) :loop-core-node-id :definition-form-id)
+   :vars (sh07-source-core-map-record-index (get core :var-references) :core-node-id nil)
+   :mutations (sh07-source-core-map-record-index (get core :mutations) :core-node-id nil)
+   :handlers (sh07-source-core-map-record-index (get core :error-handlers) :core-node-id :catch-clause-form-id)
+   :patterns (sh07-source-core-map-record-index (get core :match-pattern-records) :core-node-id :pattern-form-id)
+   :branches (sh07-source-core-map-record-index (get core :match-branch-records) :core-node-id :clause-ordinal)})
+
+(defn sh07-source-core-map-semantic-indexes-valid? [indexes]
+  (loop [families (keys indexes)]
+    (if (= (count families) 0) true
+      (if (contains? (get indexes (first families)) :source-core-map-index-error) false
+        (recur (rest families))))))
+
+; Exact correspondence preserves all existing C6 record metadata. Expected
+; records come from the freshly rebuilt and resolved core, never supplied RC.
+(defn sh07-source-core-map-semantic-record-joins? [actual fresh-expected]
+  (let [actual-indexes (sh07-source-core-map-semantic-indexes actual)
+        expected-indexes (sh07-source-core-map-semantic-indexes fresh-expected)]
+    (if (sh07-source-core-map-semantic-indexes-valid? actual-indexes)
+      (if (sh07-source-core-map-semantic-indexes-valid? expected-indexes)
+        (if (= actual-indexes expected-indexes)
+          (= actual fresh-expected) false) false) false)))
+
+(defn sh07-source-core-map-position [ids id]
+  (loop [remaining ids ordinal 0]
+    (if (= (count remaining) 0) nil
+      (if (= (first remaining) id) ordinal
+        (recur (rest remaining) (+ ordinal 1))))))
+
+(defn sh07-source-core-map-alternating-expressions [ids]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0) result
+      (recur (rest (rest remaining)) (conj result (first (rest remaining)))))))
+
+(defn sh07-source-core-map-handler-expressions [request ids]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0) result
+      (let [clause (sh07-find-form (get request :internal-indexes) (first remaining))]
+        (recur (rest remaining) (conj result (get (get clause :child-form-ids) 3)))))))
+
+(defn sh07-source-core-map-executable-children [request form]
+  (let [children (get form :child-form-ids)]
+    (if (= (get form :kind) :list)
+      (let [operator (sh07-find-form (get request :internal-indexes) (get children 0))
+            special (sh07-source-core-special-kind (get operator :value))]
+        (if (= special nil) children
+          (if (contains? #{:quote :var} special) []
+            (if (contains? #{:def :fn :set!} special) [(get children 2)]
+              (if (contains? #{:let :loop} special)
+                (let [bindings (sh07-find-form (get request :internal-indexes) (get children 1))]
+                  (sh07-append-vector
+                   (sh07-source-core-map-alternating-expressions (get bindings :child-form-ids))
+                   (subvec children 2 (count children))))
+                (if (= special :try)
+                  (sh07-append-vector [(get children 1)]
+                   (sh07-source-core-map-handler-expressions request (subvec children 2 (count children))))
+                  (if (= special :match)
+                    (sh07-append-vector [(get children 1)]
+                     (sh07-source-core-map-alternating-expressions (subvec children 2 (count children))))
+                    (vec (rest children)))))))))
+      children)))
+
+(defn sh07-source-core-map-children-join? [request form node nodes]
+  (let [expected (sh07-source-core-map-executable-children request form)
+        children (get node :children)]
+    (if (= (count expected) (count children))
+      (loop [forms expected ids children]
+        (if (= (count forms) 0) true
+          (let [child (get nodes (first ids))
+                source-form (sh07-find-form (get request :internal-indexes) (first forms))]
+            (if (= (get child :source) (sh07-node-source source-form))
+              (recur (rest forms) (rest ids)) false)))) false)))
+
+(defn sh07-source-core-map-root-ids [form-ids rows]
+  (loop [remaining form-ids result []]
+    (if (= (count remaining) 0) result
+      (let [row (get rows (first remaining)) ids (get row :emitted-node-ids)]
+        (recur (rest remaining) (conj result (get ids (- (count ids) 1))))))))
+
+(defn sh07-source-core-map-roots-join? [request core rows]
+  (if (= (get core :root-core-node-ids)
+         (sh07-source-core-map-root-ids (get request :top-level-form-ids) rows))
+    (if (= (count (get request :fragment-manifest)) (count (get core :fragment-manifest)))
+      (loop [raw (get request :fragment-manifest) resolved (get core :fragment-manifest)]
+        (if (= (count raw) 0) true
+          (let [fragment (first raw)
+                expected (assoc fragment :root-node-ids
+                           (sh07-source-core-map-root-ids (get fragment :root-form-ids) rows))]
+            (if (= expected (first resolved))
+              (recur (rest raw) (rest resolved)) false)))) false) false))
+
+(defn sh07-source-core-map-definition-join? [request form owner node indexes]
+  (let [attributes (get node :attributes)
+        record (get (get indexes :definitions) [(get node :node-id) nil])
+        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))]
+    (= [true true true true true true true]
+       [(= (get attributes :name-form-id) (get form :form-id))
+        (= (get attributes :name-syntax-id) (get form :syntax-id))
+        (= (get attributes :name) (get form :value))
+        (= (get record :name) (get form :value))
+        (= (get record :syntax-id) (get owner :syntax-id))
+        (= (get record :binding-id) (get binding :binding-id))
+        (= (get record :value-node-id) (get (get node :children) 0))])))
+
+(defn sh07-source-core-map-parameter-join? [request form owner node indexes reason]
+  (let [parameters (sh07-find-form (get request :internal-indexes) (get (get owner :child-form-ids) 1))
+        attributes (get node :attributes)
+        function (get (get indexes :functions) [(get node :node-id) nil])
+        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))]
+    (= [true true true true true true true true true]
+       [(= (get attributes :parameter-form-id) (get parameters :form-id))
+        (= (get attributes :parameter-syntax-id) (get parameters :syntax-id))
+        (= (get attributes :parameters) (get parameters :value))
+        (= (get function :function-form-id) (get owner :form-id))
+        (= (get function :function-syntax-id) (get owner :syntax-id))
+        (= (get function :parameter-binding-ids) (get node :resolved-binding-ids))
+        (= (get function :body-core-node-id) (get (get node :children) 0))
+        (= (get function :fixed-arity) (count (get parameters :child-form-ids)))
+        (if (= reason :parameter-vector) (= form parameters)
+          (let [ordinal (sh07-source-core-map-position (get parameters :child-form-ids) (get form :form-id))]
+            (if (integer? ordinal)
+              (if (= (get binding :definition-syntax-id) (get form :syntax-id))
+                (= (get (get node :resolved-binding-ids) ordinal) (get binding :binding-id)) false) false)))])))
+
+(defn sh07-source-core-map-binding-join? [request form owner node indexes reason]
+  (let [vector-form (sh07-find-form (get request :internal-indexes) (get (get owner :child-form-ids) 1))
+        attributes (get node :attributes)
+        records (get indexes (if (= (get node :core-form) :let) :lexical :loops))
+        record (get records [(get node :node-id) (get form :form-id)])
+        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))
+        ordinal (get record :ordinal)
+        initializer (if (integer? ordinal)
+                      (sh07-find-form (get request :internal-indexes)
+                                      (get (get vector-form :child-form-ids) (+ (* ordinal 2) 1))) nil)]
+    (= [true true true]
+       [(= (get attributes :binding-vector-form-id) (get vector-form :form-id))
+        (= (get attributes :binding-vector-syntax-id) (get vector-form :syntax-id))
+        (if (= reason :binding-vector) (= form vector-form)
+          (= [true true true true true true true]
+             [(= (get record :name) (get form :value))
+              (= (get record :definition-syntax-id) (get form :syntax-id))
+              (= (get record :binding-id) (get binding :binding-id))
+              (= (get record :initializer-form-id) (get initializer :form-id))
+              (= (get record :initializer-syntax-id) (get initializer :syntax-id))
+              (if (integer? ordinal)
+                (= (get form :form-id) (get (get vector-form :child-form-ids) (* ordinal 2))) false)
+              (if (integer? ordinal)
+                (= (get record :initializer-node-id) (get (get node :children) ordinal)) false)]))])))
+
+(defn sh07-source-core-map-reference-join? [request form node indexes reason]
+  (let [mutation? (= reason :mutation-target)
+        record (get (get indexes (if mutation? :mutations :vars)) [(get node :node-id) nil])
+        attributes (get node :attributes)
+        form-key (if mutation? :target-form-id :operand-form-id)
+        syntax-key (if mutation? :target-syntax-id :operand-syntax-id)
+        resolution (sh07-find-resolution (get request :internal-indexes) (get form :syntax-id))]
+    (= [true true true true true]
+       [(= (get attributes form-key) (get form :form-id))
+        (= (get attributes syntax-key) (get form :syntax-id))
+        (= (get record form-key) (get form :form-id))
+        (= (get record syntax-key) (get form :syntax-id))
+        (= (get record (if mutation? :target-binding-id :binding-id)) (get resolution :binding-id))])))
+
+(defn sh07-source-core-map-handler-join? [request form node indexes reason]
+  (let [clause (if (= reason :catch-clause) form
+                (sh07-find-form (get request :internal-indexes) (get form :parent-form-id)))
+        children (get clause :child-form-ids)
+        type-form (sh07-find-form (get request :internal-indexes) (get children 1))
+        binding-form (sh07-find-form (get request :internal-indexes) (get children 2))
+        record (get (get indexes :handlers) [(get node :node-id) (get clause :form-id)])
+        ordinal (get record :clause-ordinal)
+        descriptor (if (integer? ordinal) (get (get (get node :attributes) :handler-clauses) ordinal) nil)
+        binding (sh07-definition-binding (get request :internal-indexes) (get binding-form :syntax-id))
+        owner (sh07-find-form (get request :internal-indexes) (get (get node :source) :form-id))
+        type-resolution (sh07-find-resolution (get request :internal-indexes) (get type-form :syntax-id))]
+    (= [true true true true true true true true true true]
+       [(= (get record :catch-clause-syntax-id) (get clause :syntax-id))
+        (= (get record :error-type-form-id) (get type-form :form-id))
+        (= (get record :error-type-syntax-id) (get type-form :syntax-id))
+        (= (get record :error-type-binding-id) (get type-resolution :binding-id))
+        (= (get record :catch-binding-form-id) (get binding-form :form-id))
+        (= (get record :catch-binding-syntax-id) (get binding-form :syntax-id))
+        (= (get record :catch-binding-id) (get binding :binding-id))
+        (= (get descriptor :catch-clause-form-id) (get clause :form-id))
+        (if (integer? ordinal)
+          (= (get (get owner :child-form-ids) (+ ordinal 2)) (get clause :form-id)) false)
+        (if (integer? ordinal)
+          (= (get record :handler-core-node-id) (get (get node :children) (+ ordinal 1))) false)])))
+
+(defn sh07-source-core-map-pattern-root [request form owner-id]
+  (loop [current form depth 0]
+    (if (= (get current :parent-form-id) owner-id) current
+      (if (>= depth 256) nil
+        (if (= (get current :parent-form-id) nil) nil
+          (recur (sh07-find-form (get request :internal-indexes) (get current :parent-form-id))
+                 (+ depth 1)))))))
+
+(defn sh07-source-core-map-pattern-join? [request form node indexes]
+  (let [record (get (get indexes :patterns) [(get node :node-id) (get form :form-id)])
+        branch (get (get indexes :branches) [(get node :node-id) (get record :clause-ordinal)])
+        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))
+        owner (sh07-find-form (get request :internal-indexes) (get (get node :source) :form-id))
+        root (sh07-source-core-map-pattern-root request form (get owner :form-id))
+        body (if (integer? (get record :clause-ordinal))
+               (sh07-find-form (get request :internal-indexes)
+                (get (get owner :child-form-ids) (+ 3 (* 2 (get record :clause-ordinal))))) nil)]
+    (= [true true true true true true true true true]
+       [(= (get record :pattern-syntax-id) (get form :syntax-id))
+        (if (= (get form :kind) :vector)
+          (= (get record :vector-width) (count (get form :child-form-ids)))
+          (= (get record :pattern-value) (get form :value)))
+        (if (= (get record :pattern-kind) :binding)
+          (= (get record :pattern-binding-id) (get binding :binding-id)) true)
+        (= (get branch :branch-form-id) (get body :form-id))
+        (= (get branch :branch-syntax-id) (get body :syntax-id))
+        (= (get branch :pattern-form-id) (get root :form-id))
+        (= (get branch :pattern-syntax-id) (get root :syntax-id))
+        (if (integer? (get record :clause-ordinal))
+          (= (sh07-source-core-map-position (get owner :child-form-ids) (get root :form-id))
+             (+ 2 (* 2 (get record :clause-ordinal)))) false)
+        (if (integer? (get record :clause-ordinal))
+          (= (get branch :branch-core-node-id)
+             (get (get node :children) (+ (get record :clause-ordinal) 1))) false)])))
+
+(defn sh07-source-core-map-role-join? [request row node indexes]
+  (let [source-indexes (get request :internal-indexes)
+        form (sh07-find-form source-indexes (get (get row :source) :form-id))
+        owner (sh07-find-form source-indexes (get row :owner-form-id))
+        reason (get row :reason)]
+    (if (= reason :core-node-source) true
+      (if (= reason :core-operator)
+        (= (sh07-source-core-special-kind (get form :value)) (get node :core-form))
+        (if (= reason :definition-name)
+          (sh07-source-core-map-definition-join? request form owner node indexes)
+          (if (contains? #{:parameter-vector :parameter} reason)
+            (sh07-source-core-map-parameter-join? request form owner node indexes reason)
+            (if (contains? #{:binding-vector :binding-name} reason)
+              (sh07-source-core-map-binding-join? request form owner node indexes reason)
+              (if (= reason :quoted-data)
+                (let [quoted (sh07-find-form source-indexes (get (get owner :child-form-ids) 1))]
+                  (= (get node :attributes)
+                     {:quoted-form-id (get quoted :form-id) :quoted-syntax-id (get quoted :syntax-id)
+                      :quoted-kind (get quoted :kind) :quoted-value (get quoted :value)}))
+                (if (contains? #{:var-target :mutation-target} reason)
+                  (sh07-source-core-map-reference-join? request form node indexes reason)
+                  (if (contains? #{:catch-clause :catch-operator :catch-type :catch-binding} reason)
+                    (sh07-source-core-map-handler-join? request form node indexes reason)
+                    (if (= reason :match-pattern)
+                      (sh07-source-core-map-pattern-join? request form node indexes) false)))))))))))
+
+(defn sh07-source-core-map-semantic-joins? [request records core]
+  (let [check (sh07-input-check request)
+        indexed (assoc request :internal-indexes (get check :indexes))
+        nodes (sh07-source-core-map-node-index (get core :nodes))
+        indexes (sh07-source-core-map-semantic-indexes core)]
+    (if (if (= (get check :status) :accepted)
+          (sh07-source-core-map-semantic-indexes-valid? indexes) false)
+      (loop [remaining records]
+        (if (= (count remaining) 0) true
+          (let [row (first remaining)
+                valid (loop [ids (get row :anchor-node-ids)]
+                        (if (= (count ids) 0) true
+                          (let [node (get nodes (first ids))]
+                            (if (if (sh07-source-core-map-role-join? indexed row node indexes)
+                                  (if (if (= (get row :disposition) :emitted)
+                                        (= (first ids) (get (get row :emitted-node-ids)
+                                                        (- (count (get row :emitted-node-ids)) 1))) false)
+                                    (sh07-source-core-map-children-join? indexed
+                                     (sh07-find-form (get indexed :internal-indexes)
+                                       (get (get row :source) :form-id)) node nodes) true) false)
+                              (recur (rest ids)) false))))]
+            (if valid (recur (rest remaining)) false)))) false)))
+
+(defn sh07-source-core-map-node-references? [references requests n]
+  (loop [remaining references]
+    (if (= (count remaining) 0) true
+      (let [reference (first remaining) ordinal (get reference :ordinal)]
+        (if (sh07-digest-reference? reference)
+          (if (< ordinal n)
+            (if (= (get (get requests ordinal) :purpose) :sh07-core-node-id)
+              (recur (rest remaining)) false) false) false)))))
+
+(defn sh07-source-core-map-reference-purposes? [preimage requests n]
+  (let [core (get preimage :core-artifact-id)]
+    (if (sh07-digest-reference? core)
+      (if (= (get core :ordinal) n)
+        (if (= (get (get requests n) :purpose) :sh07-core-artifact-id)
+          (loop [remaining (get preimage :records)]
+            (if (= (count remaining) 0) true
+              (let [row (first remaining)]
+                (if (if (sh07-source-core-map-node-references? (get row :emitted-node-ids) requests n)
+                      (sh07-source-core-map-node-references? (get row :anchor-node-ids) requests n) false)
+                  (recur (rest remaining)) false)))) false) false) false)))
+
+; Semantic :passed alone is not admission. The adapter must independently
+; recompute all D/Z SHA values before using this pure transcript/role verdict.
+(defn sh07-verify-source-core-map [request resolved-core digest-requests resolved-digests]
+  (if (= [true true true]
+         [(= (get (sh07-resolved-core-carrier-preflight resolved-core) :status) :accepted)
+          (= (get (sh07-generated-digest-carrier-preflight digest-requests) :status) :accepted)
+          (= (get (sh07-carrier-preflight resolved-digests) :status) :accepted)])
+    (if (sh07-source-core-map-transcript? resolved-core digest-requests)
+      (if (if (<= (count digest-requests) (+ (count (get request :forms)) 4))
+            (<= (+ (count (get request :forms)) 4) 65540) false)
+        (let [rebuilt (sh07-build-core-template request)]
+          (if (= (get rebuilt :status) :accepted)
+            (if (= digest-requests (get rebuilt :digest-requests))
+              (if (sh07-resolved-digests-shape? digest-requests resolved-digests)
+                (let [expected (sh07-resolve-core-template (get rebuilt :core-template) resolved-digests)
+                      ordinal (- (count digest-requests) 1)
+                      sidecar (sh07-resolve-source-core-map-preimage
+                               (get (get digest-requests ordinal) :preimage)
+                               (subvec resolved-digests 0 ordinal))]
+                  (if (= (get expected :status) :accepted)
+                    (if (= resolved-core (get expected :value))
+                      (if (= (get sidecar :status) :accepted)
+                        (let [base (get sidecar :value)
+                              records (get base :records)
+                              rows (sh07-source-core-map-row-index records)
+                              groups (sh07-source-core-map-node-groups (get resolved-core :nodes))]
+                          (if (= [true true true true true true true true true true true]
+                                 [(= (get base :core-artifact-id) (get resolved-core :artifact-id-request))
+                                  (= (count rows) (count (get request :forms)))
+                                  (= (count records) (count (get request :forms)))
+                                  (sh07-source-core-map-reference-purposes?
+                                   (get (get digest-requests ordinal) :preimage)
+                                   digest-requests (count (get resolved-core :nodes)))
+                                  (sh07-source-core-map-source-joins? request base rows)
+                                  (sh07-source-core-map-roots-join? request resolved-core rows)
+                                  (sh07-source-core-map-owner-kinds?
+                                   records (sh07-source-core-map-node-index (get resolved-core :nodes)))
+                                  (sh07-source-core-map-semantic-joins? request records resolved-core)
+                                  (sh07-source-core-map-semantic-record-joins? resolved-core (get expected :value))
+                                  (sh07-source-core-map-rows-join? request records groups rows
+                                    (sh07-source-core-map-node-index (get resolved-core :nodes)))
+                                  (sh07-source-core-map-nodes-join?
+                                   (get resolved-core :nodes) (get resolved-core :source-map)
+                                   rows (get request :module))])
+                            (sh07-source-core-map-verdict nil)
+                            (sh07-source-core-map-verdict :source-core-map-origin-join)))
+                        (sh07-source-core-map-verdict :source-core-map-resolution))
+                      (sh07-source-core-map-verdict :source-core-map-core-replay))
+                    (sh07-source-core-map-verdict :source-core-map-core-resolution)))
+                (sh07-source-core-map-verdict :source-core-map-digest-shape))
+              (sh07-source-core-map-verdict :source-core-map-producer-replay))
+            (sh07-source-core-map-verdict :source-core-map-producer-rejected)))
+        (sh07-source-core-map-verdict :source-core-map-digest-bound))
+      (sh07-source-core-map-verdict :source-core-map-transcript))
+    (sh07-source-core-map-verdict :source-core-map-carrier-bound)))

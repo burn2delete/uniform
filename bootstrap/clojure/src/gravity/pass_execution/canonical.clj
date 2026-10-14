@@ -19,7 +19,12 @@
 
 (defn canonical-sort
   [values]
-  (->> values (sort-by pr-str) vec))
+  ;; Serialize once per entry; sorting retains the existing stable order for
+  ;; equal printed keys. Decorations live only for this bounded invocation.
+  (->> values
+       (mapv (fn [value] [(pr-str value) value]))
+       (sort-by first)
+       (mapv second)))
 
 (defn bounded-utf8-size
   [text]

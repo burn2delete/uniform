@@ -4,13 +4,23 @@
 
 This increment prepares the first ordered V9 completion slice: return the
 complete SH06 authority carrier from the same private source session that
-produces the module transactions. Explicit human authorization resumed the
-demonstrated SH06 prerequisite repair. Those owning joins now pass on the real
-producer path, but a distinct inherited C6 module-transaction mapping check
-still rejects before finalization. It is not accepted or integrated. Prior
+produces the module transactions. The human resumed the existing owner after
+the governed C6 mapping prerequisite was independently accepted and integrated
+through PRs #19/#20. Current-base reconciliation and fresh normal exit evidence
+are now in progress; this handoff is not accepted or integrated. Prior
 immutable HOLD evidence remains in commits `446d696` and `b978a476`; the
 historical observations below are preserved. A finalized normal return and
 fresh independent acceptance remain required for completion credit.
+
+The historical HOLD sections below retain their original observations. The
+current reconciliation base is `aa7eccc35f1329d6f848bb84326a34eb8ccf1bd7`, tree
+`1d682eb5eed8222c8c968534ce7d75fe680c9028`. The parked `71bff162` tuple remains
+history. Accepted C6 source-map/sidecar/digest-purpose/verification changes,
+authenticated pins, the canonical-sort performance change, and all current-main
+terminal shards and ledger rows are preserved. The child now depends on the
+integrated C6 mapping architecture and producer/consumer prerequisite. Fresh
+eleven-key products, 13/13/40/1 finalization, twenty-one-key inputs, post-final
+mutations and both exact independent reviews remain mandatory.
 
 Authoritative GitHub and local main were both observed at
 `6c402d3f97cfe6acf07346997af90de3b1e3a10b`, tree

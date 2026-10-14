@@ -31,38 +31,39 @@
 (def ^:private accepted-fixture-relative-path
   (str "bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/"
        "macro-def-fn-literals.gravity"))
-(def ^:private expected-source-byte-count 444325)
+(def ^:private expected-source-byte-count 498219)
 (def ^:private expected-source-revision-id
-  "sha256:3e15d5707cf4ea37ef37b8e6089ad6ff62712efc5f6c3659a94edf62bae3f092")
+  "sha256:34371eb78cbe9d1feabf421c70ced3b9a89bbb6879fab671203ca29a70672ebe")
 (def ^:private expected-plan-semantic-id
-  "sha256:5bc9aeebb830350031c42814a3b47495205bd6108a617fcea977f8c0b918aebd")
+  "sha256:bf16573f21fd7efb26549ce958fc3e6b672e1d49d5f8c9a2c72a7b60fb986829")
 (def ^:private expected-functions-semantic-id
-  "sha256:6942122229f13d1bb14ae01ffdb37ca52cc555fd68f819cca76f30284fa791db")
+  "sha256:df91ea3bc30dee03968640777a62c6ef210748921649c291caa328da0af94d63")
 (def ^:private expected-function-names-id
-  "sha256:4e7bbfcd94db26a468920a87917005eee97a85f8f0448ba32cd689cafc9d02e5")
+  "sha256:0d70635e77175d450e0d6d0505d70f95ecb8ada5fb9ca242a3648ccabbbec85c")
 (def ^:private expected-function-shapes-id
-  "sha256:61d6a743d65973ec4cb357c7285fae622c25f42b04a7de6aa8bf0fd0f1c02ee4")
+  "sha256:9af96f01a73b2f1c61c1e8dcea71b5ae49cfcfdd2934d932e333e4c91462b68a")
 (def ^:private expected-public-function-hashes
-  {'sh07-build-core-template
-   "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948"
-   'sh07-verify-core-template
-   "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791"
-   'sh07-verify-core-resolved
-   "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba"})
+  '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:30b77009004032faa6306970676d9bf7e3a01c33d51006c9b69811a20cae1637"})
 (def ^:private expected-public-function-shapes
   {'sh07-build-core-template {:arity 1 :params '[request]}
    'sh07-verify-core-template
    {:arity 3 :params '[request template digest-requests]}
    'sh07-verify-core-resolved
    {:arity 4
-    :params '[request resolved-core digest-requests resolved-digests]}})
+    :params '[request resolved-core digest-requests resolved-digests]}
+   'sh07-resolve-source-core-map-preimage
+   {:arity 2 :params '[preimage resolved-digests]}
+   'sh07-verify-source-core-map
+   {:arity 4 :params '[request resolved-core digest-requests resolved-digests]}})
 (def ^:private expected-export-names
   '[sh07-core-contract
     sh07-core-bounds
     sh07-core-diagnostic-catalog
     sh07-build-core-template
     sh07-verify-core-template
-    sh07-verify-core-resolved])
+    sh07-verify-core-resolved
+    sh07-resolve-source-core-map-preimage
+    sh07-verify-source-core-map])
 (def ^:private expected-data-definition-names
   '#{sh07-core-contract sh07-core-bounds sh07-core-diagnostic-catalog})
 (def ^:private expected-required-functions
@@ -197,10 +198,10 @@
         catalog (nth (get by-name 'sh07-core-diagnostic-catalog) 2)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 309 (count forms)))
-    (is (= 308 (count definitions) (count by-name)))
+    (is (= 364 (count forms)))
+    (is (= 363 (count definitions) (count by-name)))
     (is (= 3 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 305 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 360 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.checked-core (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -224,7 +225,7 @@
     (is (= 2048 (:maximum-bindings bounds)))
     (is (= 1024 (:maximum-keyword-lookup-records bounds)))
     (is (= expected-diagnostic-ids (:diagnostics catalog)))
-    (is (= {4 1663}
+    (is (= {4 1882}
            (frequencies (map count if-calls))))
     (is (= expected-source-byte-count
            (alength (source-bytes (path source-relative-path)))))
@@ -266,7 +267,7 @@
     (is (= expected-functions-semantic-id
            (:functions-semantic-hash binding)
            bootstrap/sh07-core-expected-functions-semantic-hash))
-    (is (= 305 (:function-count binding)
+    (is (= 360 (:function-count binding)
            bootstrap/sh07-core-expected-function-count))
     (is (= expected-function-names-id (:function-names-hash binding)
            bootstrap/sh07-core-expected-function-names-hash))

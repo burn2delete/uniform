@@ -1,5 +1,3 @@
-
-
 (defn sh07-core-semantic-mutation
   [semantic-projection-id mutation]
   (let [semantic-projection-id
@@ -20,8 +18,7 @@
       (assoc :authenticated-sh06-artifact-id
              semantic-projection-id))))
 
-(defn sh07-core-semantic-error-transfer
-  [semantic-projection-id transfer]
+(defn sh07-core-semantic-error-transfer [semantic-projection-id transfer]
   (let [semantic-projection-id
         (or semantic-projection-id
             (sh07-core-semantic-projection-id transfer))]
@@ -31,8 +28,7 @@
       (assoc :authenticated-sh06-artifact-id
              semantic-projection-id))))
 
-(defn sh07-core-semantic-error-handler
-  [semantic-projection-id handler]
+(defn sh07-core-semantic-error-handler [semantic-projection-id handler]
   (let [semantic-projection-id
         (or semantic-projection-id
             (sh07-core-semantic-projection-id handler))]
@@ -184,10 +180,25 @@
                    :reason (:reason result)})))
       (:value result))
 
-    preimage))
+    :sh07-source-core-map-id
+    (let [result (sh07-core-execute! source-path 'sh07-resolve-source-core-map-preimage
+                                    [preimage resolved-digests])]
+      (when-not (= :accepted (:status result))
+        (throw (ex-info "SH-07 mapping digest preimage did not resolve"
+                        {:id "C6-VERIFY" :stage :core-lowering
+                         :reason (:reason result)})))
+      (sh07-core-semantic-identity-preimage (:value result)))
+    :sh07-core-diagnostic-id preimage
+    (throw (ex-info "Unknown SH-07 digest purpose" {:id "C6-VERIFY" :stage :core-lowering
+                     :reason :unknown-digest-purpose :purpose purpose}))))
 
 (defn sh07-core-digest-requests
   [source-path digest-requests]
+  (let [carrier (sh07-core-execute! source-path 'sh07-generated-digest-carrier-preflight
+                                   [digest-requests])]
+    (when-not (= :accepted (:status carrier))
+      (throw (ex-info "SH-07 digest carrier rejected before hashing"
+                      {:id "C6-VERIFY" :reason :generated-digest-input-carrier-bound}))))
   (loop [remaining digest-requests
          ordinal 0
          resolved []]

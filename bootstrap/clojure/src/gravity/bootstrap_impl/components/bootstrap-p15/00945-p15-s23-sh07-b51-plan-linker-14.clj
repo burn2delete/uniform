@@ -105,6 +105,28 @@
          :sh06-resolution-plan-authority {}))
       authority)))
 
+(defn- p15-s23-sh07-b51-verify-module-source-core-map!
+  [source-path request resolved digest-requests resolved-digests]
+  (let [result
+        (try
+          (if (and (vector? resolved-digests) (seq resolved-digests)
+                   (= resolved-digests (sh07-core-digest-requests source-path digest-requests)))
+            (let [resolution (sh07-core-execute! source-path 'sh07-resolve-source-core-map-preimage
+                               [(:preimage (last digest-requests)) (pop resolved-digests)])
+                  view (assoc (:value resolution) :artifact-id (last resolved-digests))]
+              (if (and (= :accepted (:status resolution))
+                       (= (:core-artifact-id view) (:artifact-id-request resolved)))
+                (sh07-core-execute! source-path 'sh07-verify-source-core-map
+                                   [request resolved digest-requests resolved-digests])
+                {:status :rejected :reason :source-core-map-artifact-binding}))
+            {:status :rejected :reason :source-core-map-digest-recomputation})
+          (catch clojure.lang.ExceptionInfo error
+            {:status :rejected :reason (or (:reason (ex-data error)) :source-core-map-digest-resolution)}))]
+    (when-not (= :passed (:status result))
+      (p15-s23-sh07-b51-governed-read-fail!
+       :module-source-core-mapping {:reason (:reason result)}))
+    result))
+
 (defn p15-s23-sh07-b51-build-module-transaction
   [commit tree module-ordinal source c5-preimage resolution-plan-authority]
   (let [descriptor (:source-descriptor source)
@@ -161,8 +183,9 @@
         (sh07-core-execute!
          source-path 'sh07-verify-core-resolved
          [request bad-resolved digest-requests resolved-digests])
-        form-ids (mapv :form-id (:forms request))
-        node-form-ids (mapv :form-id (:nodes resolved))]
+        mapping-verification
+        (p15-s23-sh07-b51-verify-module-source-core-map!
+         source-path request resolved digest-requests resolved-digests)]
     (when-not
      (and (= module-ordinal (:module-ordinal descriptor))
           (= source-path (:path descriptor))
@@ -189,10 +212,8 @@
           (= p15-s23-sh07-b51-resolved-reject reject-actual)
           (not= 'gravity.altered (get-in resolved [:module :namespace]))
           (empty? (:diagnostics resolved))
-          (= (count (:nodes resolved)) (count (:forms request)))
-          (= (count form-ids) (count (set form-ids)))
-          (= (set form-ids) (set node-form-ids))
-          (= (count node-form-ids) (count (set node-form-ids)))
+          (= :passed (:status mapping-verification))
+          (= (count digest-requests) (+ (count (:nodes resolved)) 3))
           (<= (count digest-requests) (+ (count (:forms request)) 4)))
       (p15-s23-sh07-b51-governed-read-fail!
        :module-transaction
@@ -201,10 +222,8 @@
         :template-status (:status raw)
         :template-verification (:status template-verification)
         :resolution (:status resolution)}))
-    (p15-s23-sh07-b51-cache-session-product!
-     [:sh06-handoff module-ordinal]
-     {:authority c5-authority :verification resolution-verification
-      :request request})
+    (p15-s23-sh07-b51-cache-session-product! [:sh06-handoff module-ordinal]
+     {:authority c5-authority :verification resolution-verification :request request})
     {:module-ordinal module-ordinal
      :source-descriptor descriptor
      :resolution-artifact resolution-artifact
