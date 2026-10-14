@@ -213,6 +213,18 @@ incomparable. No new full run is justified by this leaf result.
 
 ## Nonclaims
 
+PR #15 integrated exact head
+`0b493681cce0cecd03ebd56facd390ce768a5597` as merge commit
+`cb0f21b7f8cd4fc60255d834533015812a8b9cd3`, preserving the independently
+accepted frozen lineage. The exclusive broker wait was 60.943 seconds;
+the complete serialized wrapper observed 68.475 seconds. These are integration
+scheduling observations, not benchmark samples. The wrapper held the canonical
+heavy lock across current-main preflight and GitHub mutation, then confirmed
+the accepted head was reachable from main. The retained merged postflight
+passed 16 tests/138 assertions with zero skips; strict authority, governance,
+documents, roadmap, and LOC checks also passed. The immutable terminal record
+closes this reservation; the lifecycle publication changes no measured inputs.
+
 Overall SH-07 remains partial/recorded4-of8; full-language remains recorded0/240.
 This work grants no milestone, aggregate, proof, admission, release,
 self-hosting, seedless, seed-retirement, safety, hostile-host, or full-language
