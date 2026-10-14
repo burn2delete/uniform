@@ -64,7 +64,7 @@ Raw observations are retained at
 
 ## Exact V9 supersession and identity registration
 
-This erratum supersedes only V9's paragraph after the module-transaction
+This erratum supersedes V9's paragraph after the module-transaction
 equations that requires `count(RC_i[:nodes]) = count(Q_i[:forms])`, a top-level
 node `:form-id`, and a one-to-one form/node relation. Replace those obligations
 with the exhaustive producer disposition and source-to-core join specified
@@ -79,6 +79,7 @@ below. All existing declared purposes, their preimage resolution rules, the
 prior-Z prefix, outer domain, and canonical hash remain unchanged. Unknown
 purposes reject; no raw-preimage default is an authority path. No additional
 domain or purpose is authorized by this supersession.
+These are the only V9 supersessions.
 
 Register exactly one new checked-core purpose, `:sh07-source-core-map-id`, and
 its inner sidecar domain `:gravity/sh07-source-core-map-v1`. This is an explicit
