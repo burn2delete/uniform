@@ -1712,8 +1712,8 @@
       (is (= 1024
              (count (get-in maximum-run
                             [:canonical-core-artifact :nodes]))))
-      (is (= 1026 (count (:digest-requests maximum-run)))
-          "1024 core nodes plus artifact and provenance digests")
+      (is (= 1027 (count (:digest-requests maximum-run)))
+          "1024 core nodes plus artifact, provenance, and mapping digests")
       (is (= :maximum-forms
              (get-in over-diagnostic
                      [:facts :rule-specific :bound])))
@@ -1730,7 +1730,7 @@
                      [:facts :rule-specific
                       :projected-digest-request-count]))))
     (is true
-        "set SH07_BOUNDARY_STRESS=1 for 1024/1025 node and 1026/1027 digest gates")))
+        "set SH07_BOUNDARY_STRESS=1 for the existing form/node bounds and mapping digest")))
 
 (deftest sh07-corpus-is-an-explicit-separate-gate
   (if (= "1" (System/getenv "SH07_COMPILER_CORPUS"))
