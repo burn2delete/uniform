@@ -1173,6 +1173,13 @@
     lineage
     (assoc lineage :authenticated-sh06-artifact-id projection-id)))
 
+(defn sh08-ft-match-preimage-valid? [core preimage projection-id]
+  (loop [families [:match-branch-records :match-pattern-records :match-decision-skeletons]]
+    (if (= (count families) 0) true
+      (let [family (first families)]
+        (if (= (get preimage family) (get core family))
+          (recur (rest families)) false)))))
+
 (defn sh08-ft-b47-identity-preimage-valid? [core bindings]
   (let [preimage (get core :identity-preimage)
         projection-id (sh08-ft-semantic-projection-id preimage)]
@@ -1214,10 +1221,11 @@
                                (get core :recursion-components))
                           (if (= (get preimage :lexical-bindings)
                                  (get core :lexical-bindings))
+                            (if (sh08-ft-match-preimage-valid? core preimage projection-id)
                             (= (get preimage :binding-table)
                                (sh08-ft-semantic-bindings
                                 projection-id
-                                bindings))
+                                bindings)) false)
                             false)
                           false)
                         false)
@@ -3960,7 +3968,303 @@
                               false)
                           (get context :value-type :gravity.type/unknown)
                           :gravity.type/unknown)))
-                    :gravity.type/unknown)))))))))))
+                    (if (= core-form :match)
+                      (sh08-bm-join (rest children) type-table)
+                      :gravity.type/unknown))))))))))))
+
+; L7/C7: finite Boolean matches consume the authenticated C6 decision products.
+; Match premises and solutions live in the existing identity-bound ledger.
+(defn sh08-bm-project [record fields]
+  (loop [remaining fields result {}]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining) (assoc result (first remaining) (get record (first remaining)))))))
+
+(defn sh08-bm-select [records field value]
+  (if (vector? records)
+    (loop [remaining records result []]
+      (if (= (count remaining) 0) result
+        (recur (rest remaining)
+               (if (= value (get (first remaining) field)) (conj result (first remaining)) result))))
+    []))
+
+(defn sh08-bm-join [children types]
+  (if (= (count children) 0) :gravity.type/unknown
+    (let [chosen (get types (first children) :gravity.type/unknown)]
+      (loop [remaining children]
+        (if (= (count remaining) 0) chosen
+          (if (= chosen (get types (first remaining) :gravity.type/unknown))
+            (recur (rest remaining)) :gravity.type/unknown))))))
+
+(defn sh08-bm-tree [nodes root]
+  (loop [pending [root] seen #{}]
+    (if (= (count pending) 0) seen
+      (let [id (first pending)]
+        (if (contains? seen id) (recur (rest pending) seen)
+          (recur (sh08-ft-add-values-to-set (get (get nodes id) :children) (rest pending))
+                 (conj seen id)))))))
+
+(defn sh08-bm-uses [nodes tree binding-id]
+  (loop [remaining nodes result []]
+    (if (= (count remaining) 0) result
+      (let [node (first remaining)]
+        (recur (rest remaining)
+          (if (if (= :reference (get node :core-form))
+                (if (= binding-id (get (get node :attributes) :binding-id))
+                  (contains? tree (get node :node-id)) false) false)
+            (conj result (get (get node :source) :syntax-id)) result))))))
+
+(defn sh08-bm-pattern-value [form]
+  (let [value (get form :value)]
+    (if (= :list (get form :kind))
+      (if (seq? value)
+        (if (= 2 (count value))
+          (if (= 'quote (first value))
+            (if (symbol? (second value)) (second value) value) value) value) value) value)))
+
+(defn sh08-bm-source-kind-valid? [branch form]
+  (let [kind (get branch :pattern-kind) value (get form :value)
+        binding (get branch :pattern-binding-id) scope (get branch :pattern-binding-scope-id)]
+    (if (= :binding kind)
+      (if (= :symbol (get form :kind))
+        (if (symbol? value) (if (= '_ value) false
+          (if (sh08-sha256-id? binding) (sh08-sha256-id? scope) false)) false) false)
+      (if (= binding nil)
+        (if (= scope nil)
+          (if (= :wildcard kind)
+            (if (= :symbol (get form :kind)) (= '_ value) false)
+            (if (= :literal kind)
+              (if (contains? #{:nil :boolean :integer :decimal :ratio :character :string :keyword} (get form :kind)) true
+                (if (= :list (get form :kind))
+                  (if (seq? value) (if (= 2 (count value))
+                    (if (= 'quote (first value)) (symbol? (second value)) false) false) false) false)) false))
+          false) false))))
+
+(defn sh08-bm-branch-valid? [node branch pattern ordinal nodes bindings forms sequence]
+  (let [attributes (get node :attributes)
+        clause (get (get attributes :branch-clauses) ordinal)
+        body (get nodes (get branch :branch-core-node-id))
+        form (get forms (get branch :pattern-form-id))
+        owner (get forms (get (get node :source) :form-id))
+        body-form (get forms (get branch :branch-form-id))
+        binding-id (get branch :pattern-binding-id)
+        binding (get bindings binding-id)
+        uses (if (= binding-id nil) []
+               (sh08-bm-uses sequence (sh08-bm-tree nodes (get body :node-id)) binding-id))
+        clause-fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id
+                       :pattern-syntax-id :pattern-value :branch-form-id :branch-syntax-id
+                       :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]]
+    (sh08-ft-all-true?
+      [(map? branch) (map? pattern) (map? form) (map? owner) (map? body-form)
+       (= (sh08-bm-project branch clause-fields) clause)
+       (= ordinal (get branch :clause-ordinal)) (= ordinal (get pattern :clause-ordinal))
+       (= (count (get attributes :branch-clauses)) (get branch :clause-count))
+       (= (+ ordinal 1) (get branch :branch-child-index))
+       (= (get branch :core-node-id) (get node :node-id) (get pattern :core-node-id))
+       (= (get branch :scrutinee-core-node-id) (first (get node :children)))
+       (= (get branch :branch-core-node-id) (get (get node :children) (+ ordinal 1)))
+       (= (get branch :pattern-form-id) (get form :form-id) (get pattern :pattern-form-id)
+          (get (get owner :child-form-ids) (+ 2 (* 2 ordinal))))
+       (= (get branch :pattern-syntax-id) (get form :syntax-id) (get pattern :pattern-syntax-id))
+       (= (get branch :branch-form-id) (get (get body :source) :form-id)
+          (get (get owner :child-form-ids) (+ 3 (* 2 ordinal))))
+       (= (get branch :branch-syntax-id) (get (get body :source) :syntax-id) (get body-form :syntax-id))
+       (= (get branch :pattern-kind) (get pattern :pattern-kind))
+       (sh08-bm-source-kind-valid? branch form)
+       (= (get branch :pattern-value) (get pattern :pattern-value)
+          (sh08-bm-pattern-value form))
+       (= 0 (get pattern :depth) (get pattern :local-ordinal) (get pattern :root-local-ordinal))
+       (= [] (get pattern :path)) (= nil (get pattern :parent-ordinal) (get pattern :parent-local-ordinal))
+       (= (get pattern :ordinal) (get pattern :root-ordinal))
+       (= (get branch :pattern-binding-id) (get pattern :pattern-binding-id))
+       (= (get branch :pattern-binding-scope-id) (get pattern :pattern-binding-scope-id))
+       (= uses (get branch :pattern-binding-use-syntax-ids) (get pattern :pattern-binding-use-syntax-ids))
+       (if (= binding-id nil) true
+         (= uses (sh08-bm-uses sequence (set (keys nodes)) binding-id)))
+       (= (get branch :pattern-binding-ids) (if (= binding-id nil) [] [binding-id]))
+       (if (= binding-id nil) true
+         (sh08-ft-all-true?
+           [(= :binding (get branch :pattern-kind)) (= :lexical (get binding :binding-class))
+            (= (get binding :definition-syntax-id) (get form :syntax-id))
+            (= (get binding :name) (get form :value))
+            (= (get binding :scope-id) (get form :scope-id) (get branch :pattern-binding-scope-id))]))
+       (= (get branch :conditional-region)
+          {:kind :match-branch :match-syntax-id (get (get node :source) :syntax-id) :clause-ordinal ordinal})
+       (= (get branch :conditional-region) (get (get body :evaluation) :region))
+       (= :evaluate-scrutinee-once (get branch :scrutinee-evaluation))
+       (= :conditionally-evaluate-selected-branch (get branch :branch-evaluation))
+       (= (get attributes :authenticated-sh06-artifact-id)
+          (get branch :authenticated-sh06-artifact-id) (get pattern :authenticated-sh06-artifact-id))
+       (= (get attributes :sh06-semantic-projection-id)
+          (get branch :sh06-semantic-projection-id) (get pattern :sh06-semantic-projection-id))])))
+
+(defn sh08-bm-group-valid? [node branches patterns skeleton nodes bindings forms sequence]
+  (let [attributes (get node :attributes) count-branches (count branches)]
+    (if (if (map? skeleton)
+          (if (vector? (get skeleton :branch-core-node-ids))
+          (if (> count-branches 0)
+          (if (vector? (get attributes :branch-clauses))
+            (= count-branches (count patterns) (count (get attributes :branch-clauses))
+               (get attributes :branch-count) (- (count (get node :children)) 1)) false) false) false) false)
+      (sh08-ft-all-true?
+        [(= 0 (get attributes :scrutinee-child-index))
+         (= (get node :children) (sh08-ft-add-values-to-set
+                                  (get skeleton :branch-core-node-ids) [(first (get node :children))]))
+         (= (get skeleton :scrutinee-core-node-id) (first (get node :children)))
+         (= (get skeleton :core-node-id) (get node :node-id))
+         (loop [remaining branches ordinal 0 ids [] indexes []]
+           (if (= (count remaining) 0)
+             (= [ids indexes] [(get node :resolved-binding-ids) (get attributes :branch-child-indexes)])
+             (if (sh08-bm-branch-valid? node (first remaining) (get patterns ordinal) ordinal
+                                       nodes bindings forms sequence)
+               (recur (rest remaining) (+ ordinal 1)
+                      (sh08-ft-add-values-to-set (get (first remaining) :pattern-binding-ids) ids)
+                      (conj indexes (+ ordinal 1))) false)))
+         (= :source-ordered-pattern-candidates (get skeleton :selection-policy) (get attributes :selection-policy))
+         (= :not-asserted-by-sh07-b11 (get skeleton :runtime-reachability) (get attributes :runtime-reachability))
+         (= :pending-sh08 (get skeleton :result-type-join) (get attributes :result-type-join)
+            (get skeleton :exhaustiveness) (get attributes :exhaustiveness))
+         (= (get skeleton :authenticated-sh06-artifact-id) (get attributes :authenticated-sh06-artifact-id))
+         (= (get skeleton :sh06-semantic-projection-id) (get attributes :sh06-semantic-projection-id))]) false)))
+
+(defn sh08-bm-source-node [node form]
+  (assoc node :source
+    {:form-id (get form :form-id) :syntax-id (get form :syntax-id)
+     :semantic-span (get form :source-span) :origin-chain (get form :origin-chain)
+     :generated-origin (get form :generated-origin)}))
+
+(defn sh08-bm-products [core products source-forms]
+  (if (= :accepted (get products :status))
+    (let [sequence (get core :nodes) nodes (get products :node-table)
+          matches (sh08-bm-select sequence :core-form :match)
+          branches (get core :match-branch-records)
+          patterns (get core :match-pattern-records)
+          skeletons (get core :match-decision-skeletons)
+          forms (loop [remaining source-forms result {}]
+                  (if (= (count remaining) 0) result
+                    (recur (rest remaining) (assoc result (get (first remaining) :form-id) (first remaining)))))]
+      (if (sh08-ft-all-true? [(vector? branches) (vector? patterns) (vector? skeletons)])
+      (if (sh08-ft-all-true?
+            [(loop [rows branches ordinal 0]
+               (if (= (count rows) 0) true
+                 (if (= ordinal (get (first rows) :ordinal)) (recur (rest rows) (+ ordinal 1)) false)))
+             (loop [rows patterns ordinal 0]
+               (if (= (count rows) 0) true
+                 (if (= ordinal (get (first rows) :ordinal)) (recur (rest rows) (+ ordinal 1)) false)))])
+      (if (= (count matches) 0)
+        (if (sh08-ft-all-true? [(= 0 (count branches)) (= 0 (count patterns)) (= 0 (count skeletons))])
+          products {:status :rejected :reason :orphan-match-products})
+        (if (sh08-ft-all-true? [(vector? branches) (vector? patterns) (vector? skeletons)
+                                (= (count matches) (count skeletons))])
+          (loop [remaining matches consumed-branches 0 consumed-patterns 0 groups []]
+            (if (= (count remaining) 0)
+              (if (= [consumed-branches consumed-patterns] [(count branches) (count patterns)])
+                (assoc products :boolean-matches groups)
+                {:status :rejected :reason :orphan-match-products})
+              (let [node (first remaining) id (get node :node-id)
+                    bs (sh08-bm-select branches :core-node-id id)
+                    ps (sh08-bm-select patterns :core-node-id id)
+                    roots (sh08-bm-select ps :depth 0)
+                    ss (sh08-bm-select skeletons :core-node-id id)
+                    unsupported (loop [rs roots]
+                                  (if (= (count rs) 0) nil
+                                    (if (contains? #{:literal :wildcard :binding} (get (first rs) :pattern-kind))
+                                      (recur (rest rs)) (first rs))))]
+                (if (= unsupported nil)
+                  (if (if (= (count ss) 1)
+                        (if (= (count ps) (count roots))
+                          (sh08-bm-group-valid? node bs ps (first ss) nodes (get products :binding-index) forms sequence)
+                          false) false)
+                    (recur (rest remaining) (+ consumed-branches (count bs)) (+ consumed-patterns (count ps))
+                           (conj groups {:node node :branches bs :patterns ps :skeleton (first ss) :forms forms :nodes nodes}))
+                    {:status :rejected :reason :malformed-boolean-match-products :node node})
+                  (recur (rest remaining) (+ consumed-branches (count bs)) (+ consumed-patterns (count ps))
+                         (conj groups {:node node :branches bs :patterns roots :skeleton (first ss)
+                                       :forms forms :nodes nodes :unsupported-pattern unsupported}))))))
+          {:status :rejected :reason :malformed-match-product-families}))
+        {:status :rejected :reason :malformed-match-product-ordinals})
+        {:status :rejected :reason :malformed-match-product-families})) products))
+
+(defn sh08-bm-seed-bindings [groups nodes prior-types bindings functions edges context]
+  (loop [remaining groups result bindings]
+    (if (= (count remaining) 0) result
+      (let [group (first remaining)
+            scrutinee (get nodes (first (get (get group :node) :children)))
+            type (sh08-ft-infer-node-with-context scrutinee prior-types bindings functions edges context)]
+        (recur (rest remaining)
+          (if (if (= :gravity.type/bool type) (= false (contains? group :unsupported-pattern)) false)
+            (loop [branches (get group :branches) values result]
+              (if (= (count branches) 0) values
+                (let [id (get (first branches) :pattern-binding-id)]
+                  (recur (rest branches) (if (= id nil) values (assoc values id :gravity.type/bool)))))) result))))))
+
+(defn sh08-bm-error [rule reason node expected actual]
+  {:rule rule :reason reason :node node :expected expected :actual actual})
+
+(defn sh08-bm-check [group types functions module]
+  (let [node (get group :node) branches (get group :branches)
+        scrutinee-id (first (get node :children)) type (get types scrutinee-id :gravity.type/unknown)
+        owner (get functions (get (get node :evaluation) :owner-function-syntax-id))
+        declared (if (= (get owner :body-core-node-id) (get node :node-id))
+                   (get (get (get owner :signature) :return) :type-id) nil)]
+    (if (= type :gravity.type/bool)
+      (if (contains? group :unsupported-pattern)
+        (let [pattern (get group :unsupported-pattern)]
+          {:diagnostic (sh08-bm-error (if (contains? pattern :guard) "C7-ANNOTATION" "L7-PATTERN-TYPE")
+                         :unsupported-boolean-pattern
+                         (sh08-bm-source-node node (get (get group :forms) (get pattern :pattern-form-id)))
+                         :boolean-root-pattern (get pattern :pattern-kind))})
+      (loop [remaining branches domain [true false] result-type :gravity.type/unknown facts []]
+        (if (= (count remaining) 0)
+          (if (= (count domain) 0) {:constraints facts :type result-type}
+            {:diagnostic (sh08-bm-error (if (= :formal (get module :profile)) "L7-NONEXHAUSTIVE" "C7-ANNOTATION")
+                           (if (= :formal (get module :profile)) :nonexhaustive-boolean-match :unsupported-partial-boolean-match)
+                           node :exhaustive-boolean-match domain)})
+          (let [branch (first remaining) kind (get branch :pattern-kind) value (get branch :pattern-value)
+                pattern-node (sh08-bm-source-node node (get (get group :forms) (get branch :pattern-form-id)))
+                allowed (if (= kind :literal) (if (contains? #{true false} value) [value] []) domain)
+                selected (loop [ds domain values []]
+                           (if (= (count ds) 0) values
+                             (recur (rest ds) (if (contains? (set allowed) (first ds)) (conj values (first ds)) values))))
+                residual (loop [ds domain values []]
+                           (if (= (count ds) 0) values
+                             (recur (rest ds) (if (contains? (set selected) (first ds)) values (conj values (first ds))))))
+                body-id (get branch :branch-core-node-id) body-type (get types body-id :gravity.type/unknown)
+                expected (if (= declared nil) result-type declared)]
+            (if (if (= kind :literal) (= (count allowed) 0) false)
+              {:diagnostic (sh08-bm-error "L7-PATTERN-TYPE" :boolean-pattern-type-mismatch pattern-node :gravity.type/bool value)}
+              (if (= (count selected) 0)
+                {:diagnostic (sh08-bm-error "L7-UNREACHABLE" :unreachable-boolean-match-clause pattern-node :remaining-boolean-case value)}
+                (if (sh08-ft-known? body-type)
+                  (if (if (sh08-ft-known? expected) (= expected body-type) true)
+                    (recur (rest remaining) residual body-type
+                      (conj facts
+                        {:constraint-id-request {:domain :gravity/sh08-boolean-match-constraint-v1
+                           :match-core-node-id (get node :node-id) :clause-ordinal (get branch :clause-ordinal)
+                           :branch branch :pattern (get (get group :patterns) (get branch :clause-ordinal)) :skeleton (get group :skeleton)}
+                         :kind :equality :producer-rule :sh08-boolean-match-v1
+                         :lhs body-id :rhs body-type :scrutinee-type type
+                         :remaining-before domain :matched-values selected :remaining-after residual
+                         :pattern-binding-id (get branch :pattern-binding-id)
+                         :pattern-binding-scope-id (get branch :pattern-binding-scope-id)
+                         :binding-type (if (= kind :binding) :gravity.type/bool nil)
+                         :exhaustive-after? (= (count residual) 0)
+                         :source (get pattern-node :source)
+                         :branch-source (get (get (get group :nodes) body-id) :source)
+                         :dependencies [scrutinee-id body-id] :invalidation [:c6-match-products :scrutinee-type :branch-types :binding-scopes]
+                         :profile (get module :profile) :target (get module :target)
+                         :status :solved :diagnostics []}))
+                    {:diagnostic (sh08-bm-error (if (= declared nil) "C7-ANNOTATION" "C7-TYPE-MISMATCH")
+                                     (if (= declared nil) :unsupported-heterogeneous-boolean-match-join :boolean-match-branch-type-mismatch)
+                                     (get (get group :nodes) body-id) expected body-type)})
+                  {:diagnostic (sh08-bm-error "C7-ANNOTATION" :unknown-boolean-match-branch-type pattern-node :established-branch-type body-type)})))))))
+      {:diagnostic (sh08-bm-error "C7-ANNOTATION" :unsupported-boolean-match-scrutinee node :gravity.type/bool type)})))
+
+(defn sh08-bm-checks [groups types functions module]
+  (loop [remaining groups constraints [] diagnostics []]
+    (if (= (count remaining) 0) {:constraints constraints :diagnostics diagnostics}
+      (let [checked (sh08-bm-check (first remaining) types functions module)]
+        (recur (rest remaining) (sh08-ft-add-values-to-set (get checked :constraints) constraints)
+               (if (contains? checked :diagnostic) (conj diagnostics (get checked :diagnostic)) diagnostics))))))
 
 (defn sh08-ft-infer-node
   [node type-table binding-types function-types edges]
@@ -4165,7 +4469,9 @@
    initial-binding-types context]
   (loop [remaining nodes
          type-table {}
-         binding-types initial-binding-types
+         binding-types (sh08-bm-seed-bindings (get context :boolean-matches)
+                         (sh08-ft-node-index nodes) (get context :prior-type-table {})
+                         initial-binding-types function-types edges context)
          function-result function-types]
     (if (= (count remaining) 0)
       (let [node-index
@@ -4274,7 +4580,8 @@
   (loop [rounds-left maximum-rounds
          round 1
          current-functions function-types
-         current-bindings binding-types]
+         current-bindings binding-types
+         current-types {}]
     (if (<= rounds-left 0)
       {:convergence-status :nonconverged
        :round-count (- round 1)
@@ -4292,7 +4599,7 @@
       (let [pass
             (sh08-ft-infer-pass-with-context
              node-sequence lexical-bindings definitions calls edges
-             current-functions current-bindings context)
+             current-functions current-bindings (assoc context :prior-type-table current-types))
             next-bindings (get pass :binding-types)
             next-functions
             (sh08-ft-update-function-returns
@@ -4305,7 +4612,9 @@
             (sh08-ft-first-return-conflict next-functions node-table)]
         (if (= return-conflict nil)
           (if (if (= next-functions current-functions)
-                (= next-bindings current-bindings)
+                (if (= next-bindings current-bindings)
+                  (if (> (count (get context :boolean-matches)) 0)
+                    (= current-types (get pass :type-table)) true) false)
                 false)
             (assoc pass
                    :function-types next-functions
@@ -4317,7 +4626,8 @@
              (- rounds-left 1)
              (+ round 1)
              next-functions
-             next-bindings))
+             next-bindings
+             (get pass :type-table)))
           (assoc pass
                  :function-types next-functions
                  :binding-types next-bindings
@@ -4703,14 +5013,14 @@
   (if (= (count records) 0) false
     (if (contains? (first records) :signature) true (sh08-ft-any-signature? (rest records)))))
 
-(defn sh08-ft-function-type-core-artifact [core-artifact bindings]
+(defn sh08-ft-function-type-core-artifact-with-origins [core-artifact bindings source-forms]
   (if (map? core-artifact)
     (let [shape (sh08-validate-core-shape core-artifact)
           module (if (map? (get core-artifact :module))
                    (get core-artifact :module)
                    {})
-          products (sh08-ft-products-valid?
-                    core-artifact shape bindings)]
+          products (sh08-bm-products core-artifact
+                     (sh08-ft-products-valid? core-artifact shape bindings) source-forms)]
       (if (= (get products :status) :accepted)
         (let [proof-results
               (sh08-ft-proof-results shape products bindings module)
@@ -4781,13 +5091,17 @@
                  (sh08-ft-declaration-seeds function-skeletons (sh08-ft-inference-context
                   recursive? higher-order? recursive-proof
                   higher-order-proof function-skeletons))
-                 (sh08-ft-inference-round-bound
+                 (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
                   (get products :calls)
-                  (get products :lexical-bindings))
-                 (sh08-ft-context-proof
-                  recursive? higher-order? recursive-proof higher-order-proof))
+                  (get products :lexical-bindings)))
+                 (assoc (sh08-ft-context-proof
+                  recursive? higher-order? recursive-proof higher-order-proof)
+                   :boolean-matches (get products :boolean-matches)))
+                match-checks
+                (sh08-bm-checks (get products :boolean-matches) (get raw-inference :type-table)
+                                (get raw-inference :function-types) module)
                 unknown-node
                 (if (= (get raw-inference :convergence-status)
                        :converged)
@@ -4796,6 +5110,8 @@
                    (get raw-inference :type-table))
                   nil)
                 inference
+                (if (> (count (get match-checks :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get match-checks :diagnostics))
                 (if (map? unknown-node)
                   (assoc
                    raw-inference
@@ -4807,7 +5123,7 @@
                      :reason :unsupported-or-unresolved-core-node-type
                      :expected :concrete-node-type-or-diagnostic
                      :actual :gravity.type/unknown}))
-                  raw-inference)
+                  raw-inference))
                 functions
                 (sh08-ft-function-facts
                  (get inference :function-types)
@@ -4851,13 +5167,13 @@
                        module
                        higher-order-proof)
                       combined-constraints
-                      (sh08-ft-add-values-to-set
+                      (sh08-ft-add-values-to-set (get match-checks :constraints) (sh08-ft-add-values-to-set
                         (sh08-ft-signature-constraints (get products :function-records) module)
                       (if recursive?
                         (sh08-ft-add-values-to-set
                          (sh08-ft-recursive-constraint-ledger recursive-proof)
                          (get inference :constraints))
-                        (get inference :constraints)))
+                        (get inference :constraints))))
                       convergence
                       {:status (get inference :convergence-status)
                        :round-count (get inference :round-count)
@@ -5006,7 +5322,7 @@
          :sh07-shaped-artifact-id (get core-artifact :artifact-id)
          :diagnostics
          [(sh08-ft-diagnostic
-           "C7-VERIFY" {}
+           (get products :rule "C7-VERIFY") (get products :node {})
            module :coherent-b47-function-products
            (get products :reason)
            (get products :reason) {})]
@@ -5034,11 +5350,15 @@
    :host-digest-authority-retained? true
    :native-gravity-cryptographic-verification :pending})
 
+(defn sh08-ft-function-type-core-artifact [core-artifact bindings]
+  (sh08-ft-function-type-core-artifact-with-origins core-artifact bindings []))
+
 (defn sh08-function-type-core-artifact [request]
   (let [resolution (sh08-ft-authenticated-core request)]
     (if (= :accepted (get resolution :status))
-      (sh08-ft-function-type-core-artifact
-       (get resolution :core) (get resolution :binding-table))
+      (sh08-ft-function-type-core-artifact-with-origins
+       (get resolution :core) (get resolution :binding-table)
+       (get (get (get request :b47-context) :authenticated-core-request) :forms))
       {:artifact :gravity/sh08-function-typed-core-template
        :schema-version 3
        :status :rejected

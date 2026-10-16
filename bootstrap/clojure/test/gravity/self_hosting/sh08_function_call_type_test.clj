@@ -530,6 +530,259 @@
      :function-types function-types
      :call-node-ids (mapv :core-node-id calls)}))
 
+(defn- boolean-match-input []
+  (let [sha #(str "sha256:" (format "%064x" %))
+        mid (sha 30) sid (sha 31) bodies [(sha 32) (sha 33)]
+        bid (sha 40) rid (sha 41) scope (sha 42)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span {:byte-start 0 :byte-end 1}
+                         :origin-chain [] :generated-origin nil})
+        region (fn [i] {:kind :match-branch :match-syntax-id mid :clause-ordinal i})
+        forms [{:form-id mid :syntax-id mid :child-form-ids [(sha 1) sid (sha 10) (sha 12) (sha 11) (sha 13)]}
+               {:form-id (sha 10) :syntax-id (sha 10) :kind :boolean :value true :scope-id nil
+                :source-span {:byte-start 20 :byte-end 24} :origin-chain [] :generated-origin nil}
+               {:form-id (sha 11) :syntax-id (sha 11) :kind :symbol :value 'remainder :scope-id scope
+                :source-span {:byte-start 30 :byte-end 39} :origin-chain [] :generated-origin nil}
+               {:form-id (sha 12) :syntax-id (sha 12)} {:form-id (sha 13) :syntax-id (sha 13)}]
+        branches (mapv (fn [i]
+                         {:ordinal i :clause-ordinal i :clause-count 2 :core-node-id mid
+                          :scrutinee-core-node-id sid :branch-core-node-id (bodies i) :branch-child-index (inc i)
+                          :pattern-kind (if (zero? i) :literal :binding)
+                          :pattern-form-id (sha (+ 10 i)) :pattern-syntax-id (sha (+ 10 i))
+                          :pattern-value (if (zero? i) true 'remainder)
+                          :branch-form-id (sha (+ 12 i)) :branch-syntax-id (sha (+ 12 i))
+                          :pattern-binding-id (when (= 1 i) rid)
+                          :pattern-binding-scope-id (when (= 1 i) scope)
+                          :pattern-binding-ids (if (zero? i) [] [rid])
+                          :pattern-binding-use-syntax-ids (if (zero? i) [] [(sha 13)])
+                          :conditional-region (region i) :scrutinee-evaluation :evaluate-scrutinee-once
+                          :branch-evaluation :conditionally-evaluate-selected-branch
+                          :authenticated-sh06-artifact-id (sha 50) :sh06-semantic-projection-id (sha 51)}) (range 2))
+        clause-fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id
+                       :pattern-value :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]
+        patterns (mapv #(merge (select-keys % [:ordinal :clause-ordinal :core-node-id :pattern-kind :pattern-value
+                                              :pattern-form-id :pattern-syntax-id :pattern-binding-id :pattern-binding-scope-id
+                                              :pattern-binding-use-syntax-ids :authenticated-sh06-artifact-id :sh06-semantic-projection-id])
+                              {:local-ordinal 0 :root-local-ordinal 0 :depth 0 :path [] :parent-ordinal nil
+                               :parent-local-ordinal nil :root-ordinal (:ordinal %) :vector-width nil}) branches)
+        attrs {:scrutinee-child-index 0 :branch-count 2 :branch-child-indexes [1 2]
+               :branch-clauses (mapv #(select-keys % clause-fields) branches)
+               :selection-policy :source-ordered-pattern-candidates :runtime-reachability :not-asserted-by-sh07-b11
+               :result-type-join :pending-sh08 :exhaustiveness :pending-sh08
+               :authenticated-sh06-artifact-id (sha 50) :sh06-semantic-projection-id (sha 51)}
+        skeleton (merge (select-keys attrs [:selection-policy :runtime-reachability :result-type-join :exhaustiveness
+                                            :authenticated-sh06-artifact-id :sh06-semantic-projection-id])
+                        {:core-node-id mid :scrutinee-core-node-id sid :branch-core-node-ids bodies})
+        nodes [{:node-id sid :core-form :reference :children [] :attributes {:binding-id bid} :source (source sid)}
+               {:node-id (bodies 0) :core-form :literal :children [] :attributes {:literal-kind :boolean}
+                :source (source (sha 12)) :evaluation {:region (region 0)}}
+               {:node-id (bodies 1) :core-form :reference :children [] :attributes {:binding-id rid}
+                :source (source (sha 13)) :evaluation {:region (region 1)}}
+               {:node-id mid :core-form :match :children (into [sid] bodies) :attributes attrs
+                :source (source mid) :resolved-binding-ids [rid] :evaluation {}}]
+        products {:status :accepted :node-table (into {} (map (juxt :node-id identity) nodes))
+                  :binding-index {rid {:binding-id rid :binding-class :lexical :name 'remainder
+                                       :scope-id scope :definition-syntax-id (sha 11)}}}]
+    {:core {:nodes nodes :match-branch-records branches :match-pattern-records patterns :match-decision-skeletons [skeleton]}
+     :products products :forms forms :bindings {bid :gravity.type/bool} :remainder rid :match-id mid :scrutinee-id sid :bodies bodies}))
+
+(deftest sh08-boolean-match-development-kernel
+  (let [{:keys [core products forms bindings remainder match-id scrutinee-id bodies]} (boolean-match-input)
+        joined (invoke-c7 'sh08-bm-products [core products forms])
+        groups (:boolean-matches joined)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) (:node-table products) [] [] [] [] {} bindings 20 {:boolean-matches groups}])
+        checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
+        group (first groups)
+        types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool}]
+    (is (= :accepted (:status joined)) (pr-str joined))
+    (is (= :converged (:convergence-status inference)))
+    (is (= :gravity.type/bool (get (:binding-types inference) remainder)))
+    (is (= :gravity.type/bool (get (:type-table inference) match-id)))
+    (is (= [] (:diagnostics checked)))
+    (is (every? #(= :equality (:kind %)) (:constraints checked)))
+    (is (= [[true false] [false]] (mapv :remaining-before (:constraints checked))))
+    (is (= [[true] [false]] (mapv :matched-values (:constraints checked))))
+    (is (= [[false] []] (mapv :remaining-after (:constraints checked))))
+    (is (= :gravity.type/bool (:binding-type (second (:constraints checked)))))
+    (is (= (get-in core [:match-branch-records 1 :pattern-binding-scope-id])
+           (:pattern-binding-scope-id (second (:constraints checked)))))
+    (doseq [[label altered] [[:scrutinee (assoc-in core [:match-branch-records 0 :scrutinee-core-node-id] match-id)]
+                             [:order (update core :match-branch-records #(vec (reverse %)))]
+                             [:scope (assoc-in core [:match-pattern-records 1 :pattern-binding-scope-id] nil)]
+                             [:parent (assoc-in core [:match-pattern-records 1 :parent-ordinal] 0)]
+                             [:child (assoc-in core [:nodes 3 :children] [scrutinee-id (bodies 1) (bodies 0)])]
+                             [:deleted (update core :match-branch-records pop)]
+                             [:extra (update core :match-pattern-records conj (first (:match-pattern-records core)))]]]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products [altered products forms]))) (name label)))
+    (doseq [[rule reason altered altered-types profile]
+            [["L7-PATTERN-TYPE" :boolean-pattern-type-mismatch (assoc-in group [:branches 0 :pattern-value] 1) types :meta]
+             ["L7-UNREACHABLE" :unreachable-boolean-match-clause
+              (-> group (assoc-in [:branches 1 :pattern-kind] :literal) (assoc-in [:branches 1 :pattern-value] true)) types :meta]
+             ["C7-ANNOTATION" :unsupported-heterogeneous-boolean-match-join group (assoc types (bodies 1) :gravity.type/string) :meta]
+             ["C7-ANNOTATION" :unsupported-boolean-match-scrutinee group (assoc types scrutinee-id :gravity.type/unknown) :meta]
+             ["L7-NONEXHAUSTIVE" :nonexhaustive-boolean-match (update group :branches pop) types :formal]
+             ["C7-ANNOTATION" :unsupported-partial-boolean-match (update group :branches pop) types :meta]]]
+      (let [diagnostic (:diagnostic (invoke-c7 'sh08-bm-check [altered altered-types {} {:profile profile :target :jvm}]))]
+        (is (= [rule reason] ((juxt :rule :reason) diagnostic)))))
+    (is (= :gravity.type/unknown (invoke-c7 'sh08-bm-join [[] types])))
+    (doseq [kind [:wildcard :binding]]
+      (let [forged (-> core
+                       (assoc-in [:match-branch-records 0 :pattern-kind] kind)
+                       (assoc-in [:match-pattern-records 0 :pattern-kind] kind)
+                       (assoc-in [:nodes 3 :attributes :branch-clauses 0 :pattern-kind] kind))]
+        (is (= :rejected (:status (invoke-c7 'sh08-bm-products [forged products forms]))))))
+    (is (= '_ (invoke-c7 'sh08-bm-pattern-value [{:kind :list :value '(quote _)}])))
+    (is (true? (invoke-c7 'sh08-bm-source-kind-valid?
+                          [{:pattern-kind :literal} {:kind :list :value '(quote _)}])))
+    (is (false? (invoke-c7 'sh08-bm-source-kind-valid?
+                           [{:pattern-kind :wildcard} {:kind :list :value '(quote _)}])))
+    (is (= :rejected (:status (invoke-c7 'sh08-bm-products
+                               [(assoc-in core [:match-pattern-records 1 :ordinal] 7) products forms]))))
+    (let [outside {:node-id "outside" :core-form :reference :children []
+                   :attributes {:binding-id remainder} :source {:syntax-id "outside"}}
+          altered (update core :nodes conj outside)
+          updated-products (assoc-in products [:node-table "outside"] outside)]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products [altered updated-products forms])))))
+    (let [pattern (assoc (first (:patterns group)) :pattern-kind :map)
+          unsupported (assoc group :unsupported-pattern pattern)]
+      (is (= "L7-PATTERN-TYPE" (get-in (invoke-c7 'sh08-bm-check [unsupported types {} {:profile :meta}]) [:diagnostic :rule])))
+      (is (= "C7-ANNOTATION" (get-in (invoke-c7 'sh08-bm-check [unsupported (dissoc types scrutinee-id) {} {:profile :meta}]) [:diagnostic :rule]))))
+    (is (= {} (invoke-c7 'sh08-bm-seed-bindings
+                              [groups (:node-table products) {} {} {} [] {}])))
+    (doseq [family [:match-branch-records :match-pattern-records :match-decision-skeletons]
+            value [0 nil {}]]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products
+                                           [(assoc core family value) products forms])))))
+    (let [owner "declared-owner"
+          owned (assoc-in group [:node :evaluation :owner-function-syntax-id] owner)
+          functions {owner {:body-core-node-id match-id :signature {:return {:type-id :gravity.type/i64}}}}
+          diagnostic (:diagnostic (invoke-c7 'sh08-bm-check [owned types functions {:profile :meta}]))]
+      (is (= ["C7-TYPE-MISMATCH" :gravity.type/i64 :gravity.type/bool]
+             ((juxt :rule :expected :actual) diagnostic)))
+      (is (= (first bodies) (get-in diagnostic [:node :node-id]))))
+    (is (false? (invoke-c7 'sh08-ft-match-preimage-valid? [core (assoc core :match-pattern-records []) nil])))))
+
+(deftest sh08-boolean-match-c8-ledger-development-kernel
+  ;; Normalized identity/verifier oracle for the final equality representation;
+  ;; no new authenticated-source evidence is manufactured here.
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
+        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
+        fixture (var-get (ns-resolve upstream 'function-typed-result))
+        verify (var-get (ns-resolve upstream 'function-verification))
+        {:keys [core products forms scrutinee-id bodies]} (boolean-match-input)
+        groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products forms]))
+        types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool}
+        constraints (:constraints (invoke-c7 'sh08-bm-checks [groups types {} {:profile :meta :target :jvm}]))
+        raw (assoc (fixture "/development/boolean-match.gravity") :constraint-ledger constraints)
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity
+                     :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (verify typed)
+        result (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed verification])]
+    (is (= [:equality :equality] (mapv :kind constraints)))
+    (is (= :accepted (:status result)))
+    (is (= constraints (get-in result [:typed-core :constraints])))
+    (is (= identity (get-in result [:identity-input :sh08-identity-input])))
+    (is (not= identity (invoke-c8 'sh09-adapter-function-identity-input
+                                  [(update raw :constraint-ledger #(mapv (fn [c] (assoc c :kind :boolean-match-branch)) %))])))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification result]))))
+    (doseq [candidate [(assoc-in result [:typed-core :constraints] [])
+                       (assoc-in result [:identity-input :sh08-identity-input :constraint-ledger 0 :remaining-after] [true false])]]
+      (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
+
+(deftest sh08-boolean-match-authenticated-source-composition
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+        artifacts (mapv #(fixture-artifact "accepted" "function-boolean-matches" %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [constraints (filterv #(= :sh08-boolean-match-v1 (:producer-rule %)) (:constraint-ledger result))
+              functions (into {} (map (juxt :definition-name identity) (:function-type-table result)))
+              verification (verification-result artifact result)
+              effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [result verification])
+              narrowed (first (filter :pattern-binding-id constraints))]
+          (is (= 5 (count constraints)))
+          (is (= :gravity.type/i64 (get-in functions ['select-value :return])))
+          (is (= :gravity.type/bool (get-in functions ['retain-bool :return])))
+          (is (= [false] (:matched-values narrowed)))
+          (is (= :gravity.type/bool (:binding-type narrowed)))
+          (is (= (get-in narrowed [:constraint-id-request :pattern :pattern-binding-scope-id])
+                 (:pattern-binding-scope-id narrowed)))
+          (is (every? #(= :solved (:status %)) constraints))
+          (is (= :passed (:status verification)))
+          (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+          (is (= (:typed-core result) (:typed-core effected)))
+          (is (= (:constraint-ledger result) (get-in effected [:typed-core :constraints])))
+          (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result
+                                            [result verification effected]))))
+          (let [altered (update result :constraint-ledger
+                                #(mapv (fn [c] (if (= :sh08-boolean-match-v1 (:producer-rule c))
+                                                (assoc c :matched-values []) c)) %))]
+            (is (= :rejected (:status (verification-result artifact altered))))
+            (is (= :rejected (:status (invoke-c8 'sh09-build-authenticated-pure-effect-result [altered verification]))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" "function-boolean-matches" ".gravity"))
+           (slurp (fixture-path "accepted" "function-boolean-matches" ".qst"))))))
+
+(defn- assert-boolean-match-source-rejections [cases]
+  (doseq [[basename rule reason anchor ordinal] cases]
+    (let [artifact (fixture-artifact "rejected" basename ".gravity")
+          result (function-result artifact) diagnostic (first (:diagnostics result))
+          core (canonical-core artifact)
+          branch (get (:match-branch-records core) ordinal)
+          expected-id (if (= anchor :branch) (:branch-core-node-id branch) (:core-node-id branch))
+          source (if (= anchor :pattern)
+                   (let [form (first (filter #(= (:form-id %) (:pattern-form-id branch))
+                                             (get-in (function-request artifact) [:b47-context :authenticated-core-request :forms])))]
+                     {:syntax-id (:syntax-id form) :semantic-span (:source-span form)
+                      :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)})
+                   (:source (first (filter #(= expected-id (:node-id %)) (:nodes core)))))]
+      (is (= :accepted (:status artifact)) basename)
+      (is (= :rejected (:status result)) basename)
+      (is (= [rule reason] ((juxt :rule :reason) diagnostic)) (pr-str diagnostic))
+      (is (= :type-checking (:stage diagnostic)))
+      (is (string? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (is (vector? (:origin-chain diagnostic)))
+      (is (= expected-id (:core-node-id diagnostic)))
+      (is (= [(:syntax-id source) (:semantic-span source) (:origin-chain source) (:generated-origin source)]
+             ((juxt :syntax-id :source-span :origin-chain :generated-origin) diagnostic)))
+      (when (= anchor :branch)
+        (is (= [:gravity.type/i64 :gravity.type/string]
+               ((juxt :expected-type :actual-type) diagnostic))))
+      (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+             (slurp (fixture-path "rejected" basename ".qst")))))))
+
+(deftest sh08-boolean-match-source-rejections
+  (assert-boolean-match-source-rejections
+    [["function-boolean-match-result" "C7-TYPE-MISMATCH" :boolean-match-branch-type-mismatch :branch 1]
+     ["function-boolean-match-pattern" "L7-PATTERN-TYPE" :boolean-pattern-type-mismatch :pattern 0]
+     ["function-boolean-match-duplicate" "L7-UNREACHABLE" :unreachable-boolean-match-clause :pattern 1]
+     ["function-boolean-match-subsumed" "L7-UNREACHABLE" :unreachable-boolean-match-clause :pattern 2]]))
+
+(deftest sh08-boolean-match-source-boundary-rejections
+  (assert-boolean-match-source-rejections
+    [["function-boolean-match-partial" "C7-ANNOTATION" :unsupported-partial-boolean-match :match 0]
+     ["function-boolean-match-unknown" "C7-ANNOTATION" :unsupported-boolean-match-scrutinee :match 0]])
+  ;; C6 currently admits only :meta/:jvm input. Formal C7 nonexhaustiveness is
+  ;; exercised by the direct kernel, not claimed through this upstream denial.
+  (let [basename "function-boolean-match-formal-partial"
+        diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil
+                        (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= ["C6-VERIFY" :core-lowering :formal :request-shape]
+           [(:rule diagnostic) (:stage diagnostic) (:profile diagnostic) (get-in diagnostic [:facts :reason])]))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst")))))
+  (let [basename "function-boolean-match-scope-escape"
+        diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil
+                        (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= "C5-UNRESOLVED" (:id diagnostic)))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst"))))))
+
 (deftest sh08-atomic-signature-authenticated-source-composition
   (let [artifacts (mapv #(fixture-artifact "accepted" "function-atomic-signatures" %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]

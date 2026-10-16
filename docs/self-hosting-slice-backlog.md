@@ -409,6 +409,89 @@ general imported stage-function composition remains a separate implementation
 task, not a reason to add a facade-only `gravity.types` namespace. No native,
 target-completion, self-hosting or seed-retirement claim is made here.
 
+### Boolean match typing: development increment
+
+The ordinary `:meta/:jvm` C7 function path now types unguarded matches over an
+independently established Bool scrutinee, using the actual C6 branch, pattern
+and decision skeleton records. Supported root patterns are `true`, `false`, `_` and a
+lexical binding. For example:
+
+```clojure
+(defn select-value [b :- Bool x :- I64 y :- I64] :- I64
+  (match b true x false y))
+(defn retain-bool [b :- Bool] :- Bool
+  (match b true true remainder remainder))
+```
+
+Source-ordered residual domains start at `[true false]`. A literal consumes its
+case; a wildcard or binding consumes the remaining cases. A branch binding has
+Bool type, its actual lexical scope, and the residual value domain (for example
+`[false]` for `remainder` above). Pattern shape does not supply a circular Bool
+premise for an otherwise unknown scrutinee. Every reachable branch is typed;
+the supported result join requires equal established types and preserves
+declared function-result checks. No implicit numeric conversion or union is
+introduced.
+
+`L7-PATTERN-TYPE` diagnoses a pattern incompatible with a known Bool scrutinee;
+`L7-UNREACHABLE` diagnoses an empty residual branch. At the direct C7 boundary,
+a missing case in `:formal` without supported partiality evidence is
+`L7-NONEXHAUSTIVE`. The current source C6 module boundary accepts only
+`:meta/:jvm`: the real formal fixture stops there with `C6-VERIFY` before C7.
+It does not establish formal-profile source composition. Outside mandatory
+total contexts, partial matching remains explicitly unsupported with
+`C7-ANNOTATION`, not an invented nil result or a universal language totality
+rule. Unknown scrutinees and unsupported undeclared heterogeneous joins also
+request annotations; a branch conflicting with an actual declared result is
+`C7-TYPE-MISMATCH`. Upstream scope and irrefutable-pattern diagnostics remain
+owned by C5/C6. Malformed C6-product joins are `C7-VERIFY`.
+
+Owning implementation is `gravity.compiler.c7-type-checker-engine`, with the
+existing `sh08-function-call-type-test` development selectors. C7 compares the
+raw match families with C6's actual canonical preimage and checks source
+classification, child order, global ordinals, pattern coordinates, binding
+scope and branch-contained uses. Coverage, narrowing, branch-result premises,
+origins, dependencies and invalidation inputs are retained in the existing
+hashed constraint ledger and type table. Public APIs, outer artifact keys and
+existing typed identity domains are unchanged. The pure C8 adapter preserves
+the complete typed core and ledger; no effect policy is expanded.
+
+The `sh08-boolean-match-development-kernel` passed 47 assertions; atomic
+annotation and existing call regressions passed another 62. A normalized C8
+ledger identity/verifier oracle passed eight, for 117 in the final cheap group.
+The authentic `sh08-boolean-match-authenticated-source-composition` passed 32 assertions on
+both source extensions, including I64 selection, residual Bool binding,
+wildcard coverage, forwarding, fresh C7 verification and C8 preservation with
+rewrite rejection. Its execution took 189.949 seconds, a development
+observation rather than a benchmark. Subsequent ordinal/use-site hardening and
+the undeclared-join diagnostic correction are covered by the final cheap
+kernel; independent review confirmed the accepted fixture paths unchanged.
+The ledger tag was then corrected to the existing `:equality` constraint kind,
+retaining the versioned match producer and all premises. The paired source run
+predates that one-field payload change: its typed artifact identities are not
+the final identities. The final cheap group covers emitted equality facts and
+generic C8 preservation/identity/rewrite checks; it is not a new source proof.
+Earlier failed draft checks are not counted as passing evidence.
+
+The first real rejection run passed 41 assertions on declared-result mismatch,
+wrong pattern type, duplicate and subsumed clauses, then errored on that
+upstream formal-profile boundary. It also passed the existing recursive
+fixed-point regression (31) and language-boundary gate (5): 77 passed assertions
+and one error, not an all-passing group. The remaining source cases were not
+executed by that run. The separate boundary-closure selector then passed 24
+assertions on the remaining partial/unknown cases, C5 scope escape and the
+formal fixture's explicit C6 rejection. The formal fixture was re-evaluated
+under that corrected expectation; the first four cases and accepted pair were
+not repeated. Source-negative `.qst` text equality was checked without claiming
+a second full negative composition. Broader C6 profile support requires its
+own executable composition work; this increment does not weaken its boundary.
+
+Guards, structured/union pattern typing, general subtyping and joins,
+partiality-proof ingestion, recursive/higher-order match composition,
+ownership/effect completion and runtime/backend equivalence remain outside
+this increment. The next structural step needs real constructor-derived
+key/element type evidence before map bindings or guards can be typed. These
+development results are not authoritative migration or release evidence.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

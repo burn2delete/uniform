@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.function-boolean-match-result
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn select-value [b :- Bool x :- I64] :- I64
+  (match b true x false "wrong"))
