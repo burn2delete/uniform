@@ -282,6 +282,56 @@
          (= (set source-paths) (set assigned))
          (= (count assigned) (count (set assigned))))))
 
+(deftest sh06-atomic-signature-type-namespace-development-kernel
+  (let [binding (bootstrap/sh06-resolution-current-binding! "<type-namespace-kernel>")
+        plan (:plan binding)
+        invoke #(bootstrap/sh06-resolution-execute! "<type-namespace-kernel>" binding %1 %2)
+        core (bootstrap/sh06-resolution-core-record 'I64 :type 0)
+        variable (assoc core :kind :var :namespace 'demo.types :binding-class :namespace
+                            :definition-syntax-id "var-I64")
+        var-only (assoc variable :name 'OnlyVar)
+        local {:name 'I64 :kind :local}
+        local-binding {:name 'I64 :kind :local :binding-class :lexical :scope-id :scope :binding-id :local}
+        bindings [(assoc core :binding-id :core) (assoc variable :binding-id :var)
+                  (assoc var-only :binding-id :var-only) local-binding]
+        request {:module {:namespace 'demo.types} :definitions [variable var-only]
+                 :core-bindings [core] :imports [] :import-bindings []
+                 :lexical-scopes [{:scope-id :scope :bindings [local]}]}
+        reference {:position :type :qualifier nil :symbol 'I64 :name 'I64 :scope-chain [:scope]}]
+    (is (= :development-unadmitted (:revision-status binding)))
+    (is (false? (:self-hosted? binding)))
+    (is (identical? binding (bootstrap/sh06-resolution-current-binding! "<same-input>")))
+    (is (= (:source-content-hash binding) (get-in plan [:source :sha256])))
+    (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates [request bindings reference]))))
+    (is (= [:local] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                            [request bindings (assoc reference :position :expression)]))))
+    (is (= [] (invoke 'sh06-reference-candidates [request bindings (assoc reference :symbol 'OnlyVar :name 'OnlyVar)])))
+    (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                           [request bindings (assoc reference :qualifier 'gravity.core :symbol 'gravity.core/I64)]))))
+    (is (thrown? clojure.lang.ExceptionInfo (bootstrap/sh06-resolution-read-pinned-source! "<historical-boundary>")))
+    (let [key-var (private-bootstrap-var 'sh06-resolution-current-source-key)
+          captured-var (private-bootstrap-var '*sh06-resolution-operation-binding*)
+          original-key (var-get key-var)]
+      (with-redefs-fn {key-var #(assoc (original-key) :source [:changed :changed])}
+        #(with-bindings {captured-var binding}
+           (is (thrown? clojure.lang.ExceptionInfo
+                        (bootstrap/sh06-resolution-current-binding! "<operation-drift>"))))))))
+
+(deftest sh06-atomic-signature-source-type-rejections
+  (doseq [[basename symbol] [["function-annotation-unknown" 'MissingType]
+                             ["function-annotation-var-only" 'OnlyVar]]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename)
+          source-path (path (str relative ".gravity"))
+          data (rejection-data source-path)]
+      (is (nil? (:raw-host-error data)) (pr-str data))
+      (is (= "C5-UNRESOLVED" (:id data)))
+      (is (= :name-resolution (:stage data)))
+      (is (= symbol (:symbol data)))
+      (is (= source-path (get-in data [:source-span :source])))
+      (is (string? (:syntax-id data)))
+      (is (seq (:remediation data)))
+      (is (= (slurp source-path) (slurp (path (str relative ".qst"))))))))
+
 (deftest sh06-fixture-inventory-is-co-canonical-and-behavioral
   (testing "the checked-in inventory is explicit and symmetric"
     (is (= accepted-fixtures (fixture-basenames "accepted" ".gravity")))

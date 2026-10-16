@@ -47,6 +47,18 @@
     [syntax-id (projected-syntax-id syntax (:path projected) (:name projected))]
     (swap! scope-by-syntax-id assoc syntax-id (:sh07/projected-scope-id scope))
     (swap! declaration-syntax-by-upstream-id assoc (:binding-syntax-id binding) syntax-id)))
-  (doseq
-   [index (range (if named? 3 2) (count items))]
-   (walk syntax (get items index) (conj path index) nested :expression))))
+  (loop [index 0]
+    (when (< index (count parameters))
+      (if (= ':- (get parameters index))
+        (do (when (and (< (inc index) (count parameters))
+                       (symbol? (get parameters (inc index))) (not= ':- (get parameters (inc index))))
+              (walk syntax (get parameters (inc index))
+                    (conj path parameter-index (inc index)) nested :type))
+            (recur (+ index 2)))
+        (recur (inc index)))))
+  (let [header-index (inc parameter-index)
+        annotated? (= ':- (get items header-index))]
+    (when (and annotated? (symbol? (get items (inc header-index))) (not= ':- (get items (inc header-index))))
+      (walk syntax (get items (inc header-index)) (conj path (inc header-index)) nested :type))
+    (doseq [index (range (+ header-index (if annotated? 2 0)) (count items))]
+      (walk syntax (get items index) (conj path index) nested :expression)))))

@@ -673,7 +673,7 @@
              (recur (rest records)
                     (conj accumulated (first records))))))))))
 
-(defn sh06-reference-candidates [request bindings reference]
+(defn sh06-reference-candidates-base [request bindings reference]
   (let [module (get request :module)
         qualifier (get reference :qualifier)
         name (sh06-reference-name reference)
@@ -756,6 +756,27 @@
                    (sh06-import-binding-definitions
                     request namespace-imports name))
                   [])))))))))
+
+(defn sh06-type-definitions [definitions]
+  (loop [remaining definitions values []]
+    (if (= (count remaining) 0) values
+      (recur (rest remaining)
+             (if (sh06-vector-contains? [:type :protocol] (get (first remaining) :kind))
+               (conj values (first remaining)) values)))))
+
+(defn sh06-reference-candidates [request bindings reference]
+  (if (= (get reference :position) :type)
+    (let [typed-request
+          (assoc (assoc (assoc (assoc request :lexical-scopes [])
+            :definitions (sh06-type-definitions (get request :definitions)))
+            :import-bindings (sh06-type-definitions (get request :import-bindings)))
+            :core-bindings (sh06-type-definitions (get request :core-bindings)))]
+      (if (= (get reference :qualifier) 'gravity.core)
+        (sh06-materialize-definitions bindings
+          (sh06-find-definitions-in-namespace (get typed-request :core-bindings)
+                                             'gravity.core (sh06-reference-name reference)))
+        (sh06-reference-candidates-base typed-request bindings reference)))
+    (sh06-reference-candidates-base request bindings reference)))
 
 (defn sh06-edge-nodes [edges]
   (loop [remaining edges nodes []]

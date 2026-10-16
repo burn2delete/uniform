@@ -185,6 +185,95 @@
           (.put *function-request-cache* artifact request))
         request))))
 
+(deftest sh08-atomic-signature-inference-development-kernel
+  ;; Execute the current Gravity inference algorithm with normalized records;
+  ;; this does not substitute for authenticated B47/C7 composition.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        declaration {:source-child-index 1 :marker-form-id (sha 1) :marker-syntax-id (sha 2)
+                     :type-form-id (sha 3) :type-syntax-id (sha 4)
+                     :type-symbol 'I64 :type-binding-id (sha 5) :type-id :gravity.type/i64}
+        signature {:rule-version :sh07-atomic-function-signature-v1
+                   :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+                   :parameters [declaration] :return (assoc declaration :source-child-index 2)
+                   :parameter-source-child-indexes [0] :body-source-child-index 4}
+        record {:function-syntax-id (sha 10) :function-core-node-id (sha 11)
+                :body-core-node-id (sha 12) :parameter-binding-ids [(sha 13)] :fixed-arity 1 :signature signature}
+        bindings {(sha 5) {:binding-id (sha 5) :kind :type :binding-class :core :namespace 'gravity.core :name 'I64}}
+        module {:profile :meta :target :jvm :effects #{} :capabilities #{}}
+        functions (invoke-c7 'sh08-ft-function-skeletons [[record] module])
+        seeds (invoke-c7 'sh08-ft-declaration-seeds [functions {}])
+        body {:node-id (sha 12) :core-form :reference :children [] :attributes {:binding-id (sha 13)}}
+        function {:node-id (sha 11) :core-form :fn :children [(sha 12)] :source {:syntax-id (sha 10)}}
+        infer (fn [body-node]
+                (invoke-c7 'sh08-ft-infer-acyclic
+                  [[body-node function] {(sha 12) body-node (sha 11) function} [] [] [] [] functions seeds 8]))
+        result (infer body)
+        mismatch (infer (assoc body :core-form :literal :attributes {:literal-kind :string}))]
+    (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
+    (is (= {(sha 13) :gravity.type/i64} seeds))
+    (is (= :converged (:convergence-status result)))
+    (is (= :gravity.type/i64 (get-in result [:type-table (sha 12)])))
+    (is (= :gravity.type/i64 (get-in result [:function-types (sha 10) :return])))
+    (is (= :type-conflict (:convergence-status mismatch)))
+    (is (= [:gravity.type/i64 :gravity.type/string]
+           ((juxt :expected :actual) (first (:diagnostics mismatch)))))
+    (doseq [actual [:gravity.type/string :gravity.type/integer :gravity.type/u64 :gravity.type/f32 :gravity.type/f64]]
+      (let [call {:core-node-id (sha 20) :argument-node-ids [(sha 21)]}
+            edge {:classification :local-function :callee-function-syntax-id (sha 10)}
+            constrained (invoke-c7 'sh08-ft-call-constraints
+                          [[call] [edge] {} {(sha 21) actual} seeds functions])]
+        (is (= :call-argument-type-mismatch (:reason (first (:diagnostics constrained)))))
+        (is (= [:gravity.type/i64 actual] ((juxt :expected :actual) (first (:diagnostics constrained)))))))
+    (doseq [bad [(assoc signature :rule-version nil) (assoc signature :extra true)
+                 (assoc-in signature [:parameters 0 :type-id] :gravity.type/integer)
+                 (assoc-in signature [:parameters 0 :type-binding-id] (sha 999))]]
+      (is (false? (invoke-c7 'sh08-ft-signature-valid? [bad 1 bindings]))))
+    (is (false? (invoke-c7 'sh08-ft-signature-valid? [signature 1 (assoc-in bindings [(sha 5) :kind] :var)])))
+    (doseq [bad [0 nil {} []]]
+      (is (false? (invoke-c7 'sh08-ft-function-signature-valid?
+                            [record (assoc function :attributes {:parameters bad :fixed-arity 1}) bindings]))))
+    (is (false? (invoke-c7 'sh08-ft-function-signature-valid?
+                          [(dissoc record :signature)
+                           (assoc function :attributes {:parameters '[x] :fixed-arity 1}
+                                           :lowering-rule-version :sh07-atomic-function-signature-v1) bindings])))
+    (let [boolean-declaration (assoc declaration :source-child-index 4 :type-id :gravity.type/bool
+                                    :type-symbol 'Bool :type-binding-id (sha 6)
+                                    :marker-form-id (sha 31) :marker-syntax-id (sha 32)
+                                    :type-form-id (sha 33) :type-syntax-id (sha 34))
+          mixed (assoc signature :parameters [declaration boolean-declaration nil]
+                                 :return nil :parameter-source-child-indexes [0 3 6] :body-source-child-index 2)
+          mixed-record (assoc record :signature mixed :fixed-arity 3 :parameter-binding-ids [(sha 13) (sha 14) (sha 15)])
+          mixed-functions (invoke-c7 'sh08-ft-function-skeletons [[mixed-record] module])
+          mixed-bindings (assoc bindings (sha 6) {:binding-id (sha 6) :name 'Bool :kind :type
+                                                :binding-class :core :namespace 'gravity.core})
+          mixed-seeds (invoke-c7 'sh08-ft-declaration-seeds [mixed-functions {(sha 15) :gravity.type/string}])]
+      (is (true? (invoke-c7 'sh08-ft-signature-valid? [mixed 3 mixed-bindings])))
+      (is (= {(sha 13) :gravity.type/i64 (sha 14) :gravity.type/bool (sha 15) :gravity.type/string} mixed-seeds))
+      (is (= [0 3 6] (get-in mixed-functions [(sha 10) :signature :parameter-source-child-indexes]))))
+    (doseq [proof-kind [:higher-order :recursive] compatible? [true false]]
+      (let [boolean-declaration (assoc declaration :type-id :gravity.type/bool :type-symbol 'Bool :type-binding-id (sha 6))
+            declared (assoc signature :parameters [boolean-declaration]
+                                      :return (assoc (if compatible? boolean-declaration declaration) :source-child-index 2))
+            base (invoke-c7 'sh08-ft-function-skeletons [[(assoc record :signature declared)] module])
+            proof-type (assoc (get base (sha 10)) :return :gravity.type/bool
+                              :parameters [{:binding-id (sha 13) :type :gravity.type/bool}])
+            higher-order {:status :accepted :identity {:record record} :identity-function-type proof-type}
+            recursive {:status :accepted :function-syntax-id (sha 10) :function-record record
+                       :parameter-types [:gravity.type/bool] :base-type :gravity.type/bool :function-node function}
+            completed (invoke-c7 'sh08-ft-complete-function-skeletons
+                                [base (if (= proof-kind :recursive) recursive {})
+                                      (if (= proof-kind :higher-order) higher-order {})])
+            completed-seeds (invoke-c7 'sh08-ft-declaration-seeds [completed {}])
+            checked (invoke-c7 'sh08-ft-infer-acyclic
+                              [[body function] {(sha 12) body (sha 11) function} [] [] [] [] completed completed-seeds 8])]
+        (is (= (if compatible? :gravity.type/bool :gravity.type/i64) (get-in completed [(sha 10) :return])))
+        (is (= (if compatible? :converged :type-conflict) (:convergence-status checked)))))
+    (let [names '[I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword Ratio]
+          types (mapv #(invoke-c7 'sh08-ft-atomic-type-id [%]) names)]
+      (is (= (count names) (count (set types))))
+      (is (= [:gravity.type/f32 :gravity.type/f64] (subvec types 8 10)))
+      (is (not (contains? (set types) :gravity.type/integer))))))
+
 (def ^:private accepted-gravity
   (delay (fixture-artifact "accepted" "function-local-call" ".gravity")))
 (def ^:private accepted-qst
@@ -440,6 +529,58 @@
      :edges edges
      :function-types function-types
      :call-node-ids (mapv :core-node-id calls)}))
+
+(deftest sh08-atomic-signature-authenticated-source-composition
+  (let [artifacts (mapv #(fixture-artifact "accepted" "function-atomic-signatures" %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (is (= :passed (:status (b47-verification artifact))))
+      (when (= :accepted (:status result))
+        (let [functions (into {} (map (juxt :definition-name identity) (:function-type-table result)))
+              declarations (filter #(= :sh08-atomic-function-signature-v1 (:producer-rule %)) (:constraint-ledger result))
+              boundary (:gravity-core-boundary artifact)
+              input (:authenticated-core-request boundary)
+              binding-index (into {} (map (juxt :binding-id identity) (:binding-table input)))
+              signature (get-in functions ['identity-i64 :signature])
+              type-binding (get binding-index (get-in signature [:parameters 0 :type-binding-id]))]
+          (is (= 4 (count functions)))
+          (doseq [name '[identity-i64 forward-i64 shadow-type]]
+            (is (= :gravity.type/i64 (get-in functions [name :return])))
+            (is (= :gravity.type/i64 (get-in functions [name :parameters 0 :type]))))
+          (is (= :gravity.type/bool (get-in functions ['identity-bool :return])))
+          (is (= :gravity/sh08-atomic-function-signature-typed-core-v1 (get-in result [:identity-input :domain])))
+          (is (= 8 (count declarations)))
+          (is (every? #(= :solved (:status %)) declarations))
+          (is (= [:core :type 'gravity.core 'I64] ((juxt :binding-class :kind :namespace :name) type-binding)))
+          (is (= :development-unadmitted (get-in boundary [:plan-binding :revision-status])))
+          (is (false? (get-in boundary [:plan-binding :self-hosted?])))
+          (is (= :passed (:status (verification-result artifact result))))
+          (is (= :rejected (:status (verification-result artifact (update-in result [:function-type-table 0] dissoc :signature))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" "function-atomic-signatures" ".gravity"))
+           (slurp (fixture-path "accepted" "function-atomic-signatures" ".qst"))))))
+
+(deftest sh08-atomic-signature-source-type-mismatches
+  (doseq [[basename reason actual]
+          [["function-annotation-result-mismatch" :function-result-type-mismatch :gravity.type/string]
+           ["function-annotation-argument-mismatch" :call-argument-type-mismatch :gravity.type/string]
+           ["function-annotation-integer-coercion" :call-argument-type-mismatch :gravity.type/integer]]]
+    (let [artifact (fixture-artifact "rejected" basename ".gravity")
+          result (function-result artifact) diagnostic (first (:diagnostics result))]
+      (is (= :accepted (:status artifact)))
+      (is (= :rejected (:status result)))
+      (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+      (is (= :type-checking (:stage diagnostic)))
+      (is (= reason (:reason diagnostic)))
+      (is (= :gravity.type/i64 (:expected-type diagnostic)))
+      (is (= actual (:actual-type diagnostic)))
+      (is (string? (:core-node-id diagnostic)))
+      (is (string? (:syntax-id diagnostic)))
+      (is (map? (:source-span diagnostic)))
+      (is (seq (:remediation diagnostic)))
+      (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+             (slurp (fixture-path "rejected" basename ".qst")))))))
 
 (deftest sh08-function-request-cache-is-identity-scoped-and-fail-closed
   (let [artifact (with-meta {:artifact-id "same"} {:instance :first})

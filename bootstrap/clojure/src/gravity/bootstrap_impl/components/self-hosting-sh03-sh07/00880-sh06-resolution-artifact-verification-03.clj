@@ -36,7 +36,7 @@
         run (sh06-resolution-run-request! source-path binding request)
         analysis (:resolved-analysis run)
         projections (sh06-resolution-product-projections analysis)
-        plan-binding (dissoc binding :plan :source-text)
+        plan-binding (dissoc binding :plan :source-text :input-key)
         boundary-base
         {:slice :SH-06
          :owner :gravity-source

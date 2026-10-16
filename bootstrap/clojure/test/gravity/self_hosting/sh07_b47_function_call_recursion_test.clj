@@ -227,6 +227,127 @@
         (assoc-in [:calls 0] replacement-call)
         (assoc-in [:call-edges 0] replacement-edge))))
 
+(deftest sh07-b47-atomic-signature-lowering-development-kernel
+  ;; Normalized graphs execute the current Gravity lowering pass. Source
+  ;; authentication and C7 legality are separate composition obligations.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke #(bootstrap/p15-s23-stage2-runtime-execute-function
+                 {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true} plan %1 %2)
+        sha #(str "sha256:" (format "%064x" %))
+        counter (atom 0) forms (atom {})]
+    (letfn [(make! [value]
+              (let [children (mapv make! (if (coll? value) (vec value) []))
+                    n (swap! counter inc)
+                    form {:form-id (sha n) :syntax-id (sha (+ n 1000)) :value value
+                          :kind (cond (vector? value) :vector (seq? value) :list
+                                      (symbol? value) :symbol (keyword? value) :keyword :else :integer)
+                          :child-form-ids (mapv :form-id children) :scope-id (sha 5000)
+                          :metadata {} :origin-chain [] :generated-origin []}]
+                (swap! forms assoc (:form-id form) form)
+                (doseq [child children] (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                form))
+            (input [form]
+              (let [parameters (get @forms (get (:child-form-ids form) 1))
+                    paths (bootstrap/sh07-core-parameter-binding-paths (:value parameters) [])
+                    locals (mapv (fn [ordinal entry]
+                                   (let [parameter (get @forms (get (:child-form-ids parameters) (first (:path entry))))]
+                                     {:binding-id (sha (+ 5002 ordinal)) :binding-class :lexical :kind :local :name (:name entry)
+                                      :scope-id (sha 5000) :definition-syntax-id (:syntax-id parameter)})) (range) paths)
+                    cores [{:binding-id (sha 5001) :binding-class :core :kind :type :name 'I64
+                            :namespace 'gravity.core :definition-syntax-id (sha 6000)}
+                           {:binding-id (sha 5101) :binding-class :core :kind :type :name 'Bool
+                            :namespace 'gravity.core :definition-syntax-id (sha 6100)}]
+                    by-name (into {} (map (juxt :name identity) (into locals cores)))
+                    resolutions (into {} (for [value (vals @forms)
+                                               :when (contains? by-name (:value value))
+                                               :let [binding (get by-name (:value value)) core? (= :core (:binding-class binding))]]
+                                           [(:syntax-id value)
+                                            {:symbol (:value value) :binding-id (:binding-id binding)
+                                             :position (if core? :type :expression)
+                                             :resolution-order (if core? :profile-allowed-core-binding :local-lexical-binding)}]))]
+                {:module {:namespace 'demo.signature :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 6001) :sh06-semantic-projection-id (sha 6002)}
+                 :internal-indexes {:forms {:by-id @forms :by-syntax (into {} (map (juxt :syntax-id identity) (vals @forms)))}
+                                    :bindings {:by-id (into {} (map (juxt :binding-id identity) (into locals cores)))
+                                               :by-definition (into {} (map (juxt :definition-syntax-id identity) locals))}
+                                    :resolutions {:by-reference resolutions}}}))]
+      (let [form (make! '(fn [x :- I64] :- I64 x)) request (input form)
+            header (invoke 'sh07-function-header [request form])
+            lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+            node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])]
+        (is (= :accepted (:status header)))
+        (is (= 4 (:body-index header)))
+        (is (= :accepted (:status lowered)) (pr-str lowered))
+        (is (= :sh07-atomic-function-signature-v1 (:lowering-rule-version node)))
+        (is (= 1 (get-in node [:attributes :fixed-arity])))
+        (is (= '[x] (get-in node [:attributes :parameters])))
+        (is (= [0] (:parameter-source-child-indexes signature)))
+        (is (= :gravity.type/i64 (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+        (is (= [(sha 5002)] (:resolved-binding-ids node)))
+        (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+        (is (true? (invoke 'sh07-function-node-signature-valid? [node])))
+        (let [record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              key [(:node-id node) nil] indexes {:functions {key record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              marker (get @forms (get (:child-form-ids parameter-vector) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request marker form node indexes :function-type-marker])))
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request type-form form node indexes :function-type-declaration])))
+          (is (false? (invoke 'sh07-source-core-map-declaration-join? [request marker form node indexes :function-type-declaration])))
+          (is (false? (invoke 'sh07-source-core-map-parameter-join? [request type-form form node indexes :parameter])))
+          (let [forged-signature (assoc-in signature [:parameters 0 :type-binding-id] (sha 8888))]
+            (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                [request type-form form (assoc-in node [:attributes :signature] forged-signature)
+                                 (assoc-in indexes [:functions key :signature] forged-signature) :function-type-declaration])))))
+        (doseq [bad [0 nil {} []]]
+          (is (false? (invoke 'sh07-function-node-signature-valid? [(assoc-in node [:attributes :parameters] bad)]))))
+        (doseq [mutant [(assoc signature :rule-version nil) (assoc signature :parameters [])
+                        (assoc-in signature [:parameters 0 :type-id] :gravity.type/integer)]]
+          (is (false? (invoke 'sh07-signature-valid? [mutant 1])))))
+      (let [form (make! '(fn [x :- I64 y :- Bool z] x))
+            lowered (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])
+            node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+            parameters (get @forms (get (:child-form-ids form) 1))]
+        (is (= :accepted (:status lowered)))
+        (is (= '[x y z] (get-in node [:attributes :parameters])))
+        (is (= [(sha 5002) (sha 5003) (sha 5004)] (:resolved-binding-ids node)))
+        (is (= [0 3 6] (:parameter-source-child-indexes signature)))
+        (is (= [:gravity.type/i64 :gravity.type/bool nil] (mapv :type-id (:parameters signature))))
+        (is (= [1 4 nil] (mapv :source-child-index (:parameters signature))))
+        (is (= [:parameter-vector :parameter :function-type-marker :function-type-declaration
+                :parameter :function-type-marker :function-type-declaration :parameter]
+               (mapv second (invoke 'sh07-source-core-parameter-events [(input form) (:form-id parameters)])))))
+      (doseq [[value reason actual supported]
+              [['(fn 0) :fn-multiple-body-or-shape 2 3]
+               ['(fn 0 1) :fn-parameter-vector-required nil nil]
+               ['(fn [] 1 2) :fn-multiple-body-or-shape 4 3]]]
+        (let [form (make! value) header (invoke 'sh07-function-header [(input form) form])]
+          (is (= :rejected (:status header)))
+          (is (= reason (get-in header [:facts :reason])))
+          (when actual
+            (is (= actual (get-in header [:facts :actual-child-count])))
+            (is (= supported (get-in header [:facts :supported-child-count]))))))
+      (doseq [value ['(fn [x :-] x) '(fn [:- I64] x) '(fn [x :- (Vector I64)] x)]]
+        (let [form (make! value) result (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (:rule result))))))))
+
+(deftest sh07-b47-atomic-signature-source-shape-rejections
+  (doseq [basename ["function-annotation-dangling" "function-annotation-duplicate" "function-annotation-composite"]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename)
+          source-path (path (str relative ".gravity"))
+          result (try {:value (bootstrap/sh07-core-file-artifact source-path)}
+                   (catch clojure.lang.ExceptionInfo error {:data (ex-data error)})
+                   (catch Throwable error {:host-error (.getName (class error))}))
+          data (:data result) diagnostic (or (:diagnostic data) data)]
+      (is (nil? (:host-error result)) (pr-str result))
+      (is (= "C6-LOWERING-GAP" (:rule diagnostic)))
+      (is (= :core-lowering (:stage diagnostic)))
+      (is (= :atomic-type-annotation-required (get-in diagnostic [:facts :reason])))
+      (is (= source-path (get-in diagnostic [:source-span :source])))
+      (is (true? (get-in diagnostic [:facts :fail-closed])))
+      (is (= (slurp source-path) (slurp (path (str relative ".qst"))))))))
+
 (deftest sh07-b47-fixtures-are-paired-path-neutral-and-deterministic
   (let [gravity-path (fixture-path ".gravity")
         qst-path (fixture-path ".qst")]

@@ -38,13 +38,17 @@
 
 (defn sh06-resolution-source-artifact
   [source-path source-text]
+  (let [plan-binding (sh06-resolution-current-binding! source-path)]
+   (binding [*sh06-resolution-operation-binding* plan-binding]
   (with-sh06-resolution-transport-bounds
-   (sh06-resolution-finalize-candidate
+   (let [artifact (sh06-resolution-finalize-candidate
     source-path
     (sh06-resolution-source-artifact-candidate
      source-path
      (sh05-macro-source-artifact source-path source-text)
-     true))))
+     true))]
+     (sh06-resolution-binding-current! source-path plan-binding)
+     artifact)))))
 
 (defn sh06-resolution-artifact-from-sh05-artifact
   "Resolve an already authenticated SH-05 artifact without rebuilding C3/SH-05.
@@ -57,11 +61,15 @@
    (sh06-resolution-artifact-from-sh05-artifact
     (get-in sh05-artifact [:provenance :source-path]) sh05-artifact))
   ([source-path sh05-artifact]
+   (let [plan-binding (sh06-resolution-current-binding! source-path)]
+    (binding [*sh06-resolution-operation-binding* plan-binding]
    (with-sh06-resolution-transport-bounds
-    (sh06-resolution-finalize-candidate
+    (let [artifact (sh06-resolution-finalize-candidate
      source-path
      (sh06-resolution-source-artifact-candidate
-      source-path sh05-artifact false))))
+      source-path sh05-artifact false))]
+      (sh06-resolution-binding-current! source-path plan-binding)
+      artifact)))))
   ([source-path sh05-artifact context]
    (when (nil? context)
      (sh06-resolution-c5-fail! source-path :missing-context {}))

@@ -22,7 +22,7 @@
             (sh06-resolution-context-plan-binding! source-path context))
           (catch Throwable _ nil))
         expected-plan-binding
-        (when binding (dissoc binding :plan :source-text))
+        (when binding (dissoc binding :plan :source-text :input-key))
         replay
         (when (and binding (= :passed (:status sh05-report)))
           (try

@@ -1519,14 +1519,86 @@
 (defn sh08-ft-node-form? [nodes node-id core-form]
   (= (get (get nodes node-id) :core-form) core-form))
 
+(defn sh08-ft-atomic-type-id [name]
+  (get '{I8 :gravity.type/i8 I16 :gravity.type/i16 I32 :gravity.type/i32 I64 :gravity.type/i64
+         U8 :gravity.type/u8 U16 :gravity.type/u16 U32 :gravity.type/u32 U64 :gravity.type/u64
+         F32 :gravity.type/f32 F64 :gravity.type/f64 Bool :gravity.type/bool
+         String :gravity.type/string Symbol :gravity.type/symbol Keyword :gravity.type/keyword Ratio :gravity.type/ratio} name))
+
+(defn sh08-ft-declaration-valid? [declaration bindings]
+  (if (sh08-ft-record-shape? declaration
+        #{:source-child-index :marker-form-id :marker-syntax-id :type-form-id
+          :type-syntax-id :type-symbol :type-binding-id :type-id})
+    (let [binding (get bindings (get declaration :type-binding-id))]
+      (if (= [(get binding :binding-class) (get binding :kind) (get binding :namespace)] [:core :type 'gravity.core])
+        (if (= (get binding :name) (get declaration :type-symbol))
+          (if (= (get declaration :type-id) nil) false
+            (if (= (get declaration :type-id) (sh08-ft-atomic-type-id (get binding :name)))
+              (sh08-sha256-id-vector? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+                (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)]) false)) false) false)) false))
+
+(defn sh08-ft-signature-valid? [signature arity bindings]
+  (if (sh08-ft-record-shape? signature
+        #{:rule-version :mapping-rule-version :parameters :return :parameter-source-child-indexes :body-source-child-index})
+    (if (= [(get signature :rule-version) (get signature :mapping-rule-version)]
+           [:sh07-atomic-function-signature-v1 :sh07-atomic-function-declaration-map-v1])
+      (let [parameters (get signature :parameters) coordinates (get signature :parameter-source-child-indexes)
+            result (get signature :return)]
+        (if (vector? parameters)
+          (if (vector? coordinates)
+            (if (= [(count parameters) (count coordinates)] [arity arity])
+              (if (if (= result nil) (= (get signature :body-source-child-index) 2)
+                    (if (sh08-ft-declaration-valid? result bindings)
+                      (= [(get result :source-child-index) (get signature :body-source-child-index)] [2 4]) false))
+                (loop [declarations parameters positions coordinates coordinate 0 annotated? (if (= result nil) false true)]
+                  (if (= (count declarations) 0) annotated?
+                    (let [declaration (first declarations)]
+                      (if (= (first positions) coordinate)
+                        (if (= declaration nil)
+                          (recur (rest declarations) (rest positions) (+ coordinate 1) annotated?)
+                          (if (sh08-ft-declaration-valid? declaration bindings)
+                            (if (= (get declaration :source-child-index) (+ coordinate 1))
+                              (recur (rest declarations) (rest positions) (+ coordinate 3) true) false) false)) false))))
+                false) false) false) false)) false) false))
+
+(defn sh08-ft-function-signature-valid? [record node bindings]
+  (let [attributes (get node :attributes)]
+    (if (if (map? record)
+          (if (map? attributes)
+            (if (vector? (get attributes :parameters))
+              (= [(count (get attributes :parameters)) (get attributes :fixed-arity)]
+                 [(get record :fixed-arity) (get record :fixed-arity)]) false) false) false)
+    (if (contains? attributes :signature)
+      (if (sh08-ft-record-shape? attributes #{:parameters :parameter-form-id :parameter-syntax-id
+                                            :fixed-arity :recur-target-id :signature})
+        (if (= (get record :signature) (get attributes :signature))
+          (if (= (get record :parameter-binding-ids) (get node :resolved-binding-ids))
+            (if (= (get node :lowering-rule-version) :sh07-atomic-function-signature-v1)
+              (if (vector? (get attributes :parameters))
+                (if (= (count (get attributes :parameters)) (get record :fixed-arity))
+                  (sh08-ft-signature-valid? (get record :signature) (get record :fixed-arity) bindings) false) false) false) false) false) false)
+      (if (contains? record :signature) false
+        (if (= (get node :lowering-rule-version) :sh07-b11-v12)
+        (loop [remaining (get attributes :parameters)]
+          (if (= (count remaining) 0) true
+            (if (= (first remaining) :-) false (recur (rest remaining))))) false))) false)))
+
+(defn sh08-ft-record-signature [record node]
+  (if (contains? (get node :attributes) :signature)
+    (assoc record :signature (get (get node :attributes) :signature)) record))
+
 (defn sh08-ft-function-record-valid?
   [record nodes definitions bindings]
   (if (sh08-ft-record-shape?
        record
+       (if (if (map? record) (contains? record :signature) false)
+        #{:ordinal :function-core-node-id :function-form-id :function-syntax-id :body-core-node-id
+          :parameter-binding-ids :fixed-arity :definition-kind :definition-binding-id
+          :definition-core-node-id :definition-name :signature}
        #{:ordinal :function-core-node-id :function-form-id
          :function-syntax-id :body-core-node-id :parameter-binding-ids
          :fixed-arity :definition-kind :definition-binding-id
-         :definition-core-node-id :definition-name})
+         :definition-core-node-id :definition-name}))
     (let [function-node (get nodes (get record :function-core-node-id))
           definition
           (loop [remaining definitions]
@@ -1537,7 +1609,8 @@
                 (first remaining)
                 (recur (rest remaining)))))]
       (if (if (map? function-node)
-            (= (get function-node :core-form) :fn)
+            (if (= (get function-node :core-form) :fn)
+              (sh08-ft-function-signature-valid? record function-node bindings) false)
             false)
         (if (= (get record :function-form-id)
                (sh08-ft-source-id function-node :form-id))
@@ -2023,7 +2096,7 @@
              (+ ordinal 1)
              (conj
               values
-              {:ordinal ordinal
+              (sh08-ft-record-signature {:ordinal ordinal
                :function-core-node-id (get node :node-id)
                :function-form-id (get source :form-id)
                :function-syntax-id (get source :syntax-id)
@@ -2037,7 +2110,7 @@
                :definition-core-node-id
                (if (map? definition) (get definition :core-node-id) nil)
                :definition-name
-               (if (map? definition) (get definition :name) nil)})))
+               (if (map? definition) (get definition :name) nil)} node))))
           (recur (rest remaining) ordinal values))))))
 
 (defn sh08-ft-call-node-ids [nodes]
@@ -2346,7 +2419,13 @@
             false)
           function-shape
           (if (vector? function-records)
-            (= function-records expected-functions)
+            (if (= function-records expected-functions)
+              (loop [remaining function-records]
+                (if (= (count remaining) 0) true
+                  (let [record (first remaining)]
+                    (if (sh08-ft-function-signature-valid? record
+                          (get nodes (get record :function-core-node-id)) binding-index)
+                      (recur (rest remaining)) false)))) false)
             false)
           lexical-shape
           (if (vector? lexical-bindings)
@@ -2545,7 +2624,7 @@
             :gravity.type/unknown)))
       :gravity.type/unknown)))
 
-(defn sh08-ft-function-type-skeleton [record module]
+(defn sh08-ft-function-type-skeleton-base [record module]
   {:artifact :gravity/c7-function-type
    :function-id (get record :function-syntax-id)
    :function-core-node-id (get record :function-core-node-id)
@@ -2572,6 +2651,42 @@
    :thrown-error-effects [:pending-sh09]
    :source-span nil
    :status :inferred})
+
+(defn sh08-ft-apply-declarations [function signature]
+      (assoc (assoc (assoc (assoc function :signature signature)
+        :declaration-rule-version :sh08-atomic-function-signature-v1)
+        :return (get (get signature :return) :type-id (get function :return)))
+        :parameters
+        (loop [parameters (get function :parameters) declarations (get signature :parameters) result []]
+          (if (= (count parameters) 0) result
+            (recur (rest parameters) (rest declarations)
+              (conj result (assoc (first parameters) :type
+                (get (first declarations) :type-id (get (first parameters) :type)))))))))
+
+(defn sh08-ft-function-type-skeleton [record module]
+  (let [base (sh08-ft-function-type-skeleton-base record module)]
+    (if (contains? record :signature)
+      (sh08-ft-apply-declarations base (get record :signature)) base)))
+
+(defn sh08-ft-restore-declarations [completed base]
+  (loop [ids (keys base) result completed]
+    (if (= (count ids) 0) result
+      (let [id (first ids) function (get base id)]
+        (recur (rest ids)
+          (if (contains? function :signature)
+            (assoc result id (sh08-ft-apply-declarations (get result id) (get function :signature))) result))))))
+
+(defn sh08-ft-declaration-seeds [functions initial]
+  (loop [ids (keys functions) result initial]
+    (if (= (count ids) 0) result
+      (let [function (get functions (first ids))]
+        (recur (rest ids)
+          (loop [parameters (get function :parameters) declarations (get (get function :signature) :parameters)
+                 values result]
+            (if (= (count parameters) 0) values
+              (recur (rest parameters) (rest declarations)
+                (if (= (first declarations) nil) values
+                  (assoc values (get (first parameters) :binding-id) (get (first declarations) :type-id)))))))))))
 
 ; The authoritative higher-order promotion is deliberately narrower than the
 ; fixture adapters: it derives one capture-free named identity function and
@@ -4486,13 +4601,14 @@
 
 (defn sh08-ft-complete-function-skeletons
   [base-function-skeletons recursive-proof higher-order-proof]
+  (sh08-ft-restore-declarations
   (if (= :accepted (get recursive-proof :status))
     (sh08-ft-complete-recursive-skeletons
      base-function-skeletons recursive-proof)
     (if (= :accepted (get higher-order-proof :status))
       (sh08-ft-complete-higher-order-skeletons
        base-function-skeletons higher-order-proof)
-      base-function-skeletons)))
+      base-function-skeletons)) base-function-skeletons))
 
 (defn sh08-ft-inference-context
   [recursive? higher-order? recursive-proof higher-order-proof
@@ -4559,6 +4675,33 @@
           (recur
            (rest remaining)
            (conj values (assoc (first remaining) :status :unresolved))))))))
+
+(defn sh08-ft-signature-constraints [records module]
+  (loop [remaining records result []]
+    (if (= (count remaining) 0) result
+      (let [record (first remaining) signature (get record :signature)
+            parameter-ids (get record :parameter-binding-ids)]
+        (recur (rest remaining)
+          (if (contains? record :signature)
+            (loop [declarations (conj (get signature :parameters) (get signature :return)) ordinal 0 values result]
+              (if (= (count declarations) 0) values
+                (let [declaration (first declarations) result? (= ordinal (count parameter-ids))]
+                  (recur (rest declarations) (+ ordinal 1)
+                    (if (= declaration nil) values
+                      (conj values
+                        {:constraint-id-request
+                         {:domain :gravity/sh08-atomic-function-declaration-constraint-v1
+                          :function-core-node-id (get record :function-core-node-id)
+                          :role (if result? :return :parameter) :ordinal ordinal :declaration declaration}
+                         :kind :equality :producer-rule :sh08-atomic-function-signature-v1
+                         :lhs (if result? (get record :body-core-node-id) (get parameter-ids ordinal))
+                         :rhs (get declaration :type-id) :source-syntax-id (get declaration :type-syntax-id)
+                         :profile (get module :profile) :target (get module :target)
+                         :status :solved :diagnostics []})))))) result))))))
+
+(defn sh08-ft-any-signature? [records]
+  (if (= (count records) 0) false
+    (if (contains? (first records) :signature) true (sh08-ft-any-signature? (rest records)))))
 
 (defn sh08-ft-function-type-core-artifact [core-artifact bindings]
   (if (map? core-artifact)
@@ -4635,9 +4778,9 @@
                  (get products :calls)
                  (get products :call-edges)
                  function-skeletons
-                 (sh08-ft-inference-context
+                 (sh08-ft-declaration-seeds function-skeletons (sh08-ft-inference-context
                   recursive? higher-order? recursive-proof
-                  higher-order-proof function-skeletons)
+                  higher-order-proof function-skeletons))
                  (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
@@ -4708,11 +4851,13 @@
                        module
                        higher-order-proof)
                       combined-constraints
+                      (sh08-ft-add-values-to-set
+                        (sh08-ft-signature-constraints (get products :function-records) module)
                       (if recursive?
                         (sh08-ft-add-values-to-set
                          (sh08-ft-recursive-constraint-ledger recursive-proof)
                          (get inference :constraints))
-                        (get inference :constraints))
+                        (get inference :constraints)))
                       convergence
                       {:status (get inference :convergence-status)
                        :round-count (get inference :round-count)
@@ -4722,7 +4867,8 @@
                       identity-input-base
                       {:domain (if recursive?
                                 :gravity/sh08-recursive-function-typed-core-v1
-                                :gravity/sh08-function-typed-core-v3)
+                                (if (sh08-ft-any-signature? (get products :function-records))
+                                  :gravity/sh08-atomic-function-signature-typed-core-v1 :gravity/sh08-function-typed-core-v3))
                        :sh07-shaped-artifact-id
                        (get core-artifact :artifact-id)
                        :module module

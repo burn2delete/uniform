@@ -1,0 +1,11 @@
+(ns self-hosting.sh08.function-atomic-signatures
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-08 :fixture :function-atomic-signatures
+              :legality :pending-sh09-sh10-sh11}))
+
+(defn identity-i64 [x :- I64] :- I64 x)
+(defn forward-i64 [y :- I64] :- I64 (identity-i64 y))
+(defn identity-bool [value :- Bool] :- Bool value)
+(def checked-bool (identity-bool true))
+(defn shadow-type [I64 :- I64] :- I64 I64)

@@ -2249,12 +2249,21 @@
 
 (defn sh07-source-core-parameter-events [request parameter-id]
   (let [parameters (sh07-find-form (get request :internal-indexes) parameter-id)]
-    (loop [remaining (get parameters :child-form-ids)
+    (loop [remaining (get parameters :child-form-ids) after-marker? false
            events [[parameter-id :parameter-vector false]]]
       (if (= (count remaining) 0)
         events
-        (recur (rest remaining)
-               (conj events [(first remaining) :parameter false]))))))
+        (let [form (sh07-find-form (get request :internal-indexes) (first remaining))
+              marker? (= (get form :value) :-)]
+          (recur (rest remaining) marker?
+                 (conj events [(first remaining)
+                   (if marker? :function-type-marker
+                     (if after-marker? :function-type-declaration :parameter)) false])))))))
+
+(defn sh07-source-core-return-events [request form]
+  (let [ids (get form :child-form-ids)]
+    (if (= (get (sh07-find-form (get request :internal-indexes) (get ids 2)) :value) :-)
+      [[(get ids 2) :function-type-marker false] [(get ids 3) :function-type-declaration false]] [])))
 
 (defn sh07-source-core-handler-events [request clause-ids]
   (loop [remaining clause-ids events []]
@@ -2309,7 +2318,8 @@
        (if (= core-form :def)
          [[(get children 1) :definition-name false]]
          (if (= core-form :fn)
-           (sh07-source-core-parameter-events request (get children 1))
+           (sh07-vector-append (sh07-source-core-parameter-events request (get children 1))
+                                  (sh07-source-core-return-events request form))
            (if (contains? #{:let :loop} core-form)
              (sh07-source-core-binding-events request (get children 1))
              (if (= core-form :quote)
@@ -2381,6 +2391,23 @@
             (if (= (get key :value) :when) [value-id :core-node-source value-id]
               [value-id :match-pattern owner-id])]))))))
 
+(defn sh07-source-core-parameter-intents [request form owner-id]
+  (loop [ids (get form :child-form-ids) index 0 result []]
+    (if (= (count ids) 0) result
+      (recur (rest ids) (+ index 1)
+        (conj result [(first ids)
+          (if (= (get (get form :value) index) :-) :function-type-marker
+            (if (= (get (get form :value) (- index 1)) :-) :function-type-declaration :parameter)) owner-id])))))
+
+(defn sh07-source-core-function-intents [request form]
+  (let [ids (get form :child-form-ids) owner-id (get form :form-id)
+        annotated? (= (get (sh07-find-form (get request :internal-indexes) (get ids 2)) :value) :-)]
+    (sh07-vector-append [[(get ids 1) :parameter-vector owner-id]]
+      (if annotated?
+        [[(get ids 2) :function-type-marker owner-id] [(get ids 3) :function-type-declaration owner-id]
+         [(get ids 4) :core-node-source (get ids 4)]]
+        [[(get ids 2) :core-node-source (get ids 2)]]))))
+
 ; This source-intent audit is independent of the actual emission event ledger.
 ; Data contexts retain precedence over operator-looking forms inside them.
 (defn sh07-source-core-intent-children [request form reason owner-id]
@@ -2391,7 +2418,7 @@
         (sh07-source-core-guard-pattern-intents request form owner-id)
         (sh07-source-core-data-intents children reason owner-id))
       (if (= reason :parameter-vector)
-        (sh07-source-core-data-intents children :parameter owner-id)
+        (sh07-source-core-parameter-intents request form owner-id)
         (if (= reason :binding-vector)
           (sh07-source-core-alternating-intents children :binding-name owner-id)
           (if (= reason :catch-clause)
@@ -2415,8 +2442,7 @@
                          [[(get children 1) :definition-name form-id]
                           [(get children 2) :core-node-source (get children 2)]]
                          (if (= special :fn)
-                           [[(get children 1) :parameter-vector form-id]
-                            [(get children 2) :core-node-source (get children 2)]]
+                           (sh07-source-core-function-intents request form)
                            (if (contains? #{:let :loop} special)
                              (sh07-append-vector
                               [[(get children 1) :binding-vector form-id]]
@@ -2580,13 +2606,16 @@
         node-domain
         (if (= core-form :keyword-map-lookup)
           :gravity/sh07-b15-core-node-v15
-          (if (contains? attributes :guard-rule-version)
-            :gravity/sh07-root-map-guard-core-node-v1 :gravity/sh07-b11-core-node-v12))
+          (if (contains? attributes :signature)
+            :gravity/sh07-atomic-function-signature-core-node-v1
+            (if (contains? attributes :guard-rule-version)
+              :gravity/sh07-root-map-guard-core-node-v1 :gravity/sh07-b11-core-node-v12)))
         lowering-rule-version
         (if (= core-form :keyword-map-lookup)
           :sh07-b15-v15
-          (if (contains? attributes :guard-rule-version)
-            :sh07-root-map-guard-v1 :sh07-b11-v12))
+          (if (contains? attributes :signature) :sh07-atomic-function-signature-v1
+            (if (contains? attributes :guard-rule-version)
+              :sh07-root-map-guard-v1 :sh07-b11-v12)))
         preimage
         {:domain node-domain
          :core-form core-form
@@ -4242,15 +4271,59 @@
           descriptors-result))
       shape)))
 
+(defn sh07-atomic-type-id [name]
+  (get '{I8 :gravity.type/i8 I16 :gravity.type/i16 I32 :gravity.type/i32 I64 :gravity.type/i64
+         U8 :gravity.type/u8 U16 :gravity.type/u16 U32 :gravity.type/u32 U64 :gravity.type/u64
+         F32 :gravity.type/f32 F64 :gravity.type/f64 Bool :gravity.type/bool
+         String :gravity.type/string Symbol :gravity.type/symbol Keyword :gravity.type/keyword Ratio :gravity.type/ratio} name))
+
+(defn sh07-annotation-failure [form reason]
+  {:status :rejected :rule "C6-LOWERING-GAP" :form form :facts {:reason reason}})
+
+(defn sh07-type-declaration [request marker type-form coordinate]
+  (let [indexes (get request :internal-indexes)
+        resolution (sh07-find-resolution indexes (get type-form :syntax-id))
+        binding (sh07-find-binding indexes (get resolution :binding-id))
+        type-id (sh07-atomic-type-id (get binding :name))]
+    (if (= [(get marker :kind) (get marker :value)] [:keyword :-])
+      (if (if (= (get type-form :kind) :symbol) (= (get type-form :value) ':-) true)
+        (sh07-annotation-failure marker :atomic-type-annotation-required)
+        (if (if (= (get resolution :position) :type)
+              (if (= (get resolution :symbol) (get type-form :value))
+                (sh07-resolution-binding-name-valid? indexes resolution binding) false) false)
+          (if (= [(get binding :binding-class) (get binding :kind) (get binding :namespace)]
+                 [:core :type 'gravity.core])
+            (if (= type-id nil)
+              (sh07-annotation-failure type-form :unsupported-atomic-type-annotation)
+              {:status :accepted
+               :value {:source-child-index coordinate
+                       :marker-form-id (get marker :form-id) :marker-syntax-id (get marker :syntax-id)
+                       :type-form-id (get type-form :form-id) :type-syntax-id (get type-form :syntax-id)
+                       :type-symbol (get binding :name) :type-binding-id (get binding :binding-id)
+                       :type-id type-id}})
+            (sh07-annotation-failure type-form :unsupported-atomic-type-annotation))
+          {:status :rejected :rule "C6-VERIFY" :form type-form
+           :facts {:reason :type-annotation-resolution-mismatch}}))
+      (sh07-annotation-failure marker :type-annotation-marker-required))))
+
 (defn sh07-binding-descriptors-for-symbol-vector
   [request vector-form destructuring-reason variadic-reason]
   (let [indexes (get request :internal-indexes)]
     (loop [remaining (get vector-form :child-form-ids)
-           ordinal 0
-           values []]
+           ordinal 0 coordinate 0
+           values [] declarations [] coordinates []]
       (if (= (count remaining) 0)
-        {:status :accepted :descriptors values}
-        (let [parameter (sh07-find-form indexes (first remaining))]
+        {:status :accepted :descriptors values :declarations declarations :coordinates coordinates}
+        (let [parameter (sh07-find-form indexes (first remaining))
+              marker (sh07-find-form indexes (get remaining 1))
+              annotated? (= (get marker :value) ':-)
+              declaration (if annotated?
+                            (sh07-type-declaration request marker
+                              (sh07-find-form indexes (get remaining 2)) (+ coordinate 1))
+                            {:status :accepted :value nil})]
+          (if (= (get parameter :value) ':-)
+            (sh07-annotation-failure parameter :fn-parameter-name-required)
+          (if (= (get declaration :status) :accepted)
           (if (= (get parameter :kind) :symbol)
             (if (= (get parameter :value) '&)
               {:status :rejected
@@ -4264,12 +4337,14 @@
                       (= (get binding :binding-class) :lexical)
                       false)
                   (recur
-                   (rest remaining)
+                   (subvec (vec remaining) (if annotated? 3 1) (count remaining))
                    (+ ordinal 1)
+                   (+ coordinate (if annotated? 3 1))
                    (conj values
                          {:ordinal ordinal
                           :name-form parameter
-                          :binding binding}))
+                          :binding binding})
+                   (conj declarations (get declaration :value)) (conj coordinates coordinate))
                   {:status :rejected
                    :rule "C6-VERIFY"
                    :form parameter
@@ -4280,7 +4355,97 @@
              :rule "C6-LOWERING-GAP"
              :form parameter
              :facts {:reason destructuring-reason
-                     :binding-kind (get parameter :kind)}}))))))
+                     :binding-kind (get parameter :kind)}}) declaration)))))))
+
+(defn sh07-function-header [request form]
+  (let [ids (get form :child-form-ids) indexes (get request :internal-indexes)
+        params (sh07-find-form indexes (get ids 1))
+        return? (= (get (sh07-find-form indexes (get ids 2)) :value) ':-)
+        body-index (if return? 4 2)
+        result (if return?
+                 (sh07-type-declaration request (sh07-find-form indexes (get ids 2))
+                   (sh07-find-form indexes (get ids 3)) 2)
+                 {:status :accepted :value nil})]
+    (if (= (count ids) (+ body-index 1))
+      (if (= (get params :kind) :vector)
+        (if (= (get result :status) :accepted)
+          {:status :accepted :params params :body (sh07-find-form indexes (get ids body-index))
+           :body-index body-index :return (get result :value)} result)
+        {:status :rejected :rule "C6-CORE-SHAPE" :form params
+         :facts {:reason :fn-parameter-vector-required}})
+      {:status :rejected :rule "C6-LOWERING-GAP" :form form
+       :facts {:reason :fn-multiple-body-or-shape :actual-child-count (count ids)
+               :supported-child-count (+ body-index 1)}})))
+
+(defn sh07-function-attributes [attributes header descriptors]
+  (if (if (= (get header :return) nil)
+        (loop [values (get descriptors :declarations)]
+          (if (= (count values) 0) false
+            (if (= (first values) nil) (recur (rest values)) true))) true)
+    (assoc (assoc attributes :parameters
+      (loop [remaining (get descriptors :descriptors) names []]
+        (if (= (count remaining) 0) names
+          (recur (rest remaining) (conj names (get (get (first remaining) :name-form) :value)))))) :signature
+      {:rule-version :sh07-atomic-function-signature-v1
+       :parameter-source-child-indexes (get descriptors :coordinates)
+       :parameters (get descriptors :declarations) :return (get header :return)
+       :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+       :body-source-child-index (get header :body-index)}) attributes))
+
+(defn sh07-type-declaration-valid? [declaration]
+  (if (sh07-exact-keys? declaration
+        #{:source-child-index :marker-form-id :marker-syntax-id :type-form-id
+          :type-syntax-id :type-symbol :type-binding-id :type-id})
+    (if (integer? (get declaration :source-child-index))
+      (if (>= (get declaration :source-child-index) 0)
+        (if (sh07-sha256-id-vector? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+              (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)])
+          (if (= (get declaration :type-id) nil) false
+            (= (get declaration :type-id) (sh07-atomic-type-id (get declaration :type-symbol)))) false) false) false) false))
+
+(defn sh07-signature-valid? [signature arity]
+  (if (sh07-exact-keys? signature
+        #{:rule-version :mapping-rule-version :parameters :return :parameter-source-child-indexes :body-source-child-index})
+    (if (= [(get signature :rule-version) (get signature :mapping-rule-version)]
+           [:sh07-atomic-function-signature-v1 :sh07-atomic-function-declaration-map-v1])
+      (let [parameters (get signature :parameters) coordinates (get signature :parameter-source-child-indexes)
+            result (get signature :return)]
+        (if (sh07-bounded-vector? parameters 1024)
+          (if (sh07-bounded-vector? coordinates 1024)
+            (if (= [(count parameters) (count coordinates)] [arity arity])
+              (if (if (= result nil) (= (get signature :body-source-child-index) 2)
+                    (if (sh07-type-declaration-valid? result)
+                      (= [(get result :source-child-index) (get signature :body-source-child-index)] [2 4]) false))
+                (loop [declarations parameters positions coordinates coordinate 0 annotated? (if (= result nil) false true)]
+                  (if (= (count declarations) 0) annotated?
+                    (let [declaration (first declarations)]
+                      (if (= (first positions) coordinate)
+                        (if (= declaration nil)
+                          (recur (rest declarations) (rest positions) (+ coordinate 1) annotated?)
+                          (if (sh07-type-declaration-valid? declaration)
+                            (if (= (get declaration :source-child-index) (+ coordinate 1))
+                              (recur (rest declarations) (rest positions) (+ coordinate 3) true) false) false)) false))))
+                false) false) false) false)) false) false))
+
+(defn sh07-signature-record-keys [record keys]
+  (if (if (map? record) (contains? record :signature) false)
+    (if (sh07-signature-valid? (get record :signature) (get record :fixed-arity))
+      (conj keys :signature) keys) keys))
+
+(defn sh07-function-record-signature [record attributes]
+  (if (contains? attributes :signature) (assoc record :signature (get attributes :signature)) record))
+
+(defn sh07-function-node-signature-valid? [node]
+  (if (= (get node :core-form) :fn)
+    (let [attributes (get node :attributes) signature (get attributes :signature)]
+      (if (if (sh07-bounded-vector? (get attributes :parameters) 1024)
+            (if (= (count (get attributes :parameters)) (get attributes :fixed-arity))
+              (sh07-exact-keys? attributes (sh07-signature-record-keys attributes
+                #{:parameters :parameter-form-id :parameter-syntax-id :fixed-arity :recur-target-id})) false) false)
+        (if (contains? attributes :signature)
+          (= (get node :lowering-rule-version) :sh07-atomic-function-signature-v1)
+          (if (sh07-vector-contains? (get attributes :parameters) :-) false
+            (= (get node :lowering-rule-version) :sh07-b11-v12))) false)) true))
 
 (defn sh07-descriptor-binding-ids [descriptors]
   (loop [remaining descriptors values []]
@@ -4322,14 +4487,11 @@
                :semantic-rule "L2-RECUR-TARGET"}})))
 
 (defn sh07-lower-fn [request state form]
-  (let [children (get form :child-form-ids)]
-    (if (= (count children) 3)
-      (let [params (sh07-find-form
-                    (get request :internal-indexes)
-                    (first (rest children)))
-            body (sh07-find-form
-                  (get request :internal-indexes)
-                  (first (rest (rest children))))]
+  (let [children (get form :child-form-ids)
+        header (sh07-function-header request form)]
+    (if (= (get header :status) :accepted)
+      (let [params (get header :params)
+            body (get header :body)]
         (if (= (get params :kind) :vector)
           (let [parameter-descriptors
                 (sh07-binding-descriptors-for-symbol-vector
@@ -4384,11 +4546,11 @@
                     (sh07-add-node
                      request restored form :fn
                      [(get body-lowered :node-id)]
-                     {:parameters (get params :value)
+                     (sh07-function-attributes {:parameters (get params :value)
                       :parameter-form-id (get params :form-id)
                       :parameter-syntax-id (get params :syntax-id)
                       :fixed-arity (count binding-ids)
-                      :recur-target-id (get target :target-id)}
+                      :recur-target-id (get target :target-id)} header parameter-descriptors)
                      binding-ids
                      :function-creation)
                     target-added
@@ -4405,12 +4567,7 @@
            :rule "C6-CORE-SHAPE"
            :form params
            :facts {:reason :fn-parameter-vector-required}}))
-      {:status :rejected
-       :rule "C6-LOWERING-GAP"
-       :form form
-       :facts {:reason :fn-multiple-body-or-shape
-               :actual-child-count (count children)
-               :supported-child-count 3}})))
+      header)))
 
 (defn sh07-let-binding-shape-failure [name-form]
   (if (contains? #{:vector :map} (get name-form :kind))
@@ -6262,7 +6419,7 @@
                (+ ordinal 1)
                (conj
                 values
-                {:ordinal ordinal
+                (sh07-function-record-signature {:ordinal ordinal
                  :function-core-node-id (get node :node-id)
                  :function-form-id (get source :form-id)
                  :function-syntax-id (get source :syntax-id)
@@ -6285,7 +6442,7 @@
                  :definition-name
                  (if (map? definition)
                    (get definition :name)
-                   nil)})))
+                   nil)} attributes))))
             (recur (rest remaining) ordinal values)))))))
 
 (defn sh07-build-call-edges [request state function-records]
@@ -7328,7 +7485,7 @@
             (sh07-sha256-id? (get row :owner-syntax-id))
             (contains? #{:emitted :consumed} (get row :disposition))
             (contains? #{:core-node-source :core-operator :definition-name
-                         :parameter-vector :parameter :binding-vector :binding-name
+                         :parameter-vector :parameter :function-type-marker :function-type-declaration :binding-vector :binding-name
                          :quoted-data :var-target :mutation-target :catch-clause
                          :catch-operator :catch-type :catch-binding :match-pattern}
                        (get row :reason))
@@ -8169,7 +8326,8 @@
          :source :binding-context :generated? :resolved-binding-ids
          :evaluation :module :metadata :preserved-declarations
          :pending-fact-families :lowering-rule-version})
-    (if (= (get node :artifact) :gravity/sh07-core-node)
+    (if (if (= (get node :artifact) :gravity/sh07-core-node)
+          (sh07-function-node-signature-valid? node) false)
       (if (sh07-exact-keys?
            (get node :evaluation)
            #{:kind :region :owner-function-syntax-id :order})
@@ -10072,11 +10230,11 @@
 (defn sh07-resolve-function-record [record resolved-digests]
   (if (sh07-exact-keys?
        record
-       #{:ordinal :function-core-node-id :function-form-id
+       (sh07-signature-record-keys record #{:ordinal :function-core-node-id :function-form-id
          :function-syntax-id :body-core-node-id
          :parameter-binding-ids :fixed-arity :definition-kind
          :definition-binding-id :definition-core-node-id
-         :definition-name})
+         :definition-name}))
     (if (if (integer? (get record :ordinal))
           (if (>= (get record :ordinal) 0)
             (if (sh07-sha256-id? (get record :function-form-id))
@@ -11502,7 +11660,7 @@
       (if (= reason :core-operator)
         (contains? #{:quote :if :do :let :fn :loop :recur :def :var :set! :try :throw :match} kind)
         (if (= reason :definition-name) (= kind :def)
-          (if (contains? #{:parameter-vector :parameter} reason) (= kind :fn)
+          (if (contains? #{:parameter-vector :parameter :function-type-marker :function-type-declaration} reason) (= kind :fn)
             (if (contains? #{:binding-vector :binding-name} reason) (contains? #{:let :loop} kind)
               (if (= reason :quoted-data) (= kind :quote)
                 (if (= reason :var-target) (= kind :var)
@@ -11592,7 +11750,9 @@
             special (sh07-source-core-special-kind (get operator :value))]
         (if (= special nil) children
           (if (contains? #{:quote :var} special) []
-            (if (contains? #{:def :fn :set!} special) [(get children 2)]
+            (if (contains? #{:def :fn :set!} special)
+              [(get children (if (= special :fn)
+                 (if (= (get (sh07-find-form (get request :internal-indexes) (get children 2)) :value) :-) 4 2) 2))]
               (if (contains? #{:let :loop} special)
                 (let [bindings (sh07-find-form (get request :internal-indexes) (get children 1))]
                   (sh07-append-vector
@@ -11651,22 +11811,52 @@
         (= (get record :binding-id) (get binding :binding-id))
         (= (get record :value-node-id) (get (get node :children) 0))])))
 
+(defn sh07-source-core-map-signature-join? [request owner node function]
+  (let [header (sh07-function-header request owner)
+        descriptors (sh07-binding-descriptors-for-symbol-vector request (get header :params)
+                      :fn-parameter-destructuring-deferred :variadic-function-recur-deferred)
+        expected (sh07-function-attributes {} header descriptors)]
+    (if (= [(get header :status) (get descriptors :status)] [:accepted :accepted])
+      (= [(get expected :signature) (get expected :signature)]
+         [(get (get node :attributes) :signature) (get function :signature)]) false)))
+
+(defn sh07-source-core-map-declaration-join? [request form owner node indexes reason]
+  (let [function (get (get indexes :functions) [(get node :node-id) nil])
+        signature (get (get node :attributes) :signature)
+        declaration
+        (loop [remaining (conj (get signature :parameters) (get signature :return))]
+          (if (= (count remaining) 0) nil
+            (if (= (get (first remaining) (if (= reason :function-type-marker) :marker-form-id :type-form-id))
+                   (get form :form-id)) (first remaining) (recur (rest remaining)))))]
+    (if (sh07-source-core-map-signature-join? request owner node function)
+      (if (map? declaration)
+        (= (get declaration (if (= reason :function-type-marker) :marker-syntax-id :type-syntax-id))
+           (get form :syntax-id)) false) false)))
+
 (defn sh07-source-core-map-parameter-join? [request form owner node indexes reason]
   (let [parameters (sh07-find-form (get request :internal-indexes) (get (get owner :child-form-ids) 1))
         attributes (get node :attributes)
         function (get (get indexes :functions) [(get node :node-id) nil])
-        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))]
+        binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))
+        signature (get attributes :signature)
+        coordinates (if (contains? attributes :signature) (get signature :parameter-source-child-indexes)
+                      (sh07-index-range 0 (count (get parameters :child-form-ids))))]
     (= [true true true true true true true true true]
        [(= (get attributes :parameter-form-id) (get parameters :form-id))
         (= (get attributes :parameter-syntax-id) (get parameters :syntax-id))
-        (= (get attributes :parameters) (get parameters :value))
+        (if (sh07-source-core-map-signature-join? request owner node function)
+          (= (get attributes :parameters)
+             (loop [positions coordinates names []]
+               (if (= (count positions) 0) names
+                 (recur (rest positions) (conj names (get (get parameters :value) (first positions))))))) false)
         (= (get function :function-form-id) (get owner :form-id))
         (= (get function :function-syntax-id) (get owner :syntax-id))
         (= (get function :parameter-binding-ids) (get node :resolved-binding-ids))
         (= (get function :body-core-node-id) (get (get node :children) 0))
-        (= (get function :fixed-arity) (count (get parameters :child-form-ids)))
+        (= (get function :fixed-arity) (count coordinates))
         (if (= reason :parameter-vector) (= form parameters)
-          (let [ordinal (sh07-source-core-map-position (get parameters :child-form-ids) (get form :form-id))]
+          (let [coordinate (sh07-source-core-map-position (get parameters :child-form-ids) (get form :form-id))
+                ordinal (sh07-source-core-map-position coordinates coordinate)]
             (if (integer? ordinal)
               (if (= (get binding :definition-syntax-id) (get form :syntax-id))
                 (= (get (get node :resolved-binding-ids) ordinal) (get binding :binding-id)) false) false)))])))
@@ -11795,8 +11985,10 @@
         (= (sh07-source-core-special-kind (get form :value)) (get node :core-form))
         (if (= reason :definition-name)
           (sh07-source-core-map-definition-join? request form owner node indexes)
-          (if (contains? #{:parameter-vector :parameter} reason)
-            (sh07-source-core-map-parameter-join? request form owner node indexes reason)
+          (if (contains? #{:parameter-vector :parameter :function-type-marker :function-type-declaration} reason)
+            (if (contains? #{:function-type-marker :function-type-declaration} reason)
+              (sh07-source-core-map-declaration-join? request form owner node indexes reason)
+              (sh07-source-core-map-parameter-join? request form owner node indexes reason))
             (if (contains? #{:binding-vector :binding-name} reason)
               (sh07-source-core-map-binding-join? request form owner node indexes reason)
               (if (= reason :quoted-data)

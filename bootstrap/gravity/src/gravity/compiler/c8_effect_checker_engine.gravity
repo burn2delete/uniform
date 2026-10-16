@@ -1573,15 +1573,25 @@
        :higher-order-call-facts (get typed :higher-order-call-facts))
       base)))
 
-(defn sh09-adapter-function-identity-domain [scope]
-  (if (= :capture-free-higher-order-fixed-arity-one-hop scope)
+(defn sh09-adapter-function-identity-domain [typed]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop (get typed :scope))
     :gravity/sh08-authoritative-higher-order-type-v1
-    :gravity/sh08-function-typed-core-v3))
+    (let [records (get (get typed :function-products) :function-records)]
+      (if (vector? records)
+        (loop [records records]
+          (if (= (count records) 0)
+            :gravity/sh08-function-typed-core-v3
+            (if (map? (first records))
+              (if (contains? (first records) :signature)
+                :gravity/sh08-atomic-function-signature-typed-core-v1
+                (recur (rest records)))
+              :gravity/sh08-function-typed-core-v3)))
+        :gravity/sh08-function-typed-core-v3))))
 
 (defn sh09-adapter-function-identity-input [typed]
   (let [products (get typed :function-products)
         base
-        {:domain (sh09-adapter-function-identity-domain (get typed :scope))
+        {:domain (sh09-adapter-function-identity-domain typed)
          :sh07-shaped-artifact-id (get typed :sh07-shaped-artifact-id)
          :module (get typed :module)
          :function-records (get products :function-records)

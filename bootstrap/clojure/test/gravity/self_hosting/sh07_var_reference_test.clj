@@ -794,6 +794,26 @@
                  (get-in (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request {} {}))
                          [:exception-data :reason]))))))))
 
+(deftest sh07-current-binding-captures-distinct-compiler-and-emitter
+  (let [key-var (ns-resolve 'gravity.bootstrap 'sh07-core-current-source-key)
+        key ((var-get key-var))
+        dependencies (:toolchain key)]
+    (is (= 2 (count dependencies)))
+    (is (= 2 (count (set (map first dependencies)))))
+    (is (= [(.getCanonicalPath (io/file (bootstrap/c-backend-resolve-p15-s23-compiler-source-path)))
+            (.getCanonicalPath (io/file (bootstrap/p15-s23-stage2-compiler-artifact-source-path)))]
+           (mapv first dependencies)))
+    (doseq [index (range 2)]
+      (let [observed (atom key)
+            cache (atom {:key key :binding {:source-content-hash (second (:source key))}})]
+        (with-redefs-fn {key-var #(deref observed)
+                        (ns-resolve 'gravity.bootstrap 'sh07-core-development-binding) cache}
+          #(do (is (= (:binding @cache) (bootstrap/sh07-core-current-binding!)))
+               (swap! observed assoc-in [:toolchain index 1] "sha256:changed")
+               (is (= :checked-core-toolchain-drift
+                      (get-in (diagnostic-result (fn [] (bootstrap/sh07-core-current-binding!)))
+                              [:exception-data :reason])))))))))
+
 (deftest sh07-current-binding-rechecks-all-inputs-before-publication
   (doseq [[field changed reason]
           [[:source ["development-fixture" "sha256:b"] :checked-core-source-drift]

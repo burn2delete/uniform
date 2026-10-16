@@ -339,6 +339,76 @@ passing checks. The selected source runs used `.gravity`; paired `.qst` text
 equality was checked without claiming a second full composition run. Full
 namespaces, runtime matching and authoritative migration were not run.
 
+### Atomic function annotations: development increment
+
+The ordinary C5 -> C6 -> C7 path now carries fixed-arity, single-body function
+annotations such as `(defn identity-i64 [x :- I64] :- I64 x)` and checks typed
+calls between such functions. C5 resolves annotation names in the type/protocol
+namespace before expression-binding precedence; a lexical parameter named I64
+does not capture the I64 type annotation. C6 derives concrete type IDs from the
+authenticated core type binding, not its metatype or an unverified spelling.
+
+The bounded declaration family is I8/I16/I32/I64, U8/U16/U32/U64, F32/F64,
+Bool, String, Symbol, Keyword and Ratio. It does not introduce implicit numeric
+coercion: a generic integer literal is not an I64 value merely because a
+parameter or result is declared I64. Composite types, protocols as parameter
+types, generics, dynamic boundaries and casts remain outside this increment.
+
+Owning code is `gravity.resolution`, `gravity.checked-core` and
+`gravity.compiler.c7-type-checker-engine`. The existing Clojure traversal and
+projection entrypoints retain the real source coordinates and binding IDs.
+Annotation markers and type leaves are consumed declaration syntax, not
+parameters or executable expressions. Annotated functions carry a closed
+optional `:sh07-atomic-function-signature-v1` signature and a versioned
+declaration mapping; unannotated attribute shapes remain unchanged.
+
+C7 seeds declared parameter and return types before fixed-point inference and
+preserves them through existing recursive/higher-order completion. Declarations
+appear in canonical typed function products, equality constraints and the
+annotated typed identity domain. Unknown/var-only type names belong to C5,
+malformed or unsupported annotation forms to C6, and incompatible argument or
+result types to C7. Later effect, profile, capability, ownership and safety
+legality is not implied by type acceptance.
+
+Use the existing `sh07-b47-function-call-recursion-test` lowering kernel and
+`sh08-function-call-type-test` inference kernel for the inner loop. The
+`sh08-atomic-signature-authenticated-source-composition` selector exercises the
+affected reader/macro/C5/C6/C7 composition and result verification on the paired
+I64 identity/forwarding, Bool call and type-name-shadowing source fixture.
+Its paired run passed 38 assertions. Three source-negative tests passed 73
+assertions on eight real programs: unknown and var-only type names, dangling,
+duplicate and composite annotation forms, a String result/argument against I64,
+and a generic integer argument against I64. Their `.qst` text equality was
+checked; this does not claim a second full negative composition run. Two
+existing normalized acyclic-call and recursive fixed-point regressions passed
+52 assertions. Final direct C6/C7 kernels passed 46/41 assertions, including
+legacy malformed-header diagnostic priority, mixed annotated/unannotated
+parameters and stale declaration/mapping rejection. C5/source-tool identity
+kernels passed 17 assertions and the repository-language boundary passed five.
+These five groups total 11 tests and 272 assertions. Earlier failed development
+attempts are not counted as passing evidence.
+
+The affected C8 pure-function adapter derives the annotated identity domain from
+the actual declaration-bearing function records, preserving higher-order and
+legacy precedence and exact identity/typed-core equality. Its compiled-Gravity
+adapter kernel and existing pure-function regression passed 47 assertions;
+the same run repeated the five-assertion language-boundary gate. These are
+normalized adapter inputs, not another authentic C7 source proof. Declaration
+and constraint preservation, stale-domain substitution, stripped declarations,
+malformed carriers and result tampering are covered. The narrower effectful
+compiler-read adapter remains unsupported for annotated functions. Independent
+semantic review accepted this bounded increment; none of these development
+checks is migration evidence.
+
+Current-source C5 execution records actual source/plan identities under one
+operation-local binding, rejects source/toolchain drift and remains
+development-unadmitted. Private cache keys are not transported as semantic
+artifact fields. Complete historical SOURCE/migration pins remain enforced at
+their explicit boundary. The existing seed compiles one module function table;
+general imported stage-function composition remains a separate implementation
+task, not a reason to add a facade-only `gravity.types` namespace. No native,
+target-completion, self-hosting or seed-retirement claim is made here.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

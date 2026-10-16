@@ -154,9 +154,9 @@
       :functions-semantic-hash (:functions-semantic-hash binding)
       :builder-function 'sh06-build-resolution-template
       :builder-semantic-hash
-      (get sh06-resolution-public-function-hashes
+      (get (:public-function-hashes binding)
            'sh06-build-resolution-template)
-      :function-shapes sh06-resolution-public-function-shapes}
+      :function-shapes (:public-function-shapes binding)}
      :projection-contract
      {:contract-kind :gravity/sh06-resolution-product-envelope-contract
       :contract-version 1 :profile :meta :target :jvm

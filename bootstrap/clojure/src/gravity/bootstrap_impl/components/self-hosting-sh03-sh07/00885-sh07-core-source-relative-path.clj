@@ -117,8 +117,8 @@
 
 (defn- sh07-core-current-source-key []
   (let [source (sh07-core-source-path)
-        compiler (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
-        emitter (java.io.File. (.getParentFile compiler) "emitter.gravity")
+        compiler (java.io.File. (c-backend-resolve-p15-s23-compiler-source-path))
+        emitter (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
         snapshot (fn [file]
                    [(.getCanonicalPath ^java.io.File file)
                     (str "sha256:" (sha256-bytes-hex

@@ -5,7 +5,21 @@
  semantic-late-sh06-resolution-analysis-inputs-make-traversal
  [parameter-names add-reference! add-scope!]
  (clojure.core/letfn
-  [(walk-form
+  [(walk-types [parameters scope-chain syntax]
+     (loop [remaining (seq parameters)]
+       (when (seq remaining)
+         (if (= ':- (first remaining))
+           (do (when (and (symbol? (second remaining)) (not= ':- (second remaining)))
+                 (walk-form (second remaining) scope-chain syntax :type))
+               (recur (nnext remaining)))
+           (recur (next remaining))))))
+   (walk-function-body [body scope-chain syntax]
+     (let [annotated? (= ':- (first body))]
+       (when (and annotated? (symbol? (second body)) (not= ':- (second body)))
+         (walk-form (second body) scope-chain syntax :type))
+       (doseq [item (if annotated? (drop 2 body) body)]
+         (walk-form item scope-chain syntax :expression))))
+   (walk-form
     [value scope-chain syntax position]
     (cond
      (symbol? value)
@@ -31,9 +45,8 @@
          scope-id
          (add-scope! (:syntax/id syntax) (first scope-chain) names (:span syntax))]
         (add-reference! 'defn scope-chain syntax :operator (:span syntax))
-        (doseq
-         [item (drop 3 value)]
-         (walk-form item (cons scope-id scope-chain) syntax :expression)))
+        (walk-types parameters (cons scope-id scope-chain) syntax)
+        (walk-function-body (drop 3 value) (cons scope-id scope-chain) syntax))
        (= operator 'fn)
        (let
         [named?
@@ -47,7 +60,8 @@
          scope-id
          (add-scope! (:syntax/id syntax) (first scope-chain) names (:span syntax))]
         (add-reference! 'fn scope-chain syntax :operator (:span syntax))
-        (doseq [item body] (walk-form item (cons scope-id scope-chain) syntax :expression)))
+        (walk-types parameters (cons scope-id scope-chain) syntax)
+        (walk-function-body body (cons scope-id scope-chain) syntax))
        (= operator 'match)
        (do
         (add-reference! 'match scope-chain syntax :operator (:span syntax))

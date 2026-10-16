@@ -136,7 +136,7 @@
              (recur (.getParentFile directory))))))
      sh06-resolution-source-relative-path)))
 
-(defn sh06-resolution-read-pinned-source!
+(defn sh06-resolution-read-current-source!
   [request-source]
   (let [source-path (sh06-resolution-resolve-source-path)
         nio-path (.toPath (java.io.File. source-path))
@@ -159,25 +159,26 @@
              source-path {:cause-message (.getMessage error)})))
         content-hash (str "sha256:" (sha256-bytes-hex bytes))]
     (when-not
-     (and (number? sh06-resolution-expected-source-byte-count)
-          (string? sh06-resolution-expected-source-content-hash)
-          attributes (.isRegularFile attributes)
-          (= (long sh06-resolution-expected-source-byte-count)
-             (.size attributes))
-          (= sh06-resolution-expected-source-byte-count (alength bytes))
-          (= sh06-resolution-expected-source-content-hash content-hash))
+     (and attributes (.isRegularFile attributes)
+          (= (.size attributes) (alength bytes)))
       (sh06-resolution-boundary-fail!
        "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
        {:source-path source-path
         :source-byte-count (alength bytes)
         :source-content-hash content-hash}
-       {:expected-byte-count sh06-resolution-expected-source-byte-count
-        :expected-content-hash
-        sh06-resolution-expected-source-content-hash}))
+       {}))
     {:source-path source-path
      :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
      :source-byte-count (alength bytes)
      :source-content-hash content-hash}))
+
+(defn sh06-resolution-read-pinned-source! [request-source]
+  (let [source (sh06-resolution-read-current-source! request-source)]
+    (when-not (= [sh06-resolution-expected-source-byte-count sh06-resolution-expected-source-content-hash]
+                 ((juxt :source-byte-count :source-content-hash) source))
+      (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source
+        :exact-pinned-resolution-source (dissoc source :source-text) {}))
+    source))
 
 (defn sh06-resolution-plan-identities
   [plan]
