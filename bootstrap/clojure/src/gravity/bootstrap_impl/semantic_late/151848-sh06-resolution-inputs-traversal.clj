@@ -59,12 +59,15 @@
           (let
            [scope-id (add-scope! (:syntax/id syntax) (first scope-chain) [pattern] (:span syntax))]
            (walk-form branch (cons scope-id scope-chain) syntax :expression))
-          (and (or (vector? pattern) (map? pattern)) (sh06-fixed-vector-pattern? pattern))
+          (and (or (vector? pattern) (map? pattern))
+               (sh06-fixed-vector-pattern? (if (map? pattern) (dissoc pattern :when) pattern)))
           (when-let
            [binding-paths (sh06-unique-match-binding-paths pattern [])]
            (if
             (empty? binding-paths)
-            (walk-form branch scope-chain syntax :expression)
+            (do (when (and (map? pattern) (contains? pattern :when))
+                  (walk-form (:when pattern) scope-chain syntax :expression))
+                (walk-form branch scope-chain syntax :expression))
             (let
              [scope-id
               (add-scope!
@@ -72,6 +75,8 @@
                (first scope-chain)
                (mapv :name binding-paths)
                (:span syntax))]
+             (when (and (map? pattern) (contains? pattern :when))
+               (walk-form (:when pattern) (cons scope-id scope-chain) syntax :expression))
              (walk-form branch (cons scope-id scope-chain) syntax :expression))))
           (or
            (= '_ pattern)

@@ -49,12 +49,16 @@
         (get-in scope [:bindings 0 :binding-syntax-id])
         syntax-id)
        (walk syntax branch (conj path branch-index) nested :expression))
-      (and (or (vector? pattern) (map? pattern)) (sh06-fixed-vector-pattern? pattern))
+      (and (or (vector? pattern) (map? pattern))
+           (sh06-fixed-vector-pattern? (if (map? pattern) (dissoc pattern :when) pattern)))
       (when-let
        [binding-paths (sh06-unique-match-binding-paths pattern pattern-path)]
        (if
         (empty? binding-paths)
-        (walk syntax branch (conj path branch-index) scope-chain :expression)
+        (do (when (and (map? pattern) (contains? pattern :when))
+              (let [i (first (keep-indexed #(when (= :when (key %2)) %1) pattern))]
+                (walk syntax (:when pattern) (conj pattern-path (inc (* 2 i))) scope-chain :expression)))
+            (walk syntax branch (conj path branch-index) scope-chain :expression))
         (let
          [scope
           (consume-scope! syntax (first scope-chain) binding-paths)
@@ -66,6 +70,9 @@
            [syntax-id (projected-syntax-id syntax (:path projected) (:name projected))]
            (swap! scope-by-syntax-id assoc syntax-id (:sh07/projected-scope-id scope))
            (swap! declaration-syntax-by-upstream-id assoc (:binding-syntax-id binding) syntax-id)))
+         (when (and (map? pattern) (contains? pattern :when))
+           (let [i (first (keep-indexed #(when (= :when (key %2)) %1) pattern))]
+             (walk syntax (:when pattern) (conj pattern-path (inc (* 2 i))) nested :expression)))
          (walk syntax branch (conj path branch-index) nested :expression))))
       (or
        (= '_ pattern)

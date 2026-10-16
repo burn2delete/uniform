@@ -36,7 +36,7 @@
     "repeated-literal-occurrences"
     "scrutinee-branch-effects"
     "sibling-binding-isolation"
-    "quoted-symbol-patterns" "irrefutable-terminal-patterns"})
+    "quoted-symbol-patterns" "irrefutable-terminal-patterns" "root-map-guards"})
 (def ^:private rejected-fixtures
   #{"composite-pattern-deferred"
     "guard-pattern-deferred"
@@ -48,10 +48,12 @@
     "malformed-quoted-pattern" "quoted-composite-pattern"
     "quoted-pattern-unresolved-branch" "clause-after-wildcard" "clause-after-binding"
     "catchall-before-unsupported-pattern" "catchall-before-invalid-body"
-    "invalid-blocking-body" "unresolved-after-catchall"})
+    "invalid-blocking-body" "unresolved-after-catchall"
+    "guard-unresolved-expression" "guard-binding-escape" "guard-tail-recur"})
 (def ^:private upstream-resolution-fixtures
   #{"outside-branch-binding-use" "sibling-branch-binding-use"
-    "quoted-pattern-unresolved-branch" "unresolved-after-catchall"})
+    "quoted-pattern-unresolved-branch" "unresolved-after-catchall"
+    "guard-unresolved-expression" "guard-binding-escape"})
 (def ^:private promoted-b11-fixtures
   #{"composite-pattern-deferred"})
 (def ^:private core-lowering-fixtures
@@ -569,6 +571,211 @@
                        (assoc-in [:conditional-region :clause-ordinal] 0))]
         (is (= :rejected (:status (invoke 'sh07-resolve-match-branch-record [record (mapv sha (range 7000 7004))]))))))))
 
+(deftest sh07-b10-root-map-guard-development-kernel
+  ;; Execute the current compiled Gravity kernel; these normalized graphs are
+  ;; unit inputs, not reader provenance or evidence of runtime matching.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke #(bootstrap/p15-s23-stage2-runtime-execute-function
+                 {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true} plan %1 %2)
+        sha #(str "sha256:" (format "%064x" %))
+        counter (atom 0) forms (atom {})]
+    (letfn [(make! [value]
+              (let [kind (cond (map? value) :map (vector? value) :vector (seq? value) :list
+                               (symbol? value) :symbol (keyword? value) :keyword
+                               (nil? value) :nil (boolean? value) :boolean :else :integer)
+                    children (mapv make! (cond (map? value) (vec (mapcat identity value))
+                                               (coll? value) (vec value) :else []))
+                    n (swap! counter inc)
+                    form {:form-id (sha n) :syntax-id (sha (+ n 1000)) :kind kind :value value
+                          :child-form-ids (mapv :form-id children) :scope-id (sha 5000)
+                          :metadata {} :origin-chain [] :generated-origin []}]
+                (swap! forms assoc (:form-id form) form)
+                (doseq [child children] (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                form))
+            (input [] {:module {:namespace 'demo.guard :profile :meta :target :jvm
+                                :effects #{} :capabilities #{} :safety :safe}
+                       :lineage {:authenticated-sh06-artifact-id (sha 6000) :sh06-semantic-projection-id (sha 6001)}
+                       :internal-indexes {:forms {:by-id @forms} :bindings {:by-definition {}}}})
+            (lower [pattern]
+              (let [form (make! (list 'match 0 pattern 10 '_ 20)) request (input)]
+                {:request request :form form
+                 :result (invoke 'sh07-lower-match [request (invoke 'sh07-empty-state []) form])}))]
+      (doseq [pattern [(array-map :when true :id '[1 _]) (array-map :id '{:tag 1} :when false)
+                       {:when nil} {:when :pending-type} {:when '(do true false)}
+                       {:when '(match 0 0 true _ false)}
+                       {:when '(match 0 {:when true} true _ false)}]]
+        (let [{:keys [result request form]} (lower pattern)
+              state (:state result) node (last (:nodes state))
+              z (mapv sha (range 7000 (+ 7000 (count (:nodes state)))))
+              resolve-id #(nth z (:ordinal %))
+              nodes (mapv #(-> % (update :node-id resolve-id) (update :children (fn [ids] (mapv resolve-id ids)))
+                               (update-in [:evaluation :order]
+                                          (fn [entries] (mapv (fn [entry] (update entry :core-node-id resolve-id)) entries)))) (:nodes state))
+              resolved-node (last nodes)
+              branches (:value (invoke 'sh07-resolve-match-branch-vector [(:match-branch-records state) z]))
+              patterns (:value (invoke 'sh07-resolve-match-pattern-vector [(:match-pattern-records state) z]))
+              skeletons (mapv #(:value (invoke 'sh07-resolve-match-decision-skeleton [% z])) (:match-decision-skeletons state))
+              owned (filterv #(= (:node-id resolved-node) (:core-node-id %)) branches)
+              owned-patterns (filterv #(= (:node-id resolved-node) (:core-node-id %)) patterns)
+              guard (get-in (first owned) [:guard])
+              source-pattern (get @forms (nth (:child-form-ids form) 2))]
+          (is (= :accepted (:status result)) (pr-str result))
+          (is (true? (invoke 'sh07-resolved-b11-node-valid? [resolved-node])))
+          (is (= :sh07-root-map-guard-v1 (:lowering-rule-version node)))
+          (is (= [3] (get-in node [:attributes :guard-child-indexes])))
+          (is (= :map (:pattern-kind (first owned))))
+          (is (= :branch-body (:on-true guard)))
+          (is (= :next-candidate (:on-false guard) (:on-pattern-failure guard)))
+          (is (= :once-after-structural-success (:evaluation guard)))
+          (is (= :pending-later-legality (:non-boolean-type-effect-legality guard)))
+          (is (= 1 (count (get-in node [:evaluation :order]))))
+          (is (= (get-in guard [:conditional-region]) (get-in (into {} (map (juxt :node-id identity) nodes)) [(:node-id guard) :evaluation :region])))
+          (is (bootstrap/sh07-b11-match-group-coherent? (into {} (map (juxt :node-id identity) nodes)) []
+                                                        resolved-node owned (last skeletons) owned-patterns))
+          (is (= (vec (remove #{(:source-child-index guard)} (range 1 (* 2 (count pattern)) 2)))
+                 (mapv #(peek (:path %)) (filter #(= 1 (:depth %)) owned-patterns))))
+          (is (= (:form-id guard) (nth (:child-form-ids source-pattern) (:source-child-index guard))))
+          (is (= :accepted (:status (invoke 'sh07-resolve-match-branch-record [(first (:match-branch-records state)) z]))))
+          (doseq [bad [0 nil {} [0]]]
+            (is (false? (invoke 'sh07-resolved-b11-node-valid? [(assoc-in resolved-node [:attributes :branch-clauses] bad)]))))
+          (doseq [mutant [(assoc-in resolved-node [:attributes :branch-clauses 0 :guard :node-id] (:node-id guard))
+                          (assoc-in resolved-node [:attributes :branch-clauses 0 :guard :rule-version] nil)
+                          (update-in resolved-node [:attributes] dissoc :guard-rule-version)
+                          (assoc-in resolved-node [:attributes :guard-child-indexes] [1])]]
+            (is (false? (invoke 'sh07-resolved-b11-node-valid? [mutant]))))
+          (doseq [mutant [(assoc-in (first (:match-branch-records state)) [:guard :rule-version] nil)
+                          (assoc-in (first (:match-branch-records state)) [:guard :node-id] nil)]]
+            (is (= :rejected (:status (invoke 'sh07-resolve-match-branch-record [mutant z])))))
+          (doseq [bad [0 nil [] {:unexpected true}]]
+            (is (false? (bootstrap/sh07-b11-guard-source-valid? bad)))
+            (is (false? (bootstrap/sh07-b11-guard-valid? bad 0)))
+            (is (= :rejected (:status (invoke 'sh07-resolve-match-branch-record
+                                             [(assoc (first (:match-branch-records state)) :guard bad) z]))))
+            (is (false? (bootstrap/sh07-b11-match-group-coherent?
+                         (into {} (map (juxt :node-id identity) nodes)) [] resolved-node
+                         (assoc-in owned [0 :guard] bad) (last skeletons) owned-patterns))))
+          (doseq [alias [(first (:children resolved-node)) (second (:children resolved-node))]]
+            (is (false? (bootstrap/sh07-b11-match-group-coherent?
+                         (into {} (map (juxt :node-id identity) nodes)) [] resolved-node
+                         (assoc-in owned [0 :guard :node-id] alias) (last skeletons) owned-patterns))))
+          (let [indexes {:patterns (into {} (map (fn [record] [[(:node-id resolved-node) (:pattern-form-id record)] record]) owned-patterns))
+                         :branches (into {} (map (fn [record] [[(:node-id resolved-node) (:clause-ordinal record)] record]) owned))}
+                record-key [(:node-id resolved-node) (:form-id source-pattern)]]
+            (is (true? (invoke 'sh07-source-core-map-pattern-join? [request source-pattern resolved-node indexes])))
+            (is (false? (invoke 'sh07-source-core-map-pattern-join?
+                                [request source-pattern resolved-node (update-in indexes [:patterns record-key] dissoc :guard)])))
+            (when (> (count pattern) 1)
+              (is (false? (invoke 'sh07-source-core-map-pattern-join?
+                                  [request source-pattern resolved-node
+                                   (assoc-in indexes [:patterns record-key :guard :source-child-index]
+                                             (if (= 1 (:source-child-index guard)) 3 1))])))))
+          (is (= :accepted (:status (invoke 'sh07-match-map-children [request source-pattern]))))))
+      (doseq [[entry-count expected] [[255 :accepted] [256 :rejected]]]
+        (let [pattern (make! (assoc (into {} (map (fn [n] [(keyword (str "k" n)) n]) (range entry-count))) :when true))
+              result (invoke 'sh07-match-pattern-descriptor [(input) pattern 0])]
+          (is (= expected (:status result)))
+          (if (= :accepted expected)
+            (is (= 256 (count (:records result))))
+            (is (= :vector-pattern-width-bound (get-in result [:facts :reason]))))))
+      (let [form (make! '(match 0 {:when (if true (throw 1) false)} 10 _ 20))
+            lowered (invoke 'sh07-lower-match [(input) (invoke 'sh07-empty-state []) form])
+            state (:state lowered)
+            transfer (first (:error-transfers state))
+            z (mapv sha (range 7000 (+ 7000 (count (:nodes state)))))
+            handler-region {:kind :typed-error-handler-candidate
+                            :try-syntax-id (sha 1) :try-form-id (sha 2)
+                            :catch-syntax-id (sha 3) :catch-form-id (sha 4)
+                            :clause-ordinal 0 :clause-count 1
+                            :runtime-reachability :not-asserted-by-sh07-b9 :parent-region-kind :match-guard}]
+        (is (= :accepted (:status lowered)))
+        (is (= :match-guard (get-in transfer [:evaluation-region :parent-region-kind])))
+        (is (= :accepted (:status (invoke 'sh07-resolve-error-transfer-record [transfer z]))))
+        (is (true? (invoke 'sh07-mutation-region? [handler-region])))
+        (is (= :accepted (:status (invoke 'sh07-resolve-error-transfer-record
+                                         [(assoc transfer :evaluation-region handler-region) z])))))
+      (let [state (assoc (invoke 'sh07-empty-state []) :tail-target-id (sha 9000)
+                         :recur-target-stack [{:target-id (sha 9000) :arity 0 :target-kind :loop :binding-ids []}])
+            guard-form (make! '(match 0 {:when (recur)} 10 _ 20))
+            body-form (make! '(match 0 {:when true} (recur) _ 20))]
+        (is (= :recur-tail-position-required
+               (get-in (invoke 'sh07-lower-match [(input) state guard-form]) [:facts :reason])))
+        (is (= :accepted (:status (invoke 'sh07-lower-match [(input) state body-form])))))
+      (doseq [pattern ['[{:when true}] '{:outer {:when false}}]]
+        (is (= :guard-pattern-deferred (get-in (lower pattern) [:result :facts :reason])))))))
+
+(deftest sh07-b10-root-map-guard-authentic-composition
+  (let [artifact (file-artifact "accepted" "root-map-guards" ".gravity")
+        canonical (core artifact) boundary (:gravity-core-boundary artifact)
+        nodes (exactly-once-index (:nodes canonical) :node-id)
+        forms (exactly-once-index (:forms (request artifact)) :form-id)
+        guarded (filterv #(contains? % :guard) (:match-branch-records canonical))
+        patterns (:match-pattern-records canonical)
+        references (:reference-uses canonical)
+        mapping (execute-core-function "root-map-guards" 'sh07-resolve-source-core-map-preimage
+                                       [(:preimage (last (:digest-requests boundary))) (pop (:resolved-digests boundary))])
+        rows (exactly-once-index (get-in mapping [:value :records]) #(get-in % [:source :form-id]))]
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (is (= :accepted (:status mapping)))
+    (is (= :development-unadmitted (get-in boundary [:plan-binding :revision-status])))
+    (is (false? (get-in boundary [:plan-binding :self-hosted?])))
+    (is (= 7 (count guarded)))
+    (is (= 2 (count (:mutations canonical))))
+    (is (= #{:match-guard :typed-error-handler-candidate}
+           (set (map #(get-in % [:evaluation-region :kind]) (:mutations canonical)))))
+    (is (= 3 (count (:error-transfers canonical))))
+    (is (= #{:conditional-branch :match-guard :typed-error-handler-candidate}
+           (set (map #(get-in % [:evaluation-region :kind]) (:error-transfers canonical)))))
+    (is (= 1 (count (:recur-transfers canonical))))
+    (doseq [branch guarded]
+      (let [guard (:guard branch) node (get nodes (:core-node-id branch))
+            pattern (get forms (:pattern-form-id branch))
+            key-id (nth (:child-form-ids pattern) (dec (:source-child-index guard)))
+            root-record (first (filter #(and (= (:core-node-id branch) (:core-node-id %))
+                                             (= (:clause-ordinal branch) (:clause-ordinal %))
+                                             (zero? (:depth %))) patterns))]
+        (is (= :sh07-root-map-guard-v1 (:lowering-rule-version node)))
+        (is (= (:node-id guard) (nth (:children node) (:child-index guard))))
+        (is (= (:guard root-record) (select-keys guard [:rule-version :source-child-index :form-id :syntax-id])))
+        (is (= :consumed (:disposition (get rows key-id))))
+        (is (= :match-pattern (:reason (get rows key-id))))
+        (is (= :emitted (:disposition (get rows (:form-id guard)))))
+        (is (= :core-node-source (:reason (get rows (:form-id guard)))))
+        (is (= (:form-id guard) (nth (:child-form-ids pattern) (:source-child-index guard))))
+        (is (= [(first (:children node))] (mapv :core-node-id (get-in node [:evaluation :order]))))))
+    (doseq [record patterns :when (:pattern-binding-id record)]
+      (let [branch (first (filter #(and (= (:core-node-id record) (:core-node-id %))
+                                        (= (:clause-ordinal record) (:clause-ordinal %))) guarded))
+            tree (bootstrap/sh07-b11-branch-tree nodes branch)
+            uses (filterv #(and (= (:pattern-binding-id record) (:binding-id %))
+                                (contains? tree (:core-node-id %))) references)]
+        (is (seq uses))
+        (is (= (mapv :syntax-id uses) (:pattern-binding-use-syntax-ids record)))))
+    (is (= [1 1 2 2] (sort (map (comp count :pattern-binding-use-syntax-ids)
+                                (filter :pattern-binding-id patterns)))))
+    (doseq [extension extensions]
+      (is (= (source-text (fixture-path "accepted" "root-map-guards" ".gravity"))
+             (source-text (fixture-path "accepted" "root-map-guards" extension)))))))
+
+(deftest sh07-b10-root-map-guard-source-rejections
+  (doseq [basename ["guard-unresolved-expression" "guard-binding-escape"
+                    "guard-tail-recur" "guard-pattern-deferred"]]
+    (let [source-path (fixture-path "rejected" basename ".gravity")
+          declared (fixture-oracle basename ".gravity")
+          result (diagnostic-result #(bootstrap/sh07-core-file-artifact source-path))
+          diagnostic (if (= "C5-UNRESOLVED" (:expected-rule declared))
+                       (upstream-diagnostic-data result) (diagnostic-data result))]
+      (is (nil? (:raw-host-error result)) (pr-str result))
+      (is (= (:expected-rule declared) (or (:rule diagnostic) (:id diagnostic))))
+      (is (= (:expected-stage declared) (:stage diagnostic)))
+      (is (= :error (:severity diagnostic)))
+      (is (= source-path (get-in diagnostic [:source-span :source])))
+      (if (:expected-reason declared)
+        (do (is (= (:expected-reason declared) (get-in diagnostic [:facts :reason])))
+            (is (= (:expected-remediation declared) (:remediation diagnostic)))
+            (is (true? (get-in diagnostic [:facts :fail-closed]))))
+        (is (string? (:remediation diagnostic))))
+      (is (= (source-text source-path) (source-text (fixture-path "rejected" basename ".qst")))))))
+
 (deftest sh07-b10-irrefutable-authentic-composition-and-regression
   (let [artifact (file-artifact "accepted" "irrefutable-terminal-patterns" ".gravity")
         canonical (core artifact)
@@ -732,10 +939,12 @@
                 node (get nodes match-id)
                 attributes (:attributes node)
                 scrutinee-id (first (:children node))
-                branch-ids (vec (rest (:children node)))
+                branch-ids (mapv :branch-core-node-id records)
+                guard-ids (keep #(get-in % [:guard :node-id]) records)
                 skeleton (get skeletons match-id)]
             (is (= :match (:core-form node)))
-            (is (= (inc (count records)) (count (:children node))))
+            (is (= (+ 1 (count records) (count guard-ids)) (count (:children node))))
+            (is (= (:children node) (into (into [scrutinee-id] branch-ids) guard-ids)))
             (is (= scrutinee-id (:scrutinee-core-node-id (first records))))
             (is (= branch-ids (mapv :branch-core-node-id records)))
             (is (= 0 (:scrutinee-child-index attributes)))

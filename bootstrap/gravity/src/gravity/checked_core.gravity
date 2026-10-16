@@ -155,7 +155,10 @@
     :map-pattern-policy
     {:keys :keywords-only :nesting :recursive
      :value-paths :flattened-odd-source-child-coordinates
-     :key-evaluation :none :guards :deferred}
+     :key-evaluation :none :guards :root-map-only
+     :guard-rule-version :sh07-root-map-guard-v1
+     :nested-structural-guards :deferred
+     :guard-type-effect-legality :pending-later-legality}
     :vector-pattern-policy
     {:width :fixed
      :nesting :recursive
@@ -2268,12 +2271,26 @@
                  [(get children 1) :catch-type false]
                  [(get children 2) :catch-binding false]]))))))
 
-(defn sh07-source-core-pattern-events [pattern-body-ids]
+(defn sh07-source-core-guard-pattern-events [request pattern]
+  (loop [ids (get pattern :child-form-ids)
+         events [[(get pattern :form-id) :match-pattern false]]]
+    (if (= (count ids) 0) events
+      (let [key (sh07-find-form (get request :internal-indexes) (first ids))]
+        (recur (rest (rest ids))
+          (sh07-vector-append events
+            (if (= (get key :value) :when) [[(first ids) :match-pattern false]]
+              [[(first ids) :match-pattern false] [(second ids) :match-pattern true]])))))))
+
+(defn sh07-source-core-pattern-events [request pattern-body-ids]
   (loop [remaining pattern-body-ids events []]
     (if (= (count remaining) 0)
       events
-      (recur (rest (rest remaining))
-             (conj events [(first remaining) :match-pattern true])))))
+      (let [pattern (sh07-find-form (get request :internal-indexes) (first remaining))]
+        (recur (rest (rest remaining))
+          (sh07-vector-append events
+            (if (sh07-match-guard-pattern? pattern)
+              (sh07-source-core-guard-pattern-events request pattern)
+              [[(first remaining) :match-pattern true]])))))))
 
 (defn sh07-source-core-special-kind [operator]
   (get '{quote :quote if :if do :do let :let fn :fn loop :loop
@@ -2306,7 +2323,7 @@
                       request (subvec children 2 (count children)))
                      (if (= core-form :match)
                        (sh07-source-core-pattern-events
-                        (subvec children 2 (count children)))
+                        request (subvec children 2 (count children)))
                        [])))))))))
       [])))
 
@@ -2347,13 +2364,32 @@
                       [(first (rest remaining)) :core-node-source
                        (first (rest remaining))]])))))
 
+(defn sh07-source-core-root-guard? [request form owner-id]
+  (if (= (get form :parent-form-id) owner-id)
+    (if (sh07-match-guard-pattern? form)
+      (let [owner (sh07-find-form (get request :internal-indexes) owner-id)
+            op (sh07-find-form (get request :internal-indexes) (first (get owner :child-form-ids)))]
+        (if (= (get owner :kind) :list) (= (get op :value) 'match) false)) false) false))
+
+(defn sh07-source-core-guard-pattern-intents [request form owner-id]
+  (loop [ids (get form :child-form-ids) result []]
+    (if (= (count ids) 0) result
+      (let [key (sh07-find-form (get request :internal-indexes) (first ids))
+            value-id (second ids)]
+        (recur (rest (rest ids))
+          (sh07-vector-append result [[(first ids) :match-pattern owner-id]
+            (if (= (get key :value) :when) [value-id :core-node-source value-id]
+              [value-id :match-pattern owner-id])]))))))
+
 ; This source-intent audit is independent of the actual emission event ledger.
 ; Data contexts retain precedence over operator-looking forms inside them.
 (defn sh07-source-core-intent-children [request form reason owner-id]
   (let [children (get form :child-form-ids)
         form-id (get form :form-id)]
     (if (contains? #{:quoted-data :match-pattern} reason)
-      (sh07-source-core-data-intents children reason owner-id)
+      (if (if (= reason :match-pattern) (sh07-source-core-root-guard? request form owner-id) false)
+        (sh07-source-core-guard-pattern-intents request form owner-id)
+        (sh07-source-core-data-intents children reason owner-id))
       (if (= reason :parameter-vector)
         (sh07-source-core-data-intents children :parameter owner-id)
         (if (= reason :binding-vector)
@@ -2544,11 +2580,13 @@
         node-domain
         (if (= core-form :keyword-map-lookup)
           :gravity/sh07-b15-core-node-v15
-          :gravity/sh07-b11-core-node-v12)
+          (if (contains? attributes :guard-rule-version)
+            :gravity/sh07-root-map-guard-core-node-v1 :gravity/sh07-b11-core-node-v12))
         lowering-rule-version
         (if (= core-form :keyword-map-lookup)
           :sh07-b15-v15
-          :sh07-b11-v12)
+          (if (contains? attributes :guard-rule-version)
+            :sh07-root-map-guard-v1 :sh07-b11-v12))
         preimage
         {:domain node-domain
          :core-form core-form
@@ -5258,6 +5296,75 @@
       false)
     false))
 
+(defn sh07-match-guard-source [request pattern]
+  (if (sh07-match-guard-pattern? pattern)
+    (loop [ids (get pattern :child-form-ids) coordinate 1]
+      (if (= (count ids) 0) nil
+        (let [key (sh07-find-form (get request :internal-indexes) (first ids))
+              guard (sh07-find-form (get request :internal-indexes) (second ids))]
+          (if (= (get key :value) :when)
+            {:rule-version :sh07-root-map-guard-v1
+             :source-child-index coordinate
+             :form-id (get guard :form-id) :syntax-id (get guard :syntax-id)}
+            (recur (rest (rest ids)) (+ coordinate 2)))))) nil))
+
+(defn sh07-match-guard-clause [source child-index region]
+  (assoc (assoc (assoc (assoc (assoc (assoc (assoc source
+    :child-index child-index) :conditional-region region)
+    :evaluation :once-after-structural-success)
+    :on-pattern-failure :next-candidate)
+    :on-true :branch-body) :on-false :next-candidate)
+    :non-boolean-type-effect-legality :pending-later-legality))
+
+(defn sh07-match-guard-source-valid? [guard]
+  (if (sh07-exact-keys? guard #{:rule-version :source-child-index :form-id :syntax-id})
+    (if (= (get guard :rule-version) :sh07-root-map-guard-v1)
+      (if (integer? (get guard :source-child-index))
+        (if (> (get guard :source-child-index) 0)
+          (if (integer? (/ (- (get guard :source-child-index) 1) 2))
+            (if (sh07-sha256-id? (get guard :form-id))
+              (sh07-sha256-id? (get guard :syntax-id)) false) false) false) false) false) false))
+
+(defn sh07-match-guard-source-fields [guard]
+  {:rule-version (get guard :rule-version) :source-child-index (get guard :source-child-index)
+   :form-id (get guard :form-id) :syntax-id (get guard :syntax-id)})
+
+(defn sh07-match-guard-clause-valid? [guard ordinal]
+  (let [source (sh07-match-guard-source-fields guard)
+        region (get guard :conditional-region)
+        index (get guard :child-index)]
+    (if (sh07-match-guard-source-valid? source)
+      (if (integer? index)
+        (if (> index 0)
+          (if (= region {:kind :match-guard :match-syntax-id (get region :match-syntax-id)
+                         :clause-ordinal ordinal})
+            (if (sh07-sha256-id? (get region :match-syntax-id))
+              (= guard (sh07-match-guard-clause source index region)) false) false) false) false) false)))
+
+(defn sh07-match-guard-branch-valid? [guard ordinal]
+  (let [clause (sh07-match-guard-clause (sh07-match-guard-source-fields guard)
+                  (get guard :child-index) (get guard :conditional-region))]
+    (if (sh07-match-guard-clause-valid? clause ordinal)
+      (= guard (assoc clause :node-id (get guard :node-id))) false)))
+
+(defn sh07-match-optional-guard-keys [record keys]
+  (if (if (map? record) (contains? record :guard) false)
+    (let [guard (get record :guard)
+          source (sh07-match-guard-source-fields guard)
+          value (get record :pattern-value)]
+      (if (if (= (get record :pattern-kind) :map)
+            (if (map? value)
+              (if (contains? value :when)
+                (if (sh07-match-guard-source-valid? source)
+                  (if (< (get source :source-child-index) (* 2 (count value)))
+                    (if (contains? record :depth)
+                      (if (= (get record :depth) 0)
+                        (if (= (get record :parent-ordinal) nil) (= guard source) false) false)
+                      (if (contains? record :scrutinee-core-node-id)
+                        (sh07-match-guard-branch-valid? guard (get record :clause-ordinal))
+                        (sh07-match-guard-clause-valid? guard (get record :clause-ordinal)))) false) false) false) false) false)
+        (conj keys :guard) keys)) keys))
+
 (defn sh07-match-pattern-record
   [request pattern clause-ordinal local-ordinal parent-local-ordinal
    depth path pattern-kind pattern-value vector-width binding]
@@ -5330,9 +5437,6 @@
   (let [value (get pattern :value)
         ids (get pattern :child-form-ids)
         indexes (get request :internal-indexes)]
-    (if (sh07-match-guard-pattern? pattern)
-      {:status :rejected :rule "C6-LOWERING-GAP" :form pattern
-       :facts {:reason :guard-pattern-deferred}}
       (if (if (map? value) (= (count ids) (* 2 (count value))) false)
         (loop [remaining ids seen #{} children []]
           (if (= (count remaining) 0)
@@ -5347,13 +5451,14 @@
                         (get key :parent-form-id) (get child :parent-form-id)
                         (get child :value)])
                   (recur (rest (rest remaining)) (conj seen (get key :value))
-                         (conj children (get child :form-id)))
+                         (if (= (get key :value) :when) children
+                           (conj children (get child :form-id))))
                   {:status :rejected :rule "C6-VERIFY" :form pattern
                    :facts {:reason :map-pattern-source-shape}})
                 {:status :rejected :rule "C6-LOWERING-GAP" :form pattern
                  :facts {:reason :non-keyword-map-pattern-key-deferred}}))))
         {:status :rejected :rule "C6-VERIFY" :form pattern
-         :facts {:reason :map-pattern-source-shape}}))))
+         :facts {:reason :map-pattern-source-shape}})))
 
 (defn sh07-match-pattern-preflight
   [request pattern depth seen]
@@ -5362,6 +5467,9 @@
         bounds (sh07-bounds-value)
         maximum-depth (get bounds :maximum-match-pattern-depth)
         maximum-width (get bounds :maximum-match-pattern-width)]
+    (if (if (> depth 0) (sh07-match-guard-pattern? pattern) false)
+      {:status :rejected :rule "C6-LOWERING-GAP" :form pattern
+       :facts {:reason :guard-pattern-deferred}}
     (if (> depth maximum-depth)
       {:status :rejected
        :rule "C6-LOWERING-GAP"
@@ -5392,7 +5500,7 @@
             (let [shape (if (= kind :map) (sh07-match-map-children request pattern)
                           {:status :accepted :children (get pattern :child-form-ids)})
                   child-form-ids (get shape :children)
-                  width (count child-form-ids)]
+                  width (if (= kind :map) (if (map? value) (count value) 0) (count child-form-ids))]
               (if (= (get shape :status) :accepted)
                (if (> width maximum-width)
                 {:status :rejected
@@ -5410,7 +5518,7 @@
              :form pattern
              :facts
              {:reason :unsupported-vector-pattern-leaf
-              :pattern-kind kind}}))))))
+              :pattern-kind kind}})))))))
 
 (defn sh07-match-vector-child-descriptors
   [request child-form-ids clause-ordinal parent-local-ordinal
@@ -5430,7 +5538,9 @@
              (get request :internal-indexes)
              (first remaining))
             parent (sh07-find-form (get request :internal-indexes) (get child :parent-form-id))
-            coordinate (if (= (get parent :kind) :map) (+ 1 (* 2 child-index)) child-index)
+            coordinate (if (= (get parent :kind) :map)
+                         (sh07-source-core-map-position (get parent :child-form-ids) (get child :form-id))
+                         child-index)
             descriptor
             (sh07-match-pattern-node-descriptor
              request child clause-ordinal parent-local-ordinal
@@ -5570,10 +5680,12 @@
             (sh07-duplicate-match-binding
              (get descriptor :bindings))]
         (if (= duplicate nil)
-          (assoc
-           descriptor
-           :pattern-kind
-           (get (first (get descriptor :records)) :pattern-kind))
+          (let [guard (sh07-match-guard-source request pattern)
+                records (get descriptor :records)
+                result (assoc descriptor :pattern-kind (get (first records) :pattern-kind))]
+            (if (= guard nil) result
+              (assoc (assoc result :guard guard) :records
+                     (assoc records 0 (assoc (first records) :guard guard)))))
           {:status :rejected
            :rule "C6-LOWERING-GAP"
            :form pattern
@@ -5615,6 +5727,16 @@
              (sh07-binding-use-syntax-ids-after
               state prior-reference-count binding-id)))))))))
 
+(defn sh07-match-guard-values [records key]
+  (loop [remaining (if (vector? records) records []) values []]
+    (if (= (count remaining) 0) values
+      (let [guard (get (first remaining) :guard)]
+        (recur (rest remaining)
+               (if (= guard nil) values (conj values (get guard key))))))))
+
+(defn sh07-match-with-guard [record guard]
+  (if (= guard nil) record (assoc record :guard guard)))
+
 (defn sh07-lower-match-branches
   [request state form branch-form-ids scrutinee-node-id]
   (let [indexes (get request :internal-indexes)
@@ -5633,6 +5755,7 @@
         {:status :accepted
          :state current
          :branch-node-ids branch-node-ids
+         :guard-node-ids (sh07-match-guard-values records :node-id)
          :clauses clauses
          :records records
          :pattern-records pattern-records
@@ -5670,16 +5793,30 @@
                   {:kind :match-branch
                    :match-syntax-id (get form :syntax-id)
                    :clause-ordinal clause-ordinal}
+                  guard-source (get descriptor :guard)
+                  guard-region {:kind :match-guard :match-syntax-id (get form :syntax-id)
+                                :clause-ordinal clause-ordinal}
+                  guard-descriptor
+                  (if (= guard-source nil) nil
+                    (sh07-match-guard-clause guard-source
+                      (+ branch-count 1 (count (sh07-match-guard-values records :node-id))) guard-region))
+                  guarded
+                  (if (= guard-source nil) {:status :accepted :state current}
+                    (sh07-lower-form request
+                      (assoc (assoc (assoc current :evaluation-region guard-region)
+                                    :definition-context :nested-expression) :tail-target-id nil)
+                      (sh07-find-form indexes (get guard-source :form-id))))
                   lowered
+                  (if (= (get guarded :status) :accepted)
                   (sh07-lower-form
                    request
                    (assoc
                     (assoc
-                     (assoc current
+                     (assoc (get guarded :state)
                             :evaluation-region conditional-region)
                      :definition-context :nested-expression)
                     :tail-target-id inherited-tail-target-id)
-                   branch)]
+                   branch) guarded)]
               (if (= (get lowered :status) :accepted)
                 (let [restored
                       (assoc
@@ -5705,7 +5842,7 @@
                             (get (first remaining-bindings)
                                  :binding-id)))))
                       clause
-                      {:clause-ordinal clause-ordinal
+                      (sh07-match-with-guard {:clause-ordinal clause-ordinal
                        :branch-child-index (+ clause-ordinal 1)
                        :pattern-kind (get descriptor :pattern-kind)
                        :pattern-form-id (get pattern :form-id)
@@ -5716,9 +5853,9 @@
                        :pattern-binding-id binding-id
                        :pattern-binding-scope-id
                        (if binding-id (get binding :scope-id) nil)
-                       :pattern-binding-ids descriptor-binding-ids}
+                       :pattern-binding-ids descriptor-binding-ids} guard-descriptor)
                       record
-                      {:ordinal nil
+                      (sh07-match-with-guard {:ordinal nil
                        :clause-ordinal clause-ordinal
                        :clause-count branch-count
                        :core-node-id nil
@@ -5745,7 +5882,9 @@
                             :authenticated-sh06-artifact-id)
                        :sh06-semantic-projection-id
                        (get (get request :lineage)
-                            :sh06-semantic-projection-id)}]
+                            :sh06-semantic-projection-id)}
+                        (if (= guard-descriptor nil) nil
+                          (assoc guard-descriptor :node-id (get guarded :node-id))))]
                   (recur
                    (rest (rest remaining))
                    (+ clause-ordinal 1)
@@ -5836,30 +5975,29 @@
             node-children
             (sh07-vector-append
              [(get scrutinee :node-id)]
-             branch-node-ids)
+             (sh07-vector-append branch-node-ids (get branches :guard-node-ids)))
+            guard-indexes (sh07-match-guard-values (get branches :clauses) :child-index)
+            attributes
+            {:scrutinee-child-index 0
+              :branch-count branch-count
+              :branch-child-indexes (sh07-index-range 1 (+ branch-count 1))
+              :branch-clauses (get branches :clauses)
+              :evaluation-order :scrutinee-then-source-ordered-pattern-candidates
+              :runtime-reachability :not-asserted-by-sh07-b11
+              :selection-policy :source-ordered-pattern-candidates
+              :result-type-join :pending-sh08 :exhaustiveness :pending-sh08
+              :authenticated-sh06-artifact-id
+              (get (get request :lineage) :authenticated-sh06-artifact-id)
+              :sh06-semantic-projection-id
+              (get (get request :lineage) :sh06-semantic-projection-id)}
             added
             (sh07-add-node
              request
              (get branches :state)
              form :match node-children
-             {:scrutinee-child-index 0
-              :branch-count branch-count
-              :branch-child-indexes
-              (sh07-index-range 1 (+ branch-count 1))
-              :branch-clauses (get branches :clauses)
-              :evaluation-order
-              :scrutinee-then-source-ordered-pattern-candidates
-              :runtime-reachability :not-asserted-by-sh07-b11
-              :selection-policy
-              :source-ordered-pattern-candidates
-              :result-type-join :pending-sh08
-              :exhaustiveness :pending-sh08
-              :authenticated-sh06-artifact-id
-              (get (get request :lineage)
-                   :authenticated-sh06-artifact-id)
-              :sh06-semantic-projection-id
-              (get (get request :lineage)
-                   :sh06-semantic-projection-id)}
+             (if (= (count guard-indexes) 0) attributes
+               (assoc (assoc attributes :guard-rule-version :sh07-root-map-guard-v1)
+                      :guard-child-indexes guard-indexes))
              (get branches :binding-ids)
              :scrutinee-then-source-ordered-pattern-candidates)
             bound-records
@@ -7829,11 +7967,11 @@
 (defn sh07-b11-match-clause-valid? [clause ordinal]
   (if (sh07-exact-keys?
        clause
-       #{:clause-ordinal :branch-child-index
+       (sh07-match-optional-guard-keys clause #{:clause-ordinal :branch-child-index
          :pattern-kind :pattern-form-id :pattern-syntax-id
          :pattern-value :branch-form-id :branch-syntax-id
          :pattern-binding-id :pattern-binding-scope-id
-         :pattern-binding-ids})
+         :pattern-binding-ids}))
     (if (= (get clause :clause-ordinal) ordinal)
       (if (= (get clause :branch-child-index) (+ ordinal 1))
         (if (contains? #{:literal :wildcard :binding :vector :map}
@@ -7904,22 +8042,35 @@
           children (get node :children)
           clauses (get attributes :branch-clauses)
           branch-count (get attributes :branch-count)
-          scrutinee-node-id (first children)]
+          scrutinee-node-id (first children)
+          guards (sh07-match-guard-values clauses :child-index)
+          guarded? (> (count guards) 0)]
       (if (sh07-exact-keys?
            attributes
+           (if guarded?
+             #{:scrutinee-child-index :branch-count :branch-child-indexes :branch-clauses
+               :evaluation-order :runtime-reachability :selection-policy :result-type-join
+               :exhaustiveness :authenticated-sh06-artifact-id :sh06-semantic-projection-id
+               :guard-rule-version :guard-child-indexes}
            #{:scrutinee-child-index :branch-count
              :branch-child-indexes :branch-clauses
              :evaluation-order :runtime-reachability
              :selection-policy :result-type-join :exhaustiveness
              :authenticated-sh06-artifact-id
-             :sh06-semantic-projection-id})
-        (if (if (integer? branch-count) (> branch-count 0) false)
-          (if (= (count children) (+ branch-count 1))
+             :sh06-semantic-projection-id}))
+        (if (if (sh07-bounded-vector? clauses (get (sh07-bounds-value) :maximum-module-match-branch-records))
+              (if (integer? branch-count) (> branch-count 0) false) false)
+          (if (if (= (count children) (+ branch-count 1 (count guards)))
+                (if guarded?
+                  (= [guards :sh07-root-map-guard-v1 :sh07-root-map-guard-v1]
+                     [(get attributes :guard-child-indexes) (get attributes :guard-rule-version)
+                      (get node :lowering-rule-version)])
+                  (= (get node :lowering-rule-version) :sh07-b11-v12)) false)
             (if (= (count clauses) branch-count)
               (if (= (get attributes :branch-child-indexes)
                      (sh07-index-range 1 (+ branch-count 1)))
-                (if (sh07-b11-match-clauses-valid?
-                     clauses (get node :resolved-binding-ids))
+                (if (if (= guards (sh07-index-range (+ branch-count 1) (+ branch-count 1 (count guards))))
+                      (sh07-b11-match-clauses-valid? clauses (get node :resolved-binding-ids)) false)
                   (if (= (get attributes :scrutinee-child-index) 0)
                     (if (= (get attributes :evaluation-order)
                            :scrutinee-then-source-ordered-pattern-candidates)
@@ -8524,7 +8675,7 @@
 (defn sh07-match-branch-region? [region]
   (if (sh07-exact-keys?
        region #{:kind :match-syntax-id :clause-ordinal})
-    (if (= (get region :kind) :match-branch)
+    (if (contains? #{:match-branch :match-guard} (get region :kind))
       (if (sh07-sha256-id? (get region :match-syntax-id))
         (if (integer? (get region :clause-ordinal))
           (>= (get region :clause-ordinal) 0)
@@ -8563,7 +8714,7 @@
                          :not-asserted-by-sh07-b9)
                     (contains?
                      #{:module-initialization :function-body
-                       :conditional-branch
+                       :conditional-branch :match-guard
                        :typed-error-handler-candidate}
                      (get region :parent-region-kind))
                     false)
@@ -8586,7 +8737,7 @@
                      :selected-exactly-once)
                 (if (contains?
                      #{:module-initialization :function-body
-                       :conditional-branch}
+                       :conditional-branch :match-guard}
                      (get region :parent-region-kind))
                   (if (if (= (get region :parent-region-kind)
                              :conditional-branch)
@@ -9258,7 +9409,7 @@
       (loop [remaining (keys value)]
         (if (= (count remaining) 0) true
           (if (keyword? (first remaining))
-            (if (= (first remaining) :when) false (recur (rest remaining))) false)))
+            (recur (rest remaining)) false)))
       false)
     false))
 
@@ -9270,7 +9421,8 @@
         (if (= (get parent :pattern-kind) :map)
           (if (map? (get parent :pattern-value))
             (if (< coordinate (* 2 (count (get parent :pattern-value))))
-              (integer? (/ (- coordinate 1) 2)) false) false)
+              (if (= coordinate (get (get parent :guard) :source-child-index)) false
+                (integer? (/ (- coordinate 1) 2))) false) false)
           false))
       false)
     false))
@@ -9288,14 +9440,26 @@
         (if (= (get record :pattern-kind) :vector)
           (vector? (get record :pattern-value))
           (if (= (get record :pattern-kind) :map)
-            (sh07-match-map-value-valid? (get record :pattern-value))
+            (if (sh07-match-map-value-valid? (get record :pattern-value))
+              (if (contains? (get record :pattern-value) :when)
+                (contains? (sh07-match-optional-guard-keys record #{}) :guard)
+                (= (contains? record :guard) false)) false)
             false))))))
+
+(defn sh07-resolve-match-guard-reference [record resolved-digests]
+  (if (contains? record :guard)
+    (let [guard (get record :guard)
+          resolved (sh07-resolve-controlled-reference (get guard :node-id) resolved-digests)]
+      (if (= (get resolved :status) :accepted)
+        (sh07-resolution-success (assoc record :guard (assoc guard :node-id (get resolved :value))))
+        resolved))
+    (sh07-resolution-success record)))
 
 (defn sh07-resolve-match-branch-record
   [record resolved-digests]
   (if (sh07-exact-keys?
        record
-       #{:ordinal :clause-ordinal :clause-count
+       (sh07-match-optional-guard-keys record #{:ordinal :clause-ordinal :clause-count
          :core-node-id :scrutinee-core-node-id :branch-core-node-id
          :branch-child-index :pattern-kind
          :pattern-form-id :pattern-syntax-id :pattern-value
@@ -9305,7 +9469,7 @@
          :pattern-binding-use-syntax-ids :conditional-region
          :scrutinee-evaluation :branch-evaluation
          :authenticated-sh06-artifact-id
-         :sh06-semantic-projection-id})
+         :sh06-semantic-projection-id}))
     (if (if (integer? (get record :ordinal))
           (if (>= (get record :ordinal) 0)
           (if (integer? (get record :clause-ordinal))
@@ -9378,7 +9542,7 @@
                         (if (= (get node :status) :accepted)
                           (if (= (get scrutinee :status) :accepted)
                             (if (= (get branch :status) :accepted)
-                              (sh07-resolution-success
+                              (sh07-resolve-match-guard-reference
                                (assoc
                                 (assoc
                                  (assoc record
@@ -9387,7 +9551,7 @@
                                  :scrutinee-core-node-id
                                  (get scrutinee :value))
                                 :branch-core-node-id
-                                (get branch :value)))
+                                (get branch :value)) resolved-digests)
                               branch)
                             scrutinee)
                           node))
@@ -9579,7 +9743,7 @@
   [record resolved-digests]
   (if (sh07-exact-keys?
        record
-       #{:ordinal :clause-ordinal :local-ordinal
+       (sh07-match-optional-guard-keys record #{:ordinal :clause-ordinal :local-ordinal
          :parent-local-ordinal :root-local-ordinal
          :parent-ordinal :root-ordinal :core-node-id
          :depth :path :pattern-kind
@@ -9588,7 +9752,7 @@
          :pattern-binding-id :pattern-binding-scope-id
          :pattern-binding-use-syntax-ids
          :authenticated-sh06-artifact-id
-         :sh06-semantic-projection-id})
+         :sh06-semantic-projection-id}))
     (if (if (integer? (get record :ordinal))
           (if (>= (get record :ordinal) 0)
             (if (integer? (get record :clause-ordinal))
@@ -9711,7 +9875,8 @@
   [parent records]
   (let [parent-ordinal (get parent :ordinal)
         width (if (= (get parent :pattern-kind) :map)
-                (if (map? (get parent :pattern-value)) (count (get parent :pattern-value)) -1)
+                (if (map? (get parent :pattern-value))
+                  (- (count (get parent :pattern-value)) (if (contains? parent :guard) 1 0)) -1)
                 (get parent :vector-width))]
     (loop [remaining records
            child-count 0
@@ -11412,6 +11577,14 @@
       (let [clause (sh07-find-form (get request :internal-indexes) (first remaining))]
         (recur (rest remaining) (conj result (get (get clause :child-form-ids) 3)))))))
 
+(defn sh07-source-core-map-guard-expressions [request ids]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0) result
+      (let [pattern (sh07-find-form (get request :internal-indexes) (first remaining))
+            guard (sh07-match-guard-source request pattern)]
+        (recur (rest (rest remaining))
+               (if (= guard nil) result (conj result (get guard :form-id))))))))
+
 (defn sh07-source-core-map-executable-children [request form]
   (let [children (get form :child-form-ids)]
     (if (= (get form :kind) :list)
@@ -11430,7 +11603,9 @@
                    (sh07-source-core-map-handler-expressions request (subvec children 2 (count children))))
                   (if (= special :match)
                     (sh07-append-vector [(get children 1)]
-                     (sh07-source-core-map-alternating-expressions (subvec children 2 (count children))))
+                     (sh07-append-vector
+                       (sh07-source-core-map-alternating-expressions (subvec children 2 (count children)))
+                       (sh07-source-core-map-guard-expressions request (subvec children 2 (count children)))))
                     (vec (rest children)))))))))
       children)))
 
@@ -11584,7 +11759,8 @@
                (sh07-find-form (get request :internal-indexes)
                 (get (get owner :child-form-ids) (+ 3 (* 2 (get record :clause-ordinal))))) nil)]
     (= [true true true true true true true true true true]
-       [(= (get record :pattern-syntax-id) (get pattern :syntax-id))
+       [(if (= (get record :guard) (sh07-match-guard-source request pattern))
+          (= (get record :pattern-syntax-id) (get pattern :syntax-id)) false)
         (if map-key?
           (if (= (get record :pattern-kind) :map)
             (= (get (sh07-match-map-children request pattern) :status) :accepted) false)

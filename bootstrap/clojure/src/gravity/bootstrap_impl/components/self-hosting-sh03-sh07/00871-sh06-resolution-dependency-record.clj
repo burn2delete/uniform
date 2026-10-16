@@ -158,8 +158,9 @@
       pattern))
 
     (map? pattern)
-    (vec (mapcat (fn [index [_ child]]
-                   (sh06-match-pattern-binding-paths child (conj path (inc (* 2 index)))))
+    (vec (mapcat (fn [index [key child]]
+                   (if (= :when key) []
+                     (sh06-match-pattern-binding-paths child (conj path (inc (* 2 index))))))
                  (range) pattern))
 
     :else

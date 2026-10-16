@@ -400,7 +400,7 @@
         (is (= 257 (count (:records result))))
         (is (= [] (:bindings result))))
       (doseq [[value reason] [['{symbol x} :non-keyword-map-pattern-key-deferred]
-                              ['{:when true :id x} :guard-pattern-deferred]
+                              ['{:nested {:when true :id x}} :guard-pattern-deferred]
                               ['{:a x :b x} :duplicate-vector-binding-deferred]
                               ['{:id (Ok x)} :unsupported-vector-pattern-leaf]
                               ['{:id [x & y]} :variable-width-vector-pattern-deferred]

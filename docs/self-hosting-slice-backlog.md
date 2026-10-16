@@ -279,6 +279,62 @@ of loading. These are development observations, not benchmark or proof claims.
 Earlier test syntax errors and the unsupported-operation kernel failure are
 not passing evidence. The full B10 namespace and migration proofs were not run.
 
+### Root keyword-map guards: development increment
+
+`gravity.checked-core` lowers a root keyword-map pattern's `:when` value as an
+executable expression. Structural pattern bindings are visible in both guard
+and body. C5 resolves guard references before body references in that same
+branch scope, without changing the original flattened map child coordinates.
+The `:when` key remains consumed pattern structure; its value and executable
+descendants receive normal emitted source mappings.
+
+The Core records describe scrutinee-once evaluation, structural failure skipping
+guard/body, guard-once evaluation after structural success, Boolean true selecting
+the body, and Boolean false continuing to the next candidate. Guard children are
+explicitly indexed after body children, not added to unconditional evaluation.
+Guard expressions are not tail positions; branch bodies retain their enclosing
+tail target. Calls, mutation, throws, nested conditionals and typed handlers keep
+their operation and conditional-region facts. This preserves facts for later
+checking; it does not grant effect, profile, capability or safety legality.
+
+Guarded products use the closed nested `:sh07-root-map-guard-v1` rule. Node
+attributes contain source IDs/indexes, while actual guard node references are
+explicitly resolved in branch records. Unguarded shapes, top-level schema 16,
+public APIs and historical migration pins are unchanged. Source joins use the
+actual authenticated child-form vector, not an assumed map iteration order.
+The existing 256-entry map limit includes `:when`: 255 structural entries plus
+the directive fit; 256 plus the directive do not.
+
+Nested structural-map guards remain unsupported; ordinary nested match
+expressions in a guard or body remain supported. The existing deferred-guard
+fixtures now exercise that nested structural boundary. False, nil and other
+guard expressions are retained, but L7 does not yet settle Bool-only versus
+general truthiness. Non-Boolean result policy and later type/effect legality
+remain explicit pending work, not an invented rejection or host-truthiness rule.
+Current C7 match typing, runtime matching, exhaustiveness and authoritative
+migration remain incomplete. No SH-07, target or self-hosting completion follows.
+
+Use `sh07-b10-root-map-guard-development-kernel` in the existing
+`gravity.self-hosting.sh07-match-lowering-test` namespace for the inner loop.
+The separate `sh07-b10-root-map-guard-authentic-composition` and
+`sh07-b10-root-map-guard-source-rejections` selectors cover affected source
+composition and real rejected programs. They use the existing development runner;
+no new lane, wrapper, authority receipt or admission prerequisite is introduced.
+
+Three guard-specific tests passed 453 assertions: the compiled-Gravity kernel
+(337), authentic composition (84), and four rejected source programs (32).
+The source cases reject unresolved guard references and escaped bindings in C5,
+and non-tail guard `recur` and nested structural guards in C6, with structured
+diagnostics rather than raw host exceptions. Two legacy map/catchall kernels
+also passed 310 assertions. Authentic composition executed in 139.673 seconds;
+this is a development observation, not a benchmark or proof claim. The earlier
+75-assertion composition result predates the conditional/handler guard-parent
+correction; the final 84-assertion run covers that correction and new source
+cases. An unsupported-operation kernel failure was corrected before these
+passing checks. The selected source runs used `.gravity`; paired `.qst` text
+equality was checked without claiming a second full composition run. Full
+namespaces, runtime matching and authoritative migration were not run.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
