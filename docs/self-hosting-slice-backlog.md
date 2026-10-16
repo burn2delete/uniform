@@ -745,6 +745,98 @@ equivalence and authoritative migration are not claimed. The source boundary
 remains `:meta/:jvm`; no full SH-08, self-hosting, seed-retirement or release
 status follows from this development increment.
 
+### Recursive quoted data: development increment
+
+C7's existing function path now derives types for L1/L2's inert quoted data:
+nil, Bool, normalized exact integer, character, String, Keyword, Symbol, list,
+vector, map and set, including
+empty containers and recursively nested supported data. A quote inside an
+outer quote remains an ordinary data list. For example:
+
+```clojure
+(defn token [] :- Symbol 'unresolved-data-name)
+(defn inert-data [] '(throw unresolved-data-name))
+(defn extract-token [] :- Symbol
+  (match '[true {:value ready}]
+    [flag {:value result}] result))
+```
+
+Payload symbols do not resolve, and payload lists do not become calls, bindings
+or thrown-error effects. The checker authenticates the actual quote owner,
+operator, two source children, payload parent/form/syntax/kind/value joins,
+recursive child order and cardinality, and zero executable children/bindings
+with `:no-evaluation`. A source-form collision with an executable node is
+rejected. Quoted list types use the existing collection representation style:
+`{:kind :gravity.type/list :element-types [...] :shape :literal}`. Types retain
+heterogeneous members rather than widening them or inserting coercions.
+
+Quoted map/vector shapes carry an explicit DATA-origin variant: the real quote
+Core node plus actual payload form/syntax IDs and data paths. Payload form IDs
+are not fabricated executable Core IDs. Extraction, immutable forwarding,
+pattern aliases and correlated reconstruction retain these origins in the
+existing canonical ledger, dependencies and invalidation. Quoted Boolean
+guards retain their true/false meaning; other normally returning data must
+still satisfy the Bool guard rule. Public C7 inputs and identity domains and
+the C8 production adapter are unchanged.
+
+Traversal has a shared payload-node-visit budget. Successful and failed
+traversals charge consumed visits, including parent nodes and prior siblings;
+preflight/collision failures retain the completed traversal count. This is not
+a count of all VM operations, repeated shape queries or allocated bytes. A
+small-budget oracle checks that a late three-node failure exhausts budget
+three, budget four permits the next scalar, and collision rejection still
+charges the three visits. Bounds produce explicit implementation-limit
+diagnostics rather than silently accepting missing facts.
+
+Use the existing focused runner and namespace:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-quoted-data-recursive-development-kernel \
+  --exact sh08-quoted-data-authentication-development-kernel \
+  --exact sh08-quoted-data-work-budget-development-kernel \
+  --exact sh08-quoted-data-structural-development-kernel \
+  --exact sh08-quoted-data-guard-development-kernel \
+  --exact sh08-quoted-data-c8-development-kernel
+```
+
+The stable focused group passed 17 tests and 399 assertions, including selected
+atomic, structural, alias, guard, Boolean and call-chain regressions. Independent
+static review closed the failed-traversal accounting finding. The actual
+`function-recursive-quoted-data` `.gravity`/`.qst` pair then passed 144 assertions:
+nine functions, ten quote nodes, all supported data families and empty
+containers, inert throw/unresolved-name data, real DATA-origin links, Symbol
+extraction, immutable/pattern aliases, quoted-false guard and nonkeyword map
+data typing. A real forwarding call exercises fresh C7 verification and C8
+preservation, with request/fact tampering rejected. Test execution took 224.901
+seconds; this is a development observation, not a benchmark.
+
+The changed real rejection group passed 42 assertions: Symbol/String and
+generic-integer/I64 result mismatches, quoted-list guard typing, unsupported
+decimal representation, nonkeyword structural map key, malformed quote arity
+in C6 and unquoted unresolved name in C5. Diagnostics retain the actual quote,
+payload or guard syntax, spans and origins. Rejected `.qst` files were checked
+for equal paired text, not counted as another source composition. Ratio,
+deferred-integer and tagged representations and quoted String/nil guards have
+focused-kernel coverage, not additional real rejection runs. The existing
+recursive fixed-point regression (31) and language boundary (5) passed in the
+same three-test, 78-assertion invocation. Compiler/test bytes were unchanged
+across the final kernels, accepted pair and rejection group. Use
+`sh08-quoted-data-authenticated-source-composition` and
+`sh08-quoted-data-source-rejections` for affected source composition, not as
+the default edit loop. None of these checks confers authoritative migration
+evidence.
+
+Quoted integers retain generic integer type, not implicit I64 conversion.
+Decimal/ratio/deferred-integer and tagged representations remain explicit
+implementation limitations. Structural map matching still requires keyword
+keys; other supported keys may occur in typed quoted map data. General scalar
+root matching, numeric pattern elaboration, list patterns, union/subtyping,
+error/import semantics, runtime/backend equivalence and authoritative migration
+remain outside this increment. Source composition remains `:meta/:jvm`; no
+full SH-08, self-hosting, target, seed-retirement or release claim follows.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

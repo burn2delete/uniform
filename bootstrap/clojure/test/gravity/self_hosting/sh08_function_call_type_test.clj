@@ -572,6 +572,124 @@
      :binding-types {(sha 1000) :gravity.type/bool (sha 1001) :gravity.type/i64}
      :root (sha 108) :reference (sha 109) :flag (sha 100) :value (sha 101) :sha sha}))
 
+(defn- quoted-data-input
+  ([value] (quoted-data-input value 7000))
+  ([value owner-index]
+   (let [sha #(str "sha256:" (format "%064x" %))
+         counter (atom (+ owner-index 100)) forms (atom {})
+         form (fn [id kind value parent children]
+                {:form-id id :syntax-id id :kind kind :value value :parent-form-id parent :child-form-ids children
+                 :source-span {:byte-start @counter :byte-end (inc @counter)} :origin-chain [] :generated-origin nil})
+         owner (sha owner-index) operator (sha (+ 8000 owner-index))
+         build (fn build [value parent]
+                 (let [id (sha (swap! counter inc))
+                       kind (cond (nil? value) :nil (boolean? value) :boolean (integer? value) :integer
+                                  (char? value) :character (string? value) :string (keyword? value) :keyword
+                                  (symbol? value) :symbol (vector? value) :vector (map? value) :map
+                                  (set? value) :set (seq? value) :list :else :unsupported)
+                       values (cond (map? value) (vec (mapcat identity value))
+                                    (coll? value) (vec value) :else [])
+                       ids (mapv #(build % id) values)]
+                   (swap! forms assoc id (form id kind value parent ids)) id))
+         payload (build value owner)
+         owner-form (form owner :list (list 'quote value) nil [operator payload])
+         operator-form (form operator :symbol 'quote owner [])
+         forms (assoc @forms owner owner-form operator operator-form)
+         node {:node-id (sha (+ owner-index 2)) :core-form :quote :children [] :resolved-binding-ids []
+               :source {:form-id owner :syntax-id owner :semantic-span (:source-span owner-form) :origin-chain [] :generated-origin nil}
+               :evaluation {:kind :no-evaluation :order []}
+               :attributes {:quoted-form-id payload :quoted-syntax-id payload
+                            :quoted-kind (get-in forms [payload :kind]) :quoted-value value}}]
+     {:node node :forms forms :source-forms (vec (vals forms)) :payload payload :owner owner :sha sha})))
+
+(deftest sh08-quoted-data-recursive-development-kernel
+  (doseq [[value type] [[nil :gravity.type/nil] [true :gravity.type/bool] [false :gravity.type/bool]
+                        [42 :gravity.type/integer] [\a :gravity.type/character] ["hello" :gravity.type/string]
+                        [:token :gravity.type/keyword] ['unresolved-data-name :gravity.type/symbol]]]
+    (let [{:keys [node forms payload]} (quoted-data-input value)
+          result (invoke-c7 'sh08-qd-node [node forms]) data (:data result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= type (:type data)))
+      (is (= value (:value data)))
+      (is (= {:kind :quoted-data :quote-core-node-id (:node-id node) :form-id payload
+              :syntax-id payload :data-path [] :child-form-ids []} (:origin data)))))
+  (doseq [[value kind] [['() :gravity.type/list] [[] :gravity.type/vector] [{} :gravity.type/map] [#{} :gravity.type/set]
+                        ['(throw unresolved-data-name) :gravity.type/list]
+                        ['(quote (throw unresolved-data-name)) :gravity.type/list]
+                        [[nil true 1 \a "s" :k 'symbol '(nested data) #{:a :b} {:k []}] :gravity.type/vector]
+                        [{'symbol [:value] :k '(item)} :gravity.type/map]]]
+    (let [{:keys [node forms source-forms]} (quoted-data-input value)
+          result (invoke-c7 'sh08-qd-node [node forms])
+          products (invoke-c7 'sh08-qd-products [[node] source-forms {:profile :meta :target :jvm}])
+          fact (first (:constraints products))]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= kind (get-in result [:data :type :kind])))
+      (is (= value (get-in result [:data :value])))
+      (is (= [] (:diagnostics products)))
+      (is (= (:data result) (:quoted-data fact) (get-in fact [:dependencies :data])))
+      (is (= :no-evaluation (get-in fact [:solution :evaluation])))
+      (is (= (get-in result [:data :type]) (get (:type-table products) (:node-id node))))))
+  (let [{:keys [node forms]} (quoted-data-input '(quote (throw unresolved-data-name)))
+        result (invoke-c7 'sh08-qd-node [node forms])]
+    (is (= :gravity.type/symbol (get-in result [:data :children 0 :type])))
+    (is (= :gravity.type/list (get-in result [:data :children 1 :type :kind])))
+    (is (= [1 1] (get-in result [:data :children 1 :children 1 :origin :data-path])))))
+
+(deftest sh08-quoted-data-authentication-development-kernel
+  (let [{:keys [node forms payload owner sha]} (quoted-data-input [true false])
+        child-ids (get-in forms [payload :child-form-ids])]
+    (doseq [[changed-node changed-forms]
+            [[(assoc-in node [:attributes :quoted-form-id] (sha 999)) forms]
+             [(assoc-in node [:attributes :quoted-kind] :map) forms]
+             [(assoc-in node [:attributes :quoted-value] [false true]) forms]
+             [(assoc node :children [(sha 999)]) forms]
+             [(assoc node :resolved-binding-ids [(sha 999)]) forms]
+             [(assoc-in node [:evaluation :kind] :left-to-right) forms]
+             [node (assoc-in forms [(first (get-in forms [owner :child-form-ids])) :value] 'execute)]
+             [node (assoc-in forms [payload :parent-form-id] (sha 999))]
+             [node (assoc-in forms [payload :child-form-ids] (vec (reverse child-ids)))]
+             [node (assoc-in forms [(first child-ids) :value] "wrong")]
+             [node (assoc-in forms [payload :child-form-ids] [payload])]]]
+      (is (= "C7-VERIFY" (:rule (invoke-c7 'sh08-qd-node [changed-node changed-forms])))))
+    (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
+           ((juxt :rule :reason) (invoke-c7 'sh08-qd-node-with-budget [node forms 1]))))
+    (let [wide (quoted-data-input (vec (repeat 1025 true)))]
+      (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
+             ((juxt :rule :reason) (invoke-c7 'sh08-qd-node [(:node wide) (:forms wide)])))))
+    (let [invented {:node-id (sha 888) :core-form :call :source {:form-id (first child-ids)}}
+          products (invoke-c7 'sh08-qd-products [[node invented] (vec (vals forms)) {}])]
+      (is (= ["C7-VERIFY" :quoted-payload-is-executable]
+             ((juxt :rule :reason) (first (:diagnostics products))))))
+    (doseq [kind [:decimal :ratio :integer :tagged]]
+      (let [value {:kind :gravity/deferred-literal :digits "100000"}
+            forms (-> forms (assoc-in [payload :kind] kind) (assoc-in [payload :value] value)
+                      (assoc-in [payload :child-form-ids] []) (assoc-in [owner :value] (list 'quote value)))
+            node (assoc node :attributes {:quoted-form-id payload :quoted-syntax-id payload :quoted-kind kind :quoted-value value})
+            result (invoke-c7 'sh08-qd-node [node forms])]
+        (is (= "C7-ANNOTATION" (:rule result)))
+        (is (= (if (= kind :tagged) :unsupported-quoted-data-kind :unsupported-quoted-numeric-representation) (:reason result)))))))
+
+(deftest sh08-quoted-data-work-budget-development-kernel
+  (let [first-input (quoted-data-input [true 1]) second-input (quoted-data-input 'next-data 9000)
+        {:keys [node forms payload]} first-input
+        last-child (second (get-in forms [payload :child-form-ids]))
+        invalid (assoc-in forms [last-child :kind] :decimal)
+        source-forms (vec (vals (merge invalid (:forms second-input))))
+        nodes [node (:node second-input)]
+        exhausted (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 3])
+        spare (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 4])]
+    (is (= [:unsupported-quoted-numeric-representation :quoted-data-work-limit] (mapv :reason (:diagnostics exhausted))))
+    (is (= 3 (:work-count exhausted)))
+    (is (= {} (:type-table exhausted)))
+    (is (= [:unsupported-quoted-numeric-representation] (mapv :reason (:diagnostics spare))))
+    (is (= 4 (:work-count spare)))
+    (is (= :gravity.type/symbol (get (:type-table spare) (get-in second-input [:node :node-id]))))
+    (let [invented {:node-id :invented :core-form :call :source {:form-id last-child}}
+          collided (invoke-c7 'sh08-qd-products-with-budget
+                              [[node invented (:node second-input)] (vec (vals (merge forms (:forms second-input)))) {} 3])]
+      (is (= [:quoted-payload-is-executable :quoted-data-work-limit] (mapv :reason (:diagnostics collided))))
+      (is (= 3 (:work-count collided))))))
+
 (defn- pattern-alias-kernel-input []
   ;; Normalized pass input; genuine C5/C6 source products are tested separately.
   (let [{:keys [nodes forms lexical bindings binding-types sha] :as input} (structural-match-input)
@@ -846,6 +964,57 @@
            :forms forms :nodes nodes :bindings bindings :binding-types (assoc binding-types (sha 1002) :gravity.type/i64)
            :item itemb :match-id mid)))
 
+(defn- quoted-structural-kernel-input []
+  (let [{:keys [core products forms lexical sha] :as input} (structural-match-products-input)
+        joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
+        quoted (quoted-data-input (array-map :extra :retained :payload [true {:value 'ready}]))
+        qnode (assoc (:node quoted) :node-id (sha 108))
+        qforms (assoc-in (:forms quoted) [(:owner quoted) :scope-id] (sha 3001))
+        forms (-> (merge forms qforms) (assoc-in [(sha 113) :child-form-ids] [(sha 111) (:owner quoted)]))
+        lexical (mapv #(assoc % :initializer-form-id (:owner quoted) :initializer-syntax-id (:owner quoted)) lexical)
+        sequence (mapv (fn [node] (cond (= (sha 108) (:node-id node)) qnode
+                                        (= (:match-id input) (:node-id node))
+                                        (-> node (assoc :children [(sha 109) (sha 500)])
+                                            (assoc-in [:attributes :branch-child-indexes] [1]))
+                                        :else node)) (:nodes core))
+        nodes (into {} (map (juxt :node-id identity) sequence))
+        group (-> (first (:boolean-matches joined))
+                  (assoc :nodes nodes :node-sequence sequence :forms forms :lexical-bindings lexical :node (nodes (:match-id input)))
+                  (update :branches #(vector (first %))) (update :pattern-trees #(vector (first %))))
+        quote-products (invoke-c7 'sh08-qd-products [sequence (vec (vals forms)) {:profile :meta :target :jvm}])]
+    (assoc input :groups [group] :sequence sequence :nodes nodes :forms forms :lexical lexical :quote-products quote-products)))
+
+(deftest sh08-quoted-data-structural-development-kernel
+  (let [{:keys [groups sequence nodes forms lexical binding-types quote-products item match-id sha]} (quoted-structural-kernel-input)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [sequence nodes lexical [] [] [] {} binding-types 50
+                              {:boolean-matches groups :quote-types (:type-table quote-products)}])
+        enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
+        checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
+        fact (first (:constraints checked)) extracted (first (:extractions fact))]
+    (is (= [] (:diagnostics quote-products)))
+    (is (= :converged (:convergence-status inference)))
+    (is (= :gravity.type/symbol (get (:binding-types inference) item) (get (:type-table inference) match-id)))
+    (is (= [] (:diagnostics checked)) (pr-str checked))
+    (is (= :quoted-data (get-in fact [:constructor-shape :constructor-origin])))
+    (is (= (sha 108) (get-in fact [:constructor-shape :data-origin :quote-core-node-id])))
+    (is (= 1 (count (get-in fact [:constructor-shape :binding-links]))))
+    (is (= [3 1 1] (:constructor-path extracted) (get-in extracted [:data-origin :data-path])))
+    (is (nil? (:value-node-id extracted)))
+    (is (some? (get-in extracted [:data-origin :form-id])))
+    (is (= (sha 108) (get-in extracted [:data-origin :quote-core-node-id])))
+    (is (= :gravity.type/symbol (:type extracted)))
+    (is (not= (get-in extracted [:data-origin :form-id]) (get-in extracted [:data-origin :quote-core-node-id])))
+    (is (= (:type-table inference)
+           (:type-table (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                   [sequence nodes lexical [] [] [] {} binding-types 50
+                                    {:boolean-matches groups :quote-types (:type-table quote-products)}])))))
+  (let [{:keys [node forms]} (quoted-data-input {'non-keyword 'value})
+        quoted (invoke-c7 'sh08-qd-node [node forms])
+        shape (invoke-c7 'sh08-qd-shape [(:data quoted) node])]
+    (is (= :accepted (:status quoted)))
+    (is (= ["C7-ANNOTATION" :unsupported-structural-map-key] ((juxt :rule :reason) shape)))))
+
 (deftest sh08-structural-match-inference-development-kernel
   (let [{:keys [core products forms nodes bindings lexical binding-types item match-id sha]} (structural-match-products-input)
         joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
@@ -1061,6 +1230,57 @@
              [:parent core products (assoc-in forms [guard-id :parent-form-id] match-id)]]]
       (is (= :rejected (:status (invoke-c7 'sh08-bm-products [altered altered-products (vec (vals altered-forms))]))) (name label)))))
 
+(deftest sh08-quoted-data-guard-development-kernel
+  (let [{:keys [core products forms binding-types functions]} (literal-guard-input false true)
+        group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])))
+        branch (first (:branches group)) guard-id (get-in branch [:guard :node-id])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types 50 {:boolean-matches [group]}])]
+    (doseq [[value expected] [[false :false] [true :true] [nil :gravity.type/nil] ["wrong" :gravity.type/string]
+                             ['(throw unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
+      (let [quoted (quoted-data-input value)
+            node (assoc (:node quoted) :node-id guard-id)
+            qresult (invoke-c7 'sh08-qd-node [node (:forms quoted)])
+            altered (-> group (assoc-in [:nodes guard-id] node) (update :forms merge (:forms quoted)))
+            checked (invoke-c7 'sh08-gd-result [altered branch {guard-id (get-in qresult [:data :type])} true])]
+        (if (boolean? value)
+          (do (is (= :accepted (:status checked))) (is (= expected (:truth checked))))
+          (do (is (= ["L7-GUARD-TYPE" :guard-result-not-boolean :gravity.type/bool expected]
+                     ((juxt :rule :reason :expected :actual) checked)))
+              (is (= guard-id (get-in checked [:node :node-id])))))))
+    (let [quoted (quoted-data-input false) node (assoc (:node quoted) :node-id guard-id)
+          group (-> group (assoc-in [:nodes guard-id] node) (update :forms merge (:forms quoted)))
+          checked (invoke-c7 'sh08-sm-check [group (:type-table inference) functions {:profile :meta}])]
+      (is (nil? (:diagnostic checked)))
+      (is (= :false (get-in checked [:constraints 0 :guard :truth])))
+      (is (= [] (get-in checked [:constraints 0 :matched-shapes])))
+      (is (seq (get-in checked [:constraints 0 :structurally-matched-shapes]))))))
+
+(deftest sh08-quoted-data-c8-development-kernel
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
+        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
+        fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
+        {:keys [quote-products groups nodes sequence lexical binding-types]} (quoted-structural-kernel-input)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [sequence nodes lexical [] [] [] {} binding-types 50
+                              {:boolean-matches groups :quote-types (:type-table quote-products)}])
+        enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
+        base (fixture "/development/quoted-data.gravity")
+        facts (into (:constraints quote-products) (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)])))
+        raw (assoc base :constraint-ledger facts)
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (verify typed) effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed verification])]
+    (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+    (is (true? (= facts (get-in effected [:typed-core :constraints]))))
+    (is (= (:call-type-facts typed) (:call-type-facts effected)))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification effected]))))
+    (doseq [candidate [(assoc-in effected [:typed-core :constraints 0 :quoted-data :origin :data-path] [999])
+                       (assoc-in effected [:typed-core :constraints 0 :dependencies :quote :children] [:invented])
+                       (update-in effected [:typed-core :constraints] subvec 1)]]
+      (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
+
 (deftest sh08-root-map-guard-literal-development-kernel
   (doseq [[truth fallback?] [[false true] [true false]]]
     (let [{:keys [core products forms nodes lexical binding-types functions sha guard-id]} (literal-guard-input truth fallback?)
@@ -1166,6 +1386,103 @@
     (is (= (:identity-input (first results)) (:identity-input (second results))))
     (is (= (slurp (fixture-path "accepted" "function-root-map-guards" ".gravity"))
            (slurp (fixture-path "accepted" "function-root-map-guards" ".qst"))))))
+
+(deftest sh08-quoted-data-authenticated-source-composition
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+        basename "function-recursive-quoted-data"
+        artifacts (mapv #(fixture-artifact "accepted" basename %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [core (canonical-core artifact) nodes (:nodes core)
+              quotes (filterv #(= :quote (:core-form %)) nodes)
+              facts (filterv #(= :sh08-recursive-quoted-data-v1 (:producer-rule %)) (:constraint-ledger result))
+              data (vec (mapcat #(tree-seq (fn [datum] (seq (:children datum))) :children (:quoted-data %)) facts))
+              payload-forms (set (map #(get-in % [:origin :form-id]) data))
+              kinds (set (map :kind data))
+              functions (into {} (map (juxt :definition-name identity) (:function-type-table result)))
+              structural (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (:constraint-ledger result))
+              data-extractions (filterv :data-origin (mapcat :extractions structural))
+              alias-shapes (filterv #(get-in % [:constructor-shape :pattern-binding-evidence]) structural)
+              guarded (first (filter :guard structural))
+              verification (verification-result artifact result)
+              effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [result verification])]
+          (is (= 9 (count functions)))
+          (is (= 10 (count quotes) (count facts)))
+          (is (= #{:nil :boolean :integer :character :string :keyword :symbol :list :vector :map :set} kinds))
+          (is (= :gravity.type/symbol (get-in functions ['token :return])
+                 (get-in functions ['extract-token :return]) (get-in functions ['nested-alias :return])
+                 (get-in functions ['forward-token :return])))
+          (is (= {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}
+                 (get-in functions ['inert-data :return])))
+          (is (not-any? #(contains? payload-forms (get-in % [:source :form-id])) nodes))
+          (is (not-any? #(= :throw (:core-form %)) nodes))
+          (is (= 1 (count (:calls core)) (count (:call-type-facts result))))
+          (is (every? #(and (= [] (:children %)) (= [] (:resolved-binding-ids %))
+                           (= :no-evaluation (get-in % [:evaluation :kind]))) quotes))
+          (doseq [fact facts]
+            (is (= (:quoted-data fact) (get-in fact [:dependencies :data])))
+            (is (= (:rhs fact) (get-in fact [:solution :type])))
+            (is (= :no-evaluation (get-in fact [:solution :evaluation]))))
+          (is (seq data-extractions))
+          (is (every? #(nil? (:value-node-id %)) data-extractions))
+          (is (every? #(= :quoted-data (get-in % [:data-origin :kind])) data-extractions))
+          (is (seq alias-shapes))
+          (is (some #(seq (get-in % [:constructor-shape :binding-links])) structural))
+          (is (= :false (get-in guarded [:guard :truth])))
+          (is (= [] (:matched-shapes guarded)))
+          (is (seq (:structurally-matched-shapes guarded)))
+          (is (= :passed (:status verification)))
+          (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+          (is (true? (= (:typed-core result) (:typed-core effected))))
+          (is (= (:call-type-facts result) (:call-type-facts effected)))
+          (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [result verification effected]))))
+          (let [index (.indexOf (:constraint-ledger result) (first facts))]
+            (doseq [candidate [(assoc-in result [:constraint-ledger index :quoted-data :origin :data-path] [999])
+                               (assoc-in result [:constraint-ledger index :dependencies :quote :attributes :quoted-kind] :invented)
+                               (assoc-in result [:constraint-ledger index :rhs] :gravity.type/string)]]
+              (is (= :rejected (:status (verification-result artifact candidate))))
+              (is (= :rejected (:status (invoke-c8 'sh09-build-authenticated-pure-effect-result [candidate verification]))))))
+          (let [request (function-request artifact) index (.indexOf (:nodes core) (first quotes))]
+            (doseq [[keys value] [[[:attributes :quoted-form-id] "invented"] [[:attributes :quoted-kind] :invented]
+                                  [[:attributes :quoted-value] :invented] [[:children] ["invented"]]
+                                  [[:resolved-binding-ids] ["invented"]] [[:core-form] :call]]]
+              (let [changed (assoc-in request (into [:canonical-core-artifact :nodes index] keys) value)
+                    rejected (invoke-c7 'sh08-function-type-core-artifact [changed])]
+                (is (= :rejected (:status rejected)))
+                (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" basename ".gravity")) (slurp (fixture-path "accepted" basename ".qst"))))))
+
+(deftest sh08-quoted-data-source-rejections
+  (doseq [[suffix rule reason expected actual]
+          [["symbol-result" "C7-TYPE-MISMATCH" :function-result-type-mismatch :gravity.type/string :gravity.type/symbol]
+           ["integer-result" "C7-TYPE-MISMATCH" :function-result-type-mismatch :gravity.type/i64 :gravity.type/integer]
+           ["list-guard" "L7-GUARD-TYPE" :guard-result-not-boolean :gravity.type/bool
+            {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]
+           ["decimal" "C7-ANNOTATION" :unsupported-quoted-numeric-representation nil nil]
+           ["map-key" "C7-ANNOTATION" :unsupported-structural-map-key nil nil]]]
+    (let [basename (str "function-quoted-data-" suffix)
+          artifact (fixture-artifact "rejected" basename ".gravity") result (function-result artifact)
+          diagnostic (first (:diagnostics result))
+          forms (get-in (function-request artifact) [:b47-context :authenticated-core-request :forms])
+          form (first (filter #(= (:syntax-id %) (:syntax-id diagnostic)) forms))]
+      (is (= :accepted (:status artifact)))
+      (is (= :rejected (:status result)))
+      (is (= [rule reason] ((juxt :rule :reason) diagnostic)) (pr-str diagnostic))
+      (is (= :type-checking (:stage diagnostic)))
+      (is (some #(= (:node-id %) (:core-node-id diagnostic)) (:nodes (canonical-core artifact))))
+      (is (= [(:source-span form) (:origin-chain form) (:generated-origin form)]
+             ((juxt :source-span :origin-chain :generated-origin) diagnostic)))
+      (when expected (is (= [expected actual] ((juxt :expected-type :actual-type) diagnostic))))
+      (is (= (slurp (fixture-path "rejected" basename ".gravity")) (slurp (fixture-path "rejected" basename ".qst"))))))
+  (doseq [[suffix rule stage] [["arity" "C6-CORE-SHAPE" :core-lowering] ["unresolved" "C5-UNRESOLVED" :name-resolution]]]
+    (let [basename (str "function-quoted-data-" suffix)
+          diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+      (is (= [rule stage] [(or (:rule diagnostic) (:id diagnostic)) (:stage diagnostic)]) (pr-str diagnostic))
+      (is (= (slurp (fixture-path "rejected" basename ".gravity")) (slurp (fixture-path "rejected" basename ".qst")))))))
 
 (deftest sh08-pattern-alias-authenticated-source-composition
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
