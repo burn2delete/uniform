@@ -308,9 +308,13 @@ the directive fit; 256 plus the directive do not.
 Nested structural-map guards remain unsupported; ordinary nested match
 expressions in a guard or body remain supported. The existing deferred-guard
 fixtures now exercise that nested structural boundary. False, nil and other
-guard expressions are retained, but L7 does not yet settle Bool-only versus
-general truthiness. Non-Boolean result policy and later type/effect legality
-remain explicit pending work, not an invented rejection or host-truthiness rule.
+guard expressions are retained at this lowering boundary; retention does not
+establish typing legality. L7 now requires normally returning guards to produce
+Bool: true selects the body, false tries the next clause, and no implicit
+truthiness conversion is allowed. Non-returning guards preserve their control
+transfer. The `L7-GUARD-TYPE` check and later type/effect legality remain
+implementation work; the existing C6 fixture retaining nil is not evidence
+that nil is a legal typed guard.
 Current C7 match typing, runtime matching, exhaustiveness and authoritative
 migration remain incomplete. No SH-07, target or self-hosting completion follows.
 
