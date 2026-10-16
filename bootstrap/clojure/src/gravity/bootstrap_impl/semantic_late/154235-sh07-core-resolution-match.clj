@@ -49,7 +49,7 @@
         (get-in scope [:bindings 0 :binding-syntax-id])
         syntax-id)
        (walk syntax branch (conj path branch-index) nested :expression))
-      (and (vector? pattern) (sh06-fixed-vector-pattern? pattern))
+      (and (or (vector? pattern) (map? pattern)) (sh06-fixed-vector-pattern? pattern))
       (when-let
        [binding-paths (sh06-unique-match-binding-paths pattern pattern-path)]
        (if

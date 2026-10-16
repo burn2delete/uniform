@@ -885,7 +885,7 @@
              :recur-type-compatibility
              :general-recursion
              :try-finally
-             :map-list-set-record-constructor-patterns
+             :non-keyword-map-list-set-record-constructor-patterns
              :variable-width-vector-patterns
              :guard-patterns
              :match-exhaustiveness

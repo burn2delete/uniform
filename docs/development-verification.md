@@ -97,13 +97,27 @@ over 2,994,224 blob bytes: seventeen eight-unit scans alone would charge
 407,214,464 metadata operations against its unchanged 67,108,864 cap. This is
 a deficit in that draft, not a prerequisite for ordinary language development.
 
-Bounded follow-up: inspect one representative stable construction and separate
-input occurrences, copies, canonical bytes, hashing and scheduling. Propose
-representation changes with preserved identities/equivalence and negative
-tests; do not substitute child hashes for embedded DATA, cache accepted proofs,
-or change wire formats in this simplification. Heavy runs should answer a
-concrete representation or migration question, not refresh historical receipts
-merely because another development commit exists.
+The quoted-pattern results documented in `7ccc15c3` separate this further: four
+selected tests executed in 314.985 seconds after 6.990 seconds of namespace
+loading. The accepted fixture artifact was already shared between test vars;
+the current-source compiled plan is also reused. Static tracing identifies
+repeated form-value traversal in `sh07-core-build-form-tree`, argument/result
+metadata stripping in `sh07-core-execute!`, producer replay in template and
+resolved verification, and canonicalization/hashing in digest resolution.
+Repeated DATA fields can share objects: these call sites do not establish
+allocation counts, runtime dominance or a speedup opportunity by themselves.
+
+Bounded follow-up: measure one existing authentic-composition test on one
+stable revision. Separate upstream/projection, metadata stripping, Gravity
+build/replay/resolve, canonicalization/hashing, and final fresh verification;
+report phase time, allocated/retained bytes, DATA occurrences versus unique
+objects, and canonical byte totals where observable. Use the existing test
+and runner, not another lane or wrapper. Propose representation changes only
+from those measurements, preserving identities/equivalence and negative tests.
+Do not substitute child hashes for embedded DATA, cache accepted proofs, or
+change wire formats in this simplification. Heavy runs should answer a concrete
+representation or migration question, not refresh historical receipts merely
+because another development commit exists.
 
 ```bash
 clojure -M tools/validate_gravity_docs.clj

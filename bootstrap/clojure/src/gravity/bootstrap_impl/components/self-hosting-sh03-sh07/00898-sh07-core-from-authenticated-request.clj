@@ -134,7 +134,7 @@
              :try-finally
              :try-protected-sequencing
              :try-handler-sequencing
-             :map-list-set-record-constructor-patterns
+             :non-keyword-map-list-set-record-constructor-patterns
              :variable-width-vector-patterns
              :duplicate-pattern-binding-policy
              :guard-patterns

@@ -1079,7 +1079,7 @@
         (is (= :passed
                (get-in boundary [:resolved-verification :status])))
         (is (not-any? #{:try-handlers} pending))
-        (is (= #{:map-list-set-record-constructor-patterns
+        (is (= #{:non-keyword-map-list-set-record-constructor-patterns
                  :variable-width-vector-patterns
                  :duplicate-pattern-binding-policy
                  :guard-patterns
@@ -1087,7 +1087,7 @@
                  :match-result-type-join}
                (set
                 (filter
-                 #{:map-list-set-record-constructor-patterns
+                 #{:non-keyword-map-list-set-record-constructor-patterns
                    :variable-width-vector-patterns
                    :duplicate-pattern-binding-policy
                    :guard-patterns

@@ -37,7 +37,7 @@
      (vector? (:path record))
      (= (:depth record) (count (:path record)))
      (every? #(and (integer? %) (not (neg? %))) (:path record))
-     (contains? #{:literal :wildcard :binding :vector}
+     (contains? #{:literal :wildcard :binding :vector :map}
                 (:pattern-kind record))
      (p15-s23-sh02-sha256-id? (:pattern-form-id record))
      (p15-s23-sh02-sha256-id? (:pattern-syntax-id record))
@@ -54,6 +54,13 @@
             (<= 0 (:vector-width record) 256)
             (nil? (:pattern-binding-id record))
             (nil? (:pattern-binding-scope-id record)))
+
+       :map
+       (and (map? (:pattern-value record)) (<= (count (:pattern-value record)) 256)
+            (every? keyword? (keys (:pattern-value record)))
+            (not (contains? (:pattern-value record) :when))
+            (nil? (:vector-width record))
+            (nil? (:pattern-binding-id record)) (nil? (:pattern-binding-scope-id record)))
 
        :binding
        (and (symbol? (:pattern-value record))
@@ -80,7 +87,7 @@
             (nil? (:parent-local-ordinal record))
             (= 0 (:depth record))
             (empty? (:path record)))
-       (and (= :vector (:pattern-kind parent))
+       (and (contains? #{:vector :map} (:pattern-kind parent))
             (= (:core-node-id record) (:core-node-id parent))
             (= (:clause-ordinal record) (:clause-ordinal parent))
             (= (:root-ordinal record) (:root-ordinal parent))
@@ -88,7 +95,10 @@
                (:local-ordinal parent))
             (= (:depth record) (inc (:depth parent)))
             (= (:path parent) (pop (:path record)))
-            (< (peek (:path record)) (:vector-width parent))))
+            (if (= :map (:pattern-kind parent))
+              (and (map? (:pattern-value parent)) (odd? (peek (:path record)))
+                   (< (peek (:path record)) (* 2 (count (:pattern-value parent)))))
+              (< (peek (:path record)) (:vector-width parent)))))
      (= (:core-node-id record) (:core-node-id root))
      (= (:clause-ordinal record) (:clause-ordinal root)))))
 
@@ -100,20 +110,24 @@
      (every? #(= 1 (count %)) (vals root-groups))
      (every?
       (fn [record]
-        (if (= :vector (:pattern-kind record))
+        (if (contains? #{:vector :map} (:pattern-kind record))
+          (and (if (= :map (:pattern-kind record)) (map? (:pattern-value record)) true)
           (let [children
                 (filterv
                  #(= (:ordinal record) (:parent-ordinal %))
                  pattern-records)
                 child-indexes (mapv #(peek (:path %)) children)]
             (and
-             (= (:vector-width record) (count children))
+             (= (if (= :map (:pattern-kind record))
+                  (count (:pattern-value record)) (:vector-width record)) (count children))
              (= (count children) (count (set child-indexes)))
              (every?
               #(and (integer? %)
                     (<= 0 %)
-                    (< % (:vector-width record)))
-              child-indexes)))
+                    (if (= :map (:pattern-kind record))
+                      (and (odd? %) (< % (* 2 (count (:pattern-value record)))))
+                      (< % (:vector-width record))))
+              child-indexes))))
           true))
       pattern-records))))
 

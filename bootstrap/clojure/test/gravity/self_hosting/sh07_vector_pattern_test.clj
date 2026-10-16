@@ -35,17 +35,20 @@
     "vector-branch-local-binding"
     "vector-leaf-patterns"
     "vector-scrutinee-once"
-    "vector-tail-recur"})
+    "vector-tail-recur" "keyword-map-patterns" "nested-map-in-vector"
+    "recursive-map-patterns" "map-tail-recur"})
 (def ^:private rejected-fixtures
   #{"guard-pattern-deferred"
     "list-pattern-deferred"
-    "map-pattern-deferred"
-    "nested-map-in-vector"
+    "map-non-keyword-key" "duplicate-map-bindings" "map-unsupported-leaf"
+    "map-branch-binding-escape" "map-sibling-binding-escape"
     "set-pattern-deferred"
     "vector-pattern-over-width"
     "vector-rest-extra-tail"
     "vector-rest-missing-tail"
     "vector-rest-tail"})
+
+(def ^:private map-upstream-rejections #{"map-branch-binding-escape" "map-sibling-binding-escape"})
 
 (defn- path
   [relative]
@@ -254,6 +257,306 @@
     :authenticated-sh06-artifact-id
     :sh06-semantic-projection-id})
 
+(deftest sh07-b11-keyword-map-development-kernel
+  ;; Normalized unit graphs execute the current Gravity pass, not provenance
+  ;; evidence. Source paths below use the existing flattened semantic map order.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true}
+                  plan function arguments))
+        sha #(str "sha256:" (format "%064x" %))
+        ordinal (atom 0)
+        forms (atom {})]
+    (letfn [(make! [value]
+              (let [kind (cond (map? value) :map (vector? value) :vector (seq? value) :list
+                               (symbol? value) :symbol (keyword? value) :keyword
+                               (integer? value) :integer (nil? value) :nil (set? value) :set
+                               :else :boolean)
+                    children (mapv make! (cond (map? value) (vec (mapcat identity value))
+                                               (coll? value) (vec value) :else []))
+                    n (swap! ordinal inc)
+                    form {:form-id (sha n) :syntax-id (sha (+ 1000 n)) :kind kind :value value
+                          :child-form-ids (mapv :form-id children) :scope-id (sha 5000)
+                          :metadata {} :origin-chain [] :generated-origin []}]
+                (swap! forms assoc (:form-id form) form)
+                (doseq [child children]
+                  (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                form))
+            (request []
+              (let [bindings (for [form (vals @forms) :when (contains? '#{x y z} (:value form))]
+                               {:binding-id (sha (+ 2000 (Long/parseLong (subs (:form-id form) 7) 16)))
+                                :binding-class :lexical :kind :local :name (:value form)
+                                :scope-id (sha 5000) :definition-syntax-id (:syntax-id form)})]
+                {:module {:namespace 'demo.map :profile :meta :target :jvm
+                          :effects #{} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 6000) :sh06-semantic-projection-id (sha 6001)}
+                 :internal-indexes {:forms {:by-id @forms}
+                                    :bindings {:by-definition (into {} (map (juxt :definition-syntax-id identity) bindings))
+                                               :by-id (into {} (map (juxt :binding-id identity) bindings))}}}))]
+      (doseq [value ['{:id x :name y} '[{:inner {:tags [(quote ready) _ z]}}] {}
+                    (into {} (map (fn [n] [(keyword (str "k" n)) n]) (range 12)))]]
+        (let [match-form (make! (list 'match 0 value 1 '_ 2))
+              input (request)
+              pattern (get @forms (nth (:child-form-ids match-form) 2))
+              lowered (invoke 'sh07-lower-match [input (invoke 'sh07-empty-state []) match-form])
+              state (:state lowered)
+              records (:match-pattern-records state)
+              digests (mapv sha (range 7000 7004))
+              resolved (invoke 'sh07-resolve-match-pattern-vector [records digests])
+              node (last (:nodes state))
+              resolve-id #(get digests (:ordinal %))
+              nodes (mapv #(-> % (update :node-id resolve-id) (update :children (fn [ids] (mapv resolve-id ids)))
+                               (update-in [:evaluation :order]
+                                          (fn [entries] (mapv (fn [entry] (update entry :core-node-id resolve-id)) entries))))
+                          (:nodes state))
+              resolved-node (last nodes)
+              branches (:value (invoke 'sh07-resolve-match-branch-vector [(:match-branch-records state) digests]))
+              skeleton (:value (invoke 'sh07-resolve-match-decision-skeleton [(first (:match-decision-skeletons state)) digests]))
+              indexes {:patterns (into {} (map (fn [record] [[(:node-id resolved-node) (:pattern-form-id record)] record]) (:value resolved)))
+                       :branches (into {} (map (fn [record] [[(:node-id resolved-node) (:clause-ordinal record)] record]) branches))}]
+          (is (= :accepted (:status lowered)))
+          (is (= [:literal :literal :literal :match] (mapv :core-form (:nodes state))))
+          (is (= :accepted (:status resolved)))
+          (is (true? (invoke 'sh07-resolved-b11-node-valid? [resolved-node])))
+          (is (bootstrap/sh07-b11-match-group-coherent? (into {} (map (juxt :node-id identity) nodes))
+                                                       [] resolved-node branches skeleton (:value resolved)))
+          (when (= value '{:id x :name y})
+            (doseq [bad-value [0 nil []]]
+              (let [bad-records (assoc-in (:value resolved) [0 :pattern-value] bad-value)
+                    node-by-id (into {} (map (juxt :node-id identity) nodes))
+                    by-ordinal (into {} (map (juxt :ordinal identity) bad-records))]
+                (is (false? (invoke 'sh07-match-pattern-graph-complete? [bad-records])))
+                (doseq [operation [#(bootstrap/sh07-b11-match-pattern-graph-complete? bad-records)
+                                   #(bootstrap/sh07-b11-match-group-coherent?
+                                     node-by-id [] resolved-node branches skeleton bad-records)
+                                   #(bootstrap/sh07-b11-match-pattern-record-coherent?
+                                     node-by-id [] (into {} (map (juxt :clause-ordinal identity) branches))
+                                     (second bad-records) by-ordinal)]]
+                  (let [result (diagnostic-result operation)]
+                    (is (nil? (:raw-host-error result)))
+                    (is (false? (:value result))))))))
+          (when-let [binding (first (filter #(= :binding (:pattern-kind %)) (:value resolved)))]
+            (is (false? (invoke 'sh07-source-core-map-pattern-join?
+                                [input (get @forms (:pattern-form-id binding)) resolved-node
+                                 (assoc-in indexes [:patterns [(:node-id resolved-node) (:pattern-form-id binding)] :pattern-binding-id]
+                                           (sha 9999))]))))
+          (doseq [record records :when (= :map (:pattern-kind record))]
+            (let [form (get @forms (:pattern-form-id record))
+                  child-records (filter #(= (:ordinal record) (:parent-ordinal %)) records)]
+              (is (= (:value form) (:pattern-value record)))
+              (is (nil? (:vector-width record)))
+              (is (= (count (:value form)) (count child-records)))
+              (is (= (set (range 1 (count (:child-form-ids form)) 2))
+                     (set (map #(peek (:path %)) child-records))))
+              (doseq [child child-records]
+                (let [coordinate (peek (:path child))
+                      key-form (get @forms (nth (:child-form-ids form) (dec coordinate)))
+                      value-form (get @forms (nth (:child-form-ids form) coordinate))]
+                  (is (= :keyword (:kind key-form)))
+                  (is (= (get (:value form) (:value key-form)) (:value value-form)))
+                  (is (= (:form-id value-form) (:pattern-form-id child)))))
+              (doseq [coordinate (range 0 (count (:child-form-ids form)) 2)]
+                (let [key-form (get @forms (nth (:child-form-ids form) coordinate))]
+                  (is (= :match-pattern (get-in state [:form-dispositions (:form-id key-form) :reason])))
+                  (is (= [] (get-in state [:form-dispositions (:form-id key-form) :emitted-node-ids])))
+                  (is (true? (invoke 'sh07-source-core-map-pattern-join? [input key-form resolved-node indexes])))))))
+          (let [map-record (first (filter #(and (= :map (:pattern-kind %)) (seq (:pattern-value %))) (:value resolved)))]
+            (when map-record
+              (let [form (get @forms (:pattern-form-id map-record))
+                    key-id (first (:child-form-ids form))
+                    key-form (get @forms key-id)
+                    bad (assoc-in input [:internal-indexes :forms :by-id key-id :value] :foreign)]
+                (is (= :map-pattern-source-shape
+                       (get-in (invoke 'sh07-match-pattern-descriptor [bad form 0]) [:facts :reason])))
+                (is (false? (invoke 'sh07-source-core-map-pattern-join? [bad (assoc key-form :value :foreign) resolved-node indexes])))
+                (when-let [other (first (filter #(and (= :map (:pattern-kind %))
+                                                     (not= (:pattern-form-id map-record) (:pattern-form-id %))) (:value resolved)))]
+                  (let [foreign-key (assoc key-form :parent-form-id (:pattern-form-id other))
+                        foreign-input (assoc-in input [:internal-indexes :forms :by-id key-id] foreign-key)]
+                    (is (false? (invoke 'sh07-source-core-map-pattern-join?
+                                        [foreign-input foreign-key resolved-node indexes]))))))))
+          (let [map-record (first (filter #(= :map (:pattern-kind %)) records))
+                map-form (get @forms (:pattern-form-id map-record))
+                children (filterv #(= (:ordinal map-record) (:parent-ordinal %)) records)]
+            (when (seq children)
+              (let [child (first children)
+                    mutant (assoc-in records [(:ordinal child) :path (dec (count (:path child)))]
+                                     (dec (peek (:path child))))]
+                (is (= :rejected (:status (invoke 'sh07-resolve-match-pattern-vector [mutant digests]))))
+                (is (false? (invoke 'sh07-match-pattern-graph-complete?
+                                    [(vec (remove #(= (:ordinal child) (:ordinal %)) records))]))))
+                (is (= :map-pattern-source-shape
+                       (get-in (invoke 'sh07-match-pattern-descriptor
+                                       [(update-in input [:internal-indexes :forms :by-id (:form-id map-form) :child-form-ids] pop)
+                                        (update map-form :child-form-ids pop) 0]) [:facts :reason])))))
+            (is (true? (bootstrap/sh06-fixed-vector-pattern? value)))
+            (is (= (count (:bindings (invoke 'sh07-match-pattern-descriptor [input pattern 0])))
+                   (count (bootstrap/sh06-unique-match-binding-paths value []))))))
+      (let [form (make! (into {} (map (fn [n] [(keyword (str "edge" n)) n]) (range 256))))
+            result (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
+        (is (= 512 (count (:child-form-ids form))))
+        (is (= :accepted (:status result)))
+        (is (= 257 (count (:records result))))
+        (is (= [] (:bindings result))))
+      (doseq [[value reason] [['{symbol x} :non-keyword-map-pattern-key-deferred]
+                              ['{:when true :id x} :guard-pattern-deferred]
+                              ['{:a x :b x} :duplicate-vector-binding-deferred]
+                              ['{:id (Ok x)} :unsupported-vector-pattern-leaf]
+                              ['{:id [x & y]} :variable-width-vector-pattern-deferred]
+                              [(into {} (map (fn [n] [(keyword (str "wide" n)) n]) (range 257))) :vector-pattern-width-bound]]]
+        (let [form (make! value)
+              result (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (:rule result)))
+          (is (= reason (get-in result [:facts :reason]))))))))
+
+(deftest sh07-b11-keyword-map-authentic-composition
+  (let [artifact (file-artifact "accepted" "recursive-map-patterns" ".gravity")
+        boundary (:gravity-core-boundary artifact)
+        input (request artifact)
+        canonical (core artifact)
+        node (first (filter #(= :match (:core-form %)) (:nodes canonical)))
+        records (:match-pattern-records canonical)
+        maps (filter #(= :map (:pattern-kind %)) records)
+        forms (exactly-once-index (:forms input) :form-id)
+        mapping (execute-core-function "recursive-map-patterns" 'sh07-resolve-source-core-map-preimage
+                                       [(:preimage (last (:digest-requests boundary))) (pop (:resolved-digests boundary))])
+        rows (get-in mapping [:value :records])
+        row-index (exactly-once-index rows #(get-in % [:source :form-id]))
+        references (set (map :reference-syntax-id (:resolution-table input)))
+        definitions (set (map :definition-syntax-id (:binding-table input)))]
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (is (= :accepted (:status mapping)))
+    (is (= :development-unadmitted (get-in boundary [:plan-binding :revision-status])))
+    (is (false? (get-in boundary [:plan-binding :self-hosted?])))
+    (is (contains? (set (get-in artifact [:execution-boundary :pending-lowering-families]))
+                   :non-keyword-map-list-set-record-constructor-patterns))
+    (is (false? (get-in artifact [:execution-boundary :sh07-complete?])))
+    (is (false? (get-in artifact [:execution-boundary :self-hosted?])))
+    (is (= 4 (count maps)))
+    (is (= #{0 1 3 12} (set (map #(count (:pattern-value %)) maps))))
+    (is (= #{:map :vector :literal :binding :wildcard} (set (map :pattern-kind records))))
+    (is (= ['ready '_] (mapv :pattern-value (filter #(= :literal (:pattern-kind %)) records))))
+    (is (= [(first (:children node))] (mapv :core-node-id (get-in node [:evaluation :order]))))
+    (is (= :pending-sh08 (get-in node [:attributes :exhaustiveness]) (get-in node [:attributes :result-type-join])))
+    (is (every? #(= :conditionally-evaluate-selected-branch (:branch-evaluation %)) (:match-branch-records canonical)))
+    (doseq [record maps]
+      (let [form (get forms (:pattern-form-id record))
+            ids (:child-form-ids form)
+            children (filterv #(= (:ordinal record) (:parent-ordinal %)) records)]
+        (is (= (:value form) (:pattern-value record)))
+        (is (nil? (:vector-width record)))
+        (is (= (count (:value form)) (count children)))
+        (is (= (set (range 1 (count ids) 2)) (set (map #(peek (:path %)) children))))
+        (doseq [coordinate (range 0 (count ids) 2)]
+          (let [key-form (get forms (nth ids coordinate))
+                value-form (get forms (nth ids (inc coordinate)))
+                child (first (filter #(= (:form-id value-form) (:pattern-form-id %)) children))
+                row (get row-index (:form-id key-form))]
+            (is (= :keyword (:kind key-form)))
+            (is (= (get (:value form) (:value key-form)) (:value value-form)))
+            (is (= (conj (:path record) (inc coordinate)) (:path child)))
+            (is (= :consumed (:disposition row)))
+            (is (= :match-pattern (:reason row)))
+            (is (= [] (:emitted-node-ids row)))
+            (is (= [(:node-id node)] (:anchor-node-ids row)))
+            (is (not (contains? references (:syntax-id key-form))))
+            (is (not (contains? definitions (:syntax-id key-form))))))))
+    (doseq [record records :when (= :binding (:pattern-kind record))]
+      (is (= 1 (count (:pattern-binding-use-syntax-ids record))))
+      (is (= (:pattern-binding-use-syntax-ids record)
+             (mapv :syntax-id (filter #(= (:pattern-binding-id record) (:binding-id %)) (:reference-uses canonical))))))))
+
+(deftest sh07-b11-keyword-map-forgeries-fail-closed
+  (let [artifact (file-artifact "accepted" "recursive-map-patterns" ".gravity")
+        input (request artifact)
+        canonical (core artifact)
+        records (:match-pattern-records canonical)
+        root (first (filter #(= :map (:pattern-kind %)) records))
+        form (first (filter #(= (:pattern-form-id root) (:form-id %)) (:forms input)))
+        ids (:child-form-ids form)
+        binding (first (filter #(and (= (:ordinal root) (:parent-ordinal %)) (= :binding (:pattern-kind %))) records))
+        wrong "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        alter-form (fn [f] (update input :forms #(mapv (fn [item] (if (= (:form-id form) (:form-id item)) (f item) item)) %)))
+        mutations [(alter-form #(assoc % :child-form-ids (assoc ids 1 (nth ids 3) 3 (nth ids 1))))
+                   (alter-form #(update % :child-form-ids pop))
+                   (update input :binding-table #(mapv (fn [item] (if (= (:pattern-binding-id binding) (:binding-id item))
+                                                                 (assoc item :scope-id wrong) item)) %))]]
+    (doseq [mutant mutations]
+      (let [result (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request (:sh06-resolution-artifact artifact) mutant))
+            diagnostic (diagnostic-data result)]
+        (is (nil? (:raw-host-error result)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))
+    (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact
+                                    :match-pattern-records (:ordinal binding) :pattern-binding-id] wrong)
+          failed (verification-failures mutant artifact)]
+      (is (contains? failed :canonical-core-replays?))
+      (is (contains? failed :authoritative-products-replay?)))
+    (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact
+                                    :match-pattern-records (:ordinal root) :pattern-value] 0)
+          result (diagnostic-result #(verification-failures mutant artifact))]
+      (is (nil? (:raw-host-error result)))
+      (is (contains? (:value result) :canonical-core-replays?)))
+    (let [coordinate (peek (:path binding))
+          key-form (first (filter #(= (nth ids (dec coordinate)) (:form-id %)) (:forms input)))
+          value (assoc (:pattern-value root) (:value key-form) 'substituted)
+          node-index (first (keep-indexed #(when (= (:core-node-id root) (:node-id %2)) %1) (:nodes canonical)))
+          mutant-core (-> canonical
+                          (assoc-in [:match-pattern-records (:ordinal root) :pattern-value] value)
+                          (assoc-in [:match-pattern-records (:ordinal binding) :pattern-value] 'substituted)
+                          (assoc-in [:match-branch-records (:clause-ordinal root) :pattern-value] value)
+                          (assoc-in [:nodes node-index :attributes :branch-clauses (:clause-ordinal root) :pattern-value] value))
+          mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact] mutant-core)
+          node (get-in mutant-core [:nodes node-index])
+          failed (verification-failures mutant artifact)]
+      (is (bootstrap/sh07-b11-match-group-coherent? (exactly-once-index (:nodes mutant-core) :node-id)
+                                                   (:reference-uses mutant-core) node (:match-branch-records mutant-core)
+                                                   (first (:match-decision-skeletons mutant-core)) (:match-pattern-records mutant-core)))
+      (is (contains? failed :canonical-core-replays?))
+      (is (contains? failed :authoritative-products-replay?)))
+    (let [boundary (:gravity-core-boundary artifact)
+          d (:digest-requests boundary) z (:resolved-digests boundary)
+          rc (:value (execute-core-function "recursive-map-patterns" 'sh07-resolve-core-template
+                                           [(get-in boundary [:raw-template-result :core-template]) z]))
+          rows (get-in (last d) [:preimage :records])]
+      (doseq [altered [(vec (remove #(= (first ids) (get-in % [:source :form-id])) rows))
+                       (mapv #(if (= (first ids) (get-in % [:source :form-id])) (assoc % :reason :core-node-source) %) rows)]]
+        (is (= :rejected (:status (execute-core-function "recursive-map-patterns" 'sh07-verify-source-core-map
+                                                       [input rc (assoc-in d [(dec (count d)) :preimage :records] altered) z]))))))))
+
+(deftest sh07-b11-keyword-map-source-rejections
+  (doseq [basename ["map-non-keyword-key" "duplicate-map-bindings" "map-unsupported-leaf"
+                    "map-branch-binding-escape" "map-sibling-binding-escape" "guard-pattern-deferred"]]
+    (let [path (fixture-path "rejected" basename ".gravity")
+          oracle (fixture-oracle basename ".gravity")
+          result (diagnostic-result #(bootstrap/sh07-core-file-artifact path))
+          data (:exception-data result)
+          diagnostic (if (= "C5-UNRESOLVED" (:expected-rule oracle)) (or (:diagnostic data) data)
+                         (diagnostic-data result))]
+      (is (nil? (:raw-host-error result)))
+      (is (= (:expected-rule oracle) (or (:rule diagnostic) (:id diagnostic))))
+      (is (= (:expected-stage oracle) (:stage diagnostic)))
+      (when (:expected-reason oracle)
+        (is (= (:expected-reason oracle) (get-in diagnostic [:facts :reason])))
+        (is (= (:expected-remediation oracle) (:remediation diagnostic)))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))))
+
+(deftest sh07-b11-keyword-map-promotions-and-vector-regression
+  (doseq [basename ["keyword-map-patterns" "nested-map-in-vector" "map-tail-recur" "nested-vector-patterns"]]
+    (let [artifact (file-artifact "accepted" basename ".gravity")
+          canonical (core artifact)]
+      (is (= :accepted (:status artifact)))
+      (is (= :passed (get-in artifact [:gravity-core-boundary :resolved-verification :status])))
+      (is (seq (:match-pattern-records canonical)))
+      (if (= basename "nested-vector-patterns")
+        (is (= #{:vector :binding :literal :wildcard} (set (map :pattern-kind (:match-pattern-records canonical)))))
+        (is (some #(= :map (:pattern-kind %)) (:match-pattern-records canonical))))
+      (when (= basename "map-tail-recur")
+        (is (= 1 (count (:recur-transfers canonical))))))))
+
 (deftest sh07-b11-fixtures-are-paired-byte-identical-and-bounded-in-scope
   (doseq [family ["accepted" "rejected"]]
     (let [expected
@@ -273,7 +576,8 @@
     (is (some #(str/includes? % required-name) accepted-fixtures)))
   (doseq [required-name ["list" "map" "set" "rest"]]
     (is (some #(str/includes? % required-name) rejected-fixtures)))
-  (is (not-any? #(str/includes? % "duplicate") rejected-fixtures))
+  (is (= :duplicate-vector-binding-deferred
+         (:expected-reason (fixture-oracle "duplicate-map-bindings" ".gravity"))))
   (is (not-any? #(str/includes? % "variable-width") accepted-fixtures)))
 
 (deftest sh07-b11-gravity-contract-names-l7
@@ -382,13 +686,15 @@
                           (:path record)))
               (if-some [parent-ordinal (:parent-ordinal record)]
                 (let [parent (get record-by-ordinal parent-ordinal)]
-                  (is (= :vector (:pattern-kind parent)))
+                  (is (contains? #{:vector :map} (:pattern-kind parent)))
                   (is (= (:local-ordinal parent)
                          (:parent-local-ordinal record)))
                   (is (= (inc (:depth parent)) (:depth record)))
                   (is (= (:path parent) (pop (:path record))))
-                  (is (< (peek (:path record))
-                         (:vector-width parent))))
+                  (is (if (= :map (:pattern-kind parent))
+                        (and (odd? (peek (:path record)))
+                             (< (peek (:path record)) (* 2 (count (:pattern-value parent)))))
+                        (< (peek (:path record)) (:vector-width parent)))))
                 (is (= record root-record)))
               (if (= :vector (:pattern-kind record))
                 (let [children
@@ -827,7 +1133,7 @@
                (get-in boundary [:resolved-verification :status])))
         (is (not (contains? pending :fixed-width-vector-patterns)))
         (is (contains? pending :variable-width-vector-patterns))
-        (is (contains? pending :map-list-set-record-constructor-patterns))
+        (is (contains? pending :non-keyword-map-list-set-record-constructor-patterns))
         (is (contains? pending :duplicate-pattern-binding-policy))
         (is (contains? pending :guard-patterns))
         (is (= [:types :effects :ownership :safety]
@@ -835,7 +1141,7 @@
 
 (deftest sh07-b11-rejections-are-structured-and-oracle-bound
   (let [observed-reasons (atom #{})]
-    (doseq [basename rejected-fixtures
+    (doseq [basename (set/difference rejected-fixtures map-upstream-rejections)
             extension extensions]
       (testing (str basename extension)
         (let [source-path (fixture-path "rejected" basename extension)
@@ -861,5 +1167,6 @@
              :guard-pattern-deferred
              :unsupported-vector-pattern-leaf
              :variable-width-vector-pattern-deferred
-             :vector-pattern-width-bound}
+             :vector-pattern-width-bound
+             :non-keyword-map-pattern-key-deferred :duplicate-vector-binding-deferred}
            @observed-reasons))))

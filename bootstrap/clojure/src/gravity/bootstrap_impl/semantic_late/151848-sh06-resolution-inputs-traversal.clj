@@ -59,7 +59,7 @@
           (let
            [scope-id (add-scope! (:syntax/id syntax) (first scope-chain) [pattern] (:span syntax))]
            (walk-form branch (cons scope-id scope-chain) syntax :expression))
-          (and (vector? pattern) (sh06-fixed-vector-pattern? pattern))
+          (and (or (vector? pattern) (map? pattern)) (sh06-fixed-vector-pattern? pattern))
           (when-let
            [binding-paths (sh06-unique-match-binding-paths pattern [])]
            (if

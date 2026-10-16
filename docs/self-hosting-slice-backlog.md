@@ -198,6 +198,45 @@ The full B10 namespace and authoritative migration were not run. Exhaustiveness,
 type narrowing, later legality, runtime matching and SH-07 completion remain
 outstanding; this revision is development-unadmitted.
 
+### Recursive keyword-keyed map patterns: development increment
+
+`gravity.checked-core` now lowers keyword-keyed map-shape patterns recursively
+with existing fixed vectors, scalar/quoted-symbol literals, wildcards and unique
+branch bindings. This includes empty maps, maps in vectors, vectors in maps,
+multiple bindings and branch-tail `recur`. The two formerly rejected map cases
+are promoted to accepted fixtures in the existing SH-07-B11 family.
+
+Map records retain the actual map value and nil `:vector-width`; only value
+patterns create child records. Paths use odd flattened source-child coordinates
+(`2i+1`), while key data at `2i` has consumed mapping rows joined to its exact
+owning map. These coordinates follow authenticated semantic map traversal, not
+a textual insertion-order promise. Map keys do not create references, calls or
+bindings. Existing limits are unchanged: 256 entries may have 512 source
+children; 257 entries reject. Closed producer, resolver, parent/completeness,
+source-map and host-coherence checks include the new `:map` variant without
+changing schema 16's record keys or migration pins.
+
+Six focused tests passed 487 assertions: the compiled-Gravity kernel, fixture
+pair census, authentic recursive products/mapping, coherent and malformed
+forgeries, promoted cases/tail-recur/vector regression, and six source
+rejections. Unsupported keys, guards, other composites and duplicate bindings remain
+rejected; escaped bindings fail in C5. Malformed map values fail verification
+without a host exception. The source-composition group executed in 704.105
+seconds after 7.300 seconds of namespace loading; these observations are not
+benchmark or proof claims. An interrupted pre-fix group is not passing evidence.
+
+For the inner loop, select `sh07-b11-keyword-map-development-kernel` in
+`gravity.self-hosting.sh07-vector-pattern-test` through `-M:dev-test`. Separate
+exact source tests are named `sh07-b11-keyword-map-authentic-composition`,
+`sh07-b11-keyword-map-forgeries-fail-closed`,
+`sh07-b11-keyword-map-promotions-and-vector-regression` and
+`sh07-b11-keyword-map-source-rejections`.
+
+This is lowering support, not a runtime extra-key policy, exhaustiveness or
+type-narrowing proof. Later legality, runtime matching, authoritative migration
+and SH-07 completion remain outstanding. The revision is development-unadmitted;
+no target, self-hosting, seed-retirement or release claims follow.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
