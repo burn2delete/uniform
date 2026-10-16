@@ -1977,6 +1977,8 @@
 
 (defn sh07-remediation [rule facts]
   (let [reason (get facts :reason)]
+    (if (= reason :match-clause-after-irrefutable-pattern)
+      "Remove the unreachable clause or move it before the root wildcard or binding pattern."
     (if (= reason :keyword-map-lookup-arity)
       "Provide exactly one map operand to a keyword lookup."
       (if (= reason :match-scrutinee-required)
@@ -2031,7 +2033,7 @@
                               (if (= reason
                                      :var-top-level-namespace-binding-required)
                                 "Use var only with a same-namespace top-level var or function binding; lexical bindings are not var objects."
-                                "Replay the Gravity template and bind every digest ordinal exactly once.")))))))))))))))))))))))))))
+                                "Replay the Gravity template and bind every digest ordinal exactly once."))))))))))))))))))))))))))))
 
 (defn sh07-diagnostic [request rule form facts]
   (let [module (if (map? (get request :module))
@@ -5638,9 +5640,22 @@
         (let [pattern (sh07-find-form indexes (first remaining))
               branch
               (sh07-find-form indexes (first (rest remaining)))
+              blocker (get records (- (count records) 1))
               descriptor
-              (sh07-match-pattern-descriptor
-               request pattern clause-ordinal)]
+              (if (contains? #{:wildcard :binding} (get blocker :pattern-kind))
+                {:status :rejected :rule "C6-VERIFY" :form pattern
+                 :facts {:reason :match-clause-after-irrefutable-pattern
+                         :semantic-rule "L7-UNREACHABLE"
+                         :clause-ordinal clause-ordinal
+                         :pattern-form-id (get pattern :form-id)
+                         :pattern-syntax-id (get pattern :syntax-id)
+                         :blocking-clause-ordinal (get blocker :clause-ordinal)
+                         :blocking-pattern-form-id (get blocker :pattern-form-id)
+                         :blocking-pattern-syntax-id (get blocker :pattern-syntax-id)
+                         :blocking-pattern-source-span
+                         (get (sh07-find-form indexes (get blocker :pattern-form-id)) :source-span)
+                         :blocking-pattern-kind (get blocker :pattern-kind)}}
+                (sh07-match-pattern-descriptor request pattern clause-ordinal))]
           (if (= (get descriptor :status) :accepted)
             (let [bindings (get descriptor :bindings)
                   binding
@@ -7871,7 +7886,9 @@
     (if (= (count remaining) 0)
       (= expected-binding-ids binding-ids)
       (let [clause (first remaining)]
-        (if (sh07-b11-match-clause-valid? clause ordinal)
+        (if (if (sh07-b11-match-clause-valid? clause ordinal)
+              (if (contains? #{:wildcard :binding} (get clause :pattern-kind))
+                (= (count remaining) 1) true) false)
           (recur
            (rest remaining)
            (+ ordinal 1)
@@ -9297,8 +9314,9 @@
               (if (> (get record :clause-count) 0)
                 (if (= (get record :branch-child-index)
                        (+ (get record :clause-ordinal) 1))
-                  (< (get record :clause-ordinal)
-                     (get record :clause-count))
+                  (if (contains? #{:wildcard :binding} (get record :pattern-kind))
+                    (= (get record :clause-ordinal) (- (get record :clause-count) 1))
+                    (< (get record :clause-ordinal) (get record :clause-count)))
                   false)
                 false)
               false)

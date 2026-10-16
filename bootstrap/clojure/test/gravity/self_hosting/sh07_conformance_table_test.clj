@@ -53,9 +53,9 @@
     (is (= table/expected-suite-ids (:suite-order value)))
     (is (= 14 (count (:suites value))))
     (is (= {:suite-count 14
-            :accepted-count 75
-            :rejected-count 87
-            :pair-count 162
+            :accepted-count 76
+            :rejected-count 93
+            :pair-count 169
             :source-of-truth :rows}
            (:coverage value)))
     (is (= :non-authoritative (:authority value)))

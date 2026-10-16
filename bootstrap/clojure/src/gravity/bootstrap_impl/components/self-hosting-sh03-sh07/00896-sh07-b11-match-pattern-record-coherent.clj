@@ -149,6 +149,8 @@
         (mapv #(select-keys % sh07-b11-match-clause-keys) records)]
     (and
      (seq records)
+     (not-any? #(contains? #{:wildcard :binding} (:pattern-kind %))
+               (butlast records))
      (= (range (count records)) (map :clause-ordinal records))
      (every? #(= (count records) (:clause-count %)) records)
      (= expected-indexes (mapv :branch-child-index records))

@@ -237,6 +237,48 @@ type-narrowing proof. Later legality, runtime matching, authoritative migration
 and SH-07 completion remain outstanding. The revision is development-unadmitted;
 no target, self-hosting, seed-retirement or release claims follow.
 
+### Irrefutable root match clauses: development increment
+
+`gravity.checked-core` rejects a clause after a successfully lowered unguarded
+root wildcard or binding pattern. The structured diagnostic is `C6-VERIFY`
+with semantic rule `L7-UNREACHABLE` and reason
+`:match-clause-after-irrefutable-pattern`. It identifies the offending pattern
+and earlier blocking clause by their actual form/syntax IDs, ordinal, kind and
+available semantic source span. Existing projected descendants share their
+enclosing root span; this increment does not invent more precise leaf spans.
+
+A terminal root catchall remains supported. Nested map/vector bindings are
+conditional patterns, and quoted underscore is a literal, not a wildcard.
+The sibling-binding fixture now uses conditional vector/map patterns and
+checks exactly two distinct branch bindings, scopes and reference joins.
+Clause, node, branch-record and hosted coherence checks reject forged
+nonterminal catchalls without changing product keys, schema 16 or migration pins.
+
+Reader/form-shape and C5 authentication/resolution still precede C6. Within C6,
+outer shape and scrutinee errors, then errors in the earlier clause's pattern
+or body, retain priority. Only after that clause succeeds does its catchall
+block the later clause before later C6 pattern/body analysis. An unresolved
+name in a dead-looking branch still fails C5 rather than being silently dropped.
+
+Use the exact `sh07-b10-irrefutable-clause-development-kernel` selector in
+`gravity.self-hosting.sh07-match-lowering-test` for the inner loop. The separate
+`sh07-b10-irrefutable-authentic-composition-and-regression`,
+`sh07-b10-irrefutable-forgeries-fail-closed` and
+`sh07-b10-irrefutable-source-diagnostics-and-priority` selectors exercise the
+affected authenticated composition; the existing sibling-scope test covers the
+changed fixture. Full literal/structural subsumption, guards, exhaustiveness,
+type narrowing, runtime matching and authoritative migration remain outstanding.
+This revision is development-unadmitted, not SH-07 or self-hosting completion.
+
+Six selected tests passed 288 assertions: kernel and paired-fixture census
+(145), authentic terminal/nested-pattern composition (30), coherent forgeries
+(6), six source diagnostic/priority cases (77), and exact sibling binding/scope
+joins (30). The kernel executed in 1.195 seconds after 6.992 seconds of namespace
+loading; the composition group executed in 775.704 seconds after 7.231 seconds
+of loading. These are development observations, not benchmark or proof claims.
+Earlier test syntax errors and the unsupported-operation kernel failure are
+not passing evidence. The full B10 namespace and migration proofs were not run.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
