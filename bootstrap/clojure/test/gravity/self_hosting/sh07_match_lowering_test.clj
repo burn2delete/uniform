@@ -35,7 +35,8 @@
     "nested-match-scope-isolation"
     "repeated-literal-occurrences"
     "scrutinee-branch-effects"
-    "sibling-binding-isolation"})
+    "sibling-binding-isolation"
+    "quoted-symbol-patterns"})
 (def ^:private rejected-fixtures
   #{"composite-pattern-deferred"
     "guard-pattern-deferred"
@@ -43,9 +44,12 @@
     "no-clauses"
     "odd-pattern-body-tail"
     "outside-branch-binding-use"
-    "sibling-branch-binding-use"})
+    "sibling-branch-binding-use"
+    "malformed-quoted-pattern" "quoted-composite-pattern"
+    "quoted-pattern-unresolved-branch"})
 (def ^:private upstream-resolution-fixtures
-  #{"outside-branch-binding-use" "sibling-branch-binding-use"})
+  #{"outside-branch-binding-use" "sibling-branch-binding-use"
+    "quoted-pattern-unresolved-branch"})
 (def ^:private promoted-b11-fixtures
   #{"composite-pattern-deferred"})
 (def ^:private core-lowering-fixtures
@@ -245,6 +249,215 @@
                  :pattern pattern
                  :available (sort (accepted-basenames))}))))
 
+(deftest sh07-b10-quoted-symbol-development-kernel
+  ;; Normalized development inputs test the compiled Gravity pass, not SH-06
+  ;; provenance. Authentic source composition is a separate check below.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true}
+                  plan function arguments))
+        sha #(str "sha256:" (format "%064x" %))
+        ordinal (atom 0)
+        forms (atom {})
+        form! (fn [kind value children]
+                (let [n (swap! ordinal inc)
+                      form {:form-id (sha n) :syntax-id (sha (+ 1000 n))
+                            :kind kind :value value :child-form-ids (mapv :form-id children)
+                            :metadata {} :origin-chain [] :generated-origin []}]
+                  (swap! forms assoc (:form-id form) form)
+                  (doseq [child children]
+                    (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                  form))
+        request #(hash-map :module {:namespace 'demo.match :profile :meta :target :jvm
+                                   :effects #{} :capabilities #{} :safety :safe}
+                          :lineage {:authenticated-sh06-artifact-id (sha 5000)
+                                    :sh06-semantic-projection-id (sha 5001)}
+                          :internal-indexes {:forms {:by-id @forms}})]
+    (doseq [symbol ['ready 'event/ready '_]]
+      (let [operator (form! :symbol 'quote [])
+            payload (form! :symbol symbol [])
+            pattern (form! :list (list 'quote symbol) [operator payload])
+            scrutinee (form! :integer 42 [])
+            body (form! :integer 1 [])
+            wildcard (form! :symbol '_ [])
+            fallback (form! :integer 2 [])
+            match-op (form! :symbol 'match [])
+            match-form (form! :list nil [match-op scrutinee pattern body wildcard fallback])
+            input (request)
+            lowered (invoke 'sh07-lower-match [input (invoke 'sh07-empty-state []) match-form])
+            state (:state lowered)
+            node (last (:nodes state))
+            branches (:match-branch-records state)
+            patterns (:match-pattern-records state)
+            indexes {:patterns (into {} (map (fn [record] [[(:node-id node) (:pattern-form-id record)] record]) patterns))
+                     :branches (into {} (map (fn [record] [[(:node-id node) (:clause-ordinal record)] record]) branches))}
+            digests (mapv sha (range 6000 6004))
+            resolve-id #(get digests (:ordinal %))
+            resolved-node (-> node
+                              (update :children #(mapv resolve-id %))
+                              (update-in [:evaluation :order]
+                                         #(mapv (fn [entry] (update entry :core-node-id resolve-id)) %)))]
+        (is (= :accepted (:status lowered)))
+        (is (= [:literal :literal :literal :match] (mapv :core-form (:nodes state))))
+        (is (= [:literal :wildcard] (mapv :pattern-kind branches)))
+        (is (= symbol (:pattern-value (first branches)) (:pattern-value (first patterns))
+               (get-in node [:attributes :branch-clauses 0 :pattern-value])))
+        (is (nil? (:pattern-binding-id (first branches))))
+        (is (= [] (:reference-uses state) (:calls state) (:lexical-bindings state)))
+        (is (= :pending-sh08 (get-in node [:attributes :result-type-join])
+               (get-in node [:attributes :exhaustiveness])))
+        (is (= [(:scrutinee-core-node-id (first branches))]
+               (mapv :core-node-id (get-in node [:evaluation :order]))))
+        (is (every? #(= :conditionally-evaluate-selected-branch (:branch-evaluation %)) branches))
+        (is (true? (invoke 'sh07-resolved-b11-node-valid? [resolved-node])))
+        (doseq [record branches]
+          (is (= :accepted (:status (invoke 'sh07-resolve-match-branch-record [record digests])))))
+        (doseq [record patterns]
+          (is (= :accepted (:status (invoke 'sh07-resolve-match-pattern-record [record digests])))))
+        (doseq [form [pattern operator payload]]
+          (let [row (get-in state [:form-dispositions (:form-id form)])]
+            (is (= :consumed (:disposition row)))
+            (is (= :match-pattern (:reason row)))
+            (is (= [] (:emitted-node-ids row)))
+            (is (true? (invoke 'sh07-source-core-map-pattern-join? [input (get @forms (:form-id form)) node indexes])))))
+        (let [forged (assoc-in input [:internal-indexes :forms :by-id (:form-id payload) :value] 'forged)
+              rejected (invoke 'sh07-match-pattern-descriptor [forged pattern 0])]
+          (is (= :rejected (:status rejected)))
+          (is (= :quoted-symbol-pattern-graph-mismatch (get-in rejected [:facts :reason])))
+          (is (false? (invoke 'sh07-source-core-map-pattern-join? [forged payload node indexes]))))
+        (let [inner (form! :vector [(list 'quote symbol)] [pattern])
+              outer (form! :vector [[(list 'quote symbol)]] [inner])
+              descriptor (invoke 'sh07-match-pattern-descriptor [(request) outer 0])]
+          (is (= :accepted (:status descriptor)))
+          (is (= [:vector :vector :literal] (mapv :pattern-kind (:records descriptor))))
+          (is (= symbol (:pattern-value (last (:records descriptor)))))
+          (is (= [] (:bindings descriptor)))
+          (is (true? (bootstrap/sh06-fixed-vector-pattern? (:value outer))))
+          (is (= [] (bootstrap/sh06-unique-match-binding-paths (:value outer) []))))))
+    (doseq [value ['(quote) '(quote ready extra) '(quote [ready]) '(quote (ready))]]
+      (let [form (form! :list value [])
+            descriptor (invoke 'sh07-match-pattern-descriptor [(request) form 0])]
+        (is (= :rejected (:status descriptor)))
+        (is (= :composite-pattern-deferred (get-in descriptor [:facts :reason])))))
+    (doseq [pattern ['(quote ready) '[(quote event/ready) [(quote _)]]]]
+      (let [analysis (bootstrap/sh06-resolution-analysis-inputs
+                      {} {:expanded-syntax-stream
+                          [{:form (apply list ['match 'outer pattern 'outer '_ 'outer])
+                            :syntax/id (sha 7000) :span {}}]} {})]
+        (is (= ['match 'outer 'outer 'outer] (mapv :symbol (:references analysis))))
+        (is (every? #(= [] (:scope-chain %)) (:references analysis)))
+        (is (= [] (:lexical-scopes analysis)))))))
+
+(deftest sh07-b10-quoted-symbol-authentic-composition
+  (let [artifact (file-artifact "accepted" "quoted-symbol-patterns" ".gravity")
+        boundary (:gravity-core-boundary artifact)
+        input (request artifact)
+        canonical (core artifact)
+        node (first (filter #(= :match (:core-form %)) (:nodes canonical)))
+        branches (:match-branch-records canonical)
+        patterns (:match-pattern-records canonical)
+        forms (exactly-once-index (:forms input) :form-id)
+        quoted (filter #(and (= :list (:kind %)) (= 'quote (first (:value %)))) (:forms input))
+        mapping (bootstrap/sh07-core-execute!
+                 (fixture-path "accepted" "quoted-symbol-patterns" ".gravity")
+                 'sh07-resolve-source-core-map-preimage
+                 [(:preimage (last (:digest-requests boundary))) (pop (:resolved-digests boundary))])
+        rows (get-in mapping [:value :records])
+        row-index (exactly-once-index rows #(get-in % [:source :form-id]))
+        resolved-syntax (set (map :reference-syntax-id (:resolution-table input)))
+        definitions (set (map :definition-syntax-id (:binding-table input)))]
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (is (= :accepted (:status mapping)))
+    (is (= :development-unadmitted (get-in boundary [:plan-binding :revision-status])))
+    (is (false? (get-in boundary [:plan-binding :self-hosted?])))
+    (is (= (source-text (fixture-path "accepted" "quoted-symbol-patterns" ".gravity"))
+           (source-text (fixture-path "accepted" "quoted-symbol-patterns" ".qst"))))
+    (is (= 6 (count quoted)))
+    (is (= 5 (count branches)))
+    (is (= 10 (count patterns)))
+    (is (= [:literal :literal :literal :vector :wildcard] (mapv :pattern-kind branches)))
+    (is (= ['ready 'event/ready '_] (mapv :pattern-value (take 3 branches))))
+    (is (= :source-ordered-pattern-candidates (get-in node [:attributes :selection-policy])))
+    (is (= :pending-sh08 (get-in node [:attributes :result-type-join]) (get-in node [:attributes :exhaustiveness])))
+    (is (= [(first (:children node))] (mapv :core-node-id (get-in node [:evaluation :order]))))
+    (is (every? #(= :conditionally-evaluate-selected-branch (:branch-evaluation %)) branches))
+    (doseq [form quoted]
+      (let [record (first (filter #(= (:form-id form) (:pattern-form-id %)) patterns))
+            clause (nth branches (:clause-ordinal record))
+            node-clause (get-in node [:attributes :branch-clauses (:clause-ordinal record)])
+            raw (if (seq (:path record)) (get-in (:pattern-value clause) (:path record)) (:value form))]
+        (is (= :literal (:pattern-kind record)))
+        (is (= (second (:value form)) (:pattern-value record) (second raw)))
+        (is (= (:pattern-value clause) (:pattern-value node-clause)))
+        (when (empty? (:path record))
+          (is (= (:pattern-value record) (:pattern-value clause))))
+        (is (nil? (:pattern-binding-id record)))
+        (is (= [] (:pattern-binding-use-syntax-ids record)))
+        (doseq [id (cons (:form-id form) (:child-form-ids form))]
+          (let [source-form (get forms id)
+                row (get row-index id)]
+            (is (= :consumed (:disposition row)))
+            (is (= :match-pattern (:reason row)))
+            (is (= [] (:emitted-node-ids row)))
+            (is (= [(:node-id node)] (:anchor-node-ids row)))
+            (is (not (contains? resolved-syntax (:syntax-id source-form))))
+            (is (not (contains? definitions (:syntax-id source-form))))))))
+    (let [binding (first (filter #(= :binding (:pattern-kind %)) patterns))
+          uses (filter #(= (:pattern-binding-id binding) (:binding-id %)) (:reference-uses canonical))]
+      (is (= 'captured (:pattern-value binding)))
+      (is (= 1 (count uses)))
+      (is (= (:pattern-binding-use-syntax-ids binding) (mapv :syntax-id uses))))))
+
+(deftest sh07-b10-quoted-symbol-forgeries-fail-authentication-and-mapping
+  (let [artifact (file-artifact "accepted" "quoted-symbol-patterns" ".gravity")
+        boundary (:gravity-core-boundary artifact)
+        input (request artifact)
+        pattern (first (filter #(and (= :list (:kind %)) (= '(quote ready) (:value %))) (:forms input)))
+        payload-id (second (:child-form-ids pattern))
+        path (fixture-path "accepted" "quoted-symbol-patterns" ".gravity")
+        d (:digest-requests boundary)
+        z (:resolved-digests boundary)
+        rc (:value (bootstrap/sh07-core-execute! path 'sh07-resolve-core-template
+                                                [(get-in boundary [:raw-template-result :core-template]) z]))
+        map-ordinal (dec (count d))
+        raw-rows (get-in (last d) [:preimage :records])
+        operator-id (first (:child-form-ids pattern))]
+    (doseq [[id value] [[payload-id 'forged] [(:form-id pattern) '(quote forged)]]]
+      (let [mutant (update input :forms #(mapv (fn [form] (if (= id (:form-id form)) (assoc form :value value) form)) %))
+            result (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request (:sh06-resolution-artifact artifact) mutant))
+            diagnostic (diagnostic-data result)]
+        (is (nil? (:raw-host-error result)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))
+    (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact :match-pattern-records 0 :pattern-value] 'forged)
+          failed (verification-failures mutant artifact)]
+      (is (contains? failed :canonical-core-replays?))
+      (is (contains? failed :authoritative-products-replay?)))
+    (doseq [rows [(vec (remove #(= operator-id (get-in % [:source :form-id])) raw-rows))
+                  (mapv #(if (= payload-id (get-in % [:source :form-id])) (assoc % :reason :quoted-data) %) raw-rows)]]
+      (let [mutant (assoc-in d [map-ordinal :preimage :records] rows)
+            verdict (bootstrap/sh07-core-execute! path 'sh07-verify-source-core-map [input rc mutant z])]
+        (is (= :rejected (:status verdict)))))))
+
+(deftest sh07-b10-quoted-symbol-rejections
+  (doseq [basename ["malformed-quoted-pattern" "quoted-composite-pattern" "quoted-pattern-unresolved-branch"]]
+    (let [path (fixture-path "rejected" basename ".gravity")
+          oracle (fixture-oracle basename ".gravity")
+          result (diagnostic-result #(bootstrap/sh07-core-file-artifact path))
+          diagnostic (if (= "C5-UNRESOLVED" (:expected-rule oracle))
+                       (upstream-diagnostic-data result) (diagnostic-data result))]
+      (is (= (source-text path) (source-text (fixture-path "rejected" basename ".qst"))))
+      (is (nil? (:raw-host-error result)))
+      (is (= (:expected-rule oracle) (or (:rule diagnostic) (:id diagnostic))))
+      (is (= (:expected-stage oracle) (:stage diagnostic)))
+      (if (:expected-reason oracle)
+        (do (is (= (:expected-reason oracle) (get-in diagnostic [:facts :reason])))
+            (is (= (:expected-remediation oracle) (:remediation diagnostic)))
+            (is (true? (get-in diagnostic [:facts :fail-closed]))))
+        (is (string? (:remediation diagnostic)))))))
+
 (deftest sh07-b10-fixtures-are-paired-byte-identical-and-cover-the-foundation
   (let [accepted (accepted-basenames)
         rejected (rejected-basenames)]
@@ -360,7 +573,7 @@
           (exactly-once-index (:binding-table (request artifact)) :binding-id)
           resolutions (:resolution-table (request artifact))]
       (doseq [record records]
-        (is (contains? #{:literal :wildcard :binding}
+        (is (contains? #{:literal :wildcard :binding :vector}
                        (:pattern-kind record)))
         (if (= :binding (:pattern-kind record))
           (do

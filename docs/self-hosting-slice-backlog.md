@@ -164,6 +164,40 @@ SH-07 remains partial and development-unadmitted. The owning tests are in
 `sh07-b6-qualified-set-development-kernel` through the existing development
 runner for the inner loop.
 
+### Quoted-symbol match literals: development increment
+
+`gravity.checked-core` now lowers exact quoted-symbol patterns such as
+`'ready`, `'event/ready` and `'_`, both at the root and inside supported fixed
+vectors. Quoted underscore is a literal, not a wildcard. The normalized symbol
+is preserved in literal pattern records and root branch/node records; existing
+vector values and source-child paths remain unchanged. Quote operators and
+payloads retain consumed `:match-pattern` mapping rows anchored to the actual
+match node, without becoming executable references, calls or bindings.
+
+The existing SH-06 traversal and SH-07 projection walk valid quoted-pattern
+branches in their enclosing scope. Actual vector binding symbols still create
+branch-local bindings. Malformed quotes and quoted composites remain rejected
+by C6; an unresolved executable branch is rejected by C5. Forged payloads,
+substituted pattern products and removed/misclassified quote mapping rows are
+covered by negative checks. No public API, product schema or migration pin
+changes are introduced.
+
+Use `sh07_match_lowering_test.clj` with the existing development runner:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh07-match-lowering-test --exact sh07-b10-quoted-symbol-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh07-match-lowering-test --exact sh07-b10-quoted-symbol-authentic-composition --exact sh07-b10-quoted-symbol-forgeries-fail-authentication-and-mapping --exact sh07-b10-quoted-symbol-rejections
+```
+
+The four selected kernel/composition/negative tests passed 308 assertions. The
+cold kernel executed in 1.337 seconds after 7.487 seconds of namespace loading;
+the grouped checks executed in 314.985 seconds after 6.990 seconds of loading.
+These are development observations, not performance or proof claims. Earlier
+test-harness failures and an interrupted group do not count as passing checks.
+The full B10 namespace and authoritative migration were not run. Exhaustiveness,
+type narrowing, later legality, runtime matching and SH-07 completion remain
+outstanding; this revision is development-unadmitted.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

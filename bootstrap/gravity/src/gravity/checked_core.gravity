@@ -5212,8 +5212,38 @@
                :required-minimum-child-count 2
                :required-minimum-body-count 1}})))
 
+(defn sh07-match-quoted-symbol? [form]
+  (let [value (get form :value)]
+    (if (= (get form :kind) :list)
+      (if (seq? value)
+        (if (= (count value) 2)
+          (if (= (first value) 'quote)
+            (symbol? (second value))
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh07-match-pattern-value [form]
+  (if (sh07-match-quoted-symbol? form)
+    (second (get form :value))
+    (get form :value)))
+
+(defn sh07-match-quoted-symbol-graph? [request form]
+  (let [children (get form :child-form-ids)
+        indexes (get request :internal-indexes)
+        operator (sh07-find-form indexes (get children 0))
+        payload (sh07-find-form indexes (get children 1))]
+    (if (sh07-match-quoted-symbol? form)
+      (= [2 :symbol 'quote :symbol (sh07-match-pattern-value form)]
+         [(count children) (get operator :kind) (get operator :value)
+          (get payload :kind) (get payload :value)])
+      false)))
+
 (defn sh07-match-pattern-literal? [form]
-  (sh07-literal-kind? (get form :kind)))
+  (if (sh07-literal-kind? (get form :kind))
+    true
+    (sh07-match-quoted-symbol? form)))
 
 (defn sh07-match-guard-pattern? [form]
   (if (= (get form :kind) :map)
@@ -5416,21 +5446,25 @@
                  :bindings [(get binding :binding)]}
                 binding))))
         (if (sh07-match-pattern-literal? pattern)
-          (if (if (= kind :decimal)
-                (sh07-exact-decimal-descriptor? value)
-                true)
+          (if (if (= kind :list)
+                (sh07-match-quoted-symbol-graph? request pattern)
+                (if (= kind :decimal)
+                  (sh07-exact-decimal-descriptor? value)
+                  true))
             {:status :accepted
              :next-local-ordinal (+ local-ordinal 1)
              :records
              [(sh07-match-pattern-record
                request pattern clause-ordinal local-ordinal
                parent-local-ordinal depth path
-               :literal value nil nil)]
+               :literal (sh07-match-pattern-value pattern) nil nil)]
              :bindings []}
             {:status :rejected
              :rule "C6-VERIFY"
              :form pattern
-             :facts {:reason :exact-decimal-descriptor-required}})
+             :facts {:reason (if (= kind :list)
+                               :quoted-symbol-pattern-graph-mismatch
+                               :exact-decimal-descriptor-required)}})
           (if (= kind :vector)
             (let [child-form-ids (get pattern :child-form-ids)
                   width (count child-form-ids)
@@ -5619,7 +5653,7 @@
                        :pattern-kind (get descriptor :pattern-kind)
                        :pattern-form-id (get pattern :form-id)
                        :pattern-syntax-id (get pattern :syntax-id)
-                       :pattern-value (get pattern :value)
+                       :pattern-value (sh07-match-pattern-value pattern)
                        :branch-form-id (get branch :form-id)
                        :branch-syntax-id (get branch :syntax-id)
                        :pattern-binding-id binding-id
@@ -5637,7 +5671,7 @@
                        :pattern-kind (get descriptor :pattern-kind)
                        :pattern-form-id (get pattern :form-id)
                        :pattern-syntax-id (get pattern :syntax-id)
-                       :pattern-value (get pattern :value)
+                       :pattern-value (sh07-match-pattern-value pattern)
                        :branch-form-id (get branch :form-id)
                        :branch-syntax-id (get branch :syntax-id)
                        :pattern-binding-id binding-id
@@ -9155,7 +9189,7 @@
             true
             (if (string? value)
               true
-              (if (keyword? value)
+              (if (if (keyword? value) true (symbol? value))
                 true
                 (sh07-exact-decimal-descriptor? value)))))))))
 
@@ -11448,7 +11482,9 @@
                  (+ depth 1)))))))
 
 (defn sh07-source-core-map-pattern-join? [request form node indexes]
-  (let [record (get (get indexes :patterns) [(get node :node-id) (get form :form-id)])
+  (let [parent (sh07-find-form (get request :internal-indexes) (get form :parent-form-id))
+        pattern (if (sh07-match-quoted-symbol? parent) parent form)
+        record (get (get indexes :patterns) [(get node :node-id) (get pattern :form-id)])
         branch (get (get indexes :branches) [(get node :node-id) (get record :clause-ordinal)])
         binding (sh07-definition-binding (get request :internal-indexes) (get form :syntax-id))
         owner (sh07-find-form (get request :internal-indexes) (get (get node :source) :form-id))
@@ -11456,11 +11492,16 @@
         body (if (integer? (get record :clause-ordinal))
                (sh07-find-form (get request :internal-indexes)
                 (get (get owner :child-form-ids) (+ 3 (* 2 (get record :clause-ordinal))))) nil)]
-    (= [true true true true true true true true true]
-       [(= (get record :pattern-syntax-id) (get form :syntax-id))
-        (if (= (get form :kind) :vector)
-          (= (get record :vector-width) (count (get form :child-form-ids)))
-          (= (get record :pattern-value) (get form :value)))
+    (= [true true true true true true true true true true]
+       [(= (get record :pattern-syntax-id) (get pattern :syntax-id))
+        (if (sh07-match-quoted-symbol? pattern)
+          (if (sh07-match-quoted-symbol-graph? request pattern)
+            (if (= (get form :form-id) (get pattern :form-id)) true
+              (contains? (set (get pattern :child-form-ids)) (get form :form-id))) false)
+          (= (get form :form-id) (get pattern :form-id)))
+        (if (= (get pattern :kind) :vector)
+          (= (get record :vector-width) (count (get pattern :child-form-ids)))
+          (= (get record :pattern-value) (sh07-match-pattern-value pattern)))
         (if (= (get record :pattern-kind) :binding)
           (= (get record :pattern-binding-id) (get binding :binding-id)) true)
         (= (get branch :branch-form-id) (get body :form-id))

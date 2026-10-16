@@ -1,0 +1,11 @@
+(ns self-hosting.sh07-b10.reject.malformed-quoted-pattern
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10 :sh07-b10 {:expected-rule "C6-LOWERING-GAP" :expected-stage :core-lowering
+               :expected-severity :error :expected-reason :composite-pattern-deferred
+               :expected-remediation "Use a fixed-width vector, wildcard, supported scalar literal, or one symbol binding in SH-07-B11; defer other composite patterns to their owning slices."}}))
+
+(def invalid (match :value (quote) :bad _ :other))

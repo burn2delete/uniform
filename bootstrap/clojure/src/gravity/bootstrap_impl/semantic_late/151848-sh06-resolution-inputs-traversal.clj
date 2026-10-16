@@ -81,7 +81,9 @@
            (number? pattern)
            (char? pattern)
            (string? pattern)
-           (keyword? pattern))
+           (keyword? pattern)
+           (and (seq? pattern) (= 2 (count pattern))
+                (= 'quote (first pattern)) (symbol? (second pattern))))
           (walk-form branch scope-chain syntax :expression)
           :else
           nil)))

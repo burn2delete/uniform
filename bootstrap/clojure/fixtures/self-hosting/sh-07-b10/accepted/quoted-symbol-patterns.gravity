@@ -1,0 +1,15 @@
+(ns self-hosting.sh07-b10.quoted-symbol-patterns
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10 :fixture :quoted-symbol-patterns}))
+
+(defn classify [value]
+  (match value
+    'ready value
+    'event/ready value
+    '_ value
+    ['ready ['event/ready captured '_]] captured
+    _ :other))

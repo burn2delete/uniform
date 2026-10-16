@@ -176,7 +176,9 @@
         (number? pattern)
         (char? pattern)
         (string? pattern)
-        (keyword? pattern))))
+        (keyword? pattern)
+        (and (seq? pattern) (= 2 (count pattern))
+             (= 'quote (first pattern)) (symbol? (second pattern))))))
 
 (defn sh06-unique-match-binding-paths
   [pattern path]
