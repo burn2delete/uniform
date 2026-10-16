@@ -29,7 +29,8 @@
   ["ordered-top-level-mutations"
    "function-var-mutation"
    "conditional-mutations"
-   "nested-value-mutation"])
+   "nested-value-mutation"
+   "qualified-set-target"])
 (def ^:private shape-remediation
   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
 (def ^:private gap-remediation
@@ -48,7 +49,11 @@
    {:rule "C6-LOWERING-GAP"
     :reason :lexical-set-target-deferred
     :remediation gap-remediation}
-   "qualified-set-target"
+   "external-qualified-set-target"
+   {:rule "C6-LOWERING-GAP"
+    :reason :qualified-set-target-deferred
+    :remediation gap-remediation}
+   "alias-qualified-set-target"
    {:rule "C6-LOWERING-GAP"
     :reason :qualified-set-target-deferred
     :remediation gap-remediation}
@@ -250,6 +255,213 @@
                       resolution))
                   resolutions))))
 
+(deftest sh07-b6-qualified-set-development-kernel
+  ;; Normalized development fixtures exercise compiled Gravity leaves, not
+  ;; authenticated SH-06 provenance. Real composition is checked separately.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true}
+                  plan function arguments))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        target {:form-id (sha 1) :syntax-id (sha 2) :kind :symbol
+                :value 'demo.value/target}
+        value {:form-id (sha 3) :syntax-id (sha 4) :kind :integer :value 7
+               :metadata {} :generated-origin [] :origin-chain []}
+        form {:form-id (sha 5) :syntax-id (sha 6) :kind :list
+              :child-form-ids [(sha 7) (:form-id target) (:form-id value)]
+              :metadata {} :generated-origin [] :origin-chain []}
+        binding {:binding-id (sha 8) :binding-class :namespace :kind :var
+                 :namespace 'demo.value :upstream-binding-id (sha 9)
+                 :definition-syntax-id (sha 10) :definition-artifact-id (sha 11)}
+        resolution {:symbol (:value target) :position :expression
+                    :binding-id (:binding-id binding)
+                    :upstream-binding-id (:upstream-binding-id binding)
+                    :resolution-order :fully-qualified-namespace-binding}
+        request {:module {:namespace 'demo.value :profile :meta :target :jvm
+                          :effects #{:state/write} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 12)
+                           :sh06-semantic-projection-id (sha 13)}
+                 :internal-indexes
+                 {:forms {:by-id {(:form-id target) target (:form-id value) value}}
+                  :bindings {:by-id {(:binding-id binding) binding}}
+                  :resolutions {:by-reference {(:syntax-id target) resolution}}}}
+        resolution-path [:internal-indexes :resolutions :by-reference (:syntax-id target)]
+        binding-path [:internal-indexes :bindings :by-id (:binding-id binding)]
+        lower #(invoke 'sh07-lower-set [% (invoke 'sh07-empty-state []) form])]
+    (testing "development-unadmitted qualified and ordinary var/function targets"
+      (doseq [kind [:var :function]
+              order [:fully-qualified-namespace-binding :current-namespace-binding]]
+        (let [target-symbol (if (= order :current-namespace-binding) 'target (:value target))
+              input (-> request
+                        (assoc-in (conj binding-path :kind) kind)
+                        (assoc-in (conj resolution-path :resolution-order) order)
+                        (assoc-in (conj resolution-path :symbol) target-symbol)
+                        (assoc-in [:internal-indexes :forms :by-id (:form-id target) :value] target-symbol))
+              result (lower input)
+              nodes (get-in result [:state :nodes])
+              node (last nodes)
+              record (first (get-in result [:state :mutations]))
+              rhs-id (sha 14)
+              resolved-node (-> node (assoc :children [rhs-id])
+                                (assoc-in [:evaluation :order] [{:index 0 :core-node-id rhs-id}]))
+              resolved (invoke 'sh07-resolve-mutation-record [record [rhs-id (sha 15)]])]
+          (is (= :accepted (:status result)))
+          (is (= [:literal :set!] (mapv :core-form nodes)))
+          (is (= 7 (get-in (first nodes) [:attributes :value])))
+          (is (= 1 (count (get-in result [:state :mutations]))))
+          (is (= order (:resolution-order record) (get-in node [:attributes :resolution-order])))
+          (is (= kind (:target-definition-kind record)))
+          (is (= [] (:target-evaluated-children record)))
+          (is (= [(:value-core-node-id record)] (:children node) (:evaluated-children record)))
+          (is (= [:evaluate-value :write-target :yield-unit] (:ordered-steps record)))
+          (is (= :unit (:result-policy record)))
+          (is (= :state/write (:required-effect record)))
+          (is (= #{(:syntax-id target)} (get-in result [:state :used-reference-syntax-ids])))
+          (is (= {:type-legality :pending-sh08 :effect-registry-legality :pending-sh09
+                  :effect-profile-capability-legality :pending-sh09
+                  :ownership-legality :pending-sh10 :safety-classification :pending-sh11}
+                 (select-keys record [:type-legality :effect-registry-legality
+                                      :effect-profile-capability-legality :ownership-legality
+                                      :safety-classification])))
+          (is (true? (invoke 'sh07-resolved-b6-node-valid? [resolved-node])))
+          (is (= :accepted (:status resolved)))
+          (is (= rhs-id (get-in resolved [:value :value-core-node-id])))
+          (is (false? (invoke 'sh07-resolved-b6-node-valid?
+                              [(assoc-in resolved-node [:attributes :resolution-order]
+                                         :alias-qualified-required-binding)])))
+          (is (= :rejected (:status (invoke 'sh07-resolve-mutation-record
+                                           [(assoc record :resolution-order :alias-qualified-required-binding)
+                                            [rhs-id (sha 15)]])))))))
+    (testing "foreign, alias, lexical and forged joins retain exact rejections"
+      (doseq [[input rule reason]
+              [[(assoc-in request (conj binding-path :namespace) 'foreign.value)
+                "C6-LOWERING-GAP" :qualified-set-target-deferred]
+               [(assoc-in request (conj resolution-path :resolution-order) :alias-qualified-required-binding)
+                "C6-LOWERING-GAP" :qualified-set-target-deferred]
+               [(assoc-in request (conj binding-path :binding-class) :lexical)
+                "C6-LOWERING-GAP" :lexical-set-target-deferred]
+               [(assoc-in request (conj binding-path :kind) :type)
+                "C6-LOWERING-GAP" :unsupported-set-location-kind]
+               [(assoc-in request (conj resolution-path :symbol) 'target)
+                "C6-VERIFY" :set-resolution-reference-mismatch]
+               [(assoc-in request (conj resolution-path :binding-id) (sha 16))
+                "C6-VERIFY" :set-resolution-binding-missing]
+               [(assoc-in request (conj resolution-path :upstream-binding-id) (sha 16))
+                "C6-VERIFY" :set-resolution-binding-identity-mismatch]
+               [(assoc-in request (conj resolution-path :resolution-order) :lexical-binding)
+                "C6-VERIFY" :set-same-namespace-binding-required]]]
+        (let [result (lower input)]
+          (is (= :rejected (:status result)))
+          (is (= rule (:rule result)))
+          (is (= reason (get-in result [:facts :reason]))))))))
+
+(deftest sh07-b6-qualified-set-preserves-authenticated-products-and-mapping
+  (let [artifact (file-artifact "accepted" "qualified-set-target" ".gravity")
+        canonical (core artifact)
+        records (:mutations canonical)
+        nodes (exactly-once-index (:nodes canonical) :node-id)
+        bindings (exactly-once-index (:binding-table (request artifact)) :binding-id)
+        resolutions (exactly-once-index (:resolution-table (request artifact)) :reference-syntax-id)
+        mapping-result
+        (bootstrap/sh07-core-execute!
+         (fixture-path "accepted" "qualified-set-target" ".gravity")
+         'sh07-resolve-source-core-map-preimage
+         [(:preimage (last (get-in artifact [:gravity-core-boundary :digest-requests])))
+          (pop (get-in artifact [:gravity-core-boundary :resolved-digests]))])
+        mapping (get-in mapping-result [:value :records])]
+    (is (= [:var :function :var] (mapv :target-definition-kind records)))
+    (is (= :accepted (:status mapping-result)))
+    (is (= [0 1 2] (mapv :ordinal records)))
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (is (= :development-unadmitted (get-in artifact [:gravity-core-boundary :plan-binding :revision-status])))
+    (is (false? (get-in artifact [:gravity-core-boundary :plan-binding :self-hosted?])))
+    (is (= (source-text (fixture-path "accepted" "qualified-set-target" ".gravity"))
+           (source-text (fixture-path "accepted" "qualified-set-target" ".qst"))))
+    (doseq [record records]
+      (let [node (get nodes (:core-node-id record))
+            binding (get bindings (:target-binding-id record))
+            resolution (get resolutions (:target-syntax-id record))
+            row (first (filter #(= (:target-form-id record) (get-in % [:source :form-id])) mapping))]
+        (is (= :fully-qualified-namespace-binding (:resolution-order record)
+               (:resolution-order resolution) (get-in node [:attributes :resolution-order])))
+        (is (= :namespace (:binding-class binding) (:target-binding-class record)))
+        (is (= (:binding-id binding) (:binding-id resolution) (:target-binding-id record)))
+        (is (= (:target-symbol record) (:symbol resolution)))
+        (is (= (select-keys record mutation-attribute-keys)
+               (dissoc (:attributes node) :target-evaluation :value-child-index :evaluation-order)))
+        (is (= (:upstream-binding-id binding) (:upstream-binding-id resolution)
+               (:target-upstream-binding-id record)))
+        (is (= (get-in (request artifact) [:module :namespace])
+               (:namespace binding) (:target-namespace record)))
+        (is (= [] (:target-evaluated-children record)))
+        (is (= [(:value-core-node-id record)] (:children node) (:evaluated-children record)))
+        (is (= [:evaluate-value :write-target :yield-unit] (:ordered-steps record)))
+        (is (= :unit (:result-policy record)))
+        (is (= :state/write (:required-effect record)))
+        (is (= :pending-sh09 (:effect-registry-legality record) (:effect-profile-capability-legality record)))
+        (is (= :consumed (:disposition row)))
+        (is (= :mutation-target (:reason row)))
+        (is (= [] (:emitted-node-ids row)))))
+    (let [shadow-write (last records)
+          rhs (get nodes (:value-core-node-id shadow-write))
+          rhs-resolution (get resolutions (get-in rhs [:source :syntax-id]))
+          reference (first (filter #(= (:value-core-node-id shadow-write) (:core-node-id %))
+                                   (:reference-uses canonical)))
+          rhs-row (first (filter #(= (get-in rhs [:source :form-id]) (get-in % [:source :form-id])) mapping))]
+      (is (= :reference (:core-form rhs)))
+      (is (= :lexical (:binding-class (get bindings (:binding-id rhs-resolution)))))
+      (is (not= (:binding-id rhs-resolution) (:target-binding-id shadow-write)))
+      (is (= (:binding-id rhs-resolution) (:binding-id reference) (get-in rhs [:attributes :binding-id])))
+      (is (= (:reference-syntax-id rhs-resolution) (:syntax-id reference) (get-in rhs [:source :syntax-id])))
+      (is (= (:form-id reference) (get-in rhs [:source :form-id]) (get-in rhs-row [:source :form-id])))
+      (is (= 1 (count (filter #(= (:node-id rhs) (:core-node-id %)) (:reference-uses canonical)))))
+      (is (= :emitted (:disposition rhs-row)))
+      (is (= [(:node-id rhs)] (:emitted-node-ids rhs-row))))))
+
+(deftest sh07-b6-qualified-set-forgeries-fail-membership-and-replay
+  (let [artifact (file-artifact "accepted" "qualified-set-target" ".gravity")
+        authenticated (request artifact)
+        record (first (:mutations (core artifact)))
+        wrong-id "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
+    (doseq [[field value] [[:resolution-order :current-namespace-binding]
+                         [:resolution-order :alias-qualified-required-binding]
+                         [:symbol 'target]
+                         [:binding-id wrong-id]
+                         [:upstream-binding-id wrong-id]]]
+      (let [mutation (update-request-resolution authenticated (:target-syntax-id record) #(assoc % field value))
+            result (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request
+                                        (:sh06-resolution-artifact artifact) mutation))
+            diagnostic (diagnostic-data result)]
+        (is (not= authenticated mutation))
+        (is (nil? (:raw-host-error result)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))
+    (doseq [[field value] [[:resolution-order :current-namespace-binding]
+                         [:target-binding-id wrong-id]
+                         [:value-core-node-id wrong-id]
+                         [:target-evaluated-children [(:value-core-node-id record)]]]]
+      (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact :mutations 0 field] value)
+            checks (bootstrap/sh07-core-verification-checks mutant artifact {:status :passed})]
+        (is (false? (:canonical-core-replays? checks)))
+        (is (false? (:mutations-replay? checks)))
+        (is (false? (:authoritative-products-replay? checks)))))))
+
+(deftest sh07-b6-qualified-set-external-and-alias-diagnostics
+  (doseq [basename ["external-qualified-set-target" "alias-qualified-set-target"]]
+    (let [source-path (fixture-path "rejected" basename ".gravity")
+          result (diagnostic-result #(bootstrap/sh07-core-file-artifact source-path))
+          diagnostic (diagnostic-data result)]
+      (is (= (source-text source-path) (source-text (fixture-path "rejected" basename ".qst"))))
+      (is (= :qualified-set-target-deferred (get-in (fixture-oracle basename ".gravity") [:expected-reason])))
+      (is (nil? (:raw-host-error result)))
+      (is (= "C6-LOWERING-GAP" (:rule diagnostic)))
+      (is (= :core-lowering (:stage diagnostic)))
+      (is (= :qualified-set-target-deferred (get-in diagnostic [:facts :reason])))
+      (is (= gap-remediation (:remediation diagnostic)))
+      (is (true? (get-in diagnostic [:facts :fail-closed]))))))
+
 (deftest sh07-b6-fixtures-are-paired-complete-and-path-neutral
   (doseq [family ["accepted" "rejected"]
           extension extensions]
@@ -441,9 +653,9 @@
             (is (= :namespace (:binding-class binding)
                    (:target-binding-class record)))
             (is (= (:target-symbol record)
-                   (:name binding)
                    (:symbol resolution)
                    (:value target-form)))
+            (is (= (name (:target-symbol record)) (name (:name binding))))
             (is (= (:target-binding-id record)
                    (:binding-id binding)
                    (:binding-id resolution)))
@@ -466,8 +678,9 @@
             (is (= (:upstream-binding-id binding)
                    (:upstream-binding-id resolution)
                    (:target-upstream-binding-id record)))
-            (is (= :current-namespace-binding
-                   (:resolution-order resolution)
+            (is (contains? #{:current-namespace-binding :fully-qualified-namespace-binding}
+                           (:resolution-order resolution)))
+            (is (= (:resolution-order resolution)
                    (:resolution-order record)))
             (is (= (:definition-artifact-id binding)
                    (:target-definition-artifact-id record)))
@@ -650,7 +863,7 @@
           (is (= :gravity/sh07-core-diagnostic
                  (:artifact diagnostic)))
           (is (= "C6-VERIFY" (:rule diagnostic)))
-          (is (= :authenticated-sh06-projection-mismatch
+          (is (= :authenticated-sh06-request-membership-mismatch
                  (get-in diagnostic [:facts :reason])))
           (is (true?
                (get-in diagnostic [:facts :fail-closed]))))))))

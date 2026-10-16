@@ -3344,10 +3344,16 @@
               (if (map? binding)
                 (if (= (get binding :upstream-binding-id)
                        (get resolution :upstream-binding-id))
-                  (if (contains?
-                       #{:fully-qualified-namespace-binding
-                         :alias-qualified-required-binding}
-                       (get resolution :resolution-order))
+                  (if (if (= (get resolution :resolution-order)
+                             :alias-qualified-required-binding)
+                        true
+                        (if (= (get resolution :resolution-order)
+                               :fully-qualified-namespace-binding)
+                          (if (= (get binding :namespace)
+                                 (get (get request :module) :namespace))
+                            false
+                            true)
+                          false))
                     {:status :rejected
                      :rule "C6-LOWERING-GAP"
                      :form form
@@ -3371,8 +3377,10 @@
                             false)
                         (if (if (= (get binding :namespace)
                                    (get (get request :module) :namespace))
-                              (= (get resolution :resolution-order)
-                                 :current-namespace-binding)
+                              (contains?
+                               #{:current-namespace-binding
+                                 :fully-qualified-namespace-binding}
+                               (get resolution :resolution-order))
                               false)
                           {:status :accepted
                            :binding binding
@@ -3538,7 +3546,8 @@
                      (get binding :definition-artifact-id)
                      :target-form-id (get target :form-id)
                      :target-syntax-id (get target :syntax-id)
-                     :resolution-order :current-namespace-binding
+                     :resolution-order
+                     (get (get target-check :resolution) :resolution-order)
                      :authenticated-sh06-artifact-id
                      (get (get request :lineage)
                           :authenticated-sh06-artifact-id)
@@ -7411,8 +7420,9 @@
                   false)
                 false)
               false)
-          (if (= (get attributes :resolution-order)
-                 :current-namespace-binding)
+          (if (contains?
+               #{:current-namespace-binding :fully-qualified-namespace-binding}
+               (get attributes :resolution-order))
             (if (= (get attributes :target-evaluation) :none)
               (if (= (get attributes :value-child-index) 0)
                 (if (= (get attributes :evaluation-order)
@@ -8565,8 +8575,9 @@
                   false)
                 false)
               false)
-          (if (if (= (get record :resolution-order)
-                     :current-namespace-binding)
+          (if (if (contains?
+                   #{:current-namespace-binding :fully-qualified-namespace-binding}
+                   (get record :resolution-order))
                 (if (= (get record :target-evaluated-children) [])
                   (if (= (get record :ordered-steps)
                          [:evaluate-value :write-target :yield-unit])

@@ -134,6 +134,36 @@ snapshot. Fresh stable-revision provenance/equivalence/bootstrap verification
 and authoritative admission remain outstanding. SH-07 remains partial; no
 completion, self-hosting, seed-retirement or release count changes follow.
 
+### Qualified current-namespace mutation targets: development increment
+
+`gravity.checked-core` now lowers `(set! demo.value/target value)` for
+authenticated top-level vars/functions in the current namespace. It preserves
+the actual SH-06 resolution order and binding identity, does not evaluate the
+target, evaluates the RHS once before the write, and records the unit result.
+The mutation target is consumed without emitting a target-expression node;
+the RHS retains its own resolution and source-map emission, including when a
+lexical binding shadows the qualified target's unqualified name.
+
+The existing B6 fixture `qualified-set-target` is promoted to accepted behavior.
+New foreign and alias-qualified fixtures retain `C6-LOWERING-GAP`; lexical,
+unsupported-location and forged binding joins remain rejected. No public API,
+schema, effect registry or migration fingerprint changes are introduced.
+SH-06 resolution feeds the existing C6 Core/mutation/mapping products; later
+type, effect/profile/capability, ownership and safety legality facts remain
+pending. This is Core lowering support, not runtime mutation permission.
+
+Five selected B6 tests passed 231 assertions: the direct Gravity kernel,
+authentic qualified products/mapping, request and product tampering,
+foreign/alias diagnostics, and the existing unqualified substitution regression.
+The direct kernel executed in 1.199 seconds after 6.961 seconds of namespace
+loading. Changed test-only mapping/diagnostic oracles were rechecked; passed
+unchanged negative and forgery tests were not repeated. These are development
+checks, not a full B6 namespace pass or authoritative migration evidence.
+SH-07 remains partial and development-unadmitted. The owning tests are in
+`sh07_mutation_test.clj`; use its exact
+`sh07-b6-qualified-set-development-kernel` through the existing development
+runner for the inner loop.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
