@@ -1,0 +1,11 @@
+(ns self-hosting.sh08.function-structural-matches
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn choose [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (let [packet {:extra :retained :payload [flag {:value value}]}]
+    (match packet {:payload [true {:value item}]} item _ fallback)))
+(defn forward-choice [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (choose flag value fallback))
+(defn present-nil [fallback :- I64] :- I64
+  (let [packet {:present nil :extra true}]
+    (match packet {:present nil} fallback)))

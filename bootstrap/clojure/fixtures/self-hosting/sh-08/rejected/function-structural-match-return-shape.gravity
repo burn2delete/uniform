@@ -1,0 +1,6 @@
+(ns self-hosting.sh08.function-structural-match-return-shape
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn make-packet [value :- I64] {:payload value})
+(defn unknown-shape [value :- I64 fallback :- I64] :- I64
+  (let [packet (make-packet value)]
+    (match packet {:payload item} item _ fallback)))

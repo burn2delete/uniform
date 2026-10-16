@@ -530,6 +530,356 @@
      :function-types function-types
      :call-node-ids (mapv :core-node-id calls)}))
 
+(defn- structural-match-input []
+  (let [sha #(str "sha256:" (format "%064x" %))
+        node (fn [i kind attrs children]
+               {:node-id (sha i) :core-form kind :attributes attrs :children (mapv sha children)
+                :resolved-binding-ids (if-let [b (:binding-id attrs)] [b] [])
+                :source {:form-id (sha i) :syntax-id (sha i) :semantic-span {:byte-start i :byte-end (inc i)}
+                         :origin-chain [] :generated-origin nil}})
+        sequence [(node 100 :reference {:binding-id (sha 1000)} [])
+                  (node 101 :reference {:binding-id (sha 1001)} [])
+                  (node 102 :literal {:literal-kind :keyword :value :value} [])
+                  (node 103 :collection-literal {:literal-kind :map :element-count 2 :source-value :ignored-syntax} [102 101])
+                  (node 104 :collection-literal {:literal-kind :vector :element-count 2 :source-value :ignored-syntax} [100 103])
+                  (node 105 :literal {:literal-kind :keyword :value :payload} [])
+                  (node 106 :literal {:literal-kind :keyword :value :extra} [])
+                  (node 107 :literal {:literal-kind :keyword :value :retained} [])
+                  (node 108 :collection-literal {:literal-kind :map :element-count 4 :source-value :ignored-syntax} [106 107 105 104])
+                  (node 109 :reference {:binding-id (sha 2000)} [])
+                  (assoc (node 110 :let {:initializer-child-indexes [0] :binding-count 1 :body-count 1
+                                        :binding-vector-form-id (sha 113) :binding-vector-syntax-id (sha 113)
+                                        :body-child-indexes [1] :result-policy {:kind :last-body :child-index 1}} [108 109])
+                         :resolved-binding-ids [(sha 2000)])]
+        forms (into {} (map (fn [n]
+                              (let [a (:attributes n) k (:core-form n) id (:node-id n)]
+                                [id {:form-id id :syntax-id id
+                                     :kind (case k :literal (:literal-kind a) :collection-literal (:literal-kind a) :reference :symbol :list)
+                                     :value (:value a) :child-form-ids (:children n)
+                                     :scope-id (if (= id (sha 108)) (sha 3001) nil)}])) sequence))
+        forms (-> forms
+                  (assoc (sha 111) {:form-id (sha 111) :syntax-id (sha 111) :kind :symbol :value 'packet :scope-id (sha 3000)})
+                  (assoc (sha 113) {:form-id (sha 113) :syntax-id (sha 113) :kind :vector :parent-form-id (sha 110)
+                                    :child-form-ids [(sha 111) (sha 108)]})
+                  (assoc-in [(sha 110) :child-form-ids] [(sha 112) (sha 113) (sha 109)]))
+        lexical {:let-core-node-id (sha 110) :ordinal 0 :name 'packet :binding-id (sha 2000)
+                 :definition-form-id (sha 111) :definition-syntax-id (sha 111) :binding-scope-id (sha 3000)
+                 :initializer-node-id (sha 108) :initializer-form-id (sha 108) :initializer-syntax-id (sha 108) :initializer-scope-id (sha 3001)
+                 :visible-prior-binding-ids [] :mutability :immutable}]
+    {:nodes (into {} (map (juxt :node-id identity) sequence)) :sequence sequence :forms forms :lexical [lexical]
+     :bindings {(sha 2000) {:binding-class :lexical :binding-id (sha 2000) :definition-syntax-id (sha 111)
+                           :scope-id (sha 3000) :name 'packet}}
+     :binding-types {(sha 1000) :gravity.type/bool (sha 1001) :gravity.type/i64}
+     :root (sha 108) :reference (sha 109) :flag (sha 100) :value (sha 101) :sha sha}))
+
+(deftest sh08-structural-match-shape-development-kernel
+  (let [{:keys [nodes forms lexical bindings binding-types root reference sha]} (structural-match-input)
+        shape-args [nodes {} binding-types {} lexical bindings forms #{} 0]
+        shape (invoke-c7 'sh08-sm-shape (into [reference] shape-args))
+        flag (get-in shape [:parts 1 :shape :parts 0 :shape])
+        value (get-in shape [:parts 1 :shape :parts 1 :shape :parts 0 :shape])
+        literal (fn [value kind] {:record {:pattern-kind :literal :pattern-value value} :form {:kind kind}})
+        wildcard {:record {:pattern-kind :wildcard}}
+        map-pattern (fn [children] {:record {:pattern-kind :map} :children children})
+        child (fn [key tree] {:key key :tree tree})
+        two-bools (assoc shape :parts [{:key :a :coordinate 1 :shape flag}
+                                      {:key :b :coordinate 3 :shape (assoc flag :node-id (sha 999))}])
+        patterns [(map-pattern [(child :a (literal true :boolean)) (child :b (literal true :boolean))])
+                  (map-pattern [(child :a (literal true :boolean))])
+                  (map-pattern [(child :b (literal true :boolean))]) wildcard]
+        partitions (reduce (fn [{:keys [remaining selected]} pattern]
+                             (let [results (mapv #(invoke-c7 'sh08-sm-split [% pattern]) remaining)]
+                               (is (every? #(= :accepted (:status %)) results))
+                               {:remaining (vec (mapcat :residual results))
+                                :selected (conj selected (vec (mapcat :selected results)))}))
+                           {:remaining [two-bools] :selected []} patterns)]
+    (is (= :accepted (:status shape)) (pr-str shape))
+    (is (= root (:constructor-node-id shape)))
+    (is (= lexical (:binding-links shape)))
+    (is (= [:extra :payload] (mapv :key (:parts shape))))
+    (is (= :gravity.type/i64 (:type value)))
+    (is (= [true false] (get-in flag [:domain :values])))
+    (is (= [[true true] [true false] [false true] [false false]]
+           (mapv (fn [shapes] (mapv #(first (get-in % [:shape :domain :values])) (:parts (first shapes))))
+                 (:selected partitions))))
+    (is (= [] (:remaining partitions)))
+    (is (= "L7-PATTERN-TYPE" (:rule (invoke-c7 'sh08-sm-split [value (literal "wrong" :string)]))))
+    (is (= ["C7-ANNOTATION" :unsupported-numeric-pattern-elaboration :established-numeric-pattern-elaboration]
+           ((juxt :rule :reason :expected) (invoke-c7 'sh08-sm-split [value (literal 1 :integer)]))))
+    (let [descriptor {:kind :gravity/arbitrary-decimal-literal :unscaled-value "10" :scale 1 :literal-id (sha 1)}
+          decimal {:shape-kind :scalar :type :gravity.type/decimal :domain {:values [descriptor]}}
+          split (invoke-c7 'sh08-sm-split [decimal (literal (assoc descriptor :literal-id (sha 2)) :decimal)])]
+      (is (= ["C7-ANNOTATION" :unsupported-numeric-pattern-elaboration :established-numeric-pattern-elaboration]
+             ((juxt :rule :reason :expected) split))))
+    (is (= [] (:selected (invoke-c7 'sh08-sm-split [shape (map-pattern [(child :missing wildcard)])]))))
+    (let [nil-shape {:status :accepted :shape-kind :scalar :type :gravity.type/nil :domain {:values [nil]}}
+          present (assoc shape :parts [{:key :present :coordinate 1 :shape nil-shape}])]
+      (is (= 1 (count (:selected (invoke-c7 'sh08-sm-split [present (map-pattern [(child :present (literal nil :nil))])])))))
+      (is (= 0 (count (:selected (invoke-c7 'sh08-sm-split [present (map-pattern [(child :absent (literal nil :nil))])]))))))
+    (doseq [[reason altered-nodes altered-lexical]
+            [[:invalid-immutable-shape-link nodes [(assoc (first lexical) :initializer-node-id (sha 103))]]
+             [:invalid-immutable-shape-link nodes [(assoc (first lexical) :mutability :mutable)]]
+             [:constructor-child-source-mismatch (assoc-in nodes [root :children 1] (sha 101)) lexical]
+             [:forged-structural-map-key (assoc-in nodes [(sha 106) :core-form] :reference) lexical]]]
+      (is (= reason (:reason (invoke-c7 'sh08-sm-shape [reference altered-nodes {} binding-types {} altered-lexical bindings forms #{} 0])))))
+    (is (= :accepted (:status (invoke-c7 'sh08-sm-shape [root nodes {} binding-types {} lexical bindings forms #{} 0]))))))
+
+(defn- structural-match-products-input []
+  (let [{:keys [sha nodes forms lexical bindings binding-types] :as input} (structural-match-input)
+        mid (sha 502) itemb (sha 5000) scope (sha 9000)
+        region (fn [i] {:kind :match-branch :match-syntax-id mid :clause-ordinal i})
+        form (fn [i kind value parent children]
+               {:form-id (sha i) :syntax-id (sha i) :kind kind :value value :parent-form-id (when parent (sha parent))
+                :child-form-ids (mapv sha children) :scope-id (when (= i 606) scope)
+                :source-span {:byte-start i :byte-end (inc i)} :origin-chain [] :generated-origin nil})
+        patterns-source [(form 600 :map {:payload [true {:value 'item}]} 502 [601 602])
+                         (form 601 :keyword :payload 600 []) (form 602 :vector [true {:value 'item}] 600 [603 604])
+                         (form 603 :boolean true 602 []) (form 604 :map {:value 'item} 602 [605 606])
+                         (form 605 :keyword :value 604 []) (form 606 :symbol 'item 604 []) (form 607 :symbol '_ 502 [])]
+        forms (reduce #(assoc %1 (:form-id %2) %2) forms patterns-source)
+        forms (assoc forms mid (form 502 :list nil 110 [503 109 600 500 607 501])
+                           (sha 500) (form 500 :symbol 'item 502 []) (sha 501) (form 501 :symbol 'fallback 502 []))
+        rows [[600 :map {:payload [true {:value 'item}]} nil [] nil]
+              [602 :vector nil 2 [1] 0] [603 :literal true nil [1 0] 1]
+              [604 :map {:value 'item} nil [1 1] 1] [606 :binding 'item nil [1 1 1] 3]
+              [607 :wildcard '_ nil [] nil]]
+        patterns (mapv (fn [ordinal [i kind value width path parent]]
+                         {:ordinal ordinal :clause-ordinal (if (= i 607) 1 0) :local-ordinal (if (= i 607) 0 ordinal)
+                          :parent-local-ordinal parent :root-local-ordinal 0 :parent-ordinal parent :root-ordinal (if (= i 607) 5 0)
+                          :core-node-id mid :depth (count path) :path path :pattern-kind kind :pattern-value value :vector-width width
+                          :pattern-form-id (sha i) :pattern-syntax-id (sha i)
+                          :pattern-binding-id (when (= i 606) itemb) :pattern-binding-scope-id (when (= i 606) scope)
+                          :pattern-binding-use-syntax-ids (if (= i 606) [(sha 500)] [])
+                          :authenticated-sh06-artifact-id (sha 50) :sh06-semantic-projection-id (sha 51)}) (range) rows)
+        branches (mapv (fn [i]
+                         (let [p (get patterns (if (zero? i) 0 5))]
+                           (merge (select-keys p [:core-node-id :pattern-kind :pattern-value :pattern-form-id :pattern-syntax-id
+                                                  :pattern-binding-id :pattern-binding-scope-id :pattern-binding-use-syntax-ids
+                                                  :authenticated-sh06-artifact-id :sh06-semantic-projection-id])
+                                  {:ordinal i :clause-ordinal i :clause-count 2 :scrutinee-core-node-id (sha 109)
+                                   :branch-core-node-id (sha (+ 500 i)) :branch-child-index (inc i)
+                                   :branch-form-id (sha (+ 500 i)) :branch-syntax-id (sha (+ 500 i))
+                                   :pattern-binding-ids (if (zero? i) [itemb] []) :conditional-region (region i)
+                                   :scrutinee-evaluation :evaluate-scrutinee-once :branch-evaluation :conditionally-evaluate-selected-branch}))) (range 2))
+        clause-fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
+                       :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]
+        attrs {:scrutinee-child-index 0 :branch-count 2 :branch-child-indexes [1 2] :branch-clauses (mapv #(select-keys % clause-fields) branches)
+               :evaluation-order :scrutinee-then-source-ordered-pattern-candidates :selection-policy :source-ordered-pattern-candidates
+               :runtime-reachability :not-asserted-by-sh07-b11 :result-type-join :pending-sh08 :exhaustiveness :pending-sh08
+               :authenticated-sh06-artifact-id (sha 50) :sh06-semantic-projection-id (sha 51)}
+        source (fn [i] {:form-id (sha i) :syntax-id (sha i) :semantic-span {:byte-start i :byte-end (inc i)} :origin-chain [] :generated-origin nil})
+        extra [{:node-id (sha 500) :core-form :reference :children [] :attributes {:binding-id itemb} :resolved-binding-ids [itemb]
+                :source (source 500) :evaluation {:region (region 0)}}
+               {:node-id (sha 501) :core-form :reference :children [] :attributes {:binding-id (sha 1002)} :resolved-binding-ids [(sha 1002)]
+                :source (source 501) :evaluation {:region (region 1)}}
+               {:node-id mid :core-form :match :children [(sha 109) (sha 500) (sha 501)] :attributes attrs :resolved-binding-ids [itemb]
+                :source (source 502) :evaluation {:kind :scrutinee-then-source-ordered-pattern-candidates :order [{:index 0 :core-node-id (sha 109)}]}}]
+        sequence (into (vec (butlast (:sequence input))) (conj extra (assoc-in (last (:sequence input)) [:children 1] mid)))
+        nodes (into {} (map (juxt :node-id identity) sequence))
+        bindings (assoc bindings itemb {:binding-id itemb :binding-class :lexical :definition-syntax-id (sha 606) :scope-id scope :name 'item})
+        skeleton (merge (select-keys attrs [:selection-policy :runtime-reachability :result-type-join :exhaustiveness
+                                            :authenticated-sh06-artifact-id :sh06-semantic-projection-id])
+                        {:core-node-id mid :scrutinee-core-node-id (sha 109) :branch-core-node-ids [(sha 500) (sha 501)]})]
+    (assoc input :core {:nodes sequence :lexical-bindings lexical :match-branch-records branches
+                        :match-pattern-records patterns :match-decision-skeletons [skeleton]}
+           :products {:status :accepted :node-table nodes :binding-index bindings :lexical-bindings lexical}
+           :forms forms :nodes nodes :bindings bindings :binding-types (assoc binding-types (sha 1002) :gravity.type/i64)
+           :item itemb :match-id mid)))
+
+(deftest sh08-structural-match-inference-development-kernel
+  (let [{:keys [core products forms nodes bindings lexical binding-types item match-id sha]} (structural-match-products-input)
+        joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
+        groups (:boolean-matches joined)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+        checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
+        facts (:constraints checked) extraction (get-in facts [0 :extractions 0])]
+    (is (= :accepted (:status joined)) (pr-str joined))
+    (is (= :converged (:convergence-status inference)))
+    (is (= :gravity.type/i64 (get (:binding-types inference) item)))
+    (is (= :gravity.type/i64 (get (:type-table inference) match-id)))
+    (is (= [] (:diagnostics checked)) (pr-str checked))
+    (is (= 2 (count facts)))
+    (is (= [:equality :equality] (mapv :kind facts)))
+    (is (= [1 1 1] (:pattern-path extraction)))
+    (is (= [3 1 1] (:constructor-path extraction)))
+    (is (= :gravity.type/i64 (:type extraction)))
+    (is (= (sha 9000) (:scope-id extraction)))
+    (is (= [true] (get-in facts [0 :matched-shapes 0 :parts 1 :shape :parts 0 :shape :domain :values])))
+    (is (= [false] (get-in facts [1 :matched-shapes 0 :parts 1 :shape :parts 0 :shape :domain :values])))
+    (let [partial (-> (first groups) (update :branches #(vector (first %))) (update :pattern-trees #(vector (first %))))]
+      (is (= ["C7-ANNOTATION" :unsupported-partial-structural-match]
+             ((juxt :rule :reason) (:diagnostic (invoke-c7 'sh08-sm-check [partial (:type-table inference) {} {:profile :meta}])))))
+      (is (= ["L7-NONEXHAUSTIVE" :nonexhaustive-structural-match]
+             ((juxt :rule :reason) (:diagnostic (invoke-c7 'sh08-sm-check [partial (:type-table inference) {} {:profile :formal}]))))))
+    (let [rows (vec (rest (:match-pattern-records core)))
+          root (assoc (rows 0) :ordinal 0 :local-ordinal 0 :root-ordinal 0 :parent-ordinal nil :parent-local-ordinal nil :depth 0 :path [])
+          patterns [root
+                    (assoc (rows 1) :ordinal 1 :local-ordinal 1 :parent-ordinal 0 :parent-local-ordinal 0 :path [0] :depth 1)
+                    (assoc (rows 2) :ordinal 2 :local-ordinal 2 :parent-ordinal 0 :parent-local-ordinal 0 :path [1] :depth 1)
+                    (assoc (rows 3) :ordinal 3 :local-ordinal 3 :parent-ordinal 2 :parent-local-ordinal 2 :path [1 1] :depth 2)
+                    (assoc (rows 4) :ordinal 4 :root-ordinal 4)]
+          branch (assoc (first (:match-branch-records core)) :pattern-kind :vector
+                        :pattern-form-id (sha 602) :pattern-syntax-id (sha 602) :pattern-value [true {:value 'item}])
+          clause-fields (keys (get-in core [:nodes (- (count (:nodes core)) 2) :attributes :branch-clauses 0]))
+          mid-index (- (count (:nodes core)) 2)
+          altered (-> core (assoc :match-pattern-records patterns)
+                      (assoc-in [:match-branch-records 0] branch)
+                      (assoc-in [:nodes mid-index :attributes :branch-clauses 0] (select-keys branch clause-fields)))
+          altered-forms (-> forms (assoc-in [(sha 602) :parent-form-id] match-id)
+                            (assoc-in [match-id :child-form-ids 2] (sha 602)))
+          result (invoke-c7 'sh08-bm-products [altered products (vec (vals altered-forms))])]
+      (is (= :accepted (:status result)) (pr-str result)))
+    (let [group (assoc-in (first groups) [:node :evaluation :owner-function-syntax-id] (sha 8000))
+          functions {(sha 8000) {:body-core-node-id (sha 110) :signature {:return {:type-id :gravity.type/i64}}}}
+          altered (assoc (:type-table inference) (sha 501) :gravity.type/string)
+          diagnostic (:diagnostic (invoke-c7 'sh08-sm-check [group altered functions {:profile :meta :target :jvm}]))]
+      (is (= :gravity.type/i64 (invoke-c7 'sh08-sm-expected-return [group functions])))
+      (is (= ["C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch :gravity.type/i64 :gravity.type/string]
+             ((juxt :rule :reason :expected :actual) diagnostic)))
+      (is (= (sha 501) (get-in diagnostic [:node :node-id]))))
+    (doseq [[label altered] [[:path (assoc-in core [:match-pattern-records 4 :path] [1 0 1])]
+                             [:parent (assoc-in core [:match-pattern-records 4 :parent-ordinal] 1)]
+                             [:root (assoc-in core [:match-pattern-records 4 :root-ordinal] 4)]
+                             [:scope (assoc-in core [:match-pattern-records 4 :pattern-binding-scope-id] nil)]
+                             [:binding (assoc-in core [:match-branch-records 0 :pattern-binding-ids] [])]
+                             [:extra-field (assoc-in core [:match-pattern-records 4 :invented-proof] true)]
+                             [:orphan (update core :match-pattern-records conj (last (:match-pattern-records core)))]]]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products [altered products (vec (vals forms))]))) (name label)))
+    (let [altered (assoc-in forms [(sha 605) :value] :forged-key)]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products [core products (vec (vals altered))])))))
+    (let [call-nodes (assoc-in nodes [(sha 101) :core-form] :call)
+          shape (invoke-c7 'sh08-sm-shape [(sha 104) call-nodes {(sha 101) :gravity.type/i64} binding-types {} lexical bindings forms #{} 0])]
+      (is (= :gravity.type/i64 (get-in shape [:parts 1 :shape :parts 0 :shape :type]))))
+    (let [nonliteral (assoc-in nodes [(sha 100) :core-form] :if)
+          shape (invoke-c7 'sh08-sm-shape [(sha 100) nonliteral {(sha 100) :gravity.type/nil} {} {} lexical bindings forms #{} 0])
+          split (invoke-c7 'sh08-sm-split [shape {:record {:pattern-kind :literal :pattern-value nil} :form {:kind :nil}}])]
+      (is (= [] (:residual split)))
+      (is (= 1 (count (:selected split)))))))
+
+(deftest sh08-structural-match-authenticated-source-composition
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+        artifacts (mapv #(fixture-artifact "accepted" "function-structural-matches" %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [facts (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (:constraint-ledger result))
+              extraction (get-in facts [0 :extractions 0]) shape (:constructor-shape (first facts))
+              payload (first (filter #(= :payload (:key %)) (:parts shape)))
+              core (canonical-core artifact) node-index (into {} (map (juxt :node-id identity) (:nodes core)))
+              pattern (first (filter #(= (:pattern-binding-id %) (:binding-id extraction)) (:match-pattern-records core)))
+              bindings (get-in (function-request artifact) [:b47-context :authenticated-core-request :binding-table])
+              binding (first (filter #(= (:binding-id %) (:binding-id extraction)) bindings))
+              verification (verification-result artifact result)
+              effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [result verification])]
+          (is (= 3 (count facts)))
+          (is (every? #(= :equality (:kind %)) facts))
+          (is (= :gravity.type/i64 (:type extraction)))
+          (is (= (:path pattern) (:pattern-path extraction)))
+          (is (= (:scope-id binding) (:pattern-binding-scope-id pattern) (:scope-id extraction)))
+          (is (= [(:coordinate payload) 1 1] (:constructor-path extraction)))
+          (is (= #{:extra :payload} (set (map :key (:parts shape)))))
+          (doseq [part (:parts shape)]
+            (is (= (:key part) (get-in node-index [(:key-node-id part) :attributes :value]))))
+          (is (= [true false] (get-in payload [:shape :parts 0 :shape :domain :values])))
+          (is (= [true] (get-in (first (filter #(= :payload (:key %)) (:parts (get-in facts [0 :matched-shapes 0]))))
+                               [:shape :parts 0 :shape :domain :values])))
+          (is (= [false] (get-in (first (filter #(= :payload (:key %)) (:parts (get-in facts [1 :matched-shapes 0]))))
+                                [:shape :parts 0 :shape :domain :values])))
+          (is (true? (:exhaustive-after? (last facts))))
+          (is (= :passed (:status verification)))
+          (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+          (is (= (:typed-core result) (:typed-core effected)))
+          (is (= (:constraint-ledger result) (get-in effected [:typed-core :constraints])))
+          (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [result verification effected]))))
+          (doseq [altered [(update result :constraint-ledger
+                                  #(mapv (fn [c] (if (= :sh08-structural-match-v1 (:producer-rule c))
+                                                  (assoc-in c [:constructor-shape :parts 0 :key] :forged) c)) %))
+                           (update result :constraint-ledger
+                                   #(mapv (fn [c] (if (seq (:extractions c)) (assoc-in c [:extractions 0 :type] :gravity.type/string) c)) %))]]
+            (is (= :rejected (:status (verification-result artifact altered))))
+            (is (= :rejected (:status (invoke-c8 'sh09-build-authenticated-pure-effect-result [altered verification]))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" "function-structural-matches" ".gravity"))
+           (slurp (fixture-path "accepted" "function-structural-matches" ".qst"))))))
+
+(defn- assert-structural-source-rejection [basename rule reason anchor value]
+  (let [artifact (fixture-artifact "rejected" basename ".gravity") result (function-result artifact)
+        diagnostic (first (:diagnostics result)) core (canonical-core artifact)
+        request (function-request artifact) forms (get-in request [:b47-context :authenticated-core-request :forms])
+        nodes (:nodes core)
+        pattern (if (= anchor :leaf)
+                  (first (filter #(= value (:pattern-value %)) (:match-pattern-records core)))
+                  (first (:match-pattern-records core)))
+        source-form (first (filter #(= (:form-id %) (:pattern-form-id pattern)) forms))
+        source-node (case anchor
+                      :branch (first (filter #(= (:node-id %) (:branch-core-node-id (second (:match-branch-records core)))) nodes))
+                      :key (let [record (first (:lexical-bindings core))
+                                 ctor (first (filter #(= (:node-id %) (:initializer-node-id record)) nodes))]
+                             (first (filter #(= (:node-id %) (first (:children ctor))) nodes)))
+                      nil)
+        source (if source-node (:source source-node)
+                   {:syntax-id (:syntax-id source-form) :semantic-span (:source-span source-form)
+                    :origin-chain (:origin-chain source-form) :generated-origin (:generated-origin source-form)})]
+    (is (= :accepted (:status artifact)) basename)
+    (is (= :rejected (:status result)) basename)
+    (is (= [rule reason] ((juxt :rule :reason) diagnostic)) (pr-str diagnostic))
+    (is (= :type-checking (:stage diagnostic)))
+    (is (= [(:syntax-id source) (:semantic-span source) (:origin-chain source) (:generated-origin source)]
+           ((juxt :syntax-id :source-span :origin-chain :generated-origin) diagnostic)))
+    (when source-node (is (= (:node-id source-node) (:core-node-id diagnostic))))
+    (when (contains? #{:branch :leaf} anchor)
+      (is (= [:gravity.type/i64 :gravity.type/string] ((juxt :expected-type :actual-type) diagnostic))))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst"))))))
+
+(deftest sh08-structural-match-source-type-rejections
+  (assert-structural-source-rejection "function-structural-match-pattern" "L7-PATTERN-TYPE" :structural-leaf-pattern-type-mismatch :leaf "wrong")
+  (assert-structural-source-rejection "function-structural-match-missing" "L7-UNREACHABLE" :unreachable-structural-match-clause :root nil)
+  (assert-structural-source-rejection "function-structural-match-result" "C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch :branch nil))
+
+(deftest sh08-structural-match-source-vector-width-rejection
+  (assert-structural-source-rejection "function-structural-match-width" "L7-UNREACHABLE" :unreachable-structural-match-clause :root nil))
+
+(deftest sh08-structural-match-source-boundary-rejections
+  (assert-structural-source-rejection "function-structural-match-return-shape" "C7-ANNOTATION" :unestablished-structural-shape :root nil)
+  (assert-structural-source-rejection "function-structural-match-computed-key" "C7-ANNOTATION" :unsupported-structural-map-key :key nil)
+  (let [basename "function-structural-match-scope-escape"
+        diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= ["C5-UNRESOLVED" :name-resolution] ((juxt :id :stage) diagnostic)))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst"))))))
+
+(deftest sh08-structural-match-c8-ledger-development-kernel
+  ;; Current compiled algorithms on normalized inputs, not source admission.
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
+        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
+        fixture (var-get (ns-resolve upstream 'function-typed-result))
+        verify (var-get (ns-resolve upstream 'function-verification))
+        {:keys [core products forms nodes lexical binding-types]} (structural-match-products-input)
+        groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+        constraints (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}]))
+        raw (assoc (fixture "/development/structural-match.gravity") :constraint-ledger constraints)
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (verify typed) result (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed verification])]
+    (is (= 2 (count constraints)))
+    (is (= :accepted (:status result)))
+    (is (= constraints (get-in result [:typed-core :constraints])))
+    (is (= identity (get-in result [:identity-input :sh08-identity-input])))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification result]))))
+    (doseq [candidate [(assoc-in result [:typed-core :constraints 0 :constructor-shape :parts 1 :key] :forged)
+                       (assoc-in result [:typed-core :constraints 0 :extractions 0 :type] :gravity.type/string)
+                       (assoc-in result [:typed-core :constraints 0 :extractions 0 :scope-id] nil)
+                       (assoc-in result [:typed-core :constraints 0 :remaining-after] [])
+                       (assoc-in result [:typed-core :constraints 0 :constraint-id-request :pattern-tree :children 0 :coordinate] 0)
+                       (assoc-in result [:identity-input :sh08-identity-input :constraint-ledger] [])]]
+      (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
+
 (defn- boolean-match-input []
   (let [sha #(str "sha256:" (format "%064x" %))
         mid (sha 30) sid (sha 31) bodies [(sha 32) (sha 33)]

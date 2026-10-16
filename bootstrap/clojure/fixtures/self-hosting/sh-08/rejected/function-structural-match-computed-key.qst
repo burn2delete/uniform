@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.function-structural-match-computed-key
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn computed-key [key :- Keyword value :- I64] :- I64
+  (let [packet {key value}]
+    (match packet {:payload item} item _ value)))

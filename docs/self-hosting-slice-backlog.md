@@ -488,9 +488,105 @@ own executable composition work; this increment does not weaken its boundary.
 Guards, structured/union pattern typing, general subtyping and joins,
 partiality-proof ingestion, recursive/higher-order match composition,
 ownership/effect completion and runtime/backend equivalence remain outside
-this increment. The next structural step needs real constructor-derived
-key/element type evidence before map bindings or guards can be typed. These
-development results are not authoritative migration or release evidence.
+this Boolean-only increment. The structural increment below supplies
+constructor-derived key/element evidence for map/vector bindings; it does not
+yet type guards. These development results are not authoritative migration
+or release evidence.
+
+### Constructor-derived structural match typing: development increment
+
+The C7 function path now derives recursive fixed-vector and keyword-map shapes
+from actual C6 collection constructors and immutable `let` initializer links.
+Map patterns select a subset of keys: extra constructor keys are retained,
+not rejected. A present key whose value is nil is distinct from an absent key.
+For example:
+
+```clojure
+(defn choose [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (let [packet {:extra :retained :payload [flag {:value value}]}]
+    (match packet
+      {:payload [true {:value item}]} item
+      _ fallback)))
+```
+
+`item` receives the established I64 type of the actual value child, its C5
+binding/scope identity, and separate pattern and constructor paths. Source
+syntax stored in `:source-value` is not evaluated or used as field-value
+evidence. Key literals, value-node types, constructor child order, lexical
+initializer positions and binding uses supply the facts. Existing established
+scalar-call types are retained; pattern shape does not manufacture them.
+
+Ordered residual shapes preserve earlier failed tests. In particular, patterns
+`{:a true :b true}`, `{:a true}`, `{:b true}`, `_` over two independent Bool
+fields select TT, TF, FT and FF respectively, without overlapping or dropping
+cases. Binding/wildcard leaves and supported same-type scalar literal tests
+compose with nested maps/vectors. The result join still requires equal
+established branch types. A declared return expectation reaches a nested match
+only through validated final `let` result links, not through initializers or
+arbitrary expressions.
+
+The owner remains `gravity.compiler.c7-type-checker-engine`; focused selectors
+remain in `gravity.self-hosting.sh08-function-call-type-test`:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-structural-match-shape-development-kernel \
+  --exact sh08-structural-match-inference-development-kernel \
+  --exact sh08-structural-match-c8-ledger-development-kernel
+```
+
+Run `sh08-structural-match-authenticated-source-composition` when changing the
+C5/C6-to-C7 composition or C8 handoff. It uses the existing accepted
+`function-structural-matches` `.gravity`/`.qst` pair, including forwarding and
+present-nil cases. The public C7 interface and outer artifact fields are
+unchanged. Versioned structural premises, extraction facts, residual shapes,
+source identities, dependencies and invalidation conditions use the existing
+hashed type table and equality-constraint ledger. C8 preserves that complete
+ledger; no C8 effect policy or production adapter is expanded.
+
+The accepted pair passed 48 assertions, including fresh C7 verification and C8
+shape/key/extraction rewrite rejection, in 191.877 seconds of test execution.
+That is a development cost observation, not a benchmark or migration proof.
+The source run precedes numeric-pattern diagnostic tightening and the root-vector
+join correction described below; its map-root Bool tests, I64 binding extraction
+and nil test do not take those corrected cases. Focused kernels cover those
+later changes. This is not a source run of the final compiler bytes; the
+expensive accepted pair is not repeated solely to refresh its receipt.
+
+The first real rejection/regression group completed with 77 passed assertions
+and one failure, not an all-passing result. Field-type mismatch, missing key,
+declared result mismatch, unsupported function-return shapes and computed
+keys, C5 scope escape, the existing recursive fixed-point regression and the
+language-boundary gate were exercised. The vector-width case exposed a C7
+join that compared the branch's original source vector with the vector
+pattern record's intentionally nil value field; it reported `C7-VERIFY`
+instead of `L7-UNREACHABLE`. That failure is retained rather than relabeled.
+The corrected join compares the branch value with its authenticated source
+form while retaining the vector record's nil/width/child checks. The isolated
+`sh08-structural-match-source-vector-width-rejection` then passed six assertions;
+the six already-correct source cases and accepted pair were not repeated.
+The final current cheap group passed six tests and 173 assertions: shape (23),
+inference and record joins (30), C8 preservation (11), Boolean matches (47),
+atomic annotations (41), and legacy function chains (21). It includes the
+root-vector join, explicit unsupported numeric elaboration, and direct
+meta/formal partiality diagnostics. The formal kernel is not formal-profile
+source composition.
+
+Computed map keys, collection-shape propagation through function returns or
+pattern-bound collection aliases, mutable aliases, generic or external shape
+validation, numeric literal elaboration,
+guards, general unions/subtyping, partiality proofs, recursive/higher-order
+match composition, ownership/effect completion and runtime/backend equivalence
+remain unsupported here. Numeric elaboration being unimplemented is not a
+claim that an unsuffixed numeric pattern is fundamentally incompatible with a
+fixed-width numeric value. Occurrence-specific decimal source descriptors are
+not compared as numeric values. Existing shape/depth/residual/evidence bounds
+produce explicit implementation-limit diagnostics, not new language legality
+rules or silently increased limits. Source composition remains `:meta/:jvm`;
+formal-source support still stops at the unchanged C6 boundary. Authoritative
+migration, full SH-08, target support and release status do not advance from
+these development checks.
 
 ## Current Baseline
 
