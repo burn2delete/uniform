@@ -3969,7 +3969,7 @@
                           (get context :value-type :gravity.type/unknown)
                           :gravity.type/unknown)))
                     (if (= core-form :match)
-                      (sh08-bm-join (rest children) type-table)
+                      (sh08-bm-join (sh08-gd-branch-ids node) type-table)
                       :gravity.type/unknown))))))))))))
 
 ; L7/C7: finite Boolean matches consume the authenticated C6 decision products.
@@ -4182,10 +4182,8 @@
                                                 (recur (rest rows) (conj values {:record (first rows)
                                                   :form (get forms (get (first rows) :pattern-form-id)) :children []}))))}))
                     {:status :rejected :reason :malformed-boolean-match-products :node node})
-                  (let [result (if (contains? unsupported :guard)
-                                 (sh08-sm-failure "C7-ANNOTATION" :unsupported-structural-match-guard unsupported :unguarded-pattern :guard)
-                                 (sh08-sm-group node bs ps (first ss) nodes (get products :binding-index)
-                                             forms sequence (get products :lexical-bindings)))]
+                  (let [result (sh08-sm-group node bs ps (first ss) nodes (get products :binding-index)
+                                             forms sequence (get products :lexical-bindings) (get products :calls))]
                     (if (= :accepted (get result :status))
                       (recur (rest remaining) (+ consumed-branches (count bs)) (+ consumed-patterns (count ps))
                              (conj groups result))
@@ -4287,6 +4285,91 @@
 (defn sh08-sm-failure [rule reason record expected actual]
   {:status :rejected :rule rule :reason reason :record record :expected expected :actual actual})
 
+(defn sh08-gd-branch-ids [node]
+  (let [indexes (get (get node :attributes) :branch-child-indexes) children (get node :children)]
+    (if (vector? indexes)
+      (loop [remaining indexes ids []]
+        (if (= (count remaining) 0) ids
+          (let [index (first remaining)]
+            (if (integer? index)
+              (if (if (> index 0) (< index (count children)) false)
+                (recur (rest remaining) (conj ids (get children index))) []) [])))) [])))
+
+(defn sh08-gd-source [guard]
+  (sh08-bm-project guard [:rule-version :source-child-index :form-id :syntax-id]))
+
+(defn sh08-gd-clause [source index region]
+  (assoc source :child-index index :conditional-region region :evaluation :once-after-structural-success
+                :on-pattern-failure :next-candidate :on-true :branch-body :on-false :next-candidate
+                :non-boolean-type-effect-legality :pending-later-legality))
+
+(defn sh08-gd-values [branches field]
+  (loop [remaining branches result []]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining)
+        (if (contains? (first remaining) :guard) (conj result (get (get (first remaining) :guard) field)) result)))))
+
+(defn sh08-gd-source-valid? [record form forms]
+  (if (contains? record :guard)
+    (let [guard (get record :guard) index (get guard :source-child-index)]
+      (if (integer? index)
+        (if (if (> index 0) (< index (count (get form :child-form-ids))) false)
+          (let [key (get forms (get (get form :child-form-ids) (- index 1)))
+                expression (get forms (get (get form :child-form-ids) index))]
+            (sh08-ft-all-true?
+              [(sh08-ft-record-shape? guard #{:rule-version :source-child-index :form-id :syntax-id})
+               (= :sh07-root-map-guard-v1 (get guard :rule-version))
+               (= :map (get record :pattern-kind) (get form :kind))
+               (= 0 (get record :depth)) (= nil (get record :parent-ordinal))
+               (= :keyword (get key :kind)) (= :when (get key :value))
+               (integer? (/ (- index 1) 2))
+               (= (get key :parent-form-id) (get form :form-id) (get expression :parent-form-id))
+               (= (get guard :form-id) (get expression :form-id))
+               (= (get guard :syntax-id) (get expression :syntax-id))])) false) false))
+    (if (= :map (get form :kind)) (= false (contains? (get form :value) :when)) true)))
+
+(defn sh08-gd-own-tree [nodes body guard]
+  (let [tree (sh08-bm-tree nodes body)]
+    (if (= guard nil) tree (sh08-ft-add-values-to-set (sh08-bm-tree nodes guard) tree))))
+
+(defn sh08-gd-call-ids [nodes tree]
+  (loop [remaining nodes result []]
+    (if (= (count remaining) 0) result
+      (let [node (first remaining)]
+        (recur (rest remaining)
+          (if (if (= :call (get node :core-form)) (contains? tree (get node :node-id)) false)
+            (conj result (get node :node-id)) result))))))
+
+(defn sh08-gd-branch-valid? [node branch root clause index nodes forms sequence calls]
+  (if (contains? branch :guard)
+    (let [guard (get branch :guard) source (sh08-gd-source guard)
+          expression (get nodes (get guard :node-id))
+          source-form (get forms (get source :form-id))
+          region {:kind :match-guard :match-syntax-id (get (get node :source) :syntax-id)
+                  :clause-ordinal (get branch :clause-ordinal)}
+          expected (sh08-gd-clause source index region)
+          tree (sh08-bm-tree nodes (get guard :node-id))
+          actual-calls (sh08-gd-call-ids sequence tree)
+          listed-calls (loop [remaining calls ids []]
+                         (if (= (count remaining) 0) ids
+                           (recur (rest remaining)
+                             (if (contains? tree (get (first remaining) :core-node-id))
+                               (conj ids (get (first remaining) :core-node-id)) ids))))]
+      (sh08-ft-all-true?
+        [(sh08-gd-source-valid? root (get forms (get root :pattern-form-id)) forms)
+         (= source (get root :guard)) (= expected (get clause :guard))
+         (= guard (assoc expected :node-id (get guard :node-id)))
+         (= (get guard :node-id) (get (get node :children) index))
+         (= (get expression :node-id) (get guard :node-id))
+         (= (get (get expression :source) :form-id) (get source :form-id))
+         (= (get (get expression :source) :syntax-id) (get source :syntax-id))
+         (if (= :literal (get expression :core-form))
+           (if (= (get (get expression :attributes) :literal-kind) (get source-form :kind))
+             (= (get (get expression :attributes) :value) (get source-form :value)) false) true)
+         (= (get (get expression :evaluation) :region) region)
+         (= actual-calls listed-calls)]))
+    (if (contains? root :guard) false (= false (contains? clause :guard)))))
+
 (defn sh08-sm-source-children [form forms]
   (let [kind (get form :kind) ids (get form :child-form-ids)]
     (if (contains? #{:map :vector} kind)
@@ -4306,7 +4389,7 @@
                   (if (if (= (get child :parent-form-id) (get form :form-id))
                         (if (= kind :vector) (= (get child :value) (get (get form :value) coordinate)) true) false)
                     (if (= key :when)
-                      (sh08-sm-failure "C7-ANNOTATION" :unsupported-structural-match-guard nil :unguarded-pattern key)
+                      (recur (rest (rest remaining)) (+ coordinate 2) (conj seen key) result)
                       (recur (if (= kind :map) (rest (rest remaining)) (rest remaining))
                              (+ coordinate (if (= kind :map) 2 1)) (conj seen key)
                              (conj result {:form-id child-id :coordinate (if (= kind :map) (+ coordinate 1) coordinate)
@@ -4334,14 +4417,19 @@
         form (get (get group :forms) form-id) node (get group :node)
         binding-id (get record :pattern-binding-id) binding (get bindings binding-id)
         body-id (get group :branch-id) nodes (get group :nodes)
-        uses (if (= binding-id nil) [] (sh08-bm-uses sequence (sh08-bm-tree nodes body-id) binding-id))
+        uses (if (= binding-id nil) [] (sh08-bm-uses sequence (sh08-gd-own-tree nodes body-id (get group :guard-id)) binding-id))
         children (sh08-sm-source-children form (get group :forms))]
     (if (sh08-ft-all-true?
           [(sh08-ft-record-shape? record
+             (if (contains? record :guard)
+               (conj #{:ordinal :clause-ordinal :local-ordinal :parent-local-ordinal :root-local-ordinal :parent-ordinal :root-ordinal
+                       :core-node-id :depth :path :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value :vector-width
+                       :pattern-binding-id :pattern-binding-scope-id :pattern-binding-use-syntax-ids
+                       :authenticated-sh06-artifact-id :sh06-semantic-projection-id} :guard)
              #{:ordinal :clause-ordinal :local-ordinal :parent-local-ordinal :root-local-ordinal :parent-ordinal :root-ordinal
                :core-node-id :depth :path :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value :vector-width
                :pattern-binding-id :pattern-binding-scope-id :pattern-binding-use-syntax-ids
-               :authenticated-sh06-artifact-id :sh06-semantic-projection-id})
+               :authenticated-sh06-artifact-id :sh06-semantic-projection-id}))
            (map? form) (= (get record :pattern-form-id) form-id)
            (= (get record :pattern-syntax-id) (get form :syntax-id))
            (= (get record :core-node-id) (get node :node-id))
@@ -4352,6 +4440,7 @@
            (= (get record :parent-ordinal) (if (= parent-index nil) nil (get (get records parent-index) :ordinal)))
            (= path (get record :path)) (= (count path) (get record :depth))
            (sh08-sm-pattern-kind-valid? record form)
+           (sh08-gd-source-valid? record form (get group :forms))
            (= (get record :pattern-binding-use-syntax-ids) uses)
            (if (= binding-id nil) true
              (sh08-ft-all-true?
@@ -4377,10 +4466,11 @@
         (assoc children :record record))
       (sh08-sm-failure "C7-VERIFY" :malformed-structural-pattern-tree record :exact-source-coordinate-binding-join form-id))))
 
-(defn sh08-sm-group [node branches patterns skeleton nodes bindings forms sequence lexical]
+(defn sh08-sm-group [node branches patterns skeleton nodes bindings forms sequence lexical calls]
   (let [attrs (get node :attributes) clauses (get attrs :branch-clauses)
         owner (get forms (get (get node :source) :form-id))
-        base {:node node :branches branches :patterns patterns :skeleton skeleton :nodes nodes :forms forms
+        guard-ids (sh08-gd-values branches :node-id)
+        base {:node node :branches branches :patterns patterns :skeleton skeleton :nodes nodes :forms forms :calls calls :node-sequence sequence
               :lexical-bindings lexical :binding-index bindings :structural? true}
         clause-fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id
                        :pattern-value :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]]
@@ -4390,11 +4480,20 @@
                                  #{:core-node-id :scrutinee-core-node-id :branch-core-node-ids :selection-policy :runtime-reachability
                                    :result-type-join :exhaustiveness :authenticated-sh06-artifact-id :sh06-semantic-projection-id})
                                (sh08-ft-record-shape? attrs
+                                 (if (> (count guard-ids) 0)
+                                   #{:scrutinee-child-index :branch-count :branch-child-indexes :branch-clauses :evaluation-order
+                                     :selection-policy :runtime-reachability :result-type-join :exhaustiveness
+                                     :authenticated-sh06-artifact-id :sh06-semantic-projection-id :guard-rule-version :guard-child-indexes}
                                  #{:scrutinee-child-index :branch-count :branch-child-indexes :branch-clauses :evaluation-order
                                    :selection-policy :runtime-reachability :result-type-join :exhaustiveness
-                                   :authenticated-sh06-artifact-id :sh06-semantic-projection-id})
+                                   :authenticated-sh06-artifact-id :sh06-semantic-projection-id}))
                                (> (count branches) 0) (= (count branches) (count clauses) (get attrs :branch-count))
-                                (= (get node :children) (sh08-ft-add-values-to-set (get skeleton :branch-core-node-ids) [(first (get node :children))]))
+                                (= (get node :children) (sh08-ft-add-values-to-set guard-ids
+                                   (sh08-ft-add-values-to-set (get skeleton :branch-core-node-ids) [(first (get node :children))])))
+                                (sh08-all-unique? (get node :children) [])
+                                (if (> (count guard-ids) 0)
+                                  (if (= :sh07-root-map-guard-v1 (get attrs :guard-rule-version) (get node :lowering-rule-version))
+                                    (= (get attrs :guard-child-indexes) (sh08-gd-values branches :child-index)) false) true)
                                 (= (get skeleton :core-node-id) (get node :node-id))
                                 (= (get skeleton :scrutinee-core-node-id) (first (get node :children)))
                                 (= (get skeleton :authenticated-sh06-artifact-id) (get attrs :authenticated-sh06-artifact-id))
@@ -4407,7 +4506,7 @@
                                 (= :scrutinee-then-source-ordered-pattern-candidates (get attrs :evaluation-order)
                                    (get (get node :evaluation) :kind))
                                 (= [{:index 0 :core-node-id (first (get node :children))}] (get (get node :evaluation) :order))]) false) false)
-      (loop [remaining branches ordinal 0 pattern-index 0 trees [] ids [] indexes []]
+      (loop [remaining branches ordinal 0 pattern-index 0 trees [] ids [] indexes [] guard-index (+ (count branches) 1)]
         (if (= (count remaining) 0)
           (if (sh08-ft-all-true? [(= pattern-index (count patterns))
                                   (= ids (get node :resolved-binding-ids)) (= indexes (get attrs :branch-child-indexes))])
@@ -4417,16 +4516,25 @@
                 body (get nodes (get branch :branch-core-node-id))
                 region {:kind :match-branch :match-syntax-id (get (get node :source) :syntax-id) :clause-ordinal ordinal}
                 result (sh08-sm-pattern-tree patterns pattern-index pattern-index nil [] (get branch :pattern-form-id)
-                                             (assoc base :branch-id (get body :node-id)) bindings sequence)]
+                                             (assoc base :branch-id (get body :node-id) :guard-id (get (get branch :guard) :node-id)) bindings sequence)]
             (if (= :accepted (get result :status))
               (if (sh08-ft-all-true?
                     [(sh08-ft-record-shape? branch
+                       (if (contains? branch :guard)
+                         #{:ordinal :clause-ordinal :clause-count :core-node-id :scrutinee-core-node-id :branch-core-node-id
+                           :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value :branch-form-id
+                           :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids
+                           :pattern-binding-use-syntax-ids :conditional-region :scrutinee-evaluation :branch-evaluation
+                           :authenticated-sh06-artifact-id :sh06-semantic-projection-id :guard}
                        #{:ordinal :clause-ordinal :clause-count :core-node-id :scrutinee-core-node-id :branch-core-node-id
                          :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value :branch-form-id
                          :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids
                          :pattern-binding-use-syntax-ids :conditional-region :scrutinee-evaluation :branch-evaluation
-                         :authenticated-sh06-artifact-id :sh06-semantic-projection-id})
-                     (= (sh08-bm-project branch clause-fields) (get clauses ordinal))
+                         :authenticated-sh06-artifact-id :sh06-semantic-projection-id}))
+                     (= (if (contains? branch :guard)
+                          (assoc (sh08-bm-project branch clause-fields) :guard (get (get clauses ordinal) :guard))
+                          (sh08-bm-project branch clause-fields)) (get clauses ordinal))
+                     (sh08-gd-branch-valid? node branch root (get clauses ordinal) guard-index nodes forms sequence calls)
                      (= (get branch :clause-ordinal) ordinal (get root :clause-ordinal))
                      (= (get branch :clause-count) (count branches)) (= (get branch :branch-child-index) (+ ordinal 1))
                      (= (get branch :core-node-id) (get node :node-id))
@@ -4449,7 +4557,8 @@
                      (= (get branch :authenticated-sh06-artifact-id) (get attrs :authenticated-sh06-artifact-id))
                      (= (get branch :sh06-semantic-projection-id) (get attrs :sh06-semantic-projection-id))])
                 (recur (rest remaining) (+ ordinal 1) (get result :next-index) (conj trees (get result :tree))
-                       (sh08-ft-add-values-to-set (get result :binding-ids) ids) (conj indexes (+ ordinal 1)))
+                       (sh08-ft-add-values-to-set (get result :binding-ids) ids) (conj indexes (+ ordinal 1))
+                       (if (contains? branch :guard) (+ guard-index 1) guard-index))
                 (sh08-sm-failure "C7-VERIFY" :malformed-structural-branch-products root :exact-clause-branch-join branch)) result))))
       (sh08-sm-failure "C7-VERIFY" :malformed-structural-decision-products nil :exact-match-skeleton skeleton))))
 
@@ -4602,7 +4711,46 @@
               (sh08-ft-add-values-to-set
                 (sh08-sm-extractions (get part :shape) (get child :tree) (conj constructor-path (get part :coordinate))) result))))))))
 
-(defn sh08-sm-partition [group shape]
+(defn sh08-gd-result [group branch types validate?]
+  (if (contains? branch :guard)
+    (let [guard (get branch :guard) id (get guard :node-id) node (get (get group :nodes) id)
+          type (get types id :gravity.type/unknown) tree (sh08-bm-tree (get group :nodes) id)
+          control (loop [remaining (get group :node-sequence)]
+                    (if (= (count remaining) 0) nil
+                      (let [candidate (first remaining)]
+                        (if (if (contains? tree (get candidate :node-id))
+                              (contains? #{:throw :try :recur} (get candidate :core-form)) false)
+                          candidate (recur (rest remaining))))))
+          truth (if (= :literal (get node :core-form))
+                  (if (= :boolean (get (get node :attributes) :literal-kind))
+                    (if (= true (get (get node :attributes) :value)) :true :false) :unknown) :unknown)]
+      (if (if validate? (map? control) false)
+        (assoc (sh08-sm-failure "C7-ANNOTATION" :unsupported-guard-control-transfer nil :normally-returning-guard (get control :core-form)) :node control)
+        (if (if validate? (= false (= type :gravity.type/bool)) false)
+          (assoc (sh08-sm-failure "L7-GUARD-TYPE" :guard-result-not-boolean nil :gravity.type/bool type) :node node)
+          {:status :accepted :truth truth
+           :guard {:rule-version :sh08-bool-root-map-guard-v1 :core-node-id id :type type :truth truth
+                   :source (sh08-gd-source guard) :conditional-region (get guard :conditional-region)
+                   :effects (get (get node :preserved-declarations) :effects)
+                   :capabilities (get (get node :preserved-declarations) :capabilities)
+                   :evaluation :once-after-structural-success :on-pattern-failure :next-candidate
+                   :on-true :branch-body :on-false :next-candidate
+                   :binding-ids (get branch :pattern-binding-ids)
+                   :call-node-ids (sh08-gd-call-ids (get group :node-sequence) tree)
+                   :call-membership (loop [remaining (get group :node-sequence) result []]
+                                      (if (= (count remaining) 0) result
+                                        (let [call-node (first remaining)]
+                                          (recur (rest remaining)
+                                            (if (if (= :call (get call-node :core-form))
+                                                  (contains? tree (get call-node :node-id)) false)
+                                              (conj result {:core-node-id (get call-node :node-id)
+                                                            :evaluation (get call-node :evaluation)
+                                                            :call-record (first (sh08-bm-select (get group :calls) :core-node-id (get call-node :node-id)))}) result)))))
+                   :dependencies {:guard guard :binding-ids (get branch :pattern-binding-ids)}
+                   :invalidation [:guard-source :guard-node-type :guard-region :binding-scopes :guard-call-facts :guard-effects :guard-capabilities]}})))
+    {:status :accepted :truth :true}))
+
+(defn sh08-sm-partition-with-guards [group shape types validate?]
   (loop [trees (get group :pattern-trees) branches (get group :branches) domains [shape] facts []]
     (if (= (count trees) 0) {:status :accepted :branches facts :remaining domains}
       (let [tree (first trees)
@@ -4617,14 +4765,23 @@
         (if (= :accepted (get split :status))
           (if (= (count (get split :selected)) 0)
             (sh08-sm-failure "L7-UNREACHABLE" :unreachable-structural-match-clause (get tree :record) :remaining-constructor-case (get (get tree :record) :pattern-value))
-            (let [extractions (loop [selected (get split :selected) result []]
+            (let [guard-result (sh08-gd-result group (first branches) types validate?)
+                  extractions (loop [selected (get split :selected) result []]
                                 (if (= (count selected) 0) result
                                   (recur (rest selected) (sh08-ft-add-values-to-set
                                      (sh08-sm-extractions (first selected) tree []) result))))]
-              (recur (rest trees) (rest branches) (get split :residual)
-                     (conj facts {:branch (first branches) :tree tree :remaining-before domains
-                                   :selected (get split :selected) :remaining-after (get split :residual)
-                                   :extractions extractions})))) split)))))
+              (if (= :accepted (get guard-result :status))
+                (let [after (if (= :true (get guard-result :truth)) (get split :residual) domains)
+                      selected (if (= :false (get guard-result :truth)) [] (get split :selected))
+                      fact {:branch (first branches) :tree tree :remaining-before domains
+                            :selected selected :remaining-after after :extractions extractions}]
+                  (recur (rest trees) (rest branches) after
+                    (conj facts (if (contains? guard-result :guard)
+                                  (assoc fact :guard (get guard-result :guard) :structural-selected (get split :selected)) fact))))
+                guard-result))) split)))))
+
+(defn sh08-sm-partition [group shape]
+  (sh08-sm-partition-with-guards group shape {} false))
 
 (defn sh08-sm-group-shape [group types binding-types functions]
   (sh08-sm-shape (first (get (get group :node) :children)) (get group :nodes) types binding-types functions
@@ -4669,7 +4826,7 @@
 
 (defn sh08-sm-check [group types functions module]
   (let [node (get group :node) shape (sh08-sm-group-shape group types {} functions)
-        partition (if (= :accepted (get shape :status)) (sh08-sm-partition group shape) shape)
+        partition (if (= :accepted (get shape :status)) (sh08-sm-partition-with-guards group shape types true) shape)
         declared (sh08-sm-expected-return group functions)]
     (if (= :accepted (get partition :status))
       (if (= 0 (count (get partition :remaining)))
@@ -4683,7 +4840,7 @@
               (if (sh08-ft-known? type)
                 (if (if (sh08-ft-known? expected) (= expected type) true)
                   (recur (rest branches) type
-                    (conj facts {:constraint-id-request
+                    (conj facts (sh08-gd-constraint fact {:constraint-id-request
                                   {:domain :gravity/sh08-structural-match-constraint-v1 :match-core-node-id (get node :node-id)
                                    :clause-ordinal (get branch :clause-ordinal) :branch branch
                                    :pattern-tree (get fact :tree) :skeleton (get group :skeleton)}
@@ -4698,7 +4855,7 @@
                                                 :pattern-tree (get fact :tree) :branch-node-id body-id :extractions (get fact :extractions)}
                                  :solution {:result-type type :selected-shapes (get fact :selected) :binding-extractions (get fact :extractions)}
                                  :invalidation [:constructor-children :key-nodes :value-node-types :immutable-initializers :pattern-paths :binding-scopes :branch-types]
-                                 :profile (get module :profile) :target (get module :target) :status :solved :diagnostics []}))
+                                 :profile (get module :profile) :target (get module :target) :status :solved :diagnostics []})))
                   {:diagnostic (sh08-bm-error (if (= declared nil) "C7-ANNOTATION" "C7-TYPE-MISMATCH")
                                    (if (= declared nil) :unsupported-heterogeneous-structural-match-join :structural-match-branch-type-mismatch)
                                    body expected type)})
@@ -4707,6 +4864,20 @@
                          (if (= :formal (get module :profile)) :nonexhaustive-structural-match :unsupported-partial-structural-match)
                          node :exhaustive-constructor-match (get partition :remaining))})
       {:diagnostic (sh08-sm-diagnostic group partition)})))
+
+(defn sh08-gd-constraint [fact constraint]
+  (if (contains? fact :guard)
+    (assoc constraint :guard (get fact :guard) :guard-rule-version :sh08-bool-root-map-guard-v1
+                      :structurally-matched-shapes (get fact :structural-selected)
+                      :dependencies (assoc (get constraint :dependencies) :guard (get fact :guard))
+                      :solution (assoc (get constraint :solution) :guard-truth (get (get fact :guard) :truth)
+                                       :guard-body-shapes (get fact :selected) :guard-fallthrough-shapes (get fact :remaining-after))
+                      :invalidation (sh08-ft-add-values-to-set
+                                      [:guard-source :guard-node-type :guard-region :guard-call-facts :guard-truth :guard-evaluation-order :guard-effects :guard-capabilities]
+                                      (get constraint :invalidation))
+                      :constraint-id-request (assoc (get constraint :constraint-id-request)
+                                               :domain :gravity/sh08-guarded-structural-match-constraint-v1
+                                               :guard (get fact :guard))) constraint))
 
 (defn sh08-sm-split-children [shape children]
   (loop [remaining children selected [shape] residual []]

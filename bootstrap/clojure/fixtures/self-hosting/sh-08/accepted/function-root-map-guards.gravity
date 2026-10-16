@@ -1,0 +1,15 @@
+(ns self-hosting.sh08.function-root-map-guards
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn permit [flag :- Bool] :- Bool flag)
+(defn choose [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (match {:ok flag :value value}
+    {:ok ok :value item :when (permit ok)} item
+    {:value again :when false} again
+    _ fallback))
+(defn retain-guard-binding [flag :- Bool fallback :- Bool] :- Bool
+  (match {:ok flag}
+    {:ok ok :when (permit ok)} ok
+    _ fallback))
+(defn literal-true-total [value :- I64] :- I64
+  (match {:value value} {:value item :when true} item))

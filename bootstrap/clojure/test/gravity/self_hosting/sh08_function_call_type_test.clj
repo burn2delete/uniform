@@ -757,6 +757,291 @@
       (is (= [] (:residual split)))
       (is (= 1 (count (:selected split)))))))
 
+(defn- guarded-match-input []
+  (let [{:keys [core products forms sha item match-id binding-types] :as input} (structural-match-products-input)
+        guard-id (sha 700) region {:kind :match-guard :match-syntax-id match-id :clause-ordinal 0}
+        source {:rule-version :sh07-root-map-guard-v1 :source-child-index 3 :form-id guard-id :syntax-id guard-id}
+        clause (assoc source :child-index 3 :conditional-region region :evaluation :once-after-structural-success
+                      :on-pattern-failure :next-candidate :on-true :branch-body :on-false :next-candidate
+                      :non-boolean-type-effect-legality :pending-later-legality)
+        expression '(allow item)
+        forms (-> forms
+                  (assoc-in [(sha 603) :kind] :symbol)
+                  (assoc-in [(sha 603) :value] '_)
+                  (assoc-in [(sha 602) :value] ['_ {:value 'item}])
+                  (assoc-in [(sha 600) :value :payload] ['_ {:value 'item}])
+                  (assoc-in [(sha 600) :value :when] expression)
+                  (update-in [(sha 600) :child-form-ids] into [(sha 701) guard-id])
+                  (assoc (sha 701) {:form-id (sha 701) :syntax-id (sha 701) :kind :keyword :value :when
+                                    :parent-form-id (sha 600) :child-form-ids []})
+                  (assoc guard-id {:form-id guard-id :syntax-id guard-id :kind :list :value expression
+                                   :parent-form-id (sha 600) :child-form-ids [(sha 702) (sha 703)]})
+                  (assoc (sha 702) {:form-id (sha 702) :syntax-id (sha 702) :kind :symbol :value 'allow :parent-form-id guard-id})
+                  (assoc (sha 703) {:form-id (sha 703) :syntax-id (sha 703) :kind :symbol :value 'item :parent-form-id guard-id}))
+        node (fn [i kind attrs children]
+               {:node-id (sha i) :core-form kind :attributes attrs :children (mapv sha children)
+                :resolved-binding-ids (if-let [id (:binding-id attrs)] [id] [])
+                :source {:form-id (sha i) :syntax-id (sha i) :semantic-span {:byte-start i :byte-end (inc i)}
+                         :origin-chain [] :generated-origin nil} :evaluation {:region region}})
+        guards [(node 702 :reference {:binding-id (sha 8000)} []) (node 703 :reference {:binding-id item} [])
+                (node 700 :call {:argument-count 1} [702 703])]
+        mid-index (- (count (:nodes core)) 2)
+        core (-> core
+                 (assoc-in [:match-pattern-records 2 :pattern-kind] :wildcard)
+                 (assoc-in [:match-pattern-records 2 :pattern-value] '_)
+                 (assoc-in [:match-pattern-records 0 :pattern-value :payload] ['_ {:value 'item}])
+                 (assoc-in [:match-branch-records 0 :pattern-value :payload] ['_ {:value 'item}])
+                 (assoc-in [:nodes mid-index :attributes :branch-clauses 0 :pattern-value :payload] ['_ {:value 'item}])
+                 (assoc-in [:match-pattern-records 0 :guard] source)
+                 (assoc-in [:match-pattern-records 0 :pattern-value :when] expression)
+                 (assoc-in [:match-pattern-records 4 :pattern-binding-use-syntax-ids] [(sha 703) (sha 500)])
+                 (assoc-in [:match-branch-records 0 :guard] (assoc clause :node-id guard-id))
+                 (assoc-in [:match-branch-records 0 :pattern-value :when] expression)
+                 (assoc-in [:nodes mid-index :attributes :branch-clauses 0 :guard] clause)
+                 (assoc-in [:nodes mid-index :attributes :branch-clauses 0 :pattern-value :when] expression)
+                 (assoc-in [:nodes mid-index :attributes :guard-child-indexes] [3])
+                 (assoc-in [:nodes mid-index :attributes :guard-rule-version] :sh07-root-map-guard-v1)
+                 (assoc-in [:nodes mid-index :lowering-rule-version] :sh07-root-map-guard-v1)
+                 (update-in [:nodes mid-index :children] conj guard-id))
+        sequence (vec (concat (take 10 (:nodes core)) guards (drop 10 (:nodes core))))
+        nodes (into {} (map (juxt :node-id identity) sequence))
+        calls [{:core-node-id guard-id :argument-node-ids [(sha 703)] :evaluation-order :operator-then-arguments}]
+        permit {:function-id (sha 7000) :parameter-binding-ids [(sha 8001)]
+                :parameters [{:binding-id (sha 8001) :type :gravity.type/i64}] :return :gravity.type/bool :status :inferred}
+        functions {(sha 7000) permit}]
+    (assoc input :core (assoc core :nodes sequence :calls calls)
+           :products (assoc products :node-table nodes :calls calls) :forms forms :nodes nodes :guard-id guard-id
+           :guard-index (+ mid-index 3) :functions functions
+           :calls calls :edges [{:call-core-node-id guard-id :classification :local-function :callee-function-syntax-id (sha 7000)}]
+           :binding-types (assoc binding-types (sha 8000) permit (sha 8001) :gravity.type/i64))))
+
+(defn- literal-guard-input [truth fallback?]
+  (let [{:keys [core products forms nodes sha guard-id match-id] :as input} (guarded-match-input)
+        node (-> (get nodes guard-id) (assoc :core-form :literal :attributes {:literal-kind :boolean :value truth}
+                                            :children [] :resolved-binding-ids []))
+        forms (-> forms (assoc-in [guard-id :kind] :boolean) (assoc-in [guard-id :value] truth)
+                        (assoc-in [guard-id :child-form-ids] []) (assoc-in [(sha 600) :value :when] truth))
+        sequence (mapv #(if (= guard-id (:node-id %)) node %) (remove #(contains? #{(sha 702) (sha 703)} (:node-id %)) (:nodes core)))
+        mid-index (- (count sequence) 2)
+        core (-> core (assoc :nodes sequence :calls [])
+                 (assoc-in [:match-pattern-records 0 :pattern-value :when] truth)
+                 (assoc-in [:match-pattern-records 4 :pattern-binding-use-syntax-ids] [(sha 500)])
+                 (assoc-in [:match-branch-records 0 :pattern-value :when] truth)
+                 (assoc-in [:nodes mid-index :attributes :branch-clauses 0 :pattern-value :when] truth))
+        core (if fallback? core
+               (-> core (update :match-pattern-records pop)
+                   (assoc :match-branch-records [(assoc (first (:match-branch-records core)) :clause-count 1 :guard
+                                                      (assoc (get-in core [:match-branch-records 0 :guard]) :child-index 2))])
+                   (assoc-in [:nodes mid-index :attributes :branch-count] 1)
+                   (assoc-in [:nodes mid-index :attributes :branch-child-indexes] [1])
+                   (assoc-in [:nodes mid-index :attributes :branch-clauses]
+                             [(assoc-in (first (get-in core [:nodes mid-index :attributes :branch-clauses])) [:guard :child-index] 2)])
+                   (assoc-in [:nodes mid-index :attributes :guard-child-indexes] [2])
+                   (assoc-in [:nodes mid-index :children] [(sha 109) (sha 500) guard-id])
+                   (assoc-in [:match-decision-skeletons 0 :branch-core-node-ids] [(sha 500)])
+                   (update :nodes #(vec (remove (fn [n] (= (sha 501) (:node-id n))) %)))))
+        forms (if fallback? forms (update-in forms [match-id :child-form-ids] #(vec (take 4 %))))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))]
+    (assoc input :core core :nodes nodes :forms forms :calls []
+           :products (assoc products :node-table nodes :calls []))))
+
+(deftest sh08-root-map-guard-development-kernel
+  (let [{:keys [core products forms nodes lexical binding-types item match-id guard-id functions calls edges sha]} (guarded-match-input)
+        joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
+        groups (:boolean-matches joined)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] calls edges functions binding-types 50 {:boolean-matches groups}])
+        types (:type-table inference)
+        checked (invoke-c7 'sh08-bm-checks [groups types functions {:profile :meta :target :jvm}])
+        facts (:constraints checked)]
+    (is (= :accepted (:status joined)) (pr-str joined))
+    (is (= :converged (:convergence-status inference)))
+    (is (= :gravity.type/i64 (get types match-id)))
+    (is (= :gravity.type/bool (get types guard-id)))
+    (is (= :gravity.type/i64 (get (:binding-types inference) item)))
+    (is (= [] (:diagnostics checked)) (pr-str checked))
+    (is (= :unknown (get-in facts [0 :guard :truth])))
+    (is (= (get-in facts [0 :guard]) (get-in facts [0 :dependencies :guard])))
+    (is (= :unknown (get-in facts [0 :solution :guard-truth])))
+    (is (contains? (set (get-in facts [0 :invalidation])) :guard-node-type))
+    (is (= {:dependencies {:a 1} :solution {:b 2} :invalidation [:c]}
+           (invoke-c7 'sh08-gd-constraint [{} {:dependencies {:a 1} :solution {:b 2} :invalidation [:c]}])))
+    (is (= [guard-id] (get-in facts [0 :guard :call-node-ids])))
+    (is (= (get-in nodes [guard-id :evaluation]) (get-in facts [0 :guard :call-membership 0 :evaluation])))
+    (is (= (get-in facts [0 :remaining-before]) (get-in facts [0 :remaining-after])))
+    (is (true? (:exhaustive-after? (last facts))))
+    (is (= (count (get-in facts [0 :matched-shapes])) (count (get-in facts [0 :remaining-before]))))
+    (let [guard-node (get nodes guard-id)
+          declarations {:effects [:compiler/read-ir] :capabilities [:compiler/read]}
+          effectful (assoc-in (first groups) [:nodes guard-id :preserved-declarations] declarations)
+          result (invoke-c7 'sh08-gd-result [effectful (first (:branches effectful)) types true])
+          throwing (-> (first groups) (assoc-in [:nodes guard-id :core-form] :throw)
+                       (update :node-sequence #(mapv (fn [n] (if (= guard-id (:node-id n)) (assoc n :core-form :throw) n)) %)))
+          failure (invoke-c7 'sh08-gd-result [throwing (first (:branches throwing)) types true])]
+      (is (= :accepted (:status result)))
+      (is (= [(:effects declarations) (:capabilities declarations)]
+             ((juxt :effects :capabilities) (:guard result))))
+      (is (= ["C7-ANNOTATION" :unsupported-guard-control-transfer]
+             ((juxt :rule :reason) failure))))
+    (doseq [type [:gravity.type/nil :gravity.type/integer :gravity.type/string :gravity.type/unknown]]
+      (let [diagnostic (:diagnostic (invoke-c7 'sh08-sm-check [(first groups) (assoc types guard-id type) functions {:profile :meta}]))]
+        (is (= ["L7-GUARD-TYPE" :guard-result-not-boolean :gravity.type/bool type]
+               ((juxt :rule :reason :expected :actual) diagnostic)))
+        (is (= guard-id (get-in diagnostic [:node :node-id])))))
+    (let [partial (-> (first groups) (update :branches #(vector (first %))) (update :pattern-trees #(vector (first %))))]
+      (is (= "C7-ANNOTATION" (get-in (invoke-c7 'sh08-sm-check [partial types functions {:profile :meta}]) [:diagnostic :rule])))
+      (is (= "L7-NONEXHAUSTIVE" (get-in (invoke-c7 'sh08-sm-check [partial types functions {:profile :formal}]) [:diagnostic :rule]))))
+    (doseq [[label altered altered-products altered-forms]
+            [[:source (assoc-in core [:match-pattern-records 0 :guard :source-child-index] 1) products forms]
+             [:index (assoc-in core [:match-branch-records 0 :guard :child-index] 2) products forms]
+             [:node (assoc-in core [:match-branch-records 0 :guard :node-id] (sha 500)) products forms]
+             [:clause (assoc-in core [:nodes (- (count (:nodes core)) 2) :attributes :branch-clauses 0 :guard :on-false] :branch-body) products forms]
+             [:uses (assoc-in core [:match-pattern-records 4 :pattern-binding-use-syntax-ids] [(sha 500)]) products forms]
+             [:calls core (assoc products :calls []) forms]
+             [:parent core products (assoc-in forms [guard-id :parent-form-id] match-id)]]]
+      (is (= :rejected (:status (invoke-c7 'sh08-bm-products [altered altered-products (vec (vals altered-forms))]))) (name label)))))
+
+(deftest sh08-root-map-guard-literal-development-kernel
+  (doseq [[truth fallback?] [[false true] [true false]]]
+    (let [{:keys [core products forms nodes lexical binding-types functions sha guard-id]} (literal-guard-input truth fallback?)
+          joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
+          groups (:boolean-matches joined)
+          inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                               [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+          checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta}])
+          first-fact (first (:constraints checked))]
+      (is (= :accepted (:status joined)) (pr-str joined))
+      (is (= [] (:diagnostics checked)) (pr-str checked))
+      (is (= (if truth :true :false) (get-in first-fact [:guard :truth])))
+      (is (= :gravity.type/i64 (get-in first-fact [:extractions 0 :type])))
+      (if truth
+        (is (true? (:exhaustive-after? first-fact)))
+        (do (is (= [] (:matched-shapes first-fact)))
+            (is (= (:remaining-before first-fact) (:remaining-after first-fact)))
+            (let [group (assoc-in (first groups) [:node :evaluation :owner-function-syntax-id] (sha 9009))
+                  functions {(sha 9009) {:body-core-node-id (:node-id (:node group)) :signature {:return {:type-id :gravity.type/i64}}}}
+                  bad-types (assoc (:type-table inference) (sha 500) :gravity.type/string)
+                  diagnostic (:diagnostic (invoke-c7 'sh08-sm-check [group bad-types functions {:profile :meta}]))]
+              (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))))))))
+
+(deftest sh08-root-map-guard-c8-development-kernel
+  ;; Normalized compiled C7/C8 oracle; actual source verification is separate.
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
+        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
+        fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
+        {:keys [core products forms nodes lexical binding-types functions calls edges guard-id]} (guarded-match-input)
+        groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] calls edges functions binding-types 50 {:boolean-matches groups}])
+        base (fixture "/development/guard.gravity") module (:module base)
+        facts (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) functions module]))
+        call-facts (invoke-c7 'sh08-ft-call-facts-with-context [calls edges nodes (:type-table inference) functions module {}])
+        raw (assoc base :constraint-ledger facts :call-type-facts call-facts)
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (verify typed) result (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed verification])]
+    (is (= [guard-id] (mapv :call-core-node-id call-facts)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= facts (get-in result [:typed-core :constraints])))
+    (is (= call-facts (:call-type-facts result)))
+    (is (= (get-in nodes [guard-id :evaluation]) (get-in result [:typed-core :constraints 0 :guard :call-membership 0 :evaluation])))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification result]))))
+    (doseq [candidate [(assoc-in result [:typed-core :constraints 0 :guard :truth] :true)
+                       (assoc-in result [:typed-core :constraints 0 :dependencies :guard :type] :gravity.type/string)
+                       (assoc-in result [:typed-core :constraints 0 :guard :conditional-region :clause-ordinal] 1)
+                       (assoc-in result [:typed-core :constraints 0 :solution :guard-fallthrough-shapes] [])
+                       (assoc result :call-type-facts [])]]
+      (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
+
+(deftest sh08-root-map-guard-authenticated-source-composition
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+        artifacts (mapv #(fixture-artifact "accepted" "function-root-map-guards" %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [facts (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (:constraint-ledger result))
+              guarded (filterv :guard facts) core (canonical-core artifact)
+              nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+              functions (into {} (map (juxt :definition-name identity) (:function-type-table result)))
+              call-ids (mapv :core-node-id (:calls core))
+              guard-call-ids (vec (mapcat #(get-in % [:guard :call-node-ids]) guarded))
+              choose-node (get nodes (get-in functions ['choose :body-core-node-id]))
+              verification (verification-result artifact result)
+              effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [result verification])]
+          (is (= 6 (count facts)))
+          (is (= 4 (count guarded)))
+          (is (= {:unknown 2 :false 1 :true 1} (frequencies (map #(get-in % [:guard :truth]) guarded))))
+          (is (= :gravity.type/i64 (get (:type-table result) (:node-id choose-node))))
+          (is (= [4 5] (get-in choose-node [:attributes :guard-child-indexes])))
+          (is (= 6 (count (:children choose-node))))
+          (is (= call-ids (mapv :call-core-node-id (:call-type-facts result))))
+          (is (= (set call-ids) (set guard-call-ids)))
+          (is (= 2 (count call-ids)))
+          (is (seq (filter #(> (count (:pattern-binding-use-syntax-ids %)) 1) (:match-pattern-records core))))
+          (doseq [fact guarded]
+            (is (= :gravity.type/bool (get-in fact [:guard :type])))
+            (is (= (:guard fact) (get-in fact [:dependencies :guard])))
+            (is (= (get-in fact [:guard :truth]) (get-in fact [:solution :guard-truth])))
+            (is (= :once-after-structural-success (get-in fact [:guard :evaluation])))
+            (is (= [] (get-in fact [:guard :effects]) (get-in fact [:guard :capabilities])))
+            (doseq [call (get-in fact [:guard :call-membership])]
+              (is (= (get-in nodes [(:core-node-id call) :evaluation]) (:evaluation call)))))
+          (let [false-fact (first (filter #(= :false (get-in % [:guard :truth])) guarded))
+                true-fact (first (filter #(= :true (get-in % [:guard :truth])) guarded))]
+            (is (= [] (:matched-shapes false-fact)))
+            (is (seq (:structurally-matched-shapes false-fact)))
+            (is (= (:remaining-before false-fact) (:remaining-after false-fact)))
+            (is (true? (:exhaustive-after? true-fact))))
+          (is (= :passed (:status verification)))
+          (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+          (is (= (:typed-core result) (:typed-core effected)))
+          (is (= (:call-type-facts result) (:call-type-facts effected)))
+          (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [result verification effected]))))
+          (doseq [altered [(assoc result :call-type-facts [])
+                           (update result :constraint-ledger #(mapv (fn [c] (if (:guard c) (assoc-in c [:guard :truth] :true) c)) %))]]
+            (is (= :rejected (:status (verification-result artifact altered))))
+            (is (= :rejected (:status (invoke-c8 'sh09-build-authenticated-pure-effect-result [altered verification]))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" "function-root-map-guards" ".gravity"))
+           (slurp (fixture-path "accepted" "function-root-map-guards" ".qst"))))))
+
+(defn- assert-root-map-guard-source-rejection [basename rule reason anchor expected]
+  (let [artifact (fixture-artifact "rejected" basename ".gravity") result (function-result artifact)
+        diagnostic (first (:diagnostics result)) core (canonical-core artifact)
+        branch (first (:match-branch-records core))
+        id (case anchor :guard (get-in branch [:guard :node-id]) :body (:branch-core-node-id branch) (:core-node-id branch))
+        node (first (filter #(= id (:node-id %)) (:nodes core))) source (:source node)]
+    (is (= :accepted (:status artifact)) basename)
+    (is (= :rejected (:status result)) basename)
+    (is (= [rule reason] ((juxt :rule :reason) diagnostic)) (pr-str diagnostic))
+    (is (= :type-checking (:stage diagnostic)))
+    (is (= id (:core-node-id diagnostic)))
+    (is (= [(:syntax-id source) (:semantic-span source) (:origin-chain source) (:generated-origin source)]
+           ((juxt :syntax-id :source-span :origin-chain :generated-origin) diagnostic)))
+    (when expected (is (= expected ((juxt :expected-type :actual-type) diagnostic))))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst"))))))
+
+(deftest sh08-root-map-guard-source-type-rejections
+  (doseq [[name actual] [["nil" :gravity.type/nil] ["integer" :gravity.type/integer]
+                         ["string" :gravity.type/string] ["unknown" :gravity.type/unknown]]]
+    (assert-root-map-guard-source-rejection (str "function-root-map-guard-" name) "L7-GUARD-TYPE"
+      :guard-result-not-boolean :guard [:gravity.type/bool actual])))
+
+(deftest sh08-root-map-guard-source-boundary-rejections
+  (assert-root-map-guard-source-rejection "function-root-map-guard-partial" "C7-ANNOTATION" :unsupported-partial-structural-match :match nil)
+  (assert-root-map-guard-source-rejection "function-root-map-guard-result" "C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch
+                                         :body [:gravity.type/i64 :gravity.type/string])
+  (assert-root-map-guard-source-rejection "function-root-map-guard-throw" "C7-ANNOTATION" :unsupported-guard-control-transfer
+                                         :guard [:normally-returning-guard :throw])
+  (let [basename "function-root-map-guard-scope-escape"
+        diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= ["C5-UNRESOLVED" :name-resolution] ((juxt :id :stage) diagnostic)))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity"))
+           (slurp (fixture-path "rejected" basename ".qst"))))))
+
 (deftest sh08-structural-match-authenticated-source-composition
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
   (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))

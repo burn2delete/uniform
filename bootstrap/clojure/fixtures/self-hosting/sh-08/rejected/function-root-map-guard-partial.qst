@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.function-root-map-guard-partial
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn permit [flag :- Bool] :- Bool flag)
+(defn rejected [flag :- Bool value :- I64] :- I64
+  (match {:ok flag :value value} {:ok ok :value item :when (permit ok)} item))

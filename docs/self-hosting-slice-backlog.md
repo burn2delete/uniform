@@ -490,8 +490,8 @@ partiality-proof ingestion, recursive/higher-order match composition,
 ownership/effect completion and runtime/backend equivalence remain outside
 this Boolean-only increment. The structural increment below supplies
 constructor-derived key/element evidence for map/vector bindings; it does not
-yet type guards. These development results are not authoritative migration
-or release evidence.
+itself type guards. The guard increment below adds the bounded Boolean case.
+These development results are not authoritative migration or release evidence.
 
 ### Constructor-derived structural match typing: development increment
 
@@ -587,6 +587,88 @@ rules or silently increased limits. Source composition remains `:meta/:jvm`;
 formal-source support still stops at the unchanged C6 boundary. Authoritative
 migration, full SH-08, target support and release status do not advance from
 these development checks.
+
+### Boolean root-map guard typing: development increment
+
+C7 now types normally returning guards on supported constructor-derived root
+map patterns under L7's Boolean rule. For example:
+
+```clojure
+(defn permit [flag :- Bool] :- Bool flag)
+(defn choose [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (match {:ok flag :value value}
+    {:ok ok :value item :when (permit ok)} item
+    {:value again :when false} again
+    _ fallback))
+```
+
+The guard result must be established Bool. There is no `if`-style truthiness:
+normally returning nil, integer, String and unknown values produce
+`L7-GUARD-TYPE` at the guard. Bindings are available for the guard and its own
+body, not sibling clauses or outer code. C7 authenticates C6's distinct
+source-only, clause and branch guard projections, actual `:when` source slot,
+guard node, conditional region and call membership. Match children contain
+the scrutinee, all branch bodies, then guard nodes; result inference joins
+only the validated body indexes, so Bool guards do not contaminate I64 results.
+
+Structural failure skips the guard and body in the control-flow evidence.
+The guard is recorded once after structural success, with true selecting the
+body and false continuing. A Bool-returning call is not proof that the guard
+is true: possible false fallthrough retains the incoming cases and requires
+fallback coverage or another supported totality argument. A literal true can
+consume the structurally matched cases; literal false has no selected body
+cases and retains fallthrough. Its body is still type-checked, including
+declared-result checks. This does not add a dead-code typing exception.
+
+The existing equality ledger retains the guard premise, source, type, truth,
+structural/body/fallthrough shapes, actual binding identities, ordinary call
+records and evaluation regions. Guard inputs appear in the owning constraint's
+dependencies, solution and invalidation fields. Preserved effect/capability
+declarations remain declared inputs, not inferred empty-effect proofs. All
+ordinary call facts survive the C8 handoff. No C8 effect policy or production
+adapter, public C7 API, outer artifact schema, or authority pin is changed.
+
+The owner remains `gravity.compiler.c7-type-checker-engine`. Use the existing
+function-call test namespace for fast guard feedback:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-root-map-guard-development-kernel \
+  --exact sh08-root-map-guard-literal-development-kernel \
+  --exact sh08-root-map-guard-c8-development-kernel
+```
+
+The source-ready group passed seven tests and 198 assertions, including
+structural, Boolean, atomic-signature and legacy-call regressions. The actual
+`sh08-root-map-guard-authenticated-source-composition` then passed 94 assertions
+on the `function-root-map-guards` `.gravity`/`.qst` pair. It covers two guards
+in one three-body match, I64/Bool separation, false continuation, a binding
+used in both guard and body, literal-true total coverage, fresh C7 verification,
+and complete C8 ledger/call preservation with rewrite rejection. Its 185.299
+seconds of test execution is a development observation, not a benchmark.
+Earlier failed draft checks are not acceptance evidence.
+
+The real rejection/regression group passed four tests and 93 assertions:
+normally returning nil/integer/String/unknown guards (32), guarded partiality,
+false-guard body mismatch, unsupported throw and C5 scope escape (25), the
+existing recursive fixed-point regression (31), and the language boundary (5).
+Guard, body and match diagnostics are checked against actual core/syntax IDs,
+spans and origins. Negative `.qst` fixtures were checked for equal source text,
+not counted as a second full negative composition. The compiler remained
+unchanged across the final 198-assertion kernels, accepted pair and real
+rejections. Use `sh08-root-map-guard-source-type-rejections` and
+`sh08-root-map-guard-source-boundary-rejections` for affected source-diagnostic
+composition; do not repeat unrelated source construction for a local helper edit.
+
+Nested structural guards, shape propagation through pattern-bound collection
+aliases, non-returning/throw/try guard composition, general effect and ownership
+legality, recursive/higher-order guard inference, runtime/backend equivalence
+and authoritative migration remain outside this increment. Unmodeled guard
+control transfer is explicitly unsupported, not assigned a fictitious Bool or
+Never type. Direct formal partiality kernels do not extend C6's unchanged
+`:meta/:jvm` source boundary. No full SH-08, self-hosting, target, seed-retirement
+or release claim follows from these development results.
 
 ## Current Baseline
 
