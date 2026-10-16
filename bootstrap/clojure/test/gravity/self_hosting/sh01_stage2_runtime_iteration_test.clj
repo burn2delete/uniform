@@ -283,26 +283,24 @@
       (is (= expected generic) [function :generic])
       (is (= generic interpreted) [function :interpreted]))))
 
-(deftest direct-unary-evaluates-once-before-compiler-context-validation
+(deftest direct-unary-evaluates-pure-data-arguments-once
   (let [execute-value
         (ns-resolve 'gravity.bootstrap
-                    'p15-s23-stage2-runtime-execute-value)
+                    'p15-s23-stage2-runtime-execute-value-scoped)
         calls (atom [])
         data
         (with-redefs-fn
           {execute-value
-           (fn [_runtime _plan _env instruction reason]
+           (fn [_runtime _plan _env instruction reason _public-scope]
              (swap! calls conj [instruction reason])
              (:value instruction))}
-          #(diagnostic
-            (fn []
-              (interpreted-builtin plan 'map? [{:evaluated true}]))))]
+          #(interpreted-builtin plan 'map? [{:evaluated true}]))]
     (is (= [[{:op :literal :value {:evaluated true}}
              :recur-inside-builtin-argument]]
            @calls))
-    (is (= "L2-BUILTIN-ERROR" (:id data)))
-    (is (= 'map? (:function data))))
-  (testing "argument diagnostics win before compiler-context validation"
+    (is (true? data))
+    (is (false? (bootstrap/p15-s23-stage2-compiler-artifact-plan-context? plan))))
+  (testing "argument diagnostics propagate before builtin execution"
     (let [data
           (diagnostic
            #(bootstrap/p15-s23-stage2-runtime-execute-instruction

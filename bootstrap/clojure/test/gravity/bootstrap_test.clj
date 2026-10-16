@@ -32358,7 +32358,7 @@
                  :public-function-shapes])
                copied-identities))))))
 
-(deftest p15-s23-stage2-compiler-only-list-predicate-is-contained
+(deftest p15-s23-stage2-list-predicate-is-pure-and-contained
   (let [source-path "/tmp/p15-s23-compiler-list-predicate.gravity"
         compiler-plan
         {:compiler-artifact-plan? true
@@ -32370,17 +32370,16 @@
         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
           compiler-plan 'list? [%])
         outside
-        (diagnostic-data
-         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
-           {:source {:path source-path}} 'list? [(list :value)]))
+        (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+          {:source {:path source-path}} 'list? [(list :value)])
         wrong-arity
         (diagnostic-data
          #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
            compiler-plan 'list? []))]
     (is (true? (invoke (list :value))))
     (is (false? (invoke [:value])))
-    (is (= "L2-BUILTIN-ERROR" (:id outside)))
-    (is (= 'list? (:function outside)))
+    (is (true? outside))
+    (is (false? (bootstrap/p15-s23-stage2-compiler-artifact-plan-context? compiler-plan)))
     (is (= "L2-BUILTIN-ARITY" (:id wrong-arity)))
     (is (= 1 (:expected-arity wrong-arity)))
     (is (= 0 (:actual-arity wrong-arity)))))

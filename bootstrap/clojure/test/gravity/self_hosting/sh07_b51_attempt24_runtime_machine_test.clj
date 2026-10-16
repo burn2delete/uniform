@@ -96,10 +96,9 @@
                  (:artifact result)))
           (is (= :boundary-rejected (:status result))))))))
 
-(deftest augmentation-builtin-rejects-outside-the-exact-m3-plan-context
-  (let [products @linker/authentic-linked-products
-        plan (first (:module-plans products))
-        runtime (bootstrap/p15-s23-sh07-b51-runtime-context products {})
+(deftest pure-data-predicates-do-not-admit-an-m3-plan-context
+  (let [plan {:module {:module 'ordinary.data}}
+        runtime {:sh07-b51-execution-bundle {:bundle-id :caller-forged}}
         invoke
         (fn [candidate-runtime candidate-plan]
           (bootstrap/p15-s23-stage2-runtime-invoke-builtin
@@ -112,14 +111,9 @@
                         [:sh07-b51-execution-bundle :bundle-id]
                         "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
               plan]]]
-      (try
-        (invoke candidate-runtime candidate-plan)
-        (is false "augmentation builtin must remain M3-closed")
-        (catch clojure.lang.ExceptionInfo error
-          (is (= "L2-BUILTIN-ERROR" (:id (ex-data error))))
-          (is (= "compiler-only predicate outside compiler artifact"
-                 (:cause-message (ex-data error)))))))
-    (is (empty? @(:sh07-b51-external-call-trace runtime)))))
+      (is (true? (invoke candidate-runtime candidate-plan)))
+      (is (false? (bootstrap/p15-s23-stage2-compiler-artifact-plan-context? candidate-plan)))
+      (is (false? (bootstrap/p15-s23-stage2-pinned-augmented-plan-authorized? candidate-plan))))))
 
 (deftest gravity-runtime-source-owns-the-bounded-machine-contract
   (let [path "bootstrap/gravity/p15_s23/runtime.gravity"

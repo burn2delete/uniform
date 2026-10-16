@@ -59,6 +59,18 @@ stale frozen authority claim. Source, dependency, tool and policy changes still
 conservatively invalidate prior authoritative evidence. Record implemented
 behavior and focused results separately from migration and release status.
 
+The stage2 interpreter's existing pure DATA predicates, collection operations,
+integer quotient and vector slicing are ordinary execution facilities, not
+plan-admission gates. Inspecting an argument with `map?` or `contains?` does
+not authenticate the caller or its result. Both generic and unary dispatch keep
+their arity, evaluation-order, normalization and contained-error behavior.
+Historical pinned-plan checks, compiler-internal instruction provenance, SOURCE
+admission and external-call authority remain separate checks at their owning
+boundaries. No module-name spoof, caller authority flag or fresh migration is
+needed to execute a current-source C7 development test. This supersedes old
+attempt-specific expectations that raw pure-predicate execution itself proves
+or requires M3 admission; their immutable evidence remains historical.
+
 This section supersedes historical monitor/attempt instructions insofar as they
 treated supplemental admission policies as prerequisites for ordinary semantic
 development. Immutable attempt reports, terminal records and old proofs remain
