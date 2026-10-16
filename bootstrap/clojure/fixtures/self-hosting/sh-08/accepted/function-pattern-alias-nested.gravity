@@ -1,0 +1,47 @@
+(ns self-hosting.sh08.function-pattern-alias-nested
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn nested-vector [flag :- Bool value :- I64] :- I64
+  (match {:payload [flag {:value value}]}
+    {:payload packet}
+    (match packet
+      [true {:value item}] item
+      [false {:value item}] item)))
+
+(defn nested-map-forward [flag :- Bool value :- I64] :- I64
+  (match [{:flag flag :value value}]
+    [packet]
+    (let [forward packet again forward]
+      (match again
+        {:flag true :value item} (nested-vector flag item)
+        {:flag false :value item} item))))
+
+(defn nested-guard [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (match {:payload {:flag flag :value value}}
+    {:payload packet :when (match packet {:flag bit} bit)}
+    (match packet {:value item} item)
+    _ fallback))
+
+(defn false-guard-body [value :- I64 fallback :- I64] :- I64
+  (match {:payload {:value value}}
+    {:payload packet :when false}
+    (match packet {:value item} item)
+    _ fallback))
+
+(defn correlated-whole [a :- Bool b :- Bool] :- Bool
+  (match {:a a :b b}
+    {:a true :b true} true
+    {:a false :b false} false
+    packet
+    (match packet
+      {:a true :b false} true
+      {:a false :b true} false)))
+
+(defn correlated-rebuild [a :- Bool b :- Bool] :- Bool
+  (match {:a a :b b}
+    {:a true :b true} true
+    {:a false :b false} false
+    {:a x :b y}
+    (match [x y]
+      [true false] true
+      [false true] false)))

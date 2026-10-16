@@ -572,6 +572,166 @@
      :binding-types {(sha 1000) :gravity.type/bool (sha 1001) :gravity.type/i64}
      :root (sha 108) :reference (sha 109) :flag (sha 100) :value (sha 101) :sha sha}))
 
+(defn- pattern-alias-kernel-input []
+  ;; Normalized pass input; genuine C5/C6 source products are tested separately.
+  (let [{:keys [nodes forms lexical bindings binding-types sha] :as input} (structural-match-input)
+        binder (sha 5000) scope (sha 9000)
+        binding-record {:pattern-kind :binding :pattern-binding-id binder :pattern-binding-scope-id scope
+                        :pattern-form-id (sha 606) :pattern-syntax-id (sha 606) :path [1]
+                        :pattern-binding-use-syntax-ids [(sha 500)]}
+        root-record {:pattern-kind :map :core-node-id (sha 502) :clause-ordinal 0}
+        tree {:record root-record :children [{:key :payload :coordinate 1 :tree {:record binding-record}}]}
+        ref {:node-id (sha 500) :core-form :reference :children [] :attributes {:binding-id binder}
+             :source {:form-id (sha 500) :syntax-id (sha 500)}}
+        body (fn [id] {:node-id (sha id) :core-form :reference :children []
+                       :attributes {:binding-id (sha 1002)} :source {:form-id (sha id) :syntax-id (sha id)}})
+        outer {:node-id (sha 502) :core-form :match :children [(sha 108) (sha 800)]
+               :attributes {:branch-child-indexes [1]} :source {:syntax-id (sha 502)}}
+        inner {:node-id (sha 800) :core-form :match :children [(sha 500) (sha 801) (sha 802)]
+               :attributes {:branch-child-indexes [1 2]} :source {:syntax-id (sha 800)}}
+        sequence (into (filterv #(not (contains? #{(sha 109) (sha 110)} (:node-id %))) (:sequence input))
+                       [ref (body 801) (body 802) inner outer])
+        nodes (into {} (map (juxt :node-id identity) sequence))
+        forms (assoc forms (sha 500) {:form-id (sha 500) :syntax-id (sha 500) :kind :symbol :value 'packet})
+        base {:nodes nodes :node-sequence sequence :forms forms :lexical-bindings []
+              :binding-index (assoc bindings binder {:binding-class :lexical :scope-id scope}) :structural? true}
+        outer-group (assoc base :node outer :branches [{:clause-ordinal 0 :branch-core-node-id (sha 800)}]
+                           :patterns [binding-record] :pattern-trees [tree])
+        inner-tree (fn [flag] {:record {:pattern-kind :vector :vector-width 2}
+                               :children [{:coordinate 0 :tree {:record {:pattern-kind :literal :pattern-value flag}
+                                                               :form {:kind :boolean}}}]})
+        inner-group (assoc base :node inner :branches [{:clause-ordinal 0 :branch-core-node-id (sha 801)}
+                                                     {:clause-ordinal 1 :branch-core-node-id (sha 802)}]
+                           :patterns [] :pattern-trees [(inner-tree true) (inner-tree false)])]
+    (assoc input :groups [inner-group outer-group] :nodes nodes :sequence sequence :forms forms :lexical []
+                 :binding-types (assoc binding-types (sha 1002) :gravity.type/i64) :binder binder)))
+
+(deftest sh08-pattern-alias-development-kernel
+  (let [{:keys [groups nodes sequence lexical binding-types binder sha]} (pattern-alias-kernel-input)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [sequence nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+        enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
+        checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
+        evidence (get (:binding-shapes inference) binder)
+        alias-shape (invoke-c7 'sh08-sm-group-shape [(first enriched) (:type-table inference) (:binding-types inference) {}])]
+    (is (= :converged (:convergence-status inference)) (pr-str inference))
+    (is (= [] (:diagnostics inference)))
+    (is (> (:round-count inference) 1))
+    (is (= :gravity.type/i64 (get (:type-table inference) (sha 800)) (get (:type-table inference) (sha 502))))
+    (is (= :gravity.type/vector (:kind (:type evidence))))
+    (is (= [] (:diagnostics checked)) (pr-str checked))
+    (is (= 3 (count (:constraints checked))))
+    (is (= :alternatives (:shape-kind alias-shape)))
+    (is (= evidence (:pattern-binding-evidence alias-shape)))
+    (is (= [true false] (get-in alias-shape [:alternatives 0 :parts 0 :shape :domain :values])))
+    (is (= (sha 502) (:match-core-node-id evidence)))
+    (is (= [1] (:pattern-path evidence)))
+    (is (= [3] (get-in evidence [:extractions 0 :constructor-path])))
+    (is (= (sha 104) (get-in evidence [:extractions 0 :value-node-id])))
+    (is (= (sha 9000) (:scope-id evidence)))
+    (is (= 0 (:clause-ordinal evidence)))
+    (let [bad (assoc-in (first enriched) [:nodes (sha 500) :source :syntax-id] (sha 999))]
+      (is (= ["C7-VERIFY" :invalid-pattern-shape-link]
+             ((juxt :rule :reason) (invoke-c7 'sh08-sm-group-shape [bad (:type-table inference) (:binding-types inference) {}])))))
+    (is (= :nonconverged (:convergence-status
+                         (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                    [sequence nodes lexical [] [] [] {} binding-types 1 {:boolean-matches groups}]))))
+    (is (= (:binding-shapes inference)
+           (:binding-shapes (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                       [sequence nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}]))))))
+
+(deftest sh08-pattern-alias-correlations-development-kernel
+  (let [scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]} :shape-size 1}
+        shape {:status :accepted :shape-kind :map :type {:kind :gravity.type/map}
+               :shape-size 5 :parts [{:key :a :coordinate 1 :shape scalar} {:key :b :coordinate 3 :shape scalar}]}
+        literal (fn [v] {:record {:pattern-kind :literal :pattern-value v} :form {:kind :boolean}})
+        binding (fn [id] {:record {:pattern-kind :binding :pattern-binding-id id :path [id]}})
+        pattern (fn [a b] {:record {:pattern-kind :map}
+                           :children [{:key :a :tree a} {:key :b :tree b}]})
+        group {:node {:node-id :outer} :branches [{:clause-ordinal 0} {:clause-ordinal 1} {:clause-ordinal 2}]
+               :pattern-trees [(pattern (literal true) (literal true)) (pattern (literal false) (literal false))
+                               (pattern (binding :x) (binding :y))]}
+        partition (invoke-c7 'sh08-sm-partition [group shape])
+        extractions (get-in partition [:branches 2 :extractions])
+        alias (fn [id] {:status :accepted :shape-kind :alternatives :type :gravity.type/bool
+                        :alternatives (mapv :shape (filter #(= id (:binding-id %)) extractions))})
+        constructor {:status :accepted :shape-kind :vector :shape-size 3 :type {:kind :gravity.type/vector}
+                     :parts [{:coordinate 0 :shape (alias :x)} {:coordinate 1 :shape (alias :y)}]}
+        rebuilt (invoke-c7 'sh08-sm-construct-cases [constructor])
+        pairs (fn [result] (mapv (fn [case] (mapv #(get-in % [:shape :domain :values 0]) (:parts case))) (:alternatives result)))
+        independent (update-in constructor [:parts 1 :shape :alternatives]
+                               #(mapv (fn [s] (assoc s :case-origins {:independent (get-in s [:case-origins :outer])})) %))]
+    (is (= :accepted (:status partition)))
+    (is (= [] (:remaining partition)))
+    (is (= 4 (count extractions)))
+    (is (= #{0 1} (set (map #(get-in % [:case-origins :outer :case-index]) extractions))))
+    (is (= [[false true] [true false]] (pairs rebuilt)))
+    (is (= 2 (count (:alternatives rebuilt))))
+    (is (= #{[true true] [true false] [false true] [false false]}
+           (set (pairs (invoke-c7 'sh08-sm-construct-cases [independent])))))
+    (let [tree {:record {:pattern-kind :vector :vector-width 2}
+                :children [{:coordinate 0 :tree (literal true)} {:coordinate 1 :tree (literal true)}]}
+          split (invoke-c7 'sh08-sm-split [rebuilt tree])]
+      (is (= [] (:selected split)))
+      (is (= 2 (count (:residual split)))))
+    (is (= rebuilt (invoke-c7 'sh08-sm-construct-cases [constructor])))))
+
+(deftest sh08-pattern-alias-limit-development-kernel
+  (let [{:keys [groups nodes binding-types binder sha]} (pattern-alias-kernel-input)
+        target (sha 6000) scope (sha 9000)
+        scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]} :shape-size 40000}
+        prior {binder {:binding-id binder :scope-id scope :type :gravity.type/bool :shape-size 80001
+                       :use-syntax-ids [(sha 500)] :alternatives [(assoc scalar :node-id :a) (assoc scalar :node-id :b)]}
+               target {:old-evidence :must-be-replaced}}
+        record {:pattern-kind :binding :pattern-binding-id target :pattern-binding-scope-id scope :path []
+                :pattern-binding-use-syntax-ids [(sha 801)]}
+        group (assoc (first groups) :branches [{:clause-ordinal 0}] :patterns [record] :pattern-trees [{:record record}])
+        seeded (invoke-c7 'sh08-sm-seed-shapes [group {} binding-types {} prior])
+        marker (get seeded target)
+        use-group (-> group (assoc :binding-shapes seeded)
+                      (assoc-in [:node :children 0] (sha 801))
+                      (assoc-in [:nodes (sha 801) :attributes :binding-id] target))
+        failure (invoke-c7 'sh08-sm-group-shape [use-group {} binding-types {}])]
+    (is (= :rejected (:status marker)))
+    (is (= ["C7-ANNOTATION" :structural-alias-evidence-limit :bounded-pattern-binding-alternatives]
+           ((juxt :rule :reason :expected) marker)))
+    (is (= {:shape-size 80000 :alternative-count 2} (:actual marker)))
+    (is (not (contains? marker :old-evidence)))
+    (is (= (dissoc failure :node) marker))
+    (is (= (sha 801) (get-in failure [:node :node-id])))
+    (let [choices (fn [origin] {:shape-kind :alternatives
+                               :alternatives (mapv #(assoc scalar :case-origins {origin %}) (range 33))})
+          overflow (invoke-c7 'sh08-sm-construct-cases
+                              [{:status :accepted :shape-kind :vector :parts [{:shape (choices :a)} {:shape (choices :b)}]}])]
+      (is (= ["C7-ANNOTATION" :structural-match-residual-limit :bounded-correlated-constructor-product]
+             ((juxt :rule :reason :expected) overflow))))))
+
+(deftest sh08-pattern-alias-c8-development-kernel
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
+        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
+        fixture (var-get (ns-resolve upstream 'function-typed-result))
+        verify (var-get (ns-resolve upstream 'function-verification))
+        {:keys [groups nodes sequence lexical binding-types]} (pattern-alias-kernel-input)
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [sequence nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+        enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
+        base (fixture "/development/pattern-alias.gravity")
+        facts (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)]))
+        raw (assoc base :constraint-ledger facts)
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (verify typed)
+        effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed verification])]
+    (is (seq (:call-type-facts typed)))
+    (is (false? (invoke-c8 'sh09-adapter-call-facts-valid? [[] (:module typed)])))
+    (is (true? (invoke-c8 'sh09-adapter-call-facts-valid? [(:call-type-facts typed) (:module typed)])))
+    (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+    (is (true? (= facts (get-in effected [:typed-core :constraints]))))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification effected]))))
+    (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result
+                                        [typed verification (assoc-in effected [:typed-core :constraints 0 :constructor-shape :alternatives] [])]))))))
+
 (deftest sh08-structural-match-shape-development-kernel
   (let [{:keys [nodes forms lexical bindings binding-types root reference sha]} (structural-match-input)
         shape-args [nodes {} binding-types {} lexical bindings forms #{} 0]
@@ -1006,6 +1166,96 @@
     (is (= (:identity-input (first results)) (:identity-input (second results))))
     (is (= (slurp (fixture-path "accepted" "function-root-map-guards" ".gravity"))
            (slurp (fixture-path "accepted" "function-root-map-guards" ".qst"))))))
+
+(deftest sh08-pattern-alias-authenticated-source-composition
+  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+        basename "function-pattern-alias-nested"
+        artifacts (mapv #(fixture-artifact "accepted" basename %) [".gravity" ".qst"])
+        results (mapv function-result artifacts)]
+    (doseq [[artifact result] (map vector artifacts results)]
+      (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+      (when (= :accepted (:status result))
+        (let [core (canonical-core artifact) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+              functions (into {} (map (juxt :definition-name identity) (:function-type-table result)))
+              facts (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (:constraint-ledger result))
+              alias-facts (filterv #(get-in % [:constructor-shape :pattern-binding-evidence]) facts)
+              correlated-id (get-in functions ['correlated-rebuild :body-core-node-id])
+              reconstruction (first (filter #(and (= :alternatives (get-in % [:constructor-shape :shape-kind]))
+                                                  (= :collection-literal (get-in nodes [(get-in % [:constructor-shape :node-id]) :core-form]))) facts))
+              whole (first (filter #(and (= 2 (count (get-in % [:constructor-shape :alternatives])))
+                                         (get-in % [:constructor-shape :pattern-binding-evidence])) facts))
+              item-records (filter #(= 'item (:pattern-value %)) (:match-pattern-records core))
+              verification (verification-result artifact result)
+              effected (invoke-c8 'sh09-build-authenticated-pure-effect-result [result verification])]
+          (is (= 6 (count functions)))
+          (is (= :gravity.type/i64 (get-in functions ['nested-vector :return])))
+          (is (= :gravity.type/i64 (get-in functions ['nested-map-forward :return])))
+          (is (= :gravity.type/bool (get (:type-table result) correlated-id)))
+          (is (>= (count alias-facts) 6))
+          (is (= 2 (count (get-in reconstruction [:constructor-shape :alternatives]))))
+          (is (= #{[true false] [false true]}
+                 (set (map (fn [shape] (mapv #(get-in % [:shape :domain :values 0]) (:parts shape)))
+                           (get-in reconstruction [:constructor-shape :alternatives])))))
+          (is (= 2 (count (get-in whole [:constructor-shape :pattern-binding-evidence :extractions]))))
+          (is (some #(seq (get-in % [:constructor-shape :binding-links])) alias-facts))
+          (is (>= (count item-records) 6))
+          (is (= (count item-records) (count (set (map :pattern-binding-id item-records)))))
+          (doseq [fact alias-facts]
+            (let [evidence (get-in fact [:constructor-shape :pattern-binding-evidence])]
+              (is (= (count (:extractions evidence)) (count (:alternatives evidence))))
+              (is (seq (:structurally-matched-shapes evidence)))
+              (is (every? #(seq (:case-origins %)) (:extractions evidence)))
+              (is (every? #(= (:binding-id evidence) (:binding-id %)) (:extractions evidence)))))
+          (let [guarded (filter :guard facts) false-fact (first (filter #(= :false (get-in % [:guard :truth])) guarded))]
+            (is (= #{:unknown :false} (set (map #(get-in % [:guard :truth]) guarded))))
+            (is (= [] (:matched-shapes false-fact)))
+            (is (seq (:extractions false-fact))))
+          (is (= :passed (:status verification)))
+          (is (= :accepted (:status effected)) (pr-str (:diagnostics effected)))
+          (is (true? (= (:typed-core result) (:typed-core effected))))
+          (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [result verification effected]))))
+          (let [index (.indexOf (:constraint-ledger result) (first alias-facts))]
+            (doseq [candidate [(assoc-in result [:constraint-ledger index :constructor-shape :pattern-binding-evidence :scope-id] "forged")
+                               (assoc-in result [:constraint-ledger index :constructor-shape :alternatives] [])
+                               (assoc-in result [:constraint-ledger index :constructor-shape :pattern-binding-evidence :extractions] [])]]
+              (is (= :rejected (:status (verification-result artifact candidate))))
+              (is (= :rejected (:status (invoke-c8 'sh09-build-authenticated-pure-effect-result [candidate verification])))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (is (= (slurp (fixture-path "accepted" basename ".gravity")) (slurp (fixture-path "accepted" basename ".qst"))))))
+
+(deftest sh08-pattern-alias-source-rejections
+  (doseq [[suffix rule reason] [["pattern" "L7-PATTERN-TYPE" :structural-leaf-pattern-type-mismatch]
+                                ["missing" "L7-UNREACHABLE" :unreachable-structural-match-clause]
+                                ["width" "L7-UNREACHABLE" :unreachable-structural-match-clause]
+                                ["result" "C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch]
+                                ["false-result" "C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch]]]
+    (let [basename (str "function-pattern-alias-" suffix)
+          artifact (fixture-artifact "rejected" basename ".gravity") result (function-result artifact)
+          diagnostic (first (:diagnostics result)) core (canonical-core artifact)
+          nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+          nested (first (filter #(and (= :match (:core-form %))
+                                      (= :reference (:core-form (get nodes (first (:children %)))))) (:nodes core)))
+          pattern (first (filter #(and (= (:node-id nested) (:core-node-id %))
+                                       (if (= suffix "pattern") (= "wrong" (:pattern-value %)) (= 0 (:depth %))))
+                                 (:match-pattern-records core)))
+          forms (get-in (function-request artifact) [:b47-context :authenticated-core-request :forms])
+          form (first (filter #(= (:form-id %) (:pattern-form-id pattern)) forms))
+          source (if (contains? #{"result" "false-result"} suffix) (:source nested)
+                   {:syntax-id (:syntax-id form) :semantic-span (:source-span form)
+                    :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)})]
+      (is (= :accepted (:status artifact)))
+      (is (= :rejected (:status result)))
+      (is (= [rule reason] ((juxt :rule :reason) diagnostic)) (pr-str diagnostic))
+      (is (= :type-checking (:stage diagnostic)))
+      (is (= (:node-id nested) (:core-node-id diagnostic)))
+      (is (= [(:syntax-id source) (:semantic-span source) (:origin-chain source) (:generated-origin source)]
+             ((juxt :syntax-id :source-span :origin-chain :generated-origin) diagnostic)))
+      (is (= (slurp (fixture-path "rejected" basename ".gravity")) (slurp (fixture-path "rejected" basename ".qst"))))))
+  (let [basename "function-pattern-alias-scope"
+        diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+    (is (= ["C5-UNRESOLVED" :name-resolution] ((juxt :id :stage) diagnostic)))
+    (is (= (slurp (fixture-path "rejected" basename ".gravity")) (slurp (fixture-path "rejected" basename ".qst"))))))
 
 (defn- assert-root-map-guard-source-rejection [basename rule reason anchor expected]
   (let [artifact (fixture-artifact "rejected" basename ".gravity") result (function-result artifact)

@@ -670,6 +670,81 @@ Never type. Direct formal partiality kernels do not extend C6's unchanged
 `:meta/:jvm` source boundary. No full SH-08, self-hosting, target, seed-retirement
 or release claim follows from these development results.
 
+### Pattern-bound collection aliases: development increment
+
+The C7 implementation extends constructor-derived map/vector evidence through
+pattern bindings and authenticated immutable `let` links. An extracted
+collection can be the scrutinee of another match in its own guard or body:
+
+```clojure
+(defn extract [flag :- Bool value :- I64] :- I64
+  (match {:payload [flag {:value value}]}
+    {:payload packet}
+    (match packet
+      [true {:value item}] item
+      [false {:value item}] item)))
+```
+
+The implementation retains actual binding IDs, owner match/clause, lexical
+scope, source uses, constructor IDs and extraction paths. It carries all whole
+selected cases, not a first/last case or independently widened fields.
+Reconstructing a collection from several extracted values joins their case
+origins: shared origins must agree; independent origins form a bounded product.
+The focused correlation oracle retains exactly TF/FT residual cases, excludes
+impossible TT/FF combinations, and checks a four-case independent product.
+
+Guard typing uses structural extraction premises before guard truth is known.
+Literal-false guard bodies remain type-checked, including their nested aliases.
+Shape state is derived afresh within each invocation and participates in the
+existing inference fixed point. The canonical ledger, dependency and
+invalidation facts retain the ancestry and correlated-construction premises;
+public request fields and typed identity domains are unchanged. Size/product
+overflow produces an explicit implementation-limit diagnostic at the alias
+use, replacing prior evidence instead of silently retaining stale facts.
+
+Use the existing function-call test namespace, without an authority refresh:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-pattern-alias-development-kernel \
+  --exact sh08-pattern-alias-correlations-development-kernel \
+  --exact sh08-pattern-alias-limit-development-kernel \
+  --exact sh08-pattern-alias-c8-development-kernel
+```
+
+The final focused group passed 11 tests and 241 assertions, including selected
+structural, Boolean, guard, signature, call-chain and C8 regressions. The
+initial real source pair passed its C7 checks but failed four C8 assertions:
+the fixture had no ordinary call, while the existing C8 function-call adapter
+requires nonempty call facts. This remains failed evidence. The corrected
+fixture adds a real typed forwarding call; the C8 production adapter and its
+acceptance policy are not weakened. That changed `.gravity`/`.qst` pair passed
+124 assertions through actual C5/C6 products, fresh C7 verification and C8
+preservation. It covers vector/map extraction, repeated immutable forwarding,
+guard/body use, literal-false body typing, whole residual cases and correlated
+reconstruction, distinct same-spelled binding IDs, and rejection of forged or
+dropped ancestry. Test execution took 257.615 seconds; this is a development
+observation, not a benchmark or migration proof. The changed source rejection
+group then passed 37 assertions for incompatible nested patterns, absent keys,
+wrong vector widths, declared-result mismatches, literal-false guard body
+mismatches and escaped bindings. Diagnostics retain actual nested-match or
+pattern syntax, spans and origins; negative `.qst` files were checked for equal
+source text, not counted as a second full negative composition. The existing
+recursive fixed-point regression (31 assertions) and language boundary (5)
+passed in the same three-test, 73-assertion run. Compiler and test bytes were
+unchanged across the final 241-assertion kernels, corrected accepted pair and
+source rejections. Use `sh08-pattern-alias-authenticated-source-composition`
+and `sh08-pattern-alias-source-rejections` only when that source composition
+or its diagnostics are affected; the fast kernels remain the edit loop.
+
+Computed, external, function-return and mutable collection shapes without
+constructor evidence remain unsupported. General union/subtyping, recursive
+or higher-order alias inference, effect/ownership legality, runtime/backend
+equivalence and authoritative migration are not claimed. The source boundary
+remains `:meta/:jvm`; no full SH-08, self-hosting, seed-retirement or release
+status follows from this development increment.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

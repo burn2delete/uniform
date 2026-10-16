@@ -4593,6 +4593,54 @@
          (= :lexical (get binding :binding-class))]) false)))
 
 (defn sh08-sm-shape [id nodes types binding-types functions lexical bindings forms seen depth]
+  (sh08-sm-shape-with-bindings id nodes types binding-types functions lexical bindings forms seen depth {}))
+
+(defn sh08-sm-merge-origins [left right]
+  (loop [ids (keys right) result left]
+    (if (= (count ids) 0) result
+      (let [id (first ids)]
+        (if (if (contains? result id) (= (get result id) (get right id)) true)
+          (recur (rest ids) (assoc result id (get right id))) nil)))))
+
+(defn sh08-sm-shape-cases [shape]
+  (sh08-sm-shape-cases-with-origins shape {}))
+
+(defn sh08-sm-shape-cases-with-origins [shape inherited]
+  (let [origins (sh08-sm-merge-origins inherited (get shape :case-origins {}))]
+  (if (= origins nil) []
+  (if (= :alternatives (get shape :shape-kind))
+    (loop [remaining (get shape :alternatives) result []]
+      (if (= (count remaining) 0) result
+        (recur (rest remaining) (sh08-ft-add-values-to-set (sh08-sm-shape-cases-with-origins (first remaining) origins) result))))
+    [(if (= (count origins) 0) shape (assoc shape :case-origins origins))]))))
+
+(defn sh08-sm-construct-cases [shape]
+  (loop [parts (get shape :parts) cases [(assoc shape :parts [] :case-origins {})] expanded? false]
+    (if (= (count parts) 0)
+      (if expanded?
+        (assoc shape :shape-kind :alternatives :alternatives cases)
+        shape)
+      (let [part (first parts) values (sh08-sm-shape-cases (get part :shape))
+            product (loop [remaining cases result []]
+                      (if (= (count remaining) 0) {:status :accepted :cases result}
+                        (let [case (first remaining)
+                              joined (loop [choices values out result]
+                                       (if (> (count out) (get (sh08-local-bounds-value) :maximum-node-children))
+                                         (sh08-sm-failure "C7-ANNOTATION" :structural-match-residual-limit nil :bounded-correlated-constructor-product (count out))
+                                         (if (= (count choices) 0) {:status :accepted :cases out}
+                                           (let [value (first choices)
+                                                 origins (sh08-sm-merge-origins (get case :case-origins {}) (get value :case-origins {}))]
+                                             (recur (rest choices)
+                                               (if (map? origins)
+                                                 (conj out (assoc case :parts (conj (get case :parts) (assoc part :shape value))
+                                                                      :case-origins origins)) out))))))]
+                          (if (= :accepted (get joined :status))
+                            (recur (rest remaining) (get joined :cases)) joined))))]
+        (if (= :accepted (get product :status))
+          (recur (rest parts) (get product :cases)
+                 (if (= :alternatives (get (get part :shape) :shape-kind)) true expanded?)) product)))))
+
+(defn sh08-sm-shape-with-bindings [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes]
   (if (> depth (get (sh08-local-bounds-value) :maximum-carrier-depth))
     (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-constructor-depth depth)
     (if (contains? seen id)
@@ -4604,12 +4652,30 @@
                    (sh08-ft-infer-node-with-context node types binding-types functions [] {}))
             base {:node-id id :type type :source (get node :source) :binding-links [] :shape-size 1}
             records (sh08-bm-select lexical :binding-id (get attrs :binding-id))]
+        (if (if (= kind :reference) (contains? binding-shapes (get attrs :binding-id)) false)
+          (let [evidence (get binding-shapes (get attrs :binding-id))
+                alternatives (get evidence :alternatives)
+                binding (get bindings (get attrs :binding-id))]
+            (if (= :rejected (get evidence :status))
+              (assoc evidence :node node)
+            (if (sh08-ft-all-true?
+                  [(= (get attrs :binding-id) (get evidence :binding-id))
+                   (= :lexical (get binding :binding-class))
+                   (= (get binding :scope-id) (get evidence :scope-id))
+                   (contains? (set (get evidence :use-syntax-ids)) (get (get node :source) :syntax-id))
+                   (> (count alternatives) 0)])
+              (if (= :accepted (get (sh08-carrier-preflight evidence) :status))
+              (assoc base :status :accepted :shape-kind :alternatives :alternatives alternatives
+                          :type (get evidence :type) :pattern-binding-evidence evidence
+                          :shape-size (get evidence :shape-size))
+                (sh08-sm-failure "C7-ANNOTATION" :structural-match-evidence-limit nil :bounded-pattern-ancestry nil))
+              (sh08-sm-failure "C7-VERIFY" :invalid-pattern-shape-link nil :exact-pattern-binding-ancestry evidence))))
         (if (if (= kind :reference) (> (count records) 0) false)
           (if (if (= (count records) 1)
                 (sh08-sm-let-link-valid? (first records) node nodes bindings forms) false)
             (let [record (first records)
-                  shape (sh08-sm-shape (get record :initializer-node-id) nodes types binding-types functions
-                                      lexical bindings forms (conj seen id) (+ depth 1))]
+                  shape (sh08-sm-shape-with-bindings (get record :initializer-node-id) nodes types binding-types functions
+                                      lexical bindings forms (conj seen id) (+ depth 1) binding-shapes)]
               (if (= :accepted (get shape :status))
                 (if (< (get shape :shape-size) (get (sh08-local-bounds-value) :maximum-core-nodes))
                   (assoc (assoc shape :reference-node-id id)
@@ -4625,18 +4691,18 @@
                        (if (= collection-kind :map) (sh08-even-count? children) true)])
                   (loop [remaining children ordinal 0 parts [] child-types [] seen-keys #{} size 1]
                     (if (= (count remaining) 0)
-                      (assoc (assoc base :status :accepted) :shape-kind collection-kind
+                      (sh08-sm-construct-cases (assoc (assoc base :status :accepted) :shape-kind collection-kind
                              :constructor-node-id id :parts parts :shape-size size
                              :type (if (= collection-kind :map)
                                      {:kind :gravity.type/map :member-types child-types :shape :literal}
-                                     {:kind :gravity.type/vector :element-types child-types :shape :literal}))
+                                     {:kind :gravity.type/vector :element-types child-types :shape :literal})))
                       (let [key-id (if (= collection-kind :map) (first remaining) nil)
                             value-id (if (= collection-kind :map) (second remaining) (first remaining))
                             key-node (get nodes key-id) key-form (get forms (get (get key-node :source) :form-id))
                             key (get (get key-node :attributes) :value)
                             value-node (get nodes value-id)
                             coordinate (if (= collection-kind :map) (+ ordinal 1) ordinal)
-                            shape (sh08-sm-shape value-id nodes types binding-types functions lexical bindings forms (conj seen id) (+ depth 1))
+                            shape (sh08-sm-shape-with-bindings value-id nodes types binding-types functions lexical bindings forms (conj seen id) (+ depth 1) binding-shapes)
                             key-valid (if (= collection-kind :map)
                                         (sh08-ft-all-true?
                                           [(= :literal (get key-node :core-form))
@@ -4679,7 +4745,7 @@
                 (assoc base :status :accepted :shape-kind :scalar
                        :domain (if (= type :gravity.type/bool) {:values [true false]}
                                  (if (= type :gravity.type/nil) {:values [nil]} {:excluded-values []}))))
-              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type))))))))
+              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type)))))))))
 
 (defn sh08-sm-part-index [shape key coordinate]
   (loop [parts (get shape :parts) index 0]
@@ -4696,10 +4762,15 @@
     (if (map? type) (contains? #{:gravity.type/map :gravity.type/vector} (get type :kind)) false)))
 
 (defn sh08-sm-extractions [shape tree constructor-path]
+  (sh08-sm-extractions-with-origins shape tree constructor-path (get shape :case-origins {})))
+
+(defn sh08-sm-extractions-with-origins [shape tree constructor-path origins]
   (let [record (get tree :record)]
     (if (= :binding (get record :pattern-kind))
       [{:binding-id (get record :pattern-binding-id) :scope-id (get record :pattern-binding-scope-id)
-        :type (get shape :type) :domain (get shape :domain) :shape shape
+        :type (get shape :type) :domain (get shape :domain)
+        :shape (if (= (count origins) 0) shape (assoc shape :case-origins origins))
+        :case-origins origins
         :pattern-path (get record :path) :constructor-path constructor-path
         :pattern-form-id (get record :pattern-form-id) :pattern-syntax-id (get record :pattern-syntax-id)
         :value-node-id (get shape :node-id) :source-form (get tree :form)}]
@@ -4709,7 +4780,8 @@
                 part (get (get shape :parts) index)]
             (recur (rest children)
               (sh08-ft-add-values-to-set
-                (sh08-sm-extractions (get part :shape) (get child :tree) (conj constructor-path (get part :coordinate))) result))))))))
+                (sh08-sm-extractions-with-origins (get part :shape) (get child :tree) (conj constructor-path (get part :coordinate))
+                  (sh08-sm-merge-origins origins (get (get part :shape) :case-origins {}))) result))))))))
 
 (defn sh08-gd-result [group branch types validate?]
   (if (contains? branch :guard)
@@ -4751,7 +4823,8 @@
     {:status :accepted :truth :true}))
 
 (defn sh08-sm-partition-with-guards [group shape types validate?]
-  (loop [trees (get group :pattern-trees) branches (get group :branches) domains [shape] facts []]
+  (loop [trees (get group :pattern-trees) branches (get group :branches)
+         domains (sh08-sm-shape-cases shape) facts []]
     (if (= (count trees) 0) {:status :accepted :branches facts :remaining domains}
       (let [tree (first trees)
             split (loop [remaining domains selected [] residual []]
@@ -4766,10 +4839,13 @@
           (if (= (count (get split :selected)) 0)
             (sh08-sm-failure "L7-UNREACHABLE" :unreachable-structural-match-clause (get tree :record) :remaining-constructor-case (get (get tree :record) :pattern-value))
             (let [guard-result (sh08-gd-result group (first branches) types validate?)
-                  extractions (loop [selected (get split :selected) result []]
+                  extractions (loop [selected (get split :selected) result [] case-index 0]
                                 (if (= (count selected) 0) result
-                                  (recur (rest selected) (sh08-ft-add-values-to-set
-                                     (sh08-sm-extractions (first selected) tree []) result))))]
+                                  (let [selected-shape (first selected)
+                                        origins (assoc (get selected-shape :case-origins {}) (get (get group :node) :node-id)
+                                                       {:clause-ordinal (get (first branches) :clause-ordinal) :case-index case-index})]
+                                    (recur (rest selected) (sh08-ft-add-values-to-set
+                                      (sh08-sm-extractions-with-origins selected-shape tree [] origins) result) (+ case-index 1)))))]
               (if (= :accepted (get guard-result :status))
                 (let [after (if (= :true (get guard-result :truth)) (get split :residual) domains)
                       selected (if (= :false (get guard-result :truth)) [] (get split :selected))
@@ -4784,8 +4860,64 @@
   (sh08-sm-partition-with-guards group shape {} false))
 
 (defn sh08-sm-group-shape [group types binding-types functions]
-  (sh08-sm-shape (first (get (get group :node) :children)) (get group :nodes) types binding-types functions
-                 (get group :lexical-bindings) (get group :binding-index) (get group :forms) #{} 0))
+  (sh08-sm-shape-with-bindings (first (get (get group :node) :children)) (get group :nodes) types binding-types functions
+                 (get group :lexical-bindings) (get group :binding-index) (get group :forms) #{} 0 (get group :binding-shapes {})))
+
+(defn sh08-sm-extraction-type [values]
+  (let [type (get (first values) :type)]
+    (loop [remaining values]
+      (if (= (count remaining) 0) type
+        (if (= type (get (first remaining) :type)) (recur (rest remaining)) :gravity.type/unknown)))))
+
+; Alternatives remain whole constructor cases. Never join their fields separately.
+(defn sh08-sm-seed-shapes [group types binding-types functions prior]
+  (let [shape (sh08-sm-group-shape (assoc group :binding-shapes prior) types binding-types functions)
+        partition (if (= :accepted (get shape :status)) (sh08-sm-partition group shape) shape)]
+    (if (= :accepted (get partition :status))
+      (loop [branches (get partition :branches) result prior]
+        (if (= (count branches) 0) result
+          (let [fact (first branches)
+                grouped (loop [values (get fact :extractions) out {}]
+                          (if (= (count values) 0) out
+                            (let [value (first values) id (get value :binding-id)]
+                              (recur (rest values) (assoc out id (conj (get out id []) value))))))]
+            (recur (rest branches)
+              (loop [ids (keys grouped) out result]
+                (if (= (count ids) 0) out
+                  (let [id (first ids) values (get grouped id) value (first values)
+                        record (get (get fact :tree) :record)
+                        source-record (first (sh08-bm-select (get group :patterns) :pattern-binding-id id))
+                        alternatives (loop [remaining values shapes [] size 0]
+                                       (if (= (count remaining) 0) {:shapes shapes :size size}
+                                         (let [extraction (first remaining) extracted (get extraction :shape)]
+                                           (recur (rest remaining) (conj shapes extracted) (+ size (get extracted :shape-size))))))]
+                    (recur (rest ids)
+                      (if (if (<= (get alternatives :size) (get (sh08-local-bounds-value) :maximum-core-nodes))
+                            (<= (count values) (get (sh08-local-bounds-value) :maximum-node-children)) false)
+                        (assoc out id {:binding-id id :scope-id (get value :scope-id) :type (sh08-sm-extraction-type values)
+                                       :use-syntax-ids (get source-record :pattern-binding-use-syntax-ids)
+                                       :match-core-node-id (get (get group :node) :node-id)
+                                       :clause-ordinal (get record :clause-ordinal)
+                                       :pattern-path (get value :pattern-path) :extractions values
+                                       :scrutinee-shape shape
+                                       :structural-premises (get fact :remaining-before)
+                                       :structurally-matched-shapes (if (contains? fact :structural-selected)
+                                                                      (get fact :structural-selected) (get fact :selected))
+                                       :alternatives (get alternatives :shapes) :shape-size (+ 1 (get alternatives :size))})
+                        (assoc out id (assoc (sh08-sm-failure "C7-ANNOTATION" :structural-alias-evidence-limit
+                                              nil :bounded-pattern-binding-alternatives
+                                              {:shape-size (get alternatives :size) :alternative-count (count values)})
+                                            :binding-id id :type (sh08-sm-extraction-type values)))))))))))) prior)))
+
+(defn sh08-sm-seed-all-shapes [groups types bindings functions prior]
+  (loop [remaining groups result prior]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining) (sh08-sm-seed-shapes (first remaining) types bindings functions result)))))
+
+(defn sh08-sm-groups-with-shapes [groups shapes]
+  (loop [remaining groups result []]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining) (conj result (assoc (first remaining) :binding-shapes shapes))))))
 
 (defn sh08-sm-seed [group types binding-types functions]
   (let [shape (sh08-sm-group-shape group types binding-types functions)]
@@ -4797,7 +4929,8 @@
               (recur (rest branches)
                 (loop [values (get (first branches) :extractions) out result]
                   (if (= (count values) 0) out
-                    (recur (rest values) (assoc out (get (first values) :binding-id) (get (first values) :type))))))))
+                    (let [id (get (first values) :binding-id) evidence (get (get group :binding-shapes) id)]
+                      (recur (rest values) (assoc out id (if (map? evidence) (get evidence :type) (get (first values) :type))))))))))
           binding-types)) binding-types)))
 
 (defn sh08-sm-diagnostic [group failure]
@@ -4854,7 +4987,8 @@
                                  :dependencies {:scrutinee-node-id (first (get node :children)) :constructor-shape shape
                                                 :pattern-tree (get fact :tree) :branch-node-id body-id :extractions (get fact :extractions)}
                                  :solution {:result-type type :selected-shapes (get fact :selected) :binding-extractions (get fact :extractions)}
-                                 :invalidation [:constructor-children :key-nodes :value-node-types :immutable-initializers :pattern-paths :binding-scopes :branch-types]
+                                 :invalidation [:constructor-children :key-nodes :value-node-types :immutable-initializers :pattern-paths :binding-scopes :branch-types
+                                                :pattern-binding-shapes :case-origins :correlated-constructor-products]
                                  :profile (get module :profile) :target (get module :target) :status :solved :diagnostics []})))
                   {:diagnostic (sh08-bm-error (if (= declared nil) "C7-ANNOTATION" "C7-TYPE-MISMATCH")
                                    (if (= declared nil) :unsupported-heterogeneous-structural-match-join :structural-match-branch-type-mismatch)
@@ -4905,6 +5039,13 @@
             (recur (rest remaining) (get split :selected) (get split :residual)) split))))))
 
 (defn sh08-sm-split [shape tree]
+  (if (= :alternatives (get shape :shape-kind))
+    (loop [remaining (get shape :alternatives) selected [] residual []]
+      (if (= (count remaining) 0) {:status :accepted :selected selected :residual residual}
+        (let [split (sh08-sm-split (first remaining) tree)]
+          (if (= :accepted (get split :status))
+            (recur (rest remaining) (sh08-ft-add-values-to-set (get split :selected) selected)
+                   (sh08-ft-add-values-to-set (get split :residual) residual)) split))))
   (let [record (get tree :record) kind (get record :pattern-kind)
         shape-kind (get shape :shape-kind) type (get shape :type) value (get record :pattern-value)]
     (if (contains? #{:wildcard :binding} kind)
@@ -4940,7 +5081,7 @@
                 {:status :accepted :selected [] :residual [shape]}
                 {:status :accepted :selected [(assoc shape :domain {:values [value]})]
                  :residual [(assoc shape :domain {:excluded-values (conj (get domain :excluded-values) value)})]}))
-            (sh08-sm-failure "L7-PATTERN-TYPE" :structural-leaf-pattern-type-mismatch record type literal-type))))))))
+            (sh08-sm-failure "L7-PATTERN-TYPE" :structural-leaf-pattern-type-mismatch record type literal-type)))))))))
 
 (defn sh08-sm-numeric-type? [type]
   (contains? #{:gravity.type/integer :gravity.type/decimal :gravity.type/ratio
@@ -5149,9 +5290,13 @@
 (defn sh08-ft-infer-pass-with-context
   [nodes lexical-bindings definitions calls edges function-types
    initial-binding-types context]
+  (let [binding-shapes (sh08-sm-seed-all-shapes (get context :boolean-matches)
+                        (get context :prior-type-table {}) initial-binding-types function-types
+                        (get context :prior-binding-shapes {}))
+        match-groups (sh08-sm-groups-with-shapes (get context :boolean-matches) binding-shapes)]
   (loop [remaining nodes
          type-table {}
-         binding-types (sh08-bm-seed-bindings (get context :boolean-matches)
+         binding-types (sh08-bm-seed-bindings match-groups
                          (sh08-ft-node-index nodes) (get context :prior-type-table {})
                          initial-binding-types function-types edges context)
          function-result function-types]
@@ -5172,6 +5317,7 @@
              calls edges node-index type-table definition-types
              function-with-params context)]
         {:type-table type-table
+         :binding-shapes binding-shapes
          :binding-types (get call-result :binding-types)
          :function-types function-with-params
          :constraints (get call-result :constraints)
@@ -5186,7 +5332,7 @@
          binding-types
                     (if (= (get (get node :core-form) :none) :none)
            function-result
-           function-result))))))
+           function-result)))))))
 
 (defn sh08-ft-infer-pass
   [nodes lexical-bindings definitions calls edges function-types
@@ -5263,7 +5409,8 @@
          round 1
          current-functions function-types
          current-bindings binding-types
-         current-types {}]
+         current-types {}
+         current-shapes {}]
     (if (<= rounds-left 0)
       {:convergence-status :nonconverged
        :round-count (- round 1)
@@ -5281,7 +5428,7 @@
       (let [pass
             (sh08-ft-infer-pass-with-context
              node-sequence lexical-bindings definitions calls edges
-             current-functions current-bindings (assoc context :prior-type-table current-types))
+             current-functions current-bindings (assoc context :prior-type-table current-types :prior-binding-shapes current-shapes))
             next-bindings (get pass :binding-types)
             next-functions
             (sh08-ft-update-function-returns
@@ -5296,7 +5443,8 @@
           (if (if (= next-functions current-functions)
                 (if (= next-bindings current-bindings)
                   (if (> (count (get context :boolean-matches)) 0)
-                    (= current-types (get pass :type-table)) true) false)
+                    (if (= current-types (get pass :type-table))
+                      (= current-shapes (get pass :binding-shapes)) false) true) false)
                 false)
             (assoc pass
                    :function-types next-functions
@@ -5309,7 +5457,8 @@
              (+ round 1)
              next-functions
              next-bindings
-             (get pass :type-table)))
+             (get pass :type-table)
+             (get pass :binding-shapes)))
           (assoc pass
                  :function-types next-functions
                  :binding-types next-bindings
@@ -5782,7 +5931,7 @@
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches)))
                 match-checks
-                (sh08-bm-checks (get products :boolean-matches) (get raw-inference :type-table)
+                (sh08-bm-checks (sh08-sm-groups-with-shapes (get products :boolean-matches) (get raw-inference :binding-shapes)) (get raw-inference :type-table)
                                 (get raw-inference :function-types) module)
                 unknown-node
                 (if (= (get raw-inference :convergence-status)
