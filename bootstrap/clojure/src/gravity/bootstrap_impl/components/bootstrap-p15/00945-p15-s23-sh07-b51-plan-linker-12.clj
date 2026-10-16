@@ -111,7 +111,7 @@
         source-path (:path expected-source)
         recomputed-base
         (when (and caller expected-source)
-          (sh06-resolution-request source-path sh05-artifact))]
+          (sh06-resolution-base-request source-path sh05-artifact))]
     (when-not
      (and caller expected-source
           (= source-path (:path source))

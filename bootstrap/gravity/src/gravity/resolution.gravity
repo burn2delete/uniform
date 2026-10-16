@@ -671,7 +671,8 @@
            (if (= (count records) 0)
              accumulated
              (recur (rest records)
-                    (conj accumulated (first records))))))))))
+                    (if (sh06-vector-contains? accumulated (first records)) accumulated
+                      (conj accumulated (first records)))))))))))
 
 (defn sh06-reference-candidates-base [request bindings reference]
   (let [module (get request :module)
@@ -1421,6 +1422,7 @@
                   :boundary (get (first remaining) :profile-boundary)
                   :accepted true}))))
       :incremental-invalidation-inputs
+      (sh06-module-invalidation-inputs request
       {:source-revision-id (get module :source-revision-id)
        :c4-artifact-id (get module :c4-artifact-id)
        :macro-result-id
@@ -1430,7 +1432,7 @@
          (if (= (count remaining) 0)
            ids
            (recur (rest remaining)
-                  (conj ids (get (first remaining) :binding-id)))))}
+                  (conj ids (get (first remaining) :binding-id)))))})
       :identity-preimage preimage
       :macro-expansion-binding (get request :macro-expansion-binding)
       :provenance (get request :provenance)
@@ -1448,7 +1450,219 @@
       :artifact-binding :clojure-stage0
       :clojure-seed-boundary? true}}))
 
+(defn sh06-module-check [rule reason dependency candidates]
+  {:rule rule
+   :reference {:symbol (get dependency :namespace)
+               :syntax-id (get (get dependency :semantic-span) :namespace-syntax-id)
+               :semantic-span (get dependency :semantic-span) :source-span (get dependency :source-span)}
+   :candidate-bindings candidates :dependency-edge dependency :facts {:reason reason}})
+
+(defn sh06-module-dependency-ids [dependencies]
+  (loop [remaining dependencies result []]
+    (if (= (count remaining) 0) result
+      (let [id (get (get (first remaining) :semantic-span) :ordinary-module-artifact-id)]
+        (recur (rest remaining) (if (= id nil) result
+                                 (if (sh06-vector-contains? result id) result (conj result id))))))))
+
+(defn sh06-module-invalidation-inputs [request inputs]
+  (let [ids (sh06-module-dependency-ids (get request :imports))]
+    (if (= (count ids) 0) inputs (assoc inputs :module-artifact-ids ids))))
+
+(defn sh06-module-invalidation-shape? [analysis]
+  (let [ids (sh06-module-dependency-ids (get analysis :dependency-records))
+        inputs (get analysis :incremental-invalidation-inputs)
+        fields #{:source-revision-id :c4-artifact-id :macro-result-id :binding-ids}]
+    (if (= (count ids) 0) (sh06-exact-keys? inputs fields)
+      (if (sh06-exact-keys? inputs (conj fields :module-artifact-ids))
+        (= ids (get inputs :module-artifact-ids)) false))))
+
+(defn sh06-module-binding [premise definition]
+  (let [analysis (get premise :analysis)]
+    (loop [remaining (get analysis :binding-table)]
+      (if (= (count remaining) 0) nil
+        (let [binding (first remaining)]
+          (if (if (= :namespace (get binding :binding-class))
+                (= (get binding :definition-syntax-id) (get definition :definition-syntax-id)) false)
+            binding (recur (rest remaining))))))))
+
+(defn sh06-module-definition-valid? [premise definition]
+  (let [analysis (get premise :analysis) module (get analysis :module-contract)
+        binding (sh06-module-binding premise definition)]
+    (if (sh06-definition-shape? definition)
+      (if (= :namespace (get definition :binding-class))
+        (if (= (get definition :definition-artifact-id) (get module :c4-artifact-id))
+          (if (sh06-sha256-id? (get binding :binding-id))
+            (loop [fields [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref
+                           :effects :capabilities :safety :semantic-span :source-span :definition-syntax-id :definition-artifact-id]]
+              (if (= (count fields) 0) true
+                (if (= (get binding (first fields)) (get definition (first fields))) (recur (rest fields)) false))) false) false) false) false)))
+
+(defn sh06-module-premise-valid? [premise]
+  (let [analysis (get premise :analysis) module (get analysis :module-contract)
+        request (get premise :request)
+        expected (if (= :gravity/sh06-ordinary-module-resolution-request (get request :artifact))
+                   (sh06-build-resolution-template request) {})]
+    (if (sh06-exact-keys? premise #{:artifact-id :analysis :definitions :request :raw-analysis :digest-requests :resolved-digests})
+      (if (if (= :accepted (get expected :status))
+            (if (= (get expected :namespace-analysis-template) (get premise :raw-analysis))
+              (if (= (get expected :digest-requests) (get premise :digest-requests))
+                (if (= (get request :module) module)
+                  (if (= (get request :definitions) (get premise :definitions))
+                    (= :passed (get (sh06-verify-resolution-resolved analysis (get premise :digest-requests) (get premise :resolved-digests)) :status)) false) false) false) false) false)
+      (if (if (sh06-sha256-id? (get premise :artifact-id))
+            (if (sh06-analysis-shape? analysis) (sh06-module-shape? module) false) false)
+        (if (= (get analysis :namespace) (get module :namespace))
+          (if (= (get analysis :package) (get module :package))
+            (if (= (get analysis :profile) (get module :profile))
+              (if (= (get analysis :target) (get module :target))
+                (if (= (get analysis :exports) (get module :exports))
+                  (if (sh06-bounded-vector? (get premise :definitions) (get (sh06-bounds-value) :maximum-definitions))
+                    (loop [remaining (get premise :definitions)]
+                      (if (= (count remaining) 0)
+                        (= (count (get premise :definitions))
+                           (count (loop [rows (get analysis :binding-table) out []]
+                                    (if (= (count rows) 0) out
+                                      (recur (rest rows) (if (= :namespace (get (first rows) :binding-class)) (conj out (first rows)) out))))))
+                        (if (sh06-module-definition-valid? premise (first remaining)) (recur (rest remaining)) false))) false) false) false) false) false) false) false) false) false)))
+
+(defn sh06-module-export-check [module definitions source]
+  (loop [remaining (get module :exports) seen []]
+    (if (= (count remaining) 0) nil
+      (let [name (first remaining)
+            found (sh06-find-definitions-in-namespace definitions (get module :namespace) name)]
+        (if (sh06-vector-contains? seen name)
+          (sh06-module-check "C5-AMBIGUOUS" :duplicate-export (assoc source :namespace (get module :namespace)) found)
+          (if (= (count found) 1)
+            (if (= :public (get (first found) :visibility))
+              (recur (rest remaining) (conj seen name))
+              (sh06-module-check "C5-PRIVATE" :private-export (assoc source :namespace (get module :namespace)) found))
+            (sh06-module-check (if (= (count found) 0) "C5-UNRESOLVED" "C5-AMBIGUOUS")
+                               :export-without-unique-definition (assoc source :namespace (get module :namespace)) found)))))))
+
+(defn sh06-module-import-binding [premise definition]
+  (let [analysis (get premise :analysis) binding (sh06-module-binding premise definition)
+        exported? (sh06-vector-contains? (get analysis :exports) (get definition :name))]
+    (assoc definition :binding-class :import :visibility (if exported? (get definition :visibility) :private)
+      :definition-artifact-id (get premise :artifact-id)
+      :semantic-span {:ordinary-module-artifact-id (get premise :artifact-id)
+                      :origin-analysis-id (get analysis :artifact-id) :origin-binding-id (get binding :binding-id)
+                      :origin-definition-artifact-id (get definition :definition-artifact-id)
+                      :origin-definition-syntax-id (get definition :definition-syntax-id)
+                      :origin-definition
+                      (loop [fields [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref :effects :capabilities :safety] out {}]
+                        (if (= (count fields) 0) out
+                          (recur (rest fields) (assoc out (first fields) (get definition (first fields))))))})))
+
+(defn sh06-module-add-binding [bindings binding]
+  (loop [remaining bindings]
+    (if (= (count remaining) 0) (conj bindings binding)
+      (if (if (= (get (get (first remaining) :semantic-span) :ordinary-module-artifact-id)
+                 (get (get binding :semantic-span) :ordinary-module-artifact-id))
+            (= (get (get (first remaining) :semantic-span) :origin-binding-id)
+               (get (get binding :semantic-span) :origin-binding-id)) false)
+        bindings (recur (rest remaining))))))
+
+(defn sh06-module-compatibility-check [caller callee dependency]
+  (if (= false (= (get caller :target) (get callee :target)))
+    (sh06-module-check "C5-TARGET" :target-incompatible-import dependency [])
+    (if (= false (sh06-vector-subset? (get callee :capabilities) (get caller :capabilities)))
+      (sh06-module-check "C5-CAPABILITY" :missing-import-capability dependency [])
+      (if (= (get caller :profile) (get callee :profile)) nil
+        (if (if (= :core (get callee :profile))
+              (if (= [] (get callee :effects)) (= [] (get callee :capabilities)) false) false) nil
+          (sh06-module-check "C5-CROSS-PROFILE" :unsupported-or-impure-module-boundary dependency []))))))
+
+(defn sh06-module-prepare [request]
+  (let [base (assoc (loop [fields (keys request) out {}]
+                     (if (= (count fields) 0) out
+                       (recur (rest fields) (if (sh06-vector-contains? [:module-premises :namespace-source] (first fields)) out
+                                               (assoc out (first fields) (get request (first fields)))))))
+                   :artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1)
+        premises (get request :module-premises)]
+    (if (if (sh06-request-shape? base)
+          (sh06-bounded-vector? premises (get (sh06-bounds-value) :maximum-imports)) false)
+      (let [source (get request :namespace-source)
+            own-check (if (if (sh06-exact-keys? source #{:semantic-span :source-span})
+                              (sh06-sha256-id? (get (get source :semantic-span) :namespace-syntax-id)) false)
+                        (sh06-module-export-check (get base :module) (get base :definitions) source)
+                        (sh06-module-check "C5-UNRESOLVED" :namespace-source-missing {} []))
+            premise-check (loop [remaining premises names []]
+                            (if (= (count remaining) 0) nil
+                              (let [premise (first remaining) analysis (get premise :analysis) namespace (get analysis :namespace)]
+                                (if (sh06-vector-contains? names namespace)
+                                  (sh06-module-check "C5-AMBIGUOUS" :duplicate-module-artifact {:namespace namespace} [])
+                                  (if (sh06-module-premise-valid? premise)
+                                    (let [check (sh06-module-export-check (get analysis :module-contract) (get premise :definitions)
+                                                   (get (get premise :request) :namespace-source))]
+                                      (if (= check nil) (recur (rest remaining) (conj names namespace)) check))
+                                    (sh06-module-check "C5-UNRESOLVED" :invalid-module-artifact-origin {:namespace namespace} []))))))]
+        (if (= own-check nil)
+          (if (= premise-check nil)
+            (loop [remaining (get base :imports) imports [] bindings [] edges [] consumed []]
+              (if (if (> (count bindings) (get (sh06-bounds-value) :maximum-definitions)) true
+                    (> (count edges) (get (sh06-bounds-value) :maximum-dependency-edges)))
+                {:check (sh06-module-check "C5-UNRESOLVED" :module-composition-limit {} [])}
+              (if (= (count remaining) 0)
+                (if (= (count consumed) (count premises))
+                  {:request (assoc base :imports imports :import-bindings bindings :dependency-edges edges)}
+                  {:check (sh06-module-check "C5-UNRESOLVED" :undeclared-module-artifact {} [])})
+                (let [dependency (first remaining)]
+                  (if (= :foreign (get dependency :kind))
+                    (recur (rest remaining) (conj imports dependency)
+                      (loop [rows (get base :import-bindings) out bindings]
+                        (if (= (count rows) 0) out
+                          (recur (rest rows) (if (= (get (first rows) :namespace) (get dependency :namespace))
+                                              (conj out (first rows)) out))))
+                      (conj edges {:from (get (get base :module) :namespace) :to (get dependency :namespace) :kind :foreign
+                                   :boundary (get dependency :boundary) :semantic-span (get dependency :semantic-span) :source-span (get dependency :source-span)}) consumed)
+                    (let [matches (loop [rows premises found []]
+                                    (if (= (count rows) 0) found
+                                      (recur (rest rows) (if (= (get (get (first rows) :analysis) :namespace) (get dependency :namespace))
+                                                          (conj found (first rows)) found))))]
+                      (if (= (count matches) 0)
+                        {:check (sh06-module-check "C5-UNRESOLVED" :missing-module-artifact dependency [])}
+                        (let [premise (first matches) analysis (get premise :analysis) module (get analysis :module-contract)
+                              definitions (get premise :definitions)
+                              referred-check (loop [names (get dependency :refer)]
+                                               (if (= (count names) 0) nil
+                                                 (let [found (sh06-find-definitions-in-namespace definitions (get dependency :namespace) (first names))]
+                                                   (if (= (count found) 0) (sh06-module-check "C5-UNRESOLVED" :missing-module-export dependency [])
+                                                     (if (if (= (get (first found) :visibility) :public)
+                                                           (sh06-vector-contains? (get analysis :exports) (first names)) false)
+                                                       (recur (rest names)) (sh06-module-check "C5-PRIVATE" :private-module-export dependency found))))))
+                              compatibility (sh06-module-compatibility-check (get base :module) module dependency)
+                              actual (assoc dependency :profile (get module :profile) :targets [(get module :target)]
+                                       :effects (get module :effects) :capabilities (get module :capabilities) :safety (get module :safety)
+                                       :visibility :public :boundary (if (if (= :core (get module :profile))
+                                                                          (if (= [] (get module :effects)) (= [] (get module :capabilities)) false) false)
+                                                                     :pure-core-api nil)
+                                       :dependency-artifact-id (get premise :artifact-id)
+                                       :semantic-span (assoc (get dependency :semantic-span) :ordinary-module-artifact-id (get premise :artifact-id)))]
+                          (if (if (= referred-check nil) (= compatibility nil) false)
+                            (recur (rest remaining) (conj imports actual)
+                              (loop [rows definitions out bindings]
+                                (if (= (count rows) 0) out
+                                  (recur (rest rows) (if (= (get (first rows) :namespace) (get dependency :namespace))
+                                                      (sh06-module-add-binding out (sh06-module-import-binding premise (first rows))) out))))
+                              (loop [rows (get (get analysis :dependency-graph) :edges)
+                                     out (conj edges {:from (get (get base :module) :namespace) :to (get dependency :namespace) :kind :namespace
+                                                      :boundary (get actual :boundary) :semantic-span (get actual :semantic-span) :source-span (get actual :source-span)})]
+                                (if (= (count rows) 0) out (recur (rest rows) (conj out (first rows)))))
+                              (if (sh06-vector-contains? consumed (get dependency :namespace)) consumed (conj consumed (get dependency :namespace))))
+                            {:check (if (= referred-check nil) compatibility referred-check)})))))))))
+            {:check premise-check}) {:check own-check}))
+      {:check (sh06-module-check "C5-UNRESOLVED" :malformed-module-request {} [])})))
+
 (defn sh06-build-resolution-template [request]
+  (if (= (get request :artifact) :gravity/sh06-ordinary-module-resolution-request)
+    (if (= 2 (get request :schema-version))
+      (let [prepared (sh06-module-prepare request)]
+        (if (contains? prepared :check) (sh06-rejected-result request (get prepared :check))
+          (sh06-build-resolution-template-v1 (get prepared :request))))
+      (sh06-rejected-result request (sh06-module-check "C5-UNRESOLVED" :module-request-version {} [])))
+    (sh06-build-resolution-template-v1 request)))
+
+(defn sh06-build-resolution-template-v1 [request]
   (if (sh06-request-shape? request)
     (if (sh06-all-record-shapes? request)
       (let [all-definitions
@@ -1597,10 +1811,7 @@
                     (if (sh06-exact-keys?
                          (get analysis :dependency-graph)
                          #{:nodes :edges :acyclic})
-                      (if (sh06-exact-keys?
-                           (get analysis :incremental-invalidation-inputs)
-                           #{:source-revision-id :c4-artifact-id
-                             :macro-result-id :binding-ids})
+                      (if (sh06-module-invalidation-shape? analysis)
                         (if (sh06-exact-keys?
                              (get analysis :identity-preimage)
                              #{:domain :module :macro-expansion-binding

@@ -52,6 +52,47 @@ Explicit `:dev-test` selections use test resources on the classpath without a
 manifest authority entry; unknown namespaces and unmatched selectors fail.
 Use a fresh JVM after compiler source changes to avoid stale process-local plans.
 
+### Ordinary module dependencies
+
+L3/C5 module resolution consumes real callee artifacts. Namespace names,
+`:refer` entries and `:compiler`/`:sh06` metadata do not establish that a
+definition exists or is exported. Change the owning policy in
+`bootstrap/gravity/src/gravity/resolution.gravity`; the existing SH-06 adapter
+transports and verifies artifacts rather than selecting imports itself.
+
+Use the ordinary constructor's module-input argument, not a new wrapper or
+authority flag:
+
+```clojure
+(require '[gravity.bootstrap :as bootstrap])
+
+(bootstrap/sh06-resolution-source-artifact caller-path caller-text
+  {:artifact :gravity/sh06-module-inputs
+   :schema-version 1
+   :module-artifacts [callee-artifact]})
+```
+
+Build `callee-artifact` with the same ordinary constructor or file constructor.
+The two-argument source constructor means an empty module-input set; every
+external Gravity `:requires`, including an unused requirement, then needs an
+explicit callee artifact. Missing inputs fail with `C5-UNRESOLVED`. There is no
+ambient host-namespace lookup or export-all fallback. The existing strict
+SOURCE-context interface is separate and is not a development shortcut.
+
+Start with the existing direct policy checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --exact sh06-ordinary-module-policy-development-kernel \
+  --exact sh06-ordinary-seed-build-does-not-call-public-frontdoors
+```
+
+Run the affected real module composition when import behavior or its artifact
+interface changes. Local artifact verification checks the supplied semantic
+inputs; it does not admit a module revision, refresh historical migration
+proofs, or establish imported-call typing, execution or self-hosting support.
+
 Ordinary focused tests do not require fresh authority proofs, frozen migration
 fingerprint refreshes, workstream receipts, broker setup or a new routing record.
 Current-source execution must retain actual identities; it must not inherit a

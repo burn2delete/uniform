@@ -34,7 +34,7 @@
       (when (nil? context)
         (sh06-resolution-c5-fail! source-path :missing-context {}))
       (let [sh05 (:sh05-macro-artifact artifact)
-            base (sh06-resolution-request source-path sh05)
+            base (sh06-resolution-base-request source-path sh05)
             expected
             (sh06-resolution-c5-authority-request!
              source-path sh05 base context)
@@ -86,7 +86,7 @@
           :resolution-boundary-map? (map? boundary)
           :exact-boundary-shape?
           (and (map? boundary)
-               (= sh06-resolution-boundary-keys (set (keys boundary))))}
+               (= (sh06-resolution-boundary-keys-for boundary) (set (keys boundary))))}
          shape-failed
          (->> shape-checks
               (keep (fn [[key passed?]] (when-not passed? key)))

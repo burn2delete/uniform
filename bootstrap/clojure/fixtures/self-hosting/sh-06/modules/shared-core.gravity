@@ -1,0 +1,6 @@
+(ns shared.core
+  (:profile :core) (:target :jvm) (:exports [checksum combine])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn checksum [value] value)
+
+(defn combine [left middle right] [left middle right])

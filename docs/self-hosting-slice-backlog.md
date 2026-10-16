@@ -837,6 +837,91 @@ error/import semantics, runtime/backend equivalence and authoritative migration
 remain outside this increment. Source composition remains `:meta/:jvm`; no
 full SH-08, self-hosting, target, seed-retirement or release claim follows.
 
+### Artifact-backed ordinary module imports: development increment
+
+Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
+selection from explicit, verified callee artifacts. The normal C5 source/file
+frontdoors use SH-06 without a metadata-selected stage0 fallback. Their
+module-input argument is documented in `docs/development-verification.md`;
+the default empty set is sufficient only when there are no external Gravity
+requirements. Even an unused `:requires` needs its actual module artifact.
+Namespace spelling, `:refer`, header fingerprints and metadata candidates do
+not create an exported definition. Explicit foreign imports remain a separate
+interop boundary.
+
+Aliases, referred names and fully qualified names join actual local callee
+definitions and exports. Private and missing names retain C5 diagnostics.
+Repeated imports of one origin do not create false ambiguity; distinct module
+origins remain distinct candidates. Target, capability and supported profile
+compatibility come from the actual callee, not require-option overrides.
+Verified transitive edges participate in cycle rejection. The ordinary input
+rejects historical stage0 and strict SOURCE artifacts rather than stripping
+their boundary or treating a stored status as verification.
+
+Imported bindings retain actual callee artifact, analysis, binding and
+definition-syntax origins separately from caller-side projected IDs. Raw callee
+source spans are not nested into the semantic origin projection. Ordinary
+artifacts retain their actual module inputs for fresh request reconstruction,
+serialization and verification. Conservative invalidation includes callee
+artifact IDs even when no name is used. No accepted-proof cache, resource-cap
+increase, production fragment, load-order row or authority-pin refresh was
+introduced. Clojure transports and verifies the inputs; Gravity selects and
+checks the imports.
+
+The existing strict SOURCE request remains v1, separate from the ordinary v2
+request. Four B51 linker derivation sites and their forward declaration now
+name the explicit base-request helper. A focused test checks actual base and
+ordinary shapes, contextual delegation and the structural call sites. This is
+adapter-routing evidence, not SOURCE construction, native evidence or admission.
+
+The real `sh-06/modules/{values,consumer}.{gravity,qst}` fixtures define and
+export `identity-i64`, preserve a private sibling, and lower an actual aliased
+call to C6. The original paired run recorded 23 passing assertions and two
+failures: it incorrectly expected a definition-artifact ID directly on C6
+reference attributes, once per extension. Both extensions accepted C5/C6;
+their artifact identities and explicit C7 unsupported-call checks passed.
+The whole run remains failed. The corrected oracle follows the projected
+binding into the authenticated C6 request table instead of changing C6's schema.
+
+A separate real origin/negative/replay test passed 29 assertions: the projected
+binding/resolution-use join, unused missing requirement through the default
+frontdoor, private and missing names, forged export/binding/upstream artifacts,
+serialization with fresh replay, and changed callee exports invalidating the
+consumer. The unchanged expensive C7 construction was not repeated solely to
+refresh the aggregate receipt. Paired test source remains co-canonical.
+
+The initial focused policy/seed/type/API group passed four tests and 52
+assertions. The later five-test, 377-assertion group adds genuine derived v2
+cycles, distinct-origin ambiguity, strict routing and the normalized v1
+rejection matrices. These groups overlap and are not summed as unique coverage.
+Historical metadata-driven matrices are explicitly DATA policy tests, not
+ordinary module artifacts or additional real module proofs. The direct module
+kernel took about 0.26 seconds in the latter run; the selected group took
+606.077 seconds after 6.946 seconds of namespace loading. These are development
+timings, not benchmark or dominance claims. Full upstream-product construction
+remains separate from scheduling and from the default kernel edit loop.
+
+The initial affected B12 batch passed its eight actual-target assertions, but
+the call-order fixture failed before assertions: it required `shared.core/combine`
+while the new real library exported only `checksum`. C5 correctly reported a
+missing module export. The paired library fixtures now define and export the
+real three-argument `combine`; production policy was not weakened. The original
+batch remains failed. The corrected B12 batch passed two tests and 12 assertions,
+covering actual module targets in both extensions and operator-before-argument
+order through C6. The affected module/foreign/compiler composition passed one
+test and 10 assertions; the strict nil/context/private API checks passed two
+tests and 12 assertions. The language boundary passed six tests and 11
+assertions. IO and foreign declarations were resolved, not executed. Existing
+optional B12 catalog selectors and dependency paths were updated for the
+renamed tests, owning resolution source and actual shared-core fixture pair;
+no new route, lane or authority record was needed.
+
+Imported C7 signatures, C8 imported effects, runtime module
+linking, module initialization, cross-profile facades, additional target
+variants and package solving remain later work. This increment does not admit
+an authoritative module revision or establish full SH-06/SH-07, self-hosting,
+seed-retirement, target or release completion.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

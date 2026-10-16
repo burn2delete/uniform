@@ -1,4 +1,4 @@
-; SH-07-B12 accepts an alias target subset of a broader resolved binding.
+; The actual module target overrides the broader metadata candidate.
 (ns self-hosting.sh07-b12.alias-multitarget-binding
   (:profile :meta)
   (:target :jvm)

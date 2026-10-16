@@ -1,0 +1,5 @@
+(ns example.values
+  (:profile :meta) (:target :jvm) (:exports [identity-i64])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn identity-i64 [x :- I64] :- I64 x)
+(defn private-i64 [x :- I64] :- I64 x)

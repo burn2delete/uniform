@@ -226,3 +226,9 @@
     :template-verification :resolved-verification
     :authenticated-envelope-descriptor :authenticated-envelope
     :target-source-reread? :clojure-adapter-residual? :self-hosted?})
+
+(defn sh06-resolution-boundary-keys-for [boundary]
+  (if (= :gravity/sh06-ordinary-module-resolution-request
+         (get-in boundary [:authenticated-resolution-request :artifact]))
+    (conj sh06-resolution-boundary-keys :module-inputs)
+    sh06-resolution-boundary-keys))

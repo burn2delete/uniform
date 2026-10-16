@@ -27,7 +27,7 @@
         (when (and binding (= :passed (:status sh05-report)))
           (try
             (let [request (if legacy?
-                            (sh06-resolution-request source-path sh05-artifact)
+                            (sh06-resolution-module-request source-path sh05-artifact (:module-inputs boundary))
                             (sh06-resolution-request
                              source-path sh05-artifact context))
                   run (sh06-resolution-run-request!
@@ -151,7 +151,7 @@
          :exact-artifact-shape?
          (= sh06-resolution-artifact-keys (set (keys artifact)))
          :exact-boundary-shape?
-         (= sh06-resolution-boundary-keys (set (keys boundary)))
+         (= (sh06-resolution-boundary-keys-for boundary) (set (keys boundary)))
          :fixed-boundary-contract?
          (= {:slice :SH-06
              :owner :gravity-source
