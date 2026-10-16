@@ -1,5 +1,3 @@
-
-
 (defn- sh07-core-template-carrier-census
   [value]
   (let [maximum-nodes (* 32 1024 1024)
@@ -71,9 +69,15 @@
   callers testing the executable boundary must use
   sh07-core-run-request-for-test with the verified SH-06 artifact."
   [authenticated-request]
+  (let [input-key (sh07-core-current-source-key)
+        core-binding (or *sh07-core-execution-binding* @sh07-core-cached-binding)
+        _ (when-not (= (second (:source input-key)) (:source-content-hash core-binding))
+            (throw (ex-info "SH-07 construction started with a stale binding"
+                            {:id "C6-VERIFY" :stage :core-lowering
+                             :reason :checked-core-operation-revision-drift})))
+        run (binding [*sh07-core-execution-binding* core-binding]
   (let [_ (sh07-core-request-preflight! authenticated-request)
-        source-path
-        (get-in authenticated-request [:provenance :actual-source-path])
+        source-path (get-in authenticated-request [:provenance :actual-source-path])
         result
         (sh07-core-execute!
          source-path 'sh07-build-core-template [authenticated-request])]
@@ -117,8 +121,7 @@
                            :resolved-verification
                            resolved-verification})))]
         {:raw-template-result result
-         :canonical-core-artifact
-         (sh07-core-canonical-artifact resolved-template)
+         :canonical-core-artifact (sh07-core-canonical-artifact resolved-template)
          :digest-requests digest-requests
          :resolved-digests resolved-digests
          :template-verification template-verification
@@ -127,10 +130,14 @@
        (ex-info "Gravity SH-07 returned an invalid result status"
                 {:id "C6-VERIFY" :stage :core-lowering
                  :source-path source-path
-                 :status (:status result)})))))
+                 :status (:status result)})))))]
+    (when-not (= input-key (sh07-core-current-source-key))
+      (throw (ex-info "SH-07 inputs changed during construction"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :reason :checked-core-operation-revision-drift})))
+    run))
 
-(defn sh07-core-run-request-for-test
-  [resolution-artifact authenticated-request]
+(defn sh07-core-run-request-for-test [resolution-artifact authenticated-request]
   (let [upstream-verification
         (sh06-resolution-artifact-verification resolution-artifact)
         expected-request

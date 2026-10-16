@@ -2,10 +2,10 @@
 
 Scope: the entire repository.
 
-This repository is currently the Gravity design and implementation contract, not
-yet a compiler/runtime codebase. Treat the documents under `docs/` as normative
-inputs for implementation work. Do not replace the contract with assumptions
-from a host language, target backend, or ad hoc prototype.
+This repository contains Gravity's normative design contracts and incremental
+compiler implementation with a temporary Clojure bootstrap. Treat `docs/` as
+normative inputs. Do not replace their semantics with assumptions from a host
+language, target backend, or ad hoc prototype.
 
 ## Source Language Boundary
 
@@ -33,6 +33,8 @@ Before making project changes, read:
 - `docs/source-concepts.md` for the compact concept map derived from the PDF.
 - `docs/document-sequence.md` or `docs/document-inventory.json` to locate
   owning documents by sequence/id.
+- `docs/development-verification.md` for focused development, affected
+  integration tests, and the separate authoritative migration boundary.
 - The relevant phase `README.md` and each document that governs the requested
   implementation slice.
 
@@ -136,13 +138,13 @@ tooling. Run them with the repository's Clojure tests; do not add new Python to
 close validation gaps:
 
 ```bash
-clojure -M:test
 clojure -M tools/validate_gravity_docs.clj
 clojure -M tools/validate_full_language_roadmap.clj
 ```
 
-Passing the Clojure suite is necessary but not sufficient; it does not prove
-semantic consistency across documents. The language-boundary gate enforces the
+Run appropriate focused tests after compiler/tooling changes; reserve the full
+suite for a broad integration decision. Validation does not prove semantic
+consistency across documents. The language-boundary gate enforces the
 repository language policy.
 
 ## Working Discipline
@@ -151,6 +153,10 @@ repository language policy.
 - Keep changes scoped to the requested implementation or documentation slice.
 - Add positive and negative fixtures, diagnostics, and evidence artifacts when
   the governing document requires them.
+- Ordinary semantic development does not require fresh authority proofs or
+  migration fingerprint updates first. Execute current source with accurate
+  provenance; keep implementation progress separate from authoritative
+  migration and release status, and invalidate stale evidence conservatively.
 - Do not claim release, milestone, safety, performance, or self-hosting support
   without the evidence bundle required by the relevant docs.
 
@@ -158,8 +164,8 @@ repository language policy.
 
 The machine-readable lifecycle policy is
 `contracts/workstream-governance.json`; current dispositions are recorded in
-`contracts/workstream-ledger.json`. Validate both before proposing or admitting
-work:
+`contracts/workstream-ledger.json`. These gates apply to governed candidate
+admission, not every local edit or focused test:
 
 ```bash
 clojure -M tools/validate_workstream_governance.clj
@@ -169,7 +175,8 @@ clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/m
 - Use one active candidate per invariant family. A competing attempt must wait
   until the current candidate is integrated, held, rejected, superseded, or
   abandoned.
-- After two rejected candidates in one invariant family, stop implementation.
+- After two rejected admission candidates in one invariant family, stop further
+  admission attempts, not ordinary semantic debugging or focused tests.
   Record a nonempty architecture decision before another candidate becomes
   active. Do not route downstream work around the failed invariant.
 - Move candidates through the recorded lifecycle. A self-audit may find

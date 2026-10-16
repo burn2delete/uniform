@@ -449,7 +449,8 @@
                 {:id "SH07-AUTHORITATIVE-MODULE"
                  :module module-name
                  :available (module-names)})))
-    (let [started (System/nanoTime)
+    (let [_ (bootstrap/sh07-core-assert-pinned-revision!)
+          started (System/nanoTime)
           source-binding-before (source-bytes-sha256 path)
           _ (validate-source-binding!
              contract module-name source-binding-before)

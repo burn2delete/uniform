@@ -15,6 +15,17 @@ requirements, and safety audit rules before it becomes authoritative.
 The plan keeps stage transitions narrow enough to debug and broad enough to
 shrink trust meaningfully.
 
+## Development versus authoritative migration
+
+A semantic implementation revision may be edited and tested before it is
+admitted as an authoritative module. Use focused accepted/rejected compiler
+fixtures for the ordinary development loop, then affected pass-composition
+tests when behavior or interfaces change. Stage comparison, fresh provenance,
+equivalence, TCB and compatibility-matrix evidence remain mandatory when
+explicitly admitting a stable authoritative module revision. They are not
+prerequisites for every local edit. Development results do not renew stale
+migration evidence or confer self-hosting, seed-retirement or release credit.
+
 ## Migration Order
 
 The preferred order is:

@@ -1,6 +1,8 @@
 (ns self-hosting.sh07-b5.reject.qualified-var-reference
   (:profile :meta)
   (:target :jvm)
+  (:requires [shared.core :profile :core :boundary :pure-core
+              :refer [checksum]])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -16,4 +18,4 @@
 
 (def target 1)
 (def invalid-var
-  (var self-hosting.sh07-b5.reject.qualified-var-reference/target))
+  (var shared.core/checksum))

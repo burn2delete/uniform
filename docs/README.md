@@ -30,6 +30,12 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 
 ## Implementation Roadmap
 
+For ordinary compiler edits, start with the
+[development workflow](development-verification.md): focused semantic tests,
+affected integration checks, then authoritative migration only when explicitly
+admitting a stable revision. This is distinct from the completion/release
+evidence tracked below.
+
 - [Implementation roadmap overview](implementation-roadmap.md) maps the D2
   milestone sequence to phase-level work.
 - [Full language implementation gap map](full-language-implementation-gap-map.md)

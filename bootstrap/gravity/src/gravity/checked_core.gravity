@@ -3142,10 +3142,16 @@
                       (sh07-find-binding
                        indexes (get resolution :binding-id))]
                   (if (map? binding)
-                    (if (contains?
-                         #{:fully-qualified-namespace-binding
-                           :alias-qualified-required-binding}
-                         (get resolution :resolution-order))
+                    (if (if (= (get resolution :resolution-order)
+                               :alias-qualified-required-binding)
+                          true
+                          (if (= (get resolution :resolution-order)
+                                 :fully-qualified-namespace-binding)
+                            (if (= (get binding :namespace)
+                                   (get (get request :module) :namespace))
+                              false
+                              true)
+                            false))
                       {:status :rejected
                        :rule "C6-LOWERING-GAP"
                        :form form
@@ -3171,8 +3177,10 @@
                                   (= (get binding :kind) :function))
                               (if (= (get binding :namespace)
                                      (get (get request :module) :namespace))
-                                (if (= (get resolution :resolution-order)
-                                       :current-namespace-binding)
+                                (if (contains?
+                                     #{:current-namespace-binding
+                                       :fully-qualified-namespace-binding}
+                                     (get resolution :resolution-order))
                                   (= (get binding :upstream-binding-id)
                                      (get resolution
                                           :upstream-binding-id))
@@ -3204,7 +3212,7 @@
                                 :object-policy
                                 :reference-without-dereference-or-execution
                                 :resolution-order
-                                :current-namespace-binding
+                                (get resolution :resolution-order)
                                 :authenticated-sh06-artifact-id
                                 (get (get request :lineage)
                                      :authenticated-sh06-artifact-id)
@@ -3235,7 +3243,7 @@
                                :definition-artifact-id
                                (get binding :definition-artifact-id)
                                :resolution-order
-                               :current-namespace-binding
+                               (get resolution :resolution-order)
                                :authenticated-sh06-artifact-id
                                (get (get request :lineage)
                                     :authenticated-sh06-artifact-id)
@@ -7323,8 +7331,10 @@
                    (get attributes :authenticated-sh06-artifact-id))
                 (if (sh07-sha256-id?
                      (get attributes :sh06-semantic-projection-id))
-                  (if (= (get attributes :resolution-order)
-                         :current-namespace-binding)
+                  (if (contains?
+                       #{:current-namespace-binding
+                         :fully-qualified-namespace-binding}
+                       (get attributes :resolution-order))
                     (if (= (get node :children) [])
                       (if (= (get node :resolved-binding-ids)
                              [(get attributes :binding-id)])
@@ -8347,8 +8357,10 @@
                            :reference-without-dereference-or-execution)
                       (if (= (get record :evaluated-children) [])
                         (if (= (get record :evaluation-order) [])
-                          (if (= (get record :resolution-order)
-                                 :current-namespace-binding)
+                          (if (contains?
+                               #{:current-namespace-binding
+                                 :fully-qualified-namespace-binding}
+                               (get record :resolution-order))
                             (= (get record :profile-legality)
                                :pending-sh09)
                             false)

@@ -2,6 +2,14 @@
 
 (defn sh07-core-from-authenticated-request
   [resolution-artifact authenticated-request]
+  (let [input-key (sh07-core-current-source-key)
+        captured @sh07-core-cached-binding
+        _ (when-not (= (second (:source input-key)) (:source-content-hash captured))
+            (throw (ex-info "SH-07 artifact started with a stale revision"
+                            {:id "C6-VERIFY" :stage :core-lowering
+                             :reason :checked-core-operation-revision-drift})))
+        artifact
+        (binding [*sh07-core-execution-binding* captured]
   (let [run (sh07-core-run-request-for-test
              resolution-artifact authenticated-request)
           core (:canonical-core-artifact run)
@@ -12,7 +20,7 @@
            :owner :gravity-source
            :adapter-contract sh07-core-adapter-contract
            :plan-binding
-           (dissoc @sh07-core-cached-binding :plan :source-path)
+           (dissoc captured :plan :source-path)
            :authenticated-sh06-resolution-artifact resolution-artifact
            :authenticated-core-request authenticated-request
            :raw-template-result (:raw-template-result run)
@@ -115,7 +123,7 @@
              :alias-qualified-type-references
              :alias-qualified-var-references
              :alias-qualified-set-mutations
-             :qualified-var-references
+             :external-qualified-var-references
              :var-profile-legality-sh09
              :keyword-default-value-lookup
              :general-callable-keywords
@@ -142,7 +150,12 @@
           (sh07-core-proof-from-checks
            (sh07-core-verification-checks
             artifact-base artifact-base upstream-verification))]
-    (assoc artifact-base :capability-based-proof proof)))
+    (assoc artifact-base :capability-based-proof proof)))]
+    (when-not (= input-key (sh07-core-current-source-key))
+      (throw (ex-info "SH-07 inputs changed during artifact construction"
+                      {:id "C6-VERIFY" :stage :core-lowering
+                       :reason :checked-core-operation-revision-drift})))
+    artifact))
 
 (defn sh07-core-from-resolution-artifact
   [resolution-artifact]

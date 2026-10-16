@@ -8,6 +8,21 @@ candidate lineages. It is an operating layer over the normative Gravity
 contracts. It does not replace their semantic, safety, evidence, or release
 requirements.
 
+## Scope: admission is not the development loop
+
+The lifecycle below governs recorded candidates and authoritative integration
+claims. It does not require a new reservation, architecture report, receipt
+chain, frozen fingerprint refresh, or independent pre-run grant before an
+ordinary local semantic edit or focused test. Preserve single-writer ownership
+and unrelated work, run appropriate tests, and report development results
+without claiming migration or release authority. See the default three-boundary
+workflow in `docs/development-verification.md`.
+
+Historical coordination messages and attempt-specific restrictions are not
+standing development policy. Their evidence remains immutable and their grants
+are not replayable. Actual admission still requires the applicable exact
+identities, review and evidence below; a focused test does not promote it.
+
 The executable policy is `contracts/workstream-governance.json`. Current
 candidate and terminal dispositions are recorded in
 `contracts/workstream-ledger.json`; the compact v2 manifest points to
@@ -39,9 +54,10 @@ reach the state floor required by a downstream candidate. Downstream proposals
 cannot route around a rejected prerequisite by assigning it a different task
 name or owner.
 
-After two rejected candidates in one invariant family, new active work is
-blocked until the ledger records a nonempty architecture decision. The decision
-must address the failed invariant rather than merely authorize another attempt.
+After two rejected admission candidates in one invariant family, new active
+admission candidates are blocked until the ledger records a nonempty
+architecture decision. The decision must address the failed invariant rather
+than merely authorize another attempt.
 
 Architecture decisions also carry a machine-readable authority tuple in one
 fenced `json gravity-architecture-authority-v1` block. New or active reports

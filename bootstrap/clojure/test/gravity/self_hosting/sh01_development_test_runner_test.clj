@@ -181,38 +181,33 @@
                      (:namespace %))
                   entries))))
 
-(deftest generated-selection-is-closed-before-require
-  (let [parse-args (deref #'gravity.development-test-runner/parse-args)
-        selected (deref #'gravity.development-test-runner/selected-namespace-records)
-        namespace "gravity.self-hosting.sh07-vector-pattern-test"
-        exact "sh07-b11-gravity-contract-names-l7"
-        qualified (str namespace "/" exact)
-        valid (selected (parse-args ["--namespace" namespace "--exact" qualified]))]
-    (is (= ['gravity.self-hosting.sh07-vector-pattern-test]
-           (mapv :namespace valid)))
-    (let [loaded? (atom false)
-          load-var #'gravity.development-test-runner/load-selected-namespaces!]
-      (with-redefs-fn
-        {load-var (fn [_] (reset! loaded? true))}
-        (fn []
-          (is (= "DEV-NAMESPACE-SELECTOR"
-                 (:id (exception-data
-                       #(runner/run-cli!
-                         ["--namespace" namespace
-                          "--exact" "not-in-manifest"])))))))
-      (is (false? @loaded?)))
-    (doseq [[args expected-id]
-            [[["--namespace" namespace]
-              "DEV-NAMESPACE-SELECTION"]
-             [["--namespace" namespace "--regex" ".*"]
-              "DEV-NAMESPACE-SELECTION"]
-             [["--namespace" namespace "--exact" "not-in-manifest"]
-              "DEV-NAMESPACE-SELECTOR"]
-             [["--namespace" namespace "--exact" qualified
-               "--namespace" "gravity.bootstrap-test"]
-              "DEV-NAMESPACE-SELECTION"]]]
-      (is (= expected-id
-             (:id (exception-data #(selected (parse-args args)))))))))
+(deftest explicit-development-selection-does-not-require-manifest-authority
+  (let [parse-args @#'gravity.development-test-runner/parse-args
+        selected @#'gravity.development-test-runner/selected-namespace-records
+        namespace "gravity.self-hosting.sh07-var-reference-test"]
+    (with-redefs-fn
+      {#'gravity.development-test-runner/generated-namespace-authority
+       (fn [] (throw (ex-info "manifest must not gate local development" {})))}
+      #(do
+         (doseq [selection [[ "--namespace" namespace]
+                           ["--namespace" namespace "--regex" ".*"]
+                           ["--namespace" namespace "--exact" "a-new-test"]
+                           ["--namespace" namespace "--namespace" "gravity.bootstrap-test"]]]
+           (is (some #{'gravity.self-hosting.sh07-var-reference-test}
+                     (map :namespace (selected (parse-args selection))))))
+         (doseq [unknown ["gravity.missing-test" "gravity.bootstrap"
+                          "../outside-test" "clojure.test"]]
+           (is (= :gravity.development-test-runner/unknown-namespace
+                  (:type (exception-data
+                          (fn [] (selected (parse-args ["--namespace" unknown]))))))))))))
+(deftest empty-development-selection-is-not-a-passing-run
+  (with-redefs-fn
+    {#'gravity.development-test-runner/load-selected-namespaces! (constantly nil)
+     #'gravity.development-test-runner/test-var-records (constantly [])}
+    #(is (= :gravity.development-test-runner/empty-selection
+            (:type (exception-data
+                    (fn [] (runner/run-cli!
+                            ["--namespace" "gravity.self-hosting.sh07-var-reference-test"]))))))))
 
 (deftest manifest-authority-resolution-fails-closed
   (let [generated (deref #'gravity.development-test-runner/generated-namespace-authority)]

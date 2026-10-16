@@ -1,10 +1,11 @@
 (ns gravity.development-test-runner
-  "Namespace-lazy, deterministic feedback runner for reviewed compatibility tests.
+  "Namespace-lazy, deterministic feedback runner for explicit development tests.
 
   The legacy catalog remains an independently reviewed compatibility oracle.
-  A validated UEP projection adds only fast exact-variable warm routes; the
-  two views are read together without granting acceptance authority."
-  (:require [clojure.set :as set]
+  Optional catalog and warm-worker queries validate the UEP projection.
+  Explicit test selections do not require that admission metadata."
+  (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test])
   (:import [java.lang.management ManagementFactory]))
@@ -249,11 +250,11 @@
   (str
    "Usage: clojure -M:<alias> -m gravity.development-test-runner [options]\n"
    "\n"
-   "Runs gravity.bootstrap-test by default, or selected reviewed catalog namespaces.\n"
+   "Runs gravity.bootstrap-test by default, or explicitly selected test namespaces.\n"
    "With no selector, all tests in the selected namespace set run.\n"
    "\n"
    "Options (repeatable):\n"
-   "  --namespace NS    select an allowed reviewed-catalog namespace\n"
+   "  --namespace NS    select a gravity.*-test resource on the test classpath\n"
    "  --exact NAME      select NAME or a selected namespace/NAME exactly\n"
    "  --regex REGEX     select names matching REGEX\n"
    "  --prefix PREFIX   select names beginning with PREFIX\n"
@@ -337,69 +338,26 @@
           (recur tail
                  (update options :exact conj
                          (selector-value "selector" argument))))))))
-
-(defn- selector-in-generated-entry?
-  [entry selector]
-  (let [namespace-prefix (str (:namespace entry) "/")
-        normalized (cond
-                     (str/starts-with? selector namespace-prefix)
-                     (subs selector (count namespace-prefix))
-
-                     (str/includes? selector "/") nil
-                     :else selector)]
-    (and normalized (some #{normalized} (:selectors entry)))))
-
-(defn- validate-generated-selection!
-  [generated-entries {:keys [exact regex prefix]}]
-  (when (seq generated-entries)
-    (when (or (seq regex) (seq prefix) (not (seq exact)))
-      (authority-failure
-       "DEV-NAMESPACE-SELECTION"
-       "manifest-generated namespaces require exact selectors"
-       {:namespaces (vec (sort (map #(str (:namespace %)) generated-entries)))
-        :exact (vec exact)
-        :regex (vec regex)
-        :prefix (vec prefix)}))
-    (doseq [selector exact]
-      (when-not (some #(selector-in-generated-entry? % selector)
-                      generated-entries)
-        (authority-failure
-         "DEV-NAMESPACE-SELECTOR"
-         "selector is outside manifest namespace authority"
-         {:selector selector
-          :namespaces (vec (sort (map #(str (:namespace %)) generated-entries)))})))))
-
 (defn- selected-namespace-records [{:keys [namespaces] :as options}]
-  (let [requested (if (seq namespaces) (set namespaces) #{default-test-namespace})
-        legacy-by-namespace (set (keys catalog-by-namespace))]
-    ;; Keep the default and legacy-only development path byte-for-byte static:
-    ;; requiring the manifest projection is reserved for generated selection,
-    ;; catalog display, and the explicitly warm worker.
-    (if (set/subset? requested legacy-by-namespace)
-      (do
-        (ensure-legacy-catalog-unchanged!)
-        (filterv #(contains? requested (:namespace %)) legacy-namespace-catalog))
-      (let [authority (namespace-authority)
-            entries (:entries authority)
-            by-namespace (into {} (map (juxt :namespace identity) entries))
-            generated-namespaces (set (map symbol (:generated-namespaces authority)))
-            generated-requested (->> requested
-                                    (filter generated-namespaces)
-                                    (map #(get by-namespace %))
-                                    vec)
-            legacy-requested (set/intersection requested legacy-by-namespace)]
-        (doseq [namespace requested]
-          (when-not (contains? by-namespace namespace)
-            (throw (ex-info (str "unknown test namespace: " namespace)
-                            {:type ::unknown-namespace :namespace namespace}))))
-        (when (and (seq generated-requested) (seq legacy-requested))
-          (authority-failure
-           "DEV-NAMESPACE-SELECTION"
-           "legacy and manifest-generated namespaces cannot be mixed"
-           {:legacy (vec (sort (map str legacy-requested)))
-            :generated (vec (sort (map #(str (:namespace %)) generated-requested)))}))
-        (validate-generated-selection! generated-requested options)
-        (filterv #(contains? requested (:namespace %)) entries)))))
+  ;; Explicit local tests are development feedback, not an authority-admission
+  ;; request. Keep manifest validation at namespace-authority's opt-in callers
+  ;; (catalog/warm-worker); do not make it a prerequisite for editing a pass.
+  (ensure-legacy-catalog-unchanged!)
+  (mapv
+   (fn [namespace]
+     (or (get catalog-by-namespace namespace)
+         (let [name (str namespace)
+               resource (str (-> name (str/replace "." "/")
+                                 (str/replace "-" "_")) ".clj")]
+           (when-not (and (re-matches #"gravity(?:\.[A-Za-z0-9_-]+)+-test" name)
+                          (io/resource resource))
+             (throw (ex-info (str "unknown test namespace: " namespace)
+                             {:type ::unknown-namespace :namespace namespace})))
+           {:namespace namespace
+            :path (str "bootstrap/clojure/test/" resource)})))
+   (let [requested (if (seq namespaces) (set namespaces) #{default-test-namespace})]
+     (concat (filter requested (map :namespace legacy-namespace-catalog))
+             (sort (remove #(contains? catalog-by-namespace %) requested))))))
 
 (defn- load-selected-namespaces! [namespace-records]
   (doseq [{:keys [namespace]} namespace-records]
@@ -618,6 +576,10 @@
           (load-selected-namespaces! namespace-records)
           (let [records (test-var-records namespace-records)
                 selected-records (select-test-vars records options)]
+            (when (empty? selected-records)
+              (throw (ex-info "selected namespaces contain no test vars"
+                              {:type ::empty-selection
+                               :namespaces (mapv :namespace namespace-records)})))
             (if (:list? options)
               (do (print-selection selected-records) 0)
               (let [execution-started (when (:timing-receipt options)

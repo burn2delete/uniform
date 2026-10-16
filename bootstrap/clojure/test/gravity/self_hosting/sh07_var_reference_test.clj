@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh07-authoritative-runner :as authoritative]))
 
 (defn- repository-root
   []
@@ -26,7 +27,8 @@
   "bootstrap/clojure/fixtures/self-hosting/sh-07-b5")
 (def ^:private extensions [".gravity" ".qst"])
 (def ^:private accepted-basenames
-  ["same-namespace-var-object" "ordered-var-objects"])
+  ["same-namespace-var-object" "ordered-var-objects"
+   "qualified-same-namespace-var-object"])
 (def ^:private shape-remediation
   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
 (def ^:private var-target-remediation
@@ -47,6 +49,10 @@
    {:rule "C6-VERIFY"
     :reason :var-top-level-namespace-binding-required
     :remediation var-target-remediation}
+   "alias-var-reference"
+   {:rule "C6-LOWERING-GAP"
+    :reason :qualified-var-reference-deferred
+    :remediation gap-remediation}
    "qualified-var-reference"
    {:rule "C6-LOWERING-GAP"
     :reason :qualified-var-reference-deferred
@@ -330,8 +336,10 @@
             (is (= (:upstream-binding-id binding)
                    (:upstream-binding-id resolution)
                    (:upstream-binding-id record)))
-            (is (= :current-namespace-binding
-                   (:resolution-order resolution)
+            (is (contains? #{:current-namespace-binding
+                             :fully-qualified-namespace-binding}
+                           (:resolution-order resolution)))
+            (is (= (:resolution-order resolution)
                    (:resolution-order record)
                    (get-in node [:attributes :resolution-order])))
             (is (= (:definition-artifact-id binding)
@@ -432,6 +440,8 @@
         (is (= (:rule oracle) (:rule diagnostic)))
         (is (= :core-lowering (:stage diagnostic)))
         (is (= :error (:severity diagnostic)))
+        (is (= :meta (:profile diagnostic)))
+        (is (= :jvm (:target diagnostic)))
         (is (= (:reason oracle) (get-in diagnostic [:facts :reason])))
         (is (= (:remediation oracle) (:remediation diagnostic)))
         (is (= source-path (get-in diagnostic [:source-span :source])))
@@ -549,3 +559,273 @@
            (:status
             ((required-var 'sh07-core-artifact-verification)
              mutation))))))
+
+(deftest sh07-b5-qualified-current-namespace-preserves-resolution-and-mapping
+  (let [artifact (file-artifact "accepted" "qualified-same-namespace-var-object" ".gravity")
+        canonical (core artifact)
+        records (:var-references canonical)
+        nodes (node-index artifact)
+        bindings (exactly-once-index (:binding-table (request artifact)) :binding-id)
+        rows (get-in artifact [:gravity-core-boundary :digest-requests])
+        mapping (get-in (last rows) [:preimage :records])
+        plan-binding (get-in artifact [:gravity-core-boundary :plan-binding])]
+    (is (= ['demo.value/answer 'demo.value/callable 'demo.value/answer]
+           (mapv :symbol records)))
+    (is (= [:var :function :var] (mapv :definition-kind records)))
+    (is (= :development-unadmitted (:revision-status plan-binding)))
+    (is (false? (:self-hosted? plan-binding)))
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (doseq [record records]
+      (let [node (get nodes (:core-node-id record))
+            target (get bindings (:binding-id record))
+            row (first (filter #(= (:operand-form-id record) (get-in % [:source :form-id])) mapping))]
+        (is (= :fully-qualified-namespace-binding (:resolution-order record)
+               (get-in node [:attributes :resolution-order])))
+        (is (= :namespace (:binding-class target)))
+        (is (= 'demo.value (:namespace target) (:namespace record)))
+        (is (= [] (:children node) (:evaluated-children record)))
+        (is (= :consumed (:disposition row)))
+        (is (= :var-target (:reason row)))
+        (is (= [] (:emitted-node-ids row)))))))
+
+(deftest sh07-b5-qualified-var-forged-order-spelling-and-id-fail-authentication
+  (let [artifact (file-artifact "accepted" "qualified-same-namespace-var-object" ".gravity")
+        authenticated (request artifact)
+        record (first (:var-references (core artifact)))]
+    (doseq [[field value] [[:resolution-order :current-namespace-binding]
+                         [:resolution-order :alias-qualified-required-binding]
+                         [:symbol 'answer]
+                         [:binding-id "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]]]
+      (let [mutation (update-request-resolution authenticated (:operand-syntax-id record) #(assoc % field value))
+            result (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request
+                                        (:sh06-resolution-artifact artifact) mutation))
+            diagnostic (diagnostic-data result)]
+        (is (nil? (:raw-host-error result)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))
+    (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact :var-references 0 :resolution-order]
+                           :current-namespace-binding)
+          checks (bootstrap/sh07-core-verification-checks mutant artifact {:status :passed})]
+      (is (false? (:canonical-core-replays? checks)))
+      (is (false? (:authoritative-products-replay? checks))))))
+
+(deftest sh07-development-binding-retains-complete-explicit-migration-pins
+  (let [pinned {:source-byte-count bootstrap/sh07-core-expected-source-byte-count
+                :source-content-hash bootstrap/sh07-core-expected-source-content-hash
+                :plan-semantic-hash bootstrap/sh07-core-expected-plan-semantic-hash
+                :functions-semantic-hash bootstrap/sh07-core-expected-functions-semantic-hash
+                :function-count bootstrap/sh07-core-expected-function-count
+                :function-names-hash bootstrap/sh07-core-expected-function-names-hash
+                :function-shapes-hash bootstrap/sh07-core-expected-function-shapes-hash
+                :public-function-hashes bootstrap/sh07-core-public-function-hashes
+                :public-function-shapes bootstrap/sh07-core-public-function-shapes}]
+    ;; This is a tuple-validator fixture, not compiled-code admission evidence.
+    (is (= pinned (bootstrap/sh07-core-assert-pinned-revision! pinned)))
+    (doseq [field (keys pinned)]
+      (let [result (diagnostic-result #(bootstrap/sh07-core-assert-pinned-revision! (assoc pinned field ::drift)))]
+        (is (= :unadmitted-checked-core-revision (get-in result [:exception-data :reason])))))
+    (let [current (bootstrap/sh07-core-current-binding!)]
+      (is (= :development-unadmitted (:revision-status current)))
+      (is (false? (:self-hosted? current)))
+      (is (= :unadmitted-checked-core-revision
+             (get-in (diagnostic-result #(bootstrap/sh07-core-assert-pinned-revision!)) [:exception-data :reason]))))))
+
+(deftest sh07-explicit-proof-entrypoints-check-migration-before-construction
+  (let [failure (ex-info "Unadmitted test revision" {:reason ::unadmitted})
+        called (atom false)]
+    (with-redefs [bootstrap/sh07-core-assert-pinned-revision! (fn [] (throw failure))]
+      (is (identical? failure
+                     (try (bootstrap/sh07-core-file-proof-transaction
+                           "/must-not-read.gravity" (fn [_] (reset! called true)))
+                          (catch clojure.lang.ExceptionInfo error error))))
+      (is (identical? failure
+                     (try ((ns-resolve 'gravity.self-hosting.sh07-authoritative-runner 'run-module)
+                           {:authoritative-modules {:development-fixture "/must-not-read.gravity"}}
+                           "development-fixture")
+                          (catch clojure.lang.ExceptionInfo error error)))))
+    (is (false? @called))))
+
+(deftest sh07-current-binding-invalidates-edited-bytes-and-observes-realization
+  (let [directory (java.nio.file.Files/createTempDirectory "sh07-current-source-" (make-array java.nio.file.attribute.FileAttribute 0))
+        source (.resolve directory "checked_core.gravity")
+        compiler (.resolve directory "compiler.gravity")
+        emitter (.resolve directory "emitter.gravity")
+        write! (fn [file value] (java.nio.file.Files/write file (.getBytes value "UTF-8") (make-array java.nio.file.OpenOption 0)))
+        builds (atom 0)
+        cached @(ns-resolve 'gravity.bootstrap 'sh07-core-cached-binding)]
+    (try
+      (doseq [file [source compiler emitter]] (write! file "first"))
+      (with-redefs-fn {(ns-resolve 'gravity.bootstrap 'sh07-core-development-binding) (atom nil)}
+        (fn []
+      (with-redefs [bootstrap/sh07-core-source-path (constantly (str source))
+                    bootstrap/p15-s23-stage2-compiler-artifact-source-path (constantly (str compiler))
+                    bootstrap/sh07-core-build-binding!
+                    (fn [] (swap! builds inc)
+                      {:source-content-hash (str "sha256:" (bootstrap/sha256-bytes-hex (java.nio.file.Files/readAllBytes source)))})]
+        (is (instance? clojure.lang.IPending cached))
+        (is (false? (realized? cached)))
+        (let [first-binding (bootstrap/sh07-core-current-binding!)
+              modified (java.nio.file.Files/getLastModifiedTime source (make-array java.nio.file.LinkOption 0))]
+          (is (true? (realized? cached)))
+          (is (identical? first-binding (bootstrap/sh07-core-current-binding!)))
+          (is (= 1 @builds))
+          (write! source "other")
+          (java.nio.file.Files/setLastModifiedTime source modified)
+          (is (false? (realized? cached)))
+          (is (not= first-binding (bootstrap/sh07-core-current-binding!)))
+          (is (= 2 @builds))
+          (write! emitter "other")
+          (is (= :checked-core-toolchain-drift
+                 (get-in (diagnostic-result #(bootstrap/sh07-core-current-binding!)) [:exception-data :reason])))
+          (is (= 2 @builds))))))
+      (finally
+        (doseq [file [source compiler emitter directory]] (java.nio.file.Files/deleteIfExists file))))))
+
+(deftest sh07-b5-qualified-var-development-kernel
+  ;; Normalized unit inputs exercise Gravity code; these are not authenticated
+  ;; SH-06 provenance evidence. The composition tests above cover that boundary.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh07-development-fixture
+                   :compiler-artifact-plan? true}
+                  plan function arguments))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        operand {:form-id (sha 1) :syntax-id (sha 2) :kind :symbol
+                 :value 'demo.value/answer}
+        form {:form-id (sha 3) :syntax-id (sha 4)
+              :child-form-ids [(sha 5) (:form-id operand)]
+              :metadata {} :generated-origin [] :origin-chain []}
+        target {:binding-id (sha 6) :binding-class :namespace :kind :var
+                :namespace 'demo.value :upstream-binding-id (sha 7)
+                :definition-syntax-id (sha 8) :definition-artifact-id (sha 9)}
+        resolution {:symbol (:value operand) :position :expression
+                    :binding-id (:binding-id target)
+                    :upstream-binding-id (:upstream-binding-id target)
+                    :resolution-order :fully-qualified-namespace-binding}
+        request {:module {:namespace 'demo.value :profile :meta :target :jvm
+                          :effects #{} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 10)
+                           :sh06-semantic-projection-id (sha 11)}
+                 :internal-indexes
+                 {:forms {:by-id {(:form-id operand) operand}}
+                  :bindings {:by-id {(:binding-id target) target}}
+                  :resolutions {:by-reference {(:syntax-id operand) resolution}}}}
+        lower (fn [input]
+                (invoke 'sh07-lower-var
+                        [input (invoke 'sh07-empty-state []) form]))]
+    (testing "development-unadmitted normalized var/function inputs"
+      (doseq [kind [:var :function]]
+        (let [input (assoc-in request [:internal-indexes :bindings :by-id (:binding-id target) :kind] kind)
+              result (lower input)
+              node (first (get-in result [:state :nodes]))
+              record (first (get-in result [:state :var-references]))
+              resolved (invoke 'sh07-resolve-var-reference [record [(sha 12)]])]
+          (is (= :accepted (:status result)))
+          (is (= kind (:definition-kind record) (get-in node [:attributes :definition-kind])))
+          (is (= :fully-qualified-namespace-binding (:resolution-order record)
+                 (get-in node [:attributes :resolution-order])))
+          (is (= [] (:children node) (:evaluated-children record)))
+          (is (= :no-evaluation (get-in node [:evaluation :kind])))
+          (is (= (:binding-id target) (:binding-id record)))
+          (is (true? (invoke 'sh07-resolved-b5-node-valid? [node])))
+          (is (= :accepted (:status resolved)))
+          (is (= (sha 12) (get-in resolved [:value :core-node-id]))))))
+    (testing "development-only malformed/deferred joins fail closed"
+      (doseq [[input rule reason]
+              [[(assoc-in request [:internal-indexes :bindings :by-id (:binding-id target) :namespace] 'foreign.value)
+                "C6-LOWERING-GAP" :qualified-var-reference-deferred]
+               [(assoc-in request [:internal-indexes :resolutions :by-reference (:syntax-id operand) :resolution-order]
+                          :alias-qualified-required-binding)
+                "C6-LOWERING-GAP" :qualified-var-reference-deferred]
+               [(assoc-in request [:internal-indexes :bindings :by-id (:binding-id target) :binding-class] :lexical)
+                "C6-VERIFY" :var-top-level-namespace-binding-required]
+               [(assoc-in request [:internal-indexes :resolutions :by-reference (:syntax-id operand) :symbol] 'answer)
+                "C6-VERIFY" :sh06-resolution-reference-mismatch]
+               [(assoc-in request [:internal-indexes :resolutions :by-reference (:syntax-id operand) :binding-id] (sha 13))
+                "C6-VERIFY" :sh06-resolution-binding-mismatch]
+               [(assoc-in request [:internal-indexes :resolutions :by-reference (:syntax-id operand) :upstream-binding-id] (sha 13))
+                "C6-VERIFY" :var-same-namespace-binding-required]]]
+        (let [result (lower input)]
+          (is (= :rejected (:status result)))
+          (is (= rule (:rule result)))
+          (is (= reason (get-in result [:facts :reason]))))))))
+
+(deftest sh07-development-construction-rejects-revision-races
+  ;; Cheap coordinator seams: no SH-06 construction, compiled plan, or proof.
+  (let [key {:source ["development-fixture" "sha256:a"] :toolchain []}
+        binding {:source-content-hash "sha256:a" :plan :development-fixture}
+        observed (atom key)
+        executions (atom [])
+        redefs {(ns-resolve 'gravity.bootstrap 'sh07-core-current-source-key) #(deref observed)
+                (ns-resolve 'gravity.bootstrap 'sh07-core-cached-binding) (delay binding)
+                #'bootstrap/sh07-core-request-preflight! (constantly nil)
+                #'bootstrap/sh07-core-digest-requests (fn [& _] [])
+                #'bootstrap/sh07-core-resolve-result (fn [& _] {})
+                #'bootstrap/sh07-core-canonical-artifact identity
+                #'bootstrap/sh07-core-execute!
+                (fn [_ function _]
+                  (swap! executions conj (var-get (ns-resolve 'gravity.bootstrap '*sh07-core-execution-binding*)))
+                  (if (= function 'sh07-build-core-template)
+                    {:status :accepted :core-template {} :digest-requests []}
+                    {:status :passed}))}]
+    (with-redefs-fn redefs
+      (fn []
+        (let [run (bootstrap/sh07-core-run-structural-request-for-test {})]
+          (is (= #{:raw-template-result :canonical-core-artifact :digest-requests
+                   :resolved-digests :template-verification :resolved-verification}
+                 (set (keys run))))
+          (is (= [binding binding binding] @executions)))
+        (with-redefs [bootstrap/sh07-core-canonical-artifact
+                      (fn [value] (reset! observed (assoc key :source ["development-fixture" "sha256:b"])) value)]
+          (is (= :checked-core-operation-revision-drift
+                 (get-in (diagnostic-result #(bootstrap/sh07-core-run-structural-request-for-test {}))
+                         [:exception-data :reason]))))
+        (reset! observed key)
+        (with-redefs [bootstrap/sh07-core-run-request-for-test
+                      (fn [& _] {:canonical-core-artifact {:artifact-id :development-fixture}
+                                 :plan-binding (dissoc binding :plan)})
+                      bootstrap/sh06-resolution-artifact-verification (constantly {:status :passed})
+                      bootstrap/sh07-core-proof-from-checks identity
+                      bootstrap/sh07-core-verification-checks
+                      (fn [& _] (reset! observed (assoc key :source ["development-fixture" "sha256:b"])) {})]
+          (is (= :checked-core-operation-revision-drift
+                 (get-in (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request {} {}))
+                         [:exception-data :reason]))))))))
+
+(deftest sh07-current-binding-rechecks-all-inputs-before-publication
+  (doseq [[field changed reason]
+          [[:source ["development-fixture" "sha256:b"] :checked-core-source-drift]
+           [:toolchain [["compiler.gravity" "sha256:b"]] :checked-core-toolchain-drift]]]
+    (let [initial {:source ["development-fixture" "sha256:a"] :toolchain []}
+          observed (atom initial)
+          cache (atom nil)]
+      (with-redefs-fn
+        {(ns-resolve 'gravity.bootstrap 'sh07-core-current-source-key) #(deref observed)
+         (ns-resolve 'gravity.bootstrap 'sh07-core-development-binding) cache
+         #'bootstrap/sh07-core-build-binding!
+         (fn [] (reset! observed (assoc initial field changed))
+           {:source-content-hash "sha256:a"})}
+        (fn []
+          (is (= reason (get-in (diagnostic-result #(bootstrap/sh07-core-current-binding!))
+                               [:exception-data :reason])))
+          (is (nil? @cache)))))))
+
+(deftest sh07-proof-snapshot-checks-the-exact-captured-revision
+  (let [captured {:source-content-hash "sha256:unadmitted-snapshot"}
+        seen (atom nil)
+        stopped (ex-info "snapshot pin guard" {:reason ::snapshot-pin-guard})]
+    (with-redefs-fn
+      {(ns-resolve 'gravity.bootstrap 'sh05-macro-cached-binding) (delay {})
+       (ns-resolve 'gravity.bootstrap 'sh06-resolution-cached-binding) (delay {})
+       (ns-resolve 'gravity.bootstrap 'sh07-core-cached-binding) (delay captured)
+       #'bootstrap/sh05-macro-read-pinned-source! (constantly {})
+       #'bootstrap/sh06-resolution-read-pinned-source! (constantly {})
+       #'bootstrap/sh07-core-assert-pinned-revision!
+       (fn [actual] (reset! seen actual) (throw stopped))}
+      (fn []
+        (is (identical? stopped
+                        (try ((ns-resolve 'gravity.bootstrap 'sh07-proof-transaction-core-snapshot))
+                             (catch clojure.lang.ExceptionInfo error error))))
+        (is (= captured @seen))))))

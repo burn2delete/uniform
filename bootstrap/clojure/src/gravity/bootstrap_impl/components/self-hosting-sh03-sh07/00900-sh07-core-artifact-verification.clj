@@ -26,18 +26,19 @@
 
 (defn sh07-core-artifact-verification
   [artifact]
-  (sh07-proof-transaction-report
+  (let [binding @sh07-core-cached-binding]
+   (sh07-proof-transaction-report
    :sh07 :final
    {:verifier-root
     (var-get #'sh07-core-artifact-verification*)
     :report-schema-version 1
     :check-catalog-domain :gravity/sh07-final-verification-checks
-    :source-content-hash sh07-core-expected-source-content-hash
-    :plan-semantic-hash sh07-core-expected-plan-semantic-hash
+    :source-content-hash (:source-content-hash binding)
+    :plan-semantic-hash (:plan-semantic-hash binding)
     :functions-semantic-hash
-    sh07-core-expected-functions-semantic-hash}
+    (:functions-semantic-hash binding)}
    artifact
-   #(sh07-core-artifact-verification* artifact)))
+   #(sh07-core-artifact-verification* artifact))))
 
 (defn sh07-core-capability-based-proof
   [artifact]
@@ -73,12 +74,13 @@
         sh06-source
         (sh06-resolution-read-pinned-source! "<sh07-proof-transaction>")
         binding
+        (sh07-core-assert-pinned-revision!
         (select-keys
          @sh07-core-cached-binding
          [:source-byte-count :source-content-hash :plan-semantic-hash
           :functions-semantic-hash :function-count :function-names-hash
           :function-shapes-hash :public-function-hashes
-          :public-function-shapes])
+          :public-function-shapes]))
         source-path (sh07-core-source-path)
         bytes (java.nio.file.Files/readAllBytes
                (.toPath (java.io.File. source-path)))

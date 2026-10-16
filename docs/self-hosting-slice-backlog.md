@@ -86,6 +86,54 @@ Do not claim target support, feature completeness, self-hosting, seed
 retirement, or release readiness before the corresponding documented evidence
 gates pass.
 
+## Implementation progress is separate from migration
+
+Use the three-boundary workflow in `docs/development-verification.md` for
+ordinary SH-07 work: edit the Gravity owning pass, add accepted/rejected
+fixtures, run focused semantic tests, and validate affected composition.
+Report the behavior and checks as implementation progress even while the
+slice remains partial. The uniform completion gate below is an admission and
+completion gate, not an obligation to run every authority proof before each
+local improvement. Stale authoritative evidence stays stale until an explicit
+stable-module migration decision re-establishes it. Preparation documents,
+review counts and scheduler changes are not executable progress.
+
+### Qualified current-namespace var objects: development increment
+
+The owning `gravity.checked-core` pass now lowers `(var demo.value/answer)`
+and fully qualified same-namespace function targets to var-object Core nodes.
+L2's reference-without-dereference/execution behavior and L3's qualified
+namespace resolution are preserved, including lexical shadowing, upstream
+binding identities, actual resolution order and `:var-target` source mapping.
+Alias-qualified, foreign-namespace and lexical var targets remain rejected;
+profile legality remains `:pending-sh09`. This does not extend runtime var
+semantics, cross-module initialization, type/profile legality or target support.
+
+Paired accepted/rejected fixtures and tests live in the existing SH-07-B5
+fixture directory and `sh07_var_reference_test.clj`. The direct
+`sh07-b5-qualified-var-development-kernel` executes the Gravity lowerer and
+validators on explicitly non-authoritative normalized inputs. Separate tests
+exercise real SH-06-to-SH-07 construction, source mapping, request membership
+and tampered-product replay. The default commands are in
+`docs/development-verification.md`.
+
+Validation: seven focused kernel/cache/revision-guard tests passed 72
+assertions; real qualified-var composition passed 26 assertions; authenticated
+order/spelling/binding-id and replay mutations passed 18 assertions. The kernel
+executed in 1.230 seconds after 6.970 seconds of namespace loading; the positive
+composition executed in 127.284 seconds. These are development observations,
+not benchmark or proof claims. The initial whole-B5 run was interrupted at ten
+minutes without a test report and remains unverified. The full suite and full
+fixture matrix were not rerun.
+
+The ordinary adapter executes current source with actual byte/plan identities,
+labels it `:development-unadmitted`, and rejects source/toolchain drift rather
+than mislabeling an artifact. Historical nine-field migration pins are unchanged
+and are enforced at explicit proof entrypoints and on the exact transaction
+snapshot. Fresh stable-revision provenance/equivalence/bootstrap verification
+and authoritative admission remain outstanding. SH-07 remains partial; no
+completion, self-hosting, seed-retirement or release count changes follow.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
@@ -1114,8 +1162,9 @@ seed retirement, complete public compiler routing, or `SH-07` completion.
 
 The Clojure stage0 boundary still owns initial source reads, compiler-plan
 execution, canonical digest resolution, authenticated-envelope assembly,
-central routing, and final artifact construction. All authoritative compiler
-modules now pass the source-level authenticated gates, but the complete
+central routing, and final artifact construction. The historical admitted
+compiler snapshots passed their source-level authenticated gates; subsequent
+development revisions do not inherit that authority. The complete
 core-form, mutation, recursion, exception, and pattern surface must pass the
 remaining executable gates before `SH-07` can receive completion credit.
 

@@ -6,7 +6,104 @@ Repository verification uses the Clojure runners directly.
 
 Run commands from the repository root.
 
-## Standard Gates
+## Default SH-07 workflow: three boundaries
+
+The practical unit of progress is an executable semantic change, not another
+lane, routing record, receipt, or authority proposal. These are distinct tasks:
+
+| Boundary | Required work | Trigger |
+| --- | --- | --- |
+| Semantic implementation | Edit the owning pass; add accepted/rejected fixtures; run focused tests of semantics, preserved facts and stable diagnostics. | Every semantic change. |
+| Integration validation | Test the affected upstream/downstream composition and proportionate regressions. | Behavior, input/output shape, identity, diagnostics or interfaces change. |
+| Authoritative migration | Fresh provenance, equivalence, bootstrap stage comparison, exact identities and independent acceptance. | Explicit admission of a stable module revision, not every edit. |
+
+This distinction follows D2's executable slices, TEST2's pass/composition tests,
+D9's separate test/proof evidence, and BOOT3's stage comparison after every
+**authoritative module migration**. Compile-time legality, profile, safety,
+provenance and release obligations are unchanged.
+
+For SH-07, change `bootstrap/gravity/src/gravity/checked_core.gravity` (the
+owning Gravity pass), not only the hosted C6 compatibility facade. The thin
+adapter lives in
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj`.
+Tests are in `bootstrap/clojure/test/gravity/self_hosting/sh07_*_test.clj`;
+paired `.gravity`/`.qst` fixtures are under
+`bootstrap/clojure/fixtures/self-hosting/`.
+
+Check `git status --short`, preserve unrelated work, then use existing commands:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh07-var-reference-test --list
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh07-var-reference-test --exact sh07-b5-qualified-var-development-kernel
+# Affected SH-06 -> SH-07 artifact composition (costlier, not the inner loop):
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh07-var-reference-test --exact sh07-b5-qualified-current-namespace-preserves-resolution-and-mapping --exact sh07-b5-qualified-var-forged-order-spelling-and-id-fail-authentication
+git diff --check
+```
+
+These commands target the current qualified-var slice: the direct kernel test
+executes the owning Gravity lowerer and validators without constructing the
+whole upstream proof product. Its small test inputs are not authoritative
+SH-06 evidence. The separate artifact tests exercise authenticated composition.
+Use the whole B5 namespace only when broader regression coverage is warranted.
+Substitute the owning namespace and tests for a different slice. Prefer exact
+semantic vars when a namespace also contains costly authenticated construction or source
+coverage. `--list` does not execute tests, but namespace loading can cost time.
+Explicit `:dev-test` selections use test resources on the classpath without a
+manifest authority entry; unknown namespaces and unmatched selectors fail.
+Use a fresh JVM after compiler source changes to avoid stale process-local plans.
+
+Ordinary focused tests do not require fresh authority proofs, frozen migration
+fingerprint refreshes, workstream receipts, broker setup or a new routing record.
+Current-source execution must retain actual identities; it must not inherit a
+stale frozen authority claim. Source, dependency, tool and policy changes still
+conservatively invalidate prior authoritative evidence. Record implemented
+behavior and focused results separately from migration and release status.
+
+This section supersedes historical monitor/attempt instructions insofar as they
+treated supplemental admission policies as prerequisites for ordinary semantic
+development. Immutable attempt reports, terminal records and old proofs remain
+history; they are not rewritten or reactivated. Workstream admission still
+governs actual admission. Impact planners, caches, warm workers, profiling and
+bounded resource runners below are optional tools, not the default inner loop.
+Bound and serialize genuinely heavy work to protect the host, rather than
+requiring lightweight tests to maintain heavy-run admission state first.
+
+### Contract requirements versus supplemental process
+
+D2 requires executable increments and honest milestone ordering; D9 requires
+the evidence appropriate to a claim, reproducible provenance and invalidation
+of stale evidence. TEST2 requires pass-level accepted/rejected cases and
+composition regressions. BOOT3 requires fresh equivalence and stage comparison
+at authoritative migration. None makes a new admission receipt or refreshed
+migration fingerprint a prerequisite for testing an ordinary pass edit.
+
+Workstream reservations, exact candidate tuples, admission reviews, receipt
+schemas and terminal publication come from supplemental admission contracts.
+Generated test catalogs and historical attempt-specific grants are additional
+tooling/coordination policies, not language semantics. They must not govern
+explicit local test selection. The repository's language boundary and source
+LOC limit remain implementation constraints; host resource limits still apply
+to expensive tests. These are separate from proof authority.
+
+## Repository and explicit admission checks
+
+### Product construction versus scheduling overhead
+
+Some SH-07 tests build large authenticated products before reaching a semantic
+assertion. The backlog records a 9,172,831-node reader-source template and a
+later 17,681,671-node B47 template. Another lane or lock does not remove that
+construction cost. The parked SOURCE draft separately exposed repeated scans
+over 2,994,224 blob bytes: seventeen eight-unit scans alone would charge
+407,214,464 metadata operations against its unchanged 67,108,864 cap. This is
+a deficit in that draft, not a prerequisite for ordinary language development.
+
+Bounded follow-up: inspect one representative stable construction and separate
+input occurrences, copies, canonical bytes, hashing and scheduling. Propose
+representation changes with preserved identities/equivalence and negative
+tests; do not substitute child hashes for embedded DATA, cache accepted proofs,
+or change wire formats in this simplification. Heavy runs should answer a
+concrete representation or migration question, not refresh historical receipts
+merely because another development commit exists.
 
 ```bash
 clojure -M tools/validate_gravity_docs.clj
@@ -17,14 +114,17 @@ clojure -M:test
 git diff --check
 ```
 
-The full Clojure suite is necessary but does not by itself establish release,
-self-hosting, seed-retirement, performance, or safety authority.
+Run checks appropriate to the changed files. Documentation changes require the
+document validator; tooling changes require affected tool tests. The full suite
+serves broad integration/release decisions, not every semantic edit, and does
+not itself establish release, self-hosting, seed-retirement, performance or safety.
 
-## Fresh Integration Candidate Lane
+## Explicit full fresh integration candidate check
 
-Focused and incremental runners are development feedback. Before a candidate
-can supply publishable integration evidence, run the exact committed candidate
-through the separate fresh lane:
+Focused composition tests provide integration-development feedback. To publish
+the full fresh-candidate evidence described here, explicitly run the exact
+committed candidate through this existing command. It is not a prerequisite
+for local semantic or focused composition tests:
 
 ```bash
 clojure -M tools/verify_integration_candidate.clj \
@@ -116,8 +216,8 @@ exact namespace. Deleted dedicated tests retain conservative slice fallback;
 malformed dependency records and relevant unowned paths fail closed. JVM
 groups in the reviewed map keep bootstrap-free tests isolated from tests that
 load the bootstrap facade. The plan and execution report are explicitly
-non-authoritative and cannot satisfy the standard gates below or any release,
-self-hosting, or seed-retirement gate.
+non-authoritative and cannot satisfy authoritative migration, release,
+self-hosting, or seed-retirement gates.
 
 The SH-01 impact runner batches only normal namespaces from the same slice in
 warm JVMs, with a reviewed maximum batch size of eight. `:memory-heavy` work
@@ -370,9 +470,9 @@ The shared cache and broker roots are private mode-`0700` directories under
 the repository's Git common directory at
 `gravity-development-loop-v1/{cache,broker}`. Linked worktrees therefore use
 the same cooperative same-user state without a daemon. The default incremental
-child timeout is one hour. The authoritative `clojure -M:test` lane and fresh
-integration verifier do not enable this wiring, cannot observe its cache, and
-retain their existing authority boundaries.
+child timeout is one hour. The direct `clojure -M:test` runner and fresh
+integration verifier do not enable this wiring or observe its cache. The test
+alias itself does not confer authority.
 
 Fail-fast stops queue refill but does not cancel already-submitted workers that
 are waiting for a cache key or broker lease; those workers remain bounded by
@@ -535,8 +635,9 @@ Carrier hits still execute the two exact bounded Gravity digest-resolver leaves
 needed to rebind artifact and provenance identities. They do not construct a
 fresh SH-07 template or cache a final artifact, diagnostic, or verification
 report. Result fields `:semantic-cache-enabled?` and `:cache` are operational
-telemetry only. Every result remains non-authoritative and requires a fresh
-authoritative run; reuse grants no timing, benchmark, proof, roadmap, release,
+telemetry only. Every result remains non-authoritative; a fresh authoritative
+run is required only for an actual admission claim. Reuse grants no timing,
+benchmark, proof, roadmap, release,
 self-hosting, or seed-retirement authority.
 
 The authentic accepted/rejected B8 carrier oracle is intentionally outside the

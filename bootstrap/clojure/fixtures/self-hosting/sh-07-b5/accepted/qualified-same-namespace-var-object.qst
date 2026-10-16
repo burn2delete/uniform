@@ -1,0 +1,14 @@
+; L2 var identity and L3 fully-qualified current-namespace resolution.
+(ns demo.value
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [answer answer-object callable callable-object capture])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(def answer 41)
+(def answer-object (var demo.value/answer))
+(defn callable [] 7)
+(def callable-object (var demo.value/callable))
+(defn capture [answer] (var demo.value/answer))

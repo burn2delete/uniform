@@ -983,9 +983,12 @@
     (is (= 108 (:exact-var-selector-count accounting)))
     (is (= 1 (:proof-contract-selector-count accounting)))
     (is (= 14 (:fixture-suite-count accounting)))
-    (is (= 68 (:accepted-fixture-count accounting)))
-    (is (= 79 (:rejected-fixture-count accounting)))
-    (is (= 147 (:fixture-pair-count accounting)))))
+    (is (= (get-in plan/catalog [:conformance :coverage :accepted-count])
+           (:accepted-fixture-count accounting)))
+    (is (= (get-in plan/catalog [:conformance :coverage :rejected-count])
+           (:rejected-fixture-count accounting)))
+    (is (= (get-in plan/catalog [:conformance :coverage :pair-count])
+           (:fixture-pair-count accounting)))))
 
 (deftest namespace-authority-projection-is-fast-route-owned-and-closed
   (let [projection (plan/namespace-authority-projection)
