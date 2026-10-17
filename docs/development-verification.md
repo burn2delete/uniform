@@ -818,6 +818,54 @@ indexes for unrelated type-only modules. Imported and recursive return shapes,
 unknown map parameters and unresolved alternative return shapes remain
 explicit implementation boundaries.
 
+### Finite Boolean match lowering
+
+Edit the existing Gravity emitter for execution of C7's solved finite Boolean
+matches. Root `true`, `false`, wildcard and lexical binding patterns use the
+existing `if`, `do` and `let` instructions; no runtime match operation or
+generated temporary name is needed. The scrutinee is evaluated once, before
+the selected body. Keep a residual binder inside its own branch so it cannot
+shadow an outer same-named value used by a sibling branch.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-boolean-match-lowering-development-kernel \
+  --exact current-gravity-boolean-match-routes-development-kernel \
+  --exact current-gravity-boolean-match-call-errors-development-kernel \
+  --exact current-gravity-boolean-match-fixtures-development-kernel
+```
+
+These normalized checks exercise the emitter and its evidence joins, not a
+complete source pipeline. Select C7 rows by their match identity and clause
+ordinal: their `lhs` identifies a branch body, not the match. Preserve source
+order, narrowed binder scope, original failure diagnostics and branch tail
+targets. Use the existing lowering budget, including binder-use traversal.
+
+Throwing local calls through a match also use C7's existing call-error graph and
+the independent verifier in `gravity/effects.gravity`. Their supported-form
+checks must agree with the existing conservative child-error union. This is
+source-error potential, not a claim that every branch executes at runtime.
+When changing interaction with source `let` or its instruction census, also
+select `current-gravity-typed-let-lowering-development-kernel`; it checks the
+existing let-body `do` wrapper directly. An unchanged lookup matrix is not a
+prerequisite for editing match lowering.
+
+Before accepting this increment, separately exercise real source through C7,
+lowering and runtime, including both Boolean values, whole-domain binders and
+wildcards, shadowing, throwing scrutinees and valid branch-tail recur. A focused
+pass alone does not establish that composition. Partial Boolean matching,
+structural pattern execution and guards remain separate implementation work;
+this finite lowering limit is not a general L7 requirement that every match
+be total. Normally returning guards retain L7's Bool-only policy.
+
+```bash
+# Affected source/type/effect/lowering/runtime composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-boolean-match-authenticated-composition --fail-fast
+```
+
 ### Canonical direct same-module calls
 
 Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls

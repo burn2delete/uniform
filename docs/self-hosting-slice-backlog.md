@@ -1196,6 +1196,76 @@ imported/recursive return-shape, unknown map-parameter, unresolved alternative
 shape, complete profile-legality, target, migration or self-hosting claim
 follows. Runtime and emitter APIs and authoritative pins are unchanged.
 
+### Finite Boolean match execution: development implementation
+
+The existing Gravity emitter consumes C7's solved finite Boolean match rows
+and lowers root Boolean literals, wildcard and lexical binding patterns into
+the existing `if`, `do` and `let` instructions. Rows join by match identity and
+clause ordinal, not their branch-body `lhs`. Source, branch, root-pattern,
+skeleton, binding scope, type and selected/residual-domain joins remain
+explicit. The scrutinee is evaluated once. A residual binder is initialized
+with its verified singleton Boolean inside its own branch, preserving an
+outer same-named value in a sibling. No generated name, runtime match opcode,
+new seed builtin or public API is introduced.
+
+The affected throwing-local-call composition exposed two existing supported-
+form restrictions: C7's call-error graph and the independent verifier in
+`gravity/effects.gravity` omitted `match`. Both now accept it using their
+existing conservative child-error unions, source order, call-body equations,
+match-skeleton checks and budgets. This retains source-error potential from
+all branches, not selected-path precision. Existing unsupported-operation,
+recursion-component, import and higher-order boundaries are not relaxed.
+
+The pre-composition focused group passed four tests/106 assertions: lowering joins
+and work limits, false-first/whole-binder/wildcard routes, active C7 call-error
+analysis with independent C8 reconstruction, and five fixture-pair parity
+checks. Controls cover original throw payload identity, single evaluation,
+non-leaking bindings, changed ledger/source/order/call-body evidence, missing
+rows, unknown operations, recursion components and insufficient budgets. An
+initial binder-use work-limit failure was being relabeled as a generic
+binding mismatch; it now retains the original failure, with an intermediate-
+budget control that reaches the traversal. A command using unsupported
+`--result-file` failed before executing tests; the corrected command uses the
+existing `--timing-receipt` option. That failure is not relabeled as a pass.
+
+At 2 GiB, that focused test execution took 2.238 seconds, separate from
+7.505 seconds of namespace loading. Independent scoped pre-run review accepted
+the exact candidate. Its single real-source composition completed one test/184
+assertions: 182 passed, two failed, zero errors. Both failures were the same
+instruction-census oracle: two wildcard matches emit `do`, but the test had
+omitted the existing source-let body wrapper in the nested function. The
+observed count was three, not two. The original aggregate remains FAILED.
+
+The completed semantic blocks exercised 48 top-level guest executions across
+the two source extensions, including returned-map lookup into a match,
+shadowing, nested binders, branch-tail recur, original thrown-payload identity,
+and an ordinary caller through a match to a normally returning Bool helper
+that may throw. Both independent C8 analyses passed, retaining conditional
+coverage and conservative thrown errors and rejecting an undeclared allowance.
+Seven public operations freshly entered C7 verification, including three
+row/source mutations that rejected. Three additional `.gravity`
+inputs rejected incompatible patterns, unreachable clauses and branch-result
+mismatch; a fourth rejected binder escape in C5. Rejected `.qst` pairs were
+checked for byte parity, not separately type-checked.
+
+Only the test's expected `do` count and an explanatory comment changed after
+that result. The four K kernels plus the existing exact let-lowering kernel
+then passed a separate five-test/169-assertion run. Its outer execution took
+2.486 seconds, separate from 7.521 seconds of namespace loading. These overlap
+the earlier controls and are not added as unique coverage. Independent review
+accepted the bounded semantic evidence and exact oracle correction; the
+corrected full selector was not replayed or reported as a new 184/184 pass.
+No production or fixture bytes changed after the composition. At 2 GiB its
+selected execution took 664.653 seconds, outer execution 664.655 seconds and
+namespace loading 8.267 seconds. These timings do not attribute construction
+phases or establish a speedup. No unchanged upstream matrix was repeated.
+
+Structural-pattern and guard execution, partial Boolean lowering, complete
+profile legality, target lowering, authoritative migration and self-hosting
+remain outstanding. This finite implementation limit does not impose a
+universal L7 totality rule. Normally returning guards retain L7's Bool-only
+policy. No historical authority pin is refreshed by this development work.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

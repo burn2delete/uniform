@@ -1411,6 +1411,370 @@
         (is (= :rejected (:status typed)))
         (is (= expected ((juxt :rule :reason) failure)))))))
 
+(defn- typed-boolean-match-kernel-data [base]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        {:keys [core products forms bindings remainder match-id scrutinee-id bodies]} ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'boolean-match-input))
+        source (fn [form] {:form-id (:form-id form) :syntax-id (:syntax-id form) :semantic-span (:source-span form)
+                          :origin-chain (:origin-chain form) :generated-origin (:generated-origin form)})
+        operator (get-in forms [0 :child-form-ids 0]) flag-binding (get-in core [:nodes 0 :attributes :binding-id])
+        body-forms (mapv :branch-form-id (:match-branch-records core))
+        forms (into {} (map (juxt :form-id identity)) forms)
+        forms (-> forms
+                  (assoc operator {:form-id operator :syntax-id operator :kind :symbol :value 'match :parent-form-id match-id :child-form-ids []})
+                  (assoc scrutinee-id {:form-id scrutinee-id :syntax-id scrutinee-id :kind :symbol :value 'flag :parent-form-id match-id
+                                      :source-span {:byte-start 0 :byte-end 1} :origin-chain [] :generated-origin nil})
+                  (assoc-in [match-id :kind] :list)
+                  (assoc-in [match-id :source-span] {:byte-start 0 :byte-end 1})
+                  (assoc-in [match-id :origin-chain] [])
+                  (assoc-in [(get-in core [:match-branch-records 0 :pattern-form-id]) :parent-form-id] match-id)
+                  (assoc-in [(get-in core [:match-branch-records 1 :pattern-form-id]) :parent-form-id] match-id)
+                  (assoc (body-forms 0) {:form-id (body-forms 0) :syntax-id (body-forms 0) :kind :boolean :value true :parent-form-id match-id
+                                    :source-span {:byte-start 0 :byte-end 1} :origin-chain [] :generated-origin nil})
+                  (assoc (body-forms 1) {:form-id (body-forms 1) :syntax-id (body-forms 1) :kind :symbol :value 'remainder :parent-form-id match-id
+                                    :scope-id (get-in core [:match-branch-records 1 :pattern-binding-scope-id])
+                                    :source-span {:byte-start 0 :byte-end 1} :origin-chain [] :generated-origin nil}))
+        core (-> core
+                 (assoc-in [:nodes 1 :attributes :value] true)
+                 (assoc-in [:nodes 3 :attributes :evaluation-order] :scrutinee-then-source-ordered-pattern-candidates)
+                 (assoc-in [:nodes 3 :evaluation :kind] :scrutinee-then-source-ordered-pattern-candidates)
+                 (assoc-in [:nodes 3 :evaluation :order] [{:index 0 :core-node-id scrutinee-id}]))
+        core (update core :nodes #(mapv (fn [node] (assoc node :source (source (get forms (get-in node [:source :form-id]))))) %))
+        products (assoc products :node-table (into {} (map (juxt :node-id identity)) (:nodes core)))
+        group (first (:boolean-matches (leaf 'sh08-bm-products [core products (vec (vals forms))])))
+        types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool match-id :gravity.type/bool}
+        rows (:constraints (leaf 'sh08-bm-check [group types {} {:profile :meta :target :jvm}]))
+        context (-> base (update :forms merge forms) (update :nodes merge (:node-table products))
+                    (update :types merge types) (update :bindings merge (:binding-index products))
+                    (update :core merge core) (assoc :ledger rows :locals {flag-binding 'flag} :parameter-types bindings :tail? true))]
+    {:context context :match-id match-id :scrutinee-id scrutinee-id :bodies bodies :remainder remainder :group group :leaf leaf}))
+
+(deftest current-gravity-boolean-match-call-errors-development-kernel
+  ;; Normalized compiler DATA exercises the owning analyses. Source admission
+  ;; is covered separately by the paired composition.
+  (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+  (let [helper #(ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test %)
+        c7 (fn [f & args] ((helper 'c7-invoke) f (vec args)))
+        c8 (fn [f & args] (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) f args))]
+    (doseq [position [:scrutinee :branch]]
+      (let [{:keys [core types functions direct bindings id fid]} ((helper 'local-throw-kernel-data))
+            scrutinee? (= position :scrutinee)
+            make (fn [n kind children type]
+                   (-> (first (:nodes core))
+                       (assoc :node-id (id n) :core-form kind :children (mapv id children)
+                              :attributes (if (= kind :literal) {:literal-kind type :value (if (= type :boolean) false "branch")} {}))
+                       (assoc :source {:form-id (id (+ 10000 n)) :syntax-id (id (+ 20000 n))
+                                       :semantic-span {:start-byte n :end-byte (inc n)} :origin-chain [] :generated-origin nil})
+                       (assoc :evaluation {:kind :left-to-right :owner-function-syntax-id (fid 2)
+                                           :order (mapv (fn [i n] {:index i :core-node-id (id n)}) (range) children)})))
+            children (if scrutinee? [4 23 24] [20 4 24])
+            match-node (-> (make 22 :match children nil)
+                           (assoc :attributes {:branch-count 2 :branch-child-indexes [1 2] :guard-child-indexes []})
+                           (assoc-in [:evaluation :order] [{:index 0 :core-node-id (id (first children))}]))
+            extra [(make 20 :literal [] :boolean) (make 21 :literal [] :boolean)
+                   (make 23 :literal [] :string) (make 25 :literal [] :boolean)
+                   (make 24 :throw [25] nil) match-node]
+            conditional (-> (make 26 :if [20 2 21] nil)
+                            (assoc-in [:evaluation :owner-function-syntax-id] (fid 1))
+                            (assoc-in [:evaluation :order] [{:index 0 :core-node-id (id 20)}]))
+            extra (if scrutinee? (conj extra conditional) extra)
+            nodes (mapv (fn [n]
+                          (cond (= (:node-id n) (id 202)) (assoc n :children [(id 22)])
+                                (and scrutinee? (= (:node-id n) (id 19)))
+                                (-> n (assoc :children [(id 18) (id 26)])
+                                    (assoc-in [:evaluation :order] [{:index 0 :core-node-id (id 18)} {:index 1 :core-node-id (id 26)}]))
+                                :else n)) (:nodes core))
+            core (-> core (assoc :nodes (into nodes extra))
+                     (update :function-records #(mapv (fn [f] (if (= (:function-syntax-id f) (fid 2)) (assoc f :body-core-node-id (id 22)) f)) %))
+                     (update :error-transfers conj {:core-node-id (id 24) :value-core-node-id (id 25)})
+                     (assoc :match-branch-records (mapv (fn [ordinal body] {:core-node-id (id 22) :clause-ordinal ordinal
+                              :branch-child-index (inc ordinal) :branch-core-node-id (id body) :scrutinee-core-node-id (id (first children))}) (range) (rest children))
+                            :match-decision-skeletons [{:core-node-id (id 22) :scrutinee-core-node-id (id (first children))
+                                                       :branch-core-node-ids (mapv id (rest children))}]))
+            types (merge types {(id 20) :gravity.type/bool (id 21) :gravity.type/bool (id 23) :gravity.type/string
+                                (id 25) :gravity.type/bool (id 24) :gravity.type/never (id 22) :gravity.type/string}
+                         (when scrutinee? {(id 4) :gravity.type/bool (id 19) :gravity.type/bool (id 26) :gravity.type/bool}))
+            functions (cond-> (assoc-in functions [(fid 2) :body-core-node-id] (id 22))
+                        scrutinee? (assoc-in [(fid 1) :return] :gravity.type/bool))
+            direct (assoc-in direct [:throws (fid 2)] [:gravity.type/bool])
+            result (c7 'sh08-tc-products core types functions bindings direct 65536)
+            facts {:type-table types :constraint-ledger (:constraints result)
+                   :function-type-table (c7 'sh08-th-functions (vec (vals functions)) (:throws result))}
+            scope (c8 'body-tc-scope core (:throws direct) 65536)
+            joined (assoc scope :direct-throws (:throws direct) :owners (:owners (c8 'body-throw-owners core 65536)))
+            derived (c8 'body-derive-nodes core facts) graph (:nodes derived)
+            binding-index (into {} (map (juxt :binding-id identity) bindings))
+            verify #(c8 'body-tc-verify core %1 binding-index %2 joined 65536)]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= [:gravity.type/string :gravity.type/bool] (get-in result [:throws (fid 2)]) (get-in result [:throws (fid 3)])))
+        (is (= :accepted (:status derived)) (pr-str derived))
+        (is (= :accepted (:status (verify facts graph))) (pr-str (verify facts graph)))
+        (is (= [:gravity.type/string :gravity.type/bool] (get-in graph [(id 22) :escaping-thrown-error-types])))
+        (is (= [{:index 0 :core-node-id (id (first children))}] (get-in graph [(id 22) :ordering :order])))
+        (is (= 2 (count (get-in graph [(id 22) :conditional-coverage]))))
+        (is (= #{:gravity.type/bool} (get-in graph [(id 24) :direct-thrown-errors])))
+        (is (true? (c8 'body-graph-equations-valid? core facts {} graph)))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc facts :module {:effects []}) {:nodes graph :functions {}} 65536))))
+        (doseq [bad [(assoc facts :constraint-ledger [])
+                     (assoc-in facts [:constraint-ledger 0 :dependencies :callee-source-body-id] :forged)]]
+          (is (= :rejected (:status (verify bad graph)))))
+        (let [bad (assoc-in graph [(id 22) :escaping-thrown-error-types] [])]
+          (is (false? (c8 'body-graph-equations-valid? core facts {} bad)))
+          (is (= :rejected (:status (verify facts bad)))))
+        (doseq [bad [(update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc-in n [:source :syntax-id] :forged) n)) %))
+                     (update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc-in n [:evaluation :order] []) n)) %))]]
+          (is (false? (c8 'body-graph-equations-valid? bad facts {} graph))))
+        (is (= :rejected (:status (c8 'body-derive-nodes (assoc-in core [:match-branch-records 0 :branch-core-node-id] :forged) facts))))
+        (is (= "C7-GENERIC" (get-in (c7 'sh08-tc-products core types functions bindings direct 1) [:diagnostics 0 :rule])))
+        (is (= :rejected (:status (c8 'body-tc-verify core facts binding-index graph joined 1))))
+        (doseq [bad [(update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc n :core-form :unknown) n)) %))
+                     (assoc core :recursion-components [{:function-syntax-ids [(fid 2)]}])]]
+          (is (= :rejected (:status (c7 'sh08-tc-products bad types functions bindings direct 65536))))
+          (is (= :rejected (:status (c8 'body-tc-verify bad facts binding-index graph joined 65536)))))))))
+
+(defn- rebuild-boolean-match-kernel-data [data context]
+  (let [leaf (:leaf data) core (:core context)
+        products {:status :accepted :node-table (:nodes context) :binding-index (:bindings context)}
+        joined (leaf 'sh08-bm-products [core products (vec (vals (:forms context)))])
+        checked (leaf 'sh08-bm-check [(first (:boolean-matches joined)) (:types context) {} {:profile :meta :target :jvm}])]
+    (assoc data :context (assoc context :ledger (:constraints checked)) :producer-status (:status joined) :producer-diagnostic (:diagnostic checked))))
+
+(defn- boolean-match-variant-kernel-data [data variant]
+  (let [{:keys [context match-id scrutinee-id bodies remainder]} data
+        original-branches (get-in context [:core :match-branch-records])
+        original-patterns (get-in context [:core :match-pattern-records])
+        fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
+                :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]
+        false-first? (= :false-first variant) wildcard? (= :wildcard variant)
+        region {:kind :match-branch :match-syntax-id (get-in context [:nodes match-id :source :syntax-id]) :clause-ordinal 0}
+        branch (-> (get original-branches 1) (assoc :ordinal 0 :clause-ordinal 0 :clause-count 1 :branch-child-index 1 :conditional-region region))
+        pattern (-> (get original-patterns 1) (assoc :ordinal 0 :root-ordinal 0 :clause-ordinal 0))
+        clear-binding (fn [row kind value]
+                        (assoc row :pattern-kind kind :pattern-value value :pattern-binding-id nil :pattern-binding-scope-id nil
+                                   :pattern-binding-use-syntax-ids []))
+        branches (if false-first?
+                   [(assoc (get original-branches 0) :pattern-value false)
+                    (assoc (clear-binding (get original-branches 1) :literal true) :pattern-binding-ids [])]
+                   [(if wildcard? (assoc (clear-binding branch :wildcard '_) :pattern-binding-ids []) branch)])
+        patterns (if false-first?
+                   [(assoc (get original-patterns 0) :pattern-value false) (clear-binding (get original-patterns 1) :literal true)]
+                   [(if wildcard? (clear-binding pattern :wildcard '_) pattern)])
+        selected-bodies (if false-first? bodies [(bodies 1)])
+        body (get-in context [:nodes (bodies 1)]) body-form-id (get-in body [:source :form-id])
+        pattern-form-id (:pattern-form-id (get original-branches 1))
+        body (cond-> body (not false-first?) (assoc-in [:evaluation :region] region)
+                     (or false-first? wildcard?) (assoc :core-form :literal :children [] :attributes {:literal-kind :boolean :value false}))
+        node (-> (get-in context [:nodes match-id]) (assoc :children (into [scrutinee-id] selected-bodies)
+                                                         :resolved-binding-ids (if (or false-first? wildcard?) [] [remainder]))
+                 (assoc-in [:attributes :branch-count] (count branches))
+                 (assoc-in [:attributes :branch-child-indexes] (vec (range 1 (inc (count branches)))))
+                 (assoc-in [:attributes :branch-clauses] (mapv #(select-keys % fields) branches)))
+        owner-id (get-in node [:source :form-id]) original-owner-ids (get-in context [:forms owner-id :child-form-ids])
+        context (-> context (assoc-in [:nodes match-id] node) (assoc-in [:nodes (bodies 1)] body)
+                    (assoc-in [:core :match-branch-records] branches) (assoc-in [:core :match-pattern-records] patterns)
+                    (assoc-in [:core :match-decision-skeletons 0 :branch-core-node-ids] selected-bodies))
+        context (if false-first?
+                  (assoc-in context [:forms (get-in original-branches [0 :pattern-form-id]) :value] false)
+                  (assoc-in context [:forms owner-id :child-form-ids] (into (subvec original-owner-ids 0 2) [pattern-form-id body-form-id])))
+        context (if (or false-first? wildcard?)
+                  (-> context (assoc-in [:forms pattern-form-id :kind] (if wildcard? :symbol :boolean))
+                      (assoc-in [:forms pattern-form-id :value] (if wildcard? '_ true))
+                      (assoc-in [:forms pattern-form-id :scope-id] nil)
+                      (assoc-in [:forms body-form-id :kind] :boolean) (assoc-in [:forms body-form-id :value] false)) context)
+        context (assoc-in context [:core :nodes] (mapv (:nodes context) (into [scrutinee-id] (conj selected-bodies match-id))))]
+    (rebuild-boolean-match-kernel-data data context)))
+
+(deftest current-gravity-boolean-match-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))
+        {:keys [context match-id bodies remainder]} (typed-boolean-match-kernel-data base)
+        compile #(invoke 'p15-s23-typed-compile-node %1 match-id %2)
+        result (compile context 65536)
+        expected {:op :if :test {:op :local :name 'flag} :then {:op :literal :value true}
+                  :else {:op :let :bindings [{:name 'remainder :expr {:op :literal :value false}}] :body [{:op :local :name 'remainder}]}}]
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= expected (:value result)))
+    (is (= result (compile context (:work-count result))))
+    (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count result))) [:facts :reason])))
+    (doseq [changed [(assoc context :ledger []) (update context :ledger #(vec (reverse %)))
+                     (update context :ledger conj (first (:ledger context)))
+                     (assoc-in context [:ledger 0 :constraint-id-request :match-core-node-id] (bodies 0))
+                     (assoc-in context [:ledger 0 :remaining-before] [false true])
+                     (assoc-in context [:ledger 0 :matched-values] [false])
+                     (assoc-in context [:ledger 0 :profile] :hosted)
+                     (assoc-in context [:nodes match-id :attributes :guard-rule-version] :guard)
+                     (assoc-in context [:ledger 1 :pattern-binding-scope-id] :forged)
+                     (assoc-in context [:ledger 1 :pattern-binding-id] :forged)
+                     (assoc-in context [:ledger 1 :branch-source :syntax-id] :forged)
+                     (assoc-in context [:ledger 1 :constraint-id-request :branch :pattern-binding-use-syntax-ids] [])
+                     (assoc-in context [:nodes (bodies 1) :attributes :binding-id] :forged)
+                     (assoc-in context [:bindings remainder :scope-id] :forged)
+                     (assoc-in context [:core :match-decision-skeletons 0 :branch-core-node-ids] (vec (reverse bodies)))]]
+      (is (= :rejected (:status (compile changed 65536)))))
+    (let [branch (get-in context [:core :match-branch-records 1]) pattern (get-in context [:core :match-pattern-records 1])
+          row (get-in context [:ledger 1]) skeleton (get-in context [:core :match-decision-skeletons 0])
+          node (get-in context [:nodes match-id])
+          fixed (+ 20 (count (get-in context [:core :nodes])))
+          result (invoke 'p15-s23-typed-boolean-match-branch context node branch pattern row skeleton 1 [false] fixed)]
+      (is (= :typed-lowering-work-limit (get-in result [:facts :reason]))))
+    (let [cyclic (assoc-in context [:nodes (bodies 1) :children] [(bodies 1)])
+          result (invoke 'p15-s23-typed-match-uses cyclic (bodies 1) remainder 100)]
+      (is (= :cyclic-typed-match-body (get-in result [:facts :reason]))))))
+
+(deftest current-gravity-boolean-match-routes-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        data (typed-boolean-match-kernel-data (:value (invoke 'p15-s23-typed-context module input observation)))
+        variants (into {} (map (fn [kind] [kind (boolean-match-variant-kernel-data data kind)])) [:false-first :binder :wildcard])
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        evaluate (fn [instruction flag] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-closed-instruction
+                                                                                     [instruction {'flag flag 'remainder :outer} ""]))
+        lowered (into {} (map (fn [[kind {:keys [context producer-status producer-diagnostic]}]]
+                               (is (= :accepted producer-status) (pr-str producer-diagnostic))
+                               (let [result (invoke 'p15-s23-typed-compile-node context (:match-id data) 65536)]
+                                 (is (= :complete (:status result)) (pr-str result)) [kind (:value result)]))) variants)
+        lit (fn [value] {:op :literal :value value})
+        say (fn [instruction] {:op :do :body [{:op :println :args [(lit "test")] :effect :io/write :capability :io/stdout} instruction]})
+        payload (String. "match transfer")]
+    (is (= {:op :if :test {:op :local :name 'flag} :then (lit false) :else (lit true)} (:false-first lowered)))
+    (is (= {:op :let :bindings [{:name 'remainder :expr {:op :local :name 'flag}}] :body [{:op :local :name 'remainder}]} (:binder lowered)))
+    (is (= {:op :do :body [{:op :local :name 'flag} (lit false)]} (:wildcard lowered)))
+    (is (= [false "" :normal] (evaluate (:false-first lowered) true)))
+    (is (= [true "" :normal] (evaluate (:false-first lowered) false)))
+    (is (= [false "" :normal] (evaluate (:binder lowered) false)))
+    (is (= [true "" :normal] (evaluate (:binder lowered) true)))
+    (doseq [[kind instruction] lowered]
+      (let [marked (case kind :false-first (update instruction :test say)
+                              :binder (update-in instruction [:bindings 0 :expr] say)
+                              :wildcard (update-in instruction [:body 0] say))]
+        (is (= "test\n" (second (evaluate marked true)))))
+      (let [throwing (case kind :false-first (assoc instruction :test {:op :throw :value (lit payload)})
+                                :binder (assoc-in instruction [:bindings 0 :expr] {:op :throw :value (lit payload)})
+                                :wildcard (assoc-in instruction [:body 0] {:op :throw :value (lit payload)}))
+            result (evaluate throwing true)]
+        (is (= [payload "" :thrown] result))
+        (is (identical? payload (first result)))))
+    (is (= [:outer "" :normal] (evaluate {:op :do :body [(:binder lowered) {:op :local :name 'remainder}]} true)))))
+
+(deftest current-gravity-boolean-match-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition basename functions] [["accepted" "local-runtime-boolean-match" 15]
+                                             ["rejected" "local-runtime-boolean-match-pattern" 1]
+                                             ["rejected" "local-runtime-boolean-match-unreachable" 1]
+                                             ["rejected" "local-runtime-boolean-match-branch-type" 1]
+                                             ["rejected" "local-runtime-boolean-match-binder-escape" 1]]]
+      (let [path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" basename ".gravity")))
+            paired (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" basename ".qst")))
+            text (slurp path)]
+        (is (= text (slurp paired)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(deftest current-gravity-boolean-match-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "match payload") problem (String. "scrutinee failure")
+        specifications [['true-first [true payload] payload :normal] ['true-first [false payload] "false" :normal]
+                        ['false-first [false payload] payload :normal] ['false-first [true payload] "true" :normal]
+                        ['residual-shadow [true payload] payload :normal] ['residual-shadow [false payload] "bound" :normal]
+                        ['whole-shadow [true] true :normal] ['whole-shadow [false] false :normal]
+                        ['whole-binder-string [false payload] payload :normal]
+                        ['whole-wildcard [false problem payload] payload :normal] ['whole-wildcard [true problem payload] problem :thrown]
+                        ['wildcard-wrapper [false problem payload] payload :normal] ['wildcard-wrapper [true problem payload] problem :thrown]
+                        ['probe [false problem] false :normal] ['probe [true problem] problem :thrown]
+                        ['throwing-wildcard [false problem payload] payload :thrown] ['throwing-wildcard [true problem payload] problem :thrown]
+                        ['nested [true payload] payload :normal] ['nested [false payload] "after-false" :normal]
+                        ['packet-match [true payload] payload :normal] ['packet-match [false payload] "packet-false" :normal]
+                        ['selected-recur [true payload] payload :normal] ['selected-recur [false payload] payload :normal]
+                        ['main [] "payload" :normal]]
+        cases (mapv
+               (fn [extension]
+                 (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-boolean-match" extension)
+                       path (.getPath (io/file root relative)) text (slurp path)
+                       products (fresh relative) input (select-keys products [:request :typed :verification])
+                       macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                       parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                       module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                       definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                       typed-check (is (= :accepted (get-in input [:typed :status])) (pr-str (take 2 (get-in input [:typed :diagnostics]))))
+                       verification-check (is (= :passed (get-in input [:verification :status])))
+                       ready (when-not (and typed-check verification-check)
+                               (throw (ex-info "Bool-match source products rejected before typed lowering"
+                                               {:typed-status (get-in input [:typed :status]) :diagnostics (vec (take 2 (get-in input [:typed :diagnostics])))})))
+                       standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'true-first) input))
+                       assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                       rows (filterv #(= :sh08-boolean-match-v1 (:producer-rule %)) (get-in input [:typed :constraint-ledger]))
+                       core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                       effects (c8 'body-analyze-module (:request input) facts {} 65536)
+                       matches (filterv #(= :match (:core-form %)) (:nodes core))]
+                   (is (= 15 (count (:functions assembled))))
+                   (is (= 17 (count rows)))
+                   (is (= 11 (count matches)))
+                   ;; Two wildcard routes plus the existing source-let body do.
+                   (is (= {:if 10 :let 5 :do 3 :recur 1 :keyword-map-lookup 1 :map-literal 1}
+                          (select-keys (:instruction-summary assembled) [:if :let :do :recur :keyword-map-lookup :map-literal])))
+                   (is (nil? (get-in assembled [:instruction-summary :match])))
+                   (is (= standalone (get-in assembled [:functions 'true-first])))
+                   (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                   (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+                   (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+                   (doseq [[name args expected status] specifications]
+                     (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                            [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                       (is (= [expected "" status] result) [extension name args result])
+                       (when (or (identical? expected payload) (identical? expected problem))
+                         (is (identical? expected (first result))))))
+                   (is (= :accepted (:status effects)) (pr-str (select-keys effects [:reason :diagnostics])))
+                   (when (= :accepted (:status effects))
+                     (doseq [node matches]
+                       (is (= [(first (:children node))] (get-in effects [:graph :nodes (:node-id node) :evaluated-children])))
+                       (is (= (dec (count (:children node))) (count (get-in effects [:graph :nodes (:node-id node) :conditional-coverage])))))
+                     (let [functions (into {} (map (juxt :definition-name identity)) (:function-type-table facts))]
+                       (doseq [name ['probe 'whole-wildcard 'wildcard-wrapper 'throwing-wildcard]]
+                         (is (= [:gravity.type/string] (get-in effects [:graph :functions (get-in functions [name :function-id]) :throws])))))
+                     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects) 65536)))))
+                   {:input input :module module :definitions definitions :rows rows})) [".gravity" ".qst"])
+        {:keys [input module definitions rows]} (first cases)
+        row (first rows) ledger (get-in input [:typed :constraint-ledger])
+        row-index (first (keep-indexed #(when (= (:constraint-id-request row) (:constraint-id-request %2)) %1) ledger))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :constraint-ledger row-index :remaining-before] [])
+                     (assoc-in input [:typed :constraint-ledger row-index :constraint-id-request :match-core-node-id] :forged)
+                     (assoc-in input [:typed :constraint-ledger row-index :branch-source :syntax-id] :forged)]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'true-first) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 7 (count @verified)))
+    (doseq [[basename rule reason] [["pattern" "L7-PATTERN-TYPE" :boolean-pattern-type-mismatch]
+                                  ["unreachable" "L7-UNREACHABLE" :unreachable-boolean-match-clause]
+                                  ["branch-type" "C7-TYPE-MISMATCH" :boolean-match-branch-type-mismatch]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-boolean-match-" basename ".gravity"))
+            failure (first (get-in products [:typed :diagnostics]))]
+        (is (= :rejected (get-in products [:typed :status])))
+        (is (= [rule reason] ((juxt :rule :reason) failure)))))
+    (is (= "C5-UNRESOLVED" (:id (diagnostic #(fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-boolean-match-binder-escape.gravity")))))))
+
 (deftest current-gravity-returned-map-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

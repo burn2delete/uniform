@@ -4836,7 +4836,7 @@
             ; Both loop and function recur contribute only lexical child SOURCE
             ; errors. No transfer error or control-backedge dependency is added;
             ; this finite conservative union establishes no termination or effect legality.
-            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :loop :recur :collection-literal :keyword-map-lookup :throw :call :try} kind)
+            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :match :loop :recur :collection-literal :keyword-map-lookup :throw :call :try} kind)
               (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types handlers))
                                (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
                 (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))

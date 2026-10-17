@@ -2398,7 +2398,7 @@
                (if (= 0 (count remaining)) true
                  (let [node (first remaining)]
                    (if (if (contains? scope (get (get joined :owners) (get node :node-id)))
-                         (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :keyword-map-lookup :throw :call :try} (get node :core-form)) true)
+                         (contains? #{:literal :quote :reference :fn :def :do :if :let :match :collection-literal :keyword-map-lookup :throw :call :try} (get node :core-form)) true)
                      (recur (rest remaining)) false))))
              (loop [remaining (get core :recursion-components)]
                (if (= 0 (count remaining)) true

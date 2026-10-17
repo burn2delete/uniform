@@ -2271,11 +2271,195 @@
         (p15-s23-typed-node-error :typed-keyword-lookup-evidence-mismatch node))
       (p15-s23-typed-node-error :malformed-typed-keyword-lookup node))))))
 
+(defn p15-s23-typed-match-records [records field value]
+  (loop [remaining records out []]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (if (= value (get (first remaining) field)) (conj out (first remaining)) out)))))
+
+(defn p15-s23-typed-boolean-match-rows [rows id]
+  (loop [remaining rows out []]
+    (if (= 0 (count remaining)) out
+      (let [row (first remaining) request (get row :constraint-id-request)]
+        (recur (rest remaining)
+          (if (if (= :sh08-boolean-match-v1 (get row :producer-rule))
+                (if (= :gravity/sh08-boolean-match-constraint-v1 (get request :domain)) (= id (get request :match-core-node-id)) false) false)
+            (conj out row) out))))))
+
+(defn p15-s23-typed-match-append [left right]
+  (if (vector? right)
+    (loop [remaining right out left]
+      (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))) nil))
+
+(defn p15-s23-typed-match-uses [context root binding budget]
+  (loop [pending [root] seen #{} uses [] work 0]
+    (if (= 0 (count pending)) {:status :complete :uses uses :work-count work}
+      (if (>= work budget) (p15-s23-typed-error :typed-lowering-work-limit)
+        (let [id (first pending) node (get (get context :nodes) id) children (get node :children)]
+          (if (if (map? node) (vector? children) false)
+            (if (> (+ work 1 (count children)) budget) (p15-s23-typed-error :typed-lowering-work-limit)
+            (if (contains? seen id) (p15-s23-typed-error :cyclic-typed-match-body)
+              (recur (p15-s23-typed-match-append children (vec (rest pending)))
+                     (conj seen id)
+                     (if (if (= :reference (get node :core-form)) (= binding (get (get node :attributes) :binding-id)) false)
+                       (conj uses (get (get node :source) :syntax-id)) uses) (+ work 1 (count children)))))
+            (p15-s23-typed-error :malformed-typed-match-body)))))))
+
+(defn p15-s23-typed-boolean-match-branch [context node branch pattern row skeleton ordinal domain budget]
+  (let [forms (get context :forms) nodes (get context :nodes) owner (get forms (get (get node :source) :form-id))
+        ids (get owner :child-form-ids) body-id (get (get node :children) (+ ordinal 1)) body (get nodes body-id)
+        pattern-form (get forms (get ids (+ 2 (* 2 ordinal)))) body-form (get forms (get ids (+ 3 (* 2 ordinal))))
+        kind (get branch :pattern-kind) value (get branch :pattern-value) binder (get branch :pattern-binding-id)
+        binding (get (get context :bindings) binder) name (get binding :name) request (get row :constraint-id-request)
+        body-type (get (get context :types) body-id) row-type (get row :rhs)
+        result-type (get (get context :types) (get node :node-id))
+        tag (if (map? body-type) (get body-type :kind) body-type)
+        selected (if (= :literal kind) (if (boolean? value) (if (contains? (set domain) value) [value] []) []) domain)
+        residual (loop [remaining domain out []]
+                   (if (= 0 (count remaining)) out
+                     (recur (rest remaining) (if (contains? (set selected) (first remaining)) out (conj out (first remaining))))))
+        clause-fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
+                       :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]
+        fixed (if (= :binding kind) (+ 20 (count (get (get context :core) :nodes))) 20)]
+    (if (< budget fixed) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+    (if (if (= :literal kind) (boolean? value) (if (contains? #{:wildcard :binding} kind) (symbol? value) false))
+    (if (p15-s23-typed-all
+          [(contains? #{:literal :wildcard :binding} kind) (= false (contains? branch :guard)) (= false (contains? pattern :guard))
+           (if (= :literal kind) (if (= :boolean (get pattern-form :kind)) (contains? #{true false} value) false)
+             (if (= :symbol (get pattern-form :kind)) (if (= :wildcard kind) (= '_ value) (if (symbol? value) (= false (= '_ value)) false)) false))
+           (= value (get pattern-form :value) (get pattern :pattern-value))
+           (= kind (get pattern :pattern-kind)) (= ordinal (get branch :clause-ordinal) (get pattern :clause-ordinal) (get request :clause-ordinal))
+           (= (get node :node-id) (get branch :core-node-id) (get pattern :core-node-id) (get request :match-core-node-id))
+           (= (+ ordinal 1) (get branch :branch-child-index)) (= body-id (get branch :branch-core-node-id))
+           (= body-id (get body :node-id))
+           (= (first (get node :children)) (get branch :scrutinee-core-node-id))
+           (= (get branch :clause-count) (get (get node :attributes) :branch-count))
+           (= (p15-s23-typed-project branch clause-fields) (get (get (get node :attributes) :branch-clauses) ordinal))
+           (= branch (get request :branch)) (= pattern (get request :pattern)) (= skeleton (get request :skeleton))
+           (= :solved (get row :status)) (= :equality (get row :kind)) (= :sh08-boolean-match-v1 (get row :producer-rule))
+           (= [] (get row :diagnostics)) (= (get row :profile) (get (get (get context :core) :module) :profile))
+           (= (get row :target) (get (get (get context :core) :module) :target))
+           (= :gravity.type/bool (get row :scrutinee-type)) (= body-id (get row :lhs))
+           (= tag (if (map? row-type) (get row-type :kind) row-type))
+           (= false (= nil tag)) (= false (= :gravity.type/unknown tag))
+           (if (= :gravity.type/never tag) true (= tag (if (map? result-type) (get result-type :kind) result-type)))
+           (= domain (get row :remaining-before)) (= selected (get row :matched-values)) (= residual (get row :remaining-after))
+           (> (count selected) 0) (= (= 0 (count residual)) (get row :exhaustive-after?))
+           (= [(first (get node :children)) body-id] (get row :dependencies))
+           (= (get pattern-form :form-id) (get branch :pattern-form-id) (get pattern :pattern-form-id))
+           (= (get pattern-form :syntax-id) (get branch :pattern-syntax-id) (get pattern :pattern-syntax-id))
+           (= (get body-form :form-id) (get branch :branch-form-id) (get (get body :source) :form-id))
+           (= (get body-form :syntax-id) (get branch :branch-syntax-id) (get (get body :source) :syntax-id))
+           (= (get owner :form-id) (get pattern-form :parent-form-id) (get body-form :parent-form-id))
+           (= (get row :source) (p15-s23-typed-source pattern-form)) (= (get row :branch-source) (get body :source) (p15-s23-typed-source body-form))
+           (= 0 (get pattern :depth) (get pattern :local-ordinal) (get pattern :root-local-ordinal))
+           (= [] (get pattern :path)) (= nil (get pattern :parent-ordinal) (get pattern :parent-local-ordinal))
+           (= (get pattern :ordinal) (get pattern :root-ordinal))
+           (= {:kind :match-branch :match-syntax-id (get (get node :source) :syntax-id) :clause-ordinal ordinal}
+              (get branch :conditional-region) (get (get body :evaluation) :region))
+           (= :evaluate-scrutinee-once (get branch :scrutinee-evaluation))
+           (= :conditionally-evaluate-selected-branch (get branch :branch-evaluation))
+           (= (get (get node :attributes) :authenticated-sh06-artifact-id) (get branch :authenticated-sh06-artifact-id) (get pattern :authenticated-sh06-artifact-id))
+           (= (get (get node :attributes) :sh06-semantic-projection-id) (get branch :sh06-semantic-projection-id) (get pattern :sh06-semantic-projection-id))
+           (= binder (get pattern :pattern-binding-id) (get row :pattern-binding-id))
+           (= (get branch :pattern-binding-scope-id) (get pattern :pattern-binding-scope-id) (get row :pattern-binding-scope-id))
+           (= (get branch :pattern-binding-use-syntax-ids) (get pattern :pattern-binding-use-syntax-ids))
+           (= (get branch :pattern-binding-ids) (if (= :binding kind) [binder] []))
+           (if (= :binding kind)
+             (p15-s23-typed-all [(symbol? name) (= name value) (= :lexical (get binding :binding-class))
+               (= (get binding :definition-syntax-id) (get pattern-form :syntax-id))
+               (= (get binding :scope-id) (get pattern-form :scope-id) (get branch :pattern-binding-scope-id))
+               (= :gravity.type/bool (get row :binding-type))])
+             (p15-s23-typed-all [(= nil binder (get branch :pattern-binding-scope-id) (get row :binding-type))
+                               (= [] (get branch :pattern-binding-use-syntax-ids))]))])
+      (let [uses (if (= :binding kind) (p15-s23-typed-match-uses context body-id binder (- budget fixed))
+                   {:status :complete :uses [] :work-count 0})
+            global (if (= :binding kind)
+                     (loop [remaining (get (get context :core) :nodes) out [] valid? true]
+                       (if (= 0 (count remaining)) {:uses out :valid? valid?}
+                         (let [use (first remaining) source (get use :source) form (get forms (get source :form-id))]
+                           (if (if (= :reference (get use :core-form)) (= binder (get (get use :attributes) :binding-id)) false)
+                             (recur (rest remaining) (conj out (get source :syntax-id))
+                               (if (p15-s23-typed-all [(= :gravity.type/bool (get (get context :types) (get use :node-id)))
+                                     (= name (get form :value)) (= :symbol (get form :kind)) (= source (p15-s23-typed-source form))]) valid? false))
+                             (recur (rest remaining) out valid?))))) {:uses [] :valid? true})
+            used (+ fixed (get uses :work-count 0))
+            active (if (= :binding kind) (assoc context :locals (assoc (get context :locals) binder name)
+                                                       :parameter-types (assoc (get context :parameter-types) binder :gravity.type/bool)) context)]
+        (if (= false (p15-s23-compiler-complete? uses)) uses
+        (if (p15-s23-typed-all [(= true (get global :valid?)) (= (get branch :pattern-binding-use-syntax-ids) (get uses :uses) (get global :uses))])
+          (let [compiled (p15-s23-typed-compile-node active body-id (- budget used))]
+            (if (p15-s23-compiler-complete? compiled)
+              (assoc (p15-s23-compiler-result {:instruction (get compiled :value) :kind kind :name name :selected selected :residual residual
+                                             :body-type tag}) :work-count (+ used (get compiled :work-count))) compiled))
+          (p15-s23-typed-node-error :typed-boolean-match-binding-uses-mismatch node))))
+      (p15-s23-typed-node-error :typed-boolean-match-branch-evidence-mismatch node))
+      (p15-s23-typed-node-error :unsupported-typed-boolean-pattern node)))))
+
+(defn p15-s23-typed-compile-boolean-match [context node budget]
+  (let [core (get context :core) id (get node :node-id) children (get node :children) attrs (get node :attributes)
+        all-branches (get core :match-branch-records) all-patterns (get core :match-pattern-records) all-skeletons (get core :match-decision-skeletons)
+        forms (get context :forms) owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+    (if (= false (p15-s23-typed-all [(vector? children) (vector? ids) (vector? all-branches) (vector? all-patterns) (vector? all-skeletons)]))
+      (p15-s23-typed-node-error :malformed-typed-boolean-match node)
+      (let [n (- (count children) 1) fixed (+ 32 (* 2 (+ (count all-branches) (count all-patterns) (count all-skeletons))))]
+        (if (< budget fixed) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+        (let [branches (p15-s23-typed-match-records all-branches :core-node-id id)
+              patterns (p15-s23-typed-match-records all-patterns :core-node-id id)
+              skeletons (p15-s23-typed-match-records all-skeletons :core-node-id id) skeleton (first skeletons)
+              rows (p15-s23-typed-boolean-match-rows (get context :ledger) id)
+              scrutinee (get (get context :nodes) (first children)) scrutinee-form (get forms (get ids 1)) operator (get forms (get ids 0))]
+          (if (p15-s23-typed-all [(contains? #{1 2} n) (= n (count branches) (count patterns) (count rows) (get attrs :branch-count))
+                (= 1 (count skeletons)) (= (+ 2 (* 2 n)) (count ids)) (= :list (get owner :kind)) (= :symbol (get operator :kind))
+                (= 'match (get operator :value)) (= [] (get operator :child-form-ids))
+                (= false (contains? attrs :guard-rule-version)) (= false (contains? attrs :guard-child-indexes))
+                (= (get owner :form-id) (get operator :parent-form-id) (get scrutinee-form :parent-form-id))
+                (= (get node :source) (p15-s23-typed-source owner)) (= (get scrutinee :source) (p15-s23-typed-source scrutinee-form))
+                (= (first children) (get scrutinee :node-id))
+                (= :gravity.type/bool (get (get context :types) (first children))) (= 0 (get attrs :scrutinee-child-index))
+                (= (p15-s23-typed-index-range 1 (+ n 1)) (get attrs :branch-child-indexes))
+                (= :scrutinee-then-source-ordered-pattern-candidates (get (get node :evaluation) :kind) (get attrs :evaluation-order))
+                (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
+                (= (get skeleton :core-node-id) id) (= (get skeleton :scrutinee-core-node-id) (first children))
+                (= (get skeleton :branch-core-node-ids) (subvec children 1 (count children)))
+                (= :source-ordered-pattern-candidates (get skeleton :selection-policy) (get attrs :selection-policy))
+                (= :not-asserted-by-sh07-b11 (get skeleton :runtime-reachability) (get attrs :runtime-reachability))
+                (= :pending-sh08 (get skeleton :result-type-join) (get attrs :result-type-join) (get skeleton :exhaustiveness) (get attrs :exhaustiveness))
+                (= (get skeleton :authenticated-sh06-artifact-id) (get attrs :authenticated-sh06-artifact-id))
+                (= (get skeleton :sh06-semantic-projection-id) (get attrs :sh06-semantic-projection-id))
+                (= (get node :resolved-binding-ids) (loop [remaining branches out []]
+                     (if (= 0 (count remaining)) out (recur (rest remaining) (p15-s23-typed-match-append out (get (first remaining) :pattern-binding-ids))))))])
+            (let [test (p15-s23-typed-compile-node (assoc context :tail? false) (first children) (- budget fixed))]
+              (if (p15-s23-compiler-complete? test)
+                (loop [index 0 domain [true false] out [] used (+ fixed (get test :work-count)) normal? false]
+                  (if (= index n)
+                    (if (if (= [] domain)
+                          (if (= :gravity.type/never (get (get context :types) id)) (= false normal?) normal?) false)
+                      (let [first-branch (get out 0) second-branch (get out 1)
+                            wrap (if (= n 1)
+                                   (if (= :binding (get first-branch :kind))
+                                     {:op :let :bindings [{:name (get first-branch :name) :expr (get test :value)}] :body [(get first-branch :instruction)]}
+                                     {:op :do :body [(get test :value) (get first-branch :instruction)]})
+                                   (let [second-ir (if (= :binding (get second-branch :kind))
+                                                     {:op :let :bindings [{:name (get second-branch :name) :expr {:op :literal :value (first (get second-branch :selected))}}]
+                                                      :body [(get second-branch :instruction)]} (get second-branch :instruction))]
+                                     {:op :if :test (get test :value)
+                                      :then (if (= true (first (get first-branch :selected))) (get first-branch :instruction) second-ir)
+                                      :else (if (= false (first (get first-branch :selected))) (get first-branch :instruction) second-ir)}))]
+                        (assoc (p15-s23-compiler-result wrap) :work-count used))
+                      (p15-s23-typed-node-error (if (= [] domain) :typed-boolean-match-result-type-mismatch :unsupported-partial-typed-boolean-match) node))
+                    (let [branch (p15-s23-typed-boolean-match-branch context node (get branches index) (get patterns index) (get rows index)
+                                                                  skeleton index domain (- budget used))]
+                      (if (p15-s23-compiler-complete? branch)
+                        (recur (+ index 1) (get (get branch :value) :residual) (conj out (get branch :value)) (+ used (get branch :work-count))
+                               (if (= :gravity.type/never (get (get branch :value) :body-type)) normal? true)) branch)))) test))
+            (p15-s23-typed-node-error :unsupported-or-mismatched-typed-boolean-match node))))))))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
     (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
       (if (if (map? node) (if (= nil type) false (= false (= :gravity.type/unknown type))) false)
+        (if (= form :match) (p15-s23-typed-compile-boolean-match context node budget)
         (if (= form :keyword-map-lookup) (p15-s23-typed-compile-keyword-lookup context node budget)
         (if (= form :loop) (p15-s23-typed-compile-loop context node budget)
         (if (= form :recur) (p15-s23-typed-compile-recur context node budget)
@@ -2308,7 +2492,7 @@
                         (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
                           {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
                 (p15-s23-typed-node-error :typed-control-shape-mismatch node))
-              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))))))))))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node)))))))))))))
         (p15-s23-typed-node-error :missing-typed-core-node node)))))
 
 (defn p15-s23-typed-provenance [context]
