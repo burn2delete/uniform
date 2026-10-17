@@ -1117,6 +1117,19 @@
        (= (get function :capabilities) (get module :capabilities))
        (= [:pending-sh09] (get function :thrown-error-effects))])))
 
+(defn body-normal-compatible? [actual expected]
+  (if (= actual :gravity.type/never) true (= actual expected)))
+
+(defn body-has-never? [ids types]
+  (loop [remaining ids]
+    (if (= 0 (count remaining)) false
+      (if (= :gravity.type/never (get types (first remaining))) true (recur (rest remaining))))))
+
+(defn body-call-result-valid? [node fact nominal types]
+  (let [actual (get types (get node :node-id))]
+    (if (= (get fact :result-type) actual)
+      (= actual (if (body-has-never? (get node :children) types) :gravity.type/never nominal)) false)))
+
 (defn body-function-joins-valid? [core typed bindings]
   (let [nodes (body-index (get core :nodes) :node-id) types (get typed :type-table)
         functions (body-index (get typed :function-type-table) :function-id)]
@@ -1131,7 +1144,7 @@
                                      :source-span (get function :source-span) :syntax-id (get function :syntax-id)
                                      :origin-chain (get function :origin-chain) :generated-origin (get function :generated-origin)
                                      :profile (get function :profile) :target (get function :target)))
-                 (= (get function :return) (get types (get record :body-core-node-id)))])
+                 (body-normal-compatible? (get types (get record :body-core-node-id)) (get function :return))])
             (recur (rest remaining) (+ ordinal 1)) false) false))))))
 
 (defn body-call-valid? [edge call fact nodes functions records bindings types]
@@ -1161,7 +1174,7 @@
        (= (get source :semantic-span) (get fact :source-span))
        (= (get source :origin-chain) (get fact :origin-chain))
        (= (get source :generated-origin) (get fact :generated-origin))
-       (= (get fact :result-type) (get target :return) (get types (get node :node-id)))
+       (body-call-result-valid? node fact (get target :return) types)
        (= (get fact :effects) (get target :latent-effects))
        (= (get fact :capabilities) (get target :capabilities))
        (= (get fact :profile) (get target :profile))
@@ -1176,7 +1189,8 @@
   (if (= (count ids) (count arguments) (count parameters))
     (loop [ids ids arguments arguments parameters parameters]
       (if (= 0 (count ids)) true
-        (if (= (get types (first ids)) (first arguments) (get (first parameters) :type))
+        (if (if (= (get types (first ids)) (first arguments))
+              (body-normal-compatible? (first arguments) (get (first parameters) :type)) false)
           (recur (rest ids) (rest arguments) (rest parameters)) false))) false))
 
 (defn body-call-joins-valid? [core typed bindings]
@@ -1225,7 +1239,7 @@
          (= :operator-then-arguments (get edge :evaluation-order) (get call :evaluation-order) (get fact :evaluation-order))
          (= (get source :syntax-id) (get fact :syntax-id)) (= (get source :semantic-span) (get fact :source-span))
          (= (get source :origin-chain) (get fact :origin-chain)) (= (get source :generated-origin) (get fact :generated-origin))
-         (= (get fact :result-type) (get target :return) (get types (get node :node-id)))
+         (body-call-result-valid? node fact (get target :return) types)
          (= (get fact :effects) (get target :latent-effects)) (= (get fact :capabilities) (get target :capabilities))
          (= (get fact :profile) (get target :profile)) (= (get fact :target) (get target :target))
          (= :pending-sh09-imported-body (get fact :effect-status)) (= :pending-imported-effects (get fact :legality-status))
@@ -1363,6 +1377,159 @@
     (if (= 0 (count remaining)) result
       (recur (rest remaining) (body-add (get (get graph (first remaining)) :transitive) result)))))
 
+; C7 owns loop type inference. C8 joins its retained equality premises back to
+; the original authenticated C6 control records and actual node types.
+(defn body-loop-row [premise node module]
+  (let [slot? (= :loop-slot-type (get premise :kind)) id (get node :node-id)
+        target (get premise :source-target) lhs (if slot? (get premise :binding-id) id)
+        rhs (if slot? (get premise :type) :gravity.type/never)]
+    {:constraint-id-request {:domain :gravity/sh08-loop-type-constraint-v1
+       :core-node-id id :binding-or-transfer lhs :target-id (get target :target-id) :premise premise}
+     :kind :equality :producer-rule :sh08-loop-target-types-v1 :lhs lhs :rhs rhs
+     :origin (get (get node :source) :origin-chain) :profile (get module :profile) :target (get module :target)
+     :dependencies {:loop-premise premise :core-node-id id :target-owner-core-node-id (get target :owner-core-node-id)}
+     :solution {:type rhs :slot-types (get premise :slot-types) :argument-types (get premise :argument-types)
+                :normal-transfer? (get premise :normal-transfer?)}
+     :invalidation [:loop-bindings :recur-targets :recur-transfers :type-table :binding-table]
+     :status :solved :diagnostics []}))
+
+(defn body-loop-slot-types [target bindings types]
+  (loop [ids (get target :binding-ids) out []]
+    (if (= 0 (count ids)) out
+      (recur (rest ids) (conj out (get types (get (get bindings (first ids)) :initializer-node-id)))))))
+
+(defn body-loop-arguments-valid? [arguments slots]
+  (if (= (count arguments) (count slots))
+    (loop [arguments arguments slots slots]
+      (if (= 0 (count arguments)) true
+        (if (if (contains? #{nil :gravity.type/unknown} (first slots)) false
+              (body-normal-compatible? (first arguments) (first slots)))
+          (recur (rest arguments) (rest slots)) false))) false))
+
+(defn body-loop-input-shapes? [core facts]
+  (if (body-all? [(vector? (get core :loop-bindings)) (vector? (get core :recur-targets))
+                  (vector? (get core :recur-transfers)) (vector? (get facts :constraint-ledger))])
+    (if (body-all? [(body-maps? (get core :loop-bindings)) (body-maps? (get core :recur-targets))
+                    (body-maps? (get core :recur-transfers)) (body-maps? (get facts :constraint-ledger))])
+      (if (loop [remaining (get core :recur-targets)]
+            (if (= 0 (count remaining)) true
+              (let [target (first remaining) arity (get target :arity)]
+                (if (if (integer? arity)
+                      (if (vector? (get target :binding-ids))
+                        (if (<= 0 arity) (<= arity 65536) false) false) false)
+                  (recur (rest remaining)) false))))
+        (if (loop [remaining (get core :loop-bindings)]
+              (if (= 0 (count remaining)) true
+                (let [ordinal (get (first remaining) :ordinal)]
+                  (if (if (integer? ordinal) (if (<= 0 ordinal) (< ordinal 65536) false) false)
+                    (recur (rest remaining)) false))))
+          (loop [remaining (get core :recur-transfers)]
+            (if (= 0 (count remaining)) true
+              (if (vector? (get (first remaining) :argument-node-ids))
+                (recur (rest remaining)) false))) false) false) false) false))
+
+(defn body-loop-rows [core facts budget]
+  ; Charge each slot row and each transfer/argument/slot visit before traversal.
+  ; This extends the existing logical work counter, not a total CPU bound.
+  (let [nodes (body-index (get core :nodes) :node-id) types (get facts :type-table)
+        targets (body-index (get core :recur-targets) :target-id)
+        bindings (body-index (get core :loop-bindings) :binding-id) module (get facts :module)]
+    (loop [remaining (get core :loop-bindings) transfers (get core :recur-transfers) rows [] work 0]
+      (if (> (count remaining) 0)
+        (if (>= work budget) (body-failure :body-deferred-work-limit)
+          (let [binding (first remaining) id (get binding :initializer-node-id) node (get nodes id)
+                loop-node (get nodes (get binding :loop-core-node-id))
+                target (get targets (get (get loop-node :attributes) :target-id)) type (get types id)
+                premise {:kind :loop-slot-type :binding-id (get binding :binding-id) :initializer-node-id id
+                         :type type :source-loop-binding binding :source-target target :status :solved}]
+            (if (body-all? [(= :loop (get target :target-kind) (get loop-node :core-form))
+                            (= (get binding :loop-core-node-id) (get target :owner-core-node-id))
+                            (= (get binding :binding-id) (get (get target :binding-ids) (get binding :ordinal)))
+                            (= id (get (get loop-node :children) (get binding :ordinal)))
+                            (= false (contains? #{nil :gravity.type/unknown} type))])
+              (recur (rest remaining) transfers (conj rows (body-loop-row premise node module)) (+ work 1))
+              (body-failure :incoherent-loop-slot-type-origin-join))))
+          (if (> (count transfers) 0)
+            (let [transfer (first transfers) id (get transfer :recur-core-node-id) node (get nodes id)
+                  target (get targets (get transfer :target-id))
+                  cost (+ 1 (count (get transfer :argument-node-ids)) (count (get target :binding-ids)))]
+              (if (> cost (- budget work)) (body-failure :body-deferred-work-limit)
+              (let [slots (body-loop-slot-types target bindings types)
+                  arguments (loop [ids (get transfer :argument-node-ids) out []]
+                              (if (= 0 (count ids)) out (recur (rest ids) (conj out (get types (first ids))))))
+                  premise {:kind :loop-recur-type :source-transfer transfer :source-target target
+                           :argument-types arguments :slot-types slots :result-type :gravity.type/never
+                           :normal-transfer? (= false (contains? (set arguments) :gravity.type/never)) :status :solved}]
+              (if (body-all? [(= :loop (get transfer :target-kind) (get target :target-kind))
+                              (= :recur (get node :core-form)) (= :gravity.type/never (get types id))
+                              (= (get transfer :argument-node-ids) (get node :children))
+                              (= (get target :binding-ids) (get node :resolved-binding-ids))
+                              (= (get transfer :arity) (get target :arity) (count arguments) (count slots))
+                              (= (get transfer :target-id) (get (get node :attributes) :target-id))
+                              (= true (get transfer :tail-position))
+                              (body-loop-arguments-valid? arguments slots)])
+                (recur remaining (rest transfers) (conj rows (body-loop-row premise node module))
+                       (+ work cost))
+                (body-failure :incoherent-loop-transfer-type-origin-join)))))
+            {:status :accepted :rows rows :work-count work})))))
+
+(defn body-loop-joins [core facts budget]
+  (if (body-loop-input-shapes? core facts)
+    (if (body-all?
+          [(= (body-project core [:loop-bindings :recur-targets :recur-transfers])
+              (body-project (get core :identity-preimage) [:loop-bindings :recur-targets :recur-transfers]))
+           (= (count (get core :loop-bindings)) (count (body-index (get core :loop-bindings) :binding-id)))
+           (= (count (get core :recur-targets)) (count (body-index (get core :recur-targets) :target-id)))
+           (= (count (get core :recur-transfers)) (count (body-select (get core :nodes) :core-form :recur)))
+           (= (count (get core :recur-transfers)) (count (body-index (get core :recur-transfers) :recur-core-node-id)))
+           (= (set (keys (body-index (get core :recur-transfers) :recur-core-node-id)))
+              (set (keys (body-index (body-select (get core :nodes) :core-form :recur) :node-id))))
+           (= (count (body-select (get core :recur-targets) :target-kind :loop))
+              (count (body-select (get core :nodes) :core-form :loop)))])
+      (let [result (body-loop-rows core facts budget)]
+        (if (= :accepted (get result :status))
+          (let [actual (body-select (get facts :constraint-ledger) :producer-rule :sh08-loop-target-types-v1)]
+            (if (if (= (count actual) (count (get result :rows))) (= (set actual) (set (get result :rows))) false)
+              result (body-failure :incoherent-loop-constraint-ledger))) result))
+      (body-failure :incomplete-loop-control-coverage))
+    (body-failure :incomplete-loop-control-tables)))
+
+(defn body-loop-body-indexes-valid? [indexes arity child-count]
+  (if (if (vector? indexes) (if (integer? arity) (integer? child-count) false) false)
+    (if (if (<= 0 arity) (if (< arity child-count) (<= child-count 65536) false) false)
+      (if (= (count indexes) (- child-count arity))
+        (loop [remaining indexes expected arity]
+          (if (= 0 (count remaining)) true
+            (if (if (integer? (first remaining)) (= expected (first remaining)) false)
+              (recur (rest remaining) (+ expected 1)) false))) false) false) false))
+
+(defn body-loop-values-valid? [core facts]
+  (let [types (get facts :type-table) targets (body-index (get core :recur-targets) :target-id)]
+    (loop [remaining (get core :nodes)]
+      (if (= 0 (count remaining)) true
+        (let [node (first remaining) children (get node :children) attrs (get node :attributes)
+              target (get targets (get attrs :target-id))]
+          (if (if (= :loop (get node :core-form))
+                (if (if (map? target)
+                      (body-loop-body-indexes-valid? (get attrs :body-child-indexes) (get target :arity) (count children)) false)
+                (body-all? [(= :loop (get target :target-kind))
+                            (= (get node :node-id) (get target :owner-core-node-id))
+                            (= (get node :resolved-binding-ids) (get target :binding-ids))
+                            (= (get target :arity) (get attrs :binding-count))
+                            (> (count children) (get target :arity))
+                            (> (count (get attrs :body-child-indexes)) 0)
+                            (= (get types (get node :node-id))
+                               (if (body-has-never? children types) :gravity.type/never
+                                 (get types (get children (- (count children) 1)))))]) false) true)
+            (recur (rest remaining)) false))))))
+
+(defn body-loop-body-ids [node core]
+  (let [target (body-by (get core :recur-targets) :target-id (get (get node :attributes) :target-id))
+        owner (body-by (get core :nodes) :node-id (get target :owner-core-node-id))]
+    (loop [indexes (get (get owner :attributes) :body-child-indexes) out []]
+      (if (= 0 (count indexes)) out
+        (recur (rest indexes) (conj out (get (get owner :children) (first indexes))))))))
+
 (defn body-conditional-coverage [node]
   (let [kind (get node :core-form) children (get node :children) attrs (get node :attributes)]
     (if (contains? #{:if :match} kind)
@@ -1402,7 +1569,10 @@
       (if (contains? #{:literal :quote :reference} kind) (= [] children)
         (if (contains? #{:def :fn} kind) (= 1 (count children))
           (if (= :if kind) (= 3 (count children))
-            (contains? #{:collection-literal :let :do :call :match} kind)))) false)))
+            (if (= :recur kind)
+              (if (= :loop (get (get node :attributes) :target-kind))
+                (sh09-sha256-id? (get (get node :attributes) :target-id)) false)
+              (contains? #{:collection-literal :let :do :call :match :loop} kind))))) false)))
 
 (defn body-order-valid? [node]
   (let [kind (get node :core-form) children (get node :children) order (get (get node :evaluation) :order)
@@ -1438,6 +1608,24 @@
           :function-id (get proof :identity-function-syntax-id) :body-core-node-id target
           :callable-parameter-binding-id (get proof :apply-callable-binding-id) :source-edge (body-edge-projection edge)}) base)))
 
+(defn body-control-node-record [node target graph type facts edge core]
+  (let [base (body-local-node-record node target graph type facts edge)]
+    (if (= :recur (get node :core-form))
+      (let [bodies (body-loop-body-ids node core)
+            transfer (body-by (get core :recur-transfers) :recur-core-node-id (get node :node-id))
+            target-record (body-by (get core :recur-targets) :target-id (get transfer :target-id))
+            effects (body-add (body-node-effects bodies graph) (get base :transitive))]
+        (assoc base :dependencies (body-add bodies (get base :dependencies))
+          :loop-backedge {:target-id (get transfer :target-id) :body-core-node-ids bodies
+                          :argument-core-node-ids (get transfer :argument-node-ids)
+                          :source-transfer transfer :source-target target-record}
+          :transitive effects :escaping effects)) base)))
+
+(defn body-loop-summary-graph [graph ids summaries]
+  (loop [remaining ids graph graph]
+    (if (= 0 (count remaining)) graph
+      (recur (rest remaining) (assoc graph (first remaining) {:transitive (get summaries (first remaining))})))))
+
 (defn body-derive-nodes-pass [core typed foreign budget recursive summary]
   (let [edges (body-index (get core :call-edges) :call-core-node-id)
         functions (body-index (get typed :function-type-table) :function-id)]
@@ -1453,16 +1641,21 @@
               imported (get foreign (get edge :callee-binding-id))
               target (if (= kind :call) (if (= imported nil) (get function :body-core-node-id) nil) nil)
               backedge? (= id (get recursive :recursive-call-core-node-id))
-              deps (if (if (= target nil) true backedge?) (get node :children) (conj (get node :children) target))]
+              bodies (if (= kind :recur) (body-loop-body-ids node core) [])
+              loop-cut? (if (= kind :recur) (contains? recursive :loop-summaries) false)
+              deps (if (if (= target nil) true backedge?) (get node :children) (conj (get node :children) target))
+              deps (if loop-cut? deps (body-add bodies deps))]
           (if (if (body-node-supported? node) (body-order-valid? node) false)
             (if (if (= kind :call) (if (map? imported) true (map? function))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
                        (assoc graph id (if (= imported nil)
-                                         (body-local-node-record node target
-                                           (if backedge? (assoc graph target {:transitive summary}) graph)
-                                           (get (get typed :type-table) id) typed edge)
+                                         (body-control-node-record node target
+                                           (body-loop-summary-graph
+                                             (if backedge? (assoc graph target {:transitive summary}) graph)
+                                             (if loop-cut? bodies []) (get recursive :loop-summaries))
+                                           (get (get typed :type-table) id) typed edge core)
                                          (body-foreign-node-record node imported graph (get (get typed :type-table) id))))
                        (+ progress 1) rounds (+ work 1))
                 (recur (rest pending) (conj deferred node) graph progress rounds (+ work 1)))
@@ -1481,10 +1674,11 @@
               imported (get foreign (get edge :callee-binding-id))
               target (if (= :call (get node :core-form))
                        (if (= imported nil) (get (body-selected-function edge facts functions) :body-core-node-id) nil) nil)
-              deps (if (= target nil) (get node :children) (conj (get node :children) target))]
+              deps (if (= target nil) (get node :children) (conj (get node :children) target))
+              deps (if (= :recur (get node :core-form)) (body-add (body-loop-body-ids node core) deps) deps)]
           (if (if (body-ready? deps graph)
                 (= (get graph id)
-                   (if (= imported nil) (body-local-node-record node target graph (get (get facts :type-table) id) facts edge)
+                   (if (= imported nil) (body-control-node-record node target graph (get (get facts :type-table) id) facts edge core)
                      (body-foreign-node-record node imported graph (get (get facts :type-table) id)))) false)
             (recur (rest remaining)) false))))))
 
@@ -1537,6 +1731,49 @@
             (body-failure :body-deferred-work-limit))) classified)
       (body-failure :untrusted-recursive-body-proof))))
 
+(defn body-loop-summary [core graph]
+  (loop [remaining (get core :recur-transfers) out {}]
+    (if (= 0 (count remaining)) out
+      (let [node (body-by (get core :nodes) :node-id (get (first remaining) :recur-core-node-id))
+            out (loop [ids (body-loop-body-ids node core) out out]
+                  (if (= 0 (count ids)) out
+                    (recur (rest ids) (assoc out (first ids) (get (get graph (first ids)) :transitive #{})))))]
+        (recur (rest remaining) out)))))
+
+(defn body-derive-loop-nodes [core facts foreign budget]
+  (let [size (count (get core :nodes)) proof (get facts :recursive-proof {})
+        classified (if (<= size budget) (body-classify-nodes core facts) (body-failure :body-deferred-work-limit))
+        joined (if (= :accepted (get classified :status))
+                 (body-loop-joins core facts (- budget size)) classified)]
+    (if (if (contains? facts :recursive-proof) (body-recursive-proof-valid? core facts) true)
+      (if (= :accepted (get joined :status))
+        (if (body-loop-values-valid? core facts)
+          (loop [functions (body-function-bottom facts) summaries (body-loop-summary core {})
+                 work (+ size (get joined :work-count)) rounds 0]
+            (if (if (< rounds 65536) (< work budget) false)
+              (let [derived (body-derive-nodes-pass core facts foreign (- budget work)
+                              (assoc proof :loop-summaries summaries) (get functions (get proof :function-syntax-id)))
+                    used (+ work (get derived :work-count 0))
+                    next-functions (if (= :accepted (get derived :status)) (body-function-summary facts (get derived :nodes)) {})
+                    next (if (= :accepted (get derived :status)) (body-loop-summary core (get derived :nodes)) {})]
+                (if (= :accepted (get derived :status))
+                  (if (if (= summaries next) (= functions next-functions) false)
+                    (let [final (body-derive-nodes-pass core facts foreign (- budget used)
+                                  (assoc proof :loop-summaries next) (get next-functions (get proof :function-syntax-id)))
+                          total (+ used (get final :work-count 0) size)]
+                      (if (= :accepted (get final :status))
+                        (if (<= total budget)
+                          (if (body-all? [(= next (body-loop-summary core (get final :nodes)))
+                                          (= next-functions (body-function-summary facts (get final :nodes)))
+                                          (body-graph-equations-valid? core facts foreign (get final :nodes))])
+                            (assoc final :work-count total :fixed-point-rounds (+ rounds 1))
+                            (body-failure :loop-effect-equations-mismatch))
+                          (body-failure :body-deferred-work-limit)) final))
+                    (recur next-functions next used (+ rounds 1))) derived))
+              (body-failure :body-deferred-work-limit)))
+          (body-failure :incoherent-loop-result-type)) joined)
+      (body-failure :untrusted-recursive-body-proof))))
+
 (defn body-derive-nodes [core facts]
   (body-derive-nodes-with-foreign core facts {} 65536))
 
@@ -1567,12 +1804,18 @@
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
               (body-local-joins-valid? core facts bindings) false) false) false)
-        (let [derived (if (contains? facts :recursive-proof)
+        (let [loop? (> (count (body-select (get core :nodes) :core-form :loop)) 0)
+              derived (if loop? (body-derive-loop-nodes core facts foreign budget)
+                        (if (contains? facts :recursive-proof)
                         (body-derive-recursive-nodes core facts foreign budget)
-                        (body-derive-nodes-with-foreign core facts foreign budget))]
+                        (body-derive-nodes-with-foreign core facts foreign budget)))]
           (if (= :accepted (get derived :status))
             {:status :accepted
-             :graph (let [graph (body-build-graph core facts (get derived :nodes))]
+             :graph (let [graph (body-build-graph core facts (get derived :nodes))
+                          graph (if loop? (assoc graph :loop-fixed-point
+                                  {:algorithm :bottom-initialized-bounded-effect-union
+                                   :round-count (get derived :fixed-point-rounds) :equations :checked
+                                   :recur-transfers (get core :recur-transfers)}) graph)]
                       (if (contains? facts :recursive-proof)
                         (assoc graph :recursive-fixed-point {:algorithm :bottom-initialized-bounded-effect-union
                           :round-count (get derived :fixed-point-rounds) :equations :checked

@@ -52,6 +52,14 @@ Explicit `:dev-test` selections use test resources on the classpath without a
 manifest authority entry; unknown namespaces and unmatched selectors fail.
 Use a fresh JVM after compiler source changes to avoid stale process-local plans.
 
+Selectors apply across all selected namespaces. A global regex can therefore
+select more than the exact vars added to a mixed batch; use exact selections
+when combining different-cost checks. In the SH08 function-test namespace,
+`*-c8-composition` tests construct the public C8 module bundle even though their
+inputs are normalized DATA. They are integration checks, not fast
+`*-development-kernel` tests. Their bodies and coverage remain available;
+renaming them does not require replaying an unchanged expensive proof.
+
 ### Ordinary module dependencies
 
 L3/C5 module resolution consumes real callee artifacts. Namespace names,
@@ -92,6 +100,68 @@ Run the affected real module composition when import behavior or its artifact
 interface changes. Local artifact verification checks the supplied semantic
 inputs; it does not admit a module revision, refresh historical migration
 proofs, or establish imported-call typing, execution or self-hosting support.
+
+### Loop/recur type development
+
+The existing owning pass is
+`bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
+Its internal `sh08-ft-loop-type-step` consumes canonical C6 nodes, bindings,
+targets and transfers plus current type/binding tables and the remaining
+record-visit budget. Its DATA result contains bindings, constraints, issues and
+work counts. `sh08-ft-normal-return-type` joins ordered child types with a
+nominal type. C7 retains input authentication, inference orchestration and
+diagnostic rendering; calling an internal kernel does not grant acceptance.
+The optional `gravity.types` extraction is deferred, not a prerequisite for
+this semantic increment. There is one implementation, in the actual C7 source.
+
+Run those current-source kernels directly for fast feedback:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact normal-return-bottom-development-kernel \
+  --exact loop-working-core-retains-authenticated-bindings-development-kernel \
+  --exact loop-slot-transfer-development-kernel \
+  --exact zero-slot-nested-nearest-development-kernel \
+  --exact function-target-pending-is-not-forgery-development-kernel \
+  --exact loop-effect-backedge-development-kernel
+```
+
+These tests use the existing single-source compiler interface on the exact C7
+source, not a stripped source or a raw root projected from a module bundle.
+The kernels use normalized records, not authoritative source evidence.
+The production adapter joins the separately authenticated bindings into a
+private loop-analysis view; it does not add fields to published canonical core.
+`Never` means no normal return; unknown evidence is not `Never`. Loop slots
+derive from sequential initializers, and recur arguments must match their
+individual target slots without coercion. A never-returning argument does not
+produce a mismatched transfer value. Ordinary `if` retains L2 truthiness, and
+function construction does not execute its body. Function-target recur remains
+a separately unsupported typing increment, not malformed C6 by itself.
+
+`gravity.effects` owns the corresponding C8 body-effect equations. A recur
+backedge returns to the target's body, not its initializers. Its focused check
+joins the retained C7 slot/transfer premises to C6 control records, starts effect
+summaries at bottom and checks the final equations within the existing logical
+work budget. This is development feedback, not a termination or runtime-cost
+proof.
+
+After changing C7 inference or its namespace boundary, validate the affected
+real C5/C6/C7/C8 composition and execute the same source bytes through the
+existing seed interface:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact loop-recur-authenticated-paired-composition
+```
+
+The separate `loop-c6-controls-precede-types-current-source` selector exercises
+the original source-level C6 rejection boundary. It is deliberately not named
+as a development kernel: it constructs upstream products and is slower than
+the normalized leaf checks. Run it when that composition boundary is affected,
+not on every leaf edit. Leaf kernels alone do not establish real composition,
+program termination, effect legality, migration or self-hosting completion.
 
 ### Imported-call type development
 
@@ -448,6 +518,21 @@ stale frozen authority claim. Source, dependency, tool and policy changes still
 conservatively invalidate prior authoritative evidence. Record implemented
 behavior and focused results separately from migration and release status.
 
+For example, `sh07-b47-c7-stage2-plan-identity-is-exact` in
+`sh07_c7_type_source_coverage_test.clj` pins a historical C7 source revision,
+247 functions and exact plan/function hashes. It is a migration identity check,
+not the current C7 semantic loader. Do not refresh those pins or rebuild that
+proof before a local type-rule edit. Changed source conservatively invalidates
+its current-authority claim. Independent current-source checks in the same
+file, such as control-form arities, remain applicable; this is not a blanket
+exclusion of the test namespace. Current C7 semantic tests must execute the
+actual dependency bundle and retain private-kernel regression coverage.
+Ordinary record/match fixture checks compare that bundle's retained root source
+path/text with the current file and inspect its actual function members. They
+must not require refreshing a stale source-byte/hash golden merely to run a
+semantic regression. Keep fixture parity, current-source fidelity and semantic
+negative checks; retain exact historical fingerprints in their migration tests.
+
 The stage2 interpreter's existing pure DATA predicates, collection operations,
 integer quotient and vector slicing are ordinary execution facilities, not
 plan-admission gates. Inspecting an argument with `map?` or `contains?` does
@@ -518,17 +603,31 @@ construction phase dominates. Use direct kernels for iteration and this
 affected composition for interface changes; adding scheduling machinery would
 not remove its product-construction work.
 
-Bounded follow-up: measure one existing authentic-composition test on one
+Bounded follow-up: observe one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity
-build/replay/resolve, canonicalization/hashing, and final fresh verification;
-report phase time, allocated/retained bytes, DATA occurrences versus unique
-objects, and canonical byte totals where observable. Use the existing test
-and runner, not another lane or wrapper. Propose representation changes only
-from those measurements, preserving identities/equivalence and negative tests.
+build/replay/resolve, canonicalization/hashing, and final fresh verification
+only as needed for the concrete decision. Phase time, allocated/retained bytes,
+DATA occurrences versus unique objects, and canonical byte totals are useful
+where observable; collecting every metric is not a prerequisite to fixing a
+directly observed construction failure. Use existing interfaces and tests, not
+another lane or wrapper. Justify the changed representation or lifetime from
+that evidence and preserve identities/equivalence and negative tests.
 Do not substitute child hashes for embedded DATA, cache accepted proofs, or
 change wire formats in this simplification. Heavy runs should answer a concrete
 representation or migration question, not refresh historical receipts merely
 because another development commit exists.
+
+For example, the current loop-type composition failed at the 2 GiB limit before
+semantic assertions. Narrowing to the ordinary C2 reader and observing the
+printer's caller identified `p15-s23-c6c10-canonical-record` materializing its
+complete canonical text during SH03 digest resolution. The digest caller only
+needs a hash; the identity caller separately discards that text. This is
+product-construction work, not scheduling overhead. A bounded correction may
+avoid those unused strings while preserving the record API, exact canonical
+form, UTF-8 bytes, hashes, limits and diagnostics. Require focused legacy/new
+parity and the specifically failing source boundary at the unchanged heap;
+do not infer a general allocation bound, speedup or semantic pass from the
+identified callsite or a proposed streaming implementation.
 
 ```bash
 clojure -M tools/validate_gravity_docs.clj

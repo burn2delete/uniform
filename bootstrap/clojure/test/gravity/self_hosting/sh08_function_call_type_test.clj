@@ -991,7 +991,7 @@
       (is (= ["C7-ANNOTATION" :structural-match-residual-limit :bounded-correlated-constructor-product]
              ((juxt :rule :reason :expected) overflow))))))
 
-(deftest sh08-pattern-alias-c8-development-kernel
+(deftest sh08-pattern-alias-c8-composition
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
   (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
         invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
@@ -1423,7 +1423,7 @@
       (is (= [] (get-in checked [:constraints 0 :matched-shapes])))
       (is (seq (get-in checked [:constraints 0 :structurally-matched-shapes]))))))
 
-(deftest sh08-quoted-data-c8-development-kernel
+(deftest sh08-quoted-data-c8-composition
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
   (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
         invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
@@ -1471,7 +1471,7 @@
                   diagnostic (:diagnostic (invoke-c7 'sh08-sm-check [group bad-types functions {:profile :meta}]))]
               (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))))))))
 
-(deftest sh08-root-map-guard-c8-development-kernel
+(deftest sh08-root-map-guard-c8-composition
   ;; Normalized compiled C7/C8 oracle; actual source verification is separate.
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
   (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
@@ -1871,7 +1871,7 @@
     (is (= (slurp (fixture-path "rejected" basename ".gravity"))
            (slurp (fixture-path "rejected" basename ".qst"))))))
 
-(deftest sh08-structural-match-c8-ledger-development-kernel
+(deftest sh08-structural-match-c8-ledger-composition
   ;; Current compiled algorithms on normalized inputs, not source admission.
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
   (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
@@ -2031,7 +2031,7 @@
       (is (= (first bodies) (get-in diagnostic [:node :node-id]))))
     (is (false? (invoke-c7 'sh08-ft-match-preimage-valid? [core (assoc core :match-pattern-records []) nil])))))
 
-(deftest sh08-boolean-match-c8-ledger-development-kernel
+(deftest sh08-boolean-match-c8-ledger-composition
   ;; Normalized identity/verifier oracle for the final equality representation;
   ;; no new authenticated-source evidence is manufactured here.
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)

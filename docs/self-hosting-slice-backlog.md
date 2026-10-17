@@ -532,9 +532,11 @@ remain in `gravity.self-hosting.sh08-function-call-type-test`:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-structural-match-shape-development-kernel \
-  --exact sh08-structural-match-inference-development-kernel \
-  --exact sh08-structural-match-c8-ledger-development-kernel
+  --exact sh08-structural-match-inference-development-kernel
 ```
+
+`sh08-structural-match-c8-ledger-composition` is a separate, costly public C8
+bundle check, not an inner-loop kernel.
 
 Run `sh08-structural-match-authenticated-source-composition` when changing the
 C5/C6-to-C7 composition or C8 handoff. It uses the existing accepted
@@ -635,9 +637,11 @@ function-call test namespace for fast guard feedback:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-root-map-guard-development-kernel \
-  --exact sh08-root-map-guard-literal-development-kernel \
-  --exact sh08-root-map-guard-c8-development-kernel
+  --exact sh08-root-map-guard-literal-development-kernel
 ```
+
+Use `sh08-root-map-guard-c8-composition` separately when its C8 handoff is
+affected; it constructs the public C8 bundle.
 
 The source-ready group passed seven tests and 198 assertions, including
 structural, Boolean, atomic-signature and legacy-call regressions. The actual
@@ -709,9 +713,10 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-pattern-alias-development-kernel \
   --exact sh08-pattern-alias-correlations-development-kernel \
-  --exact sh08-pattern-alias-limit-development-kernel \
-  --exact sh08-pattern-alias-c8-development-kernel
+  --exact sh08-pattern-alias-limit-development-kernel
 ```
+
+`sh08-pattern-alias-c8-composition` is the separate public C8 bundle check.
 
 The final focused group passed 11 tests and 241 assertions, including selected
 structural, Boolean, guard, signature, call-chain and C8 regressions. The
@@ -797,9 +802,11 @@ clojure -J-Xmx2g -M:dev-test \
   --exact sh08-quoted-data-authentication-development-kernel \
   --exact sh08-quoted-data-work-budget-development-kernel \
   --exact sh08-quoted-data-structural-development-kernel \
-  --exact sh08-quoted-data-guard-development-kernel \
-  --exact sh08-quoted-data-c8-development-kernel
+  --exact sh08-quoted-data-guard-development-kernel
 ```
+
+Run `sh08-quoted-data-c8-composition` separately for affected C8 integration;
+it is not a cheap quoted-data kernel.
 
 The stable focused group passed 17 tests and 399 assertions, including selected
 atomic, structural, alias, guard, Boolean and call-chain regressions. Independent
@@ -1406,6 +1413,117 @@ Only the existing root-entry membership guard changes in production. Old seed
 fixtures, public cross-module visibility and unchanged expensive compiler
 proofs were not rewritten or replayed. Authoritative migration, target support,
 compiler seed retirement, self-hosting and seedless release remain outstanding.
+
+### Loop-target recur typing
+
+The development increment implements loop-slot and normal-return kernels
+in the existing Gravity C7 pass, which retains authentication, inference
+orchestration and diagnostic ownership. The intended subset uses monomorphic
+loop slots from sequential initializers, exact recur argument types, and `Never` for transfers
+that do not return normally. C8 derives body-only backedges and bottom-initialized
+effect equations; initializers must not be restarted by recur. Function-target
+recur typing remains a separate next increment. Ordinary `if` truthiness is
+unchanged.
+
+Focused normalized checks, current-source fidelity, inference regressions and
+existing effect regressions pass 25 tests/335 assertions. A separate
+current-source C6 precedence check passes one test/seven
+assertions. Its earlier four failures were an assertion-path mistake: the C6
+reason is under `:facts`, not at the diagnostic top level. The failed receipt
+is retained separately, not relabeled as passing. The slower source selector
+is explicitly separate from the fast development-kernel selectors.
+
+The real paired composition first failed during upstream product construction
+at the unchanged 2 GiB heap. Direct ordinary C2 calls reproduced the allocation
+failure without C5 or bundle construction. These failed results confer no loop,
+runtime, migration or self-hosting credit. The detailed failed-attempt history
+remains in the original command outputs, not as prerequisites for development.
+
+The separately reviewed enabling commit `1e2e6f5c` removes discarded canonical
+text, duplicate canonical-form construction, a discarded terminal request walk
+and redundant private canonical history. It preserves public canonical text,
+fixed UTF-8 hashing, fresh validation, complete products, diagnostics and both
+canonical and host-container collision checks. Required digest uniqueness
+already rejects equal canonical forms: equal forms have equal fixed encoding
+bytes and deterministic hashes; no hash-injectivity assumption is needed.
+Focused checks pass 15 tests/335 assertions, including full-result parity,
+encoding/print settings, rejection precedence, collisions, repeat-call freshness
+and primary/cleanup failures. An earlier test-observer mistake remains a
+separate failed result. These overlapping helper results are not added to the
+loop counts above.
+
+A bounded recording of a failed C2 call showed fresh precomputed-product
+verification overlapping the original products, not a scheduling or lock
+failure. Allocation samples do not establish exact retained dominators. The
+corrected ordinary C2 constructor subsequently returned on the then-current C7 draft
+source at 2 GiB: 366.111 seconds inside the call, exit 0. This is constructor
+completion, not a general memory bound, speedup, loop acceptance or migration.
+The enabling fix does not cache accepted proofs, omit products, increase bounds
+or introduce a new test lane. No repeated C2 confirmation is needed for unchanged
+inputs. Product-representation redesign remains separate unless an actual
+integration blocker requires it; ordinary semantic edits do not depend on this
+investigation.
+
+A later paired selector reached its thirty-minute operational limit
+without completing. The exact owned JVM exited on TERM (exit 143); its timing
+receipt was absent. No completed assertion counts, language rejection or
+current execution phase can be inferred. Static inspection finds sixteen
+public C7 calls and seventeen full bundle constructions on complete traversal,
+but does not establish where the live attempt spent its time. A separate
+ten-minute, 2 GiB phase observation also stopped incomplete (TERM, exit 143).
+It captured early initial-construction events through its 64-event cap, but
+no return boundary or final observer status. Later phase attribution and cost
+ratios remain unresolved. No further timing-only retry, larger allowance or
+validation-policy change follows.
+
+Independent source inspection found a discarded SH05 verification result inside
+C5 construction. Commit `a9c39502` removes only that unused call; consumed parent,
+request and final-replay checks and source snapshots remain. Focused comparison
+with the restored-call oracle passes three tests/27 assertions for complete
+artifacts, serialization, diagnostics, fresh next-invocation checks, forged and
+stale inputs, malformed context and interruption. This is a local simplification,
+not measured speedup or loop acceptance. The existing single bundle-construction
+selector was a separate affected integration check, not the full sixteen-call
+loop selector or evidence of its semantic result. It was cancelled incomplete
+before its limit when this optional extraction was deferred; it produced no
+completed counts or timing receipt and is not a compiler rejection.
+
+The optional, unaccepted `gravity.types` extraction is deferred. It made compiler
+code compilation require the full multi-module C5 bundle path before this local
+semantic change could be tested. Keeping the single kernel implementation in
+the already stage-owned Gravity C7 namespace uses the existing single-source
+interface instead. This is a real production-source change with local calls,
+not import stripping, a raw-root bypass, duplicated kernels or a new test lane.
+The accepted `gravity.effects` boundary and all user-artifact authentication,
+fresh result verification and hostile cases remain required. Gradual namespace
+extraction remains planned; it is not a per-increment admission prerequisite.
+
+The first real composition after this simplification exposed a binding join:
+the authenticated request retains bindings separately from canonical core,
+whereas the normalized kernel fixture embedded them. A private C7 working view
+now joins the already-authenticated vector for loop analysis only; published
+core, request, identity and public schemas remain unchanged. Missing, malformed,
+empty and forged-scope binding tables still reject without a fallback.
+
+The corrected, unreduced paired composition passes one test/53 assertions. It
+authenticates both `.gravity` and `.qst` source products through C5/C6 and current
+C7 construction/fresh verification, preserves the complete request binding,
+and constructs/freshly verifies the C8 effect leaf. Both exact source files
+execute through the existing seed interface, return `7`, and observe the recur
+transfer `[false 7]`. Wrong slot and declared return types reject with
+`C7-TYPE-MISMATCH`; tampered type facts, constraints, bindings and effect graphs
+reject. The earlier missing-binding failure remains a separate failed result.
+The 25/335 focused group overlaps earlier kernel batches and must not be summed
+with them. The paired check took about 489 seconds of selected execution at
+2 GiB; this is an observation, not a speedup or memory-bound claim.
+
+This supports the stated monomorphic loop-target subset, not function-target
+recur, general coercions or joins, termination, tail-call optimization, native
+target support, public C8 module-bundle acceptance, authoritative migration,
+self-hosting or seedless release. Independent semantic/evidence review accepts
+this bounded development slice. Documentation, roadmap, source-language and
+Clojure physical-line gates pass; the local slice commit is separate from
+authoritative admission and those outstanding claims.
 
 ## Current Baseline
 

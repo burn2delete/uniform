@@ -115,26 +115,22 @@
 (defn- verification-result [request input-definition descriptor candidate]
   (invoke-c7 'sh08-verify-record-access-match-typing-result
              [request descriptor-definition input-definition descriptor candidate]))
-(defn- sha256 [text]
-  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
-    (format "%064x" (BigInteger. 1 (.digest digest (.getBytes text "UTF-8"))))))
 (defn- assert-node-link [actual-path value]
   (is (string? (:core-node-id value)))
   (is (string? (:syntax-id value)))
   (is (map? (:source-span value)))
   (is (string? actual-path)))
 
-(deftest sh08-fixtures-and-final-c7-source-coverage-are-exact
+(deftest sh08-fixtures-and-current-c7-source-boundary-are-exact
   (doseq [[disposition basename] [["accepted" "closed-record-access-match"]
                                   ["rejected" "closed-record-access-match-errors"]]]
     (is (= (slurp (fixture-path disposition basename ".gravity"))
            (slurp (fixture-path disposition basename ".qst")))))
   (let [source-text (slurp (path c7-source))
         plan @(var-get (old-helper 'c7-plan))]
-    ;; Refreshed only after the final owned C7 source is frozen.
-    (is (= 284176 (count (.getBytes source-text "UTF-8"))))
-    (is (= "e33a54b8cf202399a1f7dfae23221f653a8d43387566539fb026a54d2f44b275"
-           (sha256 source-text)))
+    (is (= (str "sha256:" (bootstrap/sha256-hex source-text))
+           (get-in plan [:source :sha256])))
+    (is (= 'gravity.compiler.c7-type-checker-engine (get-in plan [:module :module])))
     (is (= :gravity/stage2-compiler-artifact-plan (:kind plan)))
     (doseq [function '[sh08-record-access-match-typing-boundary-policy
                        sh08-record-access-match-typed-core-artifact
