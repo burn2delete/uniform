@@ -689,6 +689,166 @@
                                                                (entry :b (say "later" (lit 1)))])))]
       (is (identical? failure observed)))))
 
+(defn- typed-keyword-lookup-kernel-context [base]
+  (let [context (typed-map-kernel-context base)
+        node {:node-id :lookup :core-form :keyword-map-lookup :children [:lookup-key :vector] :resolved-binding-ids []
+              :source {:form-id :lookup-form :syntax-id :lookup-form}
+              :attributes {:keyword-child-index 0 :map-child-index 1 :keyword :key :evaluation-order :keyword-then-map
+                           :dispatch :keyword-map-lookup :missing-key-policy :nil :result-policy :map-value-or-nil :target-type-legality :pending-sh08}
+              :evaluation {:kind :keyword-then-map :order [{:index 0 :core-node-id :lookup-key} {:index 1 :core-node-id :vector}]}}
+        record {:core-node-id :lookup :keyword-node-id :lookup-key :map-node-id :vector :keyword :key
+                :ordered-evaluation-node-ids [:lookup-key :vector] :evaluation-order :keyword-then-map
+                :missing-key-policy :nil :result-policy :map-value-or-nil}]
+    (-> context
+        (assoc-in [:nodes :lookup] node)
+        (assoc-in [:nodes :lookup-key] {:node-id :lookup-key :core-form :literal :children []
+                                      :source {:form-id :lookup-key-form :syntax-id :lookup-key-form}
+                                      :attributes {:literal-kind :keyword :value :key}})
+        (assoc-in [:forms :lookup-form] {:form-id :lookup-form :syntax-id :lookup-form :kind :list :child-form-ids [:lookup-key-form :vector-form]})
+        (assoc-in [:forms :lookup-key-form] {:form-id :lookup-key-form :syntax-id :lookup-key-form :kind :keyword :value :key :parent-form-id :lookup-form})
+        (assoc-in [:forms :vector-form :parent-form-id] :lookup-form)
+        (assoc-in [:types :lookup-key] :gravity.type/keyword)
+        (assoc-in [:types :lookup] :gravity.type/string)
+        (assoc-in [:core :keyword-lookups] [record]))))
+
+(deftest current-gravity-keyword-map-lookup-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        context (typed-keyword-lookup-kernel-context (:value (invoke 'p15-s23-typed-context module input observation)))
+        work-context {:lookup-core (:core context) :lookup-nodes (:nodes context) :lookup-forms (:forms context) :lookup-bindings {}}
+        node (get-in context [:nodes :lookup])
+        step #(c7 'sh08-kl-step [%1 (:types context) {} {} %2 %3])
+        result (step node work-context 65536)
+        enriched (assoc context :ledger [(:constraint result)])
+        compile #(invoke 'p15-s23-typed-compile-node %1 :lookup %2)]
+    (is (= :accepted (:status result)))
+    (is (= :gravity.type/string (:type result)))
+    (is (= :present (get-in result [:constraint :solution :presence])))
+    (is (= result (step node work-context (:work-count result))))
+    (is (= :keyword-lookup-type-work-limit (:reason (step node work-context (dec (:work-count result))))))
+    (is (= {:op :keyword-map-lookup :args [{:op :literal :value :key}
+                                          {:op :map-literal :entries [{:key {:op :literal :value :key} :value {:op :literal :value "right"}}]}]}
+           (:value (compile enriched 1000))))
+    (is (= :typed-lowering-work-limit (get-in (compile enriched 43) [:facts :reason])))
+    (doseq [changed [(assoc-in enriched [:ledger 0 :status] :pending)
+                     (assoc-in enriched [:ledger 0 :solution :result-type] :gravity.type/nil)
+                     (assoc-in enriched [:ledger 0 :solution :selected-coordinate] 99)
+                     (assoc-in enriched [:ledger 0 :dependencies :selected-shape :type] :gravity.type/nil)
+                     (assoc-in enriched [:ledger 0 :dependencies :operand-node-id] :other)
+                     (assoc-in enriched [:forms :lookup-key-form :value] :other)
+                     (assoc-in enriched [:nodes :lookup :evaluation :order] [])
+                     (assoc-in enriched [:types :lookup] :gravity.type/nil)
+                     (assoc enriched :ledger [])]]
+      (is (= :rejected (:status (compile changed 1000)))))
+    (let [bad-node (assoc-in node [:attributes :keyword] :forged)
+          bad (step bad-node work-context 65536)]
+      (is (= :keyword-lookup-record-mismatch (:reason bad)))
+      (is (pos? (:work-count bad))))
+    (doseq [changed [(assoc-in work-context [:lookup-forms :lookup-key-form :parent-form-id] :wrong)
+                     (assoc-in work-context [:lookup-nodes :vector :core-form] :reference)
+                     (assoc-in work-context [:lookup-nodes :vector-right :attributes :value] "forged")]]
+      (let [failed (step node changed 65536)]
+        (is (= :rejected (:status failed)))
+        (is (pos? (:work-count failed)))))
+    (let [missing-node (assoc-in node [:attributes :keyword] :missing)
+          missing-context (-> work-context (assoc-in [:lookup-core :keyword-lookups 0 :keyword] :missing)
+                              (assoc-in [:lookup-nodes :lookup-key :attributes :value] :missing)
+                              (assoc-in [:lookup-forms :lookup-key-form :value] :missing))
+          missing (step missing-node missing-context 65536)]
+      (is (= :accepted (:status missing)))
+      (is (= :gravity.type/nil (:type missing)))
+      (is (= :absent (get-in missing [:constraint :solution :presence]))))
+    (let [never (c7 'sh08-kl-step [node (assoc (:types context) :vector :gravity.type/never) {} {} work-context 65536])]
+      (is (= :gravity.type/never (:type never)))
+      (is (= :no-normal-result (get-in never [:constraint :solution :presence]))))
+    (let [nodes (mapv (:nodes context) [:lookup-key :vector-left :vector-right :vector :lookup])
+          infer #(c7 'sh08-ft-infer-acyclic-with-context [nodes (:nodes context) [] [] [] [] {} {} 2 (assoc work-context :loop-work-left %)])
+          total (* 2 (:work-count result))]
+      (is (= :converged (:convergence-status (infer total))))
+      (is (= :gravity.type/string (get-in (infer total) [:type-table :lookup])))
+      (is (= :nonconverged (:convergence-status (infer (dec total))))))
+    (let [first (step node work-context (* 2 (:work-count result)))
+          second (step node work-context (- (* 2 (:work-count result)) (:work-count first)))
+          third (step node work-context (- (* 2 (:work-count result)) (:work-count first) (:work-count second)))]
+      (is (= [:accepted :accepted :rejected] (mapv :status [first second third])))
+      (is (= :keyword-lookup-type-work-limit (:reason third))))
+    (require 'gravity.self-hosting.sh08-loop-recur-type-test)
+    (let [[loop-core _] ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'loop-data))
+          loop-nodes (mapv #(cond-> % (= :again-init (:node-id %)) (assoc :attributes {:literal-kind :boolean :value true})
+                                     (= :value-init (:node-id %)) (assoc :attributes {:literal-kind :integer :value 7})
+                                     (= :next-again (:node-id %)) (assoc :attributes {:literal-kind :boolean :value false})) (:nodes loop-core))
+          nodes (into (mapv (:nodes context) [:lookup-key :vector-left :vector-right :vector :lookup]) loop-nodes)
+          bindings {:again :gravity.type/bool :value :gravity.type/integer}
+          pass #(c7 'sh08-ft-infer-pass-with-context [nodes [] [] [] [] {} bindings (assoc work-context :loop-core loop-core :loop-work-left %)])
+          high (pass 65536)
+          loop-only (c7 'sh08-ft-loop-type-step [loop-core (:type-table high) bindings 65536])
+          narrow (pass (:work-count loop-only))]
+      (is (= :accepted (:status loop-only)))
+      (is (= (+ (:work-count result) (:work-count loop-only)) (:loop-work-count high)))
+      (is (some #(= :loop-type-work-limit (:reason %)) (:diagnostics narrow))))))
+
+(deftest current-gravity-keyword-map-lookup-c8-development-kernel
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        id #(str "sha256:" (bootstrap/sha256-hex (str %)))
+        node (fn [n kind children] {:node-id (id n) :core-form kind :children (mapv id children)
+                                   :source {:syntax-id (id n)}
+                                   :evaluation {:kind :left-to-right :order (mapv (fn [i child] {:index i :core-node-id (id child)}) (range) children)}})
+        key (node 1 :literal []) value (node 2 :literal []) thrown (node 3 :throw [2])
+        lookup (-> (node 4 :keyword-map-lookup [1 3])
+                   (assoc-in [:evaluation :kind] :keyword-then-map)
+                   (assoc :attributes {:evaluation-order :keyword-then-map}))
+        core {:nodes [key value thrown lookup] :function-records [] :call-edges []}
+        facts {:module {:effects [:error/throw]} :function-type-table []
+               :type-table {(id 1) :gravity.type/keyword (id 2) :gravity.type/string (id 3) :gravity.type/never (id 4) :gravity.type/never}}
+        analyzed (c8 'body-derive-nodes core facts) graph {:nodes (:nodes analyzed) :functions {}}
+        record (get-in graph [:nodes (id 4)])]
+    (is (= :accepted (:status analyzed)))
+    (is (= #{} (:direct record)))
+    (is (= #{:error/throw} (:transitive record)))
+    (is (= #{:gravity.type/string} (:escaping-thrown-errors record)))
+    (is (= [(id 1) (id 3)] (:evaluated-children record)))
+    (is (true? (c8 'body-order-valid? lookup)))
+    (is (false? (c8 'body-order-valid? (update-in lookup [:evaluation :order] #(vec (reverse %))))))
+    (is (false? (c8 'body-order-valid? (assoc-in lookup [:evaluation :kind] :left-to-right))))
+    (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph 65536))))))
+
+(deftest current-gravity-keyword-map-lookup-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        lit (fn [value] {:op :literal :value value}) lookup (fn [key operand] {:op :keyword-map-lookup :args [(lit key) operand]})
+        say (fn [label value] {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} value]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        payload (String. "lookup payload")]
+    (doseq [[key data expected] [[:value {:value payload} payload] [:value {:value nil} nil] [:missing {:value payload} nil]]]
+      (let [result (evaluate (lookup key (say "operand" (lit data))))]
+        (is (= [expected "operand\n" :normal] result))
+        (is (identical? expected (first result)))))
+    (is (= [payload "" :normal] (evaluate (lookup :value (lookup :outer (lit {:outer {:value payload}}))))))
+    (let [result (evaluate (lookup :missing {:op :map-literal :entries [{:key (lit :present) :value {:op :throw :value (lit payload)}}]}))]
+      (is (= [payload "" :thrown] result))
+      (is (identical? payload (first result))))
+    (doseq [operand [(lit nil) (lit 42) (lit [])]]
+      (let [result (evaluate (lookup :key (say "checked" operand)))]
+        (is (= ["checked\n" :rejected] (subvec result 1)))
+        (is (= :keyword-lookup-map-required (get-in result [0 :reason])))))
+    (let [result (evaluate (lookup :key {:op :unknown}))]
+      (is (= ["" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    (doseq [bad [{:op :keyword-map-lookup} {:op :keyword-map-lookup :args []}
+                 {:op :keyword-map-lookup :args [(lit :key)]} {:op :keyword-map-lookup :args [(lit :key) (lit {}) (lit {})]}
+                 {:op :keyword-map-lookup :args [(lit "key") (say "never" (lit {}))]}
+                 {:op :keyword-map-lookup :args [{:op :quote :value :key} (say "never" (lit {}))]}
+                 (assoc (lookup :key (say "never" (lit {}))) :extra true)]]
+      (is (= ["" :rejected] (subvec (evaluate bad) 1))))
+    (let [failure (AssertionError. "fatal lookup map") value (proxy [Object] [] (toString [] (throw failure)))
+          observed (seed-throw-test-capture #(evaluate (lookup :key {:op :builtin-call :function 'str :args [(lit value)]}))) ]
+      (is (identical? failure observed)))))
+
 (deftest current-gravity-evaluated-vector-c8-development-kernel
   ;; Independent existing C8 body algorithms over normalized DATA, not a legality grant.
   (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -945,6 +1105,120 @@
           typed (:typed products) failure (first (:diagnostics typed))]
       (is (= :rejected (:status typed)))
       (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))))
+
+(defn- keyword-lookup-c8-checks [input]
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request (:request input) facts (get-in input [:typed :identity-input]) core (:canonical-core-artifact request)
+        lookups (filterv #(= :keyword-map-lookup (:core-form %)) (:nodes core))
+        analyzed (c8 'body-analyze-module request facts {} 65536)]
+    (is (= :accepted (:status analyzed)) (pr-str (select-keys analyzed [:reason :diagnostics])))
+    (when (= :accepted (:status analyzed))
+      (let [graph (:graph analyzed) never (first (filter #(= :gravity.type/never (get-in facts [:type-table (:node-id %)])) lookups))]
+        (is (= 10 (count lookups)))
+        (doseq [node lookups]
+          (is (= #{} (get-in graph [:nodes (:node-id node) :direct])))
+          (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children])))
+          (is (= (get-in facts [:type-table (:node-id node)]) (get-in graph [:nodes (:node-id node) :type]))))
+        (is (= #{:error/throw} (get-in graph [:nodes (:node-id never) :transitive])))
+        (is (= #{:gravity.type/string} (get-in graph [:nodes (:node-id never) :escaping-thrown-errors])))
+        (is (false? (c8 'body-order-valid? (assoc-in never [:evaluation :order] []))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph 65536))))))))
+
+(deftest keyword-lookup-c8-consumer-development-kernel
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
+        input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
+        calls (atom []) reports (atom [])]
+    (with-redefs-fn {leaf (fn [function & args] (swap! calls conj [function (vec args)])
+                           {:status :rejected :reason :normalized-failure})
+                    #'clojure.test/report (fn [event] (swap! reports conj event))}
+      #(keyword-lookup-c8-checks input))
+    (is (= 1 (count @calls)))
+    (is (= 'body-analyze-module (ffirst @calls)))
+    (is (identical? request (get-in @calls [0 1 0])))
+    (is (identical? facts (get-in @calls [0 1 1])))
+    (is (= [:fail] (mapv :type @reports)))))
+
+(deftest current-gravity-keyword-map-lookup-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "lookup source payload")
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-keyword-map-lookup" extension)
+                 path (.getPath (io/file root relative)) text (slurp path)
+                 products (fresh relative) input (select-keys products [:request :typed :verification])
+                 macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                 definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                 standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'let-lookup) input))
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 rows (filterv #(= :sh08-keyword-map-lookup-v1 (:producer-rule %)) (get-in input [:typed :constraint-ledger]))
+                 specifications [['constructor-lookup [payload] payload] ['let-lookup [payload] payload]
+                                 ['nested-lookup [] "nested"] ['missing [] nil] ['present-nil [] nil]
+                                 ['quoted-duplicate [] 2] ['caught [payload] payload] ['quoted-alias [] "quoted"] ['main [] "payload"]]
+                 results (into {} (map (fn [[name args expected]]
+                                        (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                                          (is (= [expected "" :normal] result)) [name (first result)])) specifications))]
+             (is (= :accepted (get-in input [:typed :status])))
+             (is (= :passed (get-in input [:verification :status])))
+             (is (= 9 (count (:functions assembled))))
+             (is (= 10 (count rows) (get-in assembled [:instruction-summary :keyword-map-lookup])))
+             (is (= 7 (get-in assembled [:instruction-summary :map-literal])))
+             (is (= 2 (get-in assembled [:instruction-summary :quote])))
+             (is (= {:present 8 :absent 1 :no-normal-result 1} (frequencies (map #(get-in % [:solution :presence]) rows))))
+             (is (some #(and (= :present (get-in % [:solution :presence])) (= :gravity.type/nil (:rhs %))) rows))
+             (is (some #(and (= :absent (get-in % [:solution :presence])) (= :gravity.type/nil (:rhs %))) rows))
+             (is (= standalone (get-in assembled [:functions 'let-lookup])))
+             (is (= :pending-c8-and-profile-authority (get-in standalone [:typed-lowering-provenance :effect-legality])))
+             (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+             (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+             (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+             (doseq [name ['constructor-lookup 'let-lookup 'caught]] (is (identical? payload (get results name))))
+             (keyword-lookup-c8-checks input)
+             {:input input :module module :definitions definitions}))
+         [".gravity" ".qst"])
+        {:keys [input module definitions]} (first cases)
+        ledger (get-in input [:typed :constraint-ledger])
+        row-index (first (keep-indexed #(when (and (= :sh08-keyword-map-lookup-v1 (:producer-rule %2)) (= :gravity.type/string (:rhs %2))) %1) ledger))
+        row (get ledger row-index) node-id (:lhs row)
+        nodes (get-in input [:request :canonical-core-artifact :nodes])
+        node-index (first (keep-indexed #(when (= node-id (:node-id %2)) %1) nodes)) node (get nodes node-index)
+        forms (get-in input [:request :b47-context :authenticated-core-request :forms])
+        form-index (first (keep-indexed #(when (= (get-in node [:source :form-id]) (:form-id %2)) %1) forms))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :constraint-ledger row-index :dependencies :selected-shape :type] :gravity.type/nil)
+                     (assoc-in input [:typed :type-table node-id] :gravity.type/never)
+                     (update-in input [:typed :constraint-ledger] #(vec (concat (subvec % 0 row-index) (subvec % (inc row-index)))))
+                     (assoc-in input [:request :canonical-core-artifact :nodes node-index :children] (vec (reverse (:children node))))
+                     (assoc-in input [:request :canonical-core-artifact :nodes node-index :attributes :keyword] :forged)
+                     (assoc-in input [:request :b47-context :authenticated-core-request :forms form-index :syntax-id] :forged)]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'let-lookup) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 10 (count @verified)))
+    (doseq [[basename expected] [["local-runtime-keyword-map-scalar" ["C7-ANNOTATION" :keyword-lookup-map-shape-required]]
+                               ["local-runtime-keyword-map-nil-result" ["C7-TYPE-MISMATCH" :function-result-type-mismatch]]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename ".gravity"))
+            typed (:typed products) failure (first (:diagnostics typed))]
+        (is (= :rejected (:status typed)))
+        (is (= expected ((juxt :rule :reason) failure)))))))
 
 (deftest current-gravity-typed-catch-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)

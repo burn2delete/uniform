@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.local-runtime-keyword-map-lookup
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn constructor-lookup [value :- String] :- String (:value {:value value}))
+(defn let-lookup [value :- String] :- String (let [data {:value value} alias data] (:value alias)))
+(defn nested-lookup [] :- String (:value (:outer {:outer {:value "nested"}})))
+(defn missing [] (:missing {:present "value"}))
+(defn present-nil [] (:value {:value nil}))
+(defn quoted-duplicate [] (:same '{:same 1 :same 2}))
+(defn caught [problem :- String] :- String (try (:missing {:present (throw problem)}) (catch String error error)))
+(defn quoted-alias [] (let [data '{:outer {:value "quoted"}} alias data] (:value (:outer alias))))
+(defn main [] (constructor-lookup "payload"))

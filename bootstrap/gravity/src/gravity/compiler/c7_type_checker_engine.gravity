@@ -4836,7 +4836,7 @@
             ; Both loop and function recur contribute only lexical child SOURCE
             ; errors. No transfer error or control-backedge dependency is added;
             ; this finite conservative union establishes no termination or effect legality.
-            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :loop :recur :collection-literal :throw :call :try} kind)
+            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :loop :recur :collection-literal :keyword-map-lookup :throw :call :try} kind)
               (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types handlers))
                                (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
                 (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))
@@ -5682,6 +5682,98 @@
           (recur (rest parts) (get product :cases)
                  (if (= :alternatives (get (get part :shape) :shape-kind)) true expanded?)) product)))))
 
+(defn sh08-kl-source-valid? [node nodes types forms]
+  (let [children (get node :children) attrs (get node :attributes)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        key-node (get nodes (get children 0)) operand (get nodes (get children 1))
+        key-form (get forms (get ids 0)) operand-form (get forms (get ids 1)) key (get attrs :keyword)]
+    (if (if (vector? children) (if (= 2 (count children))
+          (if (vector? ids) (if (= 2 (count ids)) (keyword? key) false) false) false) false)
+      (sh08-ft-all-true?
+        [(= :keyword-map-lookup (get node :core-form)) (= [] (get node :resolved-binding-ids))
+         (sh08-ft-record-shape? attrs #{:keyword-child-index :map-child-index :keyword :evaluation-order :dispatch
+                                      :missing-key-policy :result-policy :target-type-legality})
+         (= :list (get owner :kind)) (= (get owner :form-id) (get (get node :source) :form-id))
+         (= (get owner :syntax-id) (get (get node :source) :syntax-id))
+         (= :literal (get key-node :core-form)) (= [] (get key-node :children))
+         (= :keyword (get key-form :kind) (get (get key-node :attributes) :literal-kind))
+         (= key (get key-form :value) (get (get key-node :attributes) :value))
+         (= :gravity.type/keyword (get types (get key-node :node-id)))
+         (= (get ids 0) (get (get key-node :source) :form-id))
+         (= (get ids 1) (get (get operand :source) :form-id))
+         (= (get key-form :syntax-id) (get (get key-node :source) :syntax-id))
+         (= (get operand-form :syntax-id) (get (get operand :source) :syntax-id))
+         (= (get owner :form-id) (get key-form :parent-form-id) (get operand-form :parent-form-id))
+         (= 0 (get attrs :keyword-child-index)) (= 1 (get attrs :map-child-index))
+         (= :keyword-map-lookup (get attrs :dispatch)) (= :nil (get attrs :missing-key-policy))
+         (= :map-value-or-nil (get attrs :result-policy)) (= :pending-sh08 (get attrs :target-type-legality))
+         (= :keyword-then-map (get attrs :evaluation-order) (get (get node :evaluation) :kind))
+         (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (second children)}]
+            (get (get node :evaluation) :order))]) false)))
+
+(defn sh08-kl-shape [node nodes types binding-types functions lexical bindings forms seen depth binding-shapes]
+  (let [operand-id (second (get node :children)) key (get (get node :attributes) :keyword)]
+    (if (sh08-kl-source-valid? node nodes types forms)
+      (if (= :gravity.type/never (get types operand-id))
+        {:status :accepted :presence :no-normal-result :shape nil :operand-shape nil :selected-coordinate nil
+         :type :gravity.type/never :extracted-evidence-size 0}
+        (if (let [type (get types operand-id)]
+              (if (sh08-ft-known? type) (= false (= :gravity.type/map (if (map? type) (get type :kind) type))) false))
+          (sh08-sm-failure "C7-ANNOTATION" :keyword-lookup-map-shape-required nil :constructor-or-quoted-map-shape (get types operand-id))
+        (let [operand (sh08-sm-shape-with-bindings operand-id nodes types binding-types functions lexical bindings forms
+                                                 (conj seen (get node :node-id)) (+ depth 1) binding-shapes)]
+          (if (= :accepted (get operand :status))
+            (if (= :map (get operand :shape-kind))
+              (let [index (sh08-sm-part-index operand key nil) part (get (get operand :parts) index)
+                    selected (if (= index nil)
+                               {:status :accepted :shape-kind :scalar :type :gravity.type/nil :domain {:values [nil]}
+                                :shape-size 1 :node-id (get node :node-id) :source (get node :source) :binding-links []}
+                               (get part :shape))]
+                {:status :accepted :presence (if (= index nil) :absent :present) :shape selected
+                 :operand-shape operand :selected-coordinate (get part :coordinate) :type (get selected :type)
+                 :extracted-evidence-size (get selected :shape-size 1)})
+              (sh08-sm-failure "C7-ANNOTATION" :keyword-lookup-map-shape-required nil :constructor-or-quoted-map-shape (get operand :type))) operand))))
+      (sh08-sm-failure "C7-VERIFY" :keyword-lookup-source-mismatch nil :exact-keyword-operand-source-order (get node :node-id)))))
+
+(defn sh08-kl-step [node types binding-types functions context budget]
+  ; Logical outer joins and extracted evidence share the inference counter.
+  ; These are not recursive visits inside the separately bounded shape helper.
+  (let [core (get context :lookup-core) nodes (get context :lookup-nodes) source-forms (get context :lookup-forms)
+        source-bindings (get context :lookup-bindings)
+        records (get core :keyword-lookups []) lexical (get core :lexical-bindings [])
+        initial (+ 32 (count records) (count source-forms) (count source-bindings) (count nodes) (count lexical))]
+    (if (< budget initial)
+      (assoc (sh08-sm-failure "C7-GENERIC" :keyword-lookup-type-work-limit nil :remaining-type-join-units budget) :work-count initial)
+      (let [forms (if (map? source-forms) source-forms (sh08-ft-index source-forms :form-id))
+            bindings (if (map? source-bindings) source-bindings (sh08-ft-binding-index source-bindings))
+            matches (sh08-bm-select records :core-node-id (get node :node-id)) record (first matches)
+            expected {:core-node-id (get node :node-id) :keyword-node-id (first (get node :children))
+                      :map-node-id (second (get node :children)) :keyword (get (get node :attributes) :keyword)
+                      :ordered-evaluation-node-ids (get node :children) :evaluation-order :keyword-then-map
+                      :missing-key-policy :nil :result-policy :map-value-or-nil}
+            result (if (if (= 1 (count matches)) (= expected record) false)
+                     (sh08-kl-shape node nodes types binding-types functions lexical bindings forms #{} 0
+                                    (get context :prior-binding-shapes {}))
+                     (sh08-sm-failure "C7-VERIFY" :keyword-lookup-record-mismatch nil :exact-c6-lookup-record record))
+            work (+ initial (get result :extracted-evidence-size 0))]
+        (if (> work budget)
+          (assoc (sh08-sm-failure "C7-GENERIC" :keyword-lookup-type-work-limit nil :remaining-type-join-units budget) :work-count work)
+          (if (= :accepted (get result :status))
+            (let [type (get result :type) source (get node :source)
+                  premise {:source source :lookup-record record :keyword-node-id (first (get node :children))
+                           :operand-node-id (second (get node :children)) :operand-shape (get result :operand-shape)
+                           :selected-shape (get result :shape) :presence (get result :presence)
+                           :selected-coordinate (get result :selected-coordinate)}
+                  solution {:result-type type :presence (get result :presence) :selected-coordinate (get result :selected-coordinate)}]
+              {:status :accepted :type type :work-count work
+               :constraint {:constraint-id-request {:domain :gravity/sh08-keyword-map-lookup-v1 :core-node-id (get node :node-id) :premise premise}
+                            :kind :equality :producer-rule :sh08-keyword-map-lookup-v1 :lhs (get node :node-id) :rhs type
+                            :origin (get source :origin-chain) :dependencies premise :solution solution
+                            :invalidation [:keyword-lookups :source-forms :type-table :lexical-bindings :constructor-or-quote-shape :evaluation-order]
+                            :profile (get (get core :module) :profile) :target (get (get core :module) :target)
+                            :status :solved :diagnostics []}})
+            (assoc result :work-count work)))))))
+
 (defn sh08-sm-shape-with-bindings [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes]
   (if (> depth (get (sh08-local-bounds-value) :maximum-carrier-depth))
     (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-constructor-depth depth)
@@ -5724,6 +5816,12 @@
                          :binding-links (conj (get shape :binding-links) record) :shape-size (+ 1 (get shape :shape-size)))
                   (sh08-sm-failure "C7-ANNOTATION" :structural-shape-node-limit nil :bounded-expanded-shape (get shape :shape-size))) shape))
             (sh08-sm-failure "C7-VERIFY" :invalid-immutable-shape-link nil :exact-let-initializer (first records)))
+          (if (= kind :keyword-map-lookup)
+            (let [lookup (sh08-kl-shape node nodes types binding-types functions lexical bindings forms seen depth binding-shapes)]
+              (if (= :accepted (get lookup :status))
+                (if (= :no-normal-result (get lookup :presence))
+                  (assoc base :status :accepted :shape-kind :scalar :type :gravity.type/never)
+                  (get lookup :shape)) lookup))
           (if (= kind :quote)
             (let [quoted (sh08-qd-node node forms)]
               (if (= :accepted (get quoted :status))
@@ -5792,7 +5890,7 @@
                 (assoc base :status :accepted :shape-kind :scalar
                        :domain (if (= type :gravity.type/bool) {:values [true false]}
                                  (if (= type :gravity.type/nil) {:values [nil]} {:excluded-values []}))))
-              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type))))))))))
+              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type)))))))))))
 
 (defn sh08-sm-part-index [shape key coordinate]
   (loop [parts (get shape :parts) index 0]
@@ -6359,7 +6457,8 @@
          binding-types (sh08-bm-seed-bindings match-groups
                          (sh08-ft-node-index nodes) (get context :prior-type-table {})
                          initial-binding-types function-types edges context)
-         function-result function-types]
+         function-result function-types
+         lookup-rows [] lookup-issues [] lookup-work 0]
     (if (= (count remaining) 0)
       (let [node-index
             (sh08-ft-node-index nodes)
@@ -6378,7 +6477,7 @@
              function-with-params context)
             loop-result (if (map? (get context :loop-core))
                           (sh08-ft-loop-type-step (get context :loop-core) type-table (get call-result :binding-types)
-                            (get context :loop-work-left 65536))
+                            (- (get context :loop-work-left 65536) lookup-work))
                           {:bindings (get call-result :binding-types) :constraints [] :issues [] :work-count 0})]
         {:type-table type-table
          :binding-shapes binding-shapes
@@ -6386,21 +6485,30 @@
          :function-types function-with-params
          :constraints (sh08-ft-add-values-to-set
                         (sh08-ft-loop-constraints (get loop-result :constraints) node-index (get (get context :loop-core) :module))
-                        (get call-result :constraints))
-         :loop-work-count (get loop-result :work-count)
+                        (sh08-ft-add-values-to-set lookup-rows (get call-result :constraints)))
+         :loop-work-count (+ lookup-work (get loop-result :work-count))
          :diagnostics (sh08-ft-add-values-to-set (sh08-ft-loop-diagnostics (get loop-result :issues) node-index)
-                                                (get call-result :diagnostics))})
+                                                (sh08-ft-add-values-to-set lookup-issues (get call-result :diagnostics)))})
       (let [node (first remaining)
+            lookup? (= :keyword-map-lookup (get node :core-form))
+            lookup (if lookup?
+                     (sh08-kl-step node type-table binding-types function-result context
+                                   (- (get context :loop-work-left 65536) lookup-work)) {})
             node-type
-            (sh08-ft-infer-node-with-context
-             node type-table binding-types function-result edges context)]
+            (if lookup? (get lookup :type :gravity.type/unknown)
+              (sh08-ft-infer-node-with-context
+               node type-table binding-types function-result edges context))]
         (recur
          (rest remaining)
          (assoc type-table (get node :node-id) node-type)
          binding-types
                     (if (= (get (get node :core-form) :none) :none)
            function-result
-           function-result)))))))
+           function-result)
+         (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows)
+         (if (if lookup? (= :rejected (get lookup :status)) false)
+           (conj lookup-issues (assoc lookup :node node)) lookup-issues)
+         (+ lookup-work (get lookup :work-count 0))))))))
 
 (defn sh08-ft-infer-pass
   [nodes lexical-bindings definitions calls edges function-types
@@ -6479,7 +6587,7 @@
          current-bindings binding-types
          current-types {}
          current-shapes {}
-         loop-work-left 65536]
+         loop-work-left (let [budget (get context :loop-work-left 65536)] (if (< budget 65536) budget 65536))]
     (if (<= rounds-left 0)
       {:convergence-status :nonconverged
        :round-count (- round 1)
@@ -6512,7 +6620,8 @@
         (if (= return-conflict nil)
           (if (if (= next-functions current-functions)
                 (if (= next-bindings current-bindings)
-                  (if (if (> (count (get context :boolean-matches)) 0) true (map? (get context :loop-core)))
+                  (if (if (> (count (get context :boolean-matches)) 0) true
+                        (if (map? (get context :loop-core)) true (map? (get context :lookup-core))))
                     (if (= current-types (get pass :type-table))
                       (= current-shapes (get pass :binding-shapes)) false) true) false)
                 false)
@@ -7016,7 +7125,9 @@
                  (assoc (sh08-ft-context-proof
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
-                   :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)))
+                   :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
+                   :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
+                   :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings))
                 handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
                 direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
                                 (- 65536 (get handler-products :work-count 0)))

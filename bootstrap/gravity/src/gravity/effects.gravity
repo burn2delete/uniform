@@ -1956,12 +1956,16 @@
             (if (= :recur kind)
               (if (contains? #{:loop :function} (get (get node :attributes) :target-kind))
                 (sh09-sha256-id? (get (get node :attributes) :target-id)) false)
-              (contains? #{:collection-literal :let :do :call :match :loop :try} kind))))) false)))
+              (if (= kind :keyword-map-lookup) (= 2 (count children))
+                (contains? #{:collection-literal :let :do :call :match :loop :try} kind)))))) false)))
 
 (defn body-order-valid? [node]
   (let [kind (get node :core-form) children (get node :children) order (get (get node :evaluation) :order)
         expected (if (contains? #{:fn :quote} kind) []
                    (if (contains? #{:if :match :try} kind) [(first children)] children))]
+    (if (if (= kind :keyword-map-lookup)
+          (body-all? [(= 2 (count children)) (= :keyword-then-map (get (get node :evaluation) :kind))
+                      (= :keyword-then-map (get (get node :attributes) :evaluation-order))]) true)
     (if (vector? order)
       (if (= (count expected) (count order))
         (loop [index 0]
@@ -1969,7 +1973,7 @@
             (let [entry (get order index)]
               (if (if (map? entry) (body-all? [(= index (get entry :index))
                                               (= (get expected index) (get entry :core-node-id))]) false)
-                (recur (+ index 1)) false)))) false) false)))
+                (recur (+ index 1)) false)))) false) false) false)))
 
 (defn body-foreign-node-record [node imported graph type]
   (let [base (body-node-record node nil graph type)
@@ -2394,7 +2398,7 @@
                (if (= 0 (count remaining)) true
                  (let [node (first remaining)]
                    (if (if (contains? scope (get (get joined :owners) (get node :node-id)))
-                         (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call :try} (get node :core-form)) true)
+                         (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :keyword-map-lookup :throw :call :try} (get node :core-form)) true)
                      (recur (rest remaining)) false))))
              (loop [remaining (get core :recursion-components)]
                (if (= 0 (count remaining)) true

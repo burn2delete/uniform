@@ -729,6 +729,56 @@ legality, general collection operations, target support and authoritative
 migration remain separate. Real-source validation results belong in the
 backlog, not inferred from these normalized checks.
 
+### Literal Keyword map lookup
+
+For `(:key map-expression)`, edit the existing C7 engine for inferred member
+types, the typed emitter for solved-row projection, `gravity.effects` for
+operand effects, and `gravity.runtime` for instruction execution. SH-07's
+existing canonical lookup record owns the one-operand shape and evaluation
+order; do not add a second dispatch interface.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-map-lookup-lowering-development-kernel \
+  --exact current-gravity-keyword-map-lookup-runtime-development-kernel \
+  --exact current-gravity-keyword-map-lookup-c8-development-kernel
+# Affected paired-source composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-map-lookup-authenticated-composition --fail-fast
+```
+
+The initial development subset derives map shape from constructors, verified
+quoted DATA and immutable let ancestry, including nested lookup extraction.
+A present member retains its type; established absence yields Nil. Missing
+shape evidence is an implementation boundary, not implicit Dynamic or a new
+language prohibition. A Never operand remains non-returning. General `get`,
+defaults, arbitrary key types and call-returned shape propagation are separate
+increments.
+
+The producer records source, ordered operands, reconstructed shape, selected
+coordinate and presence in a solved constraint. Fresh public C7 verification
+owns recursive reconstruction; lowering joins that verified row rather than
+adding another recursive checker. Lookup outer joins and extracted-evidence
+logical charges share the existing inference counter with loops across rounds
+and failures. Those charges are not recursive helper-visit or CPU counts;
+existing shape depth, size and alternative caps remain separate.
+
+Runtime validates the closed two-argument instruction, evaluates the literal
+key and whole map operand once in order, then performs checked lookup. A
+missing key does not skip operand evaluation. Throws, rejection, payload
+identity and accumulated output propagate unchanged. Effect analysis must
+retain the operand's effects and escaping thrown types. Run the affected
+paired-source composition separately once its candidate is stable; the
+normalized kernels do not prove source composition, migration or self-hosting.
+
+The older `sh07-b15-rejected-arities-use-the-normative-shape-diagnostic`
+selector reconstructs six complete source frontdoors. It is a costlier
+upstream regression, not an arity kernel or a prerequisite for every downstream
+lookup edit. Select it when changing canonical lookup arity/shape behavior;
+do not add it automatically to the focused lookup command above.
+
 ### Canonical direct same-module calls
 
 Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls

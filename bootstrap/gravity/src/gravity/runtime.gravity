@@ -231,6 +231,15 @@
         shape?
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
+          (if (= operation :keyword-map-lookup)
+            (if (= fields #{:op :args})
+              (if (vector? arguments)
+                (if (= 2 (count arguments))
+                  (let [key (first arguments)]
+                    (if (map? key)
+                      (if (= #{:op :value} (set (keys key)))
+                        (if (= :literal (get key :op))
+                          (if (keyword? (get key :value)) (map? (second arguments)) false) false) false) false)) false) false) false)
           (if (= operation :map-literal)
             (if (= fields #{:op :entries})
               (if (vector? (get instruction :entries))
@@ -287,9 +296,15 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false)))))))))))))) false)]
+            false))))))))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :keyword-map-lookup)
+      (let [result (p15-s23-runtime-evaluate-arguments-in-context arguments environment output [] functions path [])]
+        (if (= :normal (get result 2))
+          (if (map? (get (first result) 1))
+            [(get (get (first result) 1) (get (first result) 0)) (second result) :normal]
+            [{:diagnostic "P15S23X002" :reason :keyword-lookup-map-required :operation operation} (second result) :rejected]) result))
     (if (= operation :map-literal)
       (let [items (loop [remaining (get instruction :entries) out []]
                     (if (= 0 (count remaining)) out
@@ -382,7 +397,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected]))))))))))))))))))
+                     output :rejected])))))))))))))))))))
 
 ; Development entrypoint for a closed instruction plan. The result records
 ; normal completion, a thrown value, or rejection with accumulated output.

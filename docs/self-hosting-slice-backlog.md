@@ -1058,6 +1058,76 @@ composition runs. Public APIs, C7 and C8 production
 code, migration pins and explicit pending effect/profile legality are unchanged.
 No target, authoritative migration, self-hosting or release claim follows.
 
+### Literal Keyword map lookup: development implementation
+
+The current C7/emitter/effects/runtime increment connects SH-07's existing
+one-operand `(:key map-expression)` Core form to executable development IR.
+Constructor and verified quoted-map shapes, immutable let aliases and nested
+lookup extraction supply member evidence. Present members retain their actual
+type; established absence yields Nil, distinct from a present nil member.
+A Never operand remains non-returning. Missing shape evidence is rejected
+explicitly rather than replaced with Dynamic. Arbitrary map parameters,
+call-returned shapes, generic `get`, defaults and non-Keyword keys remain
+unsupported implementation boundaries, not new language prohibitions.
+
+The solved C7 row records the source, canonical lookup record, operand and
+selected shape, selected coordinate, presence and invalidation dependencies.
+Lowering consumes that row behind fresh same-input C7 verification, preserving
+ordered key/operand instructions. The runtime evaluates the entire operand
+once, even when the key is absent, and preserves first transfer, payload
+identity and output. C8 retains operand effects and escaping thrown types;
+lookup itself does not erase an undeclared throw.
+
+The final focused group passed seven tests/255 assertions, including C7 and
+lowering joins, present/absent/Never results, runtime order and control, C8
+equations/consumer facts, map and recursive-quote regressions, and runtime DATA
+conservation. Failed shape attempts retain outer logical charges; exact and
+one-less controls exercise two inference rounds and shared lookup/loop work.
+These charges do not count recursive helper visits or prove total CPU cost;
+the existing shape bounds remain separate. At 2 GiB this group took 1.977
+seconds of outer execution plus 7.557 seconds of namespace loading. An earlier
+runtime-focused test failed to compile because of a misplaced test parenthesis;
+the corrected test's success does not relabel that failed invocation.
+
+The existing SH-07 arity regression separately passed one test/78 assertions
+across three rejected cases in both source spellings. It reconstructs complete
+source frontdoors rather than using normalized Core inputs: selected execution
+took 251.631 seconds, outer execution 251.633 seconds, plus 6.801 seconds of
+loading. That cost is not part of the focused-kernel timing above; this unchanged
+upstream matrix is not a requirement for each lookup edit.
+
+The single affected paired-source composition passed one test/158 assertions.
+Each positive source product was reused for public single-function lowering,
+whole assembly, nine guest executions and independent C8 body checks: eighteen
+executions across the two source spellings. Each assembly contains nine
+functions, ten lookup instructions, seven evaluated maps and two quoted values.
+The solved rows distinguish eight present lookups, one established absence and
+one non-returning operand. Constructor/let/nested/quoted extraction, present
+nil, missing key, inert duplicate-key quote materialization and catch around a
+throwing operand all passed, including original payload identity.
+
+Four positive public operations and six type/shape/ledger/key/operand/source
+tamper cases freshly entered public C7 verification ten times. Both source
+spellings produced equal typed identity inputs. The two new source negatives
+reject a scalar operand with `C7-ANNOTATION` /
+`:keyword-lookup-map-shape-required`, and a declared String result receiving an
+absent-key Nil with `C7-TYPE-MISMATCH` /
+`:function-result-type-mismatch`. C8 receives the actual typed identity input,
+retains lookup operand order and thrown types, and rejects an undeclared throw;
+this does not turn pending full profile legality into an accepted claim.
+
+At 2 GiB the selected composition took 415.574 seconds, outer execution
+415.575 seconds, and namespace loading 7.695 seconds. Compiler, test and fixture
+bytes were unchanged across final focused and composition runs. The result's
+158 assertions include six whole-runtime projection checks omitted from an
+earlier static count forecast; no test changed to obtain that count. This is
+affected composition evidence, not a speedup comparison or attribution of cost
+to individual proof-construction phases. No old map/vector/quote migration
+matrix was replayed. Focused success and scoped independent acceptance do not
+confer migration, complete effect/profile legality, target, self-hosting or
+release authority. Existing authoritative pins remain unchanged and are not
+evidence for the new code.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
