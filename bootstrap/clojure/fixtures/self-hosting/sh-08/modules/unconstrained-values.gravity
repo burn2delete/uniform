@@ -1,0 +1,5 @@
+(ns example.unconstrained-values
+  (:profile :meta) (:target :jvm) (:exports [identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity [value] value)

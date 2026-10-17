@@ -6447,16 +6447,58 @@
                   :diagnostics (if (map? diagnostic) [diagnostic] [])}
      :diagnostics (if (map? diagnostic) [diagnostic] [])}))
 
+(defn sh08-im-scalar-type? [type]
+  ; Reuse the existing literal/atomic catalogs. Composite and callable import
+  ; signatures remain outside this first-order scalar boundary.
+  (loop [names [:nil :boolean :integer :decimal :ratio :character :string :keyword :symbol]]
+    (if (= (count names) 0)
+      (loop [atoms '[I8 I16 I32 I64 U8 U16 U32 U64 F32 F64 Bool String Symbol Keyword Ratio]]
+        (if (= (count atoms) 0) false
+          (if (= type (sh08-ft-atomic-type-id (first atoms))) true (recur (rest atoms)))))
+      (if (= type (sh08-primitive-type-from-literal-kind (first names))) true (recur (rest names))))))
+
+(defn sh08-im-declarations-consistent? [record function]
+  (if (contains? record :signature)
+    (let [signature (get record :signature) declarations (get signature :parameters) parameters (get function :parameters)
+          result (get signature :return)]
+      (if (if (map? signature) (vector? declarations) false)
+        (if (= signature (get function :signature))
+          (if (= (count declarations) (count parameters))
+            (if (if (= result nil) true
+                  (if (map? result) (= (get result :type-id) (get function :return)) false))
+              (loop [ds declarations ps parameters]
+                (if (= (count ds) 0) true
+                  (if (if (= (first ds) nil) true
+                        (if (map? (first ds)) (= (get (first ds) :type-id) (get (first ps) :type)) false))
+                    (recur (rest ds) (rest ps)) false))) false) false) false) false))
+    (= false (contains? function :signature))))
+
+(defn sh08-im-function-identities? [record function]
+  (let [arity (get record :fixed-arity) ids (get record :parameter-binding-ids) parameters (get function :parameters)]
+    (if (if (vector? ids) (if (vector? parameters) (integer? arity) false) false)
+      (if (>= arity 0)
+        (if (sh08-ft-all-true?
+              [(= :gravity/c7-function-type (get function :artifact)) (= :inferred (get function :status))
+               (= arity (get function :fixed-arity) (count ids) (count parameters))
+               (= (get record :function-syntax-id) (get function :function-id))
+               (= (get record :function-core-node-id) (get function :function-core-node-id))
+               (= (get record :body-core-node-id) (get function :body-core-node-id))
+               (= (get record :definition-name) (get function :definition-name))
+               (= ids (get function :parameter-binding-ids))
+               (sh08-sha256-id-vector? [(get record :function-syntax-id) (get record :function-core-node-id) (get record :body-core-node-id)])
+               (sh08-all-unique? [(get record :function-syntax-id) (get record :function-core-node-id) (get record :body-core-node-id)] [])
+               (sh08-sha256-id-vector? ids) (sh08-all-unique? ids [])])
+          (loop [ps parameters remaining ids]
+            (if (= (count ps) 0) (sh08-im-declarations-consistent? record function)
+              (if (sh08-exact-keys? (first ps) #{:binding-id :type})
+                (if (= (get (first ps) :binding-id) (first remaining)) (recur (rest ps) (rest remaining)) false) false))) false) false) false)))
+
 (defn sh08-im-complete-signature? [record function]
-  (let [signature (get record :signature)]
-    (if (if (map? signature) (map? (get signature :return)) false)
-      (if (= (get (get signature :return) :type-id) (get function :return))
-        (if (= (count (get signature :parameters)) (get record :fixed-arity) (count (get function :parameters)))
-          (loop [ds (get signature :parameters) ps (get function :parameters)]
-            (if (= (count ds) 0) true
-              (if (if (map? (first ds))
-                    (= (get (first ds) :type-id) (get (first ps) :type)) false)
-                (recur (rest ds) (rest ps)) false))) false) false) false)))
+  (if (sh08-im-function-identities? record function)
+    (if (sh08-im-scalar-type? (get function :return))
+      (loop [parameters (get function :parameters)]
+        (if (= (count parameters) 0) true
+          (if (sh08-im-scalar-type? (get (first parameters) :type)) (recur (rest parameters)) false))) false) false))
 
 (defn sh08-im-origin [caller binding producer typed]
   (let [caller-c5 (sh08-im-path caller [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
@@ -6496,16 +6538,18 @@
     (if exact?
       (if (= [(get caller-module :profile) (get caller-module :target)] [(get module :profile) (get module :target)])
         (if (if (= :function (get original :kind)) (= 1 (count records) (count functions)) false)
+          (if (sh08-im-function-identities? record function)
           (if (sh08-im-complete-signature? record function)
             {:status :accepted :binding-id (get binding :binding-id) :origin origin
              :producer-sh07-artifact-id (sh08-im-path producer [:b47-context :artifact-id])
              :producer-sh06-artifact-id id :producer-identity (get typed :identity-input)
              :definition-binding-id (get (first projected) :binding-id)
              :function-type (sh08-bm-project function
-                              [:artifact :function-id :function-core-node-id :definition-name :parameters :return :fixed-arity
+                              [:artifact :function-id :function-core-node-id :body-core-node-id :definition-name :parameter-binding-ids :parameters :return :fixed-arity
                                :signature :latent-effects :capabilities :ownership-constraints :profile-constraints :thrown-error-effects :status])
              :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects}
-            (sh08-im-failure "C7-ANNOTATION" :incomplete-imported-function-signature (get binding :name)))
+            (sh08-im-failure "C7-ANNOTATION" :incomplete-or-unsupported-imported-scalar-signature (get binding :name)))
+          (sh08-im-failure "C7-VERIFY" :imported-function-type-identity-mismatch (get binding :name)))
           (sh08-im-failure "C7-ANNOTATION" :unsupported-imported-function (get binding :name)))
         (sh08-im-failure "C7-ANNOTATION" :unsupported-cross-profile-imported-typing (get module :profile)))
       (sh08-im-failure "C7-VERIFY" :imported-function-origin-mismatch origin))))

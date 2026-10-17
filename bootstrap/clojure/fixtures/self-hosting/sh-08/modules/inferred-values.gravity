@@ -1,0 +1,12 @@
+(ns example.inferred-values
+  (:profile :meta) (:target :jvm)
+  (:exports [ready identity-i64 identity integer-chain])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn ready [] true)
+(defn identity-i64 [value :- I64] value)
+(defn identity [value] value)
+(def text-evidence (identity "ready"))
+(defn integer-base [value] value)
+(defn integer-chain [value] (integer-base value))
+(def integer-evidence (integer-chain 7))

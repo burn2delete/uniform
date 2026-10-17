@@ -207,13 +207,16 @@
                               {:binding-table {:bindings [(assoc caller-binding :binding-id (sha 7))]}
                                :gravity-resolution-boundary {:module-inputs {:module-artifacts [c5]}}}}}}
         declaration {:type-id :gravity.type/i64}
-        record {:definition-binding-id (sha 8) :function-syntax-id (sha 9) :fixed-arity 1
+        record {:definition-binding-id (sha 8) :definition-name 'identity-i64 :function-syntax-id (sha 9)
+                :function-core-node-id (sha 18) :body-core-node-id (sha 19) :parameter-binding-ids [(sha 11)] :fixed-arity 1
                 :signature {:parameters [declaration] :return declaration}}
         producer {:b47-context {:artifact-id (sha 10) :authenticated-wrapper {:sh06-resolution-artifact c5}
                                 :authenticated-core-request {:lineage {:authenticated-sh06-artifact-id (sha 4)}
                                                              :binding-table [{:binding-id (sha 8) :upstream-binding-id (sha 1)}]}}
                   :canonical-core-artifact {:function-records [record]}}
-        function {:artifact :gravity/c7-function-type :function-id (sha 9) :parameters [{:binding-id (sha 11) :type :gravity.type/i64}]
+        function {:artifact :gravity/c7-function-type :function-id (sha 9) :definition-name 'identity-i64
+                  :function-core-node-id (sha 18) :body-core-node-id (sha 19) :parameter-binding-ids [(sha 11)] :signature (:signature record)
+                  :parameters [{:binding-id (sha 11) :type :gravity.type/i64}]
                   :return :gravity.type/i64 :fixed-arity 1 :latent-effects [:io/write] :capabilities [:io/stdout]
                   :thrown-error-effects [:pending-sh09] :status :inferred}
         typed {:function-type-table [function] :identity-input {:derived-producer :kernel}}
@@ -271,9 +274,40 @@
     (doseq [key [:ordinary-module-artifact-id :origin-analysis-id :origin-binding-id :origin-definition-artifact-id :origin-definition-syntax-id :origin-definition]]
       (is (= "C7-VERIFY" (:rule (join (update caller-binding :semantic-span dissoc key) producer typed)))))
     (is (= "C7-VERIFY" (:rule (join caller-binding (assoc-in producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id] (sha 999)) typed))))
-    (is (= "C7-ANNOTATION" (:rule (join caller-binding (assoc-in producer [:canonical-core-artifact :function-records 0 :signature :parameters] [nil]) typed))))
-    (is (= "C7-ANNOTATION" (:rule (join caller-binding (update-in producer [:canonical-core-artifact :function-records 0 :signature] dissoc :return) typed))))
-    (is (= "C7-ANNOTATION" (:rule (join caller-binding producer (assoc-in typed [:function-type-table 0 :return] :gravity.type/bool)))))))
+    (is (= "C7-VERIFY" (:rule (join caller-binding (assoc-in producer [:canonical-core-artifact :function-records 0 :signature :parameters] [nil]) typed))))
+    (is (= "C7-VERIFY" (:rule (join caller-binding (update-in producer [:canonical-core-artifact :function-records 0 :signature] dissoc :return) typed))))
+    (is (= "C7-VERIFY" (:rule (join caller-binding producer (assoc-in typed [:function-type-table 0 :return] :gravity.type/bool)))))))
+
+(deftest sh08-imported-inferred-signatures-development-kernel
+  ;; Complete producer facts, never caller observations, define the boundary.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        record {:function-syntax-id (sha 1) :function-core-node-id (sha 2) :body-core-node-id (sha 3)
+                :definition-name 'identity :fixed-arity 1 :parameter-binding-ids [(sha 4)]}
+        function {:artifact :gravity/c7-function-type :function-id (sha 1) :function-core-node-id (sha 2) :body-core-node-id (sha 3)
+                  :definition-name 'identity :fixed-arity 1 :parameter-binding-ids [(sha 4)]
+                  :parameters [{:binding-id (sha 4) :type :gravity.type/string}] :return :gravity.type/string :status :inferred}
+        complete #(invoke-c7 'sh08-im-complete-signature? [%1 %2])]
+    (doseq [type [:gravity.type/string :gravity.type/bool :gravity.type/integer :gravity.type/i64]]
+      (is (true? (complete record (-> function (assoc :return type) (assoc-in [:parameters 0 :type] type))))))
+    (is (true? (complete (assoc record :fixed-arity 0 :parameter-binding-ids [])
+                        (assoc function :fixed-arity 0 :parameter-binding-ids [] :parameters [] :return :gravity.type/bool))))
+    (let [partial (assoc record :signature {:parameters [{:type-id :gravity.type/i64}] :return nil})
+          typed (assoc function :signature (:signature partial) :parameters [{:binding-id (sha 4) :type :gravity.type/i64}] :return :gravity.type/i64)]
+      (is (true? (complete partial typed)))
+      (is (false? (complete partial (assoc-in typed [:parameters 0 :type] :gravity.type/bool)))))
+    (doseq [bad [nil :gravity.type/unknown {} {:artifact :gravity/c7-function-type :parameters [] :return :gravity.type/bool}
+                 {:kind :gravity.type/vector :element-types [:gravity.type/unknown] :shape :literal}
+                 {:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/bool] :shape :literal}]]
+      (is (false? (complete record (assoc function :return bad))))
+      (is (false? (complete record (assoc-in function [:parameters 0 :type] bad)))))
+    (doseq [bad [(assoc function :function-id (sha 99)) (assoc function :function-core-node-id (sha 99))
+                 (assoc function :body-core-node-id (sha 99)) (assoc function :status :unresolved)
+                 (assoc function :fixed-arity 2) (assoc function :parameter-binding-ids [(sha 99)])
+                 (assoc-in function [:parameters 0 :binding-id] (sha 99))]]
+      (is (false? (complete record bad))))
+    (is (false? (complete (assoc record :parameter-binding-ids [(sha 4) (sha 4)] :fixed-arity 2)
+                         (assoc function :fixed-arity 2 :parameter-binding-ids [(sha 4) (sha 4)]
+                                         :parameters [(first (:parameters function)) (first (:parameters function))]))))))
 
 (deftest sh08-imported-work-boundaries-development-kernel
   ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
@@ -2117,6 +2151,91 @@
     (is (= "C5-UNRESOLVED" (:id diagnostic)))
     (is (= (slurp (fixture-path "rejected" basename ".gravity"))
            (slurp (fixture-path "rejected" basename ".qst"))))))
+
+(deftest sh08-imported-inferred-signature-authenticated-source-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [library-c5 (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "inferred-values" extension))
+                 library (bootstrap/sh07-core-from-resolution-artifact library-c5)
+                 producer (function-request library)
+                 source-path (fixture-path "modules" "inferred-consumer" extension)
+                 inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
+                 c5 (bootstrap/compiler-c5-resolution-file-artifact source-path inputs)
+                 core (bootstrap/sh07-core-from-resolution-artifact c5)
+                 request (assoc (function-request core) :module-type-inputs
+                           {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
+                 result (invoke-c7 'sh08-function-type-core-artifact [request])]
+             (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
+             (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+             (when (= :accepted (:status result))
+               (let [imports (into {} (map #(vector (get-in % [:function-type :definition-name]) %) (:imported-function-types result)))
+                     producer-types (get-in result [:module-type-producers 0 :identity-input :function-type-table])
+                     functions (into {} (map (juxt :definition-name identity) producer-types))
+                     verification (invoke-c7 'sh08-verify-function-type-result [request result])
+                     changed (assoc-in result [:imported-function-types 0 :function-type :return] :gravity.type/forged)
+                     altered-verification (invoke-c7 'sh08-verify-function-type-result [request changed])]
+                 (is (= :direct-imported-functions-types-only (:scope result)))
+                 (is (= 4 (count imports) (count (:call-type-facts result)) (count (:function-type-table result))))
+                 (is (= :gravity.type/bool (get-in imports ['ready :function-type :return])))
+                 (is (= :gravity.type/i64 (get-in imports ['identity-i64 :function-type :return])))
+                 (is (= :gravity.type/string (get-in imports ['identity :function-type :return])
+                        (get-in imports ['identity :function-type :parameters 0 :type])))
+                 (is (= :gravity.type/integer (get-in imports ['integer-chain :function-type :return])
+                        (get-in imports ['integer-chain :function-type :parameters 0 :type])))
+                 (is (nil? (get-in functions ['ready :signature])))
+                 (is (nil? (get-in functions ['identity-i64 :signature :return])))
+                 (is (nil? (get-in functions ['identity :signature])))
+                 (is (= #{:gravity.type/bool :gravity.type/i64 :gravity.type/string :gravity.type/integer}
+                        (set (map :result-type (:call-type-facts result)))))
+                 (is (= :passed (:status verification)))
+                 (is (= :rejected (:status altered-verification)))
+                 (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+                 (let [effects ((ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8)
+                                'sh09-build-authenticated-pure-effect-result [result verification])]
+                   (is (= :rejected (:status effects)))
+                   (is (= :imported-body-effects-pending (get-in effects [:diagnostics 0 :reason]))))))
+             {:request request :result result :source-path source-path :inputs inputs :producer producer}))
+         [".gravity" ".qst"])
+        {:keys [request result source-path inputs producer]} (first cases)]
+    (is (= (get-in cases [0 :result :identity-input]) (get-in cases [1 :result :identity-input])))
+    (let [records (get-in producer [:canonical-core-artifact :function-records])
+          index (first (keep-indexed #(when (= 'identity (:definition-name %2)) %1) records))
+          forged "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
+      (is (some? index))
+      (doseq [bad [(assoc-in producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id] forged)
+                   (assoc-in producer [:canonical-core-artifact :function-records index :function-syntax-id] forged)
+                   (assoc-in producer [:canonical-core-artifact :function-records index :parameter-binding-ids 0] forged)
+                   (assoc-in producer [:canonical-core-artifact :function-records index :body-core-node-id] forged)]]
+        (let [rejected (invoke-c7 'sh08-function-type-core-artifact [(assoc-in request [:module-type-inputs :module-requests] [bad])])]
+          (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule]))))))
+    (doseq [[source reason]
+            [[(str/replace (slurp source-path) "identity \"consumer\"" "identity true") :call-argument-type-mismatch]
+             [(str/replace (slurp source-path) "(producer/ready)" "(producer/ready true)") :call-arity-mismatch]
+             [(str/replace (slurp source-path) "(defn call-ready []" "(defn call-ready [] :- String") :function-result-type-mismatch]]]
+      (let [c5 (bootstrap/compiler-c5-resolution-source-artifact source-path source inputs)
+            core (bootstrap/sh07-core-from-resolution-artifact c5)
+            q (assoc (function-request core) :module-type-inputs (:module-type-inputs request))
+            rejected (invoke-c7 'sh08-function-type-core-artifact [q]) diagnostic (first (:diagnostics rejected))]
+        (is (= :accepted (:status core)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+        (is (= reason (:reason diagnostic)))
+        (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target]))))
+    (let [library-c5 (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "unconstrained-values" ".gravity"))
+          library (bootstrap/sh07-core-from-resolution-artifact library-c5)
+          text "(ns example.unconstrained-consumer (:profile :meta) (:target :jvm) (:requires [example.unconstrained-values :as producer]) (:exports [attempt])) (defn attempt [] (producer/identity true))"
+          c5 (bootstrap/compiler-c5-resolution-source-artifact source-path text
+               {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]})
+          core (bootstrap/sh07-core-from-resolution-artifact c5)
+          q (assoc (function-request core) :module-type-inputs
+              {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [(function-request library)]})
+          rejected (invoke-c7 'sh08-function-type-core-artifact [q]) diagnostic (first (:diagnostics rejected))]
+      (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
+      (is (= :rejected (:status rejected)))
+      (is (= "C7-ANNOTATION" (:rule diagnostic)))
+      (is (= :invalid-module-type-producer (:reason diagnostic)))
+      (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target])))))
 
 (deftest sh08-imported-function-authenticated-source-composition
   (let [cases

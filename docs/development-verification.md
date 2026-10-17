@@ -116,12 +116,16 @@ exported signature and joins its original binding to the projected C6 function.
 Imported parameters are immutable premises, not variables specialized by the
 caller. Missing typing inputs and incomplete signatures require a C7 annotation
 diagnostic; they do not trigger ambient module discovery or dynamic fallback.
-This first imported-call boundary requires complete callee parameter/return
-annotations. That is an implementation limit, not a language-level ban on
-inferred exported signatures. The paired fixtures cover annotated I64, Bool and
-String direct calls in the same `:meta/:jvm` profile/target. Inferred imported
-signatures, higher-order imports, cross-profile typing, generic specialization
-and runtime module linking remain separate work.
+The scalar imported-call boundary accepts complete types inferred within the
+producer as well as checked annotations. Any annotation that is present must
+still agree with the derived signature. An unresolved producer cannot be
+completed from caller arguments. The initial paired fixtures cover annotated
+I64, Bool and String direct calls in the same `:meta/:jvm` profile/target; the
+producer-inference increment is tracked separately in the slice backlog.
+Only the existing literal/atomic scalar type catalogs are supported at this
+boundary. Composite or function-valued imported signatures, cross-profile
+typing, generic specialization and runtime module linking remain separate work,
+not language-level prohibitions on those features.
 
 Start with the existing direct checks:
 
@@ -129,12 +133,16 @@ Start with the existing direct checks:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh08-function-call-type-test \
   --exact sh08-imported-function-types-development-kernel \
-  --exact sh08-atomic-signature-inference-development-kernel
+  --exact sh08-imported-inferred-signatures-development-kernel
 ```
 
-The affected real composition is
-`sh08-imported-function-authenticated-source-composition` in the same namespace.
-It exercises the ordinary C5 -> C6 -> C7 path, not authoritative module migration.
+The affected real compositions are
+`sh08-imported-function-authenticated-source-composition` for the initial
+annotated boundary and
+`sh08-imported-inferred-signature-authenticated-source-composition` for
+producer-local inference, in the same namespace. Run the one affected by the
+change, not both merely to refresh an aggregate. They exercise the ordinary
+C5 -> C6 -> C7 path, not authoritative module migration.
 The imported result is type-only: declared effects/capabilities are preserved,
 body-effect inference and thrown-error analysis remain pending, and C8 rejects
 it with `:imported-body-effects-pending`. Type checking does not authorize target

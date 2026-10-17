@@ -931,9 +931,10 @@ direct test commands are in `docs/development-verification.md`. An exported
 callee is joined through the actual C5 module and original binding to its
 projected C6 function, not selected by spelling or a copied caller signature.
 
-The initial boundary requires explicit complete callee parameter/return
-annotations; inferred exported signatures are still unsupported here, not
-forbidden by L5. Imported parameter and return types are immutable premises.
+The initial increment required explicit complete callee parameter/return
+annotations; inferred exported signatures were unsupported by that increment,
+not forbidden by L5. The producer-inference increment below extends this
+boundary. Imported parameter and return types are immutable premises.
 Argument/result types and arity are checked without specializing a producer
 from caller input.
 Operator references also receive their function type. Function signatures and
@@ -987,6 +988,44 @@ source composition (1/72), these are 21 test executions and 313 assertions,
 not a count of unique semantic cases. JVMs were serialized at a 2 GiB heap.
 This is development implementation evidence, not authoritative migration,
 runtime linking, complete SH-07/SH-08/SH-09 or self-hosting completion.
+
+### Producer-inferred imported scalar signatures: development implementation
+
+The next L3/L5/C7 increment replaces annotation presence with complete types
+derived freshly within the producer module. Function, body and syntax IDs,
+ordered unique parameter IDs, fixed arity, inferred status and any present
+annotations must match the actual producer facts. All existing original C5
+export/origin and projected C6 joins remain in force. Caller observations do not
+participate in producer inference.
+
+The supported signature boundary is the existing literal/atomic scalar type
+catalogs, including the actual nil type. Unknown types, host nil, callable types
+and composite type maps reject rather than passing a shallow known-type check.
+Composite and higher-order imported signatures remain implementation work, not
+L5 restrictions. Request APIs, finite work bounds, immutable imported premises
+and the mandatory C8 pending-body-effects rejection are unchanged.
+
+The final direct batch passed five tests and 156 assertions, including existing
+annotated imports, local-chain and work-boundary regressions. The earlier
+four-test/140-assertion batch is overlapping evidence, not added coverage. The
+language boundary passed six tests and 11 assertions. Independent static review
+found no remaining blocker in the code, new fixtures or source test.
+
+Real paired-source composition passed one test and 58 assertions. It derived
+zero-argument Bool, annotated-parameter/inferred-return I64, producer-local
+String identity and an unannotated Integer call chain through separate actual
+modules. Fresh replay passed; producer/function/parameter/body tampering and
+argument, arity and declared-result mismatches rejected. An actual unresolved
+exported identity producer rejected even though its separate caller supplied
+Bool. C8 rejected the authentic accepted result for pending imported body
+effects. Both source extensions produced the same semantic identity.
+
+The three final batches total 12 test executions and 225 assertions, not unique
+semantic cases. Execution was serialized at a 2 GiB heap. The new real-source
+test took 1,272.547 seconds of selected execution and 7.012 seconds of namespace
+loading; the unchanged annotated-source composition was not replayed. This is
+development implementation evidence, not authoritative migration, checked
+runtime linking, complete effects/errors, self-hosting or release completion.
 
 ## Current Baseline
 
