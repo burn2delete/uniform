@@ -92,10 +92,12 @@
 (declare p15-s23-stage2-module-bundle p15-s23-stage2-module-literals)
 (defn p15-s23-stage2-compiler-artifact-plan-raw
   [emitter artifact-source artifact-text module-routes]
-  (let [macro-artifact (macro-source-artifact artifact-source artifact-text)
+  (let [records (read-source-form-records artifact-source artifact-text)
+        macro-artifact (macro-source-artifact-from-records artifact-source artifact-text records)
         module (assoc (:module macro-artifact)
                       :forms (:expanded-forms macro-artifact))
         function-table (stage0-function-table module)
+        _ (validate-seed-source-headers! artifact-source (map :form records))
         literals (p15-s23-stage2-module-literals (:forms module))
         source-authority
         (when (= 'gravity.checked-core (:module module))

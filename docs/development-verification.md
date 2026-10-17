@@ -196,13 +196,57 @@ checks actual accepted/rejected annotated `.gravity` and `.qst` source products,
 fresh C7/C8 verifiers and tampered artifacts. Its result must be recorded, not
 inferred from the kernel checks.
 
-The raw seed's symbol-only function header is a separate current limitation:
-annotated-source execution is not established by this compiler composition.
-Do not strip annotations or replace it with an untyped runtime example. A
-follow-on definition-lowering change must retain original declarations and
-source/plan identity while keeping semantic legality in C5/C6/C7/C8. General
-recursion, termination, target legality and authoritative migration remain
-separate claims.
+The compiler composition does not itself establish runtime execution. The
+separate exact-source seed check below supplies that evidence for the bounded
+fixture. General recursion, termination, target legality and authoritative
+migration remain separate claims.
+
+### Annotated single-source seed execution
+
+The existing three-argument compiler-artifact plan interface lowers fixed-arity
+atomic parameter and return annotations without changing the source text.
+Definition records retain `:source-declarations` alongside logical parameter
+names and executable body forms. Raw `def`/`fn` return prefixes and the existing
+macro-produced `typed/return` header are retained in their actual forms; the
+latter is not relabeled as literal unexpanded source. Full source hashes and
+function records remain part of plan and semantic identity.
+
+The owning seed code is `foundation/00546` (header normalization and validation),
+`bootstrap-p15/00580` (existing source records and raw plan construction), and
+`bootstrap-p15/00584` (direct-emitter validation and declaration comparison).
+The shared raw definition parser remains unchanged. Original headers are
+validated before body compilation, including invalid nil/false return tokens
+that legacy macro expansion can erase. Plain records and plans retain their
+previous shape; shared function-table callers are not assumed to be isolated.
+
+Run the existing focused header and compatibility checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact seed-function-declaration-headers-development-kernel \
+  --exact seed-function-declaration-rejections-development-kernel \
+  --exact seed-function-declaration-plan-parity-development-kernel \
+  --exact seed-function-declaration-macro-route-development-kernel \
+  --exact seed-shared-function-table-plain-parity-development-kernel \
+  --exact seed-annotated-function-loop-isolation-development-kernel
+```
+
+For execution of the exact annotated function-recur fixture:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact function-recur-annotated-seed-execution
+```
+
+This seed lowering validates declaration grammar, not type legality. C5/C6/C7/C8
+remain the semantic owners; a symbolic type token is not proof that its type
+exists or that its use is legal. Composite annotations, variadics, duplicate
+logical names, missing/repeated markers and empty bodies reject in this subset.
+The four-argument module constructor retains its unannotated-definition policy;
+the direct compiled-emitter path retains its hosted-profile requirement. No
+annotation stripping, unchecked imported execution or new authority follows.
 
 ### Imported-call type development
 

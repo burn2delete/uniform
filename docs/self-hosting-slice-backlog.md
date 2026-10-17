@@ -1562,13 +1562,48 @@ assertions, one failure and one error), with later assertions unexecuted. The
 new dispatch regression executes the same private helper used after the module
 joins; it does not itself replace those joins or the real paired check.
 
-Annotated-source seed execution remains the immediate next boundary. The raw
-seed currently accepts symbol-only parameter vectors and does not lower return
-annotations. Do not strip declarations or substitute an untyped runtime case.
-The prepared follow-on retains exact source/declaration identity while lowering
-only the existing fixed-arity atomic signature syntax. General recursion,
+At this compiler-slice boundary, annotated-source seed execution remained open;
+the separate increment below closes the stated fixture's execution without
+stripping declarations or substituting an untyped example. General recursion,
 termination, target legality, public C8 module-bundle acceptance, authoritative
 migration, self-hosting and seedless release remain unclaimed.
+
+### Annotated single-source seed definitions
+
+The existing seed now lowers fixed-arity atomic parameter/return declarations
+for `defn` and `def`/`fn`, retaining declarations in function records and deriving
+logical parameter names and body forms. Macro-expanded returns retain their
+actual `typed/return` declaration header; raw prefixes retain their raw form.
+Original source bytes and SHA remain unchanged. Declarations affect both plan
+and semantic identity independently of executable instructions.
+
+The raw definition parser remains byte-identical. The shared function table
+preserves complete plain-record parity for all seven existing C5/B51 module
+sources, not merely an assumed seed-only caller boundary. Raw plan construction
+reuses its existing source records for original-header validation; it does not
+parse twice or add a field to shared macro artifacts. This catches nil/false
+return annotations that legacy macro expansion otherwise consumes silently.
+The direct emitter reuses its existing raw C2/C3 forms and remains hosted-only.
+
+Focused checks pass 11 tests/179 assertions: valid raw and expanded signatures,
+malformed and composite declarations, duplicate/variadic names, pre-execution
+rejection, plain whole-plan parity, declaration-sensitive semantic input, shared
+table parity, and function/loop transfer isolation. Earlier reader-syntax and
+test-profile mistakes remain separate failed attempts; production was unchanged
+by the test-only profile correction.
+
+The exact previously compiler-checked function-recur fixture then passes one
+test/14 assertions. Both unchanged `.gravity` and `.qst` files retain their
+source SHA and declarations, return `"done"`, and observe exactly one transfer
+`[false "done"]`. The completed 69-assertion compiler composition was not
+replayed to renew a receipt. These are ordinary development results, not fresh
+authoritative migration evidence.
+
+Seed grammar recognition does not resolve types or replace C5/C6/C7/C8 legality.
+Unknown type names, unsupported semantic forms and mismatched uses retain those
+owners. Composite signatures, variadics, checked imported-user execution and
+general typed-runtime conformance remain unsupported. No target legality,
+termination, public proof, seed retirement or self-hosting claim follows.
 
 ## Current Baseline
 

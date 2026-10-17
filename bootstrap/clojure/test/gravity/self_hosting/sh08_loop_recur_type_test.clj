@@ -395,6 +395,31 @@
         (is (= (slurp (path (fixture "rejected" basename ".gravity")))
                (slurp (path (fixture "rejected" basename ".qst")))))))))
 
+(deftest function-recur-annotated-seed-execution
+  ;; Legality is covered by function-recur-authenticated-paired-composition
+  ;; over these exact files. This selector executes their unchanged bytes.
+  (let [gravity (slurp (path (fixture "accepted" "function-recur-types" ".gravity")))
+        qst (slurp (path (fixture "accepted" "function-recur-types" ".qst")))]
+    (is (= gravity qst))
+    (is (= "c9068acec85998d8dcba1b22e165b66ca9e73f5fae04f17229611ed6ad1d63f9"
+           (bootstrap/sha256-hex gravity)))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [source (path (fixture "accepted" "function-recur-types" extension)) text (slurp source)
+            emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
+            compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source text)
+            observed (atom []) original bootstrap/p15-s23-stage2-runtime-recur-signal
+            value (with-redefs [bootstrap/p15-s23-stage2-runtime-recur-signal
+                               (fn [values] (swap! observed conj values) (original values))]
+                    (bootstrap/p15-s23-stage2-runtime-execute-function
+                     {:engine :function-recur-explicit-annotated-seed-interpreter} compiled 'run []))]
+        (is (= text gravity))
+        (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
+        (is (= {:parameters '[flag :- Bool value :- String] :return '[typed/return (quote String)]}
+               (get-in compiled [:functions 'again :source-declarations])))
+        (is (= '[flag value] (get-in compiled [:functions 'again :params])))
+        (is (= "done" value))
+        (is (= [[false "done"]] @observed))))))
+
 (defn- function-recur-data []
   (let [signature {:parameters [{:type-id :gravity.type/bool} {:type-id :gravity.type/string}]
                    :return {:type-id :gravity.type/string}}

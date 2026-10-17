@@ -72,6 +72,149 @@
       (.getPath (io/file directory (str "bootstrap/clojure/fixtures/self-hosting/sh-01/modules/" name extension)))
       (recur (.getParentFile directory)))))
 
+(deftest seed-function-declaration-headers-development-kernel
+  (let [table #(bootstrap/stage0-function-table {:source-path "seed-header.gravity" :forms [%]})]
+    (is (true? (:private (meta (module-private 'normalize-seed-function-header)))))
+    (doseq [[form params body declarations]
+            [['(defn f [x :- Bool y] :- String y) '[x y] '(y) {:parameters '[x :- Bool y] :return '[:- String]}]
+             ['(def f (fn [x :- Bool] x)) '[x] '(x) {:parameters '[x :- Bool] :return nil}]
+             ['(defn f [x] :- String x) '[x] '(x) {:parameters '[x] :return '[:- String]}]
+             ['(def f (fn [x :- Bool y :- String] :- String y)) '[x y] '(y)
+              {:parameters '[x :- Bool y :- String] :return '[:- String]}]
+             ['(def f (fn [x] (typed/return (quote String) (do x)))) '[x] '(x)
+              {:parameters '[x] :return '[typed/return (quote String)]}]]]
+      (let [definition (get (table form) 'f)]
+        (is (= params (:params definition)))
+        (is (= body (:body definition)))
+        (is (= (count params) (:arity definition)))
+        (is (= 1 (:body-form-count definition)))
+        (is (= declarations (:source-declarations definition)))))
+    (let [raw (bootstrap/function-definition-form "seed-header.gravity" '(defn f [x :- FutureType] :- String x))
+          lowered (get (table '(defn f [x :- FutureType] :- String x)) 'f)]
+      (is (= '[x :- FutureType] (:params raw)))
+      (is (= '(:- String x) (:body raw)))
+      (is (= '[x] (:params lowered)))
+      (is (= '[x :- FutureType] (get-in lowered [:source-declarations :parameters]))))
+    (doseq [form ['(defn f [x y] y) '(def f (fn [x y] y))]]
+      (let [raw (bootstrap/function-definition-form "seed-header.gravity" form)]
+        (is (= (assoc raw :arity 2 :body-form-count 1) (get (table form) 'f)))
+        (is (not (contains? (get (table form) 'f) :source-declarations)))))))
+
+(deftest seed-function-declaration-rejections-development-kernel
+  (let [table #(bootstrap/stage0-function-table {:source-path "seed-header.gravity" :forms [%]})]
+    (doseq [form ['(defn f [x :-] x) '(defn f [:- Bool] 1)
+                  '(defn f [x :- :- Bool] x) '(defn f [x :- Bool :- String] x)
+                  '(defn f [x :- (Vector String)] x) '(defn f [x :- :Bool] x)
+                  '(defn f [x :- 7] x) '(defn f [] :-) '(defn f [] :- String)
+                  '(defn f [] :- [String] 1) '(defn f [] :- :String 1)
+                  '(defn f [] :- String :- Bool 1)
+                  '(defn f [x x] x) '(defn f [x :- Bool x] x)
+                  '(defn f [x :- Bool x :- String] x)
+                  '(defn f [& xs] xs) '(defn f [x & xs] x) '(defn f [x :- Bool & xs] x)
+                  '(def f (fn [x :-] x)) '(def f (fn [] :- String))
+                  '(def f (fn [x] (typed/return String (do x))))
+                  '(def f (fn [x] (typed/return (quote String extra) (do x))))
+                  '(def f (fn [x] (typed/return (quote String) (identity x))))
+                  '(def f (fn [x] (typed/return (quote String) (do x) extra)))
+                  '(def f (fn [x] (typed/return (quote String) (do x)) x))
+                  '(def f (fn [x] (typed/return (quote nil) (do x))))
+                  '(def f (fn [x] (typed/return (quote false) (do x))))]]
+      (is (= "L2-FUNCTION-PARAMS" (:id (diagnostic #(table form)))) (pr-str form)))
+    (is (= :duplicate-parameter-names
+           (:reason (diagnostic #(table '(defn f [x :- Bool x] x))))))
+    (is (= :variadic-parameters-unsupported
+           (:reason (diagnostic #(table '(defn f [x :- Bool & xs] x))))))
+    (is (= "L2-DUPLICATE-FUNCTION"
+           (:id (diagnostic #(bootstrap/stage0-function-table
+                               {:source-path "seed-header.gravity"
+                                :forms ['(defn f [x :-] x) '(defn f [] 1)]})))))))
+
+(deftest seed-function-declaration-plan-parity-development-kernel
+  (let [path (module-fixture "seed-library" ".gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        compile-source #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path %)
+        plain "(ns example.seed.plain (:profile :meta) (:target :jvm)) (defn f [x] x)"
+        normalizer (module-private 'normalize-seed-function-header)
+        current (compile-source plain)
+        legacy (with-redefs-fn {normalizer (fn [_ definition] definition)} #(compile-source plain))
+        bool-source "(ns example.seed.annotated (:profile :meta) (:target :jvm)) (defn f [x :- Bool] :- Bool x)"
+        string-source (str/replace bool-source "Bool" "String")
+        bool-plan (compile-source bool-source) string-plan (compile-source string-source)]
+    (is (= legacy current))
+    (is (= (dissoc (get-in bool-plan [:functions 'f]) :source-declarations)
+           (dissoc (get-in string-plan [:functions 'f]) :source-declarations)))
+    (is (= {:parameters '[x :- Bool] :return '[typed/return (quote Bool)]}
+           (get-in bool-plan [:functions 'f :source-declarations])))
+    (is (not= (get-in bool-plan [:functions 'f :source-declarations])
+              (get-in string-plan [:functions 'f :source-declarations])))
+    (is (not= (:plan-id bool-plan) (:plan-id string-plan)))
+    (is (not= (:source bool-plan) (:source string-plan)))
+    (is (not= (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input bool-plan)
+              (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input string-plan)))
+    (let [executed? (atom false)
+          data (diagnostic #(let [compiled (compile-source
+                                            "(ns example.seed.bad (:profile :meta) (:target :jvm)) (defn f [x :-] (println \"BODY\"))")]
+                              (reset! executed? true)
+                              (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f [true])))]
+      (is (= "L2-FUNCTION-PARAMS" (:id data)))
+      (is (false? @executed?)))
+    (is (false? (bootstrap/p15-s23-stage2-module-fixed-definition? '(defn f [x :- Bool] x))))))
+
+(deftest seed-function-declaration-macro-route-development-kernel
+  (let [path (module-fixture "seed-library" ".gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        prefix "(ns example.seed.headers (:profile :meta) (:target :jvm)) "
+        compile-source #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (str prefix %))]
+    (doseq [[form declarations]
+            [["(defn f [x :- Bool] :- Bool x)" {:parameters '[x :- Bool] :return '[typed/return (quote Bool)]}]
+             ["(defn f [x] :- String x)" {:parameters '[x] :return '[typed/return (quote String)]}]
+             ["(def f (fn [x :- Bool] :- Bool x))" {:parameters '[x :- Bool] :return '[:- Bool]}]]]
+      (let [function (get-in (compile-source form) [:functions 'f])]
+        (is (= '[x] (:params function)))
+        (is (= '(x) (:body function)))
+        (is (= declarations (:source-declarations function)))))
+    (doseq [form ["(defn f [] :- nil 1)" "(defn f [] :- false 1)" "(defn f [] :-)"
+                  "(defn f [] :- [String] 1)" "(defn f [] :- (Vector String) 1)"
+                  "(defn f [] :- String :- Bool 1)"]]
+      (is (= "L2-FUNCTION-PARAMS" (:id (diagnostic #(compile-source form)))) form))
+    (is (= "L2-DUPLICATE-FUNCTION"
+           (:id (diagnostic #(compile-source "(defn f [x :-] x) (defn f [] 1)")))))
+    (let [emitted (bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                   emitter path (str (str/replace prefix ":meta" ":hosted") "(defn main [] :- String \"done\")"))]
+      (is (= {:parameters [] :return '[typed/return (quote String)]}
+             (get-in emitted [:functions 'main :source-declarations]))))
+    (doseq [form ["(defn main [] :- nil 1)" "(defn main [] :- false 1)"]]
+      (is (= "L2-FUNCTION-PARAMS"
+             (:id (diagnostic #(bootstrap/p15-s23-stage2-plan-emitter-compile-source
+                                emitter path (str (str/replace prefix ":meta" ":hosted") form))))) form))))
+
+(deftest seed-shared-function-table-plain-parity-development-kernel
+  (let [specs (var-get (module-private 'sh06-resolution-b51-module-specs))
+        normalizer (module-private 'normalize-seed-function-header)]
+    (is (= 7 (count specs)))
+    (doseq [spec specs]
+      (let [path (:logical-source-path spec)
+            module (bootstrap/parse-module path (bootstrap/read-forms path (slurp path)))
+            current (bootstrap/stage0-function-table module)
+            previous (with-redefs-fn {normalizer (fn [_ definition] definition)}
+                       #(bootstrap/stage0-function-table module))]
+        (is (= previous current) path)
+        (is (every? #(not (contains? % :source-declarations)) (vals current)) path)))))
+
+(deftest seed-annotated-function-loop-isolation-development-kernel
+  (let [path (module-fixture "seed-library" ".gravity")
+        source "(ns example.seed.control (:profile :meta) (:target :jvm)) (defn again [flag :- Bool value :- String] :- String (if flag (recur false value) (loop [local true] (if local (recur false) value)))) (defn run [] :- String (again true \"done\"))"
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path source)
+        transfers (atom []) original bootstrap/p15-s23-stage2-runtime-recur-signal
+        value (with-redefs [bootstrap/p15-s23-stage2-runtime-recur-signal
+                           (fn [values] (swap! transfers conj values) (original values))]
+                (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'run []))]
+    (is (= "done" value))
+    (is (= [[false "done"] [false]] @transfers))
+    (is (= '[flag value] (get-in compiled [:functions 'again :params])))
+    (is (= 2 (get-in compiled [:functions 'again :arity])))))
+
 (deftest compiler-module-literal-data-development-kernel
   (let [path (module-fixture "seed-library" ".gravity")
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
