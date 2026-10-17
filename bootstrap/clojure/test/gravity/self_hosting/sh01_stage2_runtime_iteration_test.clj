@@ -2,7 +2,8 @@
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
 (def ^:private runtime {:engine :stage2-runtime-iteration-test})
 (def ^:private plan {:source {:path "stage2-runtime-iteration-test.gravity"}})
@@ -117,8 +118,7 @@
                 (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input used-b))))))
 
 (deftest compiler-module-literal-data-existing-source-kernel
-  (doseq [relative ["gravity/src/gravity/checked_core.gravity"
-                    "gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"]]
+  (doseq [relative ["gravity/src/gravity/checked_core.gravity"]]
     (let [path (str/replace (module-fixture "seed-library" ".gravity")
                            "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity" relative)
           text (slurp path)
@@ -301,11 +301,9 @@
   (let [path (str/replace (module-fixture "seed-library" ".gravity")
                           "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
                           "gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
-        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
-        artifact (bootstrap/compiler-c5-resolution-file-artifact path)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)
-                 {:caller-resolution-artifact artifact :dependency-plans []})
-        entry (first (:modules bundle))
+        bundle (body-effects/compile-c8-module-bundle path)
+        entry (body-effects/module-root-entry bundle)
+        artifact (:resolution-artifact entry)
         literals (bootstrap/p15-s23-stage2-module-literals (bootstrap/read-forms path (slurp path)))
         catalogs '#{c8-effect-graph-contract c8-effect-legality-contract c8-capability-proof-contract
                     c8-build-effect-contract c8-replay-ordering-contract c8-effect-diagnostic-catalog}]

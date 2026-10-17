@@ -1133,6 +1133,70 @@ was substituted. Effects, thrown-error completion, checked imported-user calls,
 target support, authoritative migration, self-hosting and seedless release
 remain outstanding.
 
+### Local body-derived effects: development implementation
+
+The C8/L6 increment moves body analysis into
+`bootstrap/gravity/src/gravity/effects.gravity`. The actual existing
+`gravity.compiler.c8-effect-checker-engine` exposes the three-argument
+`sh09-build-authenticated-body-effect-result` and four-argument
+`sh09-verify-authenticated-body-effect-result` as qualified forwarders to that
+owner. Existing pure-result and compiler-read interfaces remain separate; no
+caller purity flag, replacement C8 facade or accepted-proof cache is added.
+The real compiler-artifact module bundle supplies the effects dependency and
+retains all six existing C8 DATA catalog exports.
+
+The local first-order subset consumes the actual C7 result, fresh verification
+and existing binding containing the complete original request and canonical
+core. It derives a complete node graph, function latent-effect table and
+namespace summary across literals, collections, references, definitions,
+`let`, `do`, `if`, inert quote, function construction, structural matches and
+normally returning Bool guards. Acyclic local calls depend on their actual
+callee body. Function creation does not execute its latent body. Conditional
+bodies and guards contribute conservatively without becoming unconditional
+evaluation children. Zero-call functions are included. Declarations remain
+allowances: unused nonempty effect/capability declarations do not imply an
+action or prevent a supported body from being inferred empty.
+
+Graph coverage, types, source origins, function/body/call coordinates, local
+bindings and ordering are joined to the retained core and typed identity.
+The complete core preimage and derived graph participate in the new identity
+meaning. This is not the older declaration-based pure adapter's identity scope;
+the older identity path rejects the new body scope rather than claiming a
+partial complete identity. Throws remain `[:pending-sh09]`.
+
+The paired `.gravity`/`.qst` accepted fixture exercises local calls, collections,
+inert quoted throw/unresolved DATA, conditionals and guarded matches; the
+rejected pair diagnoses a non-Bool guard in C7. The actual composition passed
+one test and 59 assertions with no failures or errors on the reviewed
+`2ffa5262` effects-source snapshot. It freshly constructs C5/C6 and C7 products,
+checks C7 and the current Gravity leaf, rejects coherent input/result mutations,
+then constructs the actual C8/effects bundle and invokes the public C8
+constructor and verifier for both source extensions. Selected execution took
+2,496.702 seconds after 6.585 seconds of namespace loading with a 2 GiB heap.
+This measures the combined workload, not phase dominance or a speedup.
+
+After that run, four narrow corrections reject callable parameter/return type
+shapes recursively, join the copied global ordering ledger to its identity
+preimage, report the actual diagnostic function owner (or nil), and join call
+profile/target facts to the callee. Successful fixture graphs and C8 forwarding
+are unchanged. Five final body kernels passed 60 assertions, including ordinary
+collection/list/quoted-DATA type positives and coherent negative substitutions.
+The existing checked-core/SH02 identity kernel passed seven more assertions;
+the language boundary passed six tests and 11 assertions. These final batches
+and the explicitly attributed earlier composition total 13 test executions and
+137 assertions. Earlier overlapping kernel runs are not added. The long run
+did not execute the later guards; focused delta checks and static valid-path
+review cover those corrections without repeating the expensive composition.
+
+Imported bodies, higher-order/callable value propagation, recursion,
+throw/try/control-transfer composition, general effect legality, provider and
+grant validation, complete effect identities, targets, authoritative migration,
+self-hosting and seedless release remain outstanding. Legacy imported type-only
+input still rejects with `:imported-body-effects-pending`. Use the direct
+`sh09-body-effect-test` kernels for semantic iteration and the affected
+composition rules in `development-verification.md`; no new lane or wrapper is
+needed.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

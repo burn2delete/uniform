@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh09-c7-effect-adapter-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
 (defn- repository-root
   []
@@ -34,14 +35,7 @@
 
 (defn- compile-plan
   []
-  (let [source-path (str (.resolve @root source-relative-path))
-        source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+  (body-effects/compile-c8-module-bundle (str (.resolve @root source-relative-path))))
 
 (def ^:private c8-plan (delay (compile-plan)))
 
@@ -353,10 +347,10 @@
     (is (= :rejected (:status (build typed (assoc verification :candidate raw)))))))
 
 (deftest sh09-c7-adapter-source-structure-and-policy-are-exact
-  (let [functions (:functions @c8-plan)
+  (let [functions (:functions (body-effects/module-root-plan @c8-plan))
         policy
         (invoke-c8 'sh09-authenticated-sh08-adapter-policy [])]
-    (is (= :gravity/stage2-compiler-artifact-plan (:kind @c8-plan)))
+    (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind @c8-plan)))
     (is (= {:arity 0 :params []}
            (select-keys
             (get functions 'sh09-authenticated-sh08-adapter-policy)

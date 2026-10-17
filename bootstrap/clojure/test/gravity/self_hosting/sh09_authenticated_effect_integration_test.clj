@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]
             [gravity.self-hosting.sh08-authenticated-type-integration-test]))
 
 (defn- repository-root
@@ -42,8 +43,9 @@
         (:emitter
          (bootstrap/c-backend-stage2-plan-emitter-source-rule!
           source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+    (if (= relative "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+      (body-effects/compile-c8-module-bundle source-path)
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text))))
 
 (def ^:private envelope-source
   "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
@@ -104,8 +106,9 @@
 
 (defn- plan-semantic-id
   [plan]
-  (bootstrap/p15-s23-c11-mir-digest
-   (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input plan)))
+  (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
+    (bootstrap/reader-canonical-hash (:identity-input plan))
+    (bootstrap/p15-s23-c11-mir-digest (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input plan))))
 
 (defn- function-shapes
   [plan]
@@ -114,7 +117,8 @@
    (map
     (fn [[name function]]
       [name (select-keys function [:arity :params])]))
-   (:functions plan)))
+   (:functions (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
+                 (body-effects/module-root-plan plan) plan))))
 
 (def ^:private envelope-bounds
   {:maximum-semantic-projections 64
@@ -568,7 +572,8 @@
 
 (deftest sh09-authenticated-effect-bridge-compiles-with-narrow-api
   (doseq [plan [envelope-plan c8-plan bridge-plan]]
-    (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan))))
+    (is (= (if (identical? plan c8-plan) :gravity/stage2-compiler-artifact-module-bundle
+               :gravity/stage2-compiler-artifact-plan) (:kind @plan))))
   (let [functions (:functions @bridge-plan)]
     (is (= {:arity 0 :params []}
            (select-keys

@@ -148,6 +148,67 @@ body-effect inference and thrown-error analysis remain pending, and C8 rejects
 it with `:imported-body-effects-pending`. Type checking does not authorize target
 lowering, linking, effect execution or runtime behavior.
 
+### Body-effect development
+
+The body-analysis owner is `bootstrap/gravity/src/gravity/effects.gravity`.
+The existing `gravity.compiler.c8-effect-checker-engine` module forwards its
+`sh09-build-authenticated-body-effect-result [typed verification binding]` and
+`sh09-verify-authenticated-body-effect-result [typed verification binding candidate]`
+entrypoints to that owner. Its older pure-result and compiler-read interfaces
+remain separate. A compiler-read allowance is not evidence that a body is pure.
+
+Use the actual canonical core retained by the existing C7 request and binding,
+not a supplied effect summary. The local first-order subset derives effects
+from complete node coverage and acyclic local calls. Function creation retains
+latent body effects without executing the body. Conditional branches and match
+guards contribute conservatively to the effect union while their evaluation
+regions remain conditional. Declared effects remain allowances; unused
+nonempty declarations do not become inferred actions. Thrown-error facts remain
+pending, and this analysis does not establish full effect legality.
+
+Run the direct Gravity kernels first:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-operation-development-kernel \
+  --exact body-effect-coverage-development-kernel \
+  --exact body-effect-guard-development-kernel \
+  --exact body-effect-final-input-fences-development-kernel \
+  --exact body-effect-call-metadata-development-kernel
+```
+
+These use normalized graph DATA for development feedback, not authenticated
+upstream evidence. Changes to input joins or graph semantics also need affected
+real C5/C6 -> C7 -> effects composition, using fresh C7 verification and the
+complete original request in its binding. Do not reuse an accepted result as
+that composition's input authority.
+
+The current local-body composition also exercises the real public C8 bundle:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-authenticated-paired-composition --fail-fast
+```
+
+That test derives paired C5/C6 and C7 products, freshly verifies C7, and checks
+the leaf before constructing the real C8 module bundle. It exercises the public
+constructor and verifier without changing the bundle's fresh validation rules.
+Repeat that public-bundle boundary when C8 forwarding/authentication code,
+namespace dependencies, exports/arities, qualified callsite placement, or
+bundle construction/routing changes. Private leaf semantics alone do not
+require rebuilding this expensive boundary if affected real upstream-to-leaf
+composition and unchanged forwarding/route checks cover the change. Source and
+plan identities must still describe the current bytes: prior route evidence is
+not proof of a new bundle identity. Keep post-run reject-only or diagnostic
+corrections distinct from the source snapshot exercised by an earlier run.
+Imported bodies, higher-order or recursive propagation, unsupported operations,
+throw/try composition, general provider/grant policy and authoritative effect
+identities remain outside this local subset. The legacy imported-type-only
+input still rejects with `:imported-body-effects-pending`. Record actual test
+results separately from migration, target support and self-hosting status.
+
 ### Compiler-artifact module execution
 
 The temporary seed interpreter has a separate, explicitly unadmitted module

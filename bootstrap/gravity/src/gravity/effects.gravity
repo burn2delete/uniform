@@ -1,0 +1,919 @@
+; L6/C8: bounded body effects over authenticated canonical core.
+(ns gravity.effects (:profile :meta) (:target :jvm)
+  (:exports [build-body-effect-result verify-body-effect-result
+             sh09-adapter-function-top-level-keys sh09-adapter-function-typed-core
+             sh09-adapter-function-identity-domain sh09-adapter-function-identity-input
+             sh09-adapter-compiler-read-b47-check-catalog sh09-adapter-compiler-read-all-checks-true?
+             sh09-adapter-compiler-read-receipt-valid? sh09-adapter-compiler-read-verification-preimage
+             sh09-adapter-compiler-read-verification-resolution-valid? sh09-adapter-compiler-read-provenance-valid?
+             sh09-adapter-compiler-read-b47-context-valid? sh09-adapter-compiler-read-coordinator-valid?
+             sh09-adapter-compiler-read-request-valid? sh09-adapter-compiler-read-binding-valid?])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn sh09-adapter-function-top-level-keys [scope]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop scope)
+    #{:artifact :schema-version :status :scope :authentication-status
+      :module :sh07-shaped-artifact-id :function-products
+      :function-type-table :local-binding-facts :call-type-facts
+      :constraint-ledger :type-table :convergence :typed-core
+      :diagnostics :artifact-id-request :identity-input
+      :identity-resolution :provenance :pending
+      :higher-order-proof :higher-order-call-facts}
+    #{:artifact :schema-version :status :scope :authentication-status
+      :module :sh07-shaped-artifact-id :function-products
+      :function-type-table :local-binding-facts :call-type-facts
+      :constraint-ledger :type-table :convergence :typed-core
+      :diagnostics :artifact-id-request :identity-input
+      :identity-resolution :provenance :pending}))
+
+(defn sh09-adapter-function-typed-core [typed]
+  (let [base
+        {:artifact :gravity/typed-core
+         :core-input (get typed :sh07-shaped-artifact-id)
+         :module (get typed :module)
+         :types (get typed :type-table)
+         :constraints (get typed :constraint-ledger)
+         :function-types (get typed :function-type-table)
+         :local-bindings (get typed :local-binding-facts)
+         :calls (get typed :call-type-facts)
+         :diagnostics []}]
+    (if (= :capture-free-higher-order-fixed-arity-one-hop
+           (get typed :scope))
+      (assoc
+       (assoc base :higher-order-proof (get typed :higher-order-proof))
+       :higher-order-call-facts (get typed :higher-order-call-facts))
+      base)))
+
+(defn sh09-adapter-function-identity-domain [typed]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop (get typed :scope))
+    :gravity/sh08-authoritative-higher-order-type-v1
+    (let [records (get (get typed :function-products) :function-records)]
+      (if (vector? records)
+        (loop [records records]
+          (if (= (count records) 0)
+            :gravity/sh08-function-typed-core-v3
+            (if (map? (first records))
+              (if (contains? (first records) :signature)
+                :gravity/sh08-atomic-function-signature-typed-core-v1
+                (recur (rest records)))
+              :gravity/sh08-function-typed-core-v3)))
+        :gravity/sh08-function-typed-core-v3))))
+
+(defn sh09-adapter-function-identity-input [typed]
+  (let [products (get typed :function-products)
+        base
+        {:domain (sh09-adapter-function-identity-domain typed)
+         :sh07-shaped-artifact-id (get typed :sh07-shaped-artifact-id)
+         :module (get typed :module)
+         :function-records (get products :function-records)
+         :call-edges (get products :call-edges)
+         :recursion-components (get products :recursion-components)
+         :lexical-bindings (get products :lexical-bindings)
+         :function-type-table (get typed :function-type-table)
+         :local-binding-facts (get typed :local-binding-facts)
+         :call-type-facts (get typed :call-type-facts)
+         :constraint-ledger (get typed :constraint-ledger)
+         :type-table (get typed :type-table)
+         :convergence (get typed :convergence)
+         :pending (get typed :pending)}]
+    (if (= :capture-free-higher-order-fixed-arity-one-hop
+           (get typed :scope))
+      (assoc base :higher-order-proof (get typed :higher-order-proof))
+      base)))
+
+(defn sh09-exact-keys? [value expected]
+  (if (map? value)
+    (= (set (keys value)) expected)
+    false))
+
+(defn sh09-lowercase-hex? [characters]
+  (if (= (count characters) 0)
+    true
+    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                     \a \b \c \d \e \f}
+                   (first characters))
+      (sh09-lowercase-hex? (rest characters))
+      false)))
+
+(defn sh09-sha256-id? [value]
+  (if (string? value)
+    (if (= (count value) 71)
+      (let [characters (vec value)]
+        (if (= (subvec characters 0 7) [\s \h \a \2 \5 \6 \:])
+          (sh09-lowercase-hex? (subvec characters 7 71))
+          false))
+      false)
+    false))
+
+(defn sh09-authenticated-compiler-read-policy []
+  {:upstream-binding-artifact :gravity/sh09-authenticated-sh08-function-binding
+   :upstream-binding-boundary :clojure-coordinator-verifier
+   :upstream-binding-domain :gravity/sh09-sh08-function-binding-v1})
+
+(defn sh09-adapter-compiler-read-b47-check-catalog []
+  #{:wrapper-schema-current? :wrapper-kind-current?
+    :upstream-verification-passed? :semantic-artifact-id-current?
+    :authenticated-request-replays? :gravity-template-replays?
+    :digest-sequence-replays? :resolved-digests-replay?
+    :canonical-core-replays? :fragment-manifest-replay?
+    :fragment-coverage-replay? :module-assembly-manifest-replay?
+    :module-replay? :declared-alias-table-replay?
+    :control-flow-replays? :reference-uses-replay?
+    :var-references-replay? :calls-replay? :function-records-replay?
+    :call-edges-replay? :recursion-components-replay?
+    :keyword-lookups-replay? :lexical-bindings-replay?
+    :loop-bindings-replay? :recur-targets-replay?
+    :recur-transfers-replay? :mutations-replay?
+    :error-transfers-replay? :error-handlers-replay?
+    :match-branch-records-replay? :match-decision-skeletons-replay?
+    :match-pattern-records-replay? :template-verification-passed?
+    :resolved-verification-passed? :authoritative-products-replay?
+    :stored-capability-proof-current? :provenance-retained?})
+
+(defn sh09-adapter-compiler-read-all-checks-true? [checks]
+  (if (map? checks)
+    (if (> (count checks) 0)
+      (loop [remaining (keys checks)]
+        (if (= (count remaining) 0)
+          true
+          (if (= true (get checks (first remaining)))
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn sh09-adapter-compiler-read-receipt-valid? [receipt]
+  (if (sh09-exact-keys?
+       receipt
+       #{:status :checks :failed-checks :receipt-context
+         :opaque-provenance-binding-id :verification-digest})
+    (if (= :passed (get receipt :status))
+      (if (= (set (keys (get receipt :checks)))
+             (sh09-adapter-compiler-read-b47-check-catalog))
+        (if (sh09-adapter-compiler-read-all-checks-true?
+             (get receipt :checks))
+          (if (= [] (get receipt :failed-checks))
+            (if (= :gravity/sh07-b47-verification-v16
+                   (get receipt :receipt-context))
+              (if (sh09-sha256-id?
+                   (get receipt :opaque-provenance-binding-id))
+                (sh09-sha256-id? (get receipt :verification-digest))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
+(defn sh09-adapter-compiler-read-verification-preimage
+  [descriptor context artifact-id]
+  (let [wrapper (get context :authenticated-wrapper)
+        boundary (get wrapper :gravity-core-boundary)
+        core (get context :canonical-core-artifact)]
+    {:domain :gravity/sh08-b47-verification-binding-v1
+     :verified-artifact-id artifact-id
+     :opaque-provenance-binding-id
+     (get descriptor :opaque-provenance-binding-id)
+     :authenticated-wrapper wrapper
+     :canonical-core-artifact core
+     :authenticated-core-request (get context :authenticated-core-request)
+     :canonical-identity-preimage (get core :identity-preimage)
+     :authenticated-envelope-descriptor
+     (get boundary :authenticated-envelope-descriptor)
+     :authenticated-envelope (get boundary :authenticated-envelope)
+     :provenance-binding-preimage (get core :provenance-binding-preimage)
+     :verification-report (get descriptor :report)}))
+
+(defn sh09-adapter-compiler-read-verification-resolution-valid?
+  [descriptor context artifact-id]
+  (let [resolution (get descriptor :verification-digest-resolution)
+        expected
+        (sh09-adapter-compiler-read-verification-preimage
+         descriptor context artifact-id)]
+    (if (sh09-exact-keys?
+         resolution #{:ordinal :purpose :preimage :digest})
+      (if (= 0 (get resolution :ordinal))
+        (if (= :sh08-b47-verification-binding (get resolution :purpose))
+          (if (= expected (get resolution :preimage))
+            (if (sh09-sha256-id? (get resolution :digest))
+              (= (get resolution :digest)
+                 (get (get context :verification) :verification-digest))
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh09-adapter-compiler-read-provenance-valid?
+  [descriptor context artifact-id]
+  (let [core (get context :canonical-core-artifact)
+        wrapper (get context :authenticated-wrapper)
+        boundary (get wrapper :gravity-core-boundary)
+        lineage (get context :lineage)
+        provenance (get context :provenance)
+        binding-id (get core :provenance-binding-id)
+        binding-preimage (get core :provenance-binding-preimage)
+        envelope-descriptor
+        (get boundary :authenticated-envelope-descriptor)
+        envelope (get boundary :authenticated-envelope)
+        expected-preimage
+        {:domain :gravity/sh07-b47-core-provenance-binding-v16
+         :core-artifact-id-request artifact-id
+         :source-revision-id (get lineage :source-revision-id)
+         :sh06-artifact-id (get lineage :sh06-artifact-id)
+         :actual-source-path (get provenance :source-path)}]
+    (if (sh09-sha256-id? binding-id)
+      (if (= binding-id (get descriptor :opaque-provenance-binding-id))
+        (if (= binding-id
+               (get (get context :verification)
+                    :opaque-provenance-binding-id))
+          (if (= expected-preimage binding-preimage)
+            (if (= binding-preimage
+                   (get descriptor :provenance-binding-preimage))
+              (if (= envelope-descriptor
+                     (get descriptor :authenticated-envelope-descriptor))
+                (if (= envelope (get descriptor :authenticated-envelope))
+                  (if (= :gravity/sh07-authenticated-envelope-descriptor
+                         (get envelope-descriptor :artifact))
+                    (if (= artifact-id
+                           (get envelope-descriptor :semantic-artifact-id))
+                      (if (= :gravity/sh07-authenticated-envelope
+                             (get envelope :artifact))
+                        (if (= artifact-id
+                               (get envelope :semantic-artifact-id))
+                          (= (get provenance :source-path)
+                             (get envelope :actual-source-path))
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn sh09-adapter-compiler-read-b47-context-valid? [context typed]
+  (if (sh09-exact-keys?
+       context
+       #{:artifact-id :artifact-status :artifact-kind :input-domain
+         :identity-input :authenticated-core-request
+         :canonical-core-artifact :provenance :lineage :verification
+         :authenticated-wrapper})
+    (let [artifact-id (get context :artifact-id)
+          core (get context :canonical-core-artifact)
+          request (get context :authenticated-core-request)
+          wrapper (get context :authenticated-wrapper)
+          boundary (get wrapper :gravity-core-boundary)]
+      (if (= artifact-id (get typed :sh07-shaped-artifact-id))
+        (if (= (get typed :provenance) (get core :provenance))
+          (if (= (get (get typed :provenance) :actual-source-path)
+                 (get (get context :provenance) :source-path))
+            (if (= :accepted (get context :artifact-status))
+          (if (= :gravity/sh07-core-artifact (get context :artifact-kind))
+            (if (= :gravity/sh07-b47-canonical-core-v16
+                   (get context :input-domain))
+              (if (= :gravity/sh07-canonical-core-artifact
+                     (get core :artifact))
+                (if (= artifact-id (get core :artifact-id))
+                  (if (= (get context :identity-input)
+                         (get core :identity-preimage))
+                    (if (= (get context :lineage) (get request :lineage))
+                      (if (= (get context :provenance)
+                             (get wrapper :provenance))
+                        (if (= artifact-id (get wrapper :artifact-id))
+                          (if (= request
+                                 (get boundary :authenticated-core-request))
+                            (if (= core
+                                   (get boundary :canonical-core-artifact))
+                              (sh09-adapter-compiler-read-receipt-valid?
+                               (get context :verification))
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh09-adapter-compiler-read-coordinator-valid?
+  [descriptor context]
+  (if (sh09-exact-keys?
+       descriptor
+       #{:artifact :schema-version :boundary :verified-artifact-id
+         :verified-identity-input :verified-source-path
+         :verified-source-extension :report :check-catalog
+         :opaque-provenance-binding-id :provenance-binding-preimage
+         :authenticated-envelope-descriptor :authenticated-envelope
+         :verification-digest-resolution})
+    (let [artifact-id (get context :artifact-id)
+          report (get descriptor :report)]
+      (if (= :gravity/sh07-b47-coordinator-verification-v16
+             (get descriptor :artifact))
+        (if (= 16 (get descriptor :schema-version))
+          (if (= :clojure-coordinator-verifier (get descriptor :boundary))
+            (if (= artifact-id (get descriptor :verified-artifact-id))
+              (if (= (get context :identity-input)
+                     (get descriptor :verified-identity-input))
+                (if (= (get (get context :provenance) :source-path)
+                       (get descriptor :verified-source-path))
+                  (if (contains? #{".gravity" ".qst"}
+                                 (get descriptor :verified-source-extension))
+                    (if (sh09-adapter-compiler-read-provenance-valid?
+                         descriptor context artifact-id)
+                      (if
+                       (sh09-adapter-compiler-read-verification-resolution-valid?
+                        descriptor context artifact-id)
+                        (if (= (set (get descriptor :check-catalog))
+                               (sh09-adapter-compiler-read-b47-check-catalog))
+                          (if (= :gravity/sh07-core-artifact-verification
+                                 (get report :artifact))
+                            (if (= :passed (get report :status))
+                              (if (= (get report :source-path)
+                                     (get descriptor
+                                          :verified-source-path))
+                                (if (= (get report :checks)
+                                       (get (get context :verification)
+                                            :checks))
+                                  (if (= (set (keys (get report :checks)))
+                                         (sh09-adapter-compiler-read-b47-check-catalog))
+                                    (if
+                                     (sh09-adapter-compiler-read-all-checks-true?
+                                      (get report :checks))
+                                      (= [] (get report :failed-checks))
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false))
+    false))
+
+(defn sh09-adapter-compiler-read-request-valid? [request typed]
+  (if (sh09-exact-keys?
+       request
+       #{:canonical-core-artifact :b47-context
+         :coordinator-verification})
+    (let [context (get request :b47-context)
+          core (get request :canonical-core-artifact)]
+      (if (sh09-adapter-compiler-read-b47-context-valid? context typed)
+        (if (= core (get context :canonical-core-artifact))
+          (sh09-adapter-compiler-read-coordinator-valid?
+           (get request :coordinator-verification) context)
+          false)
+        false))
+    false))
+
+(defn sh09-adapter-compiler-read-binding-valid?
+  [typed verification binding]
+  (let [policy (sh09-authenticated-compiler-read-policy)
+        resolution (get binding :digest-resolution)
+        preimage (get resolution :preimage)]
+    (if (sh09-exact-keys?
+         binding
+         #{:artifact :schema-version :boundary :status
+           :digest-resolution})
+      (if (= (get policy :upstream-binding-artifact)
+             (get binding :artifact))
+        (if (= 1 (get binding :schema-version))
+          (if (= (get policy :upstream-binding-boundary)
+                 (get binding :boundary))
+            (if (= :passed (get binding :status))
+              (if (sh09-exact-keys?
+                   resolution
+                   #{:algorithm :encoding :preimage :digest :status})
+                (if (= :sha256 (get resolution :algorithm))
+                  (if (= :gravity/canonical-edn-v1
+                         (get resolution :encoding))
+                    (if (= :passed (get resolution :status))
+                      (if (sh09-sha256-id?
+                           (get resolution :digest))
+                        (if (sh09-exact-keys?
+                             preimage
+                             #{:domain :request :typed :verification})
+                          (if (= (get policy :upstream-binding-domain)
+                                 (get preimage :domain))
+                            (if (= typed (get preimage :typed))
+                              (if (= verification
+                                     (get preimage :verification))
+                                (sh09-adapter-compiler-read-request-valid?
+                                 (get preimage :request) typed)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+; Declarations are allowances. These classifications derive effects from the
+; complete graph; they do not establish profile/capability/safety legality.
+(defn body-effect-pending []
+  [:completed-thrown-effects :effect-legality :handled-effects :profile-capability-policy
+   :build-runtime-effect-policy :target-lowering :mir-preservation :body-effect-identities])
+
+(defn body-all? [values]
+  (loop [remaining values]
+    (if (= 0 (count remaining)) true
+      (if (= true (first remaining)) (recur (rest remaining)) false))))
+
+(defn body-add [values result]
+  (loop [remaining values result result]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (conj result (first remaining))))))
+
+(defn body-index [records field]
+  (if (vector? records)
+  (loop [remaining records result {}]
+    (if (= 0 (count remaining)) result
+      (let [record (first remaining) id (get record field)]
+        (if (contains? result id) nil
+          (recur (rest remaining) (assoc result id record)))))) nil))
+
+(defn body-project [record fields]
+  (loop [remaining fields result {}]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (assoc result (first remaining) (get record (first remaining)))))))
+
+(defn body-by [records field value]
+  (loop [remaining records result nil]
+    (if (= 0 (count remaining)) result
+      (if (= value (get (first remaining) field))
+        (if (= nil result) (recur (rest remaining) (first remaining)) nil)
+        (recur (rest remaining) result)))))
+
+(defn body-error [typed reason node]
+  {:artifact :gravity/sh09-authenticated-effected-core-template :schema-version 1 :status :rejected
+   :scope :local-first-order-body-effects-with-thrown-effects-pending
+   :diagnostics [{:artifact :gravity/diagnostic :rule "C8-VERIFY" :severity :error :reason reason
+                  :core-node-id (get node :node-id) :syntax-id (get (get node :source) :syntax-id)
+                  :source-span (get (get node :source) :semantic-span)
+                  :origin-chain (get (get node :source) :origin-chain)
+                  :generated-origin (get (get node :source) :generated-origin)
+                  :namespace (get (get typed :module) :namespace)
+                  :profile (get (get typed :module) :profile) :target (get (get typed :module) :target)
+                  :function (get (get node :evaluation) :owner-function-syntax-id)
+                  :remediation :supply-complete-fresh-typed-local-acyclic-canonical-core}]
+   :pending (body-effect-pending)})
+
+(defn body-core [binding]
+  (get (get (get (get binding :digest-resolution) :preimage) :request) :canonical-core-artifact))
+
+(defn body-input-valid? [typed verification binding]
+  (if (sh09-exact-keys? typed (sh09-adapter-function-top-level-keys (get typed :scope)))
+    (if (body-all?
+          [(= :gravity/sh08-function-typed-core-template (get typed :artifact))
+           (= 3 (get typed :schema-version)) (= :accepted (get typed :status))
+           (= :first-order-fixed-arity-functions-locals-calls (get typed :scope))
+           (= :host-resolved-b47-verification-boundary (get typed :authentication-status))
+           (= [] (get typed :diagnostics))
+           (= (get typed :artifact-id-request) (get typed :identity-input))
+           (= (sh09-adapter-function-identity-input typed) (get typed :identity-input))
+           (= (sh09-adapter-function-typed-core typed) (get typed :typed-core))
+           (= :gravity/sh08-function-type-verification (get verification :artifact))
+           (= :passed (get verification :status))
+           (= typed (get verification :expected) (get verification :candidate))
+           (= [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
+               :coherent-b47-lexical-bindings :fixed-arity-first-order-inference :local-binding-facts
+               :call-type-facts :constraint-ledger :source-syntax-origin-generated-origin-links-preserved
+               :path-neutral-identity-input :recursive-inference-rejected-without-annotation] (get verification :checks))
+           (= :meta (get (get typed :module) :profile)) (= :jvm (get (get typed :module) :target))
+           (vector? (get (get typed :module) :effects)) (vector? (get (get typed :module) :capabilities))])
+      (sh09-adapter-compiler-read-binding-valid? typed verification binding) false) false))
+
+(defn body-reachable [roots nodes]
+  (loop [pending roots seen #{}]
+    (if (= 0 (count pending)) seen
+      (let [id (first pending) node (get nodes id)]
+        (if (contains? seen id) (recur (rest pending) seen)
+          (if (map? node) (recur (body-add (get node :children) (vec (rest pending))) (conj seen id)) nil))))))
+
+(defn body-node-shapes? [nodes]
+  (loop [remaining nodes]
+    (if (= 0 (count remaining)) true
+      (if (if (map? (first remaining))
+            (body-all? [(vector? (get (first remaining) :children)) (map? (get (first remaining) :source))
+                        (map? (get (first remaining) :evaluation))
+                        (vector? (get (get (first remaining) :evaluation) :order))]) false)
+        (recur (rest remaining)) false))))
+
+(defn body-maps? [records]
+  (if (vector? records)
+    (loop [remaining records]
+      (if (= 0 (count remaining)) true
+        (if (map? (first remaining)) (recur (rest remaining)) false))) false))
+
+(defn body-first-order-value-type? [type]
+  (loop [pending [type] visits 0]
+    (if (= 0 (count pending)) true
+      (if (>= visits 65536) false
+        (let [index (- (count pending) 1) item (get pending index) next (subvec pending 0 index)]
+          (if (if (map? item) (= :gravity/c7-function-type (get item :artifact)) false) false
+            (recur
+              (if (map? item)
+                (loop [fields (keys item) result next]
+                  (if (= 0 (count fields)) result
+                    (recur (rest fields) (conj result (get item (first fields))))))
+                (if (if (vector? item) true (if (set? item) true (seq? item))) (body-add item next) next))
+              (+ visits 1))))))))
+
+(defn body-first-order-parameters? [parameters]
+  (loop [remaining parameters]
+    (if (= 0 (count remaining)) true
+      (if (body-first-order-value-type? (get (first remaining) :type))
+        (recur (rest remaining)) false))))
+
+(defn body-function-shapes? [functions]
+  (if (body-maps? functions)
+    (loop [remaining functions]
+      (if (= 0 (count remaining)) true
+        (let [function (first remaining)]
+          (if (body-all? [(vector? (get function :parameters)) (vector? (get function :parameter-binding-ids))
+                          (vector? (get function :latent-effects)) (vector? (get function :capabilities))])
+            (if (if (body-first-order-value-type? (get function :return))
+                  (body-first-order-parameters? (get function :parameters)) false)
+              (recur (rest remaining)) false) false)))) false))
+
+(defn body-shape-valid? [core typed]
+  (let [nodes (get core :nodes) functions (get typed :function-type-table)
+        records (get core :function-records) edges (get core :call-edges)
+        calls (get core :calls) locals (get core :lexical-bindings)]
+    (if (body-all? [(vector? nodes) (vector? functions) (vector? records) (vector? edges)
+                    (vector? calls) (vector? locals) (map? (get typed :type-table))
+                    (vector? (get typed :local-binding-facts)) (vector? (get typed :call-type-facts))
+                    (vector? (get core :root-core-node-ids)) (vector? (get core :definitions))
+                    (vector? (get core :match-branch-records)) (vector? (get core :evaluation-order))])
+      (if (body-all? [(body-node-shapes? nodes) (body-function-shapes? functions)
+                      (body-maps? records) (body-maps? edges) (body-maps? calls)
+                      (body-maps? locals) (body-maps? (get core :definitions))
+                      (body-maps? (get core :match-branch-records))])
+      (body-all?
+        [(> (count nodes) 0) (<= (count nodes) 65536) (<= (count functions) 256)
+         (= (count nodes) (count (body-index nodes :node-id)) (count (get typed :type-table)))
+         (= (set (keys (body-index nodes :node-id))) (set (keys (get typed :type-table))))
+         (= (count records) (count functions) (count (body-index functions :function-id)))
+         (= (count records) (count (body-index records :function-syntax-id))
+            (count (body-index records :function-core-node-id)))
+         (= (set (keys (body-index records :function-syntax-id))) (set (keys (body-index functions :function-id))))
+         (= (set (keys (body-index (body-select nodes :core-form :fn) :node-id)))
+            (set (keys (body-index records :function-core-node-id))))
+         (= (count (get core :root-core-node-ids)) (count (set (get core :root-core-node-ids))))
+         (= (set (keys (body-index nodes :node-id)))
+            (body-reachable (get core :root-core-node-ids) (body-index nodes :node-id)))
+         (= (count calls) (count edges) (count (get typed :call-type-facts))
+            (count (body-index calls :core-node-id)) (count (body-index edges :call-core-node-id))
+            (count (body-index (get typed :call-type-facts) :call-core-node-id)))
+         (= [] (get core :recursion-components))
+         (= (get typed :function-products)
+            {:function-records records :call-edges edges :recursion-components [] :lexical-bindings locals})
+         (= (get core :artifact-id) (get typed :sh07-shaped-artifact-id))
+         (= (get (get core :identity-preimage) :nodes) nodes)
+         (= (get (get core :identity-preimage) :root-core-node-ids) (get core :root-core-node-ids))
+         (= (get (get core :identity-preimage) :definitions) (get core :definitions))
+         (= (get (get core :identity-preimage) :function-records) records)
+         (= (get (get core :identity-preimage) :call-edges) edges)
+         (= (get (get core :identity-preimage) :calls) calls)
+         (= (get (get core :identity-preimage) :evaluation-order) (get core :evaluation-order))
+         (= (get (get core :identity-preimage) :lexical-bindings) locals)
+         (= (get (get core :identity-preimage) :match-branch-records) (get core :match-branch-records))
+         (= (get (get core :identity-preimage) :match-decision-skeletons) (get core :match-decision-skeletons))
+         (= (get (get core :identity-preimage) :match-pattern-records) (get core :match-pattern-records))
+         (= (get core :module) (get typed :module))]) false) false)))
+
+(defn body-function-valid? [record function nodes definitions bindings module]
+  (let [node (get nodes (get record :function-core-node-id)) source (get node :source)
+        definition (body-by definitions :binding-id (get record :definition-binding-id))
+        def-node (get nodes (get record :definition-core-node-id))
+        binding (get bindings (get record :definition-binding-id))]
+    (body-all?
+      [(= :named-top-level (get record :definition-kind)) (= :fn (get node :core-form))
+       (= :gravity/c7-function-type (get function :artifact)) (= :inferred (get function :status))
+       (= (get record :function-syntax-id) (get function :function-id) (get source :syntax-id))
+       (= (get record :function-core-node-id) (get function :function-core-node-id))
+       (= (get record :body-core-node-id) (get function :body-core-node-id) (first (get node :children)))
+       (= 1 (count (get node :children)))
+       (= (get record :function-form-id) (get source :form-id))
+       (= (get record :definition-name) (get function :definition-name) (get definition :name) (get binding :name))
+       (= (get record :parameter-binding-ids) (get function :parameter-binding-ids) (get node :resolved-binding-ids))
+       (= (get record :fixed-arity) (get function :fixed-arity) (count (get function :parameters)))
+       (= (get record :definition-core-node-id) (get definition :core-node-id))
+       (= (get definition :value-node-id) (get record :function-core-node-id))
+       (= :def (get def-node :core-form))
+       (= (get binding :definition-syntax-id) (get (get def-node :attributes) :name-syntax-id))
+       (= (get function :syntax-id) (get source :syntax-id))
+       (= (get function :source-span) (get source :semantic-span))
+       (= (get function :origin-chain) (get source :origin-chain))
+       (= (get function :generated-origin) (get source :generated-origin))
+       (= (get function :profile) (get module :profile)) (= (get function :target) (get module :target))
+       (= (get function :latent-effects) (get module :effects))
+       (= (get function :capabilities) (get module :capabilities))
+       (= [:pending-sh09] (get function :thrown-error-effects))])))
+
+(defn body-function-joins-valid? [core typed bindings]
+  (let [nodes (body-index (get core :nodes) :node-id) types (get typed :type-table)
+        functions (body-index (get typed :function-type-table) :function-id)]
+    (loop [remaining (get core :function-records) ordinal 0]
+      (if (= 0 (count remaining)) true
+        (let [record (first remaining) function (get functions (get record :function-syntax-id))]
+          (if (map? (get types (get record :function-core-node-id)))
+          (if (body-all?
+                [(= ordinal (get record :ordinal))
+                 (body-function-valid? record function nodes (get core :definitions) bindings (get typed :module))
+                 (= function (assoc (get types (get record :function-core-node-id))
+                                     :source-span (get function :source-span) :syntax-id (get function :syntax-id)
+                                     :origin-chain (get function :origin-chain) :generated-origin (get function :generated-origin)
+                                     :profile (get function :profile) :target (get function :target)))
+                 (= (get function :return) (get types (get record :body-core-node-id)))])
+            (recur (rest remaining) (+ ordinal 1)) false) false))))))
+
+(defn body-call-valid? [edge call fact nodes functions records bindings types]
+  (let [node (get nodes (get edge :call-core-node-id)) source (get node :source)
+        target (get functions (get edge :callee-function-syntax-id))
+        record (get records (get edge :callee-function-syntax-id))
+        binding (get bindings (get edge :callee-binding-id))
+        caller (get records (get edge :caller-function-syntax-id))
+        operator (get nodes (first (get node :children)))]
+    (if (vector? (get fact :argument-types))
+    (body-all?
+      [(= :local-function (get edge :classification)) (= :call (get node :core-form))
+       (= :gravity/c7-call-type-fact (get fact :artifact)) (= :inferred (get fact :status))
+       (= (get edge :call-core-node-id) (get call :core-node-id) (get fact :call-core-node-id))
+       (= (get edge :callee-binding-id) (get call :operator-binding-id)
+          (get record :definition-binding-id) (get (get operator :attributes) :binding-id))
+       (= :reference (get operator :core-form))
+       (= (get edge :callee-definition-syntax-id) (get binding :definition-syntax-id))
+       (= (get edge :callee-function-syntax-id) (get fact :callee-function-syntax-id) (get target :function-id))
+       (= (get edge :callee-function-core-node-id) (get record :function-core-node-id))
+       (= (get edge :caller-function-syntax-id) (get fact :caller-function-syntax-id))
+       (= (get edge :caller-function-core-node-id) (get caller :function-core-node-id))
+       (= (get edge :argument-core-node-ids) (get call :argument-node-ids) (vec (rest (get node :children))))
+       (= (get edge :ordered-evaluation-node-ids) (get call :ordered-evaluation-node-ids) (get node :children))
+       (= :operator-then-arguments (get edge :evaluation-order) (get call :evaluation-order) (get fact :evaluation-order))
+       (= (get source :syntax-id) (get fact :syntax-id))
+       (= (get source :semantic-span) (get fact :source-span))
+       (= (get source :origin-chain) (get fact :origin-chain))
+       (= (get source :generated-origin) (get fact :generated-origin))
+       (= (get fact :result-type) (get target :return) (get types (get node :node-id)))
+       (= (get fact :effects) (get target :latent-effects))
+       (= (get fact :capabilities) (get target :capabilities))
+       (= (get fact :profile) (get target :profile))
+       (= (get fact :target) (get target :target))
+       (= (count (get fact :argument-types)) (count (get target :parameters)))
+       (= {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id (get node :node-id)
+           :callee-function-syntax-id (get target :function-id)
+           :argument-types (get fact :argument-types) :result-type (get fact :result-type)}
+          (get fact :fact-id-request))]) false)))
+
+(defn body-arguments-valid? [ids arguments parameters types]
+  (if (= (count ids) (count arguments) (count parameters))
+    (loop [ids ids arguments arguments parameters parameters]
+      (if (= 0 (count ids)) true
+        (if (= (get types (first ids)) (first arguments) (get (first parameters) :type))
+          (recur (rest ids) (rest arguments) (rest parameters)) false))) false))
+
+(defn body-call-joins-valid? [core typed bindings]
+  (let [nodes (body-index (get core :nodes) :node-id) functions (body-index (get typed :function-type-table) :function-id)
+        records (body-index (get core :function-records) :function-syntax-id)
+        calls (body-index (get core :calls) :core-node-id) facts (body-index (get typed :call-type-facts) :call-core-node-id)]
+    (loop [remaining (get core :call-edges) ordinal 0]
+      (if (= 0 (count remaining)) true
+        (let [edge (first remaining) id (get edge :call-core-node-id)]
+          (if (if (= ordinal (get edge :ordinal))
+                (if (body-call-valid? edge (get calls id) (get facts id) nodes functions records bindings (get typed :type-table))
+                  (body-arguments-valid? (get edge :argument-core-node-ids) (get (get facts id) :argument-types)
+                    (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get typed :type-table)) false) false)
+            (recur (rest remaining) (+ ordinal 1)) false))))))
+
+(defn body-select [records field value]
+  (loop [remaining records result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (if (= value (get (first remaining) field)) (conj result (first remaining)) result)))))
+
+(defn body-match-valid? [node core types]
+  (let [branches (body-select (get core :match-branch-records) :core-node-id (get node :node-id))
+        attrs (get node :attributes) children (get node :children)
+        skeleton (body-by (get core :match-decision-skeletons) :core-node-id (get node :node-id))]
+    (if (if (vector? (get attrs :branch-child-indexes)) (vector? (get attrs :guard-child-indexes [])) false)
+    (if (body-all? [(= (count branches) (get attrs :branch-count))
+                    (= (get node :node-id) (get skeleton :core-node-id))
+                    (= (first children) (get skeleton :scrutinee-core-node-id))])
+      (loop [remaining branches ordinal 0 bodies [] guards [] guard-index (+ 1 (count branches))]
+        (if (= 0 (count remaining))
+          (body-all? [(= children (body-add guards (body-add bodies [(first children)])))
+                      (= bodies (get skeleton :branch-core-node-ids))
+                      (= (count guards) (count (get attrs :guard-child-indexes)))])
+          (let [branch (first remaining) guard (get branch :guard)]
+            (if (body-all?
+                  [(= ordinal (get branch :clause-ordinal))
+                   (= (+ ordinal 1) (get branch :branch-child-index) (get (get attrs :branch-child-indexes) ordinal))
+                   (= (get branch :branch-core-node-id) (get children (+ ordinal 1)))
+                   (= (get branch :scrutinee-core-node-id) (first children))
+                   (if (= guard nil) true
+                     (body-all? [(= guard-index (get guard :child-index))
+                                 (= (get guard :node-id) (get children guard-index))
+                                 (= guard-index (get (get attrs :guard-child-indexes) (count guards)))
+                                 (= :gravity.type/bool (get types (get guard :node-id)))]))])
+              (recur (rest remaining) (+ ordinal 1) (conj bodies (get branch :branch-core-node-id))
+                     (if (= guard nil) guards (conj guards (get guard :node-id)))
+                     (if (= guard nil) guard-index (+ guard-index 1))) false)))) false) false)))
+
+
+(defn body-local-joins-valid? [core typed bindings]
+  (let [facts (body-index (get typed :local-binding-facts) :binding-id)
+        nodes (body-index (get core :nodes) :node-id) module (get typed :module)]
+    (if (= (count (get core :lexical-bindings)) (count facts))
+      (loop [remaining (get core :lexical-bindings)]
+        (if (= 0 (count remaining)) true
+          (let [record (first remaining) fact (get facts (get record :binding-id))
+                node (get nodes (get record :initializer-node-id)) source (get node :source)
+                binding (get bindings (get record :binding-id))]
+            (if (body-all?
+                  [(= :gravity/c7-local-binding-fact (get fact :artifact)) (= :inferred (get fact :status))
+                   (= (get record :name) (get fact :name) (get binding :name))
+                   (= (get record :initializer-node-id) (get fact :initializer-node-id))
+                   (= (get record :let-core-node-id) (get fact :let-core-node-id))
+                   (= (get fact :type) (get (get typed :type-table) (get record :initializer-node-id)))
+                   (= (get fact :syntax-id) (get source :syntax-id))
+                   (= (get fact :source-span) (get source :semantic-span))
+                   (= (get fact :origin-chain) (get source :origin-chain))
+                   (= (get fact :generated-origin) (get source :generated-origin))
+                   (= (get fact :profile) (get module :profile)) (= (get fact :target) (get module :target))
+                   (= (get fact :effects) (get module :effects)) (= (get fact :capabilities) (get module :capabilities))])
+              (recur (rest remaining)) false)))) false)))
+
+(defn body-ready? [ids graph]
+  (loop [remaining ids]
+    (if (= 0 (count remaining)) true
+      (if (contains? graph (first remaining)) (recur (rest remaining)) false))))
+
+(defn body-node-effects [ids graph]
+  (loop [remaining ids result #{}]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (body-add (get (get graph (first remaining)) :transitive) result)))))
+
+(defn body-conditional-coverage [node]
+  (let [kind (get node :core-form) children (get node :children) attrs (get node :attributes)]
+    (if (contains? #{:if :match} kind)
+      (loop [index 1 result []]
+        (if (= index (count children)) result
+          (recur (+ index 1)
+            (conj result {:node-id (get children index) :child-index index
+                          :role (if (= kind :if) (if (= index 1) :then :else)
+                                  (if (contains? (set (get attrs :guard-child-indexes)) index) :guard :branch))})))) [])))
+
+(defn body-order-ids [order]
+  (loop [remaining order ids []]
+    (if (= 0 (count remaining)) ids
+      (recur (rest remaining) (conj ids (get (first remaining) :core-node-id))))))
+
+(defn body-node-record [node target graph type]
+  (let [kind (get node :core-form) children (get node :children) source (get node :source)
+        construction? (= kind :fn) latent (if construction? (body-node-effects children graph) #{})
+        deps (if construction? [] (if (= target nil) children (conj children target)))
+        effects (body-node-effects deps graph)]
+    {:artifact :gravity/c8-effect-node :core-node-id (get node :node-id) :operation kind
+     :direct #{} :latent latent :transitive effects :escaping effects :handled []
+     :evaluated-children (if construction? [] (body-order-ids (get (get node :evaluation) :order)))
+     :latent-children (if construction? children [])
+     :call-body-dependency target :dependencies deps
+     :ordering (get node :evaluation) :conditional-coverage (body-conditional-coverage node)
+     :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :type type :type-fact-id {:resolution :coordinator-digest-required
+                              :identity-input {:domain :gravity/sh09-body-node-type-v1
+                                               :core-node-id (get node :node-id) :type type}}}))
+
+(defn body-node-supported? [node]
+  (let [kind (get node :core-form) children (get node :children)]
+    (if (body-all? [(map? node) (vector? children) (sh09-sha256-id? (get node :node-id))
+                    (map? (get node :source)) (map? (get node :evaluation))])
+      (if (contains? #{:literal :quote :reference} kind) (= [] children)
+        (if (contains? #{:def :fn} kind) (= 1 (count children))
+          (if (= :if kind) (= 3 (count children))
+            (contains? #{:collection-literal :let :do :call :match} kind)))) false)))
+
+(defn body-order-valid? [node]
+  (let [kind (get node :core-form) children (get node :children) order (get (get node :evaluation) :order)
+        expected (if (contains? #{:fn :quote} kind) []
+                   (if (contains? #{:if :match} kind) [(first children)] children))]
+    (if (vector? order)
+      (if (= (count expected) (count order))
+        (loop [index 0]
+          (if (= index (count order)) true
+            (let [entry (get order index)]
+              (if (if (map? entry) (body-all? [(= index (get entry :index))
+                                              (= (get expected index) (get entry :core-node-id))]) false)
+                (recur (+ index 1)) false)))) false) false)))
+
+(defn body-derive-nodes [core typed]
+  (let [edges (body-index (get core :call-edges) :call-core-node-id)
+        functions (body-index (get typed :function-type-table) :function-id)]
+    (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0]
+      (if (= 0 (count pending))
+        (if (= 0 (count deferred)) {:status :accepted :nodes graph}
+          (if (if (> progress 0) (< rounds (count (get core :nodes))) false)
+            (recur deferred [] graph 0 (+ rounds 1))
+            {:status :rejected :reason :cyclic-or-missing-body-effect-dependencies}))
+        (let [node (first pending) kind (get node :core-form) id (get node :node-id)
+              edge (get edges id) function (get functions (get edge :callee-function-syntax-id))
+              target (if (= kind :call) (get function :body-core-node-id) nil)
+              deps (if (= target nil) (get node :children) (conj (get node :children) target))]
+          (if (if (body-node-supported? node) (body-order-valid? node) false)
+            (if (if (= kind :call) (map? function)
+                    (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
+              (if (body-ready? deps graph)
+                (recur (rest pending) deferred
+                       (assoc graph id (body-node-record node target graph (get (get typed :type-table) id))) (+ progress 1) rounds)
+                (recur (rest pending) (conj deferred node) graph progress rounds))
+              {:status :rejected :reason :unsupported-nonlocal-or-higher-order-call :node node})
+            {:status :rejected :reason :unsupported-body-operation :node node}))))))
+
+(defn body-function-effects [functions graph]
+  (loop [remaining functions result {}]
+    (if (= 0 (count remaining)) result
+      (let [function (first remaining) effects (get (get graph (get function :body-core-node-id)) :transitive)]
+        (recur (rest remaining)
+          (assoc result (get function :function-id)
+            {:function-id (get function :function-id) :body-core-node-id (get function :body-core-node-id)
+             :declared (set (get function :latent-effects)) :inferred effects :latent effects
+             :throws (get function :thrown-error-effects) :declared-capabilities (set (get function :capabilities))
+             :source-span (get function :source-span)}))))))
+
+(defn body-build-graph [core typed nodes]
+  (let [effects (body-node-effects (get core :root-core-node-ids) nodes)]
+    {:artifact :gravity/c8-effect-graph :module (get typed :module) :nodes nodes
+     :functions (body-function-effects (get typed :function-type-table) nodes)
+     :namespace {:declared (set (get (get typed :module) :effects)) :inferred effects :escaping effects :handled []}
+     :build-effects :pending-policy :replay-required :pending-policy :ordering-constraints (get core :evaluation-order)
+     :residual-effects :pending-legality :diagnostics [] :pending (body-effect-pending)}))
+
+(defn build-body-effect-result [typed verification binding]
+  (if (= :direct-imported-functions-types-only (get typed :scope))
+    (body-error typed :imported-body-effects-pending {})
+    (if (body-input-valid? typed verification binding)
+      (let [core (body-core binding)
+            request (get (get (get binding :digest-resolution) :preimage) :request)
+            bindings (body-index (get (get (get request :b47-context) :authenticated-core-request) :binding-table) :binding-id)]
+        (if (body-shape-valid? core typed)
+          (if (if (body-function-joins-valid? core typed bindings)
+                (if (body-call-joins-valid? core typed bindings)
+                  (body-local-joins-valid? core typed bindings) false) false)
+            (let [derived (body-derive-nodes core typed)]
+              (if (= :accepted (get derived :status))
+                (let [graph (body-build-graph core typed (get derived :nodes))
+                      identity {:domain :gravity/sh09-local-body-effects-v1
+                                :canonical-core-identity-input (get core :identity-preimage)
+                                :sh08-identity-input (get typed :identity-input) :effect-graph graph
+                                :scope :local-first-order-body-effects-with-thrown-effects-pending
+                                :pending (body-effect-pending)}]
+                  {:artifact :gravity/sh09-authenticated-effected-core-template :schema-version 1 :status :accepted
+                   :scope :local-first-order-body-effects-with-thrown-effects-pending
+                   :authentication-status :host-resolved-sh08-function-binding
+                   :upstream-binding (body-project binding [:artifact :schema-version :boundary :status])
+                   :sh08-shaped-artifact-id (get typed :sh07-shaped-artifact-id) :module (get typed :module)
+                   :typed-core (get typed :typed-core) :type-table (get typed :type-table)
+                   :function-type-table (get typed :function-type-table) :local-binding-facts (get typed :local-binding-facts)
+                   :call-type-facts (get typed :call-type-facts) :effect-graph graph :identity-input identity
+                   :identity-resolution :coordinator-digest-required :diagnostics [] :pending (body-effect-pending)
+                   :provenance (get typed :provenance) :self-hosted? false :clojure-seed-boundary? true})
+                (body-error typed (get derived :reason) (get derived :node {}))))
+            (body-error typed :incoherent-function-or-call-body-type-origin-join {}))
+          (body-error typed :incomplete-canonical-core-coverage {})))
+      (body-error typed :untrusted-sh08-body-effect-input {}))))
+
+(defn verify-body-effect-result [typed verification binding candidate]
+  (let [expected (build-body-effect-result typed verification binding)]
+    {:artifact :gravity/sh09-authenticated-body-effect-result-verification
+     :status (if (= expected candidate) :passed :rejected)
+     :checks [:fresh-sh08-binding :complete-canonical-node-coverage :local-call-body-propagation
+              :construction-versus-latent-effects :conditional-guard-coverage :exact-derived-graph
+              :preserved-declarations-and-pending-throws :whole-core-and-graph-identity]
+     :expected expected :candidate candidate}))
