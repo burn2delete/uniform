@@ -1942,13 +1942,72 @@ call and changed typed ledger rejected. Test execution took about 491 seconds
 plus seven seconds of namespace loading. This is a different workload from the
 direct checks, not a speedup comparison or an additive coverage total.
 
-General guest calls, symbol-let lowering, quoted containers, numeric-width
+At that boundary, general guest calls, symbol-let lowering, quoted containers, numeric-width
 catch matching, Error hierarchy/subtyping, resource cleanup and complete
 profile/target legality remain outside this subset. The runtime composition
 uses nine exact original function definitions, not whole-runtime compilation.
 Existing admitted packets and migration identities remain unchanged; this
 does not establish authoritative migration, full SH-07/SH-08, self-hosting,
 release support or seed retirement.
+
+### Canonical immutable symbol-let lowering
+
+The Gravity emitter now consumes C6 lexical-binding records and C7 inferred
+local-binding facts. Each binding joins its source vector/name/initializer,
+ordinal, original scope, prior-visible IDs, immutable binder and type fact.
+Initializers lower under the outer and preceding bindings; a new binder is
+introduced only afterward. Body lowering uses the completed local context
+without mutating the outer one. Source operator, parent, exact record census
+and body identities are checked as well as inferred types.
+
+The existing resolver models repeated names in one vector as sequential
+shadowing with distinct binding identities and scopes. Nested one-binding
+runtime lets preserve that behavior while leaving the existing flat runtime
+duplicate-label rejection unchanged. Empty binding vectors lower to body
+sequence execution. The normal-result check respects a `Never` initializer,
+rather than assuming the last body type proves a normal return.
+
+The focused regression batch passed seven tests/470 assertions, followed by
+the final let kernel at one test/60 assertions after an additional malformed
+family check. These overlap and are not additive coverage. The initial draft
+used unsupported `min`; its six-test run recorded 219 passes, seven failures
+and four errors. The correction used explicit cardinality checks, not a new
+host builtin or wider language allowance. Independent readiness review covered
+the literal C6/C7 schemas and prepared real-source test before execution.
+
+The first real composition failed during its first accepted assembly with
+`typed-let-source-or-census-mismatch` (nine passed assertions and one error),
+before runtime positives or the second extension. Static tracing independently
+identified a sufficient rejection condition: the lowerer required the binding
+vector container's scope to equal the owner scope, but the actual projection
+leaves that container scope nil. C6 requires scopes for the owner, individual
+initializers, binders and body, not the vector container. The normalized test
+had fabricated that scope. The correction removes only this invented consumer
+premise and uses nil in the normalized test, preserving all required scope
+joins and the upstream language policy. The generic failure does not prove
+it was the sole mismatch. A direct test of the saved projection helper bodies
+also checks the real container/initializer/binder/body scope shape without
+constructing an authority proof. Its first attempt could not resolve helper
+Vars removed by normal bootstrap cleanup; that test error remains recorded.
+The corrected focused batch passed eight tests/493 assertions, including 19
+projection-schema and 63 let assertions. It does not replace real composition.
+
+The corrected candidate's affected composition passed one test/132 assertions
+in about 366 seconds of execution plus seven seconds of loading. Both source
+extensions construct their accepted upstream input once and reuse it for all
+nine functions, assembly and runtime checks. Actual self/forward-reference
+rejections, nested one-binding census, original payload identity, shadowing and
+outer restoration, multiple body forms, Never-initializer recovery, catch-local
+aliases and exact public main results pass. Each public lowering operation
+checks fresh current C7 verification; changed facts and lexical records reject,
+and no guest execution uses the seed throw transport. This pass does not erase
+the first failure or make overlapping focused counts additive.
+
+General calls, closures, mutable locals, destructuring, quoted containers,
+numeric coercion, complete effect/profile/target legality and authoritative
+migration remain separate gates. Current-source lowering/execution does not
+refresh old admitted compiler identities or establish self-hosting, release
+support or seed retirement.
 
 ## Current Baseline
 

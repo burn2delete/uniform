@@ -466,6 +466,201 @@
     (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
     {:plan plan :parent-source {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}}))
 
+(defn- typed-let-kernel-context [base names]
+  (let [n (count names) binding-ids (mapv #(keyword (str "let-binding-" %)) (range n))
+        init-ids (mapv #(keyword (str "let-init-" %)) (range n))
+        name-ids (mapv #(keyword (str "let-name-" %)) (range n))
+        scopes (mapv #(keyword (str "let-scope-" %)) (range n))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
+        body-scope (if (zero? n) :let-outer (last scopes))
+        attrs {:binding-vector-form-id :let-vector :binding-vector-syntax-id :let-vector :outer-scope-id :let-outer :body-scope-id body-scope
+               :binding-count n :body-count 1 :initializer-child-indexes (vec (range n)) :body-child-indexes [n]
+               :evaluation-order :initializers-then-body-left-to-right :result-policy {:kind :last-body :child-index n}}
+        records (mapv (fn [i] {:let-core-node-id :let :ordinal i :name (get names i) :binding-id (get binding-ids i)
+                               :definition-form-id (get name-ids i) :definition-syntax-id (get name-ids i) :binding-scope-id (get scopes i)
+                               :initializer-form-id (get init-ids i) :initializer-syntax-id (get init-ids i)
+                               :initializer-scope-id (if (zero? i) :let-outer (get scopes (dec i))) :initializer-node-id (get init-ids i)
+                               :visible-prior-binding-ids (subvec binding-ids 0 i) :mutability :immutable}) (range n))
+        module (get-in base [:core :module])
+        facts (mapv (fn [record]
+                      {:artifact :gravity/c7-local-binding-fact
+                       :fact-id-request {:domain :gravity/sh08-local-binding-fact-v1 :binding-id (:binding-id record)
+                                         :initializer-node-id (:initializer-node-id record) :type :gravity.type/string :profile (:profile module) :target (:target module)}
+                       :binding-id (:binding-id record) :name (:name record) :type :gravity.type/string
+                       :initializer-node-id (:initializer-node-id record) :let-core-node-id :let
+                       :source-span nil :syntax-id (:initializer-syntax-id record) :origin-chain nil :generated-origin nil
+                       :profile (:profile module) :target (:target module) :effects (:effects module) :capabilities (:capabilities module) :status :inferred}) records)
+        initializers (into {} (map-indexed (fn [i id] [id {:node-id id :core-form :reference :children []
+                                                         :attributes {:binding-id (if (zero? i) :parameter (get binding-ids (dec i)))} :source (source id)}]) init-ids))
+        forms (into {} (mapcat (fn [record]
+                                [[(:definition-form-id record) {:form-id (:definition-form-id record) :syntax-id (:definition-syntax-id record)
+                                                                :kind :symbol :value (:name record) :child-form-ids [] :scope-id (:binding-scope-id record) :parent-form-id :let-vector}]
+                                 [(:initializer-form-id record) {:form-id (:initializer-form-id record) :syntax-id (:initializer-syntax-id record)
+                                                                 :scope-id (:initializer-scope-id record) :parent-form-id :let-vector}]]) records))]
+    (-> base (assoc :locals {:parameter 'problem} :parameter-types {:parameter :gravity.type/string}
+                    :lexical records :local-facts (into {} (map (juxt :binding-id identity) facts)))
+        (update :bindings merge (into {} (map (fn [record] [(:binding-id record) {:binding-id (:binding-id record) :name (:name record) :kind :local
+                                                                               :binding-class :lexical :definition-syntax-id (:definition-syntax-id record) :scope-id (:binding-scope-id record)}]) records)))
+        (update :nodes merge initializers {:let {:node-id :let :core-form :let :children (conj init-ids :let-body) :resolved-binding-ids binding-ids
+                                                :attributes attrs :source (source :let-form)}
+                                          :let-body {:node-id :let-body :core-form :reference :children [] :source (source :let-body)
+                                                     :attributes {:binding-id (if (zero? n) :parameter (last binding-ids))}}})
+        (update :types merge (zipmap (conj init-ids :let-body :let) (repeat :gravity.type/string)))
+        (update :forms merge forms {:let-form {:form-id :let-form :syntax-id :let-form :kind :list :scope-id :let-outer :child-form-ids [:let-op :let-vector :let-body]}
+                                    :let-op {:form-id :let-op :kind :symbol :value 'let :child-form-ids [] :parent-form-id :let-form}
+                                    :let-vector {:form-id :let-vector :syntax-id :let-vector :scope-id nil :parent-form-id :let-form :kind :vector
+                                                 :child-form-ids (vec (mapcat vector name-ids init-ids))}
+                                    :let-body {:form-id :let-body :syntax-id :let-body :scope-id body-scope :parent-form-id :let-form}}))))
+
+(deftest current-gravity-typed-let-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        execute #(bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-closed-instruction [% {'problem "original"} ""])
+        compile #(invoke 'p15-s23-typed-compile-node % :let 65536)
+        context (typed-let-kernel-context base '[alias alias]) result (compile context) instruction (:value result)]
+    (is (= :complete (:status result)) (pr-str result))
+    (is (nil? (get-in context [:forms :let-vector :scope-id])))
+    (is (= {:op :let :bindings [{:name 'alias :expr {:op :local :name 'problem}}]
+            :body [{:op :let :bindings [{:name 'alias :expr {:op :local :name 'alias}}]
+                    :body [{:op :do :body [{:op :local :name 'alias}]}]}]} instruction))
+    (is (= ["original" "" :normal] (execute instruction)))
+    (is (= {:parameter 'problem} (:locals context)))
+    (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node context :let-body 65536))))
+    (let [result (compile (typed-let-kernel-context base []))]
+      (is (= {:op :do :body [{:op :local :name 'problem}]} (:value result)))
+      (is (= ["original" "" :normal] (execute (:value result)))))
+    (doseq [mutate [#(assoc-in % [:nodes :let :children] 42) #(assoc-in % [:nodes :let :attributes :binding-count] 42)
+                    #(assoc-in % [:nodes :let :attributes :body-count] 0) #(assoc-in % [:forms :let-vector :child-form-ids] 42)
+                    #(assoc-in % [:forms :let-vector :child-form-ids] [:let-name-0])
+                    #(assoc-in % [:forms :let-op :value] 'loop) #(assoc-in % [:forms :let-op :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :let-form :kind] :vector)
+                    #(assoc-in % [:nodes :let :attributes :outer-scope-id] :wrong)
+                    #(assoc-in % [:lexical 0 :ordinal] 1) #(assoc-in % [:lexical 1 :visible-prior-binding-ids] [])
+                    #(update % :lexical pop) #(update % :lexical conj (first (:lexical %)))
+                    #(assoc-in % [:bindings :let-binding-0 :scope-id] :sibling)
+                    #(assoc-in % [:forms :let-init-0 :scope-id] :let-scope-1)
+                    #(assoc-in % [:forms :let-body :scope-id] :let-outer)
+                    #(assoc-in % [:nodes :let-init-0 :attributes :binding-id] :let-binding-0)
+                    #(assoc-in % [:nodes :let-init-0 :attributes :binding-id] :let-binding-1)
+                    #(assoc-in % [:nodes :let :resolved-binding-ids] [:let-binding-1 :let-binding-0])
+                    #(assoc-in % [:local-facts :let-binding-0 :type] :gravity.type/bool)
+                    #(assoc-in % [:local-facts :let-binding-0 :fact-id-request :type] :gravity.type/bool)
+                    #(assoc-in % [:types :let] :gravity.type/bool)]]
+      (let [rejected (compile (mutate context))]
+        (is (= :rejected (:status rejected))) (is (= "P15S23Q002" (:diagnostic rejected)))))
+    (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :let 1) [:facts :reason])))
+    (let [context (-> context (assoc-in [:nodes :let-init-0 :core-form] :throw)
+                      (assoc-in [:nodes :let-init-0 :children] [:reference]) (assoc-in [:nodes :let-init-0 :attributes] {})
+                      (assoc-in [:types :let-init-0] :gravity.type/never) (assoc-in [:types :let] :gravity.type/never)
+                      (assoc-in [:local-facts :let-binding-0 :type] :gravity.type/never)
+                      (assoc-in [:local-facts :let-binding-0 :fact-id-request :type] :gravity.type/never)
+                      (assoc-in [:nodes :let-init-1 :core-form] :literal) (assoc-in [:nodes :let-init-1 :attributes] {:value "unreachable"})
+                      (assoc-in [:forms :let-init-1 :value] "unreachable"))
+          result (compile context)]
+      (is (= :complete (:status result)) (pr-str result))
+      (is (= ["original" "" :thrown] (execute (:value result)))))
+    (doseq [family [:lexical-bindings]]
+      (is (= :rejected (:status (invoke 'p15-s23-typed-context module (assoc-in input [:request :canonical-core-artifact family] 42) observation)))))
+    (is (= :rejected (:status (invoke 'p15-s23-typed-context module (assoc-in input [:typed :local-binding-facts] 42) observation))))))
+
+(deftest current-let-container-scope-projection-development-kernel
+  ;; Invoke the actual projection traversal and final form projection on small
+  ;; normalized DATA. This checks the producer schema, not authentication.
+  (let [helper (fn [name]
+                 ;; Installation captures these helpers and then unmaps their
+                 ;; Vars. Evaluate their exact saved function bodies in the
+                 ;; owning namespace without interning replacement Vars.
+                 (let [suffix (if (= name "make-traversal") "traversal" name)
+                       resource (str "gravity/bootstrap_impl/semantic_late/154235-sh07-core-resolution-" suffix ".clj")
+                       form (read-string (slurp (io/resource resource)))]
+                   (is (= 'clojure.core/defn (first form)))
+                   (is (= (symbol (str "semantic-late-sh07-core-resolution-projection!-" name)) (second form)))
+                   (binding [*ns* (the-ns 'gravity.bootstrap)] (eval (cons 'fn (nnext form))))))
+        scopes (atom {}) declarations (atom {})
+        projected-id (fn [_ path _] path)
+        remember (fn [_ path _ active] (swap! scopes assoc path (first active)))
+        consume (fn [_ _ _] {:scope-id :inner :sh07/projected-scope-id :inner :bindings [{:binding-syntax-id :upstream}]})
+        walk ((helper "make-traversal") (helper "sequence") (helper "fn") (helper "match") (helper "try") (helper "bindings")
+              projected-id remember consume (fn [& _]) scopes declarations "normalized.gravity")
+        _ (walk {} '(let [value problem] value) [] [:outer] :expression)
+        records (mapv (fn [[id syntax]] {:form-id id :syntax-id syntax})
+                      [[:owner []] [:vector [1]] [:name [1 0]] [:initializer [1 1]] [:body [2]]])
+        projected ((helper "projection") {:source-path "normalized.gravity" :source-revision-id :normalized
+                                           :trees [{:records records}] :resolved-analysis {:binding-table [] :alias-table []}
+                                           :root-by-upstream-id {} :declaration-syntax-by-upstream-id declarations
+                                           :projected-scope-by-upstream (atom {}) :scope-by-syntax-id scopes :occurrences (atom [])})
+        forms (into {} (map (juxt :form-id identity) (:forms projected)))]
+    (is (nil? (get-in forms [:vector :scope-id])))
+    (is (= :outer (get-in forms [:owner :scope-id]) (get-in forms [:initializer :scope-id])))
+    (is (= :inner (get-in forms [:name :scope-id]) (get-in forms [:body :scope-id])))
+    (is (= :inner (get @scopes [1 0])))
+    (is (not (contains? @scopes [1])))))
+
+(deftest current-gravity-typed-let-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        {:keys [plan parent-source]} (typed-catch-runtime-projection)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        original bootstrap/p15-s23-stage2-runtime-execute-function
+        transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
+        execute (fn [function env]
+                  (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+                    #(original runtime plan 'p15-s23-runtime-evaluate-closed-instruction [(first (:instructions function)) env ""])))
+        verifications (atom 0)]
+    (is (= (str "sha256:" (bootstrap/sha256-hex (slurp (:path parent-source)))) (:sha256 parent-source)))
+    (doseq [extension [".gravity" ".qst"]]
+      (doseq [name ["local-runtime-let-self-reference" "local-runtime-let-forward-reference"]]
+        (let [source-path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" name extension)))
+              failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact source-path))]
+          (is (= "C5-UNRESOLVED" (:id failure)) (pr-str failure))))
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-symbol-let" extension)
+            source-path (.getPath (io/file root relative))
+            p (fresh relative) input (select-keys p [:request :typed :verification])
+            macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            original-forms (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            module (assoc (bootstrap/parse-module source-path original-forms) :forms (:expanded-forms macro-artifact))
+            definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+            operation (fn [thunk]
+                        (let [before @verifications
+                              result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                                   (fn [runtime plan function args]
+                                                     (when (= 'sh08-verify-function-type-result function) (swap! verifications inc))
+                                                     (original runtime plan function args))] (thunk))]
+                          (is (= 1 (- @verifications before))) result))
+            assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+            records (get-in input [:request :canonical-core-artifact :lexical-bindings])
+            lets (filter #(and (map? %) (= :let (:op %))) (tree-seq coll? seq (:functions assembled)))
+            payload (String. "original")]
+        (is (= "5fc16cee6c8ac66ecf2adba725119e83409fe797c87970843b8177f843590a34" (bootstrap/sha256-hex (slurp source-path))))
+        (is (= :accepted (get-in input [:typed :status]))) (is (= :passed (get-in input [:verification :status])))
+        (is (= 9 (count (:functions assembled))))
+        (is (= (count records) (count lets) (get-in assembled [:instruction-summary :let])))
+        (is (every? #(= 1 (count (:bindings %))) lets))
+        (doseq [name '[aliases empty-bindings repeated-name nested-initializer restore-outer multiple-body never-initializer catch-alias]]
+          (let [compiled (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions name) input))
+                result (execute compiled {'problem payload})]
+            (is (= compiled (get-in assembled [:functions name])))
+            (is (identical? payload (first result))) (is (= ["" :normal] (subvec result 1)))
+            (is (= :pending-c8-and-profile-authority (get-in compiled [:typed-lowering-provenance :effect-legality])))
+            (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text))
+                   (get-in compiled [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))))
+        (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+          #(let [result (original runtime plan 'p15-s23-runtime-execute-closed-plan [assembled])]
+             (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main :stdout ""
+                     :entrypoint-result "recovered" :status :complete :clojure-seed-boundary? true :self-hosted? false} result))))
+        (doseq [changed [(assoc-in input [:typed :local-binding-facts 0 :type] :gravity.type/bool)
+                         (assoc-in input [:request :canonical-core-artifact :lexical-bindings 0 :visible-prior-binding-ids] [:wrong])]]
+          (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'main) changed))))]
+            (is (= "P15S23Q002" (:id failure)))))))
+    (is (= 0 @transports))))
+
 (deftest current-gravity-typed-catch-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))

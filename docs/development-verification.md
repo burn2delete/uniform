@@ -485,6 +485,55 @@ constructed once. These checks overlap; their counts are not additive and
 their timings do not compare equivalent workloads. The instrumentation-only
 correction preceded this run, rather than triggering a second proof build.
 
+### Canonical symbol-let lowering
+
+Use the same emitter and runtime-iteration test namespace for immutable symbol
+bindings. The lowerer consumes the original C6 lexical records and C7 local
+binding facts, including initializer identity, ordinal, scope, prior-visible
+binding IDs and inferred type. Initializers see outer and preceding bindings,
+not the binding currently being initialized or later bindings. Nested scopes
+do not mutate the outer lowering context.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-let-lowering-development-kernel \
+  --exact current-let-container-scope-projection-development-kernel
+# Affected source -> typed lowering -> runtime composition:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-let-authenticated-composition --fail-fast
+```
+
+Repeated names in one source binding vector create successive lexical scopes
+in the existing C5/C6 implementation. Preserve that behavior: nested one-binding
+runtime lets avoid changing the flat instruction validator's duplicate-label
+restriction. Runtime labels are not binding authority. An empty binding vector
+still requires a body. A `Never` initializer prevents later initializers and
+body execution; do not infer the let result from the last body type alone.
+The binding-vector container itself has no assigned scope in the current
+projection. Do not invent an equality between that nil value and the owner's
+real scope. The projection helper check exercises this schema without building
+an authenticated source product.
+
+Run the affected real-source composition when this consumer changes, reusing
+each constructed input across lowering and runtime assertions. Ordinary
+self/forward-reference errors belong to C5. The unchanged C6 restrictions on
+malformed bindings, missing bodies and unsupported destructuring are not a
+reason to replay their historical expensive proof for each lowerer edit.
+General calls, mutable locals, destructuring, numeric coercion, full legality
+and authoritative migration remain separate work.
+
+After correcting the unsupported container-scope premise, the focused batch
+passed eight tests/493 assertions. The changed candidate's real composition
+passed one test/132 assertions in about 366 seconds of execution plus seven
+seconds of loading. It constructs each accepted input once per extension and
+reuses it for nine-function assembly, lowering, runtime and mutation checks;
+four C5 self/forward-reference rejections exercise the real owning boundary.
+The first real composition remains failed (nine passed assertions, one error),
+not relabeled by the later pass. Counts overlap and are not additive; timings
+measure different workloads, not a speedup.
+
 ### Current Gravity emitter throw lowering
 
 Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned
