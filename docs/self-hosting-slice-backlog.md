@@ -1525,6 +1525,51 @@ this bounded development slice. Documentation, roadmap, source-language and
 Clojure physical-line gates pass; the local slice commit is separate from
 authoritative admission and those outstanding claims.
 
+### Function-target recur typing and effects
+
+The next bounded C7/C8 increment supports fixed-arity function-target recur when
+the original parameter declarations independently establish each slot type.
+For example, an `again` function with `[flag :- Bool value :- String]`, returning
+String, accepts `(if flag (recur false value) value)`. Slots retain declaration
+order and exact types without caller specialization or implicit coercion.
+Unknown undeclared slots remain `C7-ANNOTATION`, even when callers supply known
+argument types. Wrong recur slots and declared result mismatches reject with
+`C7-TYPE-MISMATCH`. Original C6 arity, tail position, binding and nearest-target
+checks still apply. Function construction does not execute its body.
+
+The existing C7 source classifies supported recur as `Never` and retains the
+normal-return join. `gravity.effects` joins the original function signature,
+parameter facts, body identity and ordered transfers. Function-only recur uses
+the existing bounded body-backedge fixed point; the module need not contain a
+`loop` node. Solver selection and graph metadata use the same private decision.
+Ordinary acyclic code and named self-calls retain their prior paths. Malformed
+control tables reject before host operations; nil/absent legacy acyclic inputs
+retain their prior behavior.
+
+Focused current-source checks pass 28 tests/392 assertions, including inference
+from an initially absent transfer type, declared slot origin, function reset,
+work limits, malformed controls, solver parity and effect regressions. The
+unreduced paired composition passes one test/69 assertions: real C5/C6/C7
+construction and fresh verification, complete request binding, C8 effect-leaf
+construction/fresh verification, paired identities, hostile mutations, and all
+three negative fixture families in both `.gravity` and `.qst` forms. Selected
+execution took about 706 seconds at 2 GiB; no speedup or allocation bound is
+claimed. Earlier overlapping kernel groups are not additional coverage.
+
+The first paired attempt passed C7 but failed C8 because function-only recur
+entered the acyclic solver. It remains a separate failed result (two passing
+assertions, one failure and one error), with later assertions unexecuted. The
+new dispatch regression executes the same private helper used after the module
+joins; it does not itself replace those joins or the real paired check.
+
+Annotated-source seed execution remains the immediate next boundary. The raw
+seed currently accepts symbol-only parameter vectors and does not lower return
+annotations. Do not strip declarations or substitute an untyped runtime case.
+The prepared follow-on retains exact source/declaration identity while lowering
+only the existing fixed-arity atomic signature syntax. General recursion,
+termination, target legality, public C8 module-bundle acceptance, authoritative
+migration, self-hosting and seedless release remain unclaimed.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.function-recur-slot-type
+  (:profile :meta) (:target :jvm) (:exports [run])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn again [flag :- Bool value :- String] :- String
+  (if flag (recur false false) value))
+
+(defn run [] :- String
+  (again true "done"))

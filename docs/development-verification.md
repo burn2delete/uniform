@@ -123,7 +123,7 @@ clojure -J-Xmx2g -M:dev-test \
   --exact loop-working-core-retains-authenticated-bindings-development-kernel \
   --exact loop-slot-transfer-development-kernel \
   --exact zero-slot-nested-nearest-development-kernel \
-  --exact function-target-pending-is-not-forgery-development-kernel \
+  --exact function-target-reset-is-not-forgery-development-kernel \
   --exact loop-effect-backedge-development-kernel
 ```
 
@@ -136,8 +136,9 @@ private loop-analysis view; it does not add fields to published canonical core.
 derive from sequential initializers, and recur arguments must match their
 individual target slots without coercion. A never-returning argument does not
 produce a mismatched transfer value. Ordinary `if` retains L2 truthiness, and
-function construction does not execute its body. Function-target recur remains
-a separately unsupported typing increment, not malformed C6 by itself.
+function construction does not execute its body. Function-target recur uses
+the separately declared parameter slots described below; unresolved slots are
+an annotation requirement, not malformed C6 by themselves.
 
 `gravity.effects` owns the corresponding C8 body-effect equations. A recur
 backedge returns to the target's body, not its initializers. Its focused check
@@ -162,6 +163,46 @@ as a development kernel: it constructs upstream products and is slower than
 the normalized leaf checks. Run it when that composition boundary is affected,
 not on every leaf edit. Leaf kernels alone do not establish real composition,
 program termination, effect legality, migration or self-hosting completion.
+
+### Function-target recur development
+
+Use the same C7, `gravity.effects`, and loop-test owners. C7 takes each function
+recur slot from the original parameter declaration, not from a caller's inferred
+argument types. It checks original target, binding order, nearest-function reset
+and transfer shape before deciding whether a type annotation is missing.
+Supported recur transfers have type `Never`; the enclosing normal-return join
+still determines the function result. C8 joins the original function signature,
+parameter facts and body identity, then solves body backedges with the existing
+bounded fixed-point equations. A function-only recur must not enter the ordinary
+acyclic solver merely because the module has no `loop` node.
+
+Use these exact selectors for local feedback:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact function-recur-node-inference-development-kernel \
+  --exact function-recur-slots-development-kernel \
+  --exact function-recur-backedge-development-kernel \
+  --exact function-target-reset-is-not-forgery-development-kernel
+```
+
+The backedge check calls the same private solver-dispatch helper used by module
+analysis. It covers function-only recur, malformed control tables, and parity
+with ordinary acyclic, loop and named-self-call paths. This is not a substitute
+for the complete module joins. When that composition changes, run
+`function-recur-authenticated-paired-composition` in the same namespace. It
+checks actual accepted/rejected annotated `.gravity` and `.qst` source products,
+fresh C7/C8 verifiers and tampered artifacts. Its result must be recorded, not
+inferred from the kernel checks.
+
+The raw seed's symbol-only function header is a separate current limitation:
+annotated-source execution is not established by this compiler composition.
+Do not strip annotations or replace it with an untyped runtime example. A
+follow-on definition-lowering change must retain original declarations and
+source/plan identity while keeping semantic legality in C5/C6/C7/C8. General
+recursion, termination, target legality and authoritative migration remain
+separate claims.
 
 ### Imported-call type development
 
