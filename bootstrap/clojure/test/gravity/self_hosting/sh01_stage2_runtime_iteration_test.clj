@@ -314,6 +314,158 @@
                               :quote-op {:form-id :quote-op :parent-form-id :quote-form :kind :symbol :value 'quote :child-form-ids []}
                               :symbol-payload {:form-id :symbol-payload :syntax-id :symbol-payload :parent-form-id :quote-form :kind :symbol :value 'unresolved/data :child-form-ids []}}))))
 
+(defn- typed-recursive-quote-kernel-context [base kind value type]
+  ;; Root-only normalized projection records. Recursive C7 verification is a precondition.
+  (let [context (typed-symbol-quote-kernel-context base)
+        ids (if (contains? #{:list :vector :map :set} kind) [:data-child] [])
+        attrs {:quoted-form-id :symbol-payload :quoted-syntax-id :symbol-payload :quoted-kind kind :quoted-value value}
+        node (assoc-in (get-in context [:nodes :symbol-quote]) [:attributes] attrs)
+        data (-> (get-in context [:ledger 0 :quoted-data])
+                 (assoc :kind kind :value value :type type)
+                 (assoc-in [:origin :child-form-ids] ids))
+        premise {:core-node-id :symbol-quote :source (:source node) :attributes attrs :children []
+                 :resolved-binding-ids [] :evaluation (:evaluation node)}
+        row (-> (get-in context [:ledger 0])
+                (assoc :rhs type :quoted-data data :dependencies {:quote premise :data data}
+                       :solution {:type type :evaluation :no-evaluation}
+                       :constraint-id-request {:domain :gravity/sh08-recursive-quoted-data-constraint-v1 :quote premise :data data}))]
+    (-> context (assoc :ledger [row]) (assoc-in [:nodes :symbol-quote] node) (assoc-in [:types :symbol-quote] type)
+        (assoc-in [:forms :quote-form :value] (list 'quote value))
+        (update-in [:forms :symbol-payload] assoc :kind kind :value value :child-form-ids ids))))
+
+(deftest current-gravity-recursive-quote-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))
+        cases [[:nil nil :gravity.type/nil] [:boolean false :gravity.type/bool]
+               [:integer 17 :gravity.type/integer] [:character \a :gravity.type/character]
+               [:string "text" :gravity.type/string] [:keyword :data/key :gravity.type/keyword]
+               [:symbol 'unresolved/data :gravity.type/symbol]
+               [:list '(throw unresolved/data) {:kind :gravity.type/list}]
+               [:vector '[nil true 17 \a "text" :key unresolved/data] {:kind :gravity.type/vector}]
+               [:map '{unresolved/key [true {:nested ready}]} {:kind :gravity.type/map}]
+               [:set '#{unresolved/data :key} {:kind :gravity.type/set}]
+               [:list '() {:kind :gravity.type/list}] [:vector [] {:kind :gravity.type/vector}]
+               [:map {} {:kind :gravity.type/map}] [:set #{} {:kind :gravity.type/set}]
+               [:list '(quote nested) {:kind :gravity.type/list}]
+               [:vector '[() [] {} #{}] {:kind :gravity.type/vector}]]]
+    (doseq [[kind value type] cases]
+      (let [context (typed-recursive-quote-kernel-context base kind value type)
+            result (invoke 'p15-s23-typed-compile-node context :symbol-quote 4)]
+        (is (= :complete (:status result)))
+        (is (= :quote (get-in result [:value :op])))
+        (is (identical? value (get-in result [:value :value])))
+        (is (= 4 (:work-count result)))
+        (is (= :typed-lowering-work-limit
+               (get-in (invoke 'p15-s23-typed-compile-node context :symbol-quote 3) [:facts :reason])))))
+    (let [context (typed-recursive-quote-kernel-context base :map '{data/key [ready]} {:kind :gravity.type/map})]
+      (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                      #(assoc-in % [:ledger 0 :lhs] :other) #(assoc-in % [:ledger 0 :status] :pending)
+                      #(assoc-in % [:ledger 0 :quoted-data :kind] :decimal)
+                      #(assoc-in % [:ledger 0 :quoted-data :origin :data-path] [0])
+                      #(assoc-in % [:ledger 0 :quoted-data :origin :quote-core-node-id] :other)
+                      #(assoc-in % [:ledger 0 :quoted-data :origin :form-id] :other)
+                      #(assoc-in % [:ledger 0 :quoted-data :source :syntax-id] :other)
+                      #(assoc-in % [:ledger 0 :dependencies :quote :source :syntax-id] :other)
+                      #(assoc-in % [:types :symbol-quote] :gravity.type/string)
+                      #(assoc-in % [:nodes :symbol-quote :attributes :quoted-kind] :list)
+                      #(assoc-in % [:nodes :symbol-quote :resolved-binding-ids] [:binding])
+                      #(assoc-in % [:nodes :symbol-quote :children] [:executable])
+                      #(assoc-in % [:forms :quote-op :value] 'unquote)
+                      #(assoc-in % [:forms :symbol-payload :parent-form-id] :sibling)]]
+        (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node (mutate context) :symbol-quote 4))))))
+    ;; Opaque sentinels test cost only; they are not claimed as public accepted DATA.
+    (let [equiv-calls (atom 0) hash-calls (atom 0) failure (AssertionError. "recursive quote projection inspected DATA")
+          opaque (HostilePersistentCallee. equiv-calls hash-calls failure)
+          type {:kind :gravity.type/vector :element-types opaque}
+          context (typed-recursive-quote-kernel-context base :vector opaque type)
+          result (invoke 'p15-s23-typed-compile-node context :symbol-quote 4)]
+      (is (= :complete (:status result))) (is (identical? opaque (get-in result [:value :value])))
+      (is (= 4 (:work-count result))) (is (= 0 @equiv-calls @hash-calls)))
+    (let [forms (bootstrap/read-forms path (slurp path))
+          helper (first (filter #(= 'p15-s23-typed-quote (second %)) forms))
+          calls (set (keep #(when (seq? %) (first %)) (tree-seq coll? seq helper)))]
+      (is (not-any? calls '[p15-s23-typed-quote p15-s23-typed-compile-children p15-s23-typed-source
+                           vec list hash str pr-str map set into]))
+      (is (some #{'(get data :value)} (tree-seq coll? seq helper))))))
+
+(declare typed-catch-runtime-projection)
+
+(deftest current-gravity-recursive-quote-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        expected '{quoted-nil nil quoted-boolean false quoted-integer 17 quoted-character \a
+                   quoted-string "text" quoted-keyword :data/key quoted-symbol unresolved/data
+                   quoted-list (throw unresolved/data) quoted-vector [nil true 17 \a "text" :key unresolved/data]
+                   quoted-map {unresolved/key [true {:nested ready}]} quoted-set #{unresolved/data :key}
+                   empty-data [() [] {} #{}] nested-quote (quote nested) let-forward {:payload [unresolved/data]}
+                   same-module-forward {unresolved/key [true {:nested ready}]} main {unresolved/key [true {:nested ready}]}}
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-quoted-data" extension)
+                 path (.getPath (io/file root relative)) text (slurp path)
+                 products (fresh relative) input (select-keys products [:request :typed :verification])
+                 macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                 definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                 standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'quoted-map) input))
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 facts (filterv #(= :sh08-recursive-quoted-data-v1 (:producer-rule %)) (get-in input [:typed :constraint-ledger]))
+                 results (into {} (map (fn [[name value]]
+                                        (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                       [{:op :function-call :function name :args []} {} "" (:functions assembled) []])]
+                                          (is (= [value "" :normal] result)) [name (first result)])) expected))]
+             (is (= :accepted (get-in input [:typed :status])))
+             (is (= :passed (get-in input [:verification :status])))
+             (is (= 16 (count definitions) (count (:functions assembled))))
+             (is (= standalone (get-in assembled [:functions 'quoted-map])))
+             (is (= #{:nil :boolean :integer :character :string :keyword :symbol :list :vector :map :set}
+                    (set (map #(get-in % [:quoted-data :kind]) facts))))
+             (is (= 14 (count facts) (get-in assembled [:instruction-summary :quote])))
+             (is (not-any? #(= :throw (:core-form %)) (get-in input [:request :canonical-core-artifact :nodes])))
+             (is (identical? (get results 'quoted-map) (get results 'same-module-forward)))
+             (is (identical? (get results 'quoted-map) (get results 'main)))
+             (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+             (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+             {:input input :module module :definitions definitions :typed (:typed products)}))
+         [".gravity" ".qst"])
+        {:keys [input module definitions]} (first cases)
+        ledger (get-in input [:typed :constraint-ledger])
+        index (first (keep-indexed #(when (and (= :sh08-recursive-quoted-data-v1 (:producer-rule %2)) (= :map (get-in %2 [:quoted-data :kind]))) %1) ledger))
+        row (get ledger index) node-id (:lhs row) payload-id (get-in row [:quoted-data :origin :form-id])
+        forms (get-in input [:request :b47-context :authenticated-core-request :forms])
+        form-index (first (keep-indexed #(when (= payload-id (:form-id %2)) %1) forms))]
+    (is (= (get-in cases [0 :typed :identity-input]) (get-in cases [1 :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :constraint-ledger index :quoted-data :children 0 :origin :data-path] [999])
+                     (assoc-in input [:typed :constraint-ledger index :quoted-data :value] '{forged/data [:swapped]})
+                     (assoc-in input [:typed :type-table node-id] :gravity.type/string)
+                     (assoc-in input [:request :b47-context :authenticated-core-request :forms form-index :syntax-id] "forged-source-id")]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'quoted-map) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    ;; Existing C5/C6/C7 source-rejection evidence remains scoped to its owner revision.
+    ;; This affected composition freshly exercises E's public verification boundary.
+    (is (= 8 (count @verified)))))
+
 (deftest current-gravity-typed-catch-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -350,13 +502,11 @@
     (let [context (typed-symbol-quote-kernel-context base)]
       (is (= {:op :quote :value 'unresolved/data} (:value (invoke 'p15-s23-typed-compile-node context :symbol-quote 65536))))
       (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
-                      #(assoc-in % [:ledger 0 :quoted-data :value] 'swapped)
                       #(assoc-in % [:ledger 0 :dependencies :quote :source :syntax-id] :swapped)
                       #(assoc-in % [:ledger 0 :solution :type] :gravity.type/string)
                       #(assoc-in % [:nodes :symbol-quote :children] [:reference])
                       #(assoc-in % [:forms :symbol-payload :parent-form-id] :sibling)
-                      #(assoc-in % [:forms :quote-form :child-form-ids] 42)
-                      #(assoc-in % [:forms :symbol-payload :child-form-ids] [:reference])]]
+                      #(assoc-in % [:forms :quote-form :child-form-ids] 42)]]
         (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node (mutate context) :symbol-quote 65536)))))
       (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :symbol-quote 1) [:facts :reason]))))))
 

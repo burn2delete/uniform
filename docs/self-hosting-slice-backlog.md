@@ -844,6 +844,59 @@ error/import semantics, runtime/backend equivalence and authoritative migration
 remain outside this increment. Source composition remains `:meta/:jvm`; no
 full SH-08, self-hosting, target, seed-retirement or release claim follows.
 
+### Canonical recursive quoted-DATA lowering: development implementation
+
+The current Gravity emitter now consumes C7's existing recursive quoted-DATA
+producer for all eleven supported kinds, rather than only Symbol. Nil, Bool,
+represented exact integer, character, String, Keyword, Symbol, list, vector,
+map and set lower to the existing `:quote` instruction. Empty and mixed nested
+containers, qualified symbols, symbol map keys and nested quote lists remain
+DATA. There is no unquote, payload name resolution or execution of a quoted
+call/throw. The runtime representation and quote operation are unchanged.
+
+The public typed operation still freshly verifies the same request and
+candidate through current C7 before lowering. Its context joins the verified
+inputs; the lowerer selects one exact producer/quote ID and checks shallow
+owner, operator, payload, source, kind and root-origin coordinates. Recursive
+shape, value, type and source authentication remain owned by C7. The projection
+returns the recorded value directly instead of duplicating that checker.
+Its logical charge remains four with the same cumulative cap. The dispatcher
+also avoids hashing a composite type merely to reject nil/unknown types.
+Neither fact is a total VM-work, memory or performance claim.
+
+The focused batch passed five tests/264 assertions: all eleven kinds and empty
+containers, shallow join rejection, budget three versus four, an opaque
+no-recursive-inspection sentinel, and existing catch, raw-source, typed-input
+and public orchestration checks. These tests consume normalized verified-context
+records, not authentic source proof. The final test-only change removes five
+unchanged source-rejection rebuilds from the then-unrun affected selector;
+the focused bodies and compiler/fixture bytes are unchanged, so no focused
+replay is attributed to that selector change.
+
+The new complete `local-runtime-quoted-data` paired fixture contains sixteen
+lowerable functions, including all supported quote roots, inert throw and
+nested quote lists, let forwarding and direct same-module forwarding. The
+affected check constructs each C5/C6/C7 input once, uses representative public
+compile plus whole assembly, and executes the complete runtime leaf. It also
+tests fresh public rejection of recursive child-origin, value, type and source
+forgeries. Existing C5/C6/C7 malformed quote, unresolved-name, annotation and
+unsupported-numeric rejection evidence remains scoped to its unchanged owning
+revision rather than being rebuilt for this consumer edit.
+
+The sole affected composition passed one test/78 assertions on the final
+candidate, including thirty-two guest function executions and eight fresh
+public C7 verification entries. Test execution took 275.677 seconds plus 7.269
+seconds of namespace loading at the unchanged 2 GiB heap. Compiler, fixture,
+test, C7 and runtime bytes were unchanged through successful process exit.
+The eight entries are observed verifier calls, not a count of all internal
+construction, traversal or allocation. Focused and composition workloads differ;
+these timings establish no speedup or phase dominance.
+
+Evaluated collection constructors, unquote, numeric elaboration, general match
+execution, full effect/profile legality, target support, authoritative migration,
+self-hosting and seed retirement remain outstanding. The direct focused and
+affected commands are in `docs/development-verification.md`.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

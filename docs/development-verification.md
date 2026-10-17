@@ -447,8 +447,8 @@ analysis. Do not reconstruct upstream products merely to fix this test setup.
 The next increment uses the same emitter, runtime and test namespace. Catch
 types come from canonical C7 bindings and solved handler premises, not source
 spelling or host exception classes. The current subset is Bool, String, Symbol
-and Keyword. Quoted Symbol DATA is lowered from its solved C7 quote record;
-other quoted containers and general calls remain outside this typed route.
+and Keyword. Quoted DATA uses the solved C7 quote record; see the recursive
+quoted-DATA boundary below. General calls are not catch-type evidence.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -471,9 +471,11 @@ failures are not guest error values.
 The affected composition uses both existing atomic-catch fixture extensions
 and the small local-runtime pair. It constructs each source product once and
 checks fresh current C7 verification per public lowering operation. Runtime
-execution uses an exact nine-function projection of the current Gravity
-runtime with original-source and dependency checks, not whole-runtime
-compilation. Zero seed throw transport must be observed around every actual
+execution at that checkpoint used an exact nine-function runtime projection
+with original-source and dependency checks. The current selector now compiles
+the whole actual `gravity.runtime` leaf; the historical 122-assertion result
+below remains attributed to its original test revision, not a rerun of the
+changed loader. Zero seed throw transport must be observed around every actual
 execution, not inferred from an uninstrumented call. This boundary does not
 admit a revision, refresh old pins, discharge effect/profile legality or prove
 Error subtyping, resource cleanup, self-hosting or seed retirement.
@@ -533,6 +535,54 @@ four C5 self/forward-reference rejections exercise the real owning boundary.
 The first real composition remains failed (nine passed assertions, one error),
 not relabeled by the later pass. Counts overlap and are not additive; timings
 measure different workloads, not a speedup.
+
+### Canonical recursive quoted-DATA lowering
+
+Change `bootstrap/gravity/p15_s23/emitter.gravity` for this consumer. The
+existing public typed operation first runs the current C7 verifier on the same
+request and candidate, then joins that result to the lowering context. C7 owns
+recursive quote shape, value, type, child order, source identity and work-bound
+validation. Lowering selects the unique solved quote producer and checks its
+scalar root, operator, payload, source and origin coordinates. It emits the
+producer's exact value as existing `:quote` IR, without evaluating its contents.
+It does not repeat the recursive checker or reinterpret quoted syntax.
+
+Supported DATA is nil, Bool, represented exact integer, character, String,
+Keyword, Symbol, list, vector, map and set, including empty and nested mixed
+containers. Qualified symbols and symbol map keys remain inert; quoted
+`(throw unresolved/data)` and `(quote nested)` are lists, not executed forms.
+Immutable let forwarding and direct same-module returns preserve the value.
+Numeric elaboration, unquote, evaluated collection constructors, general match
+execution, complete effect/profile legality and migration remain separate.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-recursive-quote-lowering-development-kernel \
+  --exact current-gravity-typed-lowering-input-development-kernel \
+  --exact typed-lowering-public-orchestration-development-kernel
+# Run separately when this source -> C7 -> lowering -> runtime boundary changes:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-recursive-quote-authenticated-composition
+```
+
+The direct quote kernel consumes normalized records with an explicit verified
+context precondition; it is not another public authentication entrypoint. Its
+four-unit logical projection charge does not count all VM work. The context
+already reserves ledger lookup work, and the projection adds no recursive
+comparison, hashing, serialization or DATA reconstruction. Opaque sentinel
+controls test that boundary without claiming those sentinels are accepted
+source DATA.
+
+The affected composition uses the complete `local-runtime-quoted-data`
+`.gravity`/`.qst` pair, not a selected subset of a module containing unsupported
+bodies. Each original C5/C6/C7 product is constructed once and reused for a
+representative public function compile, whole-module assembly and execution
+through the actual runtime leaf. Deep payload, type and source forgeries are
+rejected by fresh public C7 verification. Existing owning C5/C6/C7 malformed
+quote, unresolved-name, annotation and numeric-representation rejection
+evidence is not rebuilt merely because this lowerer changed.
 
 ### Canonical direct same-module calls
 
@@ -1373,15 +1423,16 @@ source copies and the applicability of value versus serialized-output limits
 using available data and construction code. Keep that bounded investigation
 separate from semantic implementation and scheduling changes.
 
-One concrete caller to inspect is the SH09 test helper `fresh-products` in
-`sh09_body_effect_test.clj`: it eagerly constructs and digests an SH09 binding,
-including the request, typed result and verification report. The typed-lowering
-composition tests select only the original triplet and do not consume that
-binding. This is statically unused construction in those callers, not evidence
-of runtime dominance or a measured speedup. A bounded follow-up can use the
-existing C7 interfaces to avoid that unused SH09 product while preserving the
-callers that genuinely need it; no new lane, cache or authority shortcut is
-required. Do not change a helper used by a live frozen composition.
+One such construction issue is already corrected in `7aa24451`: the six SH01
+type-only callers use `fresh-type-products` in `sh09_body_effect_test.clj` to
+construct genuine C5/C6/C7 inputs without the unused SH09 binding seal. The
+existing `fresh-products` helper adds that unchanged seal for consumers that
+need it. Focused helper and schedule checks cover the split; the earlier
+authentic composition remains evidence for its original test revision, not a
+replay of the revised harness. This removes statically unused construction,
+not a measured runtime bottleneck or a claimed speedup. No new lane, cache or
+authority shortcut is involved. Do not change a helper used by a live frozen
+composition.
 
 Bounded follow-up: observe one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity

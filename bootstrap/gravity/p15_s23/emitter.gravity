@@ -1641,33 +1641,44 @@
   {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
    :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
 
-(defn p15-s23-typed-symbol-quote [context node budget]
+(defn p15-s23-typed-quote [context node budget]
+  ; Fresh public C7 verification and typed-context joins own recursive DATA
+  ; validation. This private projection checks scalar root identities only.
   (let [row (p15-s23-typed-row context :sh08-recursive-quoted-data-v1 (get node :node-id))
         forms (get context :forms) owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
         operator (get forms (get ids 0)) payload (get forms (get ids 1)) attrs (get node :attributes)
-        data {:origin {:kind :quoted-data :quote-core-node-id (get node :node-id) :form-id (get payload :form-id)
-                       :syntax-id (get payload :syntax-id) :data-path [] :child-form-ids []}
-              :kind :symbol :value (get payload :value) :type :gravity.type/symbol
-              :source (p15-s23-typed-source payload) :children [] :shape-size 1}
-        premise {:core-node-id (get node :node-id) :source (get node :source) :attributes attrs :children []
-                 :resolved-binding-ids [] :evaluation (get node :evaluation)}]
-    (if (= false (vector? ids)) (p15-s23-typed-node-error :unsupported-or-mismatched-typed-symbol-quote node)
+        data (get row :quoted-data) origin (get data :origin)
+        premise (get (get row :dependencies) :quote)
+        kind (get data :kind)
+        expected (get {:nil :gravity.type/nil :boolean :gravity.type/bool :integer :gravity.type/integer
+                       :character :gravity.type/character :string :gravity.type/string :keyword :gravity.type/keyword
+                       :symbol :gravity.type/symbol :list :gravity.type/list :vector :gravity.type/vector
+                       :map :gravity.type/map :set :gravity.type/set} kind)
+        type (get (get context :types) (get node :node-id)) row-type (get row :rhs)
+        data-type (get data :type) solution-type (get (get row :solution) :type)]
+    (if (= false (vector? ids)) (p15-s23-typed-node-error :unsupported-or-mismatched-typed-quote node)
     (if (< budget 4) (p15-s23-typed-node-error :typed-lowering-work-limit node)
       (if (p15-s23-typed-all
-          [(= :solved (get row :status)) (= :equality (get row :kind)) (= :gravity.type/symbol (get row :rhs) (get (get context :types) (get node :node-id)))
-           (= [] (get node :children) (get node :resolved-binding-ids) (get payload :child-form-ids))
+          [(= :solved (get row :status)) (= :equality (get row :kind)) (= :quote (get node :core-form))
+           (= false (= nil expected))
+           (= expected (if (map? type) (get type :kind) type) (if (map? row-type) (get row-type :kind) row-type)
+              (if (map? data-type) (get data-type :kind) data-type) (if (map? solution-type) (get solution-type :kind) solution-type))
+           (= [] (get node :children) (get node :resolved-binding-ids))
            (= :no-evaluation (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
-           (= :list (get owner :kind)) (= 2 (count ids)) (= :symbol (get payload :kind)) (symbol? (get payload :value))
+           (= :no-evaluation (get (get row :solution) :evaluation))
+           (= :list (get owner :kind)) (= 2 (count ids)) (= kind (get payload :kind) (get attrs :quoted-kind))
+           (= (get ids 0) (get operator :form-id)) (= (get ids 1) (get payload :form-id) (get attrs :quoted-form-id))
+           (= (get payload :syntax-id) (get attrs :quoted-syntax-id))
            (= (get owner :form-id) (get payload :parent-form-id) (get operator :parent-form-id))
            (= 'quote (get operator :value)) (= :symbol (get operator :kind)) (= [] (get operator :child-form-ids))
-           (= (get node :source) (p15-s23-typed-source owner))
-           (= (get owner :value) (list 'quote (get payload :value)))
-           (= attrs {:quoted-form-id (get payload :form-id) :quoted-syntax-id (get payload :syntax-id) :quoted-kind :symbol :quoted-value (get payload :value)})
-           (= data (get row :quoted-data)) (= {:quote premise :data data} (get row :dependencies))
-           (= {:type :gravity.type/symbol :evaluation :no-evaluation} (get row :solution))
-           (= {:domain :gravity/sh08-recursive-quoted-data-constraint-v1 :quote premise :data data} (get row :constraint-id-request))])
-        (assoc (p15-s23-compiler-result {:op :quote :value (get payload :value)}) :work-count 4)
-        (p15-s23-typed-node-error :unsupported-or-mismatched-typed-symbol-quote node))))))
+           (= (get owner :form-id) (get (get node :source) :form-id) (get (get premise :source) :form-id))
+           (= (get owner :syntax-id) (get (get node :source) :syntax-id) (get (get premise :source) :syntax-id))
+           (= (get node :node-id) (get premise :core-node-id) (get origin :quote-core-node-id))
+           (= :quoted-data (get origin :kind)) (= [] (get origin :data-path))
+           (= (get payload :form-id) (get origin :form-id) (get (get data :source) :form-id))
+           (= (get payload :syntax-id) (get origin :syntax-id) (get (get data :source) :syntax-id))])
+        (assoc (p15-s23-compiler-result {:op :quote :value (get data :value)}) :work-count 4)
+        (p15-s23-typed-node-error :unsupported-or-mismatched-typed-quote node))))))
 
 (defn p15-s23-typed-try-handlers [context node row budget]
   (let [premise (get row :dependencies) records (get premise :source-handlers) types (get premise :catch-types)
@@ -2145,13 +2156,13 @@
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
     (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
-      (if (if (map? node) (= false (contains? #{nil :gravity.type/unknown} type)) false)
+      (if (if (map? node) (if (= nil type) false (= false (= :gravity.type/unknown type))) false)
         (if (= form :loop) (p15-s23-typed-compile-loop context node budget)
         (if (= form :recur) (p15-s23-typed-compile-recur context node budget)
         (if (= form :call) (p15-s23-typed-compile-call context node budget)
         (if (= form :let) (p15-s23-typed-compile-let context node budget)
         (if (= form :try) (p15-s23-typed-compile-try context node budget)
-        (if (= form :quote) (p15-s23-typed-symbol-quote context node budget)
+        (if (= form :quote) (p15-s23-typed-quote context node budget)
         (if (= form :literal)
           (if (if (= :decimal (get (get node :attributes) :literal-kind)) true (map? (get source :value)))
             (p15-s23-typed-node-error :unelaborated-typed-numeric-literal node)
