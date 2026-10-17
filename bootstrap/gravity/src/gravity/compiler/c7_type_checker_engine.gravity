@@ -4832,7 +4832,11 @@
                 deps (if (= kind :fn) [] (get node :children)) deps (if (= target nil) deps (conj deps target))
                 ready? (loop [ids deps]
                          (if (= 0 (count ids)) true (if (contains? graph (first ids)) (recur (rest ids)) false)))]
-            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call :try} kind)
+            ; L2/L5/L9: target/slot/transfer checking precedes this graph in C7.
+            ; Both loop and function recur contribute only lexical child SOURCE
+            ; errors. No transfer error or control-backedge dependency is added;
+            ; this finite conservative union establishes no termination or effect legality.
+            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :loop :recur :collection-literal :throw :call :try} kind)
               (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types handlers))
                                (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
                 (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))

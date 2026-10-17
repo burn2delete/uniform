@@ -1,6 +1,8 @@
 
 
 (defn sh07-core-public-decimal-presentation
+  "Return an explicit host presentation view. Do not use this view as an
+  authenticated canonical core: its decimal values differ from the preimage."
   [core]
   (update
    core :nodes
@@ -31,8 +33,7 @@
              :identity-preimage
              (sh07-core-semantic-identity-preimage
               (:identity-preimage resolved-template)))
-      (dissoc :artifact-id-request :provenance-binding-id-request)
-      sh07-core-public-decimal-presentation))
+      (dissoc :artifact-id-request :provenance-binding-id-request)))
 
 (defn sh07-core-raise-diagnostic!
   [source-path template]

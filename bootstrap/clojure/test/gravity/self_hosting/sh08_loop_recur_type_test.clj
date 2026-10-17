@@ -665,6 +665,27 @@
         bindings (mapv (fn [f] {:name (function-name f) :binding-id (binding f) :definition-syntax-id (name-syntax f)}) (range 1 8))]
     {:core core :types types :functions functions :direct direct :bindings bindings :id id :fid fid}))
 
+(deftest loop-called-source-error-development-kernel
+  ;; Normalized source graph DATA, not an authenticated input. The existing
+  ;; call joins are unchanged; loop/recur add only lexical child dependencies.
+  (let [{:keys [core types functions direct bindings id fid]} (local-throw-kernel-data)
+        backedge (node :backedge :recur [(id 2)] :loop-body {:target-kind :loop})
+        core (update core :nodes #(mapv (fn [n] (if (= (id 19) (:node-id n))
+                                                (assoc n :core-form :loop :children [(id 18) :backedge]) n)) (conj % backedge)))
+        types (assoc types :backedge :gravity.type/never (id 19) :gravity.type/never)
+        result (c7-invoke 'sh08-tc-products [core types functions bindings direct 65536])]
+    (is (= :accepted (:status result)))
+    (doseq [f [1 2 3]] (is (= [:gravity.type/string] (get-in result [:throws (fid f)]))))
+    (is (= 4 (count (:constraints result))))
+    (let [row (first (filter #(= (id 4) (get-in % [:lhs :core-node-id])) (:constraints result)))]
+      (is (= [:gravity.type/string] (get-in row [:dependencies :callee-error-types])))
+      (is (= [:gravity.type/string] (get-in row [:solution :thrown-error-effects]))))
+    (is (= "C7-GENERIC" (get-in (c7-invoke 'sh08-tc-products [core types functions bindings direct 1]) [:diagnostics 0 :rule])))
+    (is (= :unsupported-throwing-body-operation
+           (get-in (c7-invoke 'sh08-tc-products
+                     [(update core :nodes #(mapv (fn [n] (if (= :backedge (:node-id n)) (assoc n :core-form :set!) n)) %))
+                      types functions bindings direct 65536]) [:diagnostics 0 :reason])))))
+
 (deftest local-throw-call-closure-development-kernel
   ;; Normalized DATA exercises the actual Gravity algorithms, not authentication.
   (let [{:keys [core types functions direct bindings id fid]} (local-throw-kernel-data)
@@ -776,6 +797,84 @@
         bindings [{:binding-id :string-type :name 'String :binding-class :core :kind :type :namespace 'gravity.core}
                   {:binding-id :caught :name 'e :binding-class :lexical :kind :local :definition-syntax-id :binder :scope-id :catch-scope}]]
     {:core core :forms forms :bindings bindings :types (assoc types :handler :gravity.type/string :try :gravity.type/string)}))
+
+(defn- loop-handler-kernel-data []
+  (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
+        loop-node (-> (node :protected-loop :loop [:transfer] :function-body
+                           {:target-id :protected-loop :binding-count 0 :body-count 1 :initializer-child-indexes []
+                            :body-child-indexes [0] :result-policy {:kind :last-body :child-index 0}})
+                      (assoc-in [:evaluation :kind] :initializers-then-body-left-to-right)
+                      (assoc :source {:form-id :protected-loop-form :syntax-id :protected-loop
+                                      :semantic-span nil :origin-chain nil :generated-origin nil}))
+        target (fn [id kind parent] {:target-id id :target-kind kind :owner-core-node-id id
+                                     :owner-form-id (keyword (str (name id) "-form")) :owner-syntax-id id
+                                     :arity 0 :binding-ids [] :body-scope-id :function-body :parent-target-id parent
+                                     :type-compatibility :pending-sh08})
+        record (assoc (first (:error-handlers core)) :protected-core-node-id :protected-loop)
+        core (-> core
+                 (update :nodes #(vec (mapcat (fn [n] (cond
+                           (= :try (:node-id n)) [loop-node (-> n (assoc-in [:children 0] :protected-loop)
+                                                              (assoc-in [:evaluation :order 0 :core-node-id] :protected-loop))]
+                           (= :function (:node-id n)) [(assoc-in n [:attributes :recur-target-id] :function)]
+                           :else [n])) %)))
+                 (assoc :loop-bindings [] :recur-transfers [] :binding-table []
+                        :recur-targets [(target :protected-loop :loop :function) (target :function :function nil)]
+                        :error-handlers [record])
+                 (assoc-in [:identity-preimage :error-handlers] [(assoc record :authenticated-sh06-artifact-id :projection)]))
+        forms (into (mapv (fn [f] (cond
+                         (= :transfer-form (:form-id f)) (assoc f :parent-form-id :protected-loop-form)
+                         (= :try-form (:form-id f)) (assoc f :value '(try (loop [] (throw problem)) (catch String e e))
+                                                                        :child-form-ids [:try-op-form :protected-loop-form :catch-form])
+                         :else f)) forms)
+                [{:form-id :protected-loop-form :syntax-id :protected-loop :kind :list :value '(loop [] (throw problem))
+                  :child-form-ids [:loop-op-form :loop-bindings-form :transfer-form] :parent-form-id :try-form}
+                 {:form-id :loop-op-form :syntax-id :loop-op :kind :symbol :value 'loop :child-form-ids [] :parent-form-id :protected-loop-form}
+                 {:form-id :loop-bindings-form :syntax-id :loop-bindings :kind :vector :value [] :child-form-ids [] :parent-form-id :protected-loop-form}])]
+    {:core core :forms forms :bindings bindings :types (assoc types :protected-loop :gravity.type/never)}))
+
+(deftest loop-handler-source-error-development-kernel
+  ;; No calls: a handler owner alone activates the actual source-error graph.
+  (let [{:keys [core forms bindings types]} (loop-handler-kernel-data)
+        checked (c7-invoke 'sh08-ft-loop-type-step [core types {} 65536])
+        source (c7-invoke 'sh08-eh-source-products [core forms bindings 65536])
+        independent (effects 'body-eh-source-products core forms bindings 65536)
+        direct (c7-invoke 'sh08-th-products [core forms types 65536])
+        products (c7-invoke 'sh08-tc-products [core types {} bindings direct 65536])
+        owners (c7-invoke 'sh08-th-owners [core 65536])
+        derived (c7-invoke 'sh08-tc-graph [core types (:owners owners) #{:function} 65536 (:groups source)])
+        rows (filterv #(= :sh08-atomic-typed-catch-v1 (:producer-rule %)) (:constraints products))
+        facts {:type-table types :constraint-ledger rows :atomic-typed-handlers (:groups independent)}
+        graph (reduce (fn [g n] (assoc g (:node-id n)
+                                 (effects 'body-control-node-record n nil g (get types (:node-id n)) facts {} core nil))) {} (:nodes core))
+        request {:b47-context {:authenticated-core-request {:forms forms :binding-table bindings
+                    :resolution-table [{:reference-syntax-id :type :position :type :symbol 'String :binding-id :string-type}
+                                       {:reference-syntax-id :handler :position :value :symbol 'e :binding-id :caught}]}}}
+        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2 65536)]
+    (is (= :accepted (:status checked)))
+    (is (= :accepted (:status source) (:status independent) (:status direct) (:status products) (:status derived))
+        (pr-str {:source source :independent independent}))
+    (is (= [] (:call-edges core)))
+    (is (= [:gravity.type/string] (get-in derived [:nodes :protected-loop])))
+    (is (= [] (get-in derived [:nodes :try]) (get-in products [:throws :function])))
+    (is (= 1 (count rows)))
+    (is (= [:gravity.type/string] (get-in rows [0 :dependencies :child-source-error-types 0])))
+    (is (= [] (get-in rows [0 :solution :thrown-error-effects])))
+    (is (= :gravity.type/string (get-in rows [0 :solution :normal-result-type])))
+    (is (= :accepted (:status (verify facts graph))))
+    (is (= #{:error/throw} (get-in graph [:try :escaping])))
+    (doseq [bad [(assoc facts :constraint-ledger [])
+                 (assoc-in facts [:constraint-ledger 0 :dependencies :child-source-error-types 0] [])
+                 (assoc-in facts [:constraint-ledger 0 :solution :thrown-error-effects] [:gravity.type/bool])
+                 (assoc-in facts [:constraint-ledger 0 :dependencies :source-node :source :syntax-id] :forged)]]
+      (is (= :rejected (:status (verify bad graph)))))
+    (is (= :rejected (:status (verify facts (assoc-in graph [:protected-loop :escaping-thrown-error-types] [])))))
+    (let [clauses [{:record :first :error-type :gravity.type/string :handler-core-node-id :rethrow}
+                   {:record :sibling :error-type :gravity.type/bool :handler-core-node-id :sibling}]
+          g (assoc (:nodes derived) :rethrow [:gravity.type/bool] :sibling [])
+          partition (c7-invoke 'sh08-eh-partition [(get g :protected-loop) clauses g])]
+      (is (= [:gravity.type/bool] (:residual partition)))
+      (is (= [[:gravity.type/string] []] (mapv :matched-error-types (:handled partition)))))
+    (is (= "C7-GENERIC" (get-in (c7-invoke 'sh08-tc-products [core types {} bindings direct 1]) [:diagnostics 0 :rule])))))
 
 (deftest atomic-typed-handler-source-development-kernel
   (let [{:keys [core forms bindings]} (typed-handler-kernel-data)
@@ -1356,6 +1455,78 @@
         table {:condition :gravity.type/bool :next-flag :gravity.type/bool :next-value :gravity.type/string
                :transfer :gravity.type/never :result :gravity.type/string :branch :gravity.type/string}]
     [core table]))
+
+(deftest loop-lexical-source-error-development-kernel
+  ;; The actual validating loop kernel runs before the actual source-error
+  ;; graph here, as in public C7. These normalized premises confer no authority.
+  (let [[base table] (loop-data)
+        locations [[:value-init :initializers :gravity.type/string]
+                   [:next-value :loop-body :gravity.type/bool]
+                   [:result :loop-body :gravity.type/keyword]]
+        branches (into {} (map (fn [[id scope _]]
+                                 [id (node id :if [(keyword (str (name id) "-test"))
+                                                   (keyword (str (name id) "-throw"))
+                                                   (keyword (str (name id) "-normal"))] scope {})]) locations))
+        additions (mapcat (fn [[id scope _]]
+                            [(node (keyword (str (name id) "-test")) :literal [] scope {})
+                             (node (keyword (str (name id) "-payload")) :literal [] scope {})
+                             (node (keyword (str (name id) "-throw")) :throw [(keyword (str (name id) "-payload"))] scope {})
+                             (node (keyword (str (name id) "-normal")) :literal [] scope {})]) locations)
+        core (assoc base :nodes (into (vec additions) (map #(get branches (:node-id %) %) (:nodes base))))
+        types (reduce (fn [out [id _ payload-type]]
+                        (assoc out (keyword (str (name id) "-test")) :gravity.type/bool
+                                   (keyword (str (name id) "-payload")) payload-type
+                                   (keyword (str (name id) "-throw")) :gravity.type/never
+                                   (keyword (str (name id) "-normal")) :gravity.type/integer)) table locations)
+        checked (c7-invoke 'sh08-ft-loop-type-step [core types {} 65536])
+        owners (zipmap (map :node-id (:nodes core)) (repeat :function-target))
+        derive #(c7-invoke 'sh08-tc-graph [%1 %2 owners #{:function-target} %3 {}])
+        graph (derive core types 65536)]
+    (is (= :accepted (:status checked)))
+    (is (= true (:normal-transfer? (last (:constraints checked)))))
+    (is (= :accepted (:status graph)))
+    (is (= [:gravity.type/bool] (get-in graph [:nodes :transfer])))
+    (is (= [:gravity.type/string :gravity.type/bool :gravity.type/keyword] (get-in graph [:nodes :loop-target])))
+    (is (= [] (get-in graph [:nodes :function-target])))
+    (is (not (some #{:gravity.type/never} (mapcat val (:nodes graph)))))
+    (let [never-core (update base :nodes
+                       #(into [(node :inner-problem :literal [] :loop-body {})
+                               (node :inner-throw :throw [:inner-problem] :loop-body {})]
+                          (map (fn [n] (if (= :next-value (:node-id n))
+                                         (node :next-value :throw [:inner-throw] :loop-body {}) n)) %)))
+          never-types (assoc table :next-value :gravity.type/never :inner-problem :gravity.type/string :inner-throw :gravity.type/never)
+          never (c7-invoke 'sh08-ft-loop-type-step [never-core never-types {} 65536])
+          errors (c7-invoke 'sh08-tc-graph [never-core never-types
+                    (zipmap (map :node-id (:nodes never-core)) (repeat :function-target)) #{:function-target} 65536 {}])]
+      (is (= :accepted (:status never)))
+      (is (= false (:normal-transfer? (last (:constraints never)))))
+      (is (= [:gravity.type/string] (get-in errors [:nodes :transfer])))
+      (is (= [:gravity.type/string] (get-in errors [:nodes :loop-target])))
+      (is (not (some #{:gravity.type/never} (mapcat val (:nodes errors))))))
+    (doseq [bad [(assoc-in core [:recur-transfers 0 :target-id] :function-target)
+                 (assoc-in core [:recur-transfers 0 :tail-position] false)
+                 (assoc-in core [:loop-bindings 1 :initializer-syntax-id] :forged)]]
+      (is (= :rejected (:status (c7-invoke 'sh08-ft-loop-type-step [bad types {} 65536])))))
+    (is (= "C7-TYPE-MISMATCH"
+           (get-in (c7-invoke 'sh08-ft-loop-type-step [core (assoc types :next-value :gravity.type/string) {} 65536]) [:issues 0 :rule])))
+    (is (= "C7-GENERIC" (get-in (derive core types 1) [:diagnostics 0 :rule])))
+    (is (= :unsupported-throwing-body-operation
+           (get-in (derive (update core :nodes #(mapv (fn [n] (if (= :transfer (:node-id n)) (assoc n :core-form :set!) n)) %)) types 65536)
+                   [:diagnostics 0 :reason]))))
+  (let [[base table] (function-recur-data)
+        payload (node :problem :literal [] :function-body {})
+        core (update base :nodes #(into [payload] (map (fn [n] (if (= :next-value (:node-id n))
+                                                               (node :next-value :throw [:problem] :function-body {}) n)) %)))
+        types (assoc table :problem :gravity.type/string :next-value :gravity.type/never)
+        checked (c7-invoke 'sh08-ft-loop-type-step [core types {} 65536])
+        graph (c7-invoke 'sh08-tc-graph [core types (zipmap (map :node-id (:nodes core)) (repeat :function-target))
+                                         #{:function-target} 65536 {}])]
+    (is (= :accepted (:status checked)))
+    (is (= false (:normal-transfer? (first (:constraints checked)))))
+    (is (= :accepted (:status graph)))
+    (is (= [:gravity.type/string] (get-in graph [:nodes :transfer])))
+    (is (= :gravity.type/never (:transfer types)))
+    (is (= :gravity.type/string (:branch types)))))
 
 (deftest function-recur-node-inference-development-kernel
   (let [[core prefilled] (function-recur-data)

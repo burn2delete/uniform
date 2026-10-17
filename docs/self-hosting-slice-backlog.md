@@ -2003,7 +2003,7 @@ checks fresh current C7 verification; changed facts and lexical records reject,
 and no guest execution uses the seed throw transport. This pass does not erase
 the first failure or make overlapping focused counts additive.
 
-General calls, closures, mutable locals, destructuring, quoted containers,
+Other call forms, closures, mutable locals, destructuring, quoted containers,
 numeric coercion, complete effect/profile/target legality and authoritative
 migration remain separate gates. Current-source lowering/execution does not
 refresh old admitted compiler identities or establish self-hosting, release
@@ -2062,6 +2062,88 @@ upstream mismatch or turn it into a language-law prohibition. A future C7
 identity-join correction needs its own accepted/rejected source cases and
 affected validation; qualified references are already a distinct supported
 case here.
+
+### Canonical loop-target execution
+
+The current development candidate passed the six-input affected composition:
+one test/128 assertions, with a real multi-function `.qst` compile, assembly and
+execution, both decimal diagnostic boundaries and three rejected `.qst` inputs.
+The selected operations took 586.919 seconds; command elapsed time was 594.656 seconds.
+The focused batch passed twelve tests/750 assertions. These are ordinary
+development results, not authoritative migration or whole-language completion.
+The failed and interrupted attempts below retain their original status.
+
+The current Gravity lowerer and local runtime implement sequential loop
+initialization, left-to-right recur arguments evaluated in the old environment,
+and simultaneous slot replacement. Canonical C6 target/binding/transfer records
+and C7 slot/constraint rows are consumed without changing the public lowering
+or execution interfaces. The runtime uses a separate target-bearing control
+position, not payload recognition; nested targets, non-tail and try barriers,
+callee isolation, source errors and original host failures remain distinct.
+
+The focused batch passed eleven tests/713 assertions, including 57 normalized
+lowering and 64 runtime assertions. Current C7 constructs the normalized test
+rows; this is not source authentication. The duplicate-index rejection oracle
+was corrected to inspect the raw helper result, with a positive index check.
+These counts overlap earlier batches and are not additive.
+
+The first real composition failed: one test, 25 passed assertions, one failure
+and one error. The unchanged `loop-recur-types.gravity` case completed; the
+new `local-runtime-loop.gravity` input was rejected by C7 before lowering, and
+the remaining ten inputs did not run. Its diagnostic was `C7-ANNOTATION`,
+`:unsupported-throwing-body-operation`, with actual operation `:loop`.
+Throws and handlers activate a source-error graph whose operation subset
+excluded `loop` and `recur`; this does not establish that an ordinary loop call
+alone triggers that graph. The failed run remains failed, not a passing loop
+and handler composition.
+
+The bounded C7 correction admits `loop` and `recur` to the existing lexical
+source-error union. It adds no control backedge or thrown type for a transfer.
+The preceding canonical target/slot/transfer validation, handler order, `Never`
+behavior, work limits and fresh reconstruction are unchanged. Fourteen focused
+tests/227 assertions pass, including handler-only activation, called-body
+propagation and independent handler reconstruction negatives. Four affected
+lowering/orchestration tests/170 assertions also pass. These batches overlap
+earlier coverage and are not additive. Independent review accepted the changed
+implementation for composition. That second run completed the unchanged loop
+and new main `.gravity` fixtures, including loop/throw/catch execution, then
+stopped on `local-runtime-loop-decimal.gravity`: `C7-VERIFY` reported
+`:stale-b47-identity-preimage` before lowering. Its aggregate remains failed
+(99 passed assertions, one failure, one error); paired `.qst` and negative
+inputs were not reached. The mismatch was traced to the host exporter converting
+only canonical decimal node values to `BigDecimal` after their descriptor-bearing
+identity preimage was resolved. The exporter now retains the original exact
+descriptor, including scale and C2 occurrence links. Its existing explicit
+presentation helper remains available but is not canonical input. C7 equality
+checks are unchanged. The focused actual-helper/C7 kernel passed 27 assertions;
+two affected lowering/orchestration tests passed 67 assertions. These normalized
+controls are not authenticated source evidence. Independent review accepted the
+correction and the remaining-input selector, which constructs the other ten
+inputs freshly without replaying the two successful nondecimal `.gravity`
+cases. Those earlier successes retain their pre-correction snapshot attribution;
+they are not final-current authoritative identities. That remaining-input run
+was interrupted: its JVM is gone, its timing receipt is absent, and no final
+aggregate or native exit status was recovered. Retained output contains eight
+assertion failures, four for each decimal source extension. C7 accepts both;
+lowering rejects earlier than expected because it compares the public raw
+function body with C6's descriptor-bearing normalized body. Ordered partial
+coverage is not a completed batch; completion of the last three negative `.qst`
+inputs is unobserved. The implemented fix joins verified raw roots to C6 root
+IDs in source order for definition/table fidelity while compiling only typed
+nodes. Its focused batch passed twelve tests/750 assertions, including 37
+source-join assertions for decimal fidelity, malformed roots and headers,
+definition/table equality, work bounds and ordinary/annotated parity. Those
+normalized checks are not source authentication. The affected real-input scope
+was one multi-function positive, both decimal extensions and the three unfinished
+negative `.qst` cases. This changed-candidate run passed all 128 assertions,
+including precise numeric node/syntax/origin/span rejection, current C7
+verification once per public operation, unchanged source/ledger tamper rejection
+and zero seed throw transport. The original frozen source, test and fixture
+inputs remained unchanged. No interrupted or failed aggregate is relabeled
+passed, and no full twelve-input final-candidate matrix is claimed.
+Function-target runtime recur, complete
+effect/profile legality, whole-runtime compilation and authoritative migration
+remain open; the twenty-definition evaluator projection is development-only.
 
 ## Current Baseline
 

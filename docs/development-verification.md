@@ -521,7 +521,7 @@ each constructed input across lowering and runtime assertions. Ordinary
 self/forward-reference errors belong to C5. The unchanged C6 restrictions on
 malformed bindings, missing bodies and unsupported destructuring are not a
 reason to replay their historical expensive proof for each lowerer edit.
-General calls, mutable locals, destructuring, numeric coercion, full legality
+Other call forms, mutable locals, destructuring, numeric coercion, full legality
 and authoritative migration remain separate work.
 
 After correcting the unsupported container-scope premise, the focused batch
@@ -587,6 +587,99 @@ verification runs once per public lowering operation; input tampering rejects
 and every guest execution is observed for zero seed throw transport. The
 sixteen-function runtime projection is not whole-module compilation. Counts
 overlap and timings describe different workloads, not a speedup comparison.
+
+### Canonical loop-target execution
+
+Edit the existing Gravity emitter and runtime for canonical `loop`/`recur`
+lowering and execution. Reuse C6's target, sequential binding and transfer
+records and C7's slot types and constraint rows; do not add an admission input
+or refresh historical migration pins for this work.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-loop-lowering-development-kernel \
+  --exact current-gravity-loop-runtime-development-kernel
+# Affected source -> current typed lowering -> Gravity runtime composition:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-loop-authenticated-composition --fail-fast
+```
+
+Initializers run once, sequentially. Recur arguments run left-to-right in the
+old environment; only after they all complete are the slots replaced together.
+A separate private control position carries the target ID, so ordinary or
+thrown data that resembles a recur instruction stays inert. The matching loop
+consumes its backedge. Non-tail positions, `try` regions and call boundaries
+retain the existing C6 transfer restrictions; a nested loop establishes its
+own target. An implicit function target can be a loop's canonical parent
+without enabling function-target recur execution.
+
+The focused checks exercise normalized producer-shaped data, including rows
+constructed by the current C7 constraint producer. They are not authenticated
+source evidence. The separate paired selector constructs each source input
+once and reuses its products for assembly, lowering, execution and negative
+checks. Run it when this composition changes, not to replay unchanged C6
+tail/arity proofs or to repair a test-only assertion. Its command is not a
+record of a passing run.
+
+Represented integer values remain generic Integer, not guessed I64 values.
+Unelaborated decimal descriptors still reject at this consumer boundary;
+that is not a language-level prohibition on decimal loops. Function-target
+recur, arbitrary recursive calls, full effect/profile legality, whole-runtime
+compilation and authoritative migration remain separate work. The current
+twenty-function runtime projection and active-target bound do not establish
+termination, total cost, memory bounds or host-stack fit.
+
+If changing C7's source-error composition, edit
+`bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` and run
+the existing owning kernels before the affected integration check:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact loop-lexical-source-error-development-kernel \
+  --exact loop-handler-source-error-development-kernel \
+  --exact loop-called-source-error-development-kernel
+```
+
+These checks cover lexical error unions, handler-only activation and called
+bodies. They do not add control backedges or establish termination. A failure
+before lowering must be diagnosed at its owning boundary rather than hidden
+by dropping the source case or weakening identity validation.
+
+For the typed lowerer's source-definition join, use:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-raw-root-source-development-kernel
+```
+
+Public definitions retain raw expanded source values; canonical C6 values may
+instead contain exact occurrence-linked numeric descriptors. The lowerer pairs
+all verified raw roots with C6 root IDs in source order, checks root coverage
+and definition/header coordinates, and preserves full supplied-definition and
+function-table equality. Only typed C6 nodes drive emission. The explicit host
+decimal presentation helper is not canonical compiler input. Changing this
+common join requires an affected real multi-function composition as well as
+the focused malformed-root and numeric-diagnostic controls; it does not require
+refreshing authoritative migration pins.
+
+The current source-join candidate passed this bounded affected composition
+(one test/128 assertions):
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-loop-source-join-authenticated-composition --fail-fast
+```
+
+It selects one multi-function positive, both decimal boundary cases and three
+type-rejection cases. Its 586.919-second selected time includes real product
+construction and public verification, not merely scheduling. It is not a full
+language, target, runtime-module or authoritative migration proof. Do not rerun
+this expensive composition for unchanged code or documentation-only edits.
 
 ### Current Gravity emitter throw lowering
 

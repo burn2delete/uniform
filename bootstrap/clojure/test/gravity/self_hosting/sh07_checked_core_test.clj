@@ -653,6 +653,80 @@
       (is (= expected (first arglists)) symbol)
       (is (fn? @resolved) symbol))))
 
+(deftest canonical-decimal-presentation-development-kernel
+  ;; Complete normalized resolved-template DATA exercises the actual host export
+  ;; and Gravity C7 algorithms. It is not a fresh authenticated C2/C6 proof.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        evidence {:kind :decimal :decoded (java.math.BigDecimal. "1.25")
+                  :literal-id (ordinal-sha 1) :form-id (ordinal-sha 2) :token-id (ordinal-sha 3)}
+        decimal ((required-var 'sh07-core-decimal-descriptor) "normalized-decimal.gravity"
+                 (:decoded evidence) evidence (ordinal-sha 4))
+        module {:namespace 'decimal.contract :profile :meta :target :jvm :safety :safe
+                :effects [] :capabilities [] :exports [] :source-revision-id (ordinal-sha 5)}
+        values [decimal nil false 7 "ordinary" :ordinary]
+        nodes (mapv (fn [index value kind]
+                      {:artifact :gravity/sh07-core-node :node-id (ordinal-sha (+ 100 index)) :core-form :literal :children []
+                       :attributes {:literal-kind kind :value value}
+                       :source {:form-id (if (zero? index) (:projection-form-id decimal) (ordinal-sha (+ 200 index)))
+                                :syntax-id (ordinal-sha (+ 300 index)) :semantic-span {} :origin-chain [] :generated-origin []}
+                       :binding-context nil :generated? false :resolved-binding-ids []
+                       :evaluation {:kind :value :region :namespace :owner-function-syntax-id nil :order []}
+                       :module (select-keys module [:namespace :profile :target]) :metadata {}
+                       :preserved-declarations (select-keys module [:effects :capabilities :safety])
+                       :pending-fact-families [:types :effects :ownership :safety] :lowering-rule-version :literal-v1})
+                    (range) values [:decimal :nil :boolean :integer :string :keyword])
+        preimage (assoc (zipmap
+                    [:domain :lineage :projection-binding :module :fragment-manifest :fragment-coverage :module-assembly-manifest
+                     :root-core-node-ids :definitions :nodes :evaluation-order :control-flow :reference-uses :var-references
+                     :mutations :error-transfers :error-handlers :calls :function-records :call-edges :recursion-components
+                     :keyword-lookups :match-branch-records :match-decision-skeletons :match-pattern-records
+                     :lexical-bindings :loop-bindings :recur-targets :recur-transfers :source-map :binding-table
+                     :declared-alias-table :resolution-table :macro-expansion-trace :macro-origin-traces
+                     :macro-origin-expectation :pending-fact-families] (repeat []))
+                  :domain :gravity/sh07-b47-canonical-core-v16 :lineage {} :module module :nodes nodes
+                  :root-core-node-ids (mapv :node-id nodes))
+        b47-core-keys (conj canonical-core-keys :function-records :call-edges :recursion-components)
+        template (assoc (zipmap (-> b47-core-keys (disj :artifact-id :provenance-binding-id)
+                                                    (conj :artifact-id-request :provenance-binding-id-request)) (repeat []))
+                        :artifact :gravity/sh07-core-template :schema-version 16 :artifact-id-request (ordinal-sha 6)
+                        :provenance-binding-id-request (ordinal-sha 7) :module module :lineage {} :nodes nodes
+                        :root-core-node-ids (mapv :node-id nodes) :identity-preimage preimage)
+        canonical ((required-var 'sh07-core-canonical-artifact) template)
+        presented ((required-var 'sh07-core-public-decimal-presentation) canonical)
+        shown (get-in presented [:nodes 0 :attributes :value])
+        identity-valid? #(c7 'sh08-ft-b47-identity-preimage-valid? [% []])
+        type-result #(c7 'sh08-ft-function-type-core-artifact-with-imports [% [] [] {}])]
+    (is (= b47-core-keys (set (keys canonical))))
+    (is (= preimage (:identity-preimage template)))
+    (is (= nodes (:nodes canonical) (get-in canonical [:identity-preimage :nodes])))
+    (is (= values (mapv #(get-in % [:attributes :value]) (:nodes canonical))))
+    (is (= decimal (get-in canonical [:nodes 0 :attributes :value])))
+    (is (= [:gravity/arbitrary-decimal-literal "125" 2] ((juxt :kind :unscaled-value :scale) decimal)))
+    (is (every? sha256-id? (map decimal [:literal-id :form-id :token-id :projection-form-id])))
+    (is (= (:identity-preimage canonical) (:identity-preimage presented)))
+    (is (= (subvec nodes 1) (subvec (:nodes presented) 1)))
+    (is (instance? java.math.BigDecimal shown))
+    (is (= "1.25" (.toPlainString ^java.math.BigDecimal shown)))
+    (is (= 2 (.scale ^java.math.BigDecimal shown)))
+    (is (true? (identity-valid? canonical)))
+    (is (false? (identity-valid? presented)))
+    (let [typed (type-result canonical)]
+      (is (= :accepted (:status typed)) (pr-str (:diagnostics typed)))
+      (is (= :gravity.type/decimal (get-in typed [:type-table (:node-id (first nodes))]))))
+    (is (= :stale-b47-identity-preimage (get-in (type-result presented) [:diagnostics 0 :reason])))
+    (doseq [[field value] [[:scale 3] [:unscaled-value "1250"] [:literal-id (ordinal-sha 21)]
+                           [:form-id (ordinal-sha 22)] [:token-id (ordinal-sha 23)] [:projection-form-id (ordinal-sha 24)]]]
+      (is (false? (identity-valid? (assoc-in canonical [:nodes 0 :attributes :value field] value)))))
+    (doseq [[value record] [[(:decoded evidence) nil]
+                            [(java.math.BigDecimal. "1.26") evidence]
+                            [(java.math.BigDecimal. java.math.BigInteger/ONE 65537)
+                             (assoc evidence :decoded (java.math.BigDecimal. java.math.BigInteger/ONE 65537))]]]
+      (let [failure (try ((required-var 'sh07-core-decimal-descriptor) "normalized-decimal.gravity" value record (ordinal-sha 4))
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= ["C6-ORIGIN" :exact-bounded-decimal-c2-evidence] ((juxt :id :reason) failure)))))
+    (is (= :rejected (:status (c7 'sh08-carrier-preflight [(assoc canonical :nodes (vec (repeat 65537 (first nodes))))]))))))
+
 (deftest sh07-genuine-upstream-boundary-and-supported-core
   (doseq [extension [".gravity" ".qst"]]
     (let [source-path
@@ -707,12 +781,15 @@
                      :character :string :keyword]))
         (is (= 1 (count decimal-nodes))
             "the accepted fixture has one authoritative decimal literal")
-        (is (instance? java.math.BigDecimal decimal-value))
-        (when (instance? java.math.BigDecimal decimal-value)
-          (is (= "1.25"
-                 (.toPlainString ^java.math.BigDecimal decimal-value)))
-          (is (= 2 (.scale ^java.math.BigDecimal decimal-value))
-              "lowering preserves the source decimal scale"))
+        (is (= #{:kind :unscaled-value :scale :literal-id :form-id :token-id :projection-form-id}
+               (set (keys decimal-value))))
+        (is (= [:gravity/arbitrary-decimal-literal "125" 2]
+               ((juxt :kind :unscaled-value :scale) decimal-value)))
+        (is (every? sha256-id? (map decimal-value [:literal-id :form-id :token-id :projection-form-id])))
+        (is (= (get-in boundary [:canonical-core-artifact :identity-preimage :nodes])
+               (mapv #((required-var 'sh07-core-semantic-node)
+                       (get-in boundary [:canonical-core-artifact :identity-preimage :lineage :sh06-semantic-projection-id]) %)
+                     nodes)))
         (is (every? #(= [:types :effects :ownership :safety]
                        (:pending-fact-families %))
                     nodes))
@@ -1641,7 +1718,7 @@
                     [:gravity-core-boundary :canonical-core-artifact
                      :nodes 0 :source :semantic-span]
                     :not-a-span)]
-         ["decimal scale substitution"
+         ["decimal host representation substitution"
           (update-in
            artifact
            [:gravity-core-boundary :canonical-core-artifact :nodes]
@@ -1654,6 +1731,18 @@
                             (java.math.BigDecimal. "1.250"))
                   node))
               nodes)))]
+         ["decimal descriptor scale substitution"
+          (update-in artifact [:gravity-core-boundary :canonical-core-artifact :nodes]
+                     #(mapv (fn [node] (if (= :decimal (get-in node [:attributes :literal-kind]))
+                                        (assoc-in node [:attributes :value :scale] 3) node)) %))]
+         ["decimal descriptor coefficient substitution"
+          (update-in artifact [:gravity-core-boundary :canonical-core-artifact :nodes]
+                     #(mapv (fn [node] (if (= :decimal (get-in node [:attributes :literal-kind]))
+                                        (assoc-in node [:attributes :value :unscaled-value] "126") node)) %))]
+         ["decimal descriptor occurrence substitution"
+          (update-in artifact [:gravity-core-boundary :canonical-core-artifact :nodes]
+                     #(mapv (fn [node] (if (= :decimal (get-in node [:attributes :literal-kind]))
+                                        (assoc-in node [:attributes :value :token-id] (ordinal-sha 999)) node)) %))]
          ["wrong wrapper kind"
           (assoc artifact :kind :gravity/not-sh07-core-artifact)]
          ["missing wrapper artifact id"
@@ -1671,7 +1760,7 @@
                        checks))
             public-verification
             (cond
-              (= label "decimal scale substitution")
+              (= label "decimal descriptor scale substitution")
               (fresh-sh07-verification mutation)
 
               (= label "missing embedded capability proof")
@@ -1687,7 +1776,7 @@
                    (:artifact public-verification)))
             (is (= :failed (:status public-verification)))
             (is (seq (:failed-checks public-verification)))
-            (when (= label "decimal scale substitution")
+            (when (= label "decimal descriptor scale substitution")
               (is (some #{:canonical-core-replays?}
                         (:failed-checks public-verification))))
             (when (= label "missing embedded capability proof")
