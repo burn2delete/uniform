@@ -603,9 +603,9 @@ Keyword, Symbol, list, vector, map and set, including empty and nested mixed
 containers. Qualified symbols and symbol map keys remain inert; quoted
 `(throw unresolved/data)` and `(quote nested)` are lists, not executed forms.
 Immutable let forwarding and direct same-module returns preserve the value.
-Numeric elaboration, unquote, evaluated map/set constructors, general match
+Numeric elaboration, unquote, evaluated set constructors, general match
 execution, complete effect/profile legality and migration remain separate.
-Evaluated vectors have their own development boundary below.
+Evaluated vectors and maps have their own development boundaries below.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -671,9 +671,10 @@ per-element checks, then passes the remaining budget through child lowering.
 The existing cumulative cap is unchanged. This is not a bound on every VM
 operation, total heap use or program execution. Missing/unknown types and
 incoherent Never, source, order or count facts reject with `P15S23Q002`.
-Malformed runtime descriptors reject with `P15S23X002`. Evaluated map/set
-constructors retain `:unsupported-typed-lowering-operation`; unsupported
-language forms are not described as malformed vectors.
+Malformed runtime descriptors reject with `P15S23X002`. Evaluated sets retain
+`:unsupported-typed-lowering-operation`; maps have the separate bounded
+development subset below. Unsupported language forms are not described as
+malformed vectors.
 
 This selects compiler-internal `:meta/:jvm` value construction. P3 permits
 internal compiler allocation, and L10 makes its visibility regime-dependent;
@@ -686,6 +687,47 @@ full C8-to-lowering/MIR legality boundary. The existing public typed input,
 fresh C7 verification, source provenance and explicit pending effect/profile
 legality status are unchanged. No MIR, deployable-program, hosted allocator,
 target, authoritative migration or self-hosting acceptance follows.
+
+### Canonical evaluated maps
+
+Use the same emitter, `gravity.runtime`, and runtime-iteration test namespace.
+The collection lowerer consumes G's ordered C6 children and C7's flat ordered
+member types, sharing the vector source/type joins and child compiler. The
+initial map subset requires distinct literal Keyword keys; computed,
+non-Keyword and duplicate evaluated keys remain unsupported, not newly illegal
+Gravity. Quoted maps remain inert DATA, including existing duplicate-key
+materialization. Neither lowerer reads a source map as the evaluated result.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-evaluated-map-lowering-development-kernel \
+  --exact current-gravity-evaluated-map-runtime-development-kernel
+# Affected source/type/lowering/runtime composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-evaluated-map-authenticated-composition
+```
+
+The existing `:map-literal` IR contains an ordered vector of closed key/value
+instruction pairs. Runtime shape checks precede evaluation. Keys and values
+then run once in entry order, preserving the first transfer, payload and output
+and skipping later entries. Lowering reserves `12 + 14 * child-count` logical
+join units, including both children of each pair, before child compilation;
+this is not a total execution or heap bound. Keep vector/conservation checks
+when changing their shared helper, and run affected composition separately.
+That composition reuses each paired source product for public lowering,
+assembly, execution and independent C8 body checks with `typed.identity-input`
+facts. It also checks source-order and typed-input forgeries and the new
+String-versus-map result rejection, rather than replaying old whole proofs.
+
+The source-order guarantee belongs to canonical four-argument typed lowering.
+The runtime executes ordered instruction DATA; it does not certify how legacy
+untyped host-map compilation selected that order. That legacy route's key
+sorting is not repaired by adding map execution. Full effect/profile/provider
+legality, general collection operations, target support and authoritative
+migration remain separate. Real-source validation results belong in the
+backlog, not inferred from these normalized checks.
 
 ### Canonical direct same-module calls
 

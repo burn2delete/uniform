@@ -965,7 +965,8 @@ P3 permits compiler-owned internal allocation; an empty direct constructor
 effect set does not imply zero physical allocation or grant runtime authority.
 Operand effects, ordered body coverage and declaration rejection are retained.
 Full C8/profile/provider legality is still explicitly pending and is required
-before MIR/admission claims. Evaluated maps/sets, general collection operations,
+before MIR/admission claims. Evaluated maps have a separate bounded increment
+below. Evaluated sets, general collection operations,
 hosted/constrained representations, target support, authoritative migration,
 self-hosting and seed retirement remain outstanding. Commands and boundaries
 are in `docs/development-verification.md`.
@@ -1009,6 +1010,53 @@ observations, not a performance comparison.
 The compiler, test and fixture bytes stayed unchanged across the final focused
 and affected composition runs. No evaluated-map runtime,
 authoritative migration, target, self-hosting or release claim follows.
+
+### Canonical evaluated maps: development implementation
+
+The current emitter/runtime increment adds evaluated maps with distinct
+literal Keyword keys through canonical typed lowering. Empty and nested maps,
+map/vector nesting, typed parameter values, immutable let aliases, direct
+same-module returns and typed catch are the bounded fixture scope. Ordered C6
+children and flat C7 member types drive lowering; no source map is substituted
+for evaluated children. The shared collection helper retains vector checks and
+their logical charge. Maps reserve `12 + 14 * child-count` logical join units
+before cumulative child compilation; this is not a total VM-work claim.
+
+Runtime consumes closed ordered entry instructions, validates their immediate
+shape and literal unique Keyword keys before evaluation, then evaluates each
+key and value once. The first throw/rejection preserves payload identity and
+accumulated output and prevents later execution. Quoted maps remain inert DATA.
+Computed, non-Keyword and duplicate evaluated keys remain implementation
+limitations, not language-wide prohibitions. The legacy untyped host-map
+compiler still sorts keys; this increment's source-order claim belongs to the
+canonical typed route, not arbitrary instruction producers.
+
+The final focused group passed seven tests/161 assertions: map lowering and
+runtime behavior, vector regressions, runtime DATA/unchanged-body conservation,
+independent C8 equations and correct C8 consumer facts. Keyword-first validation
+rejects an opaque non-Keyword key without hashing or equality calls. The first
+map-focused run failed two assertions because its synthetic Never case used a
+reference without a local activation context; only that test input changed.
+That failed run remains failed. The single affected paired-source composition
+then passed one test/151 assertions, including 24 guest executions across twelve
+functions per source spelling. Normal, nested and forwarded values, typed
+catch, exact parameter identity, inert duplicate-key quotes and opposite
+nine-key first-throw orders all passed. Public compile/assembly freshly entered
+C7 verification seven times; type/order forgeries reject, and a rehashed C6
+order mutation fails membership before Core execution. Independent existing
+C8 body checks retain ordered operands, thrown effects and declaration
+rejection. A new declared-String/map-result source fixture fails with the
+owning C7 diagnostic. Each positive input was reused for these assertions;
+old quote, vector and migration proof matrices were not replayed.
+
+At 2 GiB, the selected composition took 391.939 seconds, outer execution
+391.942 seconds, and namespace loading 7.857 seconds. The final focused group
+took 1.015 seconds of outer execution plus 7.259 seconds of loading. These are
+different workloads, not a speedup comparison or phase-cost attribution.
+Compiler, test and fixture bytes remained fixed across the final focused and
+composition runs. Public APIs, C7 and C8 production
+code, migration pins and explicit pending effect/profile legality are unchanged.
+No target, authoritative migration, self-hosting or release claim follows.
 
 ### Artifact-backed ordinary module imports: development increment
 

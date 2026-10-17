@@ -502,7 +502,11 @@
       (let [unsupported (-> context (assoc-in [:nodes :vector :attributes :literal-kind] kind)
                             (assoc-in [:forms :vector-form :kind] kind)
                             (assoc-in [:types :vector :kind] (if (= kind :map) :gravity.type/map :gravity.type/set)))]
-        (is (= :unsupported-typed-lowering-operation (get-in (compile unsupported 128) [:facts :reason])))))
+        (let [unsupported (if (= kind :map)
+                            (-> unsupported (update-in [:types :vector] dissoc :element-types)
+                                (assoc-in [:types :vector :member-types] [:gravity.type/bool :gravity.type/string])) unsupported)]
+          (is (= (if (= kind :map) :unsupported-typed-map-key :unsupported-typed-lowering-operation)
+                 (get-in (compile unsupported 128) [:facts :reason]))))))
     (doseq [mutate [#(assoc-in % [:nodes :vector :attributes :literal-kind] :map)
                     #(assoc-in % [:nodes :vector :attributes :element-count] 1)
                     #(assoc-in % [:nodes :vector :children] [:vector-right :vector-left])
@@ -533,7 +537,7 @@
       (is (= :throw (get-in result [:value :items 0 :op])))
       (is (= :rejected (:status (compile (assoc-in never [:types :vector-right] :gravity.type/unknown) 128)))))
     (let [forms (bootstrap/read-forms path (slurp path))
-          helper (first (filter #(= 'p15-s23-typed-compile-vector (second %)) forms))]
+          helper (first (filter #(= 'p15-s23-typed-compile-collection (second %)) forms))]
       (is (some #{'(p15-s23-typed-compile-children-mode context children (- budget charge) [] :none 0)} (tree-seq coll? seq helper)))
       (is (not-any? #{'(get attrs :source-value) '(get owner :value)} (tree-seq coll? seq helper))))))
 
@@ -567,6 +571,122 @@
     (let [failure (AssertionError. "fatal vector item") value (proxy [Object] [] (toString [] (throw failure)))
           observed (seed-throw-test-capture #(evaluate (vector-ir [{:op :builtin-call :function 'str :args [(lit value)]}
                                                                   (say "later" (lit 1))])))]
+      (is (identical? failure observed)))))
+
+(defn- typed-map-kernel-context [base]
+  (-> (typed-vector-kernel-context base)
+      (assoc-in [:nodes :vector :attributes :literal-kind] :map)
+      (assoc-in [:forms :vector-form :kind] :map)
+      (assoc-in [:nodes :vector-left :attributes] {:literal-kind :keyword :value :key})
+      (assoc-in [:forms :vector-left-form :kind] :keyword)
+      (assoc-in [:forms :vector-left-form :value] :key)
+      (assoc-in [:types :vector-left] :gravity.type/keyword)
+      (assoc-in [:types :vector] {:kind :gravity.type/map :shape :literal
+                                :member-types [:gravity.type/keyword :gravity.type/string]})))
+
+(deftest current-gravity-evaluated-map-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        context (typed-map-kernel-context (:value (invoke 'p15-s23-typed-context module input observation)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :vector %2)
+        expected {:op :map-literal :entries [{:key {:op :literal :value :key} :value {:op :literal :value "right"}}]}]
+    (is (= expected (:value (compile context 42))))
+    (is (= 42 (:work-count (compile context 42))))
+    (is (= :typed-lowering-work-limit (get-in (compile context 41) [:facts :reason])))
+    (doseq [mutate [#(assoc-in % [:forms :vector-form :form-id] :wrong)
+                    #(assoc-in % [:forms :vector-form :syntax-id] :wrong)
+                    #(assoc-in % [:forms :vector-form :kind] :vector)
+                    #(assoc-in % [:nodes :vector :children] [:vector-right :vector-left])
+                    #(assoc-in % [:forms :vector-form :child-form-ids] [:vector-right-form :vector-left-form])
+                    #(assoc-in % [:nodes :vector :attributes :element-count] 1)
+                    #(assoc-in % [:nodes :vector :resolved-binding-ids] [:binding])
+                    #(assoc-in % [:nodes :vector :evaluation :order] [])
+                    #(assoc-in % [:forms :vector-right-form :parent-form-id] :wrong)
+                    #(assoc-in % [:nodes :vector-right :source :form-id] :wrong)
+                    #(assoc-in % [:nodes :vector-right :source :syntax-id] :wrong)
+                    #(assoc-in % [:types :vector :member-types] [:gravity.type/string :gravity.type/keyword])
+                    #(assoc-in % [:types :vector :member-types] [:gravity.type/keyword])
+                    #(assoc-in % [:types :vector-right] :gravity.type/unknown)
+                    #(assoc-in % [:types :vector] :gravity.type/never)]]
+      (is (= :rejected (:status (compile (mutate context) 256)))))
+    (doseq [mutate [#(assoc-in % [:nodes :vector-left :core-form] :call)
+                    #(assoc-in % [:forms :vector-left-form :kind] :string)
+                    #(assoc-in % [:forms :vector-left-form :value] "key")]]
+      (is (= :unsupported-typed-map-key (get-in (compile (mutate context) 256) [:facts :reason]))))
+    (let [equiv-calls (atom 0) hash-calls (atom 0)
+          opaque (HostilePersistentCallee. equiv-calls hash-calls (AssertionError. "opaque key inspected"))
+          changed (-> context (assoc-in [:forms :vector-left-form :value] opaque)
+                      (assoc-in [:nodes :vector-left :attributes :value] opaque))]
+      (is (= :unsupported-typed-map-key (get-in (compile changed 256) [:facts :reason])))
+      (is (zero? @equiv-calls))
+      (is (zero? @hash-calls)))
+    (let [empty (-> context (assoc-in [:nodes :vector :children] [])
+                    (assoc-in [:nodes :vector :attributes :element-count] 0)
+                    (assoc-in [:nodes :vector :evaluation :order] [])
+                    (assoc-in [:forms :vector-form :child-form-ids] [])
+                    (assoc-in [:types :vector :member-types] []))]
+      (is (= {:op :map-literal :entries []} (:value (compile empty 12))))
+      (is (= 12 (:work-count (compile empty 12)))))
+    (let [odd (-> context (assoc-in [:nodes :vector :children] [:vector-left])
+                  (assoc-in [:forms :vector-form :child-form-ids] [:vector-left-form])
+                  (assoc-in [:nodes :vector :attributes :element-count] 1)
+                  (assoc-in [:nodes :vector :evaluation :order] [{:index 0 :core-node-id :vector-left}])
+                  (assoc-in [:types :vector :member-types] [:gravity.type/keyword]))]
+      (is (= :typed-map-source-or-type-mismatch (get-in (compile odd 256) [:facts :reason]))))
+    (let [duplicate (-> context
+                        (assoc-in [:nodes :vector :children] [:vector-left :vector-right :vector-left :vector-right])
+                        (assoc-in [:forms :vector-form :child-form-ids] [:vector-left-form :vector-right-form :vector-left-form :vector-right-form])
+                        (assoc-in [:nodes :vector :attributes :element-count] 4)
+                        (assoc-in [:nodes :vector :evaluation :order]
+                                  (mapv (fn [i child] {:index i :core-node-id child}) (range) [:vector-left :vector-right :vector-left :vector-right]))
+                        (assoc-in [:types :vector :member-types] [:gravity.type/keyword :gravity.type/string :gravity.type/keyword :gravity.type/string]))]
+      (is (= :unsupported-typed-map-key (get-in (compile duplicate 256) [:facts :reason]))))
+    (let [never (-> context (assoc-in [:types :vector] :gravity.type/never)
+                    (assoc-in [:types :vector-right] :gravity.type/never)
+                    (assoc-in [:nodes :vector-right :core-form] :throw)
+                    (assoc-in [:nodes :vector-right :children] [:vector-left]))
+          result (compile never 256)]
+      (is (= :complete (:status result)))
+      (is (= :throw (get-in result [:value :entries 0 :value :op]))))))
+
+(deftest current-gravity-evaluated-map-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        lit (fn [value] {:op :literal :value value})
+        entry (fn [key value] {:key (lit key) :value value}) map-ir (fn [entries] {:op :map-literal :entries entries})
+        say (fn [label value] {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} value]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        payload (String. "map payload") data '{:op :throw :kind :gravity/recur :values [false]}]
+    (is (= [{} "" :normal] (evaluate (map-ir []))))
+    (let [result (evaluate (map-ir [(entry :left (say "left" (lit payload)))
+                                    (entry :right (say "right" (lit false))) (entry :data {:op :quote :value data})]))]
+      (is (= [{:left payload :right false :data data} "left\nright\n" :normal] result))
+      (is (identical? payload (get (first result) :left))))
+    (is (= [{:map {:value [true]} :vector [{}]} "" :normal]
+           (evaluate (map-ir [(entry :map (map-ir [(entry :value {:op :vector-literal :items [(lit true)]})]))
+                              (entry :vector {:op :vector-literal :items [(map-ir [])]})]))))
+    (doseq [position (range 3)]
+      (let [entries (mapv #(entry (get [:a :b :c] %) (if (= position %) {:op :throw :value (lit payload)} (say (str %) (lit %)))) (range 3))
+            result (evaluate (map-ir entries))]
+        (is (= [payload (apply str (map #(str % "\n") (range position))) :thrown] result))
+        (is (identical? payload (first result)))))
+    (let [result (evaluate (map-ir [(entry :a (say "before" (lit 1))) (entry :b {:op :unknown}) (entry :c (say "later" (lit 2)))]))]
+      (is (= ["before\n" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    (doseq [bad [{:op :map-literal} {:op :map-literal :entries nil} {:op :map-literal :entries '()}
+                 (map-ir [42]) (map-ir [{:key (lit :a)}]) (map-ir [(assoc (entry :a (lit 1)) :extra true)])
+                 (map-ir [{:key (assoc (lit :a) :extra true) :value (lit 1)}])
+                 (map-ir [{:key {:op :quote :value :a} :value (lit 1)}]) (map-ir [(entry "a" (lit 1))])
+                 (map-ir [(entry :a (say "never" (lit 1))) (entry :a (lit 2))])
+                 (assoc (map-ir [(entry :a (say "never" (lit 1)))]) :extra true)
+                 (map-ir (vec (repeat 65537 (entry :a (lit 1)))))]]
+      (is (= ["" :rejected] (subvec (evaluate bad) 1))))
+    (let [failure (AssertionError. "fatal map value") value (proxy [Object] [] (toString [] (throw failure)))
+          observed (seed-throw-test-capture #(evaluate (map-ir [(entry :a {:op :builtin-call :function 'str :args [(lit value)]})
+                                                               (entry :b (say "later" (lit 1)))])))]
       (is (identical? failure observed)))))
 
 (deftest current-gravity-evaluated-vector-c8-development-kernel
@@ -702,6 +822,126 @@
         (is (= :rejected (:status (last @verified))))))
     (is (= 7 (count @verified)))
     (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-vector-result-type.gravity")
+          typed (:typed products) failure (first (:diagnostics typed))]
+      (is (= :rejected (:status typed)))
+      (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))))
+
+(defn- evaluated-map-c8-checks [input]
+  ;; Existing C8 algorithms consume identity-input facts, independently of lowering.
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request (:request input) facts (get-in input [:typed :identity-input])
+        core (:canonical-core-artifact request)
+        collections (filterv #(= :collection-literal (:core-form %)) (:nodes core))
+        analyzed (c8 'body-analyze-module request facts {} 65536)]
+    (is (= :accepted (:status analyzed)) (pr-str (select-keys analyzed [:reason :diagnostics])))
+    (when (= :accepted (:status analyzed))
+      (let [graph (:graph analyzed) nonempty (first (filter #(seq (:children %)) collections))]
+        (is (= {:map 13 :vector 2} (frequencies (map #(get-in % [:attributes :literal-kind]) collections))))
+        (doseq [node collections]
+          (is (= #{} (get-in graph [:nodes (:node-id node) :direct])))
+          (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
+        (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) collections))
+        (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph 65536))))))))
+
+(deftest evaluated-map-c8-consumer-development-kernel
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
+        input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
+        calls (atom []) reports (atom [])]
+    (with-redefs-fn {leaf (fn [function & args] (swap! calls conj [function (vec args)])
+                           {:status :rejected :reason :normalized-failure})
+                    #'clojure.test/report (fn [event] (swap! reports conj event))}
+      #(evaluated-map-c8-checks input))
+    (is (= 1 (count @calls)))
+    (is (= 'body-analyze-module (ffirst @calls)))
+    (is (identical? request (get-in @calls [0 1 0])))
+    (is (identical? facts (get-in @calls [0 1 1])))
+    (is (= [:fail] (mapv :type @reports)))))
+
+(deftest current-gravity-evaluated-map-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "map source payload")
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-evaluated-map" extension)
+                 path (.getPath (io/file root relative)) text (slurp path)
+                 products (fresh relative) input (select-keys products [:request :typed :verification])
+                 macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                 definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                 standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'packed) input))
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 specifications [['empty-map [] {}] ['mixed-map [] {:nil nil :flag true :number 17 :character \a :text "text" :keyword :key}]
+                                 ['packed [true payload] {:flag true :value payload}]
+                                 ['nested-map [] {:vector [{:inner "text"} {}] :map {:leaf [true]}}]
+                                 ['let-forward [payload] {:value payload}] ['build [payload] {:value payload}]
+                                 ['direct-forward [payload] {:value payload}] ['caught [payload] {:caught payload}]
+                                 ['quoted-duplicate [] {:same 2}] ['main [] {:flag true :value "payload"}]]
+                 evaluate (fn [name args] (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                           [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []]))
+                 results (into {} (map (fn [[name args expected]] (let [result (evaluate name args)]
+                                                                  (is (= [expected "" :normal] result)) [name (first result)])) specifications))]
+             (is (= :accepted (get-in input [:typed :status])))
+             (is (= :passed (get-in input [:verification :status])))
+             (is (= 12 (count (:functions assembled))))
+             (is (= 13 (get-in assembled [:instruction-summary :map-literal])))
+             (is (= 2 (get-in assembled [:instruction-summary :vector-literal])))
+             (is (= standalone (get-in assembled [:functions 'packed])))
+             (is (= ["value-i" "" :thrown] (evaluate 'forward [])))
+             (is (= ["value-a" "" :thrown] (evaluate 'backward [])))
+             (is (= :pending-c8-and-profile-authority (get-in standalone [:typed-lowering-provenance :effect-legality])))
+             (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+             (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+             (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+             (doseq [[name key] [['packed :value] ['let-forward :value] ['build :value] ['direct-forward :value] ['caught :caught]]]
+               (is (identical? payload (get (get results name) key))))
+             (evaluated-map-c8-checks input)
+             (assoc (select-keys products [:artifact :c5]) :input input :module module :definitions definitions)))
+         [".gravity" ".qst"])
+        {:keys [input module definitions artifact c5]} (first cases)
+        nodes (get-in input [:request :canonical-core-artifact :nodes])
+        map-index (first (keep-indexed #(when (= [:gravity.type/keyword :gravity.type/bool :gravity.type/keyword :gravity.type/string]
+                                                (get-in input [:typed :type-table (:node-id %2) :member-types])) %1) nodes))
+        map-node (get nodes map-index) node-id (:node-id map-node) child-id (first (:children map-node))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :type-table node-id] :gravity.type/never)
+                     (assoc-in input [:typed :type-table child-id] :gravity.type/unknown)
+                     (assoc-in input [:request :canonical-core-artifact :nodes map-index :children] (vec (reverse (:children map-node))))]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'packed) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 7 (count @verified)))
+    (let [request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
+          index (first (keep-indexed #(when (= (get-in map-node [:source :form-id]) (:form-id %2)) %1) (:forms request)))
+          children (get-in request [:forms index :child-form-ids])
+          changed (assoc-in request [:forms index :child-form-ids] (vec (mapcat identity (reverse (partition 2 children)))))
+          changed (assoc changed :projection-binding (bootstrap/reader-canonical-hash (bootstrap/sh07-core-projection-binding-input changed)))
+          executed (atom 0)
+          failure (with-redefs [bootstrap/sh07-core-run-structural-request-for-test
+                               (fn [_] (swap! executed inc) (throw (AssertionError. "tampered source order reached core execution")))]
+                    (diagnostic #(bootstrap/sh07-core-run-request-for-test c5 changed)))]
+      (is (= 4 (count children)))
+      (is (= "C6-VERIFY" (:rule failure)))
+      (is (= :authenticated-sh06-request-membership-mismatch (get-in failure [:facts :reason])))
+      (is (zero? @executed)))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-map-result-type.gravity")
           typed (:typed products) failure (first (:diagnostics typed))]
       (is (= :rejected (:status typed)))
       (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))))

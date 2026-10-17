@@ -1,0 +1,15 @@
+(ns self-hosting.sh08.local-runtime-evaluated-map
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn empty-map [] {})
+(defn mixed-map [] {:nil nil :flag true :number 17 :character \a :text "text" :keyword :key})
+(defn packed [flag :- Bool value :- String] {:flag flag :value value})
+(defn nested-map [] {:vector [{:inner "text"} {}] :map {:leaf [true]}})
+(defn let-forward [value :- String] (let [data {:value value} alias data] alias))
+(defn build [value :- String] {:value value})
+(defn direct-forward [value :- String] (build value))
+(defn caught [problem :- String] (try {:first (throw problem) :later "later"} (catch String error {:caught error})))
+(defn forward [] {:i (throw "value-i") :h (throw "value-h") :g (throw "value-g") :f (throw "value-f") :e (throw "value-e") :d (throw "value-d") :c (throw "value-c") :b (throw "value-b") :a (throw "value-a")})
+(defn backward [] {:a (throw "value-a") :b (throw "value-b") :c (throw "value-c") :d (throw "value-d") :e (throw "value-e") :f (throw "value-f") :g (throw "value-g") :h (throw "value-h") :i (throw "value-i")})
+(defn quoted-duplicate [] '{:same 1 :same 2})
+(defn main [] (packed true "payload"))

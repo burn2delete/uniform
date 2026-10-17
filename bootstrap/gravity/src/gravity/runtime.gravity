@@ -231,6 +231,18 @@
         shape?
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
+          (if (= operation :map-literal)
+            (if (= fields #{:op :entries})
+              (if (vector? (get instruction :entries))
+                (if (<= (count (get instruction :entries)) 65536)
+                  (loop [remaining (get instruction :entries) seen #{}]
+                    (if (= 0 (count remaining)) true
+                      (let [entry (first remaining) key (get entry :key)]
+                        (if (if (map? entry) (= #{:key :value} (set (keys entry))) false)
+                          (if (if (map? key) (= #{:op :value} (set (keys key))) false)
+                            (if (if (= :literal (get key :op)) (keyword? (get key :value)) false)
+                              (if (contains? seen (get key :value)) false
+                                (if (map? (get entry :value)) (recur (rest remaining) (conj seen (get key :value))) false)) false) false) false)))) false) false) false)
           (if (= operation :vector-literal)
             (if (= fields #{:op :items})
               (if (vector? (get instruction :items))
@@ -275,9 +287,19 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false))))))))))))) false)]
+            false)))))))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :map-literal)
+      (let [items (loop [remaining (get instruction :entries) out []]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining) (conj (conj out (get (first remaining) :key)) (get (first remaining) :value)))))
+            result (p15-s23-runtime-evaluate-arguments-in-context items environment output [] functions path [])]
+        (if (= :normal (get result 2))
+          [(loop [index 0 out {}]
+             (if (= index (count (first result))) out
+               (recur (+ index 2) (assoc out (get (first result) index) (get (first result) (+ index 1))))))
+           (second result) :normal] result))
     (if (= operation :vector-literal)
       (p15-s23-runtime-evaluate-arguments-in-context (get instruction :items) environment output [] functions path [])
     (if (= operation :loop) (p15-s23-runtime-evaluate-loop instruction environment output functions path targets)
@@ -360,7 +382,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected])))))))))))))))))
+                     output :rejected]))))))))))))))))))
 
 ; Development entrypoint for a closed instruction plan. The result records
 ; normal completion, a thrown value, or rejection with accumulated output.
