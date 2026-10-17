@@ -1188,6 +1188,13 @@
   [instruction summary]
   (let [op (get instruction :op)
         counted (assoc summary op (+ 1 (get summary op 0)))]
+    (if (= op :try)
+      (let [protected (p15-s23-summary-instruction (get instruction :protected) counted)]
+        (if (p15-s23-compiler-complete? protected)
+          (loop [remaining (get instruction :handlers) out (get protected :value)]
+            (if (= 0 (count remaining)) (p15-s23-compiler-result out)
+              (let [body (p15-s23-summary-instruction (get (first remaining) :body) out)]
+                (if (p15-s23-compiler-complete? body) (recur (rest remaining) (get body :value)) body)))) protected))
     (if (= op :throw)
       (p15-s23-summary-instruction (get instruction :value) counted)
     (if (= op :println)
@@ -1230,7 +1237,7 @@
                       (if (= op :map-literal)
                         (p15-s23-summary-map-entries
                          (get instruction :entries) counted)
-                        (p15-s23-compiler-result counted))))))))))))))
+                        (p15-s23-compiler-result counted)))))))))))))))
 
 (defn p15-s23-assemble-functions
   [emitter module definitions functions bindings summary]
@@ -1414,11 +1421,14 @@
         source (get observation :source) source-unit (get reader :source-unit-record)
         nodes (get core :nodes) forms (get authenticated :forms) bindings (get authenticated :binding-table)
         records (get core :function-records) functions (get typed :function-type-table)
+        ledger (get typed :constraint-ledger []) handlers (get core :error-handlers [])
         families? (p15-s23-typed-all [(vector? (get reader :token-stream)) (vector? nodes) (vector? forms) (vector? bindings)
-                                     (vector? records) (vector? functions) (map? (get typed :type-table))])
+                                     (vector? records) (vector? functions) (map? (get typed :type-table))
+                                     (vector? ledger) (vector? handlers)])
         work (if families? (+ (if (string? (get source :text)) (count (get source :text)) 0)
                 (count (get reader :token-stream)) (count nodes) (count forms) (count bindings)
-                (* (count records) (+ 20 (count nodes) (count forms) (count bindings)))) 65537)]
+                (* (count records) (+ 20 (count nodes) (count forms) (count bindings)))
+                (* (+ 1 (count nodes)) (+ (count ledger) (count handlers)))) 65537)]
     (if (= false families?) (p15-s23-typed-error :malformed-typed-input-families)
     (if (> work 65536) (p15-s23-typed-error :typed-lowering-work-limit)
     (if (p15-s23-typed-all
@@ -1452,7 +1462,7 @@
                                    (map? record-index) (map? function-index) (= (count record-index) (count function-index))])
               (p15-s23-compiler-result {:core core :typed typed :nodes node-index :forms form-index :bindings binding-index
                 :records record-index :functions function-index :types (get typed :type-table)
-                :observation observation :budget (- 65536 work)})
+                :observation observation :ledger ledger :error-handlers handlers :budget (- 65536 work)})
               (p15-s23-typed-error :typed-source-index-census)))
           (p15-s23-typed-error :typed-source-bytes-mismatch))
       (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
@@ -1523,11 +1533,124 @@
           (if (p15-s23-compiler-complete? tail)
             (assoc tail :work-count (+ (get head :work-count) (get tail :work-count))) tail)) head))))
 
+(defn p15-s23-typed-row [context producer id]
+  (loop [remaining (get context :ledger) found nil]
+    (if (= 0 (count remaining)) found
+      (let [row (first remaining) lhs (get row :lhs)
+            row-id (if (= producer :sh08-atomic-typed-catch-v1) (get lhs :core-node-id) lhs)]
+        (if (if (= producer (get row :producer-rule)) (= id row-id) false)
+          (if (= found nil) (recur (rest remaining) row) nil)
+          (recur (rest remaining) found))))))
+
+(defn p15-s23-typed-source [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
+   :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
+
+(defn p15-s23-typed-symbol-quote [context node budget]
+  (let [row (p15-s23-typed-row context :sh08-recursive-quoted-data-v1 (get node :node-id))
+        forms (get context :forms) owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        operator (get forms (get ids 0)) payload (get forms (get ids 1)) attrs (get node :attributes)
+        data {:origin {:kind :quoted-data :quote-core-node-id (get node :node-id) :form-id (get payload :form-id)
+                       :syntax-id (get payload :syntax-id) :data-path [] :child-form-ids []}
+              :kind :symbol :value (get payload :value) :type :gravity.type/symbol
+              :source (p15-s23-typed-source payload) :children [] :shape-size 1}
+        premise {:core-node-id (get node :node-id) :source (get node :source) :attributes attrs :children []
+                 :resolved-binding-ids [] :evaluation (get node :evaluation)}]
+    (if (= false (vector? ids)) (p15-s23-typed-node-error :unsupported-or-mismatched-typed-symbol-quote node)
+    (if (< budget 4) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+      (if (p15-s23-typed-all
+          [(= :solved (get row :status)) (= :equality (get row :kind)) (= :gravity.type/symbol (get row :rhs) (get (get context :types) (get node :node-id)))
+           (= [] (get node :children) (get node :resolved-binding-ids) (get payload :child-form-ids))
+           (= :no-evaluation (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
+           (= :list (get owner :kind)) (= 2 (count ids)) (= :symbol (get payload :kind)) (symbol? (get payload :value))
+           (= (get owner :form-id) (get payload :parent-form-id) (get operator :parent-form-id))
+           (= 'quote (get operator :value)) (= :symbol (get operator :kind)) (= [] (get operator :child-form-ids))
+           (= (get node :source) (p15-s23-typed-source owner))
+           (= (get owner :value) (list 'quote (get payload :value)))
+           (= attrs {:quoted-form-id (get payload :form-id) :quoted-syntax-id (get payload :syntax-id) :quoted-kind :symbol :quoted-value (get payload :value)})
+           (= data (get row :quoted-data)) (= {:quote premise :data data} (get row :dependencies))
+           (= {:type :gravity.type/symbol :evaluation :no-evaluation} (get row :solution))
+           (= {:domain :gravity/sh08-recursive-quoted-data-constraint-v1 :quote premise :data data} (get row :constraint-id-request))])
+        (assoc (p15-s23-compiler-result {:op :quote :value (get payload :value)}) :work-count 4)
+        (p15-s23-typed-node-error :unsupported-or-mismatched-typed-symbol-quote node))))))
+
+(defn p15-s23-typed-try-handlers [context node row budget]
+  (let [premise (get row :dependencies) records (get premise :source-handlers) types (get premise :catch-types)
+        forms (get context :forms) owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        children (get node :children) clauses (get (get node :attributes) :handler-clauses)
+        original-records (loop [remaining (get context :error-handlers) out []]
+                           (if (= 0 (count remaining)) out
+                             (recur (rest remaining) (if (= (get node :node-id) (get (first remaining) :core-node-id))
+                                                      (conj out (first remaining)) out))))]
+    (if (= false (p15-s23-typed-all [(vector? records) (vector? types) (vector? clauses) (vector? children) (vector? ids)]))
+      (p15-s23-typed-node-error :typed-handler-ledger-or-source-mismatch node)
+    (if (p15-s23-typed-all
+          [(vector? records) (vector? types) (vector? clauses) (vector? children) (vector? ids)
+           (> (count clauses) 0) (= (count records) (count types) (count clauses))
+           (= (+ 1 (count clauses)) (count children)) (= (+ 2 (count clauses)) (count ids))
+           (= original-records records) (= :solved (get row :status)) (= :equality (get row :kind))
+           (= node (get premise :source-node)) (= :sh08-atomic-typed-catch-v1 (get premise :version))
+           (= {:domain :gravity/sh08-atomic-typed-catch-v1 :premise premise} (get row :constraint-id-request))
+           (= {:core-node-id (get node :node-id) :projection :source-error-handler-result} (get row :lhs))
+           (= (get (get context :types) (get node :node-id)) (get premise :normal-result-type) (get (get row :solution) :normal-result-type))
+           (= (get node :source) (p15-s23-typed-source owner))
+           (= :list (get owner :kind)) (= 'try (get (get forms (first ids)) :value))
+           (= (get (get (get context :nodes) (first children)) :source) (p15-s23-typed-source (get forms (get ids 1))))])
+      (loop [index 0 out [] used 0]
+        (if (= index (count clauses)) (assoc (p15-s23-compiler-result out) :work-count used)
+          (let [record (get records index) clause (get clauses index) type (get types index)
+                catch-form (get forms (get ids (+ 2 index))) catch-ids (get catch-form :child-form-ids)
+                type-form (get forms (get catch-ids 1)) binder-form (get forms (get catch-ids 2)) body-form (get forms (get catch-ids 3))
+                binder (get (get context :bindings) (get record :catch-binding-id))
+                type-binding (get (get context :bindings) (get record :error-type-binding-id))
+                body-id (get children (+ index 1)) body (get (get context :nodes) body-id)
+                fields [:clause-ordinal :handler-child-index :catch-clause-form-id :catch-clause-syntax-id :error-type-form-id :error-type-syntax-id
+                        :error-type-binding-id :catch-binding-form-id :catch-binding-syntax-id :catch-binding-id :catch-binding-scope-id]]
+            (if (< (- budget used) 8) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+              (if (p15-s23-typed-all
+                    [(contains? #{:gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword} type)
+                     (= type (p15-s23-typed-atomic-id (get type-binding :name)))
+                     (= [:core :type 'gravity.core] [(get type-binding :binding-class) (get type-binding :kind) (get type-binding :namespace)])
+                     (= [:lexical :local] [(get binder :binding-class) (get binder :kind)])
+                     (= clause (p15-s23-typed-project record fields)) (= index (get record :clause-ordinal))
+                     (= (+ index 1) (get record :handler-child-index)) (= (first children) (get record :protected-core-node-id))
+                     (= body-id (get record :handler-core-node-id)) (= (get owner :form-id) (get record :form-id) (get catch-form :parent-form-id))
+                     (= (get catch-form :form-id) (get record :catch-clause-form-id)) (= (get catch-form :syntax-id) (get record :catch-clause-syntax-id))
+                     (= 4 (if (vector? catch-ids) (count catch-ids) 0)) (= (get type-form :form-id) (get record :error-type-form-id))
+                     (= :list (get catch-form :kind)) (= 'catch (get (get forms (get catch-ids 0)) :value))
+                     (= (get catch-form :form-id) (get type-form :parent-form-id) (get binder-form :parent-form-id) (get body-form :parent-form-id))
+                     (= (get catch-form :value) (list 'catch (get type-form :value) (get binder-form :value) (get body-form :value)))
+                     (= (get type-form :syntax-id) (get record :error-type-syntax-id)) (= (get type-form :value) (get type-binding :name))
+                     (= (get binder-form :form-id) (get record :catch-binding-form-id))
+                     (= (get binder-form :syntax-id) (get record :catch-binding-syntax-id) (get binder :definition-syntax-id))
+                     (= (get binder-form :scope-id) (get record :catch-binding-scope-id) (get binder :scope-id))
+                     (= (get binder-form :value) (get binder :name)) (symbol? (get binder :name))
+                     (= (get body :source) (p15-s23-typed-source body-form))])
+                (let [handler-context (assoc context :locals (assoc (get context :locals) (get binder :binding-id) (get binder :name))
+                                                    :parameter-types (assoc (get context :parameter-types) (get binder :binding-id) type))
+                      compiled (p15-s23-typed-compile-node handler-context body-id (- budget used 8))]
+                  (if (p15-s23-compiler-complete? compiled)
+                    (recur (+ index 1) (conj out {:type type :name (get binder :name) :body (get compiled :value)})
+                      (+ used 8 (get compiled :work-count))) compiled))
+                (p15-s23-typed-node-error :typed-handler-source-or-binding-mismatch node))))))
+      (p15-s23-typed-node-error :typed-handler-ledger-or-source-mismatch node)))))
+
+(defn p15-s23-typed-compile-try [context node budget]
+  (let [row (p15-s23-typed-row context :sh08-atomic-typed-catch-v1 (get node :node-id))
+        handlers (p15-s23-typed-try-handlers context node row (- budget 1))]
+    (if (p15-s23-compiler-complete? handlers)
+      (let [protected (p15-s23-typed-compile-node context (first (get node :children)) (- budget 1 (get handlers :work-count)))]
+        (if (p15-s23-compiler-complete? protected)
+          (assoc (p15-s23-compiler-result {:op :try :protected (get protected :value) :handlers (get handlers :value)})
+            :work-count (+ 1 (get handlers :work-count) (get protected :work-count))) protected)) handlers)))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
     (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
       (if (if (map? node) (= false (contains? #{nil :gravity.type/unknown} type)) false)
+        (if (= form :try) (p15-s23-typed-compile-try context node budget)
+        (if (= form :quote) (p15-s23-typed-symbol-quote context node budget)
         (if (= form :literal)
           (if (if (= :decimal (get (get node :attributes) :literal-kind)) true (map? (get source :value)))
             (p15-s23-typed-node-error :unelaborated-typed-numeric-literal node)
@@ -1549,7 +1672,7 @@
                         (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
                           {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
                 (p15-s23-typed-node-error :typed-control-shape-mismatch node))
-              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))))
         (p15-s23-typed-node-error :missing-typed-core-node node)))))
 
 (defn p15-s23-typed-provenance [context]

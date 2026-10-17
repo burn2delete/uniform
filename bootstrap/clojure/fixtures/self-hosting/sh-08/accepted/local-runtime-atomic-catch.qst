@@ -1,0 +1,13 @@
+(ns self-hosting.sh08.local-runtime-atomic-catch
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn symbol-error [] :- Symbol
+  (try (throw (quote unresolved/data)) (catch Symbol e e)))
+(defn keyword-error [] :- Keyword
+  (try (throw :unresolved/data) (catch Keyword e e)))
+(defn bool-error [] :- Bool
+  (try (throw false) (catch Bool e e)))
+(defn string-error [] :- String
+  (try (throw "original") (catch String e e)))
+(defn main [] :- String
+  (try (throw "recovered") (catch String e e)))

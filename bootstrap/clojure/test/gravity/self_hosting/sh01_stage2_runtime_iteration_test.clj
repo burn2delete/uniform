@@ -139,6 +139,99 @@
                     :source-declarations {:parameters '[problem :- String] :return '[:- String]}}]
     {:module module :input input :observation observation :definition definition})))
 
+(defn- typed-catch-kernel-context [context]
+  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
+        clause {:clause-ordinal 0 :handler-child-index 1 :catch-clause-form-id :catch :catch-clause-syntax-id :catch
+                :error-type-form-id :catch-type :error-type-syntax-id :catch-type :error-type-binding-id :string
+                :catch-binding-form-id :catch-name :catch-binding-syntax-id :catch-name :catch-binding-id :caught :catch-binding-scope-id :catch-scope}
+        node {:node-id :try :core-form :try :children [:protected :handler] :source (source :try-form)
+              :attributes {:handler-clauses [clause]}}
+        record (assoc clause :core-node-id :try :form-id :try-form :protected-core-node-id :protected :handler-core-node-id :handler)
+        premise {:version :sh08-atomic-typed-catch-v1 :source-node node :source-handlers [record]
+                 :catch-types [:gravity.type/string] :normal-result-type :gravity.type/string}
+        row {:producer-rule :sh08-atomic-typed-catch-v1 :status :solved :kind :equality
+             :constraint-id-request {:domain :gravity/sh08-atomic-typed-catch-v1 :premise premise}
+             :lhs {:core-node-id :try :projection :source-error-handler-result} :dependencies premise
+             :solution {:normal-result-type :gravity.type/string}}]
+    (-> context
+        (assoc :locals {:parameter 'problem} :parameter-types {:parameter :gravity.type/string} :ledger [row] :error-handlers [record])
+        (update :nodes merge {:try node :protected {:node-id :protected :core-form :throw :children [:reference] :source (source :protected-form)}
+                              :handler {:node-id :handler :core-form :reference :children [] :attributes {:binding-id :caught} :source (source :handler-form)}})
+        (update :types merge {:try :gravity.type/string :protected :gravity.type/never :handler :gravity.type/string})
+        (assoc-in [:bindings :caught] {:binding-id :caught :name 'caught :kind :local :binding-class :lexical
+                                      :definition-syntax-id :catch-name :scope-id :catch-scope})
+        (update :forms merge {:try-form {:form-id :try-form :syntax-id :try-form :kind :list :child-form-ids [:try-op :protected-form :catch]}
+                              :try-op {:form-id :try-op :value 'try}
+                              :catch-op {:form-id :catch-op :value 'catch}
+                              :protected-form {:form-id :protected-form :syntax-id :protected-form}
+                              :catch {:form-id :catch :syntax-id :catch :parent-form-id :try-form :kind :list :value '(catch String caught caught)
+                                      :child-form-ids [:catch-op :catch-type :catch-name :handler-form]}
+                              :catch-type {:form-id :catch-type :syntax-id :catch-type :parent-form-id :catch :value 'String}
+                              :catch-name {:form-id :catch-name :syntax-id :catch-name :parent-form-id :catch :value 'caught :scope-id :catch-scope}
+                              :handler-form {:form-id :handler-form :syntax-id :handler-form :parent-form-id :catch :value 'caught}}))))
+
+(defn- typed-symbol-quote-kernel-context [context]
+  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
+        attrs {:quoted-form-id :symbol-payload :quoted-syntax-id :symbol-payload :quoted-kind :symbol :quoted-value 'unresolved/data}
+        node {:node-id :symbol-quote :core-form :quote :children [] :resolved-binding-ids [] :source (source :quote-form)
+              :attributes attrs :evaluation {:kind :no-evaluation :order []}}
+        data {:origin {:kind :quoted-data :quote-core-node-id :symbol-quote :form-id :symbol-payload :syntax-id :symbol-payload :data-path [] :child-form-ids []}
+              :kind :symbol :value 'unresolved/data :type :gravity.type/symbol :source (source :symbol-payload) :children [] :shape-size 1}
+        premise {:core-node-id :symbol-quote :source (:source node) :attributes attrs :children [] :resolved-binding-ids [] :evaluation (:evaluation node)}
+        row {:producer-rule :sh08-recursive-quoted-data-v1 :status :solved :kind :equality :lhs :symbol-quote :rhs :gravity.type/symbol
+             :constraint-id-request {:domain :gravity/sh08-recursive-quoted-data-constraint-v1 :quote premise :data data}
+             :quoted-data data :dependencies {:quote premise :data data} :solution {:type :gravity.type/symbol :evaluation :no-evaluation}}]
+    (-> context (assoc :ledger [row]) (assoc-in [:nodes :symbol-quote] node) (assoc-in [:types :symbol-quote] :gravity.type/symbol)
+        (update :forms merge {:quote-form {:form-id :quote-form :syntax-id :quote-form :kind :list :child-form-ids [:quote-op :symbol-payload] :value '(quote unresolved/data)}
+                              :quote-op {:form-id :quote-op :parent-form-id :quote-form :kind :symbol :value 'quote :child-form-ids []}
+                              :symbol-payload {:form-id :symbol-payload :syntax-id :symbol-payload :parent-form-id :quote-form :kind :symbol :value 'unresolved/data :child-form-ids []}}))))
+
+(deftest current-gravity-typed-catch-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))
+        context (typed-catch-kernel-context base)
+        instruction {:op :try :protected {:op :throw :value {:op :local :name 'problem}}
+                     :handlers [{:type :gravity.type/string :name 'caught :body {:op :local :name 'caught}}]}]
+    (is (= instruction (:value (invoke 'p15-s23-typed-compile-node context :try 65536))))
+    (is (= {:try 1 :throw 1 :local 2} (:value (invoke 'p15-s23-summary-instruction instruction {}))))
+    (is (= {:try 1 :throw 1 :local 4}
+           (:value (invoke 'p15-s23-summary-instruction (update instruction :handlers #(vec (repeat 3 (first %)))) {}))))
+    (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node context :handler 65536))))
+    (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                    #(assoc-in % [:ledger 0 :status] :pending)
+                    #(assoc-in % [:ledger 0 :dependencies :source-handlers] 42)
+                    #(assoc-in % [:ledger 0 :dependencies :catch-types] 42)
+                    #(assoc-in % [:nodes :try :children] 42)
+                    #(assoc-in % [:nodes :try :attributes :handler-clauses] 42)
+                    #(assoc-in % [:ledger 0 :dependencies :source-node :source :syntax-id] :swapped)
+                    #(assoc-in % [:ledger 0 :dependencies :catch-types 0] :gravity.type/bool)
+                    #(assoc-in % [:ledger 0 :dependencies :source-handlers 0 :catch-binding-id] :parameter)
+                    #(assoc-in % [:nodes :try :attributes :handler-clauses 0 :clause-ordinal] 1)
+                    #(assoc-in % [:bindings :caught :scope-id] :sibling)
+                    #(assoc-in % [:bindings :string :namespace] 'foreign)
+                    #(assoc-in % [:nodes :handler :source :form-id] :body-form)
+                    #(assoc-in % [:forms :catch :child-form-ids] 42)
+                    #(assoc-in % [:error-handlers 0 :handler-core-node-id] :reference)]]
+      (let [rejected (invoke 'p15-s23-typed-compile-node (mutate context) :try 65536)]
+        (is (= :rejected (:status rejected))) (is (= "P15S23Q002" (:diagnostic rejected)))))
+    (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :try 1) [:facts :reason])))
+    (let [context (typed-symbol-quote-kernel-context base)]
+      (is (= {:op :quote :value 'unresolved/data} (:value (invoke 'p15-s23-typed-compile-node context :symbol-quote 65536))))
+      (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                      #(assoc-in % [:ledger 0 :quoted-data :value] 'swapped)
+                      #(assoc-in % [:ledger 0 :dependencies :quote :source :syntax-id] :swapped)
+                      #(assoc-in % [:ledger 0 :solution :type] :gravity.type/string)
+                      #(assoc-in % [:nodes :symbol-quote :children] [:reference])
+                      #(assoc-in % [:forms :symbol-payload :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :quote-form :child-form-ids] 42)
+                      #(assoc-in % [:forms :symbol-payload :child-form-ids] [:reference])]]
+        (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node (mutate context) :symbol-quote 65536)))))
+      (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :symbol-quote 1) [:facts :reason]))))))
+
 (deftest current-gravity-typed-lowering-input-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -197,7 +290,7 @@
       (is (= :rejected (:status (invoke 'p15-s23-typed-assemble-plan-products emitter module definitions input observation)))))
     (let [source {:syntax-id :original-syntax :semantic-span {:source "original.gravity" :start 12 :end 19}
                   :origin-chain [:original] :generated-origin {:macro :original}}
-          node {:node-id :unsupported :core-form :try :source source :binding-context {:scope :original}}
+          node {:node-id :unsupported :core-form :call :source source :binding-context {:scope :original}}
           context (:value (invoke 'p15-s23-typed-context module input observation))
           context (-> context (assoc-in [:nodes :unsupported] node) (assoc-in [:types :unsupported] :gravity.type/string))
           rejected (invoke 'p15-s23-typed-compile-node context :unsupported 65536)
@@ -236,7 +329,7 @@
       (is (= {:op :do :body [branch]} (:value (invoke 'p15-s23-typed-compile-node context :sequence 65536))))
       (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :sequence 1) [:facts :reason])))
       (is (= :unsupported-typed-lowering-operation
-             (get-in (invoke 'p15-s23-typed-compile-node (assoc-in context [:nodes :sequence :core-form] :try) :sequence 65536) [:facts :reason]))))))
+             (get-in (invoke 'p15-s23-typed-compile-node (assoc-in context [:nodes :sequence :core-form] :call) :sequence 65536) [:facts :reason]))))))
 
 (deftest typed-lowering-public-orchestration-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -277,6 +370,7 @@
         runtime-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
         names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
+                 p15-s23-runtime-typed-handlers-valid? p15-s23-runtime-atomic-error-match? p15-s23-runtime-select-typed-handler
                  p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (names (second %))) runtime-forms)
         projection (str/join "\n" (map pr-str (cons (first runtime-forms) selected)))
@@ -288,7 +382,7 @@
                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
                     'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         verifier 'sh08-verify-function-type-result original bootstrap/p15-s23-stage2-runtime-execute-function]
-    (is (= 6 (count selected)))
+    (is (= 9 (count selected)))
     (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in runtime-plan [:source :sha256])))
     (is (not= (bootstrap/sha256-hex runtime-text) (bootstrap/sha256-hex projection)))
     (doseq [extension [".gravity" ".qst"]]
@@ -349,6 +443,155 @@
           (let [failure (operation #(diagnostic thunk))]
             (is (= "P15S23Q002" (:id failure)) (pr-str failure))))))))
 
+(defn- typed-catch-runtime-projection []
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity")) text (slurp path)
+        forms (bootstrap/read-forms path text)
+        arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+                 'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
+                 'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1
+                 'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3}
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) forms)
+        projection (str/join "\n" (map pr-str (cons (first forms) selected)))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path projection)
+        builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
+        calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
+    (is (= 9 (count selected) (count (set (map second selected)))))
+    (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
+    (is (= selected (vec (rest (bootstrap/read-forms path projection)))))
+    (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
+    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in plan [:source :sha256])))
+    (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
+    {:plan plan :parent-source {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}}))
+
+(deftest current-gravity-typed-catch-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        {:keys [plan parent-source]} (typed-catch-runtime-projection)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        original bootstrap/p15-s23-stage2-runtime-execute-function
+        execute (fn [instruction env] (original runtime plan 'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
+        transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
+        observed-verifications (atom 0)]
+    (is (= (str "sha256:" (bootstrap/sha256-hex (slurp (:path parent-source)))) (:sha256 parent-source)))
+    (doseq [extension [".gravity" ".qst"] name ["atomic-typed-catch" "local-runtime-atomic-catch"]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" name extension)
+            source-path (.getPath (io/file root relative))
+            p (fresh relative) input (select-keys p [:request :typed :verification])
+            macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            original-forms (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            module (assoc (bootstrap/parse-module source-path original-forms) :forms (:expanded-forms macro-artifact))
+            definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+            operation (fn [thunk]
+                        (let [before @observed-verifications
+                              value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                                   (fn [runtime plan function args]
+                                                     (when (= 'sh08-verify-function-type-result function) (swap! observed-verifications inc))
+                                                     (original runtime plan function args))]
+                                      (thunk))]
+                          (is (= 1 (- @observed-verifications before))) value))
+            compile-function (fn [name] (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions name) input)))]
+        (is (= (if (= name "atomic-typed-catch") "1a45d1b4dc314a9685d261d6db81de056358b24813c163039f1187091f5761d5"
+                   "6f6de30256d77b0d583b57db828867366e86059d2dcc9a70fee74d1688333670") (bootstrap/sha256-hex (slurp source-path))))
+        (is (= :accepted (get-in input [:typed :status]))) (is (= :passed (get-in input [:verification :status])))
+        (if (= name "atomic-typed-catch")
+          (let [functions (into {} (map #(vector % (compile-function %)) '[recover partial nested ordered rethrow bypass]))
+                payload (String. "original")
+                cases [['recover {'flag false 'problem payload} payload :normal]
+                       ['recover {'flag true 'problem payload} payload :normal]
+                       ['partial {'flag true 'problem payload} payload :normal]
+                       ['partial {'flag false 'problem payload} false :thrown]
+                       ['nested {'problem payload} payload :normal]
+                       ['ordered {'flag true 'problem payload} payload :thrown]
+                       ['ordered {'flag false 'problem payload} "bool" :normal]
+                       ['rethrow {'problem payload} payload :thrown]
+                       ['bypass {'problem payload} payload :normal]]]
+            (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+              #(doseq [[name env expected control] cases]
+                 (let [function (get functions name) result (execute (first (:instructions function)) env)]
+                   (is (= [expected "" control] result))
+                   (when (identical? expected payload) (is (identical? payload (first result))))
+                   (is (= :pending-c8-and-profile-authority (get-in function [:typed-lowering-provenance :effect-legality]))))))
+            (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'call-catch) input))))]
+              (is (= "P15S23Q002" (:id failure))) (is (= :unsupported-typed-lowering-operation (:reason failure)))))
+          (let [assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                functions (:functions assembled)]
+            (is (= {:try 5 :throw 5 :local 5 :quote 1 :literal 4} (:instruction-summary assembled)))
+            (doseq [[name expected] [['symbol-error 'unresolved/data] ['keyword-error :unresolved/data] ['bool-error false] ['string-error "original"]]]
+              (let [function (compile-function name)]
+                (is (= function (get functions name)))
+                (is (= [expected "" :normal]
+                       (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+                         #(execute (first (:instructions function)) {}))))))
+            (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+              #(let [result (original runtime plan 'p15-s23-runtime-execute-closed-plan [assembled])]
+                 (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main :stdout ""
+                         :entrypoint-result "recovered" :status :complete :clojure-seed-boundary? true :self-hosted? false} result))))
+            (let [index (first (keep-indexed #(when (= :sh08-atomic-typed-catch-v1 (:producer-rule %2)) %1) (get-in input [:typed :constraint-ledger])))
+                  changed (assoc-in input [:typed :constraint-ledger index :dependencies :catch-types] [:gravity.type/bool])
+                  failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'main) changed))))]
+              (is (= "P15S23Q002" (:id failure))))))))
+    (is (= 0 @transports))))
+
+(deftest current-gravity-typed-catch-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        literal (fn [value] {:op :literal :value value})
+        throw-value (fn [value] {:op :throw :value (literal value)})
+        handler (fn [type body] {:type type :name 'caught :body body})
+        recover (fn [protected handlers] {:op :try :protected protected :handlers handlers})
+        local {:op :local :name 'caught}
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+        eval #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        execute #(invoke 'p15-s23-runtime-execute-closed-plan {:entrypoint 'main :functions {'main {:instructions [%]}}})
+        payload (String. "original")]
+    (doseq [[type value] [[:gravity.type/string payload] [:gravity.type/bool false] [:gravity.type/bool true]
+                         [:gravity.type/symbol 'unresolved/data] [:gravity.type/keyword :unresolved/data]]]
+      (let [result (eval (recover (throw-value value) [(handler type local)]))]
+        (is (identical? value (first result))) (is (= ["" :normal] (subvec result 1)))))
+    (doseq [value [nil false {} [] {:op :throw :value payload} [:original "" :thrown] (ex-info "inert" {}) (AssertionError. "inert")]]
+      (let [result (eval (recover (literal value) [(handler :gravity.type/string (throw-value :unreachable))]))]
+        (is (identical? value (first result))) (is (= ["" :normal] (subvec result 1)))))
+    (is (= [payload "protected\nhandler\n" :normal]
+           (eval (recover (say "protected" (throw-value payload)) [(handler :gravity.type/string (say "handler" local))]))))
+    (is (= [payload "protected\nfirst\n" :thrown]
+           (eval (recover (say "protected" (throw-value payload))
+                          [(handler :gravity.type/string (say "first" {:op :throw :value local}))
+                           (handler :gravity.type/string (say "unreachable" (literal :bad)))]))))
+    (is (= [payload "inner\nouter\n" :normal]
+           (eval (recover (recover (throw-value payload) [(handler :gravity.type/string (say "inner" {:op :throw :value local}))])
+                          [(handler :gravity.type/string (say "outer" local))]))))
+    (doseq [value [nil {} [] {:op :throw :value payload} [:original "" :thrown] (ex-info "inert" {})]]
+      (let [result (eval (recover (throw-value value) [(handler :gravity.type/bool (literal :bad)) (handler :gravity.type/string (literal :bad))]))]
+        (is (identical? value (first result))) (is (= ["" :thrown] (subvec result 1)))))
+    (let [rejected (eval (recover {:op :unsupported} [(handler :gravity.type/string (say "unreachable" local))]))]
+      (is (= ["" :rejected] (subvec rejected 1))) (is (= "P15S23X002" (:diagnostic (first rejected)))))
+    (let [rejected (eval (recover (throw-value payload) [(handler :gravity.type/string {:op :unsupported})
+                                                         (handler :gravity.type/string (say "unreachable" local))]))]
+      (is (= ["" :rejected] (subvec rejected 1))) (is (= "P15S23X002" (:diagnostic (first rejected)))))
+    (let [environment {'caught :outer}
+          result (invoke 'p15-s23-runtime-evaluate-closed-instruction (recover (throw-value payload) [(handler :gravity.type/string local)]) environment "")]
+      (is (identical? payload (first result))) (is (= {'caught :outer} environment)))
+    (doseq [handlers [nil 42 {} [] [42] [{:type :gravity.type/i32 :name 'caught :body local}]
+                      [(handler :gravity.type/string local) {:type :gravity.type/string :name 42 :body local}]
+                      [(assoc (handler :gravity.type/string local) :extra true)]
+                      [(handler :gravity.type/string 42)] (vec (repeat 65537 (handler :gravity.type/string local)))]]
+      (let [result (eval (recover (say "unreachable" (throw-value payload)) handlers))]
+        (is (= ["" :rejected] (subvec result 1))) (is (= "P15S23X002" (:diagnostic (first result))))))
+    (let [normal (execute (recover (throw-value payload) [(handler :gravity.type/string local)]))
+          thrown (execute (recover (throw-value payload) [(handler :gravity.type/bool local)]))]
+      (is (= :complete (:status normal))) (is (identical? payload (:entrypoint-result normal)))
+      (is (= #{:artifact :entrypoint :stdout :clojure-seed-boundary? :self-hosted? :entrypoint-result :status} (set (keys normal))))
+      (is (= :thrown (:status thrown))) (is (identical? payload (:thrown-value thrown))) (is (not (contains? thrown :entrypoint-result))))
+    (let [failure (AssertionError. "fatal") environment (ThrowingAssociative. failure)
+          observed (seed-throw-test-capture #(invoke 'p15-s23-runtime-evaluate-closed-instruction
+                      (recover (throw-value payload) [(handler :gravity.type/string local)]) environment ""))]
+      (is (identical? failure observed)))))
+
 (deftest current-gravity-runtime-throw-development-kernel
   (let [fixture-path (module-fixture "seed-library" ".gravity")
         root (loop [directory (.getParentFile (io/file fixture-path))]
@@ -358,6 +601,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! fixture-path :jvm))
         parent-forms (bootstrap/read-forms source-path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+                 'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) parent-forms)
@@ -377,7 +621,7 @@
     ;; subset. Compile exact original function forms as a fresh projection;
     ;; retain its own hash and the distinct complete parent-source provenance.
     (is (= text (slurp source-path)))
-    (is (= 6 (count selected) (count (set (map second selected)))))
+    (is (= 9 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest (bootstrap/read-forms source-path projection)))))
     (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in compiled [:source :sha256])))

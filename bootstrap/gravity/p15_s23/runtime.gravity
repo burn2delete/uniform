@@ -1811,6 +1811,35 @@
         (p15-s23-runtime-evaluate-sequence
          (rest instructions) environment (second head-result))))))
 
+(defn p15-s23-runtime-typed-handlers-valid? [instruction]
+  (if (= #{:op :protected :handlers} (set (keys instruction)))
+    (if (map? (get instruction :protected))
+      (if (vector? (get instruction :handlers))
+        (if (if (> (count (get instruction :handlers)) 0) (<= (count (get instruction :handlers)) 65536) false)
+          (loop [remaining (get instruction :handlers)]
+            (if (= 0 (count remaining)) true
+              (let [handler (first remaining)]
+                (if (map? handler)
+                  (if (= #{:type :name :body} (set (keys handler)))
+                    (if (contains? #{:gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword} (get handler :type))
+                      (if (symbol? (get handler :name))
+                        (if (map? (get handler :body)) (recur (rest remaining)) false) false) false) false) false)))) false) false) false) false))
+
+(defn p15-s23-runtime-atomic-error-match? [type value]
+  (if (= type :gravity.type/bool) (if (= true value) true (= false value))
+    (if (= type :gravity.type/string) (string? value)
+      (if (= type :gravity.type/symbol) (symbol? value)
+        (if (= type :gravity.type/keyword) (keyword? value) false)))))
+
+(defn p15-s23-runtime-select-typed-handler [handlers result environment]
+  (loop [remaining handlers]
+    (if (= 0 (count remaining)) result
+      (let [handler (first remaining)]
+        (if (p15-s23-runtime-atomic-error-match? (get handler :type) (first result))
+          (p15-s23-runtime-evaluate-closed-instruction (get handler :body)
+            (assoc environment (get handler :name) (first result)) (second result))
+          (recur (rest remaining)))))))
+
 (defn p15-s23-runtime-evaluate-closed-instruction
   [instruction environment output]
   (let [operation (get instruction :op)
@@ -1821,6 +1850,7 @@
         shape?
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
+          (if (= operation :try) (p15-s23-runtime-typed-handlers-valid? instruction)
           (if (= operation :local)
             (if (contains? fields :name)
               (if (symbol? (get instruction :name)) (contains? environment (get instruction :name)) false) false)
@@ -1853,9 +1883,13 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false)))))))) false)]
+            false))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :try)
+      (let [result (p15-s23-runtime-evaluate-closed-instruction (get instruction :protected) environment output)]
+        (if (= :thrown (get result 2))
+          (p15-s23-runtime-select-typed-handler (get instruction :handlers) result environment) result))
     (if (= operation :literal)
       [(get instruction :value) output :normal]
       (if (= operation :quote)
@@ -1927,7 +1961,7 @@
                      (first binding-result)
                      (second binding-result)) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected]))))))))))))
+                     output :rejected])))))))))))))
 
 ; Pinned public entrypoint for the authenticated closed hosted-core plan.  The
 ; Clojure seed invokes this Gravity function once for the authoritative packet

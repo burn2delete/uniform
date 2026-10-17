@@ -1857,7 +1857,7 @@ was written. The optional capture is removed from the normal test rather than
 growing caps, stripping proofs or replaying solely to obtain a file. A bounded
 representation follow-up is described in `docs/development-verification.md`.
 
-Runtime catch execution, type-authoritative lowering inputs, complete Error
+At that boundary, runtime catch execution, type-authoritative lowering inputs, complete Error
 hierarchy/subtyping, target/profile error lowering, resource unwinding and
 authoritative migration remain open. This increment does not establish full
 SH-07/SH-08, self-hosting, release support or seed retirement. The next executable
@@ -1903,13 +1903,52 @@ parse mismatch was caught statically and corrected before the sole expensive
 composition. No proof replay, optional product capture, old pin refresh or
 authority-admission workflow was needed for these development corrections.
 
-Typed runtime catches and quoted-symbol lowering are the next dependency-ready
-semantic work. General calls, bindings, loops, complete numeric representation,
+At this boundary, typed runtime catches and quoted-symbol lowering were the
+next dependency-ready semantic work. General calls, bindings, loops, complete numeric representation,
 Error subtyping, resource cleanup, profile/target legality and authoritative
 migration remain outstanding for this typed route. The runtime test uses the
 unchanged exact six-function projection, not whole-runtime compilation. This
 is executable development progress, not full SH-07/SH-08, self-hosting, release
 readiness or Clojure seed retirement.
+
+### Canonical atomic catch lowering and runtime handling
+
+The current Gravity emitter consumes solved C7 handler records and canonical
+Bool, String, Symbol and Keyword types. It rejoins handler order, original
+source clauses, binder identities/scopes/types and handler-body ownership.
+Quoted Symbol payloads use the solved inert quoted-DATA record; source spelling
+alone is not authority. Handler binders extend only their own body environment.
+
+The Gravity runtime evaluates the protected instruction once and selects the
+first matching atomic handler only for thrown control. Normal and rejected
+control bypass handlers. A selected handler's throw bypasses sibling handlers
+and can reach an outer try. False matches Bool; nil does not. Payloads retain
+identity, shadowing leaves the outer environment intact, malformed handler
+descriptors reject before protected execution, and fatal host failures retain
+their original identity rather than becoming guest error values. Descriptor
+validation checks body maps shallowly, not whole instruction graphs.
+
+The final direct catch checks passed two tests/128 assertions. Earlier focused
+regressions overlap and are not additive coverage. A test-only transport
+instrumentation gap was found and corrected before the affected real
+composition: all tiny atomic executions must be observed, not merely the
+main entrypoint and older fixture cases. No expensive proof was replayed for
+that correction. The sole affected composition passed one test/122 assertions
+over four genuine upstream inputs, with fresh current C7 verification per
+public operation. It exercised original nested/ordered/rethrow cases, all four
+atomic payload types, quoted Symbol DATA and exact public main recovery. Seed
+throw transport remained unused around every execution; the unsupported guest
+call and changed typed ledger rejected. Test execution took about 491 seconds
+plus seven seconds of namespace loading. This is a different workload from the
+direct checks, not a speedup comparison or an additive coverage total.
+
+General guest calls, symbol-let lowering, quoted containers, numeric-width
+catch matching, Error hierarchy/subtyping, resource cleanup and complete
+profile/target legality remain outside this subset. The runtime composition
+uses nine exact original function definitions, not whole-runtime compilation.
+Existing admitted packets and migration identities remain unchanged; this
+does not establish authoritative migration, full SH-07/SH-08, self-hosting,
+release support or seed retirement.
 
 ## Current Baseline
 

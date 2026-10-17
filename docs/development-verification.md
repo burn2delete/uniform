@@ -442,6 +442,49 @@ not the namespace declaration: parse the retained C2 original forms for the
 module header, then associate the authenticated expanded body for function
 analysis. Do not reconstruct upstream products merely to fix this test setup.
 
+### Canonical atomic catch lowering and execution
+
+The next increment uses the same emitter, runtime and test namespace. Catch
+types come from canonical C7 bindings and solved handler premises, not source
+spelling or host exception classes. The current subset is Bool, String, Symbol
+and Keyword. Quoted Symbol DATA is lowered from its solved C7 quote record;
+other quoted containers and general calls remain outside this typed route.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-catch-lowering-development-kernel \
+  --exact current-gravity-typed-catch-runtime-development-kernel
+# Run when the catch lowering/runtime composition changes:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-catch-authenticated-composition --fail-fast
+```
+
+The direct checks distinguish normal, thrown and rejected control, preserve
+payload identity and evaluate the protected expression once. The first matching
+handler runs; its own throw bypasses sibling handlers and may reach an outer
+try. A malformed handler descriptor rejects before protected execution. Body
+map validation is shallow, not a new whole-IR validity proof. Fatal host
+failures are not guest error values.
+
+The affected composition uses both existing atomic-catch fixture extensions
+and the small local-runtime pair. It constructs each source product once and
+checks fresh current C7 verification per public lowering operation. Runtime
+execution uses an exact nine-function projection of the current Gravity
+runtime with original-source and dependency checks, not whole-runtime
+compilation. Zero seed throw transport must be observed around every actual
+execution, not inferred from an uninstrumented call. This boundary does not
+admit a revision, refresh old pins, discharge effect/profile legality or prove
+Error subtyping, resource cleanup, self-hosting or seed retirement.
+
+The final direct batch passed two tests/128 assertions. The sole affected real
+composition passed one test/122 assertions in about 491 seconds of execution
+plus seven seconds of namespace loading. Its four upstream inputs were each
+constructed once. These checks overlap; their counts are not additive and
+their timings do not compare equivalent workloads. The instrumentation-only
+correction preceded this run, rather than triggering a second proof build.
+
 ### Current Gravity emitter throw lowering
 
 Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned
