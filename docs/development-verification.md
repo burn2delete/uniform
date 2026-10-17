@@ -327,6 +327,30 @@ the affected component, imported or indirect throwing calls, handlers and
 cleanup remain unsupported here. These checks do not admit a module revision
 or establish Gravity-emitter/runtime ownership, complete legality or self-hosting.
 
+### Current Gravity emitter throw lowering
+
+Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned
+instruction lowerer. Its one-operand `throw` becomes `{:op :throw :value ...}`;
+wrong arity rejects before operand compilation. Instruction summaries traverse
+the operand. Products containing throws explicitly leave effect inference
+pending and legality unchecked, rather than reporting an empty inferred effect.
+Ordinary products and original declaration records retain their existing shape.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-emitter-throw-development-kernel
+```
+
+This check compiles and executes the actual current Gravity emitter source
+through the existing raw three-argument developer interface. It lowers the
+unchanged compiler-accepted paired throw fixture and observes normal return and
+escaping payload through the temporary seed executor. Reuse the unchanged
+fixture's upstream evidence; rerun affected compiler composition only when its
+behavior or interface changes. Do not refresh old admission pins to run this
+development check. Gravity-owned runtime error transfer, handlers, target error
+lowering and authoritative migration remain separate gates.
+
 ### Single-source seed throw execution
 
 The temporary seed lowers one-operand `throw` in the existing three-argument

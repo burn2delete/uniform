@@ -84,6 +84,110 @@
        (identical? (var-get (module-private 'p15-s23-stage2-runtime-source-throw-token))
                    (:gravity.bootstrap/source-throw (ex-data failure)))))
 
+(deftest current-gravity-emitter-throw-development-kernel
+  (let [fixture-path (module-fixture "seed-library" ".gravity")
+        root (loop [directory (.getParentFile (io/file fixture-path))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        emitter-path (.getPath (io/file root "bootstrap/gravity/p15_s23/emitter.gravity"))
+        text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! fixture-path :jvm))
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path text)
+        invoke (fn [function & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled function (vec args)))
+        module {:module 'example.gravity.emitter :profile :meta :target :jvm :effects #{:error/throw} :capabilities #{}}
+        lower #(invoke 'p15-s23-compile-expr emitter module '#{problem flag} %)
+        execute #(bootstrap/p15-s23-stage2-runtime-execute-instruction runtime
+                   {:source {:path fixture-path :sha256 "guest-source"} :module module} %2 %1)]
+    ;; This raw plan names the actual changed source. Configured metadata does
+    ;; not admit it, and no old sealed plan is patched to run these functions.
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
+    (is (nil? (:scope compiled)))
+    (is (not= (get-in compiled [:source :sha256])
+              (var-get (module-private 'p15-s23-stage2-compiler-artifact-expected-source-content-hash))))
+    (is (= compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path text)))
+    (doseq [form ['(throw) '(throw unknown extra) '(throw (recur false) extra)]]
+      (is (= {:status :rejected :diagnostic "L2-UNKNOWN-CORE-FORM"
+              :facts {:operator 'throw :reason :throw-arity :expected-arity 1 :actual-arity (dec (count form))}}
+             (lower form))))
+    (is (= "L2-UNKNOWN-SYMBOL" (:diagnostic (lower '(throw missing)))))
+    (is (= (get-in emitter [:call-rules :unknown-callee-diagnostic])
+           (:diagnostic (lower '(throw (missing))))))
+    (is (= {:status :complete :value {:op :throw :value {:op :local :name 'problem}}}
+           (lower '(throw problem))))
+    (doseq [form ['(throw problem) '(do (throw problem)) '(if flag (throw problem) problem)
+                  '(throw (throw problem))]]
+      (let [lowered (lower form) instruction (:value lowered) payload (Object.)
+            failure (seed-throw-test-capture #(execute instruction {'flag true 'problem payload}))]
+        (is (= :complete (:status lowered)))
+        (is (seed-throw-test-transport? failure))
+        (is (identical? payload (:payload (ex-data failure))))))
+    (doseq [data ['(throw unknown) {:kind :gravity/recur :values [false] :op :throw}
+                  {:gravity.bootstrap/source-throw :data :payload :data}]]
+      (let [instruction (:value (lower (list 'quote data)))]
+        (is (= data (execute instruction {})))
+        (is (= {:quote 1} (:value (invoke 'p15-s23-summary-instruction instruction {}))))))
+    (is (= {:throw 2 :local 1}
+           (:value (invoke 'p15-s23-summary-instruction (:value (lower '(throw (throw problem)))) {}))))
+    (let [instruction (:value (lower '(if flag (throw (do problem)) (throw (throw problem)))))
+          summary (:value (invoke 'p15-s23-summary-instruction instruction {}))
+          products {:functions {} :binding-table [] :instruction-summary summary :preserved :original}
+          result (:value (invoke 'p15-s23-complete-plan-products module products nil))]
+      (is (= {:if 1 :local 3 :throw 3 :do 1} summary))
+      (is (= products (dissoc result :entrypoint :effect-summary)))
+      (is (= {:declared #{:error/throw} :inferred :pending-gravity-emitter-effect-inference
+              :legality :not-checked :authority :non-authoritative :source-operation-occurrences {:throw 3} :capabilities #{}}
+             (:effect-summary result))))
+    ;; Ordinary products retain their complete prior shape and println-only
+    ;; summary behavior. These are comparisons, not effect-legality evidence.
+    (doseq [summary [{} {:println 1 :literal 1}]]
+      (let [products {:functions {'f {:params []}} :binding-table [] :instruction-summary summary}]
+        (is (= (assoc products :entrypoint 'main
+                      :effect-summary {:declared #{:error/throw} :inferred (if (:println summary) #{:io/write} #{}) :capabilities #{}})
+               (:value (invoke 'p15-s23-complete-plan-products module products 'main))))))
+    (doseq [body ["(do (println \"ordinary\") \"done\")"
+                 "(if false [1 2] {:result '(throw unknown)})"]]
+      (let [source (str "(ns example.gravity.plain (:profile :meta) (:target :jvm)) (defn main [] " body ")")
+            artifact (bootstrap/macro-source-artifact fixture-path source)
+            ordinary-module (assoc (:module artifact) :forms (:expanded-forms artifact))
+            definitions (bootstrap/stage0-function-table ordinary-module)
+            ordinary-module (assoc ordinary-module :function-table definitions)
+            seed (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter fixture-path source)
+            expected (-> (select-keys seed [:functions :instruction-summary :effect-summary :entrypoint])
+                         (assoc :binding-table (mapv #(assoc (:binding %) :arity (:arity %)) (vals (:functions seed))))
+                         (assoc-in [:effect-summary :inferred]
+                                   (if (pos? (get-in seed [:instruction-summary :println] 0)) #{:io/write} #{})))]
+        (is (= {:status :complete :value expected}
+               (invoke 'p15-s23-assemble-plan-products emitter ordinary-module (vec definitions))))))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [source-path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/direct-typed-throw" extension)))
+            source-text (slurp source-path)
+            macro-artifact (bootstrap/macro-source-artifact source-path source-text)
+            guest-module (assoc (:module macro-artifact) :forms (:expanded-forms macro-artifact))
+            definitions (bootstrap/stage0-function-table guest-module)
+            guest-module (assoc guest-module :function-table definitions)
+            definition (get definitions 'choose)
+            lowered (invoke 'p15-s23-compile-function emitter guest-module definition)
+            function (:value lowered) instruction (first (:instructions function)) payload (String. "problem")
+            guest-context {:source {:path source-path :sha256 (str "sha256:" (bootstrap/sha256-hex source-text))}
+                           :module (select-keys guest-module [:module :profile :target :effects :capabilities])}
+            run #(bootstrap/p15-s23-stage2-runtime-execute-instruction runtime guest-context {'flag % 'problem payload} instruction)
+            failure (seed-throw-test-capture #(run true))
+            assembled (invoke 'p15-s23-assemble-functions emitter guest-module (vec definitions) {} [] {})
+            completed (invoke 'p15-s23-complete-plan-products guest-module (:value assembled) nil)]
+        (is (= "755e5b876b8fde5f1be48b0dce2cea96c17da24d967b4d9e641c720a46617f23" (bootstrap/sha256-hex source-text)))
+        (is (= :complete (:status lowered) (:status assembled) (:status completed)))
+        (is (= definition (dissoc function :binding :instructions)))
+        (is (= '[flag problem] (:params function)))
+        (is (= (:source-declarations definition) (:source-declarations function)))
+        (is (some? (:source-declarations function)))
+        (is (identical? payload (run false)))
+        (is (seed-throw-test-transport? failure))
+        (is (identical? payload (:payload (ex-data failure))))
+        (is (= (:source guest-context) (:source (ex-data failure))))
+        (is (= function (get-in assembled [:value :functions 'choose])))
+        (is (= {:if 1 :local 3 :throw 1} (get-in assembled [:value :instruction-summary])))
+        (is (= :pending-gravity-emitter-effect-inference (get-in completed [:value :effect-summary :inferred])))))))
+
 (deftest seed-throw-lowering-and-arity-development-kernel
   (let [compiled (seed-throw-test-plan "(defn f [problem] (throw problem))")
         boundary (module-private 'p15-s23-stage2-seed-throw-plan-boundary)

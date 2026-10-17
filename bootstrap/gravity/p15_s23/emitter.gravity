@@ -919,6 +919,19 @@
         call-rules (get emitter :call-rules)
         builtin-functions (set (get call-rules :builtin-functions))
         internal-arity (p15-s23-internal-builtin-arity callee)]
+    (if (= callee (quote throw))
+      (if (= 1 (count arguments))
+        (let [value (p15-s23-compile-expr
+                     emitter (p15-s23-child-module module [1])
+                     locals (first arguments))]
+          (if (p15-s23-compiler-complete? value)
+            (p15-s23-compiler-result
+             (hash-map :op :throw :value (get value :value)))
+            value))
+        (p15-s23-compiler-error
+         "L2-UNKNOWN-CORE-FORM"
+         (hash-map :operator (quote throw) :reason :throw-arity
+                   :expected-arity 1 :actual-arity (count arguments))))
     (if (= callee (quote println))
       (let [args
             (p15-s23-compile-forms
@@ -1045,7 +1058,7 @@
                               :function callee
                               :args (get args :value)
                               :external-link external-link))
-                            args)))))))))))))))))
+                            args))))))))))))))))))
 
 (defn p15-s23-compile-expr
   [emitter module locals form]
@@ -1175,6 +1188,8 @@
   [instruction summary]
   (let [op (get instruction :op)
         counted (assoc summary op (+ 1 (get summary op 0)))]
+    (if (= op :throw)
+      (p15-s23-summary-instruction (get instruction :value) counted)
     (if (= op :println)
       (p15-s23-summary-instructions (get instruction :args) counted)
       (if (= op :do)
@@ -1215,7 +1230,7 @@
                       (if (= op :map-literal)
                         (p15-s23-summary-map-entries
                          (get instruction :entries) counted)
-                        (p15-s23-compiler-result counted)))))))))))))
+                        (p15-s23-compiler-result counted))))))))))))))
 
 (defn p15-s23-assemble-functions
   [emitter module definitions functions bindings summary]
@@ -1268,13 +1283,21 @@
    (assoc products
           :entrypoint entrypoint
           :effect-summary
+          (if (> (get (get products :instruction-summary) :throw 0) 0)
+            (hash-map
+             :declared (get module :effects)
+             :inferred :pending-gravity-emitter-effect-inference
+             :legality :not-checked :authority :non-authoritative
+             :source-operation-occurrences
+             (hash-map :throw (get (get products :instruction-summary) :throw))
+             :capabilities (get module :capabilities))
           (hash-map
            :declared (get module :effects)
            :inferred
            (if (> (get (get products :instruction-summary) :println 0) 0)
              #{:io/write}
              #{})
-           :capabilities (get module :capabilities)))))
+           :capabilities (get module :capabilities))))))
 
 (defn p15-s23-assemble-plan-products
   [emitter module definitions]

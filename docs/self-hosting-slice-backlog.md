@@ -1749,6 +1749,36 @@ handlers, cleanup and complete error/profile/provider legality remain separate
 work. No authoritative module migration, full target implementation, self-hosting
 or seed-retirement claim follows from this development increment.
 
+### Current Gravity emitter throw lowering
+
+The Gravity-owned `p15_s23/emitter.gravity` now lowers exactly one `throw`
+operand, preserving the owning child path and rejecting malformed arity before
+operand compilation. Summaries traverse nested throw operands. Throw-containing
+products mark effect inference pending, legality unchecked and authority
+non-authoritative; ordinary products retain the existing println-only inference.
+Original parsed function declarations and logical parameters are preserved.
+
+The current-source focused regression passes nine tests/272 assertions,
+including 62 assertions executing the actual changed Gravity emitter functions
+through the existing raw developer interface. The unchanged accepted paired
+throw source is lowered and assembled, then its returned instruction is observed
+through the temporary seed executor: normal return and escaping payload/source
+are preserved. Wrong arity, missing symbols, unknown callees, nested summaries,
+inert quoted DATA and ordinary whole-product parity are checked. No old compiler
+proof was replayed and no admission pin was refreshed.
+
+Earlier focused results remain failures: the first run had two assertions read
+source provenance from the wrong transport field; an adjacent legacy macro-route
+test correctly rejected the stale admitted emitter identity; an added parity
+oracle initially expected the seed's empty inference instead of the unchanged
+Gravity println inference. Only test expectations and the development selection
+were corrected. These results are not retroactively relabeled as passing.
+
+Gravity-owned runtime error transfer, handlers, complete legality, target error
+lowering and fresh authoritative migration remain outstanding. The emitter
+development revision does not inherit its old admitted source identity or
+establish full SH-07, self-hosting or seed retirement.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
