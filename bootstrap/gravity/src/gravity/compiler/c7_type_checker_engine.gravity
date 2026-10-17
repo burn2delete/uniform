@@ -4544,16 +4544,166 @@
         (recur (rest remaining) (conj out (if (contains? thrown id)
           (assoc function :thrown-error-effects (get thrown id)) function)))))))
 
-(defn sh08-th-call-fence [core thrown]
-  (loop [remaining (get core :call-edges)]
-    (if (= 0 (count remaining)) nil
-      (let [edge (first remaining)]
-        (if (if (contains? thrown (get edge :callee-function-syntax-id)) true
-              (contains? thrown (get edge :caller-function-syntax-id)))
-          (first (get (sh08-th-error "C7-ANNOTATION" :typed-throw-call-propagation-pending
-            (get (sh08-ft-node-index (get core :nodes)) (get edge :call-core-node-id))
-            :proved-thrown-error-call-propagation (get edge :callee-function-syntax-id)) :diagnostics))
-          (recur (rest remaining)))))))
+(defn sh08-tc-union [left right]
+  (loop [remaining right out left seen (set left)]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (if (contains? seen (first remaining)) out (conj out (first remaining)))
+             (conj seen (first remaining))))))
+
+(defn sh08-tc-invokes? [node types]
+  (loop [remaining (get node :children)]
+    (if (= 0 (count remaining)) true
+      (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
+
+(defn sh08-tc-scope [core thrown budget]
+  (loop [scope (set (keys thrown)) remaining (get core :call-edges) next (set (keys thrown)) work 0 touched #{}]
+    (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-call-visits work)
+      (if (= 0 (count remaining))
+        (if (= scope next) {:status :accepted :scope touched :active? (> (count touched) 0) :work-count work}
+          (recur next (get core :call-edges) next work touched))
+        (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
+              local? (= :local-function (get edge :classification))
+              touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
+          (if (if touches? (= false local?) false)
+            (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-call-component {} :direct-local-call edge)
+            (recur scope (rest remaining) (if touches? (conj (conj next caller) callee) next)
+                   (+ work 1) (if touches? (conj (conj touched caller) callee) touched))))))))
+
+(defn sh08-tc-error-work [node graph target]
+  (let [ids (if (= target nil) (get node :children) (conj (get node :children) target))
+        size (loop [remaining ids out 0]
+               (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (get graph (first remaining) []))))))]
+    (+ 1 (count ids) (* (+ 2 (count ids)) (+ 1 size)))))
+
+(defn sh08-tc-node-errors [node graph target types]
+  (let [kind (get node :core-form)]
+    (if (contains? #{:fn :quote} kind) []
+      (let [operands (loop [ids (get node :children) out []]
+                       (if (= 0 (count ids)) out (recur (rest ids) (sh08-tc-union out (get graph (first ids) [])))))
+            called (if (= target nil) operands (sh08-tc-union operands (get graph target [])))
+            payload (get types (first (get node :children)))]
+        (if (if (= kind :throw) (= false (= payload :gravity.type/never)) false)
+          (sh08-tc-union called [payload]) called)))))
+
+(defn sh08-tc-graph [core types owners scope budget]
+  (let [nodes (sh08-ft-node-index (get core :nodes)) records (sh08-ft-function-record-index (get core :function-records))
+        edges (sh08-ft-index (get core :call-edges) :call-core-node-id)
+        selected (loop [remaining (get core :nodes) out []]
+                   (if (= 0 (count remaining)) out
+                     (recur (rest remaining) (if (contains? scope (get owners (get (first remaining) :node-id)))
+                                              (conj out (first remaining)) out))))]
+    (loop [pending selected deferred [] graph {} work 0 progress 0]
+      (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-body-visits work)
+        (if (= 0 (count pending))
+          (if (= 0 (count deferred)) {:status :accepted :nodes graph :work-count work}
+            (if (> progress 0) (recur deferred [] graph work 0)
+              (sh08-th-error "C7-ANNOTATION" :throwing-call-cycle-or-missing-body {} :acyclic-complete-bodies deferred)))
+          (let [node (first pending) kind (get node :core-form) id (get node :node-id) edge (get edges id)
+                target (if (if (= kind :call) (sh08-tc-invokes? node types) false)
+                         (get (get records (get edge :callee-function-syntax-id)) :body-core-node-id) nil)
+                deps (if (= kind :fn) [] (get node :children)) deps (if (= target nil) deps (conj deps target))
+                ready? (loop [ids deps]
+                         (if (= 0 (count ids)) true (if (contains? graph (first ids)) (recur (rest ids)) false)))]
+            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call} kind)
+              (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types))
+                               (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
+                (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))
+              (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-body-operation node :acyclic-direct-local-body kind))))))))
+
+(defn sh08-tc-constraint [core edge calls nodes records bindings types functions graph]
+  (let [id (get edge :call-core-node-id) node (get nodes id)
+        caller (get records (get edge :caller-function-syntax-id)) callee (get records (get edge :callee-function-syntax-id))
+        invoked? (sh08-tc-invokes? node types) body (get callee :body-core-node-id)
+        operand-errors (loop [ids (get node :children) out []]
+                         (if (= 0 (count ids)) out (recur (rest ids) (sh08-tc-union out (get graph (first ids) [])))))
+        callee-errors (if invoked? (get graph body []) [])
+        premise {:version :sh08-acyclic-local-thrown-errors-v1 :analysis :conservative-source-error-potential
+                 :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
+                 :source-node node :operator-node (get nodes (first (get node :children)))
+                 :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
+                 :callee-normal-type (sh08-bm-project (get functions (get edge :callee-function-syntax-id))
+                   [:parameters :return :fixed-arity :signature :latent-effects])
+                 :operand-types (sh08-ft-ordered-child-types (get edge :argument-core-node-ids) types)
+                 :callee-source-body-id body :normal-invocation? invoked?
+                 :operand-error-types operand-errors :callee-error-types callee-errors
+                 :error-types (sh08-tc-union operand-errors callee-errors)}]
+    {:constraint-id-request {:domain :gravity/sh08-acyclic-local-thrown-errors-v1 :premise premise}
+     :kind :equality :producer-rule :sh08-acyclic-local-thrown-errors-v1
+     :lhs {:core-node-id id :projection :thrown-error-effects} :rhs (get premise :error-types)
+     :origin (get (get node :source) :origin-chain) :dependencies premise
+     :solution {:thrown-error-effects (get premise :error-types) :normal-result-type (get types id)}
+     :invalidation [:call-edges :calls :binding-table :function-records :callee-body :type-table :error-transfers :evaluation-order]
+     :profile (get (get core :module) :profile) :target (get (get core :module) :target) :status :solved :diagnostics []}))
+
+(defn sh08-tc-products [core types functions bindings direct budget]
+  (if (= 0 (count (get direct :throws))) direct
+  (let [scoped (sh08-tc-scope core (get direct :throws) budget)]
+    (if (= :accepted (get scoped :status))
+      (if (= false (get scoped :active?))
+        (assoc direct :work-count (+ (get direct :work-count 0) (get scoped :work-count)))
+        (let [scope (get scoped :scope) initial (+ (get scoped :work-count) (* 8 (count (get core :nodes)))
+                    (* 70 (count (get core :call-edges))) (count bindings) (count (get core :definitions))
+                    (* 3 (count (get core :function-records)))
+                    (* (count (get core :calls)) (+ (count bindings) (count (get core :definitions))
+                                                   (* 2 (count (get core :function-records))))))
+              owners (sh08-th-owners core (- budget initial))
+              nodes (sh08-ft-node-index (get core :nodes)) records (sh08-ft-function-record-index (get core :function-records))
+              calls (sh08-ft-index (get core :calls) :core-node-id) binding-index (sh08-ft-binding-index bindings)
+              definitions (sh08-ft-index (get core :definitions) :binding-id)
+              expected (if (if (<= initial budget) (= :accepted (get owners :status)) false)
+                         (sh08-ft-index (sh08-ft-build-call-edges (get core :nodes) (get core :definitions) bindings
+                                          (get core :calls) (get core :function-records)) :call-core-node-id) {})
+              bad-edge (if (= :accepted (get owners :status)) (loop [edges (get core :call-edges)]
+                          (if (= 0 (count edges)) nil
+                            (let [edge (first edges) call (get calls (get edge :call-core-node-id))]
+                              (if (if (contains? scope (get edge :caller-function-syntax-id))
+                                    (if (= :local-function (get edge :classification))
+                                      (if (sh08-ft-call-valid? call nodes binding-index)
+                                        (let [definition (get definitions (get edge :callee-binding-id))
+                                              callee (get records (get edge :callee-function-syntax-id))
+                                              fn-node (get nodes (get callee :function-core-node-id))]
+                                          (sh08-ft-all-true?
+                                            [(= edge (get expected (get edge :call-core-node-id)))
+                                             (sh08-ft-definition-valid? definition nodes binding-index)
+                                             (= [(get callee :body-core-node-id)] (get fn-node :children))
+                                             (= (get callee :function-syntax-id) (get (get fn-node :source) :syntax-id))
+                                             (= (get edge :caller-function-syntax-id)
+                                                (get (get owners :owners) (get edge :call-core-node-id)))])) false) false) true)
+                                (recur (rest edges)) edge)))) nil)
+              recursive? (loop [components (get core :recursion-components)]
+                           (if (= 0 (count components)) false
+                             (if (loop [ids (get (first components) :function-syntax-ids)]
+                                   (if (= 0 (count ids)) false (if (contains? scope (first ids)) true (recur (rest ids))))) true
+                               (recur (rest components)))))
+              derived (if (> initial budget)
+                        (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits initial)
+                        (if (= :rejected (get owners :status)) owners
+                        (if (if (= bad-edge nil) (= false recursive?) false)
+                        (if (= :accepted (get owners :status))
+                          (sh08-tc-graph core types (get owners :owners) scope (- budget initial (get owners :work-count))) owners)
+                        (sh08-th-error (if recursive? "C7-ANNOTATION" "C7-VERIFY")
+                          :unsupported-or-incoherent-throwing-call-component
+                          (get nodes (get bad-edge :call-core-node-id) {}) :original-acyclic-local-edges bad-edge))))]
+          (if (= :accepted (get derived :status))
+            (let [thrown (loop [remaining (get core :function-records) out (get direct :throws)]
+                           (if (= 0 (count remaining)) out
+                             (let [record (first remaining) id (get record :function-syntax-id)]
+                               (recur (rest remaining) (if (contains? scope id)
+                                 (assoc out id (get (get derived :nodes) (get record :body-core-node-id) [])) out)))))
+                  rows (loop [edges (get core :call-edges) out (get direct :constraints)
+                              work (+ initial (get owners :work-count) (get derived :work-count))]
+                         (if (> work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-row-visits work)
+                         (if (= 0 (count edges)) {:status :accepted :constraints out :work-count work}
+                           (let [edge (first edges)]
+                             (if (contains? scope (get edge :caller-function-syntax-id))
+                               (recur (rest edges)
+                                 (conj out (sh08-tc-constraint core edge calls nodes records binding-index types functions (get derived :nodes)))
+                                 (+ work 70 (* 4 (sh08-tc-error-work (get nodes (get edge :call-core-node-id))
+                                   (get derived :nodes) (get (get records (get edge :callee-function-syntax-id)) :body-core-node-id)))))
+                               (recur (rest edges) out (+ work 1)))))))]
+              (if (= :accepted (get rows :status))
+                (assoc direct :throws thrown :constraints (get rows :constraints)
+                  :work-count (+ (get direct :work-count 0) (get rows :work-count))) rows)) derived))) scoped))))
 
 (defn sh08-th-type-map [table thrown]
   (loop [ids (keys table) out table]
@@ -6631,8 +6781,13 @@
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)))
-                throw-products (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table) 65536)
-                throw-call (sh08-th-call-fence core-artifact (get throw-products :throws))
+                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table) 65536)
+                throw-products (if (if (= :accepted (get direct-throws :status))
+                                     (if (= [] (get unprojected-inference :diagnostics))
+                                       (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
+                                 (sh08-tc-products core-artifact (get unprojected-inference :type-table)
+                                   (get unprojected-inference :function-types) bindings direct-throws
+                                   (- 65536 (get direct-throws :work-count 0))) direct-throws)
                 raw-inference (if (= 0 (count (get throw-products :throws))) unprojected-inference
                   (assoc unprojected-inference
                     :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
@@ -6650,7 +6805,6 @@
                 inference
                 (if (> (count (get throw-products :diagnostics)) 0)
                   (assoc raw-inference :diagnostics (get throw-products :diagnostics))
-                (if (map? throw-call) (assoc raw-inference :diagnostics [throw-call])
                 (if (> (count (get quoted-products :diagnostics)) 0)
                   (assoc raw-inference :diagnostics (get quoted-products :diagnostics))
                 (if (> (count (get match-checks :diagnostics)) 0)
@@ -6666,7 +6820,7 @@
                      :reason :unsupported-or-unresolved-core-node-type
                      :expected :concrete-node-type-or-diagnostic
                      :actual :gravity.type/unknown}))
-                  raw-inference)))))
+                  raw-inference))))
                 functions
                 (sh08-ft-function-facts
                  (get inference :function-types)

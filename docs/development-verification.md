@@ -284,12 +284,48 @@ or profile-lowering legality intersection. The normalized legacy C8 registry's
 
 Nested function ownership is separate, quoted DATA is inert, and an operand
 that never returns preserves the outer source record without inventing a
-`Never`-typed error. Unrelated calls keep their existing behavior. Calls whose
-local caller or callee owns these new throw facts remain unsupported until
-their propagation is implemented. Imported concrete throws remain fenced by
-C8's existing foreign-summary check, not a new C7 import guarantee. `try`,
+`Never`-typed error. Unrelated calls keep their existing behavior. Direct local
+call propagation has its own bounded increment below. Imported concrete throws
+remain fenced by C8's existing foreign-summary check, not a new C7 import
+guarantee. `try`,
 handlers, cleanup, host-exception normalization, general runtime execution,
 error legality and authoritative migration remain separate work.
+
+### Direct-local thrown-error propagation
+
+Use the same C7, `gravity.effects`, fixture directory and loop-test namespace.
+The bounded acyclic component analysis joins original local call edges,
+bindings, arguments and callee bodies. Normal return types and possible thrown
+types are separate: a String-returning function can also throw String. A pure
+leaf gets an empty thrown-type vector only after its supported body is checked;
+pending or unknown facts are not treated as empty.
+
+Start with these exact development checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact local-throw-call-closure-development-kernel \
+  --exact local-throw-call-effect-equations-development-kernel \
+  --exact local-throw-call-existing-type-guards-development-kernel \
+  --exact local-throw-final-signature-status-development-kernel \
+  --exact local-throw-source-body-index-parity-development-kernel
+```
+
+When the call/type/effect composition changes, use
+`local-throw-propagation-authenticated-paired-composition` in that namespace.
+It checks fresh C5/C6/C7 products, independent C8 body equations, altered
+summaries and real rejection fixtures. It also executes the same accepted
+source through the existing seed interface, without a second compiler proof.
+
+Error vectors conservatively include source operand error potential in order;
+this is not path-sensitive reachability analysis. A `Never` operator or argument
+prevents normal invocation, so the callee body's errors are excluded while the
+original static call edge and source records remain present. Disconnected
+direct-throw owners retain their prior analysis. Throwing recursion, recur in
+the affected component, imported or indirect throwing calls, handlers and
+cleanup remain unsupported here. These checks do not admit a module revision
+or establish Gravity-emitter/runtime ownership, complete legality or self-hosting.
 
 ### Single-source seed throw execution
 

@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.local-throw-undeclared
+  (:profile :meta) (:target :jvm) (:exports [relay2])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn choose [flag :- Bool problem :- String] :- String
+  (if flag (throw problem) problem))
+(defn relay [flag :- Bool problem :- String] :- String
+  (choose flag problem))
+(defn relay2 [flag :- Bool problem :- String] :- String
+  (relay flag problem))

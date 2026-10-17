@@ -456,9 +456,11 @@
       (is (false? (-> never :constraints first :solution :normal-transfer?))))
     (is (= [{:function-id :plain :thrown-error-effects [:pending-sh09]}]
            (c7-invoke 'sh08-th-functions [[{:function-id :plain :thrown-error-effects [:pending-sh09]}] (:throws checked)])))
-    (doseq [edge [{:callee-function-syntax-id :function} {:caller-function-syntax-id :function :callee-function-syntax-id :plain}]]
-      (is (= "C7-ANNOTATION" (:rule (c7-invoke 'sh08-th-call-fence [(assoc core :call-edges [edge]) (:throws checked)])))))
-    (is (nil? (c7-invoke 'sh08-th-call-fence [(assoc core :call-edges [{:caller-function-syntax-id :other :callee-function-syntax-id :plain}]) (:throws checked)])))))
+    (is (= "C7-ANNOTATION" (-> (c7-invoke 'sh08-tc-scope
+      [(assoc core :call-edges [{:classification :nonlocal-or-nonfunction :caller-function-syntax-id :function}]) (:throws checked) 65536])
+      :diagnostics first :rule)))
+    (is (false? (:active? (c7-invoke 'sh08-tc-scope
+      [(assoc core :call-edges [{:classification :local-function :caller-function-syntax-id :other :callee-function-syntax-id :plain}]) (:throws checked) 65536]))))))
 
 (deftest direct-typed-throw-effect-replay-development-kernel
   ;; Exercise the real coverage guard with distinct authenticated occurrence
@@ -502,7 +504,7 @@
                  (assoc-in request [:canonical-core-artifact :error-transfers] 7)
                  (update-in request [:canonical-core-artifact :error-transfers] conj (first (:error-transfers core)))
                  (assoc-in request [:b47-context :authenticated-core-request :forms 1 :value] 'identity)
-                 (assoc-in request [:canonical-core-artifact :call-edges] [{:callee-function-syntax-id :function}])]]
+                 (assoc-in request [:canonical-core-artifact :call-edges] [{:classification :nonlocal-or-nonfunction :caller-function-syntax-id :function}])]]
       (is (= :rejected (:status (check bad facts)))))
     (doseq [bad [(assoc facts :constraint-ledger [])
                  (assoc-in facts [:constraint-ledger 0 :solution :payload-type] :gravity.type/bool)
@@ -517,13 +519,13 @@
         (is (= :rejected (:status rejected)))
         (is (= :malformed-thrown-error-constraint-ledger (:reason rejected)))))
     (let [node (second (:nodes core)) graph {:payload {:type :gravity.type/string :transitive #{} :escaping-thrown-errors #{}}}
-          derived (effects 'body-control-node-record node nil graph :gravity.type/never facts {} core)]
+          derived (effects 'body-control-node-record node nil graph :gravity.type/never facts {} core nil)]
       (is (= #{:error/throw} (:direct derived) (:transitive derived) (:escaping derived)))
       (is (= #{:gravity.type/string} (:direct-thrown-errors derived) (:escaping-thrown-errors derived)))
       (is (= [:evaluate-value :transfer-error] (get-in derived [:error-transfer :ordered-steps])))
       (is (= (first (:error-transfers core)) (get-in derived [:error-transfer :source-transfer])))
       (let [outer (effects 'body-control-node-record node nil (assoc-in graph [:payload :type] :gravity.type/never)
-                      :gravity.type/never facts {} core)]
+                      :gravity.type/never facts {} core nil)]
         (is (= #{} (:direct outer) (:direct-thrown-errors outer)))
         (is (false? (get-in outer [:error-transfer :normal-transfer?])))))))
 
@@ -553,9 +555,9 @@
                :function-type-table [{:function-id :function :thrown-error-effects [:gravity.type/string]}]}
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms forms}}}
         inner-graph (effects 'body-control-node-record inner nil {:payload {:type :gravity.type/string :transitive #{}}}
-                             :gravity.type/never facts {} core)
+                             :gravity.type/never facts {} core nil)
         outer-graph (effects 'body-control-node-record outer nil {:transfer inner-graph}
-                             :gravity.type/never facts {} core)]
+                             :gravity.type/never facts {} core nil)]
     (is (= :accepted (:status checked)))
     (is (= 2 (count (:constraints checked))))
     (is (= {:function [:gravity.type/string]} (:throws checked)))
@@ -597,6 +599,326 @@
     (is (= "C8-UNDECLARED" (-> (effects 'body-error-result facts namespace-failure) :diagnostics first :rule)))
     (is (= "C8-VERIFY" (-> (effects 'body-error-result facts {:reason :forged}) :diagnostics first :rule)))
     (is (= :rejected (:status (effects 'body-allowance-check core facts graph 0))))))
+
+(defn- local-throw-kernel-data []
+  (let [id (fn [n] ((body-helper 'sha) n))
+        fid #(id (+ 100 %)) fnid #(id (+ 200 %)) defid #(id (+ 300 %)) binding #(id (+ 400 %)) syntax #(id (+ 500 %))
+        name-syntax #(id (+ 700 %)) function-name #(symbol (str "function-" %))
+        make (fn [n kind children owner attrs]
+               {:node-id (id n) :core-form kind :children (mapv id children) :attributes attrs :resolved-binding-ids []
+                :source {:form-id (id (+ 10000 n)) :syntax-id (id (+ 20000 n))
+                         :semantic-span {:start-byte n :end-byte (inc n)} :origin-chain [] :generated-origin nil}
+                :evaluation {:kind (if (= kind :fn) :function-creation :left-to-right)
+                             :owner-function-syntax-id (when owner (fid owner))
+                             :order (mapv (fn [index child] {:index index :core-node-id (id child)})
+                                          (range) (if (= kind :fn) [] children))}})
+        call (fn [n operator args caller callee]
+               (assoc (make n :call (into [operator] args) caller {}) :resolved-binding-ids [(binding callee)]))
+        bodies {1 19 2 4 3 12 4 6 5 10 6 15 7 16}
+        nodes [(make 1 :literal [] 1 {:literal-kind :string :value "problem"}) (make 2 :throw [1] 1 {})
+               (make 3 :reference [] 2 {:binding-id (binding 1)}) (call 4 3 [] 2 1)
+               (make 11 :reference [] 3 {:binding-id (binding 2)}) (call 12 11 [] 3 2)
+               (make 5 :literal [] 4 {:literal-kind :boolean :value true}) (make 6 :throw [5] 4 {})
+               (make 7 :reference [] 5 {:binding-id (binding 4)})
+               (make 8 :literal [] 5 {:literal-kind :string :value "argument"}) (make 9 :throw [8] 5 {}) (call 10 7 [9] 5 4)
+               (make 13 :literal [] 6 {:literal-kind :string :value "isolated"})
+               (make 14 :throw [13] 6 {}) (make 15 :loop [14] 6 {})
+               (make 16 :literal [] 7 {:literal-kind :string :value "pure"})
+               (make 17 :reference [] 1 {:binding-id (binding 7)}) (call 18 17 [] 1 7) (make 19 :do [18 2] 1 {})]
+        records (mapv (fn [f] {:ordinal (dec f) :function-syntax-id (fid f) :function-core-node-id (fnid f)
+                               :definition-core-node-id (defid f) :definition-binding-id (binding f)
+                               :body-core-node-id (id (bodies f)) :fixed-arity (if (= f 4) 1 0) :parameter-binding-ids []}) (range 1 8))
+        definitions (mapv (fn [f] {:name (function-name f) :binding-id (binding f) :core-node-id (defid f) :syntax-id (syntax f)
+                                   :value-node-id (fnid f)}) (range 1 8))
+        functions (into {} (map (fn [f] [(fid f) {:artifact :gravity/c7-function-type :function-id (fid f)
+                            :body-core-node-id (id (bodies f)) :function-core-node-id (fnid f)
+                            :parameters (if (= f 4) [{:binding-id (id 900) :type :gravity.type/bool}] [])
+                            :return :gravity.type/string :fixed-arity (if (= f 4) 1 0) :latent-effects [:error/throw]
+                            :capabilities [] :thrown-error-effects [:pending-sh09]}]) (range 1 8)))
+        specs [[4 3 [] 2 1] [12 11 [] 3 2] [10 7 [9] 5 4] [18 17 [] 1 7]]
+        calls (mapv (fn [[n operator args _ callee]]
+                       {:core-node-id (id n) :operator-node-id (id operator) :operator-binding-id (binding callee)
+                        :argument-node-ids (mapv id args) :ordered-evaluation-node-ids (mapv id (into [operator] args))
+                        :evaluation-order :operator-then-arguments :result-policy :call-result}) specs)
+        edges (mapv (fn [ordinal [n operator args caller callee]]
+                       {:ordinal ordinal :call-core-node-id (id n) :caller-function-syntax-id (fid caller)
+                        :caller-function-core-node-id (fnid caller) :callee-binding-id (binding callee)
+                        :callee-definition-syntax-id (name-syntax callee) :callee-function-syntax-id (fid callee)
+                        :callee-function-core-node-id (fnid callee) :argument-core-node-ids (mapv id args)
+                        :ordered-evaluation-node-ids (mapv id (into [operator] args)) :evaluation-order :operator-then-arguments
+                        :classification :local-function}) (range) specs)
+        nodes (into nodes (mapcat (fn [f]
+                         [(-> (make (+ 200 f) :fn [(bodies f)] nil {}) (assoc-in [:source :syntax-id] (fid f)))
+                          (-> (make (+ 300 f) :def [(+ 200 f)] nil {:name (function-name f) :name-syntax-id (name-syntax f)})
+                              (assoc :resolved-binding-ids [(binding f)]) (assoc-in [:source :syntax-id] (syntax f)))]) (range 1 8)))
+        types (into {} (map (fn [node] [(:node-id node) :gravity.type/string]) nodes))
+        types (merge types {(id 2) :gravity.type/never (id 5) :gravity.type/bool (id 6) :gravity.type/never
+                            (id 9) :gravity.type/never (id 10) :gravity.type/never (id 14) :gravity.type/never})
+        core {:nodes nodes :module {:profile :meta :target :jvm :effects [:error/throw]}
+              :root-core-node-ids (mapv defid (range 1 8)) :function-records records :definitions definitions
+              :calls calls :call-edges edges :recursion-components []
+              :error-transfers (mapv (fn [[n value]] {:core-node-id (id n) :value-core-node-id (id value)}) [[2 1] [6 5] [9 8] [14 13]])}
+        direct {:status :accepted :throws {(fid 1) [:gravity.type/string] (fid 4) [:gravity.type/bool]
+                                          (fid 5) [:gravity.type/string] (fid 6) [:gravity.type/string]}
+                :constraints [] :diagnostics [] :work-count 0}
+        bindings (mapv (fn [f] {:name (function-name f) :binding-id (binding f) :definition-syntax-id (name-syntax f)}) (range 1 8))]
+    {:core core :types types :functions functions :direct direct :bindings bindings :id id :fid fid}))
+
+(deftest local-throw-call-closure-development-kernel
+  ;; Normalized DATA exercises the actual Gravity algorithms, not authentication.
+  (let [{:keys [core types functions direct bindings id fid]} (local-throw-kernel-data)
+        result (c7-invoke 'sh08-tc-products [core types functions bindings direct 65536])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (doseq [f [1 2 3 5 6]] (is (= [:gravity.type/string] (get-in result [:throws (fid f)]))))
+    (is (= [:gravity.type/bool] (get-in result [:throws (fid 4)])))
+    (is (= [] (get-in result [:throws (fid 7)])))
+    (is (= 4 (count (:constraints result))))
+    (let [row (first (filter #(= (id 10) (get-in % [:lhs :core-node-id])) (:constraints result)))]
+      (is (= {:core-node-id (id 10) :projection :thrown-error-effects} (:lhs row)))
+      (is (false? (get-in row [:dependencies :normal-invocation?])))
+      (is (= [] (get-in row [:dependencies :callee-error-types])))
+      (is (= :gravity.type/never (get-in row [:solution :normal-result-type]))))
+    (is (= (c7-invoke 'sh08-tc-products [core types functions bindings (assoc direct :throws {}) 65536])
+           (assoc direct :throws {})))
+    (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-tc-products [core types functions bindings direct 1]) :diagnostics first :rule)))
+    (let [cost (:work-count result)]
+      (is (= :accepted (:status (c7-invoke 'sh08-tc-products [core types functions bindings direct (inc cost)])))))
+    (let [direct (assoc direct :work-count 17)
+          baseline (:work-count result)
+          accepted (c7-invoke 'sh08-tc-products [core types functions bindings direct (inc baseline)])]
+      (is (= :accepted (:status accepted)))
+      (is (= (+ 17 baseline) (:work-count accepted)))
+      (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-tc-products [core types functions bindings direct (dec baseline)]) :diagnostics first :rule))))
+    (let [isolated (assoc direct :throws {(fid 6) [:gravity.type/string]} :work-count 17)
+          no-touch (c7-invoke 'sh08-tc-products [core types functions bindings isolated 65536])]
+      (is (= (:throws isolated) (:throws no-touch)))
+      (is (= (+ 17 (count (:call-edges core))) (:work-count no-touch))))
+    (let [scoped (c7-invoke 'sh08-tc-scope [core (:throws direct) 65536])
+          initial (+ (:work-count scoped) (* 8 (count (:nodes core))) (* 70 (count (:call-edges core)))
+                     (count bindings) (count (:definitions core)) (* 3 (count (:function-records core)))
+                     (* (count (:calls core)) (+ (count bindings) (count (:definitions core)) (* 2 (count (:function-records core))))))
+          exhausted (c7-invoke 'sh08-tc-products [core types functions bindings direct (inc initial)])]
+      (is (= "C7-GENERIC" (-> exhausted :diagnostics first :rule)))
+      (is (= :typed-throw-work-limit (-> exhausted :diagnostics first :reason))))
+    (is (= "C7-VERIFY" (-> (c7-invoke 'sh08-tc-products [(assoc-in core [:call-edges 0 :callee-binding-id] :forged) types functions bindings direct 65536]) :diagnostics first :rule)))
+    (let [definition (first (:definitions core)) binding (first bindings)
+          def-index (first (keep-indexed #(when (= (:core-node-id definition) (:node-id %2)) %1) (:nodes core)))]
+      (is (not= (:definition-syntax-id binding) (:syntax-id definition)))
+      (doseq [[bad-core bad-bindings]
+              [[(assoc-in core [:call-edges 0 :callee-definition-syntax-id] (:syntax-id definition)) bindings]
+               [core (assoc-in bindings [0 :definition-syntax-id] (:syntax-id definition))]
+               [(assoc-in core [:nodes def-index :attributes :name-syntax-id] (:syntax-id definition)) bindings]
+               [(assoc-in core [:definitions 0 :syntax-id] (:definition-syntax-id binding)) bindings]
+               [(assoc-in core [:function-records 0 :body-core-node-id] (id 6)) bindings]]]
+        (let [bad (c7-invoke 'sh08-tc-products [bad-core types functions bad-bindings direct 65536])]
+          (is (= "C7-VERIFY" (-> bad :diagnostics first :rule)))
+          (is (= (id 4) (get-in bad [:diagnostics 0 :node :node-id]))))))
+    (is (= "C7-ANNOTATION" (-> (c7-invoke 'sh08-tc-products [(assoc core :recursion-components [{:function-syntax-ids [(fid 1)]}]) types functions bindings direct 65536]) :diagnostics first :rule)))))
+
+(deftest local-throw-call-existing-type-guards-development-kernel
+  (let [{:keys [core types functions id]} (local-throw-kernel-data)
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        call (last (butlast (:calls core))) edge (last (butlast (:call-edges core)))
+        invoke (fn [call edge] (c7-invoke 'sh08-ft-call-constraints-with-context
+                                [[call] [edge] nodes types {(id 900) :gravity.type/bool} functions {}]))]
+    (is (= [] (:diagnostics (invoke call edge))))
+    (is (= :gravity.type/never
+           (c7-invoke 'sh08-ft-infer-node-with-context [(get nodes (id 10)) types {} functions (:call-edges core) {}])))
+    (is (= :call-arity-mismatch
+           (-> (invoke (assoc call :argument-node-ids []) (assoc edge :argument-core-node-ids [])) :diagnostics first :reason)))
+    (is (= :call-argument-type-mismatch
+           (-> (invoke (assoc call :argument-node-ids [(id 1)]) (assoc edge :argument-core-node-ids [(id 1)])) :diagnostics first :reason)))))
+
+(deftest local-throw-final-signature-status-development-kernel
+  (let [function {:parameters [{:binding-id :unused :type :gravity.type/unknown}]
+                  :return :gravity.type/string :status :inferred}]
+    (is (= :unresolved (:status (first (c7-invoke 'sh08-ft-final-functions [[function]])))))
+    (is (= :inferred (:status (first (c7-invoke 'sh08-ft-final-functions
+                                       [[(assoc-in function [:parameters 0 :type] :gravity.type/bool)]])))))))
+
+(deftest local-throw-source-body-index-parity-development-kernel
+  (let [{:keys [core types functions direct bindings]} (local-throw-kernel-data)
+        result (c7-invoke 'sh08-tc-products [core types functions bindings direct 65536])
+        facts {:function-type-table (c7-invoke 'sh08-th-functions [(vec (vals functions)) (:throws result)])
+               :type-table types :constraint-ledger (:constraints result)}
+        [ho-core ho-facts _] ((body-helper 'callable-kernel-data))]
+    ;; Compare the old unique-vector lookup with the indexed input, then rebuild
+    ;; every record using the old lookup against the complete derived graph.
+    (doseq [[core facts] [[core facts] [ho-core ho-facts]]]
+      (let [table (:function-type-table facts) index (effects 'body-index table :function-id)
+            edges (effects 'body-index (:call-edges core) :call-core-node-id)
+            derived (effects 'body-derive-nodes-with-foreign core facts {} 65536) graph (:nodes derived)
+            old-source #(get (effects 'body-by table :function-id (:callee-function-syntax-id %)) :body-core-node-id)
+            indexed-source #(get-in index [(:callee-function-syntax-id %) :body-core-node-id])
+            record (fn [node edge source]
+                     (let [target (when (and (= :call (:core-form node))
+                                             (effects 'body-call-invokes? node (:type-table facts)))
+                                    (:body-core-node-id (effects 'body-selected-function edge facts index)))]
+                       (effects 'body-control-node-record node target graph (get (:type-table facts) (:node-id node))
+                                facts edge core source)))
+            old-graph (into {} (map (fn [node] (let [id (:node-id node) edge (get edges id)]
+                                               [id (record node edge (old-source edge))])) (:nodes core)))]
+        (is (= :accepted (:status derived)))
+        (is (= graph old-graph))
+        (is (true? (effects 'body-graph-equations-valid? core facts {} old-graph)))
+        (doseq [node (:nodes core)
+                edge [(get edges (:node-id node)) {} {:callee-function-syntax-id :missing} nil]]
+          (is (= (old-source edge) (indexed-source edge)))
+          (is (= (record node edge (old-source edge)) (record node edge (indexed-source edge)))))))
+    (is (nil? (effects 'body-index (conj (:function-type-table facts) (first (:function-type-table facts))) :function-id))))
+  (let [module {:namespace 'example.body :profile :meta :target :jvm :effects [] :capabilities []}
+        sha (body-helper 'sha) make (body-helper 'node)
+        nodes [(make 1 :literal []) (make 2 :fn [1]) (make 3 :def [2])]
+        core {:module module :nodes nodes :root-core-node-ids [(sha 3)] :definitions []
+              :function-records [{:function-syntax-id (sha 12) :function-core-node-id (sha 2)}]
+              :call-edges [] :calls [] :recursion-components [] :lexical-bindings [] :match-branch-records []
+              :evaluation-order [{:core-node-id (sha 3) :index 0}]}
+        core (assoc core :identity-preimage (select-keys core [:nodes :root-core-node-ids :definitions :function-records
+                                                              :call-edges :calls :evaluation-order :lexical-bindings :match-branch-records]))
+        facts {:module module :function-records (:function-records core) :call-edges [] :recursion-components [] :lexical-bindings []
+               :function-type-table [{:function-id (sha 12) :parameters [] :parameter-binding-ids [] :latent-effects [] :capabilities []}]
+               :type-table {(sha 1) :int (sha 2) :fn (sha 3) :fn} :local-binding-facts [] :call-type-facts []}]
+    (is (true? (effects 'body-shape-valid? core facts)))
+    (is (false? (effects 'body-shape-valid? core (update facts :function-type-table conj (first (:function-type-table facts))))))))
+
+(deftest local-throw-call-effect-equations-development-kernel
+  (let [{:keys [core types functions direct bindings id fid]} (local-throw-kernel-data)
+        result (c7-invoke 'sh08-tc-products [core types functions bindings direct 65536])
+        function-table (c7-invoke 'sh08-th-functions [(vec (vals functions)) (:throws result)])
+        facts {:function-type-table function-table :type-table types :constraint-ledger (:constraints result)}
+        scoped (effects 'body-tc-scope core (:throws direct) 65536)
+        owners (effects 'body-throw-owners core 65536)
+        joined (assoc scoped :direct-throws (:throws direct) :owners (:owners owners))
+        derived (effects 'body-derive-nodes core facts) graph (:nodes derived)
+        verify #(effects 'body-tc-verify core % (into {} (map (juxt :binding-id identity) bindings)) %2 joined 65536)]
+    (is (= :accepted (:status derived)))
+    (is (not (contains? (:scope scoped) (fid 6))))
+    (is (= :accepted (:status (verify facts graph))))
+    (is (= [] (get-in (verify facts graph) [:functions (fid 7)])))
+    (let [pure-index (first (keep-indexed #(when (= (fid 7) (:function-id %2)) %1) function-table))]
+      (is (= :rejected (:status (verify (assoc-in facts [:function-type-table pure-index :thrown-error-effects] [:pending-sh09]) graph)))))
+    (is (= [:gravity.type/string] (get-in graph [(id 12) :escaping-thrown-error-types])))
+    (is (= #{} (get-in graph [(id 12) :direct-thrown-errors])))
+    (is (= [:gravity.type/string] (get-in graph [(id 10) :escaping-thrown-error-types])))
+    (is (nil? (get-in graph [(id 10) :call-body-dependency])))
+    (is (false? (get-in graph [(id 10) :throw-call-dependency :normal-invocation?])))
+    (doseq [bad [(assoc facts :constraint-ledger [])
+                 (update facts :constraint-ledger conj (first (:constraint-ledger facts)))
+                 (assoc-in facts [:constraint-ledger 0 :dependencies :callee-source-body-id] :forged)
+                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [:gravity.type/integer])]]
+      (is (= :rejected (:status (verify bad graph)))))
+    (is (= :rejected (:status (verify facts (assoc-in graph [(id 12) :escaping-thrown-error-types] [])))))
+    (let [node {:core-form :call :children [:operator :argument]} graph {:operator [] :argument [:gravity.type/string :gravity.type/bool]
+                                                                       :target [:gravity.type/string :gravity.type/integer]}]
+      (is (= [:gravity.type/string :gravity.type/bool :gravity.type/integer]
+             (c7-invoke 'sh08-tc-node-errors [node graph :target {:argument :gravity.type/string}])))
+      (is (= [:gravity.type/string :gravity.type/bool]
+             (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never}]))))))
+
+(defn- local-throw-change-summary [typed function-id errors]
+  (-> typed
+      (update :function-type-table #(mapv (fn [f] (if (= function-id (:function-id f)) (assoc f :thrown-error-effects errors) f)) %))
+      (update :type-table #(into {} (map (fn [[id type]] [id (if (and (map? type) (= function-id (:function-id type)))
+                                                                            (assoc type :thrown-error-effects errors) type)])) %))))
+
+(deftest local-throw-propagation-authenticated-paired-composition
+  (doseq [extension [".gravity" ".qst"]]
+    (let [relative (fixture "accepted" "local-throw-propagation" extension)
+          p ((body-helper 'fresh-products) relative) typed (:typed p)
+          core (get-in p [:request :canonical-core-artifact]) result ((body-helper 'build-leaf) p) graph (:effect-graph result)
+          functions (into {} (map (juxt :definition-name identity) (:function-type-table typed)))
+          rows (filterv #(= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule %)) (:constraint-ledger typed))]
+      (is (= :passed (:status (:report p)) (:status (:verification p))))
+      (is (= :accepted (:status typed) (:status result)) (pr-str [(:diagnostics typed) (:diagnostics result)]))
+      (when-not (= :accepted (:status typed) (:status result))
+        (throw (ex-info "Local typed throw propagation failed" {:typed-diagnostics (:diagnostics typed) :effects-diagnostics (:diagnostics result)})))
+      (doseq [name '[choose relay relay2 abort]]
+        (let [function (functions name)]
+          (is (= :gravity.type/string (:return function)))
+          (is (= [:gravity.type/string] (:thrown-error-effects function)))
+          (is (= [:gravity.type/string] (get-in graph [:functions (:function-id function) :throws])))))
+      (is (= [:gravity.type/bool] (:thrown-error-effects (functions 'bool-choice))))
+      (is (= [] (:thrown-error-effects (functions 'pure-value))))
+      (is (= [] (get-in graph [:functions (:function-id (functions 'pure-value)) :throws])))
+      (is (= 5 (count rows)))
+      (is (= #{} (get-in graph [:namespace :inferred])))
+      (doseq [function (vals functions)]
+        (is (= #{} (get-in graph [:nodes (:function-core-node-id function) :transitive]))))
+      (let [abort-id (:body-core-node-id (functions 'abort))
+            relay-id (:body-core-node-id (functions 'relay2))
+            row-index (first (keep-indexed #(when (and (= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule %2))
+                                                       (= abort-id (get-in %2 [:lhs :core-node-id]))) %1) (:constraint-ledger typed)))
+            row (get (:constraint-ledger typed) row-index)]
+        (is (= :gravity.type/never (get (:type-table typed) abort-id)))
+        (is (= :gravity.type/never (get-in row [:solution :normal-result-type])))
+        (is (false? (get-in row [:dependencies :normal-invocation?])))
+        (is (= [] (get-in row [:dependencies :callee-error-types])))
+        (is (= [:gravity.type/string] (:rhs row)))
+        (is (nil? (get-in graph [:nodes abort-id :call-body-dependency])))
+        (is (false? (get-in graph [:nodes abort-id :throw-call-dependency :normal-invocation?])))
+        (is (= [:gravity.type/string] (get-in graph [:nodes abort-id :escaping-thrown-error-types])))
+        (is (= #{} (get-in graph [:nodes relay-id :direct-thrown-errors])))
+        (is (= :passed (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+        (doseq [bad [(local-throw-change-summary typed (:function-id (functions 'relay2)) [])
+                     (update typed :constraint-ledger #(filterv (fn [row] (not= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule row))) %))
+                     (assoc-in typed [:constraint-ledger row-index :dependencies :callee-source-body-id] relay-id)
+                     (assoc-in typed [:constraint-ledger row-index :dependencies :source-edge :callee-binding-id] :forged)
+                     (update-in typed [:constraint-ledger row-index :dependencies :source-edge :ordered-evaluation-node-ids] #(vec (reverse %)))]]
+          (is (= :rejected (:status (c7-invoke 'sh08-verify-function-type-result [(:request p) bad])))))
+        (doseq [mutate [#(local-throw-change-summary % (:function-id (functions 'relay2)) [])
+                        #(local-throw-change-summary % (:function-id (functions 'pure-value)) [:pending-sh09])
+                        #(update % :constraint-ledger (fn [rows] (filterv (fn [row] (not= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule row))) rows)))
+                        #(assoc-in % [:constraint-ledger row-index :dependencies :callee-source-body-id] relay-id)
+                        #(assoc-in % [:constraint-ledger row-index :dependencies :source-edge :callee-binding-id] :forged)]]
+          (is (= :rejected (:status ((body-helper 'build-leaf) ((body-helper 'coherent-typed-mutation) p mutate))))))
+        (doseq [bad-graph [(assoc-in graph [:nodes relay-id :call-body-dependency] nil)
+                           (assoc-in graph [:nodes relay-id :escaping-thrown-error-types] [])
+                           (assoc-in graph [:nodes abort-id :throw-call-dependency :normal-invocation?] true)
+                           (assoc-in graph [:functions (:function-id (functions 'pure-value)) :throws] [:pending-sh09])]]
+          (let [stale (assoc result :effect-graph bad-graph)
+                coherent ((body-helper 'reseal-effect-graph) result bad-graph)]
+            (is (= :rejected (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) stale))))
+            (is (= :rejected (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) coherent)))))))
+      ;; Seed observations reuse these accepted bytes and products; no second
+      ;; compiler composition is constructed for the execution observations.
+      (let [source (path relative) text (slurp source)
+            emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
+            compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source text)
+            transport (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw!) original (var-get transport)
+            token (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw-token))
+            payload (String. "problem") seen (atom [])
+            escape (fn [name args] (try (bootstrap/p15-s23-stage2-runtime-execute-function
+                                         {:engine :local-typed-throw-seed-observation} compiled name args)
+                                       nil (catch clojure.lang.ExceptionInfo error error)))
+            [normal thrown aborted]
+            (with-redefs-fn {transport (fn [active-plan value] (swap! seen conj value) (original active-plan value))}
+              #(vector (bootstrap/p15-s23-stage2-runtime-execute-function
+                         {:engine :local-typed-throw-seed-observation} compiled 'relay2 [false payload])
+                       (escape 'relay2 [true payload]) (escape 'abort [])))]
+        (is (= "8649cc5e1742c00befa785f740840ce2e73ec917028c03f1d4243780659a65a2" (bootstrap/sha256-hex text)))
+        (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
+        (is (identical? payload normal))
+        (is (identical? payload (:payload (ex-data thrown))))
+        (is (= "argument" (:payload (ex-data aborted))))
+        (is (identical? token (:gravity.bootstrap/source-throw (ex-data thrown))))
+        (is (identical? token (:gravity.bootstrap/source-throw (ex-data aborted))))
+        (is (= [payload "argument"] @seen))))
+    (doseq [[name rule] [["local-throw-argument-type" "C7-TYPE-MISMATCH"] ["local-throw-result-type" "C7-TYPE-MISMATCH"]
+                         ["local-throw-unknown-slot" "C7-GENERIC"]]]
+      (let [p ((body-helper 'fresh-products) (fixture "rejected" name extension))]
+        (is (= :rejected (get-in p [:typed :status])))
+        (is (= rule (get-in p [:typed :diagnostics 0 :rule])) (pr-str (get-in p [:typed :diagnostics])))
+        (when (= name "local-throw-unknown-slot")
+          (is (= :unresolved-function-type (get-in p [:typed :diagnostics 0 :reason]))))))
+    (let [p ((body-helper 'fresh-products) (fixture "rejected" "local-throw-undeclared" extension))
+          result ((body-helper 'build-leaf) p)]
+      (is (= :accepted (get-in p [:typed :status])))
+      (is (= :passed (get-in p [:verification :status])))
+      (is (= :rejected (:status result)))
+      (is (= "C8-UNDECLARED" (get-in result [:diagnostics 0 :rule])) (pr-str (:diagnostics result)))))
+  (doseq [[disposition name] [["accepted" "local-throw-propagation"] ["rejected" "local-throw-argument-type"]
+                              ["rejected" "local-throw-result-type"] ["rejected" "local-throw-unknown-slot"] ["rejected" "local-throw-undeclared"]]]
+    (is (= (slurp (path (fixture disposition name ".gravity"))) (slurp (path (fixture disposition name ".qst")))))))
 
 (deftest direct-typed-throw-authenticated-paired-composition
   ;; Actual source/compiler products; no seed execution or host exception claim.

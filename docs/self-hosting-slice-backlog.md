@@ -1620,8 +1620,9 @@ C8 reconstructs the typed-transfer facts independently and derives the direct
 allowances. Missing declarations produce `C8-UNDECLARED` with the offending
 function and source node. Nested function errors stay latent at function
 construction, quoted DATA remains inert, and unrelated calls preserve their
-previous behavior. Local calls involving the newly concrete throwing owners
-remain unsupported; selected imported concrete throw summaries remain fenced
+previous behavior. At that boundary, local calls involving the newly concrete
+throwing owners remained unsupported; the direct-local increment below addresses
+that gap. Selected imported concrete throw summaries remain fenced
 by C8's existing pending-summary requirement, not a new C7 import claim.
 
 Focused development checks pass 24 tests/425 assertions, covering the new
@@ -1684,6 +1685,69 @@ compiler composition is reused only for those unchanged bytes, not replayed to
 renew a receipt. These results do not establish Gravity-authored emitter/runtime
 ownership, imported errors, handlers, resource cleanup, a public target exception
 ABI, full profile legality, migration authority, self-hosting or seed retirement.
+
+### Acyclic direct-local thrown-error propagation
+
+The current development increment replaces the throwing-local-call fence with
+bounded analysis of complete original C6 local edges and supported acyclic
+bodies. C7 preserves direct throw records and derives ordered, distinct possible
+error types through callee bodies. C8 independently reconstructs those equations
+and compares the call premises and function summaries before source allowance
+checks. Normal return types remain separate from thrown types. A supported pure
+leaf can establish an empty error vector; unknown or pending is not empty.
+
+The paired accepted fixture contains a pure String identity function, two relay
+hops, a Bool-throwing callee and an argument that never returns. Conservative
+source operand error potential is retained, but that argument prevents normal
+callee invocation and excludes its Bool body error. Static call/source evidence
+is not erased. Disconnected prior direct-throw owners keep their existing
+analysis. Rejection fixtures cover argument/result mismatches, unknown slots and
+missing source effect declarations.
+
+The initial focused regression passes 27 tests/468 assertions, including
+independent C8 replay, coherent summary tampering, source ordering, pure-leaf
+and non-returning operand
+cases, cumulative work limits, and existing loop/recur/callable/import controls.
+The first affected source composition failed before seed execution: one passing
+assertion, one failure and one error. A newly reused legacy edge validator
+confused the callee name's syntax ID with the whole definition form's syntax ID;
+the actual producer distinguishes them. The failed result is retained. Corrected
+exact-edge reconstruction and original work-limit diagnostic precedence pass
+three affected tests/57 assertions with distinct-coordinate and budget controls.
+The corrected composition completed both source extensions and their same-byte
+seed observations: 145 assertions passed, two failed and none errored. Both
+failures were the new unknown-slot fixture expecting `C7-ANNOTATION` instead of
+the existing `C7-GENERIC/:unresolved-function-type` diagnostic for an unused
+unknown parameter. Positive construction, verifiers, coherent tampering,
+normal return, escaping payload and early argument escape checks passed. The
+aggregate run remains recorded as failed; correcting that test oracle does not
+retroactively turn it into a passing run or require replaying its successful
+blocks.
+
+That actual composition used `effects.gravity` SHA-256
+`4a2b686f680e4aaacf2791947e12bd48c4dc93a971331558b72ebe1d96f5a44b`.
+A subsequent exact-output lookup factor uses the existing validated function
+index rather than scanning every function for each node; its source SHA-256 is
+`4906ff18c485e64535297201b90973da51b1804e8440bf420eacff99e6e34f0e`.
+It retains original source-callee evidence separately from the selected
+execution target. The final focused signature-status control passes, and
+369 parity assertions cover local, non-returning, higher-order, noncall,
+missing-ID and duplicate-table boundaries. This does not reattribute the earlier
+composition to a different source revision. The first parity run's incomplete
+positive test fixture is retained as a test-data failure; the repaired fixture
+passes without weakening the production validator.
+
+The final current-source focused regression passes 29 tests/852 assertions,
+including the repaired oracle and lookup controls and existing loop/recur,
+callable, imported-body and effect checks. These overlapping focused runs are
+not added together as separate coverage. The unchanged successful expensive
+composition and seed blocks were not replayed merely for a test-oracle edit or
+the output-equivalent lookup factor.
+
+Throwing recursive/recur components, imported and indirect throwing calls,
+handlers, cleanup and complete error/profile/provider legality remain separate
+work. No authoritative module migration, full target implementation, self-hosting
+or seed-retirement claim follows from this development increment.
 
 ## Current Baseline
 
