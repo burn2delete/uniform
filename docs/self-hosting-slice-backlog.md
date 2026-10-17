@@ -2199,6 +2199,25 @@ proofs, authoritative migration, target completion, self-hosting and seedless
 release remain outstanding. No unchanged expensive proof was replayed to repair
 the cheap tests or documentation.
 
+### Bounded test-construction cleanup
+
+A subsequent test-only change removes duplicate work without changing compiler
+or fixture bytes. All six SH01 type-only helper callers still construct genuine
+fresh C5/C6/C7 products, but omit the unused SH09 binding seal. C8's existing
+helper adds the unchanged seal and preserves its exact preimage and consumer
+arguments. The function-recur selector retains every assembled-function and
+runtime check, one standalone public compile per accepted input, the rejected
+pair and all hostile cases. Its static public verification schedule falls from
+36 to 16; each retained public operation still verifies freshly.
+
+Helper flow checks pass two tests/27 assertions. Schedule, public-boundary and
+existing recur checks pass four tests/135 assertions; these overlap the earlier
+semantic regression and are not extra language coverage. The accepted actual
+one-test/276-assertion composition remains attributed to the original test
+revision in `55b7dca9`, not to a replay of the revised harness. There is no
+measured speedup, new semantic feature or migration claim. The direct commands
+and distinctions are in `docs/development-verification.md`.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

@@ -39,7 +39,7 @@
      :boundary :clojure-coordinator-verifier :status :passed
      :digest-resolution {:algorithm :sha256 :encoding :gravity/canonical-edn-v1 :preimage preimage
                          :digest (bootstrap/p15-s23-c11-mir-digest preimage) :status :passed}}))
-(defn- fresh-products [relative]
+(defn- fresh-type-products [relative]
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [c5 (bootstrap/compiler-c5-resolution-file-artifact (path relative))
         artifact (bootstrap/sh07-core-from-resolution-artifact c5)
@@ -51,8 +51,11 @@
         invoke (sh08-helper 'invoke-c7)
         typed (invoke 'sh08-function-type-core-artifact [request])
         verification (invoke 'sh08-verify-function-type-result [request typed])]
-    {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
-     :binding (seal-binding request typed verification)}))
+    {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification}))
+
+(defn- fresh-products [relative]
+  (let [{:keys [request typed verification] :as products} (fresh-type-products relative)]
+    (assoc products :binding (seal-binding request typed verification))))
 
 (defn- fresh-request [c5]
   (let [artifact (bootstrap/sh07-core-from-resolution-artifact c5)
@@ -128,6 +131,69 @@
    :evaluation {:kind (case kind :fn :function-creation :quote :no-evaluation :left-to-right)
                 :order (if (#{:fn :quote} kind) []
                          (mapv (fn [index n] {:index index :core-node-id (sha n)}) (range) children))}})
+
+(deftest fresh-type-products-construction-development-kernel
+  ;; Mocked control-flow DATA checks work preservation, not authentication.
+  (let [relative "normalized-type-products.gravity" events (atom []) seals (atom 0)
+        c5 {:normalized :c5} artifact {:normalized :c6} report {:normalized :c6-report}
+        coordinator {:normalized :coordinator} core {:normalized :core}
+        context {:canonical-core-artifact core} typed {:normalized :typed}
+        verification {:normalized :verification}
+        request {:canonical-core-artifact core :b47-context context :coordinator-verification coordinator}
+        expected {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification}
+        cycle [[:c5 (path relative)] [:c6 c5] [:c6-verify artifact] [:coordinator artifact report]
+               [:context artifact report coordinator]
+               [:c7 'sh08-function-type-core-artifact [request]]
+               [:c7 'sh08-verify-function-type-result [request typed]]]]
+    (with-redefs [bootstrap/compiler-c5-resolution-file-artifact (fn [source] (swap! events conj [:c5 source]) c5)
+                  bootstrap/sh07-core-from-resolution-artifact (fn [input] (swap! events conj [:c6 input]) artifact)
+                  bootstrap/sh07-core-artifact-verification (fn [input] (swap! events conj [:c6-verify input]) report)
+                  sh08-helper (fn [name]
+                                (case name
+                                  coordinator-verification (fn [input proof] (swap! events conj [:coordinator input proof]) coordinator)
+                                  b47-context (fn [input proof binding] (swap! events conj [:context input proof binding]) context)
+                                  invoke-c7 (fn [function args]
+                                              (swap! events conj [:c7 function args])
+                                              (case function sh08-function-type-core-artifact typed sh08-verify-function-type-result verification))))
+                  seal-binding (fn [& _] (swap! seals inc) (throw (ex-info "Unexpected type-only seal" {})))]
+      (is (= expected (fresh-type-products relative)))
+      (is (= cycle @events))
+      (is (= expected (fresh-type-products relative)))
+      (is (= (vec (concat cycle cycle)) @events))
+      (is (= 0 @seals))
+      (reset! events [])
+      (let [failure (ex-info "C6 verification failed" {:normalized :failure})
+            observed (with-redefs [bootstrap/sh07-core-artifact-verification
+                                   (fn [input] (swap! events conj [:c6-verify input]) (throw failure))]
+                       (try (fresh-type-products relative) (catch Throwable error error)))]
+        (is (identical? failure observed))
+        (is (= (subvec cycle 0 3) @events))
+        (is (= 0 @seals))))))
+
+(deftest fresh-products-seal-consumer-development-kernel
+  ;; The existing C8 helper still receives the original triplet and exact seal.
+  (let [relative "normalized-sealed-products.gravity" builds (atom []) seals (atom []) consumers (atom [])
+        request {:normalized :request} typed {:normalized :typed} verification {:normalized :verification}
+        products {:c5 {:normalized :c5} :artifact {:normalized :c6} :report {:normalized :c6-report}
+                  :request request :typed typed :verification verification}
+        original-seal seal-binding
+        preimage {:domain :gravity/sh09-sh08-function-binding-v1 :request request :typed typed :verification verification}]
+    (with-redefs [fresh-type-products (fn [source] (swap! builds conj source) products)
+                  seal-binding (fn [r t v] (swap! seals conj [r t v]) (original-seal r t v))
+                  leaf (fn [function & args] (swap! consumers conj [function (vec args)]) :observed)]
+      (doseq [_ (range 2)]
+        (let [sealed (fresh-products relative) binding (:binding sealed)]
+          (is (= products (dissoc sealed :binding)))
+          (is (= preimage (get-in binding [:digest-resolution :preimage])))
+          (is (identical? request (get-in binding [:digest-resolution :preimage :request])))
+          (is (identical? typed (get-in binding [:digest-resolution :preimage :typed])))
+          (is (identical? verification (get-in binding [:digest-resolution :preimage :verification])))
+          (is (= :passed (:status binding) (get-in binding [:digest-resolution :status])))
+          (is (= :observed (build-leaf sealed)))
+          (is (= ['build-body-effect-result [typed verification binding]] (last @consumers)))))
+      (is (= [relative relative] @builds))
+      (is (= [[request typed verification] [request typed verification]] @seals))
+      (is (= 2 (count @consumers))))))
 
 (deftest body-effect-operation-development-kernel
   ;; Actual Gravity algorithm, normalized graph DATA; no authentication claim.

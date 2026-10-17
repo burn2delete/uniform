@@ -494,7 +494,7 @@
 (deftest current-gravity-typed-lowering-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         runtime-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
         names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
@@ -908,7 +908,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function verifications (atom 0)
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         operation (fn [thunk]
@@ -950,13 +950,15 @@
             (when-not (= :accepted (:status typed)) (throw (ex-info "Function recur input was not accepted by current C7" {:source-path source-path :status (:status typed)})))
             (let [assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
                   functions (:functions assembled)
-                  targets (into {} (map (juxt :owner-core-node-id identity) (filter #(= :function (:target-kind %)) (:recur-targets core))))]
+                  targets (into {} (map (juxt :owner-core-node-id identity) (filter #(= :function (:target-kind %)) (:recur-targets core))))
+                  representative (if (= kind :again) 'again 'swap)
+                  standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions representative) input))]
               (is (= (count (:recur-transfers core)) (get-in assembled [:instruction-summary :recur])))
+              (is (= standalone (get functions representative)))
               (doseq [record (:function-records core)]
                 (let [function-name (:definition-name record)
-                      compiled (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions function-name) input))
+                      compiled (get functions function-name)
                       target (get targets (:function-core-node-id record))]
-                  (is (= compiled (get functions function-name)))
                   (is (= (:target-id target) (:recur-target compiled)))
                   (is (= (:parameter-binding-ids record) (:binding-ids target)))
                   (is (= (:fixed-arity record) (:arity target) (:arity compiled) (count (:params compiled))))
@@ -1003,7 +1005,50 @@
                                    (update-in input [:typed :constraint-ledger] #(filterv (fn [row] (not= :sh08-loop-target-types-v1 (:producer-rule row))) %))]]
                     (is (= "P15S23Q002" (:id (operation #(diagnostic (fn []
                               (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'main) changed)))))))))))))))
+    (is (= 16 @verifications))
     (is (= 0 @transports))))
+
+(deftest function-recur-composition-work-development-kernel
+  ;; Read-only source controls establish the harness schedule, not acceptance
+  ;; of a new compiler candidate or a measured timing improvement.
+  (let [forms (binding [*read-eval* false]
+                (with-open [reader (java.io.PushbackReader. (io/reader (io/resource "gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj")))]
+                  (loop [out []]
+                    (let [form (read {:eof ::eof} reader)]
+                      (if (= ::eof form) out (recur (conj out form)))))))
+        calls (fn [form] (filter seq? (tree-seq coll? seq form)))
+        lookup (fn [bindings name] (some (fn [[key value]] (when (= key name) value)) (partition 2 bindings)))
+        composition (first (filter #(and (seq? %) (= 'deftest (first %)) (= 'current-gravity-function-recur-authenticated-composition (second %))) forms))
+        outer-bindings (second (nth composition 2))
+        references (filter #(and (= 'ns-resolve (first %)) (= (list 'quote 'gravity.self-hosting.sh09-body-effect-test) (second %))) (calls forms))
+        record-loop (first (filter #(and (= 'doseq (first %)) (= '[record (:function-records core)] (second %))) (calls composition)))
+        record-bindings (second (nth record-loop 2))
+        accepted-let (first (filter #(and (= 'let (first %)) (some #{'standalone} (take-nth 2 (second %)))) (calls composition)))
+        accepted-bindings (second accepted-let)
+        hostile-loop (first (filter #(and (= 'doseq (first %)) (= 'changed (first (second %)))) (calls composition)))
+        inventory (lookup outer-bindings 'inventory)
+        input-loop (first (filter #(and (= 'doseq (first %)) (= 'extension (first (second %)))) (calls composition)))
+        extensions (second (second input-loop))
+        accepted (count (remove #(= :rejected (nth % 2)) inventory))
+        rejected (- (count inventory) accepted)
+        hostile-count (count (second (second hostile-loop)))
+        main-count (count (filter #(= :main (nth % 2)) inventory))]
+    (is (= 6 (count references)))
+    (is (every? #(= (list 'quote 'fresh-type-products) (nth % 2)) references))
+    (is (= '(get functions function-name) (lookup record-bindings 'compiled)))
+    (is (not-any? #(= 'bootstrap/p15-s23-stage2-compile-function (first %)) (calls record-loop)))
+    (is (= 5 (count (filter #(= 'is (first %)) (calls record-loop)))))
+    (is (every? (set (tree-seq coll? seq record-loop))
+                [:recur-target :parameter-binding-ids :arity :params :typed-lowering-provenance
+                 :effect-legality :compiler-sources :lowering :source :sha256 :pending-c8-and-profile-authority]))
+    (is (= '(if (= kind :again) (quote again) (quote swap)) (lookup accepted-bindings 'representative)))
+    (is (= 'operation (first (lookup accepted-bindings 'standalone))))
+    (is (= 1 (count (filter #(= 'bootstrap/p15-s23-stage2-compile-function (first %)) (calls (lookup accepted-bindings 'standalone))))))
+    (is (some #{'(is (= standalone (get functions representative)))} (calls accepted-let)))
+    (is (= 6 (* (count extensions) (count inventory))))
+    (is (= 3 hostile-count))
+    (is (= 16 (* (count extensions) (+ (* 2 accepted) rejected (* hostile-count main-count)))))
+    (is (some #{(read-string "(is (= 16 @verifications))")} (calls composition)))))
 
 (defn- current-gravity-loop-composition [selection]
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -1011,7 +1056,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function verifications (atom 0)
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         operation (fn [thunk] (let [before @verifications
@@ -1432,7 +1477,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         verifications (atom 0)
@@ -1637,7 +1682,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         execute (fn [function env]
@@ -1697,7 +1742,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         execute (fn [instruction env] (original runtime plan 'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)

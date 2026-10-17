@@ -639,6 +639,34 @@ verification. That is not a phase-cost or speedup measurement. Do not repeat
 this unchanged composition, the old C6/C7 matrix, or migration proofs to debug
 these development kernels or correct documentation.
 
+That 276-assertion result belongs to commit `55b7dca9`, before a test-only
+construction cleanup. Assembly already lowers every definition, so the revised
+selector checks every assembled function and retains one representative
+standalone compile per accepted input. It expects 16 fresh public C7
+verifications instead of 36; every retained public call still verifies freshly.
+The six SH01 type-only callers also omit the unused SH09 binding seal. The C8
+helper still adds its original seal to the same fresh products. Production and
+fixture bytes did not change. The old composition was not replayed merely to
+renew evidence for this harness refactor, and no elapsed-time improvement or
+new composition pass is claimed for the revised selector.
+
+When changing that helper or test schedule, use the cheap preservation checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact fresh-type-products-construction-development-kernel \
+  --exact fresh-products-seal-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact function-recur-composition-work-development-kernel \
+  --exact typed-lowering-public-orchestration-development-kernel
+```
+
+The helper checks use mocked control-flow DATA, not accepted compiler evidence.
+The schedule check reads the actual test source. Neither is a substitute for
+affected composition when production behavior or fixtures change.
+
 The focused checks exercise normalized producer-shaped data, including rows
 constructed by the current C7 constraint producer. They are not authenticated
 source evidence. The separate paired selector constructs each source input
