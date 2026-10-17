@@ -1306,6 +1306,62 @@ recursion support, callable recursion, termination, recursion-depth bounds,
 tail-call optimization, thrown-error completion, full legality, target execution,
 authoritative migration, self-hosting and seedless release remain outstanding.
 
+### Capture-free callable body effects: development implementation
+
+The L3/L5/L6/C7/C8 increment extends the same `gravity.effects` interface to
+C7's existing named identity/apply-one proof. The exact identity definition,
+apply definition, callable parameter, value argument, nested function type,
+outer selection, inner invocation and original call facts must agree. Only
+the proof-selected parameter may carry that callable type. The inner C6 call
+retains its nonlocal classification and nil direct callee; a separate
+proof-bound selected-body dependency identifies the invoked identity body.
+Constructing or carrying a function value has no immediate body effect;
+invoking it propagates the derived body summary, not declaration allowances.
+
+Direct scalar imports retain the complete producer graph and original module
+coordinates. The real producer fixture exports both identity and apply; the
+new paired caller selects only identity. Thus the executable example covers
+an unselected apply body, not a private apply fixture. Selected imported APIs
+remain first-order. The same aggregate node/function limits and shared
+65,536-attempt work counter apply. Throws and legality remain pending.
+
+The final direct kernel batch passed 13 tests/190 assertions, and four separate
+route/language checks passed 44 assertions. A later identical kernel recheck
+after the diagnostic-only test correction overlaps that batch and is not extra
+coverage. Pre-composition review added the selected-import first-order fence
+and its coherent nested-callable control before any real composition ran.
+
+The first actual composition completed all local callable and scalar-import
+positive pairs, fresh verification, full node coverage and coherent proof,
+type, edge, call-fact, selected-body, summary and throw mutations. It also
+completed both nonfunction and capture rejection pairs. Its aggregate result
+was FAILED: 76 passing assertions (66 positive-composition assertions and ten
+negative-case assertions), two failing assertions and no errors.
+Both failures were the test's hardcoded `C7-ANNOTATION` expectation for capture;
+current C7 instead rejects it earlier with
+`C7-TYPE-MISMATCH` / `:function-result-type-mismatch`. Nonfunction calls reject
+with `C7-ANNOTATION` / `:unsupported-nonlocal-call`. Capture rejection here does
+not establish a completed closure-legality diagnostic. The original failed
+result is retained, not relabeled as a passing aggregate. Selected execution
+took 1008.751 seconds after 7.035 seconds of namespace loading with a 2 GiB
+heap; this is not a phase-cost or speedup measurement.
+
+The correction changes only test expectations and factors the negative checks
+to permit a focused capture-pair selector; production, C8 forwarding and fixture
+bytes are unchanged. That follow-up passed one test/six assertions with exact
+rule/reason, C7 rejection and body-analysis rejection for both extensions.
+Selected execution took 173.914 seconds after 6.955 seconds of namespace loading
+with the same 2 GiB heap. The already exercised positive and nonfunction cases
+were not repeated for an oracle-only correction. The passing follow-up is
+separate evidence, not a replacement passing result for the original aggregate;
+overlapping assertions are not added into a new aggregate count. Independent
+review checked the narrow oracle correction. No old public C8 bundle identity
+is claimed for this revision.
+Captures, multi-hop or arbitrary higher-order dispatch, imported callable APIs,
+callable recursion, completed thrown effects, full effect/capability legality,
+targets, authoritative migration, self-hosting and seedless release remain
+outstanding.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

@@ -93,6 +93,22 @@
         verification (invoke 'sh08-verify-function-type-result [request typed])]
     {:c5 c5 :request request :typed typed :verification verification
      :binding (seal-binding request typed verification)}))
+
+(defn- fresh-callable-import-products [extension]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [producer (bootstrap/compiler-c5-resolution-file-artifact
+                   (path (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-call-nonlocal" extension)))
+        producer-request (fresh-request producer)
+        c5 (bootstrap/compiler-c5-resolution-file-artifact
+             (path (str "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/callable-imported-body" extension))
+             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [producer]})
+        request (assoc (fresh-request c5) :module-type-inputs
+                  {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer-request]})
+        invoke (sh08-helper 'invoke-c7)
+        typed (invoke 'sh08-function-type-core-artifact [request])
+        verification (invoke 'sh08-verify-function-type-result [request typed])]
+    {:c5 c5 :request request :typed typed :verification verification
+     :binding (seal-binding request typed verification)}))
 (defn- build-leaf [products]
   (leaf 'build-body-effect-result (:typed products) (:verification products) (:binding products)))
 (defn- coherent-typed-mutation [products mutate]
@@ -318,6 +334,11 @@
         joined (leaf 'body-import-origin request binding entry proof)]
     (is (= (sha 11) (:body-core-node-id joined)))
     (is (= (leaf 'body-import-coordinate proof) (:coordinate joined)))
+    (let [callable-target (assoc function :fixed-arity 1 :parameter-binding-ids [(sha 90)]
+                                         :parameters [{:binding-id (sha 90) :type {:artifact :gravity/c7-function-type}}])]
+      (is (nil? (leaf 'body-import-origin request binding
+                       (assoc-in entry [:facts :function-type-table] [callable-target])
+                       (assoc proof :function-type callable-target)))))
     (doseq [p [(assoc proof :origin {}) (assoc proof :producer-sh06-artifact-id (sha 99))
                (assoc proof :producer-sh07-artifact-id (sha 99)) (assoc proof :definition-binding-id (sha 99))
                (assoc-in proof [:function-type :body-core-node-id] (sha 99))
@@ -490,6 +511,125 @@
     (is (= :cyclic-or-missing-body-effect-dependencies
            (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 65536))))))
 
+(defn- callable-kernel-data []
+  (let [owned (fn [id n] (assoc-in n [:evaluation :owner-function-syntax-id] (sha id)))
+        ;; Keep the named function values separate from calls that execute them.
+        nodes [(owned 20 (assoc (node 1 :reference []) :attributes {:binding-id (sha 51)}))
+               (assoc-in (node 2 :fn [1]) [:source :syntax-id] (sha 20)) (node 3 :def [2])
+               (owned 30 (assoc (node 4 :reference []) :attributes {:binding-id (sha 61)}))
+               (owned 30 (assoc (node 5 :reference []) :attributes {:binding-id (sha 62)}))
+               (owned 30 (node 6 :call [4 5]))
+               (assoc-in (node 7 :fn [6]) [:source :syntax-id] (sha 30)) (node 8 :def [7])
+               (assoc (node 9 :reference []) :attributes {:binding-id (sha 60)})
+               (assoc (node 10 :reference []) :attributes {:binding-id (sha 50)})
+               (assoc (node 11 :literal []) :attributes {:literal-kind :integer :value 7}) (node 12 :call [9 10 11])]
+        function-type (fn [id core body name ids parameters]
+                        {:artifact :gravity/c7-function-type :function-id (sha id) :function-core-node-id (sha core)
+                         :body-core-node-id (sha body) :definition-name name :parameter-binding-ids (mapv sha ids)
+                         :parameters parameters :return :gravity.type/integer :return-conflict nil :fixed-arity (count ids)
+                         :latent-effects [] :capabilities [] :ownership-constraints :pending-sh10 :profile-constraints [:meta]
+                         :thrown-error-effects [:pending-sh09] :source-span (get-in nodes [(dec core) :source :semantic-span])
+                         :syntax-id (sha id) :origin-chain [] :generated-origin nil :profile :meta :target :jvm :status :inferred})
+        identity-type (function-type 20 2 1 'identity [51] [{:binding-id (sha 51) :type :gravity.type/integer}])
+        apply-type (function-type 30 7 6 'apply-one [61 62] [{:binding-id (sha 61) :type identity-type}
+                                                           {:binding-id (sha 62) :type :gravity.type/integer}])
+        inner-edge {:ordinal 0 :call-core-node-id (sha 6) :caller-function-syntax-id (sha 30) :caller-function-core-node-id (sha 7)
+                    :callee-binding-id (sha 61) :callee-definition-syntax-id (sha 90) :callee-function-syntax-id nil
+                    :callee-function-core-node-id nil :argument-core-node-ids [(sha 5)]
+                    :ordered-evaluation-node-ids [(sha 4) (sha 5)] :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        outer-edge (assoc inner-edge :ordinal 1 :call-core-node-id (sha 12) :caller-function-syntax-id nil :caller-function-core-node-id nil
+                         :callee-binding-id (sha 60) :callee-definition-syntax-id (sha 91) :callee-function-syntax-id (sha 30)
+                         :callee-function-core-node-id (sha 7) :argument-core-node-ids [(sha 10) (sha 11)]
+                         :ordered-evaluation-node-ids [(sha 9) (sha 10) (sha 11)] :classification :local-function)
+        inner {:core-node-id (sha 6) :operator-binding-id (sha 61) :argument-node-ids [(sha 5)]
+               :ordered-evaluation-node-ids [(sha 4) (sha 5)] :evaluation-order :operator-then-arguments}
+        outer {:core-node-id (sha 12) :operator-binding-id (sha 60) :argument-node-ids [(sha 10) (sha 11)]
+               :ordered-evaluation-node-ids [(sha 9) (sha 10) (sha 11)] :evaluation-order :operator-then-arguments}
+        proof {:domain :gravity/sh08-authoritative-higher-order-proof-v1
+               :identity-function-syntax-id (sha 20) :identity-function-core-node-id (sha 2)
+               :identity-definition-binding-id (sha 50) :identity-parameter-binding-id (sha 51) :identity-body-core-node-id (sha 1)
+               :apply-function-syntax-id (sha 30) :apply-function-core-node-id (sha 7) :apply-definition-binding-id (sha 60)
+               :apply-callable-binding-id (sha 61) :apply-value-binding-id (sha 62) :apply-body-core-node-id (sha 6)
+               :inner-call-core-node-id (sha 6) :inner-operator-binding-id (sha 61) :inner-argument-node-ids [(sha 5)]
+               :inner-evaluation-order :operator-then-arguments :inner-source-span (get-in nodes [5 :source :semantic-span]) :inner-edge inner-edge
+               :outer-call-core-node-id (sha 12) :outer-operator-binding-id (sha 60) :outer-argument-node-ids [(sha 10) (sha 11)]
+               :outer-evaluation-order :operator-then-arguments :outer-source-span (get-in nodes [11 :source :semantic-span]) :outer-edge outer-edge
+               :outer-value-argument-node-id (sha 11) :outer-value-literal-kind :integer :identity-parameter-type :gravity.type/integer
+               :apply-callable-parameter-type identity-type :apply-value-parameter-type :gravity.type/integer
+               :identity-function-type identity-type :apply-function-type apply-type
+               :inner-result-type :gravity.type/integer :outer-result-type :gravity.type/integer}
+        fact {:artifact :gravity/c7-call-type-fact :status :inferred :call-core-node-id (sha 6)
+              :caller-function-syntax-id (sha 30) :callee-function-syntax-id nil
+              :argument-types [:gravity.type/integer] :result-type :gravity.type/integer
+              :evaluation-order :operator-then-arguments :syntax-id (get-in nodes [5 :source :syntax-id])
+              :source-span (get-in nodes [5 :source :semantic-span]) :origin-chain [] :generated-origin nil
+              :effects [] :capabilities [] :profile :meta :target :jvm
+              :dispatch :indirect-function-value :higher-order-call? true :b47-edge inner-edge
+              :callable-parameter-binding-id (sha 61) :selected-identity-function-syntax-id (sha 20)
+              :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id (sha 6)
+                                :callee-function-syntax-id nil :argument-types [:gravity.type/integer]
+                                :result-type :gravity.type/integer :higher-order-call? true}}
+        core {:nodes nodes :calls [inner outer] :call-edges [inner-edge outer-edge] :definitions [] :recursion-components []
+              :function-records [{:function-syntax-id (sha 20) :function-core-node-id (sha 2) :body-core-node-id (sha 1)
+                                  :definition-binding-id (sha 50) :definition-kind :named-top-level :fixed-arity 1 :parameter-binding-ids [(sha 51)]}
+                                 {:function-syntax-id (sha 30) :function-core-node-id (sha 7) :body-core-node-id (sha 6)
+                                  :definition-binding-id (sha 60) :definition-kind :named-top-level :fixed-arity 2 :parameter-binding-ids [(sha 61) (sha 62)]}]}
+        facts {:higher-order-proof proof :function-type-table [identity-type apply-type]
+               :module {:effects [] :capabilities [] :profile :meta :target :jvm}
+               :type-table {(sha 4) identity-type (sha 5) :gravity.type/integer (sha 6) :gravity.type/integer}
+               :call-type-facts [fact]}]
+    [core facts {(sha 61) {:definition-syntax-id (sha 90)}}]))
+
+(deftest body-effect-callable-proof-development-kernel
+  (let [[core facts bindings] (callable-kernel-data)]
+    (is (true? (leaf 'body-ho-proof-valid? core facts bindings)))
+    (is (true? (leaf 'body-function-shapes-with-proof? facts)))
+    (is (false? (leaf 'body-function-shapes? (:function-type-table facts))))
+    (doseq [mutate [(fn [f] (assoc f :higher-order-proof 7))
+                    (fn [f] (assoc-in f [:higher-order-proof :inner-argument-node-ids] 7))
+                    (fn [f] (assoc-in f [:higher-order-proof :identity-function-syntax-id] (sha 99)))
+                    (fn [f] (assoc-in f [:higher-order-proof :inner-edge :callee-function-syntax-id] (sha 20)))
+                    (fn [f] (assoc-in f [:higher-order-proof :identity-function-type :return] :gravity.type/bool))
+                    (fn [f] (assoc-in f [:function-type-table 1 :parameters 1 :type] (get-in f [:higher-order-proof :identity-function-type])))]]
+      (is (false? (leaf 'body-ho-proof-valid? core (mutate facts) bindings))))
+    (doseq [mutate [(fn [c] (assoc-in c [:nodes 9 :attributes :binding-id] (sha 60)))
+                    (fn [c] (assoc-in c [:nodes 4 :attributes :binding-id] (sha 99)))
+                    (fn [c] (assoc-in c [:nodes 10 :attributes :literal-kind] :string))
+                    (fn [c] (assoc-in c [:calls 0 :argument-node-ids] 7))
+                    (fn [c] (assoc c :recursion-components [{}]))]]
+      (is (false? (leaf 'body-ho-proof-valid? (mutate core) facts bindings))))
+    (is (false? (leaf 'body-function-shapes-with-proof?
+                     (assoc-in facts [:function-type-table 1 :parameters 1 :type] (get-in facts [:higher-order-proof :identity-function-type])))))
+    (is (false? (leaf 'body-function-shapes-with-proof?
+                     (assoc-in facts [:function-type-table 0 :return] (get-in facts [:higher-order-proof :identity-function-type])))))))
+
+(deftest body-effect-callable-dependency-development-kernel
+  (let [[core facts _] (callable-kernel-data)
+        inner (first (:calls core)) edge (first (:call-edges core)) fact (first (:call-type-facts facts))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        run #(leaf 'body-ho-inner-call-valid? edge inner % nodes facts)
+        derived (leaf 'body-derive-nodes-with-foreign core facts {} 65536) graph (:nodes derived)]
+    (is (true? (run fact)))
+    (doseq [bad [(assoc fact :selected-identity-function-syntax-id (sha 99))
+                 (assoc fact :callee-function-syntax-id (sha 20)) (assoc fact :profile :hosted)
+                 (assoc-in fact [:fact-id-request :callee-function-syntax-id] (sha 20))
+                 (assoc fact :argument-types 7) 7 nil]]
+      (is (false? (run bad))))
+    (is (= :accepted (:status derived)))
+    (is (nil? (get-in graph [(sha 6) :call-body-dependency])))
+    (is (= (sha 1) (get-in graph [(sha 6) :selected-body-dependency :body-core-node-id])))
+    (is (= edge (get-in graph [(sha 6) :selected-body-dependency :source-edge])))
+    (is (= (mapv sha [4 5 1]) (get-in graph [(sha 6) :dependencies])))
+    (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
+    (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 11))))
+    (let [seed {(sha 1) {:transitive #{:compiler/read-ir}} (sha 4) {:transitive #{}} (sha 5) {:transitive #{}}}
+          call (leaf 'body-local-node-record (get nodes (sha 6)) (sha 1) seed :gravity.type/integer facts edge)
+          value (leaf 'body-local-node-record (get nodes (sha 10)) nil seed :callable facts nil)
+          construction (leaf 'body-local-node-record (get nodes (sha 2)) nil seed :callable facts nil)]
+      (is (= #{:compiler/read-ir} (:transitive call)))
+      (is (= #{} (:transitive value) (:transitive construction)))
+      (is (= #{:compiler/read-ir} (:latent construction))))))
+
 (deftest body-effect-public-forwarding-source-boundary
   (let [forms (read-string (str "[" (slurp (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")) "]"))
         definitions (into {} (keep #(when (and (seq? %) (= 'defn (first %))) [(second %) %]) forms))
@@ -549,6 +689,86 @@
         (is (= :rejected (:status (leaf 'verify-body-effect-result (:typed products) (:verification products) (:binding products) candidate)))))))
   (is (= :imported-body-effects-pending
          (get-in (leaf 'build-body-effect-result {:scope :direct-imported-functions-types-only} {} {}) [:diagnostics 0 :reason]))))
+
+(deftest body-effect-callable-authenticated-paired-composition
+  (let [products (mapv #(fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-call-nonlocal" %))
+                       [".gravity" ".qst"])
+        results (mapv build-leaf products)]
+    (doseq [[p result] (map vector products results)]
+      (let [typed (:typed p) proof (:higher-order-proof typed) graph (:effect-graph result)
+            core (get-in p [:request :canonical-core-artifact]) facts (:identity-input typed)
+            inner (:inner-call-core-node-id proof) selected (get-in graph [:nodes inner :selected-body-dependency])]
+        (is (= :accepted (:status typed) (:status result)) (pr-str (:diagnostics result)))
+        (when-not (= :accepted (:status result))
+          (throw (ex-info "Callable leaf rejected actual products" {:diagnostics (:diagnostics result)})))
+        (is (= :passed (:status (:report p)) (:status (:verification p))))
+        (is (= :capture-free-one-hop-body-effects-with-thrown-effects-pending (:scope result)))
+        (is (= (:request p) (get-in p [:binding :digest-resolution :preimage :request])))
+        (is (= (set (map :node-id (:nodes core))) (set (keys (:nodes graph)))))
+        (is (= (:identity-body-core-node-id proof) (:body-core-node-id selected)))
+        (is (= (:identity-function-syntax-id proof) (:function-id selected)))
+        (is (= (:inner-edge proof) (:source-edge selected)))
+        (is (nil? (get-in graph [:nodes inner :call-body-dependency])))
+        (is (nil? (get-in selected [:source-edge :callee-function-syntax-id])))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (every? #(and (= #{} (:inferred %)) (= [:pending-sh09] (:throws %))) (vals (:functions graph))))
+        (is (= :passed (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+        (doseq [mutate [(fn [t] (assoc-in t [:higher-order-proof :identity-function-syntax-id] (sha 999)))
+                        (fn [t] (assoc-in t [:higher-order-proof :identity-function-type :return] :gravity.type/bool))
+                        (fn [t] (assoc-in t [:higher-order-proof :inner-edge :callee-function-syntax-id] (:identity-function-syntax-id proof)))
+                        (fn [t] (assoc-in t [:higher-order-call-facts 0 :selected-identity-function-syntax-id] (sha 999)))
+                        (fn [t] (update t :call-type-facts
+                                  #(mapv (fn [f] (if (= inner (:call-core-node-id f))
+                                                  (assoc f :selected-identity-function-syntax-id (sha 999)) f)) %)))
+                        (fn [t] (assoc t :higher-order-proof 7))
+                        (fn [t] (assoc t :higher-order-call-facts [7]))]]
+          (is (= :rejected (:status (build-leaf (coherent-typed-mutation p mutate))))))
+        (doseq [candidate [(reseal-effect-graph result (assoc-in graph [:nodes inner :selected-body-dependency :body-core-node-id] (sha 999)))
+                           (reseal-effect-graph result (assoc-in graph [:nodes inner :transitive] #{:compiler/read-ir}))
+                           (reseal-effect-graph result (update graph :functions
+                             #(into {} (map (fn [[id f]] [id (assoc f :throws [])]) %))))]]
+          (is (= :rejected (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) candidate)))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results)))))
+  (let [products (mapv fresh-callable-import-products [".gravity" ".qst"])
+        results (mapv build-leaf products)]
+    (doseq [[p result] (map vector products results)]
+      (let [producer (first (vals (:producer-effect-graphs result)))
+            proof (get-in producer [:sh08-identity-input :higher-order-proof])
+            producer-graph (:effect-graph producer)]
+        (is (= :accepted (get-in p [:typed :status]) (:status result)) (pr-str (:diagnostics result)))
+        (when-not (= :accepted (:status result))
+          (throw (ex-info "Scalar import from callable producer rejected" {:diagnostics (:diagnostics result)})))
+        (is (= :passed (get-in p [:verification :status])))
+        (is (= 1 (count (:producer-effect-graphs result)) (count (:imported-body-dependencies result))))
+        (is (= :gravity/sh08-authoritative-higher-order-type-v1 (get-in producer [:sh08-identity-input :domain])))
+        (is (= 2 (count (:functions producer-graph))))
+        (is (= (:identity-body-core-node-id proof)
+               (get-in producer-graph [:nodes (:inner-call-core-node-id proof) :selected-body-dependency :body-core-node-id])))
+        (is (= (:request p) (get-in p [:binding :digest-resolution :preimage :request])))
+        (is (= :passed (:status (leaf 'verify-body-effect-result (:typed p) (:verification p) (:binding p) result))))
+        (is (= :rejected (:status (build-leaf (coherent-typed-mutation p
+                    #(assoc-in % [:module-type-producers 0 :identity-input :higher-order-proof :inner-call-core-node-id] (sha 999)))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))))
+
+(defn- assert-current-c7-callable-rejections [cases]
+  (doseq [[basename expected-rule expected-reason] cases
+          extension [".gravity" ".qst"]]
+    (let [p (fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename extension))
+          diagnostic (get-in p [:typed :diagnostics 0])]
+      (println "Current C7 callable rejection" (pr-str {:fixture basename :extension extension
+                   :diagnostic (select-keys diagnostic [:rule :reason :expected-type :actual-type])}))
+      (is (= :rejected (get-in p [:typed :status])))
+      (is (= [expected-rule expected-reason] [(:rule diagnostic) (:reason diagnostic)]))
+      (is (= :rejected (:status (build-leaf p)))))))
+
+(deftest body-effect-callable-current-c7-rejections
+  (assert-current-c7-callable-rejections
+    [["function-value-nonfunction" "C7-ANNOTATION" :unsupported-nonlocal-call]
+     ["function-value-capture" "C7-TYPE-MISMATCH" :function-result-type-mismatch]]))
+
+(deftest body-effect-callable-capture-current-c7-rejection
+  (assert-current-c7-callable-rejections
+    [["function-value-capture" "C7-TYPE-MISMATCH" :function-result-type-mismatch]]))
 
 (deftest body-effect-recursive-authenticated-paired-composition
   (doseq [basename ["function-self-recursive-type" "function-self-recursive-string-type"]]

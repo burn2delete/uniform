@@ -505,13 +505,20 @@
   (if (= :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base (get typed :scope))
     true (if (body-imported? typed) (contains? typed :recursive-proof) false)))
 
+(defn body-higher-order? [typed]
+  (if (= :capture-free-higher-order-fixed-arity-one-hop (get typed :scope))
+    true (if (body-imported? typed) (contains? typed :higher-order-proof) false)))
+
 (defn body-top-level-keys [typed]
   (let [base (sh09-adapter-function-top-level-keys (get typed :scope))
+        base (if (body-higher-order? typed) (conj (conj base :higher-order-proof) :higher-order-call-facts) base)
         base (if (body-recursive? typed) (conj (conj base :recursive-proof) :recursive-call-facts) base)]
     (if (body-imported? typed) (conj (conj base :module-type-producers) :imported-function-types) base)))
 
 (defn body-caller-identity [typed]
   (let [base (sh09-adapter-function-identity-input typed)
+        base (if (body-higher-order? typed)
+               (assoc base :domain :gravity/sh08-authoritative-higher-order-type-v1 :higher-order-proof (get typed :higher-order-proof)) base)
         base (if (body-recursive? typed)
                (assoc base :domain :gravity/sh08-recursive-function-typed-core-v1 :recursive-proof (get typed :recursive-proof)) base)]
     (if (body-imported? typed)
@@ -521,6 +528,8 @@
 
 (defn body-caller-typed-core [typed]
   (let [base (sh09-adapter-function-typed-core typed)
+        base (if (body-higher-order? typed)
+               (assoc base :higher-order-proof (get typed :higher-order-proof) :higher-order-call-facts (get typed :higher-order-call-facts)) base)
         base (if (body-recursive? typed)
                (assoc base :recursive-proof (get typed :recursive-proof) :recursive-call-facts (get typed :recursive-call-facts)) base)]
     (if (body-imported? typed)
@@ -547,6 +556,11 @@
      :complete-immutable-imported-signatures :imported-operator-and-call-types :local-inference-remains-separate
      :origin-and-signature-bound-constraint-ledger :producer-declarations-preserved-with-pending-imported-effects
      :canonical-producer-and-import-order :source-syntax-origin-links-preserved :path-neutral-identity-input]
+    (if (body-higher-order? typed)
+    [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components :coherent-b47-lexical-bindings
+     :fixed-arity-first-order-inference :capture-free-higher-order-one-hop-inference :canonical-complete-function-signatures
+     :higher-order-proof :higher-order-inner-and-outer-call-facts :local-binding-facts :call-type-facts :constraint-ledger
+     :source-syntax-origin-generated-origin-links-preserved :path-neutral-identity-input :recursive-inference-rejected-without-annotation]
     (if (body-recursive? typed)
     [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components :coherent-b47-lexical-bindings
      :named-self-recursive-positive-fixed-arity-positional-literal-base-proof :concrete-recursive-base-and-parameter-evidence
@@ -555,7 +569,7 @@
     [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
      :coherent-b47-lexical-bindings :fixed-arity-first-order-inference :local-binding-facts
      :call-type-facts :constraint-ledger :source-syntax-origin-generated-origin-links-preserved
-     :path-neutral-identity-input :recursive-inference-rejected-without-annotation])))
+     :path-neutral-identity-input :recursive-inference-rejected-without-annotation]))))
 
 (defn body-import-tables-valid? [typed]
   (loop [tables [(get typed :module-type-producers) (get typed :imported-function-types)]]
@@ -574,7 +588,8 @@
           [(= :gravity/sh08-function-typed-core-template (get typed :artifact))
            (= 3 (get typed :schema-version)) (= :accepted (get typed :status))
            (contains? #{:first-order-fixed-arity-functions-locals-calls :direct-imported-functions-types-only
-                        :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base} (get typed :scope))
+                        :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
+                        :capture-free-higher-order-fixed-arity-one-hop} (get typed :scope))
            (= :host-resolved-b47-verification-boundary (get typed :authentication-status))
            (= [] (get typed :diagnostics))
            (= (get typed :artifact-id-request) (get typed :identity-input))
@@ -588,11 +603,14 @@
            (vector? (get (get typed :module) :effects)) (vector? (get (get typed :module) :capabilities))])
       (if (if (body-imported? typed)
             (body-import-tables-valid? typed) true)
+      (if (if (body-higher-order? typed)
+            (if (body-ho-proof-shape? (get typed :higher-order-proof))
+              (= (get typed :higher-order-call-facts) (body-ho-call-proof-facts (get typed :higher-order-proof))) false) true)
       (if (if (body-recursive? typed)
             (if (map? (get typed :recursive-proof))
               (= (get typed :recursive-call-facts) (body-recursive-call-facts (get typed :identity-input))) false) true)
       (if (body-binding-envelope-valid? typed verification binding)
-        (body-caller-request-valid? (body-path binding [:digest-resolution :preimage :request]) typed) false) false) false) false) false))
+        (body-caller-request-valid? (body-path binding [:digest-resolution :preimage :request]) typed) false) false) false) false) false) false))
 
 (defn body-reachable [roots nodes]
   (loop [pending roots seen #{}]
@@ -664,12 +682,14 @@
                      (let [keys #{:domain :sh07-shaped-artifact-id :module :function-records :call-edges :recursion-components
                        :lexical-bindings :function-type-table :local-binding-facts :call-type-facts :constraint-ledger
                        :type-table :convergence :pending}]
-                       (if (contains? producer-facts :recursive-proof) (conj keys :recursive-proof) keys)))
+                       (if (contains? producer-facts :recursive-proof) (conj keys :recursive-proof)
+                         (if (contains? producer-facts :higher-order-proof) (conj keys :higher-order-proof) keys))))
                    (sh09-exact-keys? producer #{:canonical-core-artifact :b47-context :coordinator-verification})
                    (contains? #{:gravity/sh08-function-typed-core-v3 :gravity/sh08-atomic-function-signature-typed-core-v1
-                                :gravity/sh08-recursive-function-typed-core-v1}
+                                :gravity/sh08-recursive-function-typed-core-v1 :gravity/sh08-authoritative-higher-order-type-v1}
                               (get producer-facts :domain))
                    (= (contains? producer-facts :recursive-proof) (= :gravity/sh08-recursive-function-typed-core-v1 (get producer-facts :domain)))
+                   (= (contains? producer-facts :higher-order-proof) (= :gravity/sh08-authoritative-higher-order-type-v1 (get producer-facts :domain)))
                    (= (get identity :producer-sh07-artifact-id) (get core :artifact-id)
                       (get producer-facts :sh07-shaped-artifact-id))
                    (= c5 (body-by retained :artifact-id c5-id))
@@ -710,6 +730,7 @@
         caller-module (body-path request [:canonical-core-artifact :module])]
     (if (body-all?
           [(map? caller-row) (map? original) (map? projected) (map? record) (map? function)
+           (body-function-shapes? [function])
            (sh09-exact-keys? proof #{:status :binding-id :origin :producer-sh07-artifact-id :producer-sh06-artifact-id
                                     :definition-binding-id :function-type :effect-status :legality-status})
            (= :accepted (get proof :status))
@@ -750,6 +771,138 @@
             (if (if (body-first-order-value-type? (get function :return))
                   (body-first-order-parameters? (get function :parameters)) false)
               (recur (rest remaining)) false) false)))) false))
+
+(defn body-ho-proof-shape? [proof]
+  (if (map? proof)
+    (body-all? [(map? (get proof :inner-edge)) (map? (get proof :outer-edge))
+                (map? (get proof :identity-function-type)) (map? (get proof :apply-function-type))
+                (vector? (get proof :inner-argument-node-ids)) (vector? (get proof :outer-argument-node-ids))
+                (sh09-sha256-id? (get proof :inner-call-core-node-id))
+                (sh09-sha256-id? (get proof :outer-call-core-node-id))
+                (sh09-sha256-id? (get proof :identity-function-syntax-id))
+                (sh09-sha256-id? (get proof :apply-function-syntax-id))]) false))
+
+(defn body-ho-call-proof-facts [proof]
+  [{:role :inner-indirect-call :call-core-node-id (get proof :inner-call-core-node-id)
+    :caller-function-syntax-id (get proof :apply-function-syntax-id)
+    :callee-function-syntax-id (get (get proof :inner-edge) :callee-function-syntax-id)
+    :selected-identity-function-syntax-id (get proof :identity-function-syntax-id)
+    :operator-binding-id (get proof :inner-operator-binding-id)
+    :callable-parameter-binding-id (get proof :apply-callable-binding-id)
+    :argument-node-ids (get proof :inner-argument-node-ids) :argument-value-binding-id (get proof :apply-value-binding-id)
+    :evaluation-order (get proof :inner-evaluation-order) :source-span (get proof :inner-source-span)
+    :b47-edge (get proof :inner-edge) :result-type (get proof :inner-result-type) :dispatch :indirect-function-value}
+   {:role :outer-direct-call :call-core-node-id (get proof :outer-call-core-node-id) :caller-function-syntax-id nil
+    :callee-function-syntax-id (get proof :apply-function-syntax-id) :operator-binding-id (get proof :outer-operator-binding-id)
+    :argument-node-ids (get proof :outer-argument-node-ids) :value-argument-node-id (get proof :outer-value-argument-node-id)
+    :evaluation-order (get proof :outer-evaluation-order) :source-span (get proof :outer-source-span)
+    :outer-edge (get proof :outer-edge) :b47-edge (get proof :outer-edge)
+    :selected-apply-function-syntax-id (get proof :apply-function-syntax-id)
+    :result-type (get proof :outer-result-type) :dispatch :direct-local-function}])
+
+(defn body-ho-function-type [function]
+  (body-project function [:artifact :function-id :function-core-node-id :body-core-node-id :definition-name
+                         :parameter-binding-ids :parameters :return :return-conflict :fixed-arity :latent-effects
+                         :capabilities :ownership-constraints :profile-constraints :thrown-error-effects :source-span
+                         :syntax-id :origin-chain :generated-origin :profile :target :status]))
+
+(defn body-ho-input-shapes? [core facts]
+  (if (body-all? [(body-ho-proof-shape? (get facts :higher-order-proof))
+                  (body-maps? (get core :nodes)) (body-maps? (get core :function-records))
+                  (body-maps? (get core :definitions)) (body-maps? (get core :calls))
+                  (body-maps? (get core :call-edges)) (body-maps? (get facts :function-type-table))])
+    (body-all?
+      [(body-node-shapes? (get core :nodes))
+       (loop [records (get core :function-records)]
+         (if (= 0 (count records)) true
+           (if (vector? (get (first records) :parameter-binding-ids)) (recur (rest records)) false)))
+       (loop [calls (get core :calls)]
+         (if (= 0 (count calls)) true
+           (if (vector? (get (first calls) :argument-node-ids)) (recur (rest calls)) false)))]) false))
+
+(defn body-function-shapes-with-proof? [facts]
+  (let [proof (get facts :higher-order-proof) functions (get facts :function-type-table)]
+    (if (contains? facts :higher-order-proof)
+      (if (if (body-ho-proof-shape? proof) (body-maps? functions) false)
+        (loop [remaining functions]
+          (if (= 0 (count remaining)) true
+            (let [function (first remaining)]
+              (if (= (get function :function-id) (get proof :apply-function-syntax-id))
+                (if (if (vector? (get function :parameters)) (= 2 (count (get function :parameters))) false)
+                  (if (body-all? [(body-first-order-value-type? (get function :return))
+                                  (vector? (get function :latent-effects)) (vector? (get function :capabilities))
+                                  (= (get proof :apply-callable-binding-id) (get (first (get function :parameters)) :binding-id))
+                                  (= (get proof :identity-function-type) (get (first (get function :parameters)) :type))
+                                  (body-first-order-value-type? (get (get (get function :parameters) 1) :type))])
+                    (recur (rest remaining)) false) false)
+                (if (body-function-shapes? [function]) (recur (rest remaining)) false))))) false)
+      (body-function-shapes? functions))))
+
+(defn body-ho-proof-valid? [core facts bindings]
+  (let [proof (get facts :higher-order-proof)]
+    (if (body-ho-input-shapes? core facts)
+      (let [nodes (body-index (get core :nodes) :node-id)
+            identity (body-by (get core :function-records) :function-syntax-id (get proof :identity-function-syntax-id))
+            apply (body-by (get core :function-records) :function-syntax-id (get proof :apply-function-syntax-id))
+            identity-type (body-by (get facts :function-type-table) :function-id (get identity :function-syntax-id))
+            apply-type (body-by (get facts :function-type-table) :function-id (get apply :function-syntax-id))
+            inner (body-by (get core :calls) :core-node-id (get proof :inner-call-core-node-id))
+            outer (body-by (get core :calls) :core-node-id (get proof :outer-call-core-node-id))
+            inner-node (get nodes (get inner :core-node-id)) outer-node (get nodes (get outer :core-node-id))
+            inner-edge (body-by (get core :call-edges) :call-core-node-id (get inner :core-node-id))
+            outer-edge (body-by (get core :call-edges) :call-core-node-id (get outer :core-node-id))
+            identity-body (get nodes (get identity :body-core-node-id))
+            inner-operator (get nodes (first (get inner-node :children)))
+            inner-argument (get nodes (first (get inner :argument-node-ids)))
+            selected-node (get nodes (first (get outer :argument-node-ids)))
+            value-node (get nodes (get (get outer :argument-node-ids) 1))
+            value-type (body-primitive-literal-type value-node)
+            expected {:domain :gravity/sh08-authoritative-higher-order-proof-v1
+              :identity-function-syntax-id (get identity :function-syntax-id) :identity-function-core-node-id (get identity :function-core-node-id)
+              :identity-definition-binding-id (get identity :definition-binding-id)
+              :identity-parameter-binding-id (first (get identity :parameter-binding-ids)) :identity-body-core-node-id (get identity :body-core-node-id)
+              :apply-function-syntax-id (get apply :function-syntax-id) :apply-function-core-node-id (get apply :function-core-node-id)
+              :apply-definition-binding-id (get apply :definition-binding-id)
+              :apply-callable-binding-id (first (get apply :parameter-binding-ids))
+              :apply-value-binding-id (get (get apply :parameter-binding-ids) 1) :apply-body-core-node-id (get apply :body-core-node-id)
+              :inner-call-core-node-id (get inner :core-node-id) :inner-operator-binding-id (get inner :operator-binding-id)
+              :inner-argument-node-ids (get inner :argument-node-ids) :inner-evaluation-order (get inner :evaluation-order)
+              :inner-source-span (get (get inner-node :source) :semantic-span) :inner-edge (body-edge-projection inner-edge)
+              :outer-call-core-node-id (get outer :core-node-id) :outer-operator-binding-id (get outer :operator-binding-id)
+              :outer-argument-node-ids (get outer :argument-node-ids) :outer-evaluation-order (get outer :evaluation-order)
+              :outer-source-span (get (get outer-node :source) :semantic-span) :outer-edge (body-edge-projection outer-edge)
+              :outer-value-argument-node-id (get value-node :node-id) :outer-value-literal-kind (get (get value-node :attributes) :literal-kind)
+              :identity-parameter-type value-type :apply-callable-parameter-type (body-ho-function-type identity-type)
+              :apply-value-parameter-type value-type :identity-function-type (body-ho-function-type identity-type)
+              :apply-function-type (body-ho-function-type apply-type) :inner-result-type value-type :outer-result-type value-type}]
+        (if (body-all? [(vector? (get identity :parameter-binding-ids)) (vector? (get apply :parameter-binding-ids))
+                        (vector? (get inner :argument-node-ids)) (vector? (get outer :argument-node-ids))])
+          (body-all?
+            [(= expected proof) (= [] (get core :recursion-components))
+             (= :named-top-level (get identity :definition-kind) (get apply :definition-kind))
+             (= 1 (get identity :fixed-arity) (count (get identity :parameter-binding-ids)) (count (get inner :argument-node-ids)))
+             (= 2 (get apply :fixed-arity) (count (get apply :parameter-binding-ids)) (count (get outer :argument-node-ids)))
+             (contains? #{:gravity.type/integer :gravity.type/bool :gravity.type/string} value-type)
+             (= (get identity-type :parameters) [{:binding-id (get proof :identity-parameter-binding-id) :type value-type}])
+             (= value-type (get identity-type :return) (get apply-type :return))
+             (= (get apply-type :parameters) [{:binding-id (get proof :apply-callable-binding-id) :type (get proof :identity-function-type)}
+                                             {:binding-id (get proof :apply-value-binding-id) :type value-type}])
+             (= (get apply :body-core-node-id) (get inner-node :node-id))
+             (= :reference (get identity-body :core-form) (get inner-operator :core-form) (get inner-argument :core-form) (get selected-node :core-form))
+             (= (get proof :identity-parameter-binding-id) (get (get identity-body :attributes) :binding-id))
+             (= (get identity :function-syntax-id) (get (get identity-body :evaluation) :owner-function-syntax-id))
+             (= (get proof :apply-callable-binding-id) (get inner :operator-binding-id) (get inner-edge :callee-binding-id)
+                (get (get inner-operator :attributes) :binding-id))
+             (= (get proof :apply-value-binding-id) (get (get inner-argument :attributes) :binding-id))
+             (= (get apply :function-syntax-id) (get (get inner-node :evaluation) :owner-function-syntax-id)
+                (get (get inner-operator :evaluation) :owner-function-syntax-id) (get (get inner-argument :evaluation) :owner-function-syntax-id)
+                (get inner-edge :caller-function-syntax-id))
+             (= :nonlocal-or-nonfunction (get inner-edge :classification))
+             (= nil (get inner-edge :callee-function-syntax-id) (get inner-edge :callee-function-core-node-id))
+             (= (get inner-edge :callee-definition-syntax-id) (get (get bindings (get proof :apply-callable-binding-id)) :definition-syntax-id))
+             (= (get proof :identity-definition-binding-id) (get (get selected-node :attributes) :binding-id))
+             (= (get proof :apply-definition-binding-id) (get outer :operator-binding-id))
+             (= nil (get (get outer-node :evaluation) :owner-function-syntax-id) (get outer-edge :caller-function-syntax-id))]) false)) false)))
 
 (defn body-edge-projection [edge]
   (if (map? edge)
@@ -895,7 +1048,7 @@
                     (vector? (get typed :local-binding-facts)) (vector? (get typed :call-type-facts))
                     (vector? (get core :root-core-node-ids)) (vector? (get core :definitions))
                     (vector? (get core :match-branch-records)) (vector? (get core :evaluation-order))])
-      (if (body-all? [(body-node-shapes? nodes) (body-function-shapes? functions)
+      (if (body-all? [(body-node-shapes? nodes) (body-function-shapes-with-proof? typed)
                       (body-maps? records) (body-maps? edges) (body-maps? calls)
                       (body-maps? locals) (body-maps? (get core :definitions))
                       (body-maps? (get core :match-branch-records))])
@@ -1093,12 +1246,55 @@
               local? (= :local-function (get edge :classification))]
           (if (if (= ordinal (get edge :ordinal))
                 (if local?
-                  (if (body-call-valid? edge (get calls id) (get call-facts id) nodes functions records bindings (get facts :type-table))
+                  (if (if (body-ho-outer-fact-valid? edge (get call-facts id) (get facts :higher-order-proof))
+                        (body-call-valid? edge (get calls id) (get call-facts id) nodes functions records bindings (get facts :type-table)) false)
                     (body-arguments-valid? (get edge :argument-core-node-ids) (get (get call-facts id) :argument-types)
                       (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get facts :type-table)) false)
-                  (if (map? imported)
-                    (body-import-call-valid? edge (get calls id) (get call-facts id) nodes records imported (get facts :type-table)) false)) false)
-            (recur (rest remaining) (+ ordinal 1) (if local? used (conj used (get edge :callee-binding-id)))) false))))))
+                  (if (= id (get (get facts :higher-order-proof) :inner-call-core-node-id))
+                    (body-ho-inner-call-valid? edge (get calls id) (get call-facts id) nodes facts)
+                    (if (map? imported)
+                      (body-import-call-valid? edge (get calls id) (get call-facts id) nodes records imported (get facts :type-table)) false))) false)
+            (recur (rest remaining) (+ ordinal 1)
+              (if (map? imported) (conj used (get edge :callee-binding-id)) used)) false))))))
+
+(defn body-ho-outer-fact-valid? [edge fact proof]
+  (if (= (get edge :call-core-node-id) (get proof :outer-call-core-node-id))
+    (body-all? [(= :direct-local-function (get fact :dispatch))
+                (= (get proof :apply-function-syntax-id) (get fact :selected-apply-function-syntax-id))
+                (= (body-edge-projection edge) (get fact :b47-edge))]) true))
+
+(defn body-ho-inner-call-valid? [edge call fact nodes facts]
+  (let [proof (get facts :higher-order-proof) node (get nodes (get edge :call-core-node-id)) source (get node :source)
+        types (get facts :type-table) value-type (get proof :inner-result-type)]
+    (if (body-all? [(map? fact) (vector? (get call :argument-node-ids)) (vector? (get node :children))])
+    (body-all?
+      [(= (get proof :inner-call-core-node-id) (get edge :call-core-node-id) (get call :core-node-id) (get fact :call-core-node-id))
+       (= :nonlocal-or-nonfunction (get edge :classification)) (= :call (get node :core-form))
+       (= (get proof :apply-function-syntax-id) (get edge :caller-function-syntax-id) (get fact :caller-function-syntax-id))
+       (= (get proof :apply-function-core-node-id) (get edge :caller-function-core-node-id))
+       (= nil (get edge :callee-function-syntax-id) (get edge :callee-function-core-node-id) (get fact :callee-function-syntax-id))
+       (= (get proof :inner-edge) (body-edge-projection edge) (get fact :b47-edge))
+       (= (get proof :apply-callable-binding-id) (get edge :callee-binding-id) (get call :operator-binding-id)
+          (get fact :callable-parameter-binding-id))
+       (= (get proof :identity-function-syntax-id) (get fact :selected-identity-function-syntax-id))
+       (= :indirect-function-value (get fact :dispatch)) (= true (get fact :higher-order-call?))
+       (= :gravity/c7-call-type-fact (get fact :artifact)) (= :inferred (get fact :status))
+       (= (get proof :inner-argument-node-ids) (get call :argument-node-ids) (get edge :argument-core-node-ids)
+          (vec (rest (get node :children))))
+       (= (get node :children) (get call :ordered-evaluation-node-ids) (get edge :ordered-evaluation-node-ids))
+       (= :operator-then-arguments (get fact :evaluation-order) (get call :evaluation-order) (get edge :evaluation-order))
+       (= [value-type] (get fact :argument-types))
+       (= value-type (get fact :result-type) (get types (get node :node-id))
+          (get types (first (get call :argument-node-ids))))
+       (= (get proof :identity-function-type) (get types (first (get node :children))))
+       (= (get (get facts :module) :effects) (get fact :effects))
+       (= (get (get facts :module) :capabilities) (get fact :capabilities))
+       (= (get (get facts :module) :profile) (get fact :profile)) (= (get (get facts :module) :target) (get fact :target))
+       (= (get source :syntax-id) (get fact :syntax-id)) (= (get source :semantic-span) (get fact :source-span))
+       (= (get source :origin-chain) (get fact :origin-chain)) (= (get source :generated-origin) (get fact :generated-origin))
+       (= {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id (get node :node-id)
+           :callee-function-syntax-id nil :argument-types [value-type] :result-type value-type :higher-order-call? true}
+          (get fact :fact-id-request))]) false)))
 
 (defn body-select [records field value]
   (loop [remaining records result []]
@@ -1227,6 +1423,21 @@
     (assoc base :foreign-body-dependency (assoc (get imported :coordinate) :body-core-node-id (get imported :body-core-node-id))
                 :transitive effects :escaping effects)))
 
+(defn body-selected-function [edge facts functions]
+  (let [proof (get facts :higher-order-proof)]
+    (if (if (map? proof) (= (get edge :call-core-node-id) (get proof :inner-call-core-node-id)) false)
+      (get functions (get proof :identity-function-syntax-id))
+      (get functions (get edge :callee-function-syntax-id)))))
+
+(defn body-local-node-record [node target graph type facts edge]
+  (let [base (body-node-record node target graph type) proof (get facts :higher-order-proof)]
+    (if (if (map? proof) (= (get node :node-id) (get proof :inner-call-core-node-id)) false)
+      (assoc base :call-body-dependency nil
+        :selected-body-dependency {:proof-domain (get proof :domain)
+          :identity-definition-binding-id (get proof :identity-definition-binding-id)
+          :function-id (get proof :identity-function-syntax-id) :body-core-node-id target
+          :callable-parameter-binding-id (get proof :apply-callable-binding-id) :source-edge (body-edge-projection edge)}) base)))
+
 (defn body-derive-nodes-pass [core typed foreign budget recursive summary]
   (let [edges (body-index (get core :call-edges) :call-core-node-id)
         functions (body-index (get typed :function-type-table) :function-id)]
@@ -1238,7 +1449,7 @@
             {:status :rejected :reason :cyclic-or-missing-body-effect-dependencies}))
         (if (>= work budget) (body-failure :body-deferred-work-limit)
         (let [node (first pending) kind (get node :core-form) id (get node :node-id)
-              edge (get edges id) function (get functions (get edge :callee-function-syntax-id))
+              edge (get edges id) function (body-selected-function edge typed functions)
               imported (get foreign (get edge :callee-binding-id))
               target (if (= kind :call) (if (= imported nil) (get function :body-core-node-id) nil) nil)
               backedge? (= id (get recursive :recursive-call-core-node-id))
@@ -1249,9 +1460,9 @@
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
                        (assoc graph id (if (= imported nil)
-                                         (body-node-record node target
+                                         (body-local-node-record node target
                                            (if backedge? (assoc graph target {:transitive summary}) graph)
-                                           (get (get typed :type-table) id))
+                                           (get (get typed :type-table) id) typed edge)
                                          (body-foreign-node-record node imported graph (get (get typed :type-table) id))))
                        (+ progress 1) rounds (+ work 1))
                 (recur (rest pending) (conj deferred node) graph progress rounds (+ work 1)))
@@ -1269,11 +1480,11 @@
         (let [node (first remaining) id (get node :node-id) edge (get edges id)
               imported (get foreign (get edge :callee-binding-id))
               target (if (= :call (get node :core-form))
-                       (if (= imported nil) (get (get functions (get edge :callee-function-syntax-id)) :body-core-node-id) nil) nil)
+                       (if (= imported nil) (get (body-selected-function edge facts functions) :body-core-node-id) nil) nil)
               deps (if (= target nil) (get node :children) (conj (get node :children) target))]
           (if (if (body-ready? deps graph)
                 (= (get graph id)
-                   (if (= imported nil) (body-node-record node target graph (get (get facts :type-table) id))
+                   (if (= imported nil) (body-local-node-record node target graph (get (get facts :type-table) id) facts edge)
                      (body-foreign-node-record node imported graph (get (get facts :type-table) id)))) false)
             (recur (rest remaining)) false))))))
 
@@ -1352,9 +1563,10 @@
   (let [core (get request :canonical-core-artifact)
         bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
     (if (body-shape-valid? core facts)
-      (if (if (body-function-joins-valid? core facts bindings)
+      (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
+            (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
-              (body-local-joins-valid? core facts bindings) false) false)
+              (body-local-joins-valid? core facts bindings) false) false) false)
         (let [derived (if (contains? facts :recursive-proof)
                         (body-derive-recursive-nodes core facts foreign budget)
                         (body-derive-nodes-with-foreign core facts foreign budget))]
@@ -1407,15 +1619,17 @@
 (defn body-accepted-result [typed binding core graph bank foreign]
   (let [imported? (body-imported? typed)
         scope (if imported? :direct-imported-body-effects-with-thrown-effects-pending
-                (if (body-recursive? typed) :bounded-self-recursive-body-effects-with-thrown-effects-pending
-                  :local-first-order-body-effects-with-thrown-effects-pending))
+                (if (body-higher-order? typed) :capture-free-one-hop-body-effects-with-thrown-effects-pending
+                  (if (body-recursive? typed) :bounded-self-recursive-body-effects-with-thrown-effects-pending
+                    :local-first-order-body-effects-with-thrown-effects-pending)))
         producer-graphs (body-producer-graph-identities bank)
         dependencies (loop [ids (keys foreign) result {}]
                        (if (= 0 (count ids)) result
                          (let [id (first ids) target (get foreign id)]
                            (recur (rest ids) (assoc result id (assoc (get target :coordinate) :body-core-node-id (get target :body-core-node-id)))))))
         identity {:domain (if imported? :gravity/sh09-direct-imported-body-effects-v1
-                            (if (body-recursive? typed) :gravity/sh09-bounded-self-recursive-body-effects-v1 :gravity/sh09-local-body-effects-v1))
+                            (if (body-higher-order? typed) :gravity/sh09-capture-free-one-hop-body-effects-v1
+                              (if (body-recursive? typed) :gravity/sh09-bounded-self-recursive-body-effects-v1 :gravity/sh09-local-body-effects-v1)))
                   :canonical-core-identity-input (get core :identity-preimage)
                   :sh08-identity-input (get typed :identity-input) :effect-graph graph :scope scope :pending (body-effect-pending)}
         identity (if imported? (assoc identity :producer-effect-graphs producer-graphs :imported-body-dependencies dependencies) identity)

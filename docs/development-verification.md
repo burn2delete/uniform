@@ -303,6 +303,49 @@ This bounded analysis does not prove program termination, recursion depth,
 tail-call optimization, mutual recursion, callable recursion, completed thrown
 effects, full effect legality, target execution or authoritative migration.
 
+### Capture-free callable body analysis
+
+The body interface recognizes C7's existing named identity/apply-one proof,
+not arbitrary higher-order values or the older fixture bridges. The callable
+parameter is allowed only at the exact proof-selected apply slot, with the
+original nested function type. Other callable parameters, callable returns,
+captures, multi-hop dispatch and higher-order recursion remain separate work.
+
+The inner call keeps its original nonlocal C6 edge and nil direct callee. A
+separate selected-body dependency joins the outer function-value argument,
+callable parameter, inner operator/argument, selected identity function and
+actual body. Carrying or constructing a function value does not execute it;
+the inner invocation propagates its derived body effects. C7 declaration
+allowances do not replace that derivation. Pending throws and legality remain
+pending.
+
+Run the direct checks first:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-callable-proof-development-kernel \
+  --exact body-effect-callable-dependency-development-kernel
+```
+
+The affected real composition uses
+`body-effect-callable-authenticated-paired-composition` in the same namespace.
+The separate `body-effect-callable-current-c7-rejections` selector covers the
+real nonfunction and capture fixture pairs.
+It consumes fresh C7 construction/verification and the original complete
+binding. A direct scalar import can select the producer's identity export while
+the complete producer graph also contains its validated apply body. The
+selected imported function must still have a first-order signature; this is
+not an imported callable API. Original producer coordinates and full private
+body coverage remain required. The existing aggregate bounds, unchanged public
+C8 forwarding checks and public-bundle rerun triggers apply. Actual results
+are recorded separately in the slice backlog, not inferred from these commands.
+Current C7 diagnostic precedence, rather than historical fixture comments,
+defines the rejection oracle. An oracle-only correction does not require
+repeating already completed positive composition when production and fixture
+bytes are unchanged; retain the failed aggregate and run the affected negative
+selector separately.
+
 ### Compiler-artifact module execution
 
 The temporary seed interpreter has a separate, explicitly unadmitted module
