@@ -1663,6 +1663,271 @@
         (is (identical? payload (first result)))))
     (is (= [:outer "" :normal] (evaluate {:op :do :body [(:binder lowered) {:op :local :name 'remainder}]} true)))))
 
+(defn- typed-structural-match-kernel-data [base]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [helper #(ns-resolve 'gravity.self-hosting.sh08-function-call-type-test %)
+        invoke (fn [f args] ((helper 'invoke-c7) f args))
+        {:keys [core products forms nodes bindings lexical binding-types item match-id sha]} ((helper 'structural-match-products-input))
+        forms (-> forms (assoc-in [(sha 109) :value] 'packet) (assoc-in [(sha 109) :parent-form-id] match-id)
+                  (assoc-in [(sha 501) :value] 'fallback)
+                  (assoc (sha 503) {:form-id (sha 503) :syntax-id (sha 503) :kind :symbol :value 'match
+                                    :parent-form-id match-id :child-form-ids []}))
+        forms (reduce (fn [out node] (let [id (get-in node [:source :form-id])]
+                                       (if (get-in out [id :source-span]) out
+                                           (assoc-in out [id :source-span] (get-in node [:source :semantic-span]))))) forms (:nodes core))
+        forms (into {} (map (fn [[id form]] [id (assoc form :origin-chain [] :generated-origin nil)]) forms))
+        nodes (into {} (map (fn [node] [(:node-id node) (assoc node :source {:form-id (get-in node [:source :form-id])
+                                 :syntax-id (get-in node [:source :syntax-id]) :semantic-span (get-in forms [(get-in node [:source :form-id]) :source-span])
+                                 :origin-chain [] :generated-origin nil})])) (:nodes core))
+        core (assoc core :nodes (mapv #(get nodes (:node-id %)) (:nodes core)) :module (get-in base [:core :module]))
+        products (assoc products :node-table nodes)
+        joined (invoke 'sh08-bm-products [core products (vec (vals forms))])
+        inference (invoke 'sh08-ft-infer-acyclic-with-context
+                          [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches (:boolean-matches joined)}])
+        types (:type-table inference)
+        checked (invoke 'sh08-bm-checks [(:boolean-matches joined) types {} {:profile :meta :target :jvm}])
+        context (-> base (update :forms merge forms) (update :nodes merge nodes) (update :types merge types)
+                    (update :bindings merge bindings) (update :core merge core)
+                    (assoc :ledger (:constraints checked) :locals {(sha 2000) 'packet (sha 1002) 'fallback}
+                           :parameter-types {(sha 2000) (get types (sha 109)) (sha 1002) :gravity.type/i64} :tail? true))]
+    {:context context :match-id match-id :sha sha :item item :checked checked :joined joined}))
+
+(deftest current-gravity-structural-match-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        {:keys [context match-id sha item checked joined]} (typed-structural-match-kernel-data (:value (invoke 'p15-s23-typed-context module input observation)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 match-id %2)
+        result (compile context 65536)
+        expected {:op :structural-match :scrutinee {:op :local :name 'packet}
+                  :clauses [{:pattern {:kind :map :entries [{:key :payload :pattern {:kind :vector :items
+                                     [{:kind :literal :family :boolean :value true}
+                                      {:kind :map :entries [{:key :value :pattern {:kind :binding :name 'item}}]}]}}]}
+                             :body {:op :local :name 'item}}
+                            {:pattern {:kind :wildcard} :body {:op :local :name 'fallback}}]}]
+    (is (= :accepted (:status joined)) (pr-str joined))
+    (is (= [] (:diagnostics checked)) (pr-str checked))
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= expected (:value result)))
+    (when (= :complete (:status result))
+      (is (= result (compile context (:work-count result))))
+      (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count result))) [:facts :reason]))))
+    (is (= {:structural-match 1 :local 3} (:value (invoke 'p15-s23-summary-instruction expected {}))))
+    (doseq [changed [(assoc context :ledger []) (update context :ledger #(vec (reverse %)))
+                     (update context :ledger conj (first (:ledger context)))
+                     (assoc-in context [:ledger 0 :constraint-id-request :pattern-tree :children 0 :coordinate] 0)
+                     (assoc-in context [:ledger 0 :extractions 0 :scope-id] :forged)
+                     (assoc-in context [:ledger 0 :solution :binding-extractions 0 :constructor-path] [])
+                     (assoc-in context [:ledger 0 :branch-source :syntax-id] :forged)
+                     (assoc-in context [:bindings item :scope-id] :forged)
+                     (assoc-in context [:nodes match-id :attributes :guard-rule-version] :guard)
+                     (assoc-in context [:core :match-pattern-records 4 :path] [])
+                     (assoc-in context [:forms (sha 606) :value] 'other)
+                     (assoc-in context [:nodes (sha 500) :attributes :binding-id] :other)]]
+      (is (= :rejected (:status (compile changed 65536)))))))
+
+(deftest current-gravity-structural-integer-pattern-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [invoke (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        tree {:record {:pattern-kind :literal :pattern-value 7} :form {:kind :integer}}
+        shape {:shape-kind :scalar :type :gravity.type/integer :domain {:values [7 8]}}
+        result (invoke 'sh08-sm-split [shape tree])]
+    (is (= :accepted (:status result)))
+    (is (= [7] (get-in result [:selected 0 :domain :values])))
+    (is (= [8] (get-in result [:residual 0 :domain :values])))
+    (is (= :unsupported-numeric-pattern-elaboration (:reason (invoke 'sh08-sm-split [(assoc shape :type :gravity.type/i64) tree]))))))
+
+(deftest current-gravity-structural-match-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {'item :outer} ""])
+        lit (fn [value] {:op :literal :value value})
+        atom-pattern (fn [family value] {:kind :literal :family family :value value})
+        binder {:kind :binding :name 'item} wildcard {:kind :wildcard}
+        pattern {:kind :map :entries [{:key :payload :pattern {:kind :vector :items [(atom-pattern :boolean true)
+                           {:kind :map :entries [{:key :value :pattern binder}]}]}}]}
+        instruction (fn [value pattern] {:op :structural-match :scrutinee (lit value)
+                                         :clauses [{:pattern pattern :body {:op :local :name 'item}}
+                                                   {:pattern wildcard :body (lit :fallback)}]})
+        payload (String. "structural payload")
+        accepted (instruction {:extra :retained :payload [true {:value payload}]} pattern)]
+    (is (= [payload "" :normal] (evaluate accepted)))
+    (is (identical? payload (first (evaluate accepted))))
+    (doseq [value [{:payload [false {:value payload}]} {:payload [true {:value payload} :extra]} {:payload []}
+                   {:payload [true {}]} {:missing [true {:value payload}]} [] nil]]
+      (is (= [:fallback "" :normal] (evaluate (instruction value pattern)))))
+    (let [nil-pattern {:kind :map :entries [{:key :present :pattern (atom-pattern :nil nil)}]}]
+      (is (= [:outer "" :normal] (evaluate (instruction {:present nil} nil-pattern))))
+      (is (= [:fallback "" :normal] (evaluate (instruction {} nil-pattern)))))
+    (doseq [[family value other] [[:boolean true 1] [:string "same" :same] [:keyword :same "same"]
+                                  [:symbol 'same "same"] [:character \a "a"] [:integer 7 "7"] [:nil nil false]]]
+      (is (= [:outer "" :normal] (evaluate (instruction value (atom-pattern family value)))))
+      (is (= [:fallback "" :normal] (evaluate (instruction other (atom-pattern family value))))))
+    (let [partial {:kind :vector :items [binder (atom-pattern :boolean true)]}]
+      (is (= [:fallback "" :normal] (evaluate (instruction [payload false] partial))))
+      (is (= [:outer "" :normal] (evaluate {:op :structural-match :scrutinee (lit [payload false])
+                                             :clauses [{:pattern partial :body (lit :unreachable)}
+                                                       {:pattern wildcard :body {:op :local :name 'item}}]})))
+      (is (= [:outer "" :normal] (evaluate {:op :do :body [accepted {:op :local :name 'item}]}))))
+    (let [marker {:op :println :args [(lit "once")] :effect :io/write :capability :io/stdout}
+          marked (update accepted :scrutinee #(hash-map :op :do :body [marker %]))]
+      (is (= [payload "once\n" :normal] (evaluate marked)))
+      (let [result (evaluate (assoc marked :scrutinee {:op :do :body [marker {:op :throw :value (lit payload)}]}))]
+        (is (= [payload "once\n" :thrown] result)) (is (identical? payload (first result))))
+      (is (= "" (second (evaluate (assoc-in marked [:clauses 0 :pattern] {:kind :unknown}))))))
+    (let [equiv-calls (atom 0) hash-calls (atom 0) failure (AssertionError. "opaque comparison")
+          opaque (HostilePersistentCallee. equiv-calls hash-calls failure)]
+      (doseq [[family value] [[:nil nil] [:boolean true] [:string "s"] [:keyword :key] [:symbol 's] [:character \a] [:integer 7]]]
+        (is (= [:fallback "" :normal] (evaluate (instruction opaque (atom-pattern family value))))))
+      (is (= [0 0] [@equiv-calls @hash-calls])))
+    (let [again {:op :recur :target "selected" :args [(lit payload)]}
+          selected (assoc accepted :clauses [{:pattern wildcard :body again}])
+          execute #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-with-targets
+                    [% {} "" {} [] [{:id "selected" :names ['value]}]])
+          transfer (execute selected)]
+      (is (= [[payload] "" :recur "selected"] transfer))
+      (is (identical? payload (get-in transfer [0 0])))
+      (is (= :rejected (get (execute (assoc selected :scrutinee again)) 2))))
+    (let [failure (AssertionError. "original fatal") environment (ThrowingAssociative. failure)
+          observed (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan
+                     'p15-s23-runtime-evaluate-closed-instruction [(instruction payload binder) environment ""]))]
+      (is (identical? failure observed)))
+    (let [rejected (evaluate (assoc accepted :scrutinee {:op :unsupported}))]
+      (is (= ["" :rejected] (subvec rejected 1)))
+      (is (= "P15S23X002" (get-in rejected [0 :diagnostic]))))
+    (doseq [bad [(assoc accepted :extra true) (assoc accepted :clauses [])
+                 (assoc-in accepted [:clauses 0 :pattern :entries 0 :key] "payload")
+                 (assoc-in accepted [:clauses 0 :pattern] {:kind :literal :family :decimal :value {:unscaled-value "7"}})
+                 (assoc-in accepted [:clauses 0 :pattern] {:kind :vector :items [binder binder]})
+                 (assoc-in accepted [:clauses 0 :pattern] {:kind :map :entries [{:key :a :pattern wildcard} {:key :a :pattern wildcard}]})
+                 (assoc-in accepted [:clauses 0 :pattern] {:kind :wildcard :extra true})
+                 (assoc-in accepted [:clauses 0 :pattern] (nth (iterate #(hash-map :kind :vector :items [%]) wildcard) 130))
+                 (assoc-in accepted [:clauses 0 :pattern] {:kind :vector :items (vec (repeat 65536 wildcard))})
+                 (assoc-in accepted [:clauses 0 :body] nil)]]
+      (let [result (evaluate bad)]
+        (is (= :rejected (get result 2))) (is (= "P15S23X002" (get-in result [0 :diagnostic])))))
+    (let [no-match (assoc accepted :clauses [{:pattern (atom-pattern :boolean true) :body (lit :bad)}])]
+      (is (= :structural-match-no-selected-clause (get-in (evaluate no-match) [0 :reason]))))))
+
+(deftest current-gravity-structural-match-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition suffix functions] [["accepted" "" 14] ["rejected" "-pattern" 1]
+                                           ["rejected" "-absent" 1] ["rejected" "-width" 1]
+                                           ["rejected" "-branch-type" 1] ["rejected" "-binder-escape" 1]]]
+      (let [base (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/local-runtime-structural-match" suffix)
+            path (.getPath (io/file root (str base ".gravity"))) text (slurp path)]
+        (is (= text (slurp (io/file root (str base ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(deftest current-gravity-structural-match-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "structural source payload") fallback (String. "original fallback") problem (String. "original callee failure")
+        specifications [['choose [true payload fallback] payload :normal] ['choose [false payload fallback] fallback :normal]
+                        ['multi [true payload] payload :normal] ['multi [false payload] payload :normal]
+                        ['rollback [true payload fallback] payload :normal] ['rollback [false payload fallback] fallback :normal]
+                        ['nested [true payload] payload :normal] ['nested [false payload] payload :normal]
+                        ['present-nil [] "present" :normal] ['absent-map [] "absent" :normal] ['quoted [] "quoted" :normal]
+                        ['literals [] "literals" :normal]
+                        ['checked [false true payload problem fallback] payload :normal]
+                        ['checked [false false payload problem fallback] fallback :normal]
+                        ['checked [true true payload problem fallback] problem :thrown]
+                        ['checked-wrapper [false true payload problem fallback] payload :normal]
+                        ['checked-wrapper [true true payload problem fallback] problem :thrown]
+                        ['selected-recur [true payload] payload :normal] ['selected-recur [false payload] payload :normal]
+                        ['main [] "payload" :normal]]
+        cases (mapv
+               (fn [extension]
+                 (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-structural-match" extension)
+                       path (.getPath (io/file root relative)) text (slurp path)
+                       products (fresh relative) input (select-keys products [:request :typed :verification])
+                       macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                       parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                       module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                       definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                       typed-check (is (= :accepted (get-in input [:typed :status])) (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                       verification-check (is (= :passed (get-in input [:verification :status])))
+                       ready (when-not (and typed-check verification-check)
+                               (throw (ex-info "Structural-match source products rejected before lowering"
+                                               {:typed-status (get-in input [:typed :status]) :diagnostics (vec (take 3 (get-in input [:typed :diagnostics])))})))
+                       standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'choose) input))
+                       assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                       rows (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (get-in input [:typed :constraint-ledger]))
+                       core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                       effects (c8 'body-analyze-module (:request input) facts {} 65536)
+                       matches (filterv #(= :match (:core-form %)) (:nodes core))]
+                   (is (= 14 (count (:functions assembled))))
+                   (is (= 17 (count rows)))
+                   (is (= 11 (count matches) (get-in assembled [:instruction-summary :structural-match])))
+                   (is (= {:map-literal 7 :vector-literal 6 :if 2 :quote 2 :recur 1}
+                          (select-keys (:instruction-summary assembled) [:map-literal :vector-literal :if :quote :recur])))
+                   (is (= standalone (get-in assembled [:functions 'choose])))
+                   (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                   (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+                   (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+                   (doseq [[name args expected status] specifications]
+                     (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                            [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                       (is (= [expected "" status] result) [extension name result])
+                       (when (or (identical? expected payload) (identical? expected fallback) (identical? expected problem))
+                         (is (identical? expected (first result))))))
+                   (is (= :accepted (:status effects)) (pr-str (select-keys effects [:reason :diagnostics])))
+                   (when (= :accepted (:status effects))
+                     (doseq [node matches]
+                       (is (= [(first (:children node))] (get-in effects [:graph :nodes (:node-id node) :evaluated-children])))
+                       (is (= (dec (count (:children node))) (count (get-in effects [:graph :nodes (:node-id node) :conditional-coverage])))))
+                     (let [functions (into {} (map (juxt :definition-name identity)) (:function-type-table facts))]
+                       (doseq [name ['gate 'checked 'checked-wrapper]]
+                         (is (= [:gravity.type/string] (get-in effects [:graph :functions (get-in functions [name :function-id]) :throws])))))
+                     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects) 65536)))))
+                   {:input input :module module :definitions definitions :rows rows})) [".gravity" ".qst"])
+        {:keys [input module definitions rows]} (first cases)
+        row (first (filter #(seq (:extractions %)) rows)) ledger (get-in input [:typed :constraint-ledger])
+        row-index (first (keep-indexed #(when (= (:constraint-id-request row) (:constraint-id-request %2)) %1) ledger))
+        changed-extractions (assoc-in (:extractions row) [0 :constructor-path] [])
+        changed-tree (assoc-in (get-in row [:constraint-id-request :pattern-tree]) [:children 0 :coordinate] 0)
+        changed-scope (assoc-in (get-in row [:constraint-id-request :pattern-tree])
+                               [:children 0 :tree :children 1 :tree :children 0 :tree :record :pattern-binding-scope-id] :forged)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    ;; These coherent carrier mutations must be rejected by fresh public C7;
+    ;; lowering never treats an extraction path as a runtime indexing shortcut.
+    (doseq [changed-row [(-> row (assoc :extractions changed-extractions)
+                            (assoc-in [:dependencies :extractions] changed-extractions)
+                            (assoc-in [:solution :binding-extractions] changed-extractions))
+                        (-> row (assoc-in [:constraint-id-request :pattern-tree] changed-tree) (assoc-in [:dependencies :pattern-tree] changed-tree))
+                        (-> row (assoc-in [:constraint-id-request :pattern-tree] changed-scope) (assoc-in [:dependencies :pattern-tree] changed-scope))
+                        (assoc row :remaining-before [] :exhaustive-after? false)]]
+      (let [changed (assoc-in input [:typed :constraint-ledger row-index] changed-row)
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'choose) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 8 (count @verified)))
+    (doseq [[suffix rule reason] [["pattern" "L7-PATTERN-TYPE" :structural-pattern-type-mismatch]
+                                 ["absent" "L7-UNREACHABLE" :unreachable-structural-match-clause]
+                                 ["width" "L7-UNREACHABLE" :unreachable-structural-match-clause]
+                                 ["branch-type" "C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-structural-match-" suffix ".gravity"))
+            failure (first (get-in products [:typed :diagnostics]))]
+        (is (= :rejected (get-in products [:typed :status])))
+        (is (= [rule reason] ((juxt :rule :reason) failure)))))
+    (is (= "C5-UNRESOLVED" (:id (diagnostic #(fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-structural-match-binder-escape.gravity")))))))
+
 (deftest current-gravity-boolean-match-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -2097,7 +2362,9 @@
                  p15-s23-runtime-function-valid? p15-s23-runtime-activate-function
                  p15-s23-runtime-evaluate-with-targets p15-s23-runtime-loop-valid? p15-s23-runtime-recur-valid? p15-s23-runtime-evaluate-loop
                  p15-s23-runtime-typed-handlers-valid? p15-s23-runtime-atomic-error-match? p15-s23-runtime-select-typed-handler
-                 p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
+                 p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan
+                 p15-s23-runtime-pattern-atom? p15-s23-runtime-structural-match-valid?
+                 p15-s23-runtime-match-pattern p15-s23-runtime-evaluate-structural-match}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (names (second %))) runtime-forms)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path)
@@ -2107,7 +2374,7 @@
                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
                     'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         verifier 'sh08-verify-function-type-result original bootstrap/p15-s23-stage2-runtime-execute-function]
-    (is (= 22 (count selected)))
+    (is (= 26 (count selected)))
     (is (= selected (vec (rest runtime-forms))))
     (is (= (str "sha256:" (bootstrap/sha256-hex runtime-text)) (get-in runtime-plan [:source :sha256])))
     (is (not= (:path compatibility-source) runtime-path))
@@ -2183,13 +2450,15 @@
                  'p15-s23-runtime-evaluate-with-targets 6 'p15-s23-runtime-loop-valid? 2 'p15-s23-runtime-recur-valid? 2 'p15-s23-runtime-evaluate-loop 6
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1
-                 'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3}
+                 'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3
+                 'p15-s23-runtime-pattern-atom? 2 'p15-s23-runtime-structural-match-valid? 1
+                 'p15-s23-runtime-match-pattern 3 'p15-s23-runtime-evaluate-structural-match 6}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) forms)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 22 (count selected) (count (set (map second selected)))))
+    (is (= 26 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -3475,6 +3744,8 @@
                  'p15-s23-runtime-function-valid? 2 'p15-s23-runtime-activate-function 5
                  'p15-s23-runtime-evaluate-with-targets 6 'p15-s23-runtime-loop-valid? 2 'p15-s23-runtime-recur-valid? 2 'p15-s23-runtime-evaluate-loop 6
                  'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3
+                 'p15-s23-runtime-pattern-atom? 2 'p15-s23-runtime-structural-match-valid? 1
+                 'p15-s23-runtime-match-pattern 3 'p15-s23-runtime-evaluate-structural-match 6
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) parent-forms)
@@ -3491,7 +3762,7 @@
         seed-transports (atom 0) original (var-get transport)]
     ;; Compile the entire implementation file and retain the separate compatibility source identity.
     (is (= text (slurp source-path)))
-    (is (= 22 (count selected) (count (set (map second selected)))))
+    (is (= 26 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest parent-forms))))
     (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
@@ -4055,7 +4326,9 @@
         implementation-forms (bootstrap/read-forms implementation-path implementation-text)
         implementation-functions (vec (rest implementation-forms))
         functions (vec (concat (take 4 compatibility-functions) implementation-functions (drop 8 compatibility-functions)))
-        preserved-functions (fn [forms] (filterv #(not= 'p15-s23-runtime-evaluate-with-targets (second %)) forms))
+        preserved-functions (fn [forms] (filterv #(not (contains? '#{p15-s23-runtime-evaluate-with-targets
+                                           p15-s23-runtime-pattern-atom? p15-s23-runtime-structural-match-valid?
+                                           p15-s23-runtime-match-pattern p15-s23-runtime-evaluate-structural-match} (second %))) forms))
         underlying (fn [value] (if (and (seq? value) (= 'quote (first value))) (second value) value))
         data (mapv #(vector (second %) (underlying (nth % 2))) definitions)
         digest #(bootstrap/sha256-hex (pr-str (bootstrap/c-backend-canonical-value %)))
@@ -4072,7 +4345,9 @@
                   p15-s23-runtime-function-valid? 2 p15-s23-runtime-loop-valid? 2
                   p15-s23-runtime-println-output 2 p15-s23-runtime-println-two 2 p15-s23-runtime-println-value 1
                   p15-s23-runtime-recur-valid? 2 p15-s23-runtime-select-handler-in-context 6
-                  p15-s23-runtime-select-typed-handler 3 p15-s23-runtime-typed-handlers-valid? 1}
+                  p15-s23-runtime-select-typed-handler 3 p15-s23-runtime-typed-handlers-valid? 1
+                  p15-s23-runtime-pattern-atom? 2 p15-s23-runtime-structural-match-valid? 1
+                  p15-s23-runtime-match-pattern 3 p15-s23-runtime-evaluate-structural-match 6}
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         literals-var (module-private 'p15-s23-stage2-module-literals)
         original-literals @literals-var observed (atom [])
@@ -4092,15 +4367,16 @@
                          {:entrypoint 'main :functions {'main {:arity 0 :params [] :instructions [%]}}})
         payload (String. "original runtime payload")]
     ;; C/D's complete-body conservation result is historical. F intentionally
-    ;; changes evaluate-with-targets; these digests cover the other 21/29 bodies.
+    ;; changes evaluate-with-targets; L adds four private structural helpers.
+    ;; These historical digests cover the same other 21/29 original bodies.
     ;; Catalog DATA and current complete source identities remain checked.
     (is (= 23 (count data)))
     (is (= "68697377c7914c2442f2c6ae916984ddfebfb3fd77aa4b3ba3b385ea2db1bfe0" (digest data)))
     (is (= 29 (count (preserved-functions functions))))
     (is (= "680b2af4243eacd44211249930dd521728fc0cf625957817c617599519831984" (digest (preserved-functions functions))))
-    (is (= 30 (count functions)))
+    (is (= 34 (count functions)))
     (is (= 12 (count compatibility-functions)))
-    (is (= 22 (count implementation-functions) (count (:functions compiled))))
+    (is (= 26 (count implementation-functions) (count (:functions compiled))))
     (is (= 21 (count (preserved-functions implementation-functions))))
     (is (= "d78ce93eb159ce90c31d23c29d588744b336c46301d21b593dc06240ac2ab8c1" (digest (preserved-functions implementation-functions))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) functions))))

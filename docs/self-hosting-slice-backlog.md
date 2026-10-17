@@ -1266,6 +1266,77 @@ remain outstanding. This finite implementation limit does not impose a
 universal L7 totality rule. Normally returning guards retain L7's Bool-only
 policy. No historical authority pin is refreshed by this development work.
 
+### Constructor-linked structural match execution: development increment
+
+The Gravity emitter now projects C7's existing unguarded structural pattern
+trees into one closed internal `:structural-match` instruction, evaluated by
+the stage-owned Gravity runtime. Fixed vectors require exact width; literal-
+Keyword subset maps permit extra keys and distinguish absent keys from present
+nil. Nested wildcard, lexical binding and represented primitive leaves preserve
+source order. Family checks precede literal equality. Represented Integer
+matching does not authorize coercion to fixed-width numeric types.
+
+C7 continues to own constructor shapes, partitioning, extraction facts and
+exhaustiveness. The emitter joins the consumed tree, source coordinates,
+clauses, binding scopes, narrowed types and uses instead of duplicating that
+solver. Runtime bindings from a failed partial pattern are discarded before
+the next clause. The scrutinee executes once without an outer recur target;
+the selected body retains its own tail target and original control payload.
+The runtime's four public exports remain unchanged. Descriptor bounds are
+local shape bounds, not a global evaluator CPU or termination proof.
+
+The final normalized group passed twelve tests/291 assertions: structural
+lowering, runtime behavior, represented Integer matching, fixture parity,
+unchanged-runtime conservation, existing Boolean lowering/routes, three C7
+structural/quoted-shape kernels and two C8 operation/coverage kernels. Controls
+include exact lowering work limits, malformed source/scope/coordinate evidence,
+absent-versus-nil and width, same-name binder rollback, opaque values with zero
+equality/hash calls, validation before output, recur boundaries and original
+fatal-error identity. At 2 GiB the outer test execution took 2.015 seconds,
+separate from 7.644 seconds of runtime-test namespace loading and 0.482 seconds
+for the additional type-test namespace. Overlapping earlier focused runs are
+not added as unique coverage.
+
+Earlier invocations exposed a matcher delimiter error, an unsupported seed
+`merge` call, normalized fixture origin mismatch and a test delimiter error.
+Those failed invocations remain failed. The corrections preserve the strict
+production source join and use a private map-extension loop without extending
+the seed. Scoped independent review accepted the frozen candidate for one
+affected real-source composition. That original run passed one test/177
+assertions without a retry or input changes.
+
+Each real source spelling supplied one fresh product reused for public
+function lowering, complete fourteen-function assembly, twenty top-level guest
+executions and actual C8 body analysis. The forty executions cover returned
+and quoted constructors, nested shadowing, multiple binders, partial-binding
+rollback, called throws with original String identity, and source-verified
+selected-body function recur. Each source contains eleven matches and
+seventeen structural rows. Both C8 analyses preserve conditional coverage and
+conservative throw propagation, and reject an undeclared allowance.
+
+Eight tracked emitter operations freshly entered public C7 verification:
+four positive compile/assembly operations and four coherent mutations. The
+mutations change extraction paths across their aliases, pattern coordinates,
+binding scopes or remaining-domain evidence and reject with `P15S23Q002`.
+That count excludes the source-product constructor's upstream verification.
+Four additional `.gravity` inputs reject incompatible patterns with
+`L7-PATTERN-TYPE`, known absent-key and wrong-width clauses with
+`L7-UNREACHABLE`, and reachable result mismatch with `C7-TYPE-MISMATCH`.
+A fifth rejects binder escape with `C5-UNRESOLVED`. Their rejected `.qst`
+pairs were checked for byte parity, not separately type-checked.
+
+At 2 GiB the selected composition took 737.988 seconds, outer test execution
+737.990 seconds and namespace loading 7.584 seconds. All fifteen compiler,
+runtime, test and fixture files stayed unchanged across the final focused and
+composition runs. These different workloads do not establish a speedup or
+identify which construction phase dominates. No unchanged Boolean, lookup,
+map, vector or quote proof matrix was replayed.
+
+Guards, additional L7 pattern families, complete profile legality, documented
+target lowering, authoritative migration, self-hosting and release remain
+outstanding. Existing authority pins are unchanged and do not certify this
+development code.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

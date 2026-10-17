@@ -221,6 +221,90 @@
                 (recur next (second result)))
               [{:diagnostic "P15S23X002" :reason :unmatched-local-recur} (second result) :rejected]) result))) initial)))
 
+(defn p15-s23-runtime-pattern-atom? [family value]
+  (if (= family :nil) (= nil value)
+    (if (= family :boolean) (boolean? value)
+      (if (= family :string) (string? value)
+        (if (= family :keyword) (keyword? value)
+          (if (= family :symbol) (symbol? value)
+            (if (= family :character) (char? value)
+              (if (= family :integer) (integer? value) false))))))))
+
+(defn p15-s23-runtime-structural-match-valid? [instruction]
+  ; Descriptor traversal is bounded separately from guest execution. These
+  ; existing shape ceilings do not establish a global evaluator CPU bound.
+  (if (if (map? instruction) (= #{:op :scrutinee :clauses} (set (keys instruction))) false)
+    (let [clauses (get instruction :clauses)]
+      (if (if (map? (get instruction :scrutinee)) (vector? clauses) false)
+        (if (if (> (count clauses) 0) (<= (count clauses) 65536) false)
+          (loop [remaining clauses pending [] names #{} work 0]
+            (if (> work 65536) false
+              (if (= 0 (count pending))
+                (if (= 0 (count remaining)) true
+                  (let [clause (first remaining)]
+                    (if (if (map? clause) (= #{:pattern :body} (set (keys clause))) false)
+                      (if (map? (get clause :body))
+                        (recur (rest remaining) [{:pattern (get clause :pattern) :depth 0}] #{} (+ work 1)) false) false)))
+                (let [frame (get pending (- (count pending) 1)) pattern (get frame :pattern)
+                      depth (get frame :depth) kind (get pattern :kind)
+                      tail (subvec pending 0 (- (count pending) 1))]
+                  (if (if (map? pattern) (<= depth 128) false)
+                    (if (= kind :wildcard)
+                      (if (= #{:kind} (set (keys pattern))) (recur remaining tail names (+ work 1)) false)
+                    (if (= kind :binding)
+                      (let [name (get pattern :name)]
+                        (if (if (= #{:kind :name} (set (keys pattern))) (symbol? name) false)
+                          (if (contains? names name) false (recur remaining tail (conj names name) (+ work 1))) false))
+                    (if (= kind :literal)
+                      (if (if (= #{:kind :family :value} (set (keys pattern)))
+                            (p15-s23-runtime-pattern-atom? (get pattern :family) (get pattern :value)) false)
+                        (recur remaining tail names (+ work 1)) false)
+                    (if (contains? #{:map :vector} kind)
+                      (let [map-pattern? (= kind :map) children (get pattern (if map-pattern? :entries :items))]
+                        (if (if (= (if map-pattern? #{:kind :entries} #{:kind :items}) (set (keys pattern))) (vector? children) false)
+                          (if (> (+ work 1 (count children)) 65536) false
+                            (let [added (loop [index 0 out tail keys #{}]
+                                          (if (= index (count children)) {:pending out}
+                                            (let [child (get children index) key (get child :key)]
+                                              (if (if map-pattern?
+                                                    (if (map? child) (if (= #{:key :pattern} (set (keys child))) (keyword? key) false) false) true)
+                                                (if (if map-pattern? (contains? keys key) false) nil
+                                                  (recur (+ index 1) (conj out {:pattern (if map-pattern? (get child :pattern) child) :depth (+ depth 1)})
+                                                         (if map-pattern? (conj keys key) keys))) nil))))]
+                              (if (map? added) (recur remaining (get added :pending) names (+ work 1 (count children))) false))) false)) false)))) false))))) false) false)) false))
+
+(defn p15-s23-runtime-match-pattern [pattern value environment]
+  ; Called only after the complete closed descriptor has passed validation.
+  (loop [pending [{:pattern pattern :value value}] active environment]
+    (if (= 0 (count pending)) {:matched? true :environment active}
+      (let [frame (get pending (- (count pending) 1)) pattern (get frame :pattern) value (get frame :value)
+            kind (get pattern :kind) tail (subvec pending 0 (- (count pending) 1))]
+        (if (= kind :wildcard) (recur tail active)
+        (if (= kind :binding) (recur tail (assoc active (get pattern :name) value))
+        (if (= kind :literal)
+          (if (p15-s23-runtime-pattern-atom? (get pattern :family) value)
+            (if (= value (get pattern :value)) (recur tail active) {:matched? false}) {:matched? false})
+          (let [map-pattern? (= kind :map) children (get pattern (if map-pattern? :entries :items))]
+            (if (if map-pattern? (map? value) (if (vector? value) (= (count value) (count children)) false))
+              (let [added (loop [index (- (count children) 1) out tail]
+                            (if (< index 0) {:pending out}
+                              (let [child (get children index) key (get child :key)]
+                                (if (if map-pattern? (contains? value key) true)
+                                  (recur (- index 1) (conj out {:pattern (if map-pattern? (get child :pattern) child)
+                                                              :value (get value (if map-pattern? key index))})) nil))))]
+                (if (map? added) (recur (get added :pending) active) {:matched? false})) {:matched? false})))))))))
+
+(defn p15-s23-runtime-evaluate-structural-match [instruction environment output functions path targets]
+  (let [result (p15-s23-runtime-evaluate-with-targets (get instruction :scrutinee) environment output functions path [])]
+    (if (= :normal (get result 2))
+      (loop [remaining (get instruction :clauses)]
+        (if (= 0 (count remaining))
+          [{:diagnostic "P15S23X002" :reason :structural-match-no-selected-clause :operation :structural-match} (second result) :rejected]
+          (let [clause (first remaining) selected (p15-s23-runtime-match-pattern (get clause :pattern) (first result) environment)]
+            (if (= true (get selected :matched?))
+              (p15-s23-runtime-evaluate-with-targets (get clause :body) (get selected :environment) (second result) functions path targets)
+              (recur (rest remaining)))))) result)))
+
 (defn p15-s23-runtime-evaluate-with-targets
   [instruction environment output functions path targets]
   (let [operation (get instruction :op)
@@ -231,6 +315,7 @@
         shape?
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
+          (if (= operation :structural-match) (p15-s23-runtime-structural-match-valid? instruction)
           (if (= operation :keyword-map-lookup)
             (if (= fields #{:op :args})
               (if (vector? arguments)
@@ -296,9 +381,11 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false))))))))))))))) false)]
+            false)))))))))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :structural-match)
+      (p15-s23-runtime-evaluate-structural-match instruction environment output functions path targets)
     (if (= operation :keyword-map-lookup)
       (let [result (p15-s23-runtime-evaluate-arguments-in-context arguments environment output [] functions path [])]
         (if (= :normal (get result 2))
@@ -397,7 +484,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected])))))))))))))))))))
+                     output :rejected]))))))))))))))))))))
 
 ; Development entrypoint for a closed instruction plan. The result records
 ; normal completion, a thrown value, or rejection with accumulated output.

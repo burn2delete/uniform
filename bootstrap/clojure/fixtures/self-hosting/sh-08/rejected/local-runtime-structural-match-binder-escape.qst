@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.local-runtime-structural-match-binder-escape
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn invalid [text :- String] :- String (do (match [text] [captured] captured) captured))

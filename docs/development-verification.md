@@ -866,6 +866,57 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-boolean-match-authenticated-composition --fail-fast
 ```
 
+### Constructor-linked structural match execution
+
+For unguarded structural matches, edit the existing emitter and stage-owned
+`gravity/runtime.gravity`. C7 owns shape inference, partitioning, narrowing and
+exhaustiveness. Lowering consumes its freshly verified pattern tree and joins
+source coordinates, clause order, binding scopes, types and uses; it does not
+solve the shape problem again.
+
+Start with these existing direct checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-structural-match-lowering-development-kernel \
+  --exact current-gravity-structural-match-runtime-development-kernel \
+  --exact current-gravity-structural-integer-pattern-development-kernel \
+  --exact compiler-module-whole-runtime-data-development-kernel
+```
+
+The bounded projection emits one closed internal `:structural-match`
+instruction. Fixed vectors require exact width. Literal-Keyword map patterns
+permit extra keys and distinguish an absent key from a present nil. Recursive
+patterns support wildcard, lexical bindings and represented primitive leaves;
+primitive-family checks precede equality. Represented Integer literals are not
+an implicit coercion to I64 or other numeric types. Keep unsupported numeric
+elaboration explicit rather than interpreting host numeric equality as policy.
+
+The scrutinee executes once without an outer recur target. Only the selected
+body executes, retaining its original tail target. Failed partial bindings
+must not leak into later clauses; throws, rejected control and fatal errors
+retain their original payload and output. Validate the whole closed descriptor
+before evaluating its scrutinee. Existing descriptor depth/work ceilings are
+local shape bounds, not an aggregate evaluator CPU or termination proof.
+
+These normalized checks are development feedback, not source composition or
+authoritative migration. A changed projection or runtime instruction also
+requires the affected paired source/type/effect/lowering/runtime composition,
+including genuine constructor-derived patterns and public C7 rejection of
+coherently changed extraction evidence. Reuse each fresh source product within
+that composition; do not repeat unchanged Boolean/map/vector proof matrices.
+Select the existing Boolean lowering/routes kernels when changing shared
+match dispatch. Guards and additional L7 pattern families remain separate
+implementation work, not language prohibitions.
+
+```bash
+# Affected real-source composition, outside the edit loop:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-structural-match-authenticated-composition --fail-fast
+```
+
 ### Canonical direct same-module calls
 
 Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls
