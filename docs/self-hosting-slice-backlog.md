@@ -1087,6 +1087,39 @@ forward body analysis into `gravity.effects`. A second facade pretending to be
 that namespace is not a substitute. Full effects/errors, checked runtime
 linking, migration, self-hosting and seedless release remain outstanding.
 
+### Hosted compiler-module construction: development increment
+
+The existing module-development interface now accepts exactly `:meta/:jvm`
+and `:hosted/:jvm` modules, with the caller and leaf dependency using the same
+profile and target. The owning `00580-p15-s23-stage2-module-source.clj`
+component derives declaration and imported-origin profile/target checks from
+the authenticated module instead of assuming `:meta`. Ordinary C5 verification,
+source, namespace, package, export and origin joins, fresh public bundle
+reconstruction, and route validation before argument evaluation remain intact.
+This removes an incidental development restriction; it does not implement a
+new profile facade or change P13 compatibility rules.
+
+The final focused batch passed eight tests and 195 assertions, including the
+existing C5 policy kernel for target, capability and cross-profile diagnostics.
+Normalized kernel inputs are not authentic module evidence. The single affected
+real composition passed one test and 44 assertions: hosted caller/leaf pairs in
+both source extensions and one existing meta/JVM pair. It preserves actual
+profile facts, private root entry, same-name function routing, scalar values and
+String object identity. Real private/missing imports and direct cross-profile
+edges reject; stale source and rehashed plan/route substitutions also reject.
+An earlier test-loading delimiter error has no semantic result and is not
+counted as a passing batch.
+
+Selected real execution took 476.823 seconds after 7.593 seconds of namespace
+loading with a 2 GiB heap. This is an affected integration check, not a routine
+edit prerequisite or an isolated measurement of verification phases. No old
+full matrix, migration proof or authority-pin refresh was repeated. The module
+bundle still records unchecked effects, development-unadmitted status and the
+Clojure seed/interpreter boundary. Whole-runtime construction and extraction
+into `gravity.runtime` remain next; checked imported-user legality, full hosted
+runtime conformance, target support, authoritative migration and seed retirement
+remain unproved.
+
 ### Literal module DATA: development implementation
 
 The L2/L3/C5/BOOT2 increment adds source-local literal DATA declarations to the

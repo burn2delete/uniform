@@ -2724,6 +2724,174 @@
       (is (= 'typed-core-artifact (:typed-core-artifact result)))
       (is (= 'c8-effect-diagnostic-catalog (:diagnostics result))))))
 
+(deftest compiler-module-profile-source-development-kernel
+  ;; Normalized source records and mocked front doors; not C5 authentication evidence.
+  (let [expanded '(def identity (fn [value] value))
+        syntax {:syntax/id :definition :form expanded}
+        make-artifact
+        (fn [profile target]
+          {:kind :gravity/sh06-resolution-artifact :status :accepted :artifact-id :module
+           :provenance {:source-path "<profile-kernel>"}
+           :gravity-resolution-boundary
+           {:owner :gravity-source
+            :authenticated-resolution-request
+            {:artifact :gravity/sh06-ordinary-module-resolution-request :schema-version 2
+             :module {:namespace 'example.library :package 'example :profile profile :target target
+                      :exports '[identity] :c4-artifact-id :c4}}}
+           :sh05-macro-artifact
+           {:expanded-syntax-stream [syntax]
+            :gravity-macro-boundary {:authenticated-sh04-artifact
+                                    {:c2-reader-artifact {:parsed-semantic-values
+                                                         '[(ns example.library) (defn identity [value] value)]}}}}
+           :binding-table {:bindings [{:binding-class :namespace :name 'identity :kind :function
+                                       :namespace 'example.library :package 'example :visibility :public
+                                       :profile-set [profile] :target-set [target]
+                                       :definition-syntax-id :definition :definition-artifact-id :c4}]}})
+        verified (atom []) reads (atom 0)
+        overrides {(module-private 'sh06-resolution-artifact-verification)
+                   (fn [artifact] (swap! verified conj artifact) {:status :passed})
+                   (module-private 'c2-reader-artifact-source-text)
+                   (fn [& _] (swap! reads inc) "normalized")
+                   (module-private 'macro-source-artifact)
+                   (fn [& _] {:module {:module 'example.library} :expanded-forms [expanded]})}
+        source #(with-redefs-fn overrides (fn [] (bootstrap/p15-s23-stage2-module-source %)))
+        reason #(get-in (diagnostic (fn [] (source %))) [:facts :reason])]
+    (doseq [profile [:meta :hosted]]
+      (let [artifact (make-artifact profile :jvm) result (source artifact)]
+        (is (= profile (get-in result [:module :profile])))
+        (is (identical? artifact (:artifact result)))
+        (is (= '[identity] (vec (keys (:functions result)))))))
+    (doseq [[profile target] [[:core :jvm] [:hosted :wasm] [:meta :js]]]
+      (is (= :source-or-expansion-mismatch (reason (make-artifact profile target)))))
+    (doseq [[key value] [[:namespace 'example.forged] [:package 'other] [:profile-set [:meta]]
+                         [:target-set [:wasm]] [:visibility :private] [:definition-artifact-id :forged]]]
+      (is (= :declaration-binding-mismatch
+             (reason (assoc-in (make-artifact :hosted :jvm) [:binding-table :bindings 0 key] value)))))
+    (is (= :declaration-syntax
+           (reason (assoc-in (make-artifact :hosted :jvm)
+                             [:binding-table :bindings 0 :definition-syntax-id] :missing))))
+    (is (= 12 (count @verified) @reads))
+    (reset! reads 0)
+    (with-redefs-fn (assoc overrides (module-private 'sh06-resolution-artifact-verification)
+                         (fn [_] {:status :failed}))
+      #(is (= :verified-ordinary-c5-required
+              (get-in (diagnostic (fn [] (bootstrap/p15-s23-stage2-module-source
+                                         (make-artifact :hosted :jvm)))) [:facts :reason]))))
+    (is (zero? @reads))))
+
+(deftest compiler-module-profile-origin-development-kernel
+  ;; Exercise the origin join itself with normalized DATA, independently of C5 construction.
+  (let [make-case
+        (fn [profile target]
+          (let [original {:binding-id :original :binding-class :namespace :name 'identity :kind :function
+                          :namespace 'example.library :package 'example :visibility :public
+                          :profile-set [profile] :target-set [target] :type-ref :type
+                          :effects [] :capabilities [] :safety :safe
+                          :definition-artifact-id :c4 :definition-syntax-id :syntax}
+                callee {:module-id :library
+                        :module {:namespace 'example.library :package 'example :exports '[identity]
+                                 :profile profile :target target}
+                        :artifact {:binding-table {:bindings [original]}
+                                   :gravity-resolution-boundary {:resolved-analysis {:artifact-id :analysis}}}}
+                imported (assoc original :binding-class :import :definition-artifact-id :library
+                                :semantic-span
+                                {:ordinary-module-artifact-id :library :origin-binding-id :original
+                                 :origin-analysis-id :analysis :origin-definition-artifact-id :c4
+                                 :origin-definition-syntax-id :syntax
+                                 :origin-definition (select-keys original [:name :kind :namespace :package :visibility
+                                                                          :profile-set :target-set :type-ref :effects
+                                                                          :capabilities :safety])})]
+            [{:module {:profile profile :target target}} imported callee original]))
+        origin (module-private 'p15-s23-stage2-module-origin!)
+        [caller imported callee _] (make-case :hosted :jvm)
+        reason (fn [c b m] (get-in (diagnostic #(origin c b m)) [:facts :reason]))]
+    (doseq [profile [:meta :hosted]]
+      (let [[c b m original] (make-case profile :jvm)]
+        (is (identical? original (origin c b m)))))
+    (doseq [[profile target] [[:core :jvm] [:hosted :wasm] [:meta :js]]]
+      (let [[c b m] (make-case profile target)]
+        (is (= :imported-function-origin (reason c b m)))))
+    (doseq [[path value] [[[:profile-set] [:meta]] [[:target-set] [:wasm]]
+                          [[:namespace] 'example.forged] [[:package] 'other]
+                          [[:visibility] :private] [[:kind] :var]
+                          [[:semantic-span :ordinary-module-artifact-id] :wrong]
+                          [[:semantic-span :origin-analysis-id] :wrong]
+                          [[:semantic-span :origin-definition-artifact-id] :wrong]
+                          [[:semantic-span :origin-definition-syntax-id] :wrong]
+                          [[:semantic-span :origin-definition :capabilities] [:io]]]]
+      (is (= :imported-function-origin (reason caller (assoc-in imported path value) callee))))
+    (doseq [changed [(assoc-in callee [:module :exports] [])
+                     (assoc-in callee [:module :namespace] 'example.forged)
+                     (assoc-in callee [:module :package] 'other)
+                     (assoc-in callee [:artifact :binding-table :bindings 0 :visibility] :private)]]
+      (is (= :imported-function-origin (reason caller imported changed))))
+    (is (= :original-binding (reason caller (assoc-in imported [:semantic-span :origin-binding-id] :missing) callee)))
+    (is (= :imported-function-origin (reason (assoc-in caller [:module :profile] :meta) imported callee)))))
+
+(deftest compiler-module-hosted-authenticated-paired-composition
+  ;; Finite ordinary C5 construction; public execution reconstructs every bundle afresh.
+  (let [cases
+        (mapv
+         (fn [[profile extension]]
+           (let [prefix (if (= :hosted profile) "hosted-seed" "seed")
+                 library-path (module-fixture (str prefix "-library") extension)
+                 caller-path (module-fixture (str prefix "-consumer") extension)
+                 text (slurp caller-path)
+                 emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+                 library (bootstrap/sh06-resolution-file-artifact library-path)
+                 c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+                 caller (bootstrap/compiler-c5-resolution-file-artifact caller-path c5-inputs)
+                 dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter library-path (slurp library-path))
+                 inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+                 bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path text inputs)
+                 value (String. "module identity")]
+             (is (= :accepted (:status library) (:status caller)))
+             (is (= [profile profile]
+                    (mapv #(get-in % [:gravity-resolution-boundary :authenticated-resolution-request :module :profile])
+                          [library caller])))
+             (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+             (is (= :not-checked (get-in bundle [:boundary :effects])))
+             (is (= 2 (count (:modules bundle))))
+             (is (= [profile profile] (mapv #(get-in % [:plan :module :profile]) (:modules bundle))))
+             (is (= [profile profile] (mapv #(get-in % [:module :profile]) (get-in bundle [:identity-input :modules]))))
+             (is (every? #(every? (fn [binding] (= [profile] (:profile-set binding))) (:exports %)) (:modules bundle)))
+             (is (= (:artifact-id library) (get-in bundle [:routes 0 :callee-module-id])))
+             (if (= :hosted profile)
+               (do
+                 (is (identical? value (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [value])))
+                 (is (= 41 (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [41])))
+                 (is (= [:caller value] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'identity [value])))
+                 (is (= :private (:visibility (first (filter #(= 'relay (:name %))
+                                                           (get-in caller [:binding-table :bindings])))))))
+               (is (= [:callee value] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [value]))))
+             {:profile profile :bundle bundle :caller-path caller-path :text text :emitter emitter
+              :library library :caller caller :inputs inputs :c5-inputs c5-inputs :dependency dependency}))
+         [[:hosted ".gravity"] [:hosted ".qst"] [:meta ".gravity"]])
+        {:keys [bundle caller-path text emitter inputs c5-inputs dependency]} (first cases)]
+    (is (= (get-in cases [0 :bundle :identity-input]) (get-in cases [1 :bundle :identity-input])))
+    (doseq [[name rule] [["hidden" "C5-PRIVATE"] ["missing" "C5-UNRESOLVED"]]]
+      (is (= rule (:id (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                    caller-path (str/replace text "library/identity" (str "library/" name)) c5-inputs))))))
+    (doseq [{:keys [profile caller-path text c5-inputs]} [(first cases) (nth cases 2)]]
+      (let [other (if (= profile :hosted) ":meta" ":hosted")]
+        (is (= "C5-CROSS-PROFILE"
+               (:id (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                  caller-path (str/replace text (str ":profile " profile) (str ":profile " other)) c5-inputs)))))))
+    (is (= :source-emitter-or-dependency-set
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                 emitter caller-path (str text " ") inputs)) [:facts :reason])))
+    (let [changed (assoc-in dependency [:functions 'identity :instructions] [{:op :literal :value :forged}])
+          forged (assoc changed :plan-id (str "sha256:" (bootstrap/sha256-hex
+                                                         (pr-str (bootstrap/c-backend-canonical-value (dissoc changed :plan-id))))))]
+      (is (= :independent-raw-plan-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                   emitter caller-path text (assoc inputs :dependency-plans [forged]))) [:facts :reason]))))
+    (let [forged (assoc-in bundle [:routes 0 :callee-module-id] (:root-module-id bundle))
+          identity (assoc (:identity-input forged) :routes (:routes forged))
+          forged (assoc forged :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))]
+      (is (= :module-bundle-reconstruction-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'relay [41])) [:facts :reason]))))))
+
 (deftest compiler-module-authenticated-source-and-runtime-composition
   (let [cases
         (mapv

@@ -1104,6 +1104,10 @@ actual C5 public exports/origins, separate plans and exact callsite routes are
 checked; a matching name or recomputed hash alone does not establish a link.
 The public invocation reconstructs the bundle, and linked-call route and arity
 checks precede argument evaluation. Local function names remain module-local.
+The two supported module pairs are development construction/execution subsets,
+not full profile conformance or host-capability grants. Ordinary C5 still owns
+target, capability and cross-profile import diagnostics; this interface does
+not turn a meta/hosted edge into an implicit facade.
 
 For this explicit development interface, the entry is an unqualified function
 name in the freshly reconstructed root module. It may be private or public,
@@ -1116,8 +1120,9 @@ This permits focused compiler-kernel checks after extracting a stage-owned
 namespace without exporting test-only functions or rewriting source. It does
 not grant checked user-program execution or stable private-import access.
 
-The subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm`,
-with direct qualified imported calls and source-local literal DATA declarations
+The subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm` or
+`:hosted/:jvm`, with caller and dependency using the same profile and target.
+It supports direct qualified imported calls and source-local literal DATA declarations
 of the form `(def name literal-data)`. Scalars, nested vectors/maps/sets and
 exact quoted DATA are materialized before body compilation for unqualified
 module-local reads; quoted symbols,
@@ -1160,6 +1165,15 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact compiler-module-literal-data-authenticated-composition \
   --exact compiler-module-literal-data-actual-c8-composition
+# After the module profile/declaration/origin joins change:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-profile-source-development-kernel \
+  --exact compiler-module-profile-origin-development-kernel
+# Affected hosted caller/leaf composition, with one meta/JVM regression:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-hosted-authenticated-paired-composition
 ```
 
 The direct kernels use normalized inputs and dispatch instrumentation; they
