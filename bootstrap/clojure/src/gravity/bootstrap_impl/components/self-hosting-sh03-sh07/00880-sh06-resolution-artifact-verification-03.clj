@@ -29,7 +29,6 @@
            legacy? context)
           (sh06-authenticated-source-snapshot!
            source-path c2-artifact :source-authentication-before-c5 legacy?))
-        upstream-report (sh05-macro-artifact-verification sh05-artifact)
         request (if contextual?
                   (sh06-resolution-request source-path sh05-artifact context)
                   (sh06-resolution-module-request source-path sh05-artifact module-inputs))
