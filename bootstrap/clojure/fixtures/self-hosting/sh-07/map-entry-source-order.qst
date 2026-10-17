@@ -1,0 +1,14 @@
+(ns self-hosting.sh07.map-entry-source-order
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+
+(def quoted-duplicates '{:a 1 :a 2})
+
+(defn forward []
+  {:a (throw "value-a") :b (throw "value-b") :c (throw "value-c")
+   :d (throw "value-d") :e (throw "value-e") :f (throw "value-f")
+   :g (throw "value-g") :h (throw "value-h") :i (throw "value-i")})
+
+(defn backward []
+  {:i (throw "value-i") :h (throw "value-h") :g (throw "value-g")
+   :f (throw "value-f") :e (throw "value-e") :d (throw "value-d")
+   :c (throw "value-c") :b (throw "value-b") :a (throw "value-a")})

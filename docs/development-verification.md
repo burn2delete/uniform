@@ -35,6 +35,7 @@ Follow the owning boundary when the next change is downstream of SH-07:
 | Behavior being changed | Implementation owner | Focused workflow below |
 | --- | --- | --- |
 | Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` | Default SH-07 commands here. |
+| Retained source occurrences to the temporary C6 request | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00887-sh07-core-build-form-tree.clj` and its `00890` caller | `gravity.self-hosting.sh07-mutation-test`, exact `sh07-map-source-order-development-kernel`; affected real source composition before accepting a projection change. |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Loop/recur and the matching type-development section. |
 | Typed Core to executable development IR | `bootstrap/gravity/p15_s23/emitter.gravity` | Explicit typed input, then the matching lowering section. |
 | Development IR evaluation and control | `bootstrap/gravity/src/gravity/runtime.gravity` | Runtime namespace boundary, then the matching execution section. |
@@ -42,6 +43,10 @@ Follow the owning boundary when the next change is downstream of SH-07:
 Change the owning Gravity implementation, not only a compatibility adapter or
 fixture expectation. Select the relevant exact tests; this table is not a
 requirement to run every upstream/downstream namespace for each edit.
+The temporary request projection is an exception only for transport defects:
+it must preserve source occurrences, bindings and evaluation order for the
+owning Gravity pass. Fixing that bridge does not move language semantics or
+implementation authority into it.
 
 Check `git status --short`, preserve unrelated work, then use existing commands:
 
@@ -72,6 +77,39 @@ when combining different-cost checks. In the SH08 function-test namespace,
 inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
+
+### Map source-order projection
+
+The temporary SH-07 request builder must use retained C2 entry occurrences,
+not host-map iteration, for evaluated map children. Its local correction keeps
+existing form IDs, bindings, reference paths and decimal coordinates; only the
+map parent's ordered child links change. Quoted map DATA retains its existing
+materialized value and is not subjected to evaluated-map restrictions.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh07-mutation-test \
+  --exact sh07-map-source-order-development-kernel \
+  --exact sh07-map-quoted-duplicate-source-development-kernel
+```
+
+These normalized checks cover correspondence and preservation, not actual
+source composition or map execution. The affected composition must separately
+check original textual order through C2, the request and Core IR, and reject a
+reordered request against unchanged ancestry. No new migration proof or
+host-projection accounting protocol is implied by this correction.
+
+Run that affected composition separately, not in the edit loop:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh07-mutation-test \
+  --exact sh07-map-source-order-authenticated-composition
+```
+
+The paired fixture checks opposite nine-key source orders, quoted duplicate-key
+DATA compatibility and a coherently rehashed request-order rejection. Its
+accepted result establishes Core IR order, not evaluated-map runtime support.
 
 ### Ordinary module dependencies
 

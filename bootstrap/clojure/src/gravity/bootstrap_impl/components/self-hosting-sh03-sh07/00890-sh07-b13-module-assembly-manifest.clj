@@ -106,12 +106,12 @@
            raw-traces)
           trace-by-output
           (into {} (map (juxt :output-def-syntax-id identity)) traces)
-          trees
+          trees (sh07-core-source-map-order resolution-artifact executable-syntax
           (mapv
            #(sh07-core-build-form-tree
              source-path (:source-revision-id lineage) decimal-evidence %
              (get trace-by-output (:sh07/root-syntax-id %)))
-           executable-syntax)
+           executable-syntax))
           _ (sh07-core-decimal-evidence-complete!
              source-path decimal-evidence)
           authenticated-sh06-request

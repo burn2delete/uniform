@@ -970,6 +970,46 @@ hosted/constrained representations, target support, authoritative migration,
 self-hosting and seed retirement remain outstanding. Commands and boundaries
 are in `docs/development-verification.md`.
 
+### Map source-order projection: development implementation
+
+The temporary SH-07 request projection previously enumerated host maps even
+though C2 retained textual entry order. The current correction joins retained
+C2 key/value occurrences to the existing projected records and permutes only
+evaluated map parents' child links. Existing form/syntax IDs, bindings,
+reference paths, scopes, decimal coordinates and other record fields remain
+unchanged. Known `defn` expansion uses its retained source origin and verified
+header/body transfer; missing or ambiguous evaluated occurrences fail with
+`C6-ORIGIN` rather than silently falling back to host order.
+
+Quoted map DATA is inert and retains prior materialization, including repeated
+keys already collapsed by the reader adapter. This is not a new language-wide
+duplicate-map policy. Evaluated duplicate-key occurrence loss remains an
+unsupported provenance case, not a newly declared language error. Metadata,
+quote abbreviations, nested maps and set member coordinates have focused
+coverage. Redundant whole-container equality and hashing of entry values were
+removed; no new host-projection work counter or performance claim is made.
+
+The final focused invocation passed two tests/207 assertions, including an
+original-C2-shaped repeated-key control with four source children and two
+projected children for both prefix and explicit list quotes. Independent
+scoped review accepted the final code, focused result and real-source
+composition oracle. The preceding revision passed two tests/204 assertions;
+the final delta adds abbreviation checks and the list-quote case.
+The earlier negative-control runs failed because they targeted a
+metadata-only map rather than the actual syntax root; they remain failed
+development runs. Real paired source composition then passed one test/55
+assertions: both nine-key functions preserve opposite textual orders from C2
+through request links to ordered Core children and their associated throw
+operands, even though both host maps enumerate keys alike. Original quoted
+duplicate entries remain inert materialized DATA. A rehashed pair-order
+mutation fails fresh expected-request membership before Core execution.
+The run used 2 GiB; the selected test took 197.354 seconds, outer execution
+197.356 seconds, and namespace loading 6.854 seconds. These are development
+observations, not a performance comparison.
+The compiler, test and fixture bytes stayed unchanged across the final focused
+and affected composition runs. No evaluated-map runtime,
+authoritative migration, target, self-hosting or release claim follows.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

@@ -152,6 +152,198 @@
           'sh07-core-from-authenticated-request
           '[resolution-artifact authenticated-request]}}))))
 
+(defn- map-order-kernel [value]
+  ;; Normalized retained C2 occurrences. Each map's source order deliberately
+  ;; reverses host entry order, without changing values or projected paths.
+  (let [sources (atom []) next-id (atom 0)
+        build (fn build [value parent]
+                (let [id (keyword (str "c2-map-order-" (swap! next-id inc)))
+                      metadata (meta value) wrapper? (seq metadata)
+                      abbreviation? (and (seq? value) (= 2 (count value)) (= 'quote (first value)))
+                      kind (cond wrapper? :metadata-wrapper abbreviation? :abbreviation :else (bootstrap/sh07-core-value-kind value))
+                      children (cond wrapper? [metadata (with-meta value nil)]
+                                     abbreviation? [(second value)]
+                                     (map? value) (vec (mapcat identity (reverse (vec value))))
+                                     (set? value) (vec (reverse (bootstrap/sh07-core-children value)))
+                                     :else (bootstrap/sh07-core-children value))
+                      records (mapv #(build % id) children)
+                      record (cond-> {:form-id id :parent-form-id parent :kind kind :value value
+                                      :children (mapv :form-id records) :span {:source "<map-order-kernel>"}}
+                               abbreviation? (assoc :abbrev :quote))]
+                  (swap! sources conj record) record))
+        root (build value nil)
+        decimals (mapv (fn [form] {:kind :decimal :decoded (:value form) :form-id (:form-id form)
+                                   :literal-id (:form-id form) :token-id (:form-id form)})
+                       (filter #(instance? java.math.BigDecimal (:value %)) @sources))
+        defn? (and (seq? value) (= 'defn (first value)))
+        syntax {:syntax/id :upstream-map-root :sh07/root-syntax-id :projected-map-root
+                :source {:form-id (:form-id root)} :span {} :form (bootstrap/sh05-expanded-form value)}
+        resolution {:provenance {:source-path "<map-order-kernel>"}
+                    :sh05-macro-artifact
+                    {:gravity-macro-boundary {:authenticated-sh04-artifact
+                                             {:c2-reader-artifact {:form-tree @sources :literal-decoding-records decimals}}}
+                     :macro-expansion-trace (if defn? [{:macro 'defn :output-syntax-id :upstream-map-root}] [])}}
+        evidence (bootstrap/sh07-core-decimal-evidence resolution)
+        trace (when defn? (bootstrap/sh07-core-macro-trace {:source-revision-id :revision}
+                              {:input-syntax-id :input-map-root :output-syntax-id :projected-map-root}))
+        tree (bootstrap/sh07-core-build-form-tree "<map-order-kernel>" :revision evidence syntax trace)
+        records (mapv #(assoc % :scope-id :preserved-scope :metadata (assoc (:metadata %) :binding-marker :preserved)) (:records tree))
+        indexed (into {} (map (juxt :form-id identity)) records)]
+    {:resolution resolution :syntaxes [syntax] :trees [{:root (get indexed (get-in tree [:root :form-id])) :records records}]}))
+
+(deftest sh07-map-source-order-development-kernel
+  (let [mixed (array-map :a 'value '[key] '(quote {ready "quoted"}) '(identity key) {:nested [true false]})
+        values [(into {} (map #(vector (keyword (str "key" %)) (str "value" %)) (range 9)))
+                mixed (list 'quote mixed) #{mixed {:other 'value}}
+                (with-meta mixed {:doc "metadata map"})
+                (list 'defn 'packet '[key value] mixed)
+                (list 'defn 'typed '[key :- Symbol value :- String] ':- 'String (list 'quote mixed))
+                (array-map :first (java.math.BigDecimal. "1.25") :second (java.math.BigDecimal. "1.25"))]]
+    (doseq [value values]
+      (let [{:keys [resolution syntaxes trees]} (map-order-kernel value)
+            result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)
+            before (get-in trees [0 :records]) after (get-in result [0 :records])]
+        (is (= (mapv :form-id before) (mapv :form-id after)))
+        (is (= (mapv #(dissoc % :child-form-ids) before) (mapv #(dissoc % :child-form-ids) after)))
+        (doseq [[original changed] (map vector before after)]
+          (let [indexed (into {} (map (juxt :form-id identity)) before)
+                inert? (loop [child original]
+                         (when-let [parent (get indexed (:parent-form-id child))]
+                           (or (and (seq? (:value parent)) (= 'quote (first (:value parent)))
+                                    (= (:form-id child) (second (:child-form-ids parent))))
+                               (recur parent))))]
+          (is (= (if (and (= :map (:kind original)) (not inert?))
+                   (vec (mapcat identity (reverse (partition 2 (:child-form-ids original)))))
+                   (:child-form-ids original)) (:child-form-ids changed)))))
+        (is (= result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel mixed)
+          sources (get-in resolution [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree])
+          map-index (first (keep-indexed #(when (= (get-in syntaxes [0 :source :form-id]) (:form-id %2)) %1) sources))
+          root-id (get-in trees [0 :root :form-id])
+          projected-index (first (keep-indexed #(when (= root-id (:form-id %2)) %1) (get-in trees [0 :records])))
+          source-path [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree]]
+      (doseq [[label r s t] [[:duplicate-source (update-in resolution source-path conj (first sources)) syntaxes trees]
+                             [:missing-child (assoc-in resolution (into source-path [map-index :children 0]) :missing) syntaxes trees]
+                             [:duplicate-child (assoc-in resolution (into source-path [map-index :children]) [(:form-id (first sources)) (:form-id (first sources))]) syntaxes trees]
+                             [:missing-origin resolution (assoc-in syntaxes [0 :source :form-id] :missing) trees]
+                             [:missing-projected resolution syntaxes (assoc-in trees [0 :records projected-index :child-form-ids 0] :missing)]]]
+        (let [failure (try (bootstrap/sh07-core-source-map-order r s t) nil
+                          (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-ORIGIN" (:id failure)) label)
+          (is (= :core-lowering (:stage failure)) label))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel '(defn packet [] {:a true :b false}))
+          resolution (assoc-in resolution [:sh05-macro-artifact :macro-expansion-trace 0 :macro] 'unverified-macro)]
+      (is (= :map-source-defn-transfer
+             (:reason (try (bootstrap/sh07-core-source-map-order resolution syntaxes trees) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))))))))
+
+(deftest sh07-map-quoted-duplicate-source-development-kernel
+  (doseq [mode [:prefix-quote :list-quote :evaluated]]
+    (let [quoted? (not= mode :evaluated)
+          {:keys [resolution syntaxes trees]} (map-order-kernel (if quoted? (list 'quote {:a 2}) {:a 2}))
+          source-path [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree]
+          sources (get-in resolution source-path)
+          index (first (keep-indexed #(when (= :map (:kind %2)) %1) sources))
+          owner (get sources index) old-children (:children owner)
+          key {:form-id :original-first-key :parent-form-id (:form-id owner) :kind :keyword :value :a :children []}
+          value {:form-id :original-first-value :parent-form-id (:form-id owner) :kind :integer :value 1 :children []}
+          original-sources (-> sources (assoc-in [index :children] (into [(:form-id key) (:form-id value)] old-children)) (conj key value))
+          original-sources (if (= mode :list-quote)
+                             (let [root-id (get-in syntaxes [0 :source :form-id])
+                                   root-index (first (keep-indexed #(when (= root-id (:form-id %2)) %1) original-sources))
+                                   operator {:form-id :original-quote-operator :parent-form-id root-id :kind :symbol :value 'quote :children []}]
+                               (-> original-sources (assoc-in [root-index :kind] :list)
+                                   (update-in [root-index :children] #(into [(:form-id operator)] %)) (conj operator))) original-sources)
+          resolution (assoc-in resolution source-path original-sources)]
+      (is (= 4 (count (get-in original-sources [index :children]))))
+      (is (= {:a 2} (get-in original-sources [index :value])))
+      (if quoted?
+        (is (= trees (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))
+        (let [failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes trees) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-ORIGIN" (:id failure)))
+          (is (= :map-source-entry-bijection (:reason failure))))))))
+
+(deftest sh07-map-source-order-authenticated-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [source-path (path (str "bootstrap/clojure/fixtures/self-hosting/sh-07/map-entry-source-order" extension))
+                 text (slurp source-path)
+                 resolution (bootstrap/compiler-c5-resolution-file-artifact source-path)
+                 artifact (bootstrap/sh07-core-from-resolution-artifact resolution)
+                 verification (bootstrap/sh07-core-artifact-verification artifact)
+                 request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
+                 core (get-in artifact [:gravity-core-boundary :canonical-core-artifact])
+                 c2 (get-in resolution [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
+                 source-forms (into {} (map (juxt :form-id identity)) (:form-tree c2))
+                 source-roots (mapv source-forms (:top-level-form-ids c2))
+                 projected (into {} (map (juxt :form-id identity)) (:forms request))
+                 projected-roots (mapv projected (:top-level-form-ids request))
+                 nodes (into {} (map (juxt :node-id identity)) (:nodes core))
+                 orders
+                 (into {}
+                  (for [[name expected] [['forward [:a :b :c :d :e :f :g :h :i]]
+                                        ['backward [:i :h :g :f :e :d :c :b :a]]]]
+                    (let [source-root (first (filter #(= name (second (:value %))) source-roots))
+                          source-map (get source-forms (get (:children source-root) 3))
+                          original-keys (mapv #(get-in source-forms [% :value]) (take-nth 2 (:children source-map)))
+                          projected-root (first (filter #(= name (get-in projected [(second (:child-form-ids %)) :value])) projected-roots))
+                          function-form (get projected (get (:child-form-ids projected-root) 2))
+                          projected-map (get projected (get (:child-form-ids function-form) 2))
+                          projected-keys (mapv #(get-in projected [% :value]) (take-nth 2 (:child-form-ids projected-map)))
+                          function (first (filter #(= name (:definition-name %)) (:function-records core)))
+                          body (get nodes (:body-core-node-id function))
+                          keys (mapv #(get-in nodes [% :attributes :value]) (take-nth 2 (:children body)))
+                          values (mapv (fn [id] (get-in nodes [(first (:children (get nodes id))) :attributes :value]))
+                                       (take-nth 2 (rest (:children body))))]
+                      (is (= :map (:kind source-map) (:kind projected-map)))
+                      (is (= expected original-keys projected-keys keys))
+                      (is (= (mapv #(str "value-" (clojure.core/name %)) expected) values))
+                      (is (= :collection-literal (:core-form body)))
+                      (is (= :map (get-in body [:attributes :literal-kind])))
+                      (is (= (:children body) (mapv :core-node-id (get-in body [:evaluation :order]))))
+                      (is (= :left-to-right (get-in body [:evaluation :kind])))
+                      [name {:source-map source-map :projected-map projected-map :keys keys}])))
+                 quoted-source-root (first (filter #(= 'quoted-duplicates (second (:value %))) source-roots))
+                 quoted-prefix (get source-forms (get (:children quoted-source-root) 2))
+                 quoted-source-map (get source-forms (first (:children quoted-prefix)))
+                 quoted-root (first (filter #(= 'quoted-duplicates (get-in projected [(second (:child-form-ids %)) :value])) projected-roots))
+                 quote-form (get projected (get (:child-form-ids quoted-root) 2))
+                 quoted-map (get projected (get (:child-form-ids quote-form) 1))
+                 quote-node (first (filter #(= :quote (:core-form %)) (:nodes core)))]
+             (is (= :accepted (:status resolution)))
+             (is (= :passed (:status verification)))
+             (is (= [:meta :jvm] [(get-in request [:module :profile]) (get-in request [:module :target])]))
+             (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in c2 [:source-unit-record :bytes-hash])))
+             (is (= (:artifact-id resolution) (get-in request [:lineage :authenticated-sh06-artifact-id])))
+             (is (= (reverse (get-in orders ['forward :keys])) (get-in orders ['backward :keys])))
+             (is (= (vec (keys (get-in orders ['forward :source-map :value])))
+                    (vec (keys (get-in orders ['backward :source-map :value])))))
+             (is (= 4 (count (:children quoted-source-map))))
+             (is (= 2 (count (:child-form-ids quoted-map))))
+             (is (= {:a 2} (:value quoted-source-map) (:value quoted-map) (get-in quote-node [:attributes :quoted-value])))
+             (is (= [] (:children quote-node)))
+             {:artifact artifact :resolution resolution :request request :orders orders}))
+         [".gravity" ".qst"])
+        {:keys [resolution request orders]} (first cases)
+        id (get-in orders ['forward :projected-map :form-id])
+        index (first (keep-indexed #(when (= id (:form-id %2)) %1) (:forms request)))
+        children (get-in request [:forms index :child-form-ids])
+        changed (assoc-in request [:forms index :child-form-ids] (vec (mapcat identity (reverse (partition 2 children)))))
+        changed (assoc changed :projection-binding
+                       (bootstrap/reader-canonical-hash (bootstrap/sh07-core-projection-binding-input changed)))
+        executed (atom 0)
+        failure (with-redefs [bootstrap/sh07-core-run-structural-request-for-test
+                             (fn [_] (swap! executed inc) (throw (AssertionError. "tampered source order reached core execution")))]
+                  (try (bootstrap/sh07-core-run-request-for-test resolution changed) nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= (get-in cases [0 :artifact :artifact-id]) (get-in cases [1 :artifact :artifact-id])))
+    (is (= (set children) (set (get-in changed [:forms index :child-form-ids]))))
+    (is (= "C6-VERIFY" (:rule failure)))
+    (is (= :authenticated-sh06-request-membership-mismatch (get-in failure [:facts :reason])))
+    (is (zero? @executed))))
+
 (def ^:private artifacts (atom {}))
 (def ^:private c2-artifacts (atom {}))
 
