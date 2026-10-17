@@ -1120,6 +1120,34 @@ into `gravity.runtime` remain next; checked imported-user legality, full hosted
 runtime conformance, target support, authoritative migration and seed retirement
 remain unproved.
 
+### Whole-runtime source DATA: development increment
+
+The actual `p15_s23/runtime.gravity` can now be constructed through the existing
+raw compiler-artifact interface without selecting or rewriting its function
+forms. Eighteen catalog maps now explicitly quote symbolic DATA, as required
+by L2; the five already-literal maps and all 30 function forms are unchanged.
+Pre-edit conservation checks preserve the 23 catalog values and exact function
+names/arities. The compiler's construction-local literal table is checked
+against those values; no catalog carrier or raw-plan field was added.
+
+Two focused tests passed 50 assertions, including 29 in the new whole-runtime
+check and 21 in the existing literal grammar check. One complete-file plan is
+reused for nine public runtime invocations: main, normal completion, a real
+loop backedge, a function-target swap/backedge preserving String identity,
+throw/catch/rethrow, unknown-operation rejection and inert quoted DATA. Output
+order and skipped later work remain observable. Removing the first catalog's
+quote in an in-memory source variant rejects during initializer validation.
+The new check took 0.142 seconds of selected execution; this is not a speedup
+comparison with a different test or evidence of all 30 functions' conformance.
+
+No C5/C7 products, old native proof or authoritative runtime binding were rebuilt.
+The historical pinned adapter's source-byte and 22-definition fences remain
+unchanged and stale for current source. Catalog representation compatibility
+does not renew provider/grant claims, admit a runtime revision, prove whole
+runtime conformance or retire the Clojure seed. The next ownership step is the
+actual call-closed evaluator module in `gravity.runtime`, with thin compatibility
+entrypoints and real module composition.
+
 ### Literal module DATA: development implementation
 
 The L2/L3/C5/BOOT2 increment adds source-local literal DATA declarations to the

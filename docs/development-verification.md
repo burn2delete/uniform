@@ -1152,6 +1152,11 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact compiler-module-literal-data-development-kernel \
   --exact compiler-module-literal-data-existing-source-kernel
+# Whole current runtime source: DATA conservation and real runtime execution:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-whole-runtime-data-development-kernel \
+  --exact compiler-module-literal-data-development-kernel
 # Run after module input, compilation or dispatch behavior changes:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
@@ -1186,6 +1191,13 @@ The compile-time literal table is not another raw-plan field: actual source
 identity binds unused declarations, while embedded literal instructions bind
 values a function reads. Changing an unused catalog therefore changes module
 identity without changing an otherwise identical function-semantic projection.
+The whole-runtime check constructs the actual complete runtime file once, not
+the older selected-function projection. Its explicit catalog quotes preserve
+symbolic DATA without evaluating labels as variable references. Conservation
+checks are development regression oracles, not refreshed authority pins. The
+historical pinned runtime adapter remains separately stale and fail-closed;
+repairing its byte counts, definition set or contract hashes is not a prerequisite
+for this current-source check.
 Do not refresh authority pins to account for redundant development metadata.
 Run only the affected composition rather than replaying unchanged source proofs
 to refresh an aggregate result.

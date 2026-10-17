@@ -21,7 +21,7 @@
 ; The Clojure seed validates every key, cross-link, source hash, function hash,
 ; and operation fact before it delegates to the typed reference adapter.
 (def p15-s23-reference-runtime-contract
-  {:artifact :gravity/p15-s23-reference-runtime-contract
+  '{:artifact :gravity/p15-s23-reference-runtime-contract
    :schema-version 1
    :status :complete-for-pinned-reference-runtime-contract-slice
    :runtime-family :managed
@@ -118,7 +118,7 @@
 ; exact program principal, source hash, plan id, provider selection, and grant
 ; record to this pinned policy before any reference-runtime invocation.
 (def p15-s23-checked-core-program-authority-policy
-  {:artifact :gravity/p15-s23-checked-core-program-authority-policy
+  '{:artifact :gravity/p15-s23-checked-core-program-authority-policy
    :schema-version 1
    :policy-id :gravity.reference/checked-core-program-authority-policy
    :audit-policy-id :gravity.reference/runtime-audit-policy
@@ -176,7 +176,7 @@
 ; grants, lifetime, and audit boundary.  It never consumes the checked
 ; program's fourth-argument authority and never reaches deployment stdout.
 (def p15-s23-checked-core-verification-replay-policy
-  {:artifact :gravity/p15-s23-checked-core-verification-replay-policy
+  '{:artifact :gravity/p15-s23-checked-core-verification-replay-policy
    :schema-version 1
    :policy-id :gravity.reference/checked-core-verification-replay-policy
    :audit-policy-id
@@ -298,7 +298,7 @@
    :authority-widening? false})
 
 (def p15-s23-checked-core-verification-replay-audit-policy
-  {:artifact
+  '{:artifact
    :gravity/p15-s23-checked-core-verification-replay-audit-policy
    :schema-version 1
    :policy-id
@@ -359,7 +359,7 @@
    :authority-widening? false})
 
 (def p15-s23-reference-runtime-function-graph
-  {:artifact :gravity/p15-s23-runtime-function-graph
+  '{:artifact :gravity/p15-s23-runtime-function-graph
    :schema-version 1
    :graph-id :gravity.reference/runtime-function-graph
    :functions
@@ -466,7 +466,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-function-effects
-  {:artifact :gravity/p15-s23-runtime-function-effect-table
+  '{:artifact :gravity/p15-s23-runtime-function-effect-table
    :schema-version 1
    :table-id :gravity.reference/runtime-function-effects
    :allocation-provider-id :gravity.reference/jvm-managed-allocator
@@ -727,7 +727,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-effect-graph
-  {:artifact :gravity/effect-graph
+  '{:artifact :gravity/effect-graph
    :schema-version 1
    :graph-id :gravity.reference/runtime-effect-graph
    :module gravity.bootstrap.p15-s23.runtime
@@ -930,7 +930,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-managed-allocator-provider
-  {:artifact :gravity/provider-declaration
+  '{:artifact :gravity/provider-declaration
    :schema-version 1
    :kind :managed-memory-provider
    :provider-id :gravity.reference/jvm-managed-allocator
@@ -973,7 +973,7 @@
    :conformance :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-transcript-capture-provider
-  {:artifact :gravity/provider-declaration
+  '{:artifact :gravity/provider-declaration
    :schema-version 1
    :kind :effect-handler-provider
    :provider-id :gravity.reference/transcript-capture
@@ -1021,7 +1021,7 @@
    :deployment-authority? false})
 
 (def p15-s23-reference-transcript-capture-handler
-  {:artifact :gravity/typed-effect-handler
+  '{:artifact :gravity/typed-effect-handler
    :schema-version 1
    :handler-id :gravity.reference/transcript-string-handler
    :handled-label :io/write
@@ -1070,7 +1070,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-provider-selections
-  {:artifact :gravity/provider-selection-record-set
+  '{:artifact :gravity/provider-selection-record-set
    :schema-version 1
    :selection-record-set-id
    :gravity.reference/runtime-provider-selections
@@ -1157,7 +1157,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-proofs
-  {:artifact :gravity/capability-proof-record-set
+  '{:artifact :gravity/capability-proof-record-set
    :schema-version 1
    :record-set-id :gravity.reference/runtime-capability-proofs
    :records
@@ -1284,7 +1284,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-stdout-deployment-requirement
-  {:artifact :gravity/p15-s23-stdout-deployment-requirement
+  '{:artifact :gravity/p15-s23-stdout-deployment-requirement
    :schema-version 1
    :effect :io/write
    :capability :io/stdout
@@ -1485,7 +1485,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-audit-policy
-  {:artifact :gravity/runtime-audit-policy
+  '{:artifact :gravity/runtime-audit-policy
    :schema-version 1
    :policy-id :gravity.reference/runtime-audit-policy
    :principals
@@ -1505,7 +1505,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-manifest
-  {:artifact :gravity/runtime-capabilities
+  '{:artifact :gravity/runtime-capabilities
    :schema-version 1
    :manifest-id :gravity.reference/runtime-capabilities
    :inputs
@@ -1531,7 +1531,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-table
-  {:artifact :gravity/runtime-capability-table
+  '{:artifact :gravity/runtime-capability-table
    :schema-version 1
    :table-id :gravity.reference/runtime-capability-table
    :rows
@@ -1603,7 +1603,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-observability-manifest
-  {:artifact :gravity/runtime-observability
+  '{:artifact :gravity/runtime-observability
    :schema-version 1
    :manifest-id :gravity.reference/runtime-observability
    :events #{:allocation :capability :failure :handled-effect}
@@ -1643,7 +1643,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-grant-records
-  {:artifact :gravity/grant-record-set
+  '{:artifact :gravity/grant-record-set
    :schema-version 1
    :grant-record-set-id :gravity.reference/runtime-grants
    :source-principal gravity.bootstrap.p15-s23.runtime

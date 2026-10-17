@@ -2447,6 +2447,103 @@
                                      (assoc-in (dissoc compiled :plan-id) [:source :byte-count]
                                                bootstrap/p15-s23-sh02-source-byte-count)))))))))
 
+(deftest compiler-module-whole-runtime-data-development-kernel
+  (let [path (str/replace (module-fixture "seed-library" ".gravity")
+                          "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
+                          "gravity/p15_s23/runtime.gravity")
+        text (slurp path) forms (bootstrap/read-forms path text)
+        definitions (filterv #(= 'def (first %)) forms)
+        functions (filterv #(= 'defn (first %)) forms)
+        underlying (fn [value] (if (and (seq? value) (= 'quote (first value))) (second value) value))
+        data (mapv #(vector (second %) (underlying (nth % 2))) definitions)
+        digest #(bootstrap/sha256-hex (pr-str (bootstrap/c-backend-canonical-value %)))
+        arities '{main 0 p15-s23-runtime-activate-function 5 p15-s23-runtime-atomic-error-match? 2
+                  p15-s23-runtime-b51-machine-action-shape? 1 p15-s23-runtime-b51-machine-frame-shape? 1
+                  p15-s23-runtime-b51-machine-state 4 p15-s23-runtime-call-target-valid? 3
+                  p15-s23-runtime-concat 2 p15-s23-runtime-evaluate-arguments 4
+                  p15-s23-runtime-evaluate-arguments-in-context 7 p15-s23-runtime-evaluate-bindings 3
+                  p15-s23-runtime-evaluate-bindings-in-context 6 p15-s23-runtime-evaluate-call 6
+                  p15-s23-runtime-evaluate-closed-instruction 3 p15-s23-runtime-evaluate-in-context 5
+                  p15-s23-runtime-evaluate-loop 6 p15-s23-runtime-evaluate-sequence 3
+                  p15-s23-runtime-evaluate-sequence-in-context 6 p15-s23-runtime-evaluate-with-targets 6
+                  p15-s23-runtime-execute-closed-plan 1 p15-s23-runtime-format-value 1
+                  p15-s23-runtime-function-valid? 2 p15-s23-runtime-loop-valid? 2
+                  p15-s23-runtime-println-output 2 p15-s23-runtime-println-two 2 p15-s23-runtime-println-value 1
+                  p15-s23-runtime-recur-valid? 2 p15-s23-runtime-select-handler-in-context 6
+                  p15-s23-runtime-select-typed-handler 3 p15-s23-runtime-typed-handlers-valid? 1}
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        literals-var (module-private 'p15-s23-stage2-module-literals)
+        original-literals @literals-var observed (atom [])
+        compiled (with-redefs-fn {literals-var (fn [forms]
+                                               (let [result (original-literals forms)]
+                                                 (swap! observed conj result) result))}
+                   #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text))
+        invoke (fn [function & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled function (vec args)))
+        lit (fn [value] {:op :literal :value value}) local (fn [name] {:op :local :name name})
+        branch (fn [test then else] {:op :if :test test :then then :else else})
+        again (fn [target args] {:op :recur :target target :args args})
+        escape (fn [value] {:op :throw :value value})
+        say (fn [label value] {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} value]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        execute #(invoke 'p15-s23-runtime-execute-closed-plan
+                         {:entrypoint 'main :functions {'main {:arity 0 :params [] :instructions [%]}}})
+        payload (String. "original runtime payload")]
+    ;; These pre-edit conservation digests cover DATA and function forms, not admission authority.
+    (is (= 23 (count data)))
+    (is (= "68697377c7914c2442f2c6ae916984ddfebfb3fd77aa4b3ba3b385ea2db1bfe0" (digest data)))
+    (is (= "525d55d6bcb05f28b7b8c627caf0c5febbb8d721f2c292dff9d325444d6c07b8" (digest functions)))
+    (is (= 30 (count functions) (count (:functions compiled))))
+    (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) functions))
+           (into {} (map (fn [[name function]] [name (:arity function)]) (:functions compiled)))))
+    (is (= 18 (count (filter #(seq? (nth % 2)) definitions))))
+    (is (= '#{p15-s23-reference-runtime-service-manifest p15-s23-reference-managed-runtime-adapter
+              p15-s23-reference-memory-provider-manifest p15-s23-reference-runtime-failure-policy
+              p15-s23-runtime-b51-machine-contract}
+           (set (map second (filter #(map? (nth % 2)) definitions)))))
+    (is (= [(into (sorted-map) data)] @observed))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
+    (is (= 'gravity.bootstrap.p15-s23.runtime (get-in compiled [:module :module])))
+    (is (= [:hosted :jvm] [(get-in compiled [:module :profile]) (get-in compiled [:module :target])]))
+    (is (not (contains? compiled :literal-data)))
+    (is (= "gravity-stage2-runtime" (invoke 'main)))
+    (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main
+            :stdout "normal\n" :entrypoint-result 7 :status :complete :clojure-seed-boundary? true :self-hosted? false}
+           (execute (say "normal" (lit 7)))))
+    (let [loop-instruction {:op :loop :target "once"
+                            :bindings [{:name 'again :expr (lit true)} {:name 'value :expr (say "init" (lit 0))}]
+                            :body [(branch (local 'again)
+                                     (again "once" [(lit false) (say "step" (lit 7))])
+                                     (say "final" (local 'value)))]}]
+      (is (= [7 "init\nstep\nfinal\n" :normal] (evaluate loop-instruction))))
+    (let [right (String. "right")
+          function {:recur-target "swap" :arity 3 :params '[flag left right]
+                    :instructions [(branch (local 'flag)
+                                     (again "swap" [(lit false) (say "right" (local 'right)) (say "left" (local 'left))])
+                                     (local 'right))]}
+          result (invoke 'p15-s23-runtime-activate-function function [true payload right] "" {} ['main])]
+      (is (= [payload "right\nleft\n" :normal] result))
+      (is (identical? payload (first result))))
+    (let [thrown (execute {:op :do :body [(say "before" (lit nil)) (escape (lit payload)) (say "later" (lit nil))]})
+          handler (fn [body] {:type :gravity.type/string :name 'error :body body})
+          caught (evaluate {:op :try :protected (escape (lit payload)) :handlers [(handler (local 'error))]})
+          rethrown (evaluate {:op :try :protected (escape (lit payload)) :handlers [(handler (escape (local 'error)))]})
+          rejected (execute {:op :do :body [(say "before" (lit nil)) {:op :unknown} (say "later" (lit nil))]})]
+      (is (= :thrown (:status thrown))) (is (identical? payload (:thrown-value thrown)))
+      (is (= [payload "" :normal] caught)) (is (identical? payload (first caught)))
+      (is (= [payload "" :thrown] rethrown)) (is (identical? payload (first rethrown)))
+      (is (= :rejected (:status rejected)))
+      (is (= "P15S23X002" (get-in rejected [:diagnostic :diagnostic])))
+      (is (= "before\n" (:stdout thrown) (:stdout rejected))))
+    (let [data '{:forms [(launch unknown) (quote untouched)]}
+          result (evaluate {:op :quote :value data})]
+      (is (= [data "" :normal] result)))
+    (let [unquoted (str/replace-first text "(def p15-s23-reference-runtime-contract\n  '{"
+                                    "(def p15-s23-reference-runtime-contract\n  {")]
+      (is (not= text unquoted))
+      (is (= :unsupported-literal-data
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path unquoted)) [:facts :reason]))))))
+
 (deftest compiler-module-route-development-kernel
   ;; Normalized routing DATA, not authenticated module input or admission.
   (let [instruction {:op :compiler-module-call :route-id :route :function 'library/identity
