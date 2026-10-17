@@ -172,9 +172,18 @@ checked; a matching name or recomputed hash alone does not establish a link.
 The public invocation reconstructs the bundle, and linked-call route and arity
 checks precede argument evaluation. Local function names remain module-local.
 
-The initial subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm`,
-with direct qualified imported calls. Module initializers, variadics, imported
-values and source/seed operator-shadowing mismatches reject. Imported calls
+The subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm`,
+with direct qualified imported calls and source-local literal DATA declarations
+of the form `(def name literal-data)`. Scalars, nested vectors/maps/sets and
+exact quoted DATA are materialized before body compilation for unqualified
+module-local reads; quoted symbols,
+lists and call-looking payloads remain inert. Parameters and lexical bindings
+take precedence over module DATA. Actual C5 var export descriptors are retained,
+but exported DATA is not callable and imported DATA reads remain unsupported.
+This is an immutable seed subset, not a language-wide restriction on `def`.
+Arbitrary initializer calls, bare-symbol aliases, forward/dependency initializer
+references, duplicate definitions, variadics and source/seed operator-shadowing
+mismatches reject. Imported calls
 under `let`, `loop`, nested functions or collection expressions are not yet
 supported; forwarding nested DATA through a parameter is distinct from those
 executable forms. Quoted DATA remains inert. General module initialization and
@@ -188,10 +197,20 @@ clojure -J-Xmx2g -M:dev-test \
   --exact compiler-module-route-development-kernel \
   --exact compiler-module-seed-shape-development-kernel \
   --exact compiler-module-b51-dispatch-development-kernel
+# After literal declaration or local lookup changes:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-literal-data-development-kernel \
+  --exact compiler-module-literal-data-existing-source-kernel
 # Run after module input, compilation or dispatch behavior changes:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact compiler-module-authenticated-source-and-runtime-composition
+# Affected literal DATA composition and actual C8 compatibility:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-literal-data-authenticated-composition \
+  --exact compiler-module-literal-data-actual-c8-composition
 ```
 
 The direct kernels use normalized inputs and dispatch instrumentation; they
@@ -200,6 +219,13 @@ constructs actual caller/callee C5 artifacts and independent plans. Bundle
 records retain the temporary Clojure seed/interpreter boundary and unchecked
 effects status. Neither path grants SOURCE/B51 authority, checked imported-call
 legality, target support, migration acceptance or seed retirement.
+The compile-time literal table is not another raw-plan field: actual source
+identity binds unused declarations, while embedded literal instructions bind
+values a function reads. Changing an unused catalog therefore changes module
+identity without changing an otherwise identical function-semantic projection.
+Do not refresh authority pins to account for redundant development metadata.
+Run only the affected composition rather than replaying unchanged source proofs
+to refresh an aggregate result.
 
 Ordinary focused tests do not require fresh authority proofs, frozen migration
 fingerprint refreshes, workstream receipts, broker setup or a new routing record.

@@ -1080,6 +1080,59 @@ forward body analysis into `gravity.effects`. A second facade pretending to be
 that namespace is not a substitute. Full effects/errors, checked runtime
 linking, migration, self-hosting and seedless release remain outstanding.
 
+### Literal module DATA: development implementation
+
+The L2/L3/C5/BOOT2 increment adds source-local literal DATA declarations to the
+ordinary compiler-artifact module subset. Scalars, nested vector/map/set
+initializers and exact quoted DATA are materialized before function bodies
+compile. Unqualified local reads use existing literal instructions; parameters
+and `let` bindings shadow module DATA. Quoted symbols, lists, nested quotes and
+call-looking payloads remain inert. Actual C5 declarations retain their original
+syntax, definition artifact, namespace/package, visibility and function/var
+kind. Mixed exports preserve DATA vars rather than dropping them or converting
+them into functions. DATA is not callable, and qualified/imported DATA reads,
+arbitrary initializer calls, aliases, mutation and general initialization remain
+unsupported, not forbidden by the language contract.
+
+Early kernel/namespace compilation errors were corrected before source-backed
+acceptance. The first real batch failed with `B1-METADATA` and
+`:pinned-sh02-gravity-function-identity`, before any assertions; fail-fast left
+the paired test unexecuted. A redundant literal inventory had been added to the
+raw plan and existing function-semantic projection. The correction keeps the
+table compile-local: actual source hashes and full C5/bundle reconstruction
+bind unused declarations, while embedded literal instructions bind used values.
+Unused DATA changes module identity without changing an otherwise identical
+function projection. No authority pin or strict check was weakened or refreshed.
+The failed result remains separate from the corrected passing evidence.
+
+The corrected source batch passed two tests and 23 assertions. Paired modules
+read different same-named catalogs, preserve nested DATA and lexical shadowing,
+use private DATA locally, retain var exports, and reject non-callable DATA,
+literal/export tampering and imported DATA reads. The actual existing C8 source
+constructed a bundle retaining all six catalog exports and invoked its existing
+quoted contract function without changing quoted-symbol output. This is C8
+source compatibility, not evidence of effect analysis. Selected execution took
+797.895 seconds for actual C8 and 328.845 seconds for the paired test, totaling
+1,126.741 seconds after 6.736 seconds of namespace loading.
+
+After that run, function-table validation was moved ahead of literal collection
+to preserve the existing `L2-DUPLICATE-FUNCTION` diagnostic. This ordering-only
+change leaves successful plans identical and was checked with focused tests,
+not a replay of the expensive compositions. Six final tests passed 91 assertions,
+including legacy `def`/`fn` construction, actual checked-core/C8 raw plans,
+exact historical SH02 function/plan identities, used/unused DATA invalidation,
+literal bounds, initializer and collision rejection, routing and dispatch
+regressions. The language boundary passed six tests and 11 assertions. These
+final batches total 14 test executions and 125 assertions; earlier overlapping
+kernels are not added. JVMs were serialized with a 2 GiB heap.
+
+No new loader resource, test lane, authority flag or raw-plan inventory was
+introduced. The actual C8 namespace can now be the caller for the next
+Gravity-owned body-analysis increment in `gravity.effects`; no parallel facade
+was substituted. Effects, thrown-error completion, checked imported-user calls,
+target support, authoritative migration, self-hosting and seedless release
+remain outstanding.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

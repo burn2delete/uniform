@@ -3,8 +3,11 @@
   [emitter module locals form]
   (cond
     (symbol? form)
-    (if (contains? locals form)
-      {:op :local :name form}
+    (cond
+      (contains? locals form) {:op :local :name form}
+      (contains? (:p15-s23-stage2-module-literals module) form)
+      {:op :literal :value (get (:p15-s23-stage2-module-literals module) form)}
+      :else
       (fail! "L2-UNKNOWN-SYMBOL"
              "stage2 plan emitter cannot resolve symbol"
              {:source-span {:source (:source-path module)}
@@ -32,14 +35,12 @@
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
                      (range 1 (count form)) (rest form))}
-
         (= callee 'do)
         {:op (:op special-rule)
          :body (mapv (fn [index body-form]
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals body-form))
                      (range 1 (count form)) (rest form))}
-
         (= callee 'if)
         (let [actual-arity (count (rest form))]
           (when-not (= 3 actual-arity)
@@ -60,7 +61,6 @@
         (= callee 'let)
         (let [[_ bindings & body] form]
           (p15-s23-stage2-seed-compile-let emitter module locals bindings body))
-
         (= callee 'loop)
         (let [[_ bindings & body] form]
           (p15-s23-stage2-seed-compile-loop emitter module locals bindings body))

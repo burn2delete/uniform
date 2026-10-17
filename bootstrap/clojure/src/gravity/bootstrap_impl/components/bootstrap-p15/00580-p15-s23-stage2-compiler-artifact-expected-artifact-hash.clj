@@ -89,18 +89,19 @@
                              (set/union (set functions)
                                         p15-s23-stage2-compiler-artifact-builtins))))))
 
-(declare p15-s23-stage2-module-bundle)
+(declare p15-s23-stage2-module-bundle p15-s23-stage2-module-literals)
 (defn p15-s23-stage2-compiler-artifact-plan-raw
   [emitter artifact-source artifact-text module-routes]
   (let [macro-artifact (macro-source-artifact artifact-source artifact-text)
         module (assoc (:module macro-artifact)
                       :forms (:expanded-forms macro-artifact))
         function-table (stage0-function-table module)
+        literals (p15-s23-stage2-module-literals (:forms module))
         source-authority
         (when (= 'gravity.checked-core (:module module))
           (p15-s23-sh07-compiler-source-authority
            artifact-source artifact-text module function-table))
-        module (cond-> (assoc module :function-table function-table)
+        module (cond-> (assoc module :function-table function-table :p15-s23-stage2-module-literals literals)
                  module-routes (assoc :p15-s23-stage2-module-routes module-routes)
                  source-authority
                  (assoc :p15-s23-sh07-source-authority source-authority))

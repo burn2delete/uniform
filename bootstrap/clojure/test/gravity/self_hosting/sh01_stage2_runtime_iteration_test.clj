@@ -71,6 +71,78 @@
       (.getPath (io/file directory (str "bootstrap/clojure/fixtures/self-hosting/sh-01/modules/" name extension)))
       (recur (.getParentFile directory)))))
 
+(deftest compiler-module-literal-data-development-kernel
+  (let [path (module-fixture "seed-library" ".gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        source "(ns example.literal (:profile :meta) (:target :jvm)) (def catalog {:nested [nil true 7 \"value\" #{:a}]}) (def secret :private) (defn shadow [catalog] catalog) (defn main [value] [catalog (let [catalog value] catalog) (shadow value) (quote catalog) secret])"
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path source)]
+    (is (= {:nested [nil true 7 "value" #{:a}]} (get-in compiled [:functions 'main :instructions 0 :items 0 :value])))
+    (is (= [{:nested [nil true 7 "value" #{:a}]} :argument :argument 'catalog :private]
+           (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'main [:argument])))
+    (is (= :literal (get-in compiled [:functions 'main :instructions 0 :items 0 :op])))
+    (is (= '(data (quote untouched) (dangerous call))
+           (bootstrap/p15-s23-stage2-module-literal! '(quote (data (quote untouched) (dangerous call))))))
+    (is (= {:symbol 'catalog :forms '(call argument)}
+           (bootstrap/p15-s23-stage2-module-literal! '{:symbol (quote catalog) :forms (quote (call argument))})))
+    (doseq [body ["(def catalog other)" "(def catalog (identity 1))" "(def catalog (quote data extra))"
+                  "(def catalog {:nested [other]})" "(def catalog other) (def other 1)"
+                  "(def catalog 1) (def catalog 2)" "(def catalog 1) (defn catalog [x] x)"]]
+      (is (= "BOOT2006" (:id (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                           emitter path (str "(ns example.literal (:profile :meta) (:target :jvm)) " body)))))))
+    (is (= :unsupported-literal-data
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (nth (iterate vector :leaf) 66))) [:facts :reason])))
+    (is (= :unsupported-literal-data
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (apply str (repeat 65537 "x")))) [:facts :reason])))
+    (is (= :literal-data-size-limit
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (vec (repeat 65537 nil)))) [:facts :reason])))
+    (is (= :duplicate-module-definition
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literals '[(def value 1) (defn value [x] x)])) [:facts :reason])))
+    (is (= "L2-DUPLICATE-FUNCTION"
+           (:id (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                              emitter path "(ns example.literal (:profile :meta) (:target :jvm)) (defn same [x] x) (defn same [x] x)")))))
+    (is (= 42 (bootstrap/p15-s23-stage2-runtime-execute-function
+               runtime (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                        emitter path "(ns example.literal (:profile :meta) (:target :jvm)) (def identity (fn [x] x))")
+               'identity [42])))
+    (let [compile (fn [literal used?]
+                    (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                     emitter path (str "(ns example.literal (:profile :meta) (:target :jvm)) (def catalog " literal
+                                       ") (defn main [x] " (if used? "catalog" "x") ")")))
+          unused-a (compile 1 false) unused-b (compile 2 false)
+          used-a (compile 1 true) used-b (compile 2 true)]
+      (is (not= (:plan-id unused-a) (:plan-id unused-b)))
+      (is (= (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input unused-a)
+             (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input unused-b)))
+      (is (not= (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input used-a)
+                (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input used-b))))))
+
+(deftest compiler-module-literal-data-existing-source-kernel
+  (doseq [relative ["gravity/src/gravity/checked_core.gravity"
+                    "gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"]]
+    (let [path (str/replace (module-fixture "seed-library" ".gravity")
+                           "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity" relative)
+          text (slurp path)
+          emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+          compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)]
+      (is (= :gravity/stage2-compiler-artifact-plan (:kind compiled)))
+      (is (seq (:functions compiled)))
+      (is (seq (bootstrap/p15-s23-stage2-module-literals (bootstrap/read-forms path text))))
+      (is (not (contains? compiled :literal-data)))))
+  (let [path (str/replace (module-fixture "seed-library" ".gravity")
+                          "bootstrap/clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
+                          bootstrap/p15-s23-sh02-source-relative-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))]
+    (is (= bootstrap/p15-s23-sh02-expected-plan-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input compiled))))
+    (is (= bootstrap/p15-s23-sh02-expected-functions-semantic-hash
+           (bootstrap/p15-s23-c11-mir-digest (:functions compiled))))
+    (is (= bootstrap/p15-s23-sh02-expected-plan-id
+           (str "sha256:" (bootstrap/sha256-hex
+                            (pr-str (bootstrap/c-backend-canonical-value
+                                     (assoc-in (dissoc compiled :plan-id) [:source :byte-count]
+                                               bootstrap/p15-s23-sh02-source-byte-count)))))))))
+
 (deftest compiler-module-route-development-kernel
   ;; Normalized routing DATA, not authenticated module input or admission.
   (let [instruction {:op :compiler-module-call :route-id :route :function 'library/identity
@@ -104,6 +176,7 @@
                      [callee-plan instruction scope]
                      [caller-plan instruction (assoc-in scope [:bundle :routes 0 :arity] 3)]
                      [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :visibility] :private)]
+                     [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :kind] :var)]
                      [caller-plan instruction (assoc-in scope [:bundle :modules 1 :plan :functions 'identity :arity] 1)]]]
       (reset! seen [])
       (is (= "BOOT2006" (:id (diagnostic #(run p i s)))))
@@ -182,6 +255,69 @@
     (is (= :clojure-stage0-seed (get-in raw [:compiler :compiled-by])))
     (is (= {:nested [1 {:data #{:x :y}}]}
            (bootstrap/p15-s23-stage2-runtime-execute-function runtime raw 'identity [{:nested [1 {:data #{:x :y}}]}])))))
+
+(deftest compiler-module-literal-data-authenticated-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [library-path (module-fixture "literal-library" extension)
+                 caller-path (module-fixture "literal-consumer" extension)
+                 emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+                 library (bootstrap/compiler-c5-resolution-file-artifact library-path)
+                 module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+                 caller (bootstrap/compiler-c5-resolution-file-artifact caller-path module-inputs)
+                 dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter library-path (slurp library-path))
+                 inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+                 bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path (slurp caller-path) inputs)
+                 root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))
+                 value {:argument [42 #{:nested}]}]
+             (is (= :accepted (:status library) (:status caller)))
+             (is (= [{:module :caller} value value 'catalog :caller-private]
+                    (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'identity [value])))
+             (is (= [{:module :library :nested [nil true 7 "value" #{:a :b}]} :library-private value]
+                    (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [value])))
+             (is (= #{['catalog :var] ['identity :function] ['relay :function]}
+                    (set (map (juxt :name :kind) (:exports root)))))
+             (is (= :private (:visibility (first (filter #(= 'secret (:name %)) (get-in caller [:binding-table :bindings]))))))
+             {:bundle bundle :caller-path caller-path :emitter emitter :inputs inputs :module-inputs module-inputs}))
+         [".gravity" ".qst"])
+        {:keys [bundle caller-path emitter inputs module-inputs]} (first cases)]
+    (is (= (get-in cases [0 :bundle :identity-input]) (get-in cases [1 :bundle :identity-input])))
+    (is (= :root-export-required
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'catalog [])) [:facts :reason])))
+    (doseq [mutate [(fn [entry] (assoc-in entry [:plan :functions 'identity :instructions 0 :items 0 :value] :tampered))
+                    (fn [entry] (update entry :exports #(filterv (fn [binding] (not= :var (:kind binding))) %)))]]
+      (let [tampered (update bundle :modules (fn [entries] (mapv #(if (= (:root-module-id bundle) (:module-id %)) (mutate %) %) entries)))]
+        (is (= :module-bundle-reconstruction-mismatch
+               (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime tampered 'identity [1])) [:facts :reason])))))
+    (let [text (str/replace (slurp caller-path) "(library/identity value)" "library/catalog")
+          artifact (bootstrap/compiler-c5-resolution-source-artifact caller-path text module-inputs)]
+      (is (= :accepted (:status artifact)))
+      (is (= :qualified-direct-import-calls-only
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                   emitter caller-path text (assoc inputs :caller-resolution-artifact artifact))) [:facts :reason]))))))
+
+(deftest compiler-module-literal-data-actual-c8-composition
+  (let [path (str/replace (module-fixture "seed-library" ".gravity")
+                          "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
+                          "gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        artifact (bootstrap/compiler-c5-resolution-file-artifact path)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)
+                 {:caller-resolution-artifact artifact :dependency-plans []})
+        entry (first (:modules bundle))
+        literals (bootstrap/p15-s23-stage2-module-literals (bootstrap/read-forms path (slurp path)))
+        catalogs '#{c8-effect-graph-contract c8-effect-legality-contract c8-capability-proof-contract
+                    c8-build-effect-contract c8-replay-ordering-contract c8-effect-diagnostic-catalog}]
+    (is (= :accepted (:status artifact)))
+    (is (= catalogs (set (keys literals))))
+    (is (= catalogs (set (map :name (filter #(= :var (:kind %)) (:exports entry))))))
+    (is (= (count (get-in artifact [:gravity-resolution-boundary :resolved-analysis :module-contract :exports]))
+           (count (:exports entry))))
+    (let [result (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'verify-c8-effect-checker [:input])]
+      (is (= :stage1-source-owned (:status result)))
+      (is (= 'typed-core-artifact (:typed-core-artifact result)))
+      (is (= 'c8-effect-diagnostic-catalog (:diagnostics result))))))
 
 (deftest compiler-module-authenticated-source-and-runtime-composition
   (let [cases

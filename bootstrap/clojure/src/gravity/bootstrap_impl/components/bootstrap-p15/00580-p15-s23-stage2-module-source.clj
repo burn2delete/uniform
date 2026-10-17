@@ -22,6 +22,63 @@
        (= (count (nth form 2)) (count (set (nth form 2))))
        (seq (drop 3 form)) (not= ':- (nth form 3 nil))))
 
+(defn p15-s23-stage2-module-literal! [value]
+  (loop [pending [[value 0 false]] visited 0]
+    (when (> visited 65536) (p15-s23-stage2-module-fail! :literal-data-size-limit {}))
+    (if (empty? pending)
+      (letfn [(materialize [item]
+                (cond
+                  (and (seq? item) (= 'quote (first item))) (second item)
+                  (map? item) (into {} (map (fn [[k v]] [(materialize k) (materialize v)])) item)
+                  (vector? item) (mapv materialize item)
+                  (set? item) (into #{} (map materialize) item)
+                  :else item))]
+        (materialize value))
+      (let [[item depth quoted?] (peek pending)
+            quote? (and (not quoted?) (seq? item) (= 'quote (first item)) (= 2 (count item)))
+            collection? (or (vector? item) (map? item) (set? item) (and quoted? (seq? item)))]
+        (when (or (> depth 64)
+                  (not (or quote? collection? (nil? item) (boolean? item) (number? item)
+                           (char? item) (keyword? item) (string? item) (and quoted? (symbol? item))))
+                  (and (string? item) (> (count item) 65536)))
+          (p15-s23-stage2-module-fail! :unsupported-literal-data {}))
+        (recur (cond
+                 quote? (conj (pop pending) [(second item) (inc depth) true])
+                 collection? (into (pop pending) (map #(vector % (inc depth) quoted?))
+                                   (if (map? item) (mapcat identity item) item))
+                 :else (pop pending)) (inc visited))))))
+
+(defn p15-s23-stage2-module-literals [forms]
+  (let [declarations (filterv #(and (seq? %) (contains? '#{def defn} (first %))) forms)
+        names (mapv second declarations)]
+    (when-not (= (count names) (count (set names)))
+      (p15-s23-stage2-module-fail! :duplicate-module-definition {}))
+    (into (sorted-map)
+          (keep (fn [form]
+                  (when (and (= 'def (first form)) (not (def-function-form? form)))
+                    (when-not (and (= 3 (count form)) (symbol? (second form)) (nil? (namespace (second form))))
+                      (p15-s23-stage2-module-fail! :literal-data-declaration-required {}))
+                    [(second form) (p15-s23-stage2-module-literal! (nth form 2))]))) declarations)))
+
+(defn p15-s23-stage2-module-declarations! [source forms]
+  (let [bindings (get-in source [:artifact :binding-table :bindings])
+        module (:module source)]
+    (doseq [form forms]
+      (let [name (second form)
+            binding (p15-s23-stage2-module-one!
+                     (filterv #(and (= :namespace (:binding-class %)) (= name (:name %))) bindings)
+                     :unique-declaration-binding)
+            syntax (p15-s23-stage2-module-one!
+                    (filterv #(= (:syntax/id %) (:definition-syntax-id binding)) (:syntax source))
+                    :declaration-syntax)]
+        (when-not (and (= form (:form syntax))
+                       (= (if (contains? (:functions source) name) :function :var) (:kind binding))
+                       (= (:namespace module) (:namespace binding)) (= (:package module) (:package binding))
+                       (= [:meta] (:profile-set binding)) (= [:jvm] (:target-set binding))
+                       (= (if (some #{name} (:exports module)) :public :private) (:visibility binding))
+                       (= (get-in source [:request :module :c4-artifact-id]) (:definition-artifact-id binding)))
+          (p15-s23-stage2-module-fail! :declaration-binding-mismatch {:symbol name}))))))
+
 (defn p15-s23-stage2-module-source [artifact]
   (let [boundary (:gravity-resolution-boundary artifact)
         request (:authenticated-resolution-request boundary)]
@@ -46,12 +103,19 @@
                      (= (:namespace module) (get-in macro [:module :module]))
                      (= expanded (:expanded-forms macro)))
         (p15-s23-stage2-module-fail! :source-or-expansion-mismatch {:source-path path}))
-      (when-not (every? p15-s23-stage2-module-fixed-definition? (rest forms))
+      (when-not (every? #(or (p15-s23-stage2-module-fixed-definition? %)
+                             (and (seq? %) (= 'def (first %)))) (rest forms))
         (p15-s23-stage2-module-fail! :function-only-unannotated-seed-subset {:source-path path}))
-      {:artifact artifact :module-id (:artifact-id artifact) :module module
-       :source-path path :source-text text :macro macro
-       :functions (stage0-function-table (assoc (:module macro) :forms expanded))
-       :syntax (:expanded-syntax-stream sh05) :request request})))
+      (doseq [form (rest forms) :when (= 'def (first form))]
+        (when-not (= 3 (count form)) (p15-s23-stage2-module-fail! :literal-data-declaration-required {}))
+        (p15-s23-stage2-module-literal! (nth form 2)))
+      (let [source {:artifact artifact :module-id (:artifact-id artifact) :module module
+                    :source-path path :source-text text :macro macro
+                    :literals (p15-s23-stage2-module-literals expanded)
+                    :functions (stage0-function-table (assoc (:module macro) :forms expanded))
+                    :syntax (:expanded-syntax-stream sh05) :request request}]
+        (p15-s23-stage2-module-declarations! source expanded)
+        source))))
 
 (defn p15-s23-stage2-module-shadowing-check! [source emitter]
   (let [bindings (into {} (map (juxt :binding-id identity) (get-in source [:artifact :binding-table :bindings])))
@@ -64,7 +128,8 @@
                                '[println do if let loop recur quote host-reflect]))]
     (doseq [reference (get-in source [:request :references])
             :when (and (= :operator (:position reference))
-                       (or (contains? reserved (:symbol reference)) (contains? (:functions source) (:symbol reference))))]
+                       (or (contains? reserved (:symbol reference)) (contains? (:functions source) (:symbol reference))
+                           (contains? (:literals source) (:symbol reference))))]
       (let [binding (get bindings (:binding-id (get resolved (:syntax-id reference))))]
         (when-not (if (contains? reserved (:symbol reference))
                     (= :core (:binding-class binding))
@@ -80,9 +145,12 @@
             (let [binding (p15-s23-stage2-module-one!
                            (filterv #(and (= :namespace (:binding-class %)) (= name (:name %)))
                                     (get-in artifact [:binding-table :bindings])) :unique-export-binding)]
-              (when-not (and (= :public (:visibility binding)) (= :function (:kind binding))
-                             (contains? (:functions source) name))
-                (p15-s23-stage2-module-fail! :exported-seed-function-required {:symbol name}))
+              (when-not (and (= :public (:visibility binding))
+                             (case (:kind binding)
+                               :function (contains? (:functions source) name)
+                               :var (contains? (:literals source) name)
+                               false))
+                (p15-s23-stage2-module-fail! :exported-seed-declaration-required {:symbol name}))
               binding)) (:exports module))))
 
 (defn p15-s23-stage2-module-call-sites [definition]
