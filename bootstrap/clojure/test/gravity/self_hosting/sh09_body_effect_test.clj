@@ -270,6 +270,7 @@
         match-node (assoc match-node :evaluation {:kind :scrutinee-then-source-ordered-pattern-candidates
                                                   :order [{:index 0 :core-node-id (sha 2)}]})]
     (is (true? (leaf 'body-match-valid? match-node core types)))
+    (is (true? (leaf 'body-match-valid? match-node core (assoc types (sha 5) :gravity.type/never))))
     (is (false? (leaf 'body-match-valid? (update match-node :children pop) core types)))
     (is (false? (leaf 'body-match-valid? match-node core (assoc types (sha 5) :gravity.type/integer))))
     (let [graph (zipmap (map sha [2 3 4 5]) (repeat {:transitive #{}}))
@@ -281,6 +282,14 @@
       (is (= [:branch :branch :guard] (mapv :role (:conditional-coverage record))))
       (is (= [:then :else] (mapv :role (:conditional-coverage if-record))))
       (is (= (mapv sha [3 4 5]) (mapv :node-id (:conditional-coverage record)))))
+    (let [graph {(sha 2) {:transitive #{}}
+                 (sha 3) {:transitive #{:error/throw} :escaping-thrown-error-types [:gravity.type/bool] :escaping-thrown-errors #{:gravity.type/bool}}
+                 (sha 4) {:transitive #{}}
+                 (sha 5) {:transitive #{:error/throw} :escaping-thrown-error-types [:gravity.type/string] :escaping-thrown-errors #{:gravity.type/string}}}
+          record (leaf 'body-node-record match-node nil graph :gravity.type/never)]
+      (is (= (mapv sha [2 3 4 5]) (:dependencies record)))
+      (is (= [:gravity.type/bool :gravity.type/string] (:escaping-thrown-error-types record)))
+      (is (= #{:error/throw} (:transitive record))))
     (is (false? (leaf 'body-match-valid? match-node (update-in core [:match-branch-records 0] dissoc :guard) types)))
     (is (false? (leaf 'body-match-valid? (assoc-in match-node [:attributes :guard-child-indexes] []) core types)))
     (is (false? (leaf 'body-match-valid? (assoc-in match-node [:attributes :guard-child-indexes] [2]) core types)))

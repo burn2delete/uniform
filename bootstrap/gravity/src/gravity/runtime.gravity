@@ -242,8 +242,8 @@
               (if (= 0 (count pending))
                 (if (= 0 (count remaining)) true
                   (let [clause (first remaining)]
-                    (if (if (map? clause) (= #{:pattern :body} (set (keys clause))) false)
-                      (if (map? (get clause :body))
+                    (if (if (map? clause) (= (if (contains? clause :guard) #{:pattern :body :guard} #{:pattern :body}) (set (keys clause))) false)
+                      (if (if (map? (get clause :body)) (if (contains? clause :guard) (map? (get clause :guard)) true) false)
                         (recur (rest remaining) [{:pattern (get clause :pattern) :depth 0}] #{} (+ work 1)) false) false)))
                 (let [frame (get pending (- (count pending) 1)) pattern (get frame :pattern)
                       depth (get frame :depth) kind (get pattern :kind)
@@ -297,13 +297,21 @@
 (defn p15-s23-runtime-evaluate-structural-match [instruction environment output functions path targets]
   (let [result (p15-s23-runtime-evaluate-with-targets (get instruction :scrutinee) environment output functions path [])]
     (if (= :normal (get result 2))
-      (loop [remaining (get instruction :clauses)]
+      (loop [remaining (get instruction :clauses) current-output (second result)]
         (if (= 0 (count remaining))
-          [{:diagnostic "P15S23X002" :reason :structural-match-no-selected-clause :operation :structural-match} (second result) :rejected]
+          [{:diagnostic "P15S23X002" :reason :structural-match-no-selected-clause :operation :structural-match} current-output :rejected]
           (let [clause (first remaining) selected (p15-s23-runtime-match-pattern (get clause :pattern) (first result) environment)]
             (if (= true (get selected :matched?))
-              (p15-s23-runtime-evaluate-with-targets (get clause :body) (get selected :environment) (second result) functions path targets)
-              (recur (rest remaining)))))) result)))
+              (if (contains? clause :guard)
+                (let [guard (p15-s23-runtime-evaluate-with-targets (get clause :guard) (get selected :environment) current-output functions path [])]
+                  (if (= :normal (get guard 2))
+                    (if (boolean? (first guard))
+                      (if (first guard)
+                        (p15-s23-runtime-evaluate-with-targets (get clause :body) (get selected :environment) (second guard) functions path targets)
+                        (recur (rest remaining) (second guard)))
+                      [{:diagnostic "P15S23X002" :reason :non-boolean-structural-guard :operation :structural-match} (second guard) :rejected]) guard))
+                (p15-s23-runtime-evaluate-with-targets (get clause :body) (get selected :environment) current-output functions path targets))
+              (recur (rest remaining) current-output))))) result)))
 
 (defn p15-s23-runtime-evaluate-with-targets
   [instruction environment output functions path targets]

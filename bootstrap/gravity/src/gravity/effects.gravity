@@ -1375,7 +1375,7 @@
                      (body-all? [(= guard-index (get guard :child-index))
                                  (= (get guard :node-id) (get children guard-index))
                                  (= guard-index (get (get attrs :guard-child-indexes) (count guards)))
-                                 (= :gravity.type/bool (get types (get guard :node-id)))]))])
+                                 (contains? #{:gravity.type/bool :gravity.type/never} (get types (get guard :node-id)))]))])
               (recur (rest remaining) (+ ordinal 1) (conj bodies (get branch :branch-core-node-id))
                      (if (= guard nil) guards (conj guards (get guard :node-id)))
                      (if (= guard nil) guard-index (+ guard-index 1))) false)))) false) false)))

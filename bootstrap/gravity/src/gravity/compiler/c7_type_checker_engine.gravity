@@ -5002,7 +5002,7 @@
                           (get context :value-type :gravity.type/unknown)
                           (get (get (sh08-im-callee edge context) :function-type) :return :gravity.type/unknown))))
                     (if (= core-form :match)
-                      (sh08-bm-join (sh08-gd-branch-ids node) type-table)
+                      (sh08-gd-match-result-type node type-table context)
                       :gravity.type/unknown)))))))))))))))))
 
 (defn sh08-ft-infer-node-with-context
@@ -6051,25 +6051,36 @@
                 (sh08-sm-extractions-with-origins (get part :shape) (get child :tree) (conj constructor-path (get part :coordinate))
                   (sh08-sm-merge-origins origins (get (get part :shape) :case-origins {}))) result))))))))
 
+(defn sh08-gd-truth [group branch types]
+  (if (contains? branch :guard)
+    (let [id (get (get branch :guard) :node-id) type (get types id :gravity.type/unknown)
+          node (get (get group :nodes) id) attrs (get node :attributes)
+          value (if (= :quote (get node :core-form)) (get attrs :quoted-value) (get attrs :value))]
+      (if (= type :gravity.type/never) :never
+        (if (= type :gravity.type/bool)
+          (if (if (= :literal (get node :core-form)) (= :boolean (get attrs :literal-kind))
+                (if (= :quote (get node :core-form)) (= :boolean (get attrs :quoted-kind)) false))
+            (if (boolean? value) (if value :true :false) :unknown) :unknown) :unknown))) :true))
+
+(defn sh08-gd-match-result-type [node types context]
+  (let [group (loop [remaining (get context :boolean-matches)]
+                (if (= 0 (count remaining)) nil
+                  (if (= (get node :node-id) (get (get (first remaining) :node) :node-id)) (first remaining)
+                    (recur (rest remaining)))))]
+    (if (= group nil) (sh08-bm-join (sh08-gd-branch-ids node) types)
+      (loop [remaining (get group :branches) result []]
+        (if (= 0 (count remaining)) (sh08-ft-normal-return-type :alternatives result :gravity.type/unknown)
+          (let [branch (first remaining) truth (sh08-gd-truth group branch types)
+                type (if (contains? #{:false :never} truth) :gravity.type/never
+                       (get types (get branch :branch-core-node-id) :gravity.type/unknown))]
+            (recur (rest remaining) (conj result type))))))))
+
 (defn sh08-gd-result [group branch types validate?]
   (if (contains? branch :guard)
     (let [guard (get branch :guard) id (get guard :node-id) node (get (get group :nodes) id)
           type (get types id :gravity.type/unknown) tree (sh08-bm-tree (get group :nodes) id)
-          control (loop [remaining (get group :node-sequence)]
-                    (if (= (count remaining) 0) nil
-                      (let [candidate (first remaining)]
-                        (if (if (contains? tree (get candidate :node-id))
-                              (contains? #{:throw :try :recur} (get candidate :core-form)) false)
-                          candidate (recur (rest remaining))))))
-          quote (if (= :quote (get node :core-form)) (sh08-qd-node node (get group :forms)) {})
-          truth (if (= :boolean (get (get quote :data) :kind))
-                  (if (= true (get (get quote :data) :value)) :true :false)
-                  (if (= :literal (get node :core-form))
-                  (if (= :boolean (get (get node :attributes) :literal-kind))
-                    (if (= true (get (get node :attributes) :value)) :true :false) :unknown) :unknown))]
-      (if (if validate? (map? control) false)
-        (assoc (sh08-sm-failure "C7-ANNOTATION" :unsupported-guard-control-transfer nil :normally-returning-guard (get control :core-form)) :node control)
-        (if (if validate? (= false (= type :gravity.type/bool)) false)
+          truth (sh08-gd-truth group branch types)]
+        (if (if validate? (= false (contains? #{:gravity.type/bool :gravity.type/never} type)) false)
           (assoc (sh08-sm-failure "L7-GUARD-TYPE" :guard-result-not-boolean nil :gravity.type/bool type) :node node)
           {:status :accepted :truth truth
            :guard {:rule-version :sh08-bool-root-map-guard-v1 :core-node-id id :type type :truth truth
@@ -6090,7 +6101,7 @@
                                                             :evaluation (get call-node :evaluation)
                                                             :call-record (first (sh08-bm-select (get group :calls) :core-node-id (get call-node :node-id)))}) result)))))
                    :dependencies {:guard guard :binding-ids (get branch :pattern-binding-ids)}
-                   :invalidation [:guard-source :guard-node-type :guard-region :binding-scopes :guard-call-facts :guard-effects :guard-capabilities]}})))
+                   :invalidation [:guard-source :guard-node-type :guard-region :binding-scopes :guard-call-facts :guard-effects :guard-capabilities]}}))
     {:status :accepted :truth :true}))
 
 (defn sh08-sm-partition-with-guards [group shape types validate?]
@@ -6118,8 +6129,8 @@
                                     (recur (rest selected) (sh08-ft-add-values-to-set
                                       (sh08-sm-extractions-with-origins selected-shape tree [] origins) result) (+ case-index 1)))))]
               (if (= :accepted (get guard-result :status))
-                (let [after (if (= :true (get guard-result :truth)) (get split :residual) domains)
-                      selected (if (= :false (get guard-result :truth)) [] (get split :selected))
+                (let [after (if (contains? #{:true :never} (get guard-result :truth)) (get split :residual) domains)
+                      selected (if (contains? #{:false :never} (get guard-result :truth)) [] (get split :selected))
                       fact {:branch (first branches) :tree tree :remaining-before domains
                             :selected selected :remaining-after after :extractions extractions}]
                   (recur (rest trees) (rest branches) after
@@ -6246,14 +6257,15 @@
               {:diagnostic (sh08-bm-error "C7-ANNOTATION" :structural-match-evidence-limit node :bounded-evidence-ledger nil)})
             (let [fact (first branches) branch (get fact :branch) body-id (get branch :branch-core-node-id)
                   body (get (get group :nodes) body-id) type (get types body-id :gravity.type/unknown)
+                  effective (if (contains? #{:false :never} (get (get fact :guard) :truth)) :gravity.type/never type)
                   expected (if (= declared nil) result-type declared)]
               (if (sh08-ft-known? type)
                 (if (if (sh08-ft-known? expected)
-                      (if (= type :gravity.type/never) true
+                      (if (= effective :gravity.type/never) true
                         (if (if (= declared nil) (= expected :gravity.type/never) false) true (= expected type))) true)
                   (recur (rest branches)
-                    (if (= result-type :gravity.type/unknown) type
-                      (sh08-ft-normal-return-type :alternatives [result-type type] :gravity.type/unknown))
+                    (if (= result-type :gravity.type/unknown) effective
+                      (sh08-ft-normal-return-type :alternatives [result-type effective] :gravity.type/unknown))
                     (conj facts (sh08-gd-constraint fact {:constraint-id-request
                                   {:domain :gravity/sh08-structural-match-constraint-v1 :match-core-node-id (get node :node-id)
                                    :clause-ordinal (get branch :clause-ordinal) :branch branch
@@ -6288,7 +6300,10 @@
                       :structurally-matched-shapes (get fact :structural-selected)
                       :dependencies (assoc (get constraint :dependencies) :guard (get fact :guard))
                       :solution (assoc (get constraint :solution) :guard-truth (get (get fact :guard) :truth)
-                                       :guard-body-shapes (get fact :selected) :guard-fallthrough-shapes (get fact :remaining-after))
+                                       :guard-body-shapes (get fact :selected) :guard-fallthrough-shapes (get fact :remaining-after)
+                                       :body-completion (if (contains? #{:false :never} (get (get fact :guard) :truth)) :not-executed :potential)
+                                       :effective-result-type (if (contains? #{:false :never} (get (get fact :guard) :truth))
+                                                                :gravity.type/never (get constraint :rhs)))
                       :invalidation (sh08-ft-add-values-to-set
                                       [:guard-source :guard-node-type :guard-region :guard-call-facts :guard-truth :guard-evaluation-order :guard-effects :guard-capabilities]
                                       (get constraint :invalidation))

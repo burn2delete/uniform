@@ -1193,7 +1193,10 @@
         (if (p15-s23-compiler-complete? test)
           (loop [remaining (get instruction :clauses) out (get test :value)]
             (if (= 0 (count remaining)) (p15-s23-compiler-result out)
-              (let [body (p15-s23-summary-instruction (get (first remaining) :body) out)]
+              (let [guard (if (contains? (first remaining) :guard)
+                            (p15-s23-summary-instruction (get (first remaining) :guard) out) (p15-s23-compiler-result out))
+                    body (if (p15-s23-compiler-complete? guard)
+                           (p15-s23-summary-instruction (get (first remaining) :body) (get guard :value)) guard)]
                 (if (p15-s23-compiler-complete? body) (recur (rest remaining) (get body :value)) body)))) test))
     (if (= op :try)
       (let [protected (p15-s23-summary-instruction (get instruction :protected) counted)]
@@ -2298,17 +2301,24 @@
       (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))) nil))
 
 (defn p15-s23-typed-match-uses [context root binding budget]
-  (loop [pending [root] seen #{} uses [] work 0]
-    (if (= 0 (count pending)) {:status :complete :uses uses :work-count work}
+  (loop [pending [root] seen #{} work 0]
+    (if (= 0 (count pending))
+      (let [sequence (get (get context :core) :nodes) total (+ work (count sequence))]
+        (if (> total budget) (p15-s23-typed-error :typed-lowering-work-limit)
+          (loop [remaining sequence uses []]
+            (if (= 0 (count remaining)) {:status :complete :uses uses :work-count total}
+              (let [node (first remaining)]
+                (recur (rest remaining)
+                  (if (if (contains? seen (get node :node-id))
+                        (if (= :reference (get node :core-form)) (= binding (get (get node :attributes) :binding-id)) false) false)
+                    (conj uses (get (get node :source) :syntax-id)) uses)))))))
       (if (>= work budget) (p15-s23-typed-error :typed-lowering-work-limit)
         (let [id (first pending) node (get (get context :nodes) id) children (get node :children)]
           (if (if (map? node) (vector? children) false)
             (if (> (+ work 1 (count children)) budget) (p15-s23-typed-error :typed-lowering-work-limit)
             (if (contains? seen id) (p15-s23-typed-error :cyclic-typed-match-body)
               (recur (p15-s23-typed-match-append children (vec (rest pending)))
-                     (conj seen id)
-                     (if (if (= :reference (get node :core-form)) (= binding (get (get node :attributes) :binding-id)) false)
-                       (conj uses (get (get node :source) :syntax-id)) uses) (+ work 1 (count children)))))
+                     (conj seen id) (+ work 1 (count children)))))
             (p15-s23-typed-error :malformed-typed-match-body)))))))
 
 (defn p15-s23-typed-boolean-match-branch [context node branch pattern row skeleton ordinal domain budget]
@@ -2467,7 +2477,8 @@
       (let [row (first remaining) request (get row :constraint-id-request)]
         (recur (rest remaining)
           (if (if (= :sh08-structural-match-v1 (get row :producer-rule))
-                (if (= :gravity/sh08-structural-match-constraint-v1 (get request :domain)) (= id (get request :match-core-node-id)) false) false)
+                (if (contains? #{:gravity/sh08-structural-match-constraint-v1 :gravity/sh08-guarded-structural-match-constraint-v1} (get request :domain))
+                  (= id (get request :match-core-node-id)) false) false)
             (conj out row) out))))))
 
 (defn p15-s23-typed-pattern-atom? [family value]
@@ -2489,7 +2500,14 @@
         fixed (+ 16 (count extractions) (count (get (get context :core) :nodes)))]
     (if (< budget fixed) (p15-s23-typed-error :typed-lowering-work-limit)
       (let [values (p15-s23-typed-match-records extractions :binding-id id) type (get (first values) :type)
-            uses (p15-s23-typed-match-uses context body id (- budget fixed))]
+            guard-id (get context :structural-guard-node-id)
+            guard-uses (if (= guard-id nil) {:status :complete :uses [] :work-count 0}
+                         (p15-s23-typed-match-uses context guard-id id (- budget fixed)))
+            body-uses (if (p15-s23-compiler-complete? guard-uses)
+                        (p15-s23-typed-match-uses context body id (- budget fixed (get guard-uses :work-count))) guard-uses)
+            uses (if (p15-s23-compiler-complete? body-uses)
+                   {:status :complete :uses (p15-s23-typed-match-append (get guard-uses :uses) (get body-uses :uses))
+                    :work-count (+ (get guard-uses :work-count) (get body-uses :work-count))} body-uses)]
         (if (= false (p15-s23-compiler-complete? uses)) uses
         (if (p15-s23-typed-all [(symbol? (get binding :name)) (= (get binding :name) (get form :value) (get record :pattern-value))
               (= :lexical (get binding :binding-class)) (= (get binding :definition-syntax-id) (get form :syntax-id))
@@ -2522,10 +2540,13 @@
   ; projects its tree and joins exact source coordinates and binding extractions.
   (let [record (get tree :record) form (get tree :form) kind (get record :pattern-kind)
         children (get tree :children) ids (get form :child-form-ids) value (get record :pattern-value)
+        guard (get record :guard) guard-index (get guard :source-child-index)
         fixed (+ 16 (count ids) (count children))]
     (if (if (> (count path) 128) true (< budget fixed)) (p15-s23-typed-error :typed-lowering-work-limit)
     (if (p15-s23-typed-all [(map? tree) (map? record) (map? form) (vector? children) (vector? ids)
-          (= false (contains? record :guard)) (= match-id (get record :core-node-id)) (= clause (get record :clause-ordinal))
+          (if (= guard nil) true (p15-s23-typed-all [(= [] path) (= :map kind) (= :sh07-root-map-guard-v1 (get guard :rule-version))
+            (integer? guard-index) (if (integer? guard-index) (if (> guard-index 0) (< guard-index (count ids)) false) false)]))
+          (= match-id (get record :core-node-id)) (= clause (get record :clause-ordinal))
           (= record (get (get (get context :core) :match-pattern-records) (get record :ordinal)))
           (= form (get (get context :forms) (get record :pattern-form-id))) (= (get record :pattern-syntax-id) (get form :syntax-id))
           (= path (get record :path)) (= (count path) (get record :depth)) (= root (get record :root-ordinal))
@@ -2533,15 +2554,21 @@
           (= parent (get record :parent-ordinal)) (= (if (= parent nil) nil (- parent root)) (get record :parent-local-ordinal))])
       (if (contains? #{:map :vector} kind)
         (let [map-pattern? (= kind :map) n (count children)]
-          (if (p15-s23-typed-all [(= kind (get form :kind)) (= (count ids) (* (if map-pattern? 2 1) n))
+          (if (p15-s23-typed-all [(= kind (get form :kind)) (= (count ids) (+ (* (if map-pattern? 2 1) n) (if (= guard nil) 0 2)))
+                (if (= guard nil) true
+                  (let [key (get (get context :forms) (get ids (- guard-index 1))) expression (get (get context :forms) (get ids guard-index))]
+                    (p15-s23-typed-all [(= :keyword (get key :kind)) (= :when (get key :value))
+                      (= (get form :form-id) (get key :parent-form-id) (get expression :parent-form-id))
+                      (= (get guard :form-id) (get expression :form-id)) (= (get guard :syntax-id) (get expression :syntax-id))])))
                 (if map-pattern? (= nil (get record :vector-width)) (= n (get record :vector-width)))
                 (= nil (get record :pattern-binding-id) (get record :pattern-binding-scope-id))])
             (loop [index 0 out [] locals {} types {} bindings [] seen #{} work fixed count-records 1]
               (if (= index n)
                 (assoc (p15-s23-compiler-result (if map-pattern? {:kind :map :entries out} {:kind :vector :items out}))
                   :locals locals :types types :binding-ids bindings :record-count count-records :work-count work)
-                (let [child (get children index) coordinate (if map-pattern? (+ 1 (* 2 index)) index)
-                      child-form (get (get context :forms) (get ids coordinate)) key-form (get (get context :forms) (get ids (* 2 index)))
+                (let [child (get children index) raw-coordinate (if map-pattern? (+ 1 (* 2 index)) index)
+                      coordinate (if (= guard nil) raw-coordinate (if (>= raw-coordinate guard-index) (+ raw-coordinate 2) raw-coordinate))
+                      child-form (get (get context :forms) (get ids coordinate)) key-form (get (get context :forms) (get ids (- coordinate 1)))
                       key (get child :key)]
                   (if (p15-s23-typed-all [(= coordinate (get child :coordinate)) (= (get ids coordinate) (get child :form-id))
                         (= (get form :form-id) (get child-form :parent-form-id))
@@ -2579,6 +2606,44 @@
           (p15-s23-typed-error :typed-structural-pattern-leaf-children)))
       (p15-s23-typed-error :typed-structural-pattern-source-mismatch)))))
 
+(defn p15-s23-typed-structural-guard [context node branch row budget]
+  (if (contains? branch :guard)
+    (let [guard (get branch :guard) id (get guard :node-id) typed (get row :guard)
+          expression (get (get context :nodes) id) form (get (get context :forms) (get guard :form-id))
+          type (get (get context :types) id) attrs (get expression :attributes)
+          literal? (if (= :literal (get expression :core-form)) (= :boolean (get attrs :literal-kind))
+                     (if (= :quote (get expression :core-form)) (= :boolean (get attrs :quoted-kind)) false))
+          value (if (= :quote (get expression :core-form)) (get attrs :quoted-value) (get attrs :value))
+          truth (if (= type :gravity.type/never) :never (if literal? (if value :true :false) :unknown))
+          source (p15-s23-typed-project guard [:rule-version :source-child-index :form-id :syntax-id])
+          fixed 24]
+      (if (< budget fixed) (p15-s23-typed-error :typed-lowering-work-limit)
+        (if (p15-s23-typed-all [(contains? #{:gravity.type/bool :gravity.type/never} type)
+              (= id (get expression :node-id) (get typed :core-node-id)) (= type (get typed :type)) (= truth (get typed :truth))
+              (= id (get (get node :children) (get guard :child-index)))
+              (= :sh08-bool-root-map-guard-v1 (get typed :rule-version) (get row :guard-rule-version))
+              (= typed (get (get row :constraint-id-request) :guard) (get (get row :dependencies) :guard))
+              (= source (get typed :source)) (= (get expression :source) (p15-s23-typed-source form))
+              (= source (get (get (get (get row :constraint-id-request) :pattern-tree) :record) :guard))
+              (= {:kind :match-guard :match-syntax-id (get (get node :source) :syntax-id) :clause-ordinal (get branch :clause-ordinal)}
+                 (get guard :conditional-region) (get typed :conditional-region) (get (get expression :evaluation) :region))
+              (= :once-after-structural-success (get guard :evaluation) (get typed :evaluation))
+              (= :next-candidate (get guard :on-pattern-failure) (get typed :on-pattern-failure) (get guard :on-false) (get typed :on-false))
+              (= :branch-body (get guard :on-true) (get typed :on-true))
+              (= (get branch :pattern-binding-ids) (get typed :binding-ids))
+              (= {:guard guard :binding-ids (get branch :pattern-binding-ids)} (get typed :dependencies))
+              (= truth (get (get row :solution) :guard-truth))
+              (= (get row :matched-shapes) (get (get row :solution) :guard-body-shapes))
+              (= (get row :remaining-after) (get (get row :solution) :guard-fallthrough-shapes))
+              (= (if (contains? #{:false :never} truth) :not-executed :potential) (get (get row :solution) :body-completion))
+              (= (if (contains? #{:false :never} truth) :gravity.type/never (get row :rhs)) (get (get row :solution) :effective-result-type))])
+          ; Keep lexical ancestry for a guard-local loop's authenticated parent;
+          ; tail? false still prevents transfer to that enclosing target.
+          (let [compiled (p15-s23-typed-compile-node (assoc context :tail? false) id (- budget fixed))]
+            (if (p15-s23-compiler-complete? compiled) (assoc compiled :work-count (+ fixed (get compiled :work-count))) compiled))
+          (p15-s23-typed-error :typed-structural-guard-evidence-mismatch))))
+    (assoc (p15-s23-compiler-result nil) :work-count 0)))
+
 (defn p15-s23-typed-compile-structural-match [context node budget]
   (let [core (get context :core) id (get node :node-id) children (get node :children) attrs (get node :attributes)
         all-branches (get core :match-branch-records) all-patterns (get core :match-pattern-records) all-skeletons (get core :match-decision-skeletons)
@@ -2590,15 +2655,22 @@
             patterns (p15-s23-typed-match-records all-patterns :core-node-id id)
             skeletons (p15-s23-typed-match-records all-skeletons :core-node-id id) skeleton (first skeletons)
             rows (p15-s23-typed-structural-match-rows (get context :ledger) id) n (count branches)
+            guard-ids (loop [remaining branches out []]
+                        (if (= 0 (count remaining)) out
+                          (recur (rest remaining) (if (contains? (first remaining) :guard) (conj out (get (get (first remaining) :guard) :node-id)) out))))
             scrutinee (get (get context :nodes) (first children)) operator (get forms (get ids 0))
             shape (get (first rows) :constructor-shape) type (get (get context :types) id)
             fields [:clause-ordinal :branch-child-index :pattern-kind :pattern-form-id :pattern-syntax-id :pattern-value
                     :branch-form-id :branch-syntax-id :pattern-binding-id :pattern-binding-scope-id :pattern-binding-ids]]
-        (if (p15-s23-typed-all [(> n 0) (= n (count rows) (get attrs :branch-count)) (= (+ n 1) (count children))
+        (if (p15-s23-typed-all [(> n 0) (= n (count rows) (get attrs :branch-count)) (= (+ n 1 (count guard-ids)) (count children))
               (= 1 (count skeletons)) (= (+ 2 (* n 2)) (count ids))
               (= :list (get owner :kind)) (= :symbol (get operator :kind)) (= 'match (get operator :value))
               (= [] (get operator :child-form-ids)) (= (get owner :form-id) (get operator :parent-form-id))
-              (= false (contains? attrs :guard-rule-version)) (= false (contains? attrs :guard-child-indexes))
+              (if (= 0 (count guard-ids))
+                (p15-s23-typed-all [(= false (contains? attrs :guard-rule-version)) (= false (contains? attrs :guard-child-indexes))])
+                (p15-s23-typed-all [(= :sh07-root-map-guard-v1 (get attrs :guard-rule-version) (get node :lowering-rule-version))
+                  (= (p15-s23-typed-index-range (+ n 1) (+ n 1 (count guard-ids))) (get attrs :guard-child-indexes))
+                  (= guard-ids (subvec children (+ n 1) (count children)))]))
               (= (get node :source) (p15-s23-typed-source owner))
               (= (get scrutinee :source) (p15-s23-typed-source (get forms (get ids 1))))
               (= (get owner :form-id) (get (get forms (get ids 1)) :parent-form-id))
@@ -2608,7 +2680,7 @@
               (= :scrutinee-then-source-ordered-pattern-candidates (get attrs :evaluation-order) (get (get node :evaluation) :kind))
               (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
               (= id (get skeleton :core-node-id)) (= (first children) (get skeleton :scrutinee-core-node-id))
-              (= (subvec children 1 (count children)) (get skeleton :branch-core-node-ids))
+              (= (subvec children 1 (+ n 1)) (get skeleton :branch-core-node-ids))
               (= :source-ordered-pattern-candidates (get attrs :selection-policy) (get skeleton :selection-policy))
               (= :not-asserted-by-sh07-b11 (get attrs :runtime-reachability) (get skeleton :runtime-reachability))
               (= :pending-sh08 (get attrs :result-type-join) (get skeleton :result-type-join) (get attrs :exhaustiveness) (get skeleton :exhaustiveness))
@@ -2626,12 +2698,18 @@
                   (let [branch (get branches index) row (get rows index) request (get row :constraint-id-request)
                         tree (get request :pattern-tree) root (get tree :record) body-id (get children (+ index 1)) body (get (get context :nodes) body-id)
                         body-form (get forms (get ids (+ 3 (* index 2)))) pattern-form (get forms (get ids (+ 2 (* index 2))))
-                        body-type (get (get context :types) body-id) extractions (get row :extractions)]
+                        body-type (get (get context :types) body-id) extractions (get row :extractions)
+                        guarded? (contains? branch :guard)
+                        effective (if guarded? (get (get row :solution) :effective-result-type) body-type)]
                     (if (p15-s23-typed-all [(= index (get branch :clause-ordinal) (get request :clause-ordinal))
                           (= id (get request :match-core-node-id) (get branch :core-node-id)) (= n (get branch :clause-count))
                           (= branch (get request :branch)) (= skeleton (get request :skeleton))
-                          (= false (contains? branch :guard)) (= false (contains? row :guard))
-                          (= (p15-s23-typed-project branch fields) (get (get attrs :branch-clauses) index))
+                          (= guarded? (contains? row :guard))
+                          (= (let [clause (p15-s23-typed-project branch fields)]
+                               (if guarded? (assoc clause :guard (p15-s23-typed-project (get branch :guard)
+                                 [:rule-version :source-child-index :form-id :syntax-id :child-index :conditional-region :evaluation
+                                  :on-pattern-failure :on-true :on-false :non-boolean-type-effect-legality])) clause))
+                             (get (get attrs :branch-clauses) index))
                           (= body-id (get branch :branch-core-node-id) (get body :node-id) (get row :lhs))
                           (= (+ index 1) (get branch :branch-child-index)) (= (first children) (get branch :scrutinee-core-node-id))
                           (= (get pattern-form :form-id) (get branch :pattern-form-id) (get root :pattern-form-id))
@@ -2648,16 +2726,20 @@
                           (= :solved (get row :status)) (= :equality (get row :kind)) (= [] (get row :diagnostics))
                           (= (get (get core :module) :profile) (get row :profile)) (= (get (get core :module) :target) (get row :target))
                           (= body-type (get row :rhs) (get (get row :solution) :result-type))
-                          (if (= body-type :gravity.type/never) true (= type body-type))
+                          (if (= effective :gravity.type/never) true (= type effective body-type))
                           (= shape (get row :constructor-shape)) (vector? (get row :remaining-before))
-                          (vector? (get row :matched-shapes)) (> (count (get row :matched-shapes)) 0)
+                          (vector? (get row :matched-shapes))
+                          (if guarded? (if (vector? (get row :structurally-matched-shapes)) (> (count (get row :structurally-matched-shapes)) 0) false)
+                            (> (count (get row :matched-shapes)) 0))
                           (vector? (get row :remaining-after)) (= (= [] (get row :remaining-after)) (get row :exhaustive-after?))
                           (if (= index 0) true (= previous (get row :remaining-before)))
                           (vector? extractions) (= extractions (get (get row :solution) :binding-extractions))
                           (= (get row :matched-shapes) (get (get row :solution) :selected-shapes))
-                          (= {:scrutinee-node-id (first children) :constructor-shape shape :pattern-tree tree :branch-node-id body-id :extractions extractions}
+                          (= (let [dependencies {:scrutinee-node-id (first children) :constructor-shape shape :pattern-tree tree :branch-node-id body-id :extractions extractions}]
+                               (if guarded? (assoc dependencies :guard (get row :guard)) dependencies))
                              (get row :dependencies))])
-                      (let [projected (p15-s23-typed-pattern-project context tree id index (get root :ordinal) nil [] extractions body-id (- budget work))]
+                      (let [projected (p15-s23-typed-pattern-project (assoc context :structural-guard-node-id (get (get branch :guard) :node-id))
+                                        tree id index (get root :ordinal) nil [] extractions body-id (- budget work))]
                         (if (p15-s23-compiler-complete? projected)
                           (if (= (get projected :binding-ids) (get branch :pattern-binding-ids))
                             (if (< (- budget work (get projected :work-count)) (* 2 (count (get projected :binding-ids))))
@@ -2665,12 +2747,15 @@
                             (let [joined-work (+ (get projected :work-count) (* 2 (count (get projected :binding-ids))))
                                   active (assoc context :locals (p15-s23-typed-map-extend (get context :locals) (get projected :locals))
                                                        :parameter-types (p15-s23-typed-map-extend (get context :parameter-types) (get projected :types)))
-                                  compiled (p15-s23-typed-compile-node active body-id (- budget work joined-work))]
+                                  guard (p15-s23-typed-structural-guard active node branch row (- budget work joined-work))
+                                  compiled (if (p15-s23-compiler-complete? guard)
+                                             (p15-s23-typed-compile-node active body-id (- budget work joined-work (get guard :work-count))) guard)]
                               (if (p15-s23-compiler-complete? compiled)
-                                (recur (+ index 1) (conj out {:pattern (get projected :value) :body (get compiled :value)})
-                                  (+ work joined-work (get compiled :work-count)) (get row :remaining-after)
+                                (recur (+ index 1) (conj out (let [clause {:pattern (get projected :value) :body (get compiled :value)}]
+                                                              (if guarded? (assoc clause :guard (get guard :value)) clause)))
+                                  (+ work joined-work (get guard :work-count) (get compiled :work-count)) (get row :remaining-after)
                                   (p15-s23-typed-match-append binding-ids (get projected :binding-ids))
-                                  (+ record-count (get projected :record-count)) (if (= body-type :gravity.type/never) normal? true)) compiled)))
+                                  (+ record-count (get projected :record-count)) (if (= effective :gravity.type/never) normal? true)) compiled)))
                             (p15-s23-typed-node-error :typed-structural-branch-bindings-mismatch node)) projected))
                       (p15-s23-typed-node-error :typed-structural-match-row-mismatch node))))) test))
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-structural-match node)))

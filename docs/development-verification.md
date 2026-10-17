@@ -907,14 +907,76 @@ including genuine constructor-derived patterns and public C7 rejection of
 coherently changed extraction evidence. Reuse each fresh source product within
 that composition; do not repeat unchanged Boolean/map/vector proof matrices.
 Select the existing Boolean lowering/routes kernels when changing shared
-match dispatch. Guards and additional L7 pattern families remain separate
-implementation work, not language prohibitions.
+match dispatch. Guard execution has its own checks below; additional L7
+pattern families remain separate implementation work, not language prohibitions.
 
 ```bash
 # Affected real-source composition, outside the edit loop:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact current-gravity-structural-match-authenticated-composition --fail-fast
+```
+
+### Root-map guard completion and execution
+
+L7 guards that return normally require an established Bool result. `true`
+selects the body, `false` continues, and non-returning `Never` preserves its
+control transfer. There is no truthiness conversion. Change C7 for completion,
+narrowing and result facts; `gravity/effects.gravity` for independent effect
+joins; and the existing emitter/runtime for execution.
+
+Start with the owning producer checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact sh08-root-map-guard-development-kernel \
+  --exact sh08-root-map-guard-literal-development-kernel \
+  --exact sh08-root-map-guard-completion-development-kernel \
+  --exact sh08-guard-match-forward-inference-development-kernel \
+  --exact sh08-quoted-data-guard-development-kernel \
+  --exact body-effect-guard-development-kernel
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-root-map-guard-lowering-development-kernel \
+  --exact current-gravity-root-map-guard-runtime-development-kernel \
+  --exact current-gravity-guard-local-loop-parent-development-kernel \
+  --exact current-gravity-guard-recur-diagnostic-envelope-development-kernel
+```
+
+Keep every body's original type and legality checks. A body that cannot execute
+after a false or Never guard contributes no normal match result; its separate
+effective-completion evidence does not relabel that body as Never. An unresolved
+potential result remains Unknown until inference resolves it, including when
+a later branch never returns. Never guards consume their structurally matched
+cases by transferring control; they do not select a body or fall through.
+
+After structural success, evaluate the guard once with its pattern bindings in
+non-tail position. Preserve lexical target ancestry for authenticating a local
+loop; that ancestry does not permit a direct recur from the guard. False
+restores the original bindings for later
+clauses while preserving output. Only the selected body receives its original
+tail target. Nested guards must preserve authenticated binding-use order, not
+assume that the grouped Core child vector is an execution schedule. Conservative
+source-error summaries remain separate from selected-path precision.
+
+These are normalized development checks. Changes to guard facts or execution
+also need one affected paired real-source composition through C7, lowering,
+runtime and actual C8 body/allowance checks before acceptance. Preserve direct
+guard-tail-recur and escaped-binding rejection. The unchanged
+`sh07-b10-root-map-guard-source-rejections` selector constructs four complete
+upstream source products; it is not a cheap prerequisite for every guard edit.
+Use affected source negatives in the selected composition rather than replaying
+that unchanged matrix. No new authority admission or migration pin is needed
+for this development feedback.
+
+```bash
+# Affected paired source/type/effect/lowering/runtime composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-root-map-guard-authenticated-composition --fail-fast
 ```
 
 ### Canonical direct same-module calls

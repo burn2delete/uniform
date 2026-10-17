@@ -1337,6 +1337,117 @@ target lowering, authoritative migration, self-hosting and release remain
 outstanding. Existing authority pins are unchanged and do not certify this
 development code.
 
+### Root-map guard completion and execution: development increment
+
+The current guard increment retains L7's Bool-only normal result policy and
+preserves non-returning control. C7 no longer rejects every guard containing a
+throw, try or recur descendant. Existing type, target and effect checks still
+decide whether those expressions are legal. Every body retains its actual type
+and legality checks; a body that cannot execute after a false or Never guard
+has separate effective-completion evidence instead of a fabricated body type.
+A Never guard removes its structurally matched cases by transferring control,
+not by selecting its body or falling through.
+
+The emitter consumes those facts through the existing closed structural-match
+instruction. Runtime checks normal results are Boolean, evaluates guards once
+after structural success, restores outer bindings on false while preserving
+output, and propagates original non-normal control. Guards cannot recur to an
+outer target; selected bodies retain their original targets, and a guard-local
+loop retains its own target. C8 independently accepts authenticated Bool or
+Never guards and retains conservative source-error potential.
+
+Review caught two valid-program regressions in the draft. An Unknown first
+branch was being mistaken for an empty result accumulator, allowing a later
+Never branch to fix an inferred return prematurely. The correction uses the
+existing alternatives join over all effective branch types; owning first-pass
+and acyclic caller-before-callee checks preserve Unknown until String resolves.
+Nested guards also exposed a difference between grouped Core child layout and
+actual guard-before-body lowering order. Binder-use collection now determines
+reachability, precharges its original-node scan and emits uses in authenticated
+node order. Exact-budget, one-less and shared Boolean/structural lowering
+controls passed. Neither finding required another parser or authority wrapper.
+
+The final corrected normalized group passed fifteen tests/685 assertions: C7 completion,
+quoted guards and forward inference; C8 guard checks; emitter/runtime controls;
+fixture parity; unchanged-runtime conservation; and existing normalized C6 guard,
+Boolean lowering, structural lowering and local-loop ancestry regressions.
+At 2 GiB outer test execution took 4.781 seconds, with 7.733 seconds of runtime-
+test namespace loading, 0.270 seconds for the C6 test namespace and 0.332 seconds
+for the type-test namespace. Earlier thirteen-test/612-assertion,
+ten-test/235-assertion and four-test/112-assertion groups
+overlap these controls and are not added as unique coverage. No unchanged
+four-source SH-07 rejection matrix was repeated.
+
+Failed drafts remain failed: a test delimiter error prevented the first
+producer batch from executing; a later normalized typed-try fixture retained
+stale handler-use and ancestor source values; and the first consumer batch had
+two errors from an unsupported seed `dissoc` and a runtime delimiter error.
+The corrections keep the production handler source join strict, use an explicit
+field projection rather than expanding the seed, and preserve those outcomes.
+A broader batch also failed one of 235 assertions because its normalized C8
+graph supplied ordered error values without the required escaping-error set.
+The fixture now carries both representations, as actual derived nodes do;
+the production checker was unchanged. That 234-pass/one-failure run is not
+relabeled as the later ten-test/235-assertion pass.
+
+Paired source fixtures cover inline throw, conditional throw, typed catch,
+false and Never completion, nested binder use, loop/recur and forward inference.
+The first real-source composition failed after nine passing assertions with
+one uncaught lowering error, `typed-loop-source-or-target-mismatch`, while
+assembling the guard-local loop case. Its one-test/ten-assertion result remains
+failed; later runtime, effect and negative-source checks in that test did not
+complete. Selected execution took 185.289 seconds, with 7.879 seconds of test
+namespace loading. The source/target join requires correction and affected
+validation; this is not a reason to remove the legal local-loop case or relax
+outer-target recur rejection.
+
+The correction preserves the nearest lexical target while compiling a guard
+with tail eligibility disabled, matching C6. All existing loop source, target,
+scope and ledger equalities remain intact. Its affected normalized group passed
+four tests/145 assertions, including sixteen new guard-local-loop checks,
+existing loop lowering and guard lowering/runtime checks. Execution took 2.502
+seconds plus 7.659 seconds of namespace loading. An initial version of the new
+fixture omitted its branch clause ordinal and failed three of 136 assertions
+at the guard-evidence join, before loop compilation; the fixture was corrected,
+not the production join. These overlapping focused results are not added to
+the earlier group as unique coverage.
+
+The corrected candidate's real-source run completed 222 assertions with 221
+passes and one failure. Its only failed assertion read the final C6 diagnostic
+from `:id`, although the owning C6 diagnostic and rejection bridge retain
+`:rule`; the following exact `:recur-tail-position-required` assertion passed.
+The aggregate remains failed, not a 222-assertion pass. Selected execution took
+1080.451 seconds, plus 8.031 seconds of namespace loading, at the unchanged
+2 GiB heap. Compiler and fixture bytes were unchanged throughout that run.
+
+Its passing assertions cover both source extensions, 45 guest executions,
+preserved payload identity, false/Never effective completion, forward String
+inference, nested binder use, guard-local loop and selected-body recur. Two
+actual C8 analyses retained guard dependencies and source errors, discharged
+the typed catch and rejected an undeclared module allowance. Nine tracked
+emitter C7 verification entries include four coherent type/truth/completion/
+region forgeries; this count excludes upstream constructor verification.
+Six C7 negatives and three earlier C5 negatives also passed, with thirteen
+fresh source inputs in total. Rejected `.qst` pairs have fixture parity checks,
+not separately repeated source construction. No seed throw-transport count
+was instrumented or claimed.
+
+The test now reads the owning C6 `:rule` field and retains the exact reason
+assertion. A separate five-test/432-assertion focused run passed, including
+seven direct checks through the current C6 recur lowerer, rendered rejection
+and existing exception bridge. It also covers the normalized C6 guard kernel,
+guard-local parent and guard lowering/runtime controls. Execution took 3.185
+seconds plus 7.838 and 0.272 seconds of namespace loading. Its first invocation
+stopped at a test-source delimiter error before assertions; that outcome is
+preserved. No compiler or fixture changed for this correction, and the
+18-minute source composition was not replayed or relabeled as passed.
+
+Do not replay unchanged source construction merely to turn a test-only field
+correction into a fresh aggregate pass. This development evidence does
+not establish full L7, profile/provider legality, documented target support,
+authoritative migration, self-hosting or release completion. Historical
+authority pins remain unchanged.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
