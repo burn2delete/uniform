@@ -370,6 +370,17 @@ checked; a matching name or recomputed hash alone does not establish a link.
 The public invocation reconstructs the bundle, and linked-call route and arity
 checks precede argument evaluation. Local function names remain module-local.
 
+For this explicit development interface, the entry is an unqualified function
+name in the freshly reconstructed root module. It may be private or public,
+matching the existing single-source interpreter interface; it is not a lookup
+through dependency modules. Missing names, qualified names, non-symbol entries
+and literal DATA declarations are not callable entries. Function arity and the
+lexical module scope still apply. Cross-module calls remain limited to actual
+public exports and their validated routes, even when the root entry is private.
+This permits focused compiler-kernel checks after extracting a stage-owned
+namespace without exporting test-only functions or rewriting source. It does
+not grant checked user-program execution or stable private-import access.
+
 The subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm`,
 with direct qualified imported calls and source-local literal DATA declarations
 of the form `(def name literal-data)`. Scalars, nested vectors/maps/sets and
@@ -392,6 +403,7 @@ Use the existing runtime test namespace, not an admission runner:
 ```bash
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-root-private-entry-development-kernel \
   --exact compiler-module-route-development-kernel \
   --exact compiler-module-seed-shape-development-kernel \
   --exact compiler-module-b51-dispatch-development-kernel
@@ -404,6 +416,10 @@ clojure -J-Xmx2g -M:dev-test \
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact compiler-module-authenticated-source-and-runtime-composition
+# Root-entry behavior, including private root functions and public dependencies:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-root-private-authenticated-paired-composition
 # Affected literal DATA composition and actual C8 compatibility:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \

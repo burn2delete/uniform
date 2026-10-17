@@ -1362,6 +1362,51 @@ callable recursion, completed thrown effects, full effect/capability legality,
 targets, authoritative migration, self-hosting and seedless release remain
 outstanding.
 
+### Private root compiler-kernel entry: development enabling increment
+
+L3 permits current-module private resolution but forbids private imports as
+stable APIs. The existing, explicitly unadmitted compiler-artifact development
+interpreter now applies that distinction at its root entry. After complete
+fresh bundle reconstruction and exact root-module selection, the requested
+entry must be an unqualified symbol naming a map-valued function in that root
+plan. It need not be exported. This matches the single-source development
+interface without adding a flag, field, getter, source rewrite or test export.
+It enables existing private compiler kernels to remain directly testable after
+moving implementation into stage-owned namespaces.
+
+Missing names, dependency-only names, qualified entries, non-symbols and DATA
+declarations reject with `:root-function-member-required`. Function arity,
+lexical scope, SOURCE/B51 separation and all cross-module public-export,
+namespace, origin, binding, callsite and route checks remain in place. Linked
+call checks still precede argument evaluation. The change is not private-import
+support, checked user-program execution or a stable public ABI.
+
+The stable focused batch passed six tests/109 assertions for normalized root
+entry and lookup order, malformed entries, exact module membership, arity,
+scope, pre-argument route rejection, B51 separation, seed shape, existing source
+pins and repository language policy. The initial four-test/97-assertion batch
+overlaps and is not extra coverage. Normalized checks are not authentic source
+or migration evidence.
+
+The new `private-root-consumer` `.gravity`/`.qst` pair then passed the affected
+composition on its first attempt: one test/33 assertions, no failures or errors.
+It constructs actual ordinary C5 caller/library products and an independent
+library plan. The root's private relay invokes the library's public identity
+function and returns the real nested value; the public root entry still works.
+Each invocation delegates to the original fresh bundle validator. Exported DATA,
+dependency-only and qualified entries, non-symbol entry and wrong arity reject.
+Actual C5 still rejects importing the library's private function. Coherently
+rehashed root-plan/bundle tampering and a changed-root bundle also reject.
+Paired identities agree. Selected execution took 380.460 seconds after 7.045
+seconds of namespace loading with a 2 GiB heap. This is total selected-test
+timing, not a phase-cost or speedup claim. The two nonoverlapping batches total
+seven executions/142 assertions.
+
+Only the existing root-entry membership guard changes in production. Old seed
+fixtures, public cross-module visibility and unchanged expensive compiler
+proofs were not rewritten or replayed. Authoritative migration, target support,
+compiler seed retirement, self-hosting and seedless release remain outstanding.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

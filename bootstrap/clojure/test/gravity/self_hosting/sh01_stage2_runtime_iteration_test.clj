@@ -177,6 +177,9 @@
                      [caller-plan instruction (assoc-in scope [:bundle :routes 0 :arity] 3)]
                      [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :visibility] :private)]
                      [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :kind] :var)]
+                     [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :namespace] 'example.wrong)]
+                     [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :semantic-span :ordinary-module-artifact-id] :caller)]
+                     [caller-plan instruction (assoc-in scope [:bundle :routes 0 :callee-binding-id] :wrong)]
                      [caller-plan instruction (assoc-in scope [:bundle :modules 1 :plan :functions 'identity :arity] 1)]]]
       (reset! seen [])
       (is (= "BOOT2006" (:id (diagnostic #(run p i s)))))
@@ -190,6 +193,48 @@
       (is (= :admission-runtime-forbidden
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
                                    (assoc runtime key {}) {:kind :gravity/stage2-compiler-artifact-module-bundle} 'relay [])) [:facts :reason]))))))
+
+(deftest compiler-module-root-private-entry-development-kernel
+  ;; Normalized development DATA; full reconstruction is exercised separately.
+  (let [validate (module-private 'p15-s23-stage2-module-validate-bundle!)
+        entry-scope (module-private 'p15-s23-stage2-module-entry-scope!)
+        original-entry @entry-scope
+        private {:arity 1 :params '[value] :instructions [{:op :local :name 'value}]}
+        public {:arity 1 :params '[value] :instructions [{:op :function-call :function 'private-entry
+                                                       :args [{:op :local :name 'value}]}]}
+        root-plan {:module {:module 'example.root}
+                   :functions (sorted-map 'private-entry private 'public-entry public 'catalog :data)}
+        dependency {:module-id :dependency :plan {:functions {'dependency-only private}} :exports []}
+        root {:module-id :root :plan root-plan :exports [{:name 'public-entry :kind :function} {:name 'catalog :kind :var}]}
+        bundle {:kind :gravity/stage2-compiler-artifact-module-bundle :root-module-id :root :modules [dependency root] :routes []}
+        seen (atom [])
+        run (fn [b function args]
+              (reset! seen [])
+              (with-redefs-fn
+                {validate (fn [value] (swap! seen conj :validated) value)
+                 entry-scope (fn [p f as scope]
+                               (let [next (original-entry p f as scope)]
+                                 (swap! seen conj [f (:module-id next) (:function next)]) next))}
+                #(bootstrap/p15-s23-stage2-runtime-execute-function runtime b function args)))]
+    (is (= :private (run bundle 'private-entry [:private])))
+    (is (= [:validated ['private-entry :root 'private-entry]] @seen))
+    (is (= :public (run bundle 'public-entry [:public])))
+    (is (= [:validated ['public-entry :root 'public-entry] ['private-entry :root 'private-entry]] @seen))
+    (doseq [function ['missing 'dependency-only 'catalog 'library/identity 'example.root/private-entry
+                      nil :private-entry 7 "private-entry" {} [] true (Object.)]]
+      (is (= :root-function-member-required (get-in (diagnostic #(run bundle function [])) [:facts :reason])))
+      (is (= [:validated] @seen)))
+    (is (= "L2-FUNCTION-ARITY" (:id (diagnostic #(run bundle 'private-entry [])))))
+    (is (= :runtime-plan-or-function-member
+           (get-in (diagnostic #(run (assoc-in bundle [:modules 1 :plan :functions 'private-entry :arity] 2)
+                                   'private-entry [1])) [:facts :reason])))
+    (is (= :runtime-module-member
+           (get-in (diagnostic #(run (assoc bundle :root-module-id :missing) 'private-entry [1])) [:facts :reason])))
+    (is (= :runtime-module-member
+           (get-in (diagnostic #(run (update bundle :modules conj root) 'private-entry [1])) [:facts :reason])))
+    (with-redefs-fn {validate (fn [_] (throw (ex-info "Reconstruction denied" {:id :reconstruction-denied})))}
+      #(is (= :reconstruction-denied
+              (:id (diagnostic (fn [] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle :bad [])))))))))
 
 (deftest compiler-module-b51-dispatch-development-kernel
   (let [guard (module-private 'p15-s23-sh07-b51-assert-scoped-function-entry!)
@@ -256,6 +301,64 @@
     (is (= {:nested [1 {:data #{:x :y}}]}
            (bootstrap/p15-s23-stage2-runtime-execute-function runtime raw 'identity [{:nested [1 {:data #{:x :y}}]}])))))
 
+(deftest compiler-module-root-private-authenticated-paired-composition
+  (let [validate (module-private 'p15-s23-stage2-module-validate-bundle!)
+        original-validate @validate
+        cases (mapv
+                (fn [extension]
+                  (let [library-path (module-fixture "seed-library" extension)
+                        caller-path (module-fixture "private-root-consumer" extension)
+                        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+                        library (bootstrap/compiler-c5-resolution-file-artifact library-path)
+                        c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+                        caller (bootstrap/compiler-c5-resolution-file-artifact caller-path c5-inputs)
+                        dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter library-path (slurp library-path))
+                        inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+                        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path (slurp caller-path) inputs)
+                        root (body-effects/module-root-entry bundle)
+                        validations (atom 0) value {:nested [1 #{:value}]}]
+                    (is (= :accepted (:status library) (:status caller)))
+                    (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+                    (is (= :not-checked (get-in bundle [:boundary :effects])))
+                    (is (false? (get-in bundle [:boundary :self-hosted?])))
+                    (is (= #{['public-entry :function] ['catalog :var]} (set (map (juxt :name :kind) (:exports root)))))
+                    (is (= :private (:visibility (first (filter #(= 'private-relay (:name %)) (get-in caller [:binding-table :bindings]))))))
+                    (is (map? (get-in root [:plan :functions 'private-relay])))
+                    (is (= 'private-relay (get-in bundle [:routes 0 :caller-function])))
+                    (with-redefs-fn {validate (fn [candidate] (swap! validations inc) (original-validate candidate))}
+                      #(do
+                         (is (= [:callee value] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'private-relay [value])))
+                         (is (= [:callee value] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'public-entry [value])))
+                         (is (= :root-function-member-required
+                                (get-in (diagnostic (fn [] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'catalog []))) [:facts :reason])))))
+                    (is (= 3 @validations))
+                    {:bundle bundle :caller-path caller-path :c5-inputs c5-inputs :emitter emitter}))
+                [".gravity" ".qst"])
+        {:keys [bundle caller-path c5-inputs emitter]} (first cases)]
+    (is (= (get-in cases [0 :bundle :identity-input]) (get-in cases [1 :bundle :identity-input])))
+    (doseq [function ['identity 'library/identity 'example.private-root-consumer/private-relay :private-relay]]
+      (is (= :root-function-member-required
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle function [])) [:facts :reason]))))
+    (is (= "L2-FUNCTION-ARITY"
+           (:id (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'private-relay [])))))
+    (is (= "C5-PRIVATE"
+           (:id (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                               caller-path (str/replace (slurp caller-path) "library/identity" "library/hidden") c5-inputs)))))
+    (let [entries (mapv (fn [entry]
+                          (if (= (:root-module-id bundle) (:module-id entry))
+                            (let [changed (assoc-in (:plan entry) [:functions 'private-relay :instructions] [{:op :literal :value :forged}])
+                                  changed (assoc changed :plan-id (str "sha256:" (bootstrap/sha256-hex
+                                             (pr-str (bootstrap/c-backend-canonical-value (dissoc changed :plan-id))))))]
+                              (assoc entry :plan changed)) entry)) (:modules bundle))
+          identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id bundle) entries (:routes bundle))
+          forged (assoc bundle :modules entries :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))]
+      (is (= :module-bundle-reconstruction-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'private-relay [1])) [:facts :reason]))))
+    (let [other-id (:module-id (first (remove #(= (:root-module-id bundle) (:module-id %)) (:modules bundle))))
+          identity (bootstrap/p15-s23-stage2-module-identity emitter other-id (:modules bundle) (:routes bundle))
+          forged (assoc bundle :root-module-id other-id :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))]
+      (is (= "BOOT2006" (:id (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'hidden [1]))))))))
+
 (deftest compiler-module-literal-data-authenticated-composition
   (let [cases
         (mapv
@@ -283,7 +386,7 @@
          [".gravity" ".qst"])
         {:keys [bundle caller-path emitter inputs module-inputs]} (first cases)]
     (is (= (get-in cases [0 :bundle :identity-input]) (get-in cases [1 :bundle :identity-input])))
-    (is (= :root-export-required
+    (is (= :root-function-member-required
            (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'catalog [])) [:facts :reason])))
     (doseq [mutate [(fn [entry] (assoc-in entry [:plan :functions 'identity :instructions 0 :items 0 :value] :tampered))
                     (fn [entry] (update entry :exports #(filterv (fn [binding] (not= :var (:kind binding))) %)))]]

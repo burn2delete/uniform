@@ -69,8 +69,9 @@
     (p15-s23-stage2-module-fail! :admission-runtime-forbidden {}))
   (let [bundle (p15-s23-stage2-module-validate-bundle! bundle)
         root (p15-s23-stage2-module-member! bundle (:root-module-id bundle))]
-    (when-not (some #(and (= function (:name %)) (= :function (:kind %))) (:exports root))
-      (p15-s23-stage2-module-fail! :root-export-required {:function function}))
+    (when-not (and (symbol? function) (nil? (namespace function))
+                   (map? (get-in root [:plan :functions function])))
+      (p15-s23-stage2-module-fail! :root-function-member-required {:function function}))
     ;; This data is derived only here, after full reconstruction, and threaded
     ;; lexically through private calls. Public raw instruction entry has nil.
     (p15-s23-stage2-runtime-execute-function-scoped
