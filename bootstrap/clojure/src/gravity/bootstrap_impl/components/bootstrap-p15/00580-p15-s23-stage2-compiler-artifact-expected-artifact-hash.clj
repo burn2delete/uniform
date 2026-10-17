@@ -89,8 +89,9 @@
                              (set/union (set functions)
                                         p15-s23-stage2-compiler-artifact-builtins))))))
 
-(defn p15-s23-stage2-compiler-artifact-plan
-  [emitter artifact-source artifact-text]
+(declare p15-s23-stage2-module-bundle)
+(defn p15-s23-stage2-compiler-artifact-plan-raw
+  [emitter artifact-source artifact-text module-routes]
   (let [macro-artifact (macro-source-artifact artifact-source artifact-text)
         module (assoc (:module macro-artifact)
                       :forms (:expanded-forms macro-artifact))
@@ -100,6 +101,7 @@
           (p15-s23-sh07-compiler-source-authority
            artifact-source artifact-text module function-table))
         module (cond-> (assoc module :function-table function-table)
+                 module-routes (assoc :p15-s23-stage2-module-routes module-routes)
                  source-authority
                  (assoc :p15-s23-sh07-source-authority source-authority))
         artifact-emitter
@@ -143,6 +145,12 @@
            :plan-id (str "sha256:"
                          (sha256-hex
                           (pr-str (c-backend-canonical-value plan-base)))))))
+
+(defn p15-s23-stage2-compiler-artifact-plan
+  ([emitter artifact-source artifact-text]
+   (p15-s23-stage2-compiler-artifact-plan-raw emitter artifact-source artifact-text nil))
+  ([emitter artifact-source artifact-text module-inputs]
+   (p15-s23-stage2-module-bundle emitter artifact-source artifact-text module-inputs)))
 
 (defn p15-s23-stage2-compiler-artifact-semantic-input
   [plan]

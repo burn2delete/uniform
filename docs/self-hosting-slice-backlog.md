@@ -1027,6 +1027,59 @@ loading; the unchanged annotated-source composition was not replayed. This is
 development implementation evidence, not authoritative migration, checked
 runtime linking, complete effects/errors, self-hosting or release completion.
 
+### Ordinary compiler-artifact module calls: development implementation
+
+The L3/C5/BOOT2 enabling increment gives the temporary compiler-artifact seed
+interpreter an explicit module-bundle input. Actual caller C5 source and imports
+are joined to retained callee C5 public exports and independently compiled raw
+plans. Modules retain separate function tables; exact source callsite routes
+select the callee. Reconstructing source, exports, plans and the whole bundle
+rejects self-rehashed substitutions rather than trusting claimed hashes.
+The existing three-argument raw constructor stays acyclic; the four-argument
+constructor and direct commands are documented in
+`docs/development-verification.md`.
+
+The initial executable subset is unannotated fixed-arity function-only modules
+in `:meta/:jvm`, with direct qualified imported calls. Rest parameters,
+duplicate parameters, annotation syntax and operator-shadowing cases that the
+raw seed cannot lower faithfully reject. Actual C5 bindings determine whether
+an operator means a core builtin, namespace function or local binding; matching
+source forms alone is not an equivalence argument. General initializers,
+imported values and imported calls nested under `let`, `loop`, functions or
+collection expressions remain unsupported. These are implementation gaps, not
+new language restrictions.
+
+Four final focused tests passed 57 assertions, including argument evaluation
+exactly once in order, route/export/function/arity rejection before arguments,
+raw-entry rejection, inert quoted DATA, B51 opaque-scope forwarding and legacy
+external authorization before arguments. Dispatch instrumentation is unit
+regression evidence, not native admission. Raw C7 construction passed one test
+and 41 assertions; C8's pending-imported-effects rejection passed one test and
+seven assertions.
+
+The single real composition passed one test and 38 assertions. Both source
+extensions built two actual modules with different functions named `identity`;
+qualified calls returned the callee result for scalar and nested DATA inputs,
+while a direct root call returned the caller result. Actual private/missing
+exports, stale source, self-rehashed plan/route substitutions, variadics and
+builtin/local/namespace-function shadow mismatches rejected. Both extensions
+produced the same semantic bundle identity. The language boundary passed six
+tests and 11 assertions. These final batches total 13 test executions and 154
+assertions; earlier overlapping kernel batches are not added. JVMs were
+serialized at a 2 GiB heap. The real composition used 497.822 seconds of selected
+execution after 7.184 seconds of namespace loading; unchanged C7 source typing
+proofs and historical native admission proofs were not replayed.
+
+The bundle explicitly records development-unadmitted status, unchecked effects
+and the Clojure seed/interpreter boundary. It does not accept imported user-call
+effects, bypass C8's type-only rejection, grant SOURCE/B51 authority, establish
+target support or admit an authoritative module revision. Next, source-local
+literal DATA declarations and mixed function/var exports must be supported to
+retain the actual C8 engine's six exported catalogs before its existing API can
+forward body analysis into `gravity.effects`. A second facade pretending to be
+that namespace is not a substitute. Full effects/errors, checked runtime
+linking, migration, self-hosting and seedless release remain outstanding.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

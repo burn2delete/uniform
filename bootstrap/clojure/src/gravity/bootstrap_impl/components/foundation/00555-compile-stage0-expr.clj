@@ -84,6 +84,7 @@
           :recur (:args instruction)
           :builtin-call (:args instruction)
           :function-call (:args instruction)
+          :compiler-module-call (:args instruction)
           :vector-literal (:items instruction)
           :set-literal (:items instruction)
           :map-literal (mapcat (fn [{:keys [key value]}] [key value])

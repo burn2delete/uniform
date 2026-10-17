@@ -1,5 +1,7 @@
 (ns gravity.self-hosting.sh01-stage2-runtime-iteration-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]))
 
 (def ^:private runtime {:engine :stage2-runtime-iteration-test})
@@ -61,6 +63,187 @@
    {:op :builtin-call
     :function function
     :args (literal-instructions arguments)}))
+
+(defn- module-private [name] (ns-resolve 'gravity.bootstrap name))
+(defn- module-fixture [name extension]
+  (loop [directory (.getParentFile (io/file (.toURI (io/resource "gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"))))]
+    (if (.isFile (io/file directory "deps.edn"))
+      (.getPath (io/file directory (str "bootstrap/clojure/fixtures/self-hosting/sh-01/modules/" name extension)))
+      (recur (.getParentFile directory)))))
+
+(deftest compiler-module-route-development-kernel
+  ;; Normalized routing DATA, not authenticated module input or admission.
+  (let [instruction {:op :compiler-module-call :route-id :route :function 'library/identity
+                     :caller-function 'relay :callsite-path [0]
+                     :args (literal-instructions [:left :right])}
+        caller-plan {:module {:module 'example.caller} :functions {'relay {:arity 2 :params '[x y] :instructions [instruction]}}}
+        callee-plan {:module {:module 'example.library} :functions {'identity {:arity 2 :params '[x y] :instructions [{:op :local :name 'y}]}}}
+        exported {:binding-id :export :name 'identity :kind :function :visibility :public :namespace 'example.library}
+        caller {:module-id :caller :plan caller-plan}
+        callee {:module-id :callee :plan callee-plan :exports [exported]
+                :resolution-artifact {:gravity-resolution-boundary {:resolved-analysis {:module-contract {:namespace 'example.library}}}}}
+        route {:route-id :route :caller-module-id :caller :caller-function 'relay :callsite-path [0]
+               :symbol 'library/identity :callee-module-id :callee :callee-binding-id :export :callee-function 'identity :arity 2}
+        bundle {:modules [caller callee] :routes [route]}
+        scope {:kind :gravity/stage2-module-invocation :bundle bundle :module-id :caller :function 'relay}
+        execute (module-private 'p15-s23-stage2-module-execute-call)
+        execute-value (module-private 'p15-s23-stage2-runtime-execute-value-scoped)
+        original @execute-value seen (atom [])
+        run (fn [p instruction s]
+              (with-redefs-fn {execute-value (fn [r p e arg reason s]
+                                              (when (= reason :recur-inside-function-argument) (swap! seen conj (:value arg)))
+                                              (original r p e arg reason s))}
+                #(execute runtime p {} instruction s)))]
+    (is (= :right (run caller-plan instruction scope)))
+    (is (= [:left :right] @seen))
+    (doseq [[p i s] [[caller-plan (assoc instruction :route-id :wrong) scope]
+                     [caller-plan (assoc instruction :function 'identity) scope]
+                     [caller-plan (assoc instruction :args []) scope]
+                     [caller-plan instruction (assoc scope :module-id :callee)]
+                     [caller-plan instruction (assoc scope :function 'identity)]
+                     [callee-plan instruction scope]
+                     [caller-plan instruction (assoc-in scope [:bundle :routes 0 :arity] 3)]
+                     [caller-plan instruction (assoc-in scope [:bundle :modules 1 :exports 0 :visibility] :private)]
+                     [caller-plan instruction (assoc-in scope [:bundle :modules 1 :plan :functions 'identity :arity] 1)]]]
+      (reset! seen [])
+      (is (= "BOOT2006" (:id (diagnostic #(run p i s)))))
+      (is (= [] @seen)))
+    (reset! seen [])
+    (is (= "BOOT2006" (:id (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+                                          (assoc runtime :module-invocation scope) caller-plan {} instruction)))))
+    (is (= [] @seen))
+    (is (= "BOOT2006" (:id (diagnostic #(run caller-plan instruction (Object.))))))
+    (doseq [key [:sh07-b51-runtime-context-token :sh07-b51-linked-carrier-v4 :sh07-b51-execution-bundle]]
+      (is (= :admission-runtime-forbidden
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
+                                   (assoc runtime key {}) {:kind :gravity/stage2-compiler-artifact-module-bundle} 'relay [])) [:facts :reason]))))))
+
+(deftest compiler-module-b51-dispatch-development-kernel
+  (let [guard (module-private 'p15-s23-sh07-b51-assert-scoped-function-entry!)
+        scoped (module-private 'p15-s23-stage2-runtime-execute-function-scoped)
+        opaque (Object.) seen (atom nil)
+        raw {:functions {'identity {:params [] :instructions [{:op :literal :value :raw}]}}}]
+    (is (= :raw (with-redefs-fn {guard (fn [_ _ _ _ scope] (reset! seen scope))}
+                  #(scoped runtime raw 'identity [] opaque))))
+    (is (identical? opaque @seen)))
+  (let [authorize (module-private 'p15-s23-sh07-b51-runtime-authorize-external-link)
+        values (module-private 'p15-s23-stage2-runtime-execute-values-scoped)
+        evaluated (atom 0)
+        denied (with-redefs-fn {authorize (fn [& _] (throw (ex-info "strict route denied" {:id "STRICT-ROUTE"})))
+                               values (fn [& _] (swap! evaluated inc) [])}
+                 #(diagnostic (fn [] (bootstrap/p15-s23-stage2-runtime-execute-instruction
+                                      runtime plan {} {:op :function-call :function 'identity :external-link {}
+                                                       :args [{:op :literal :value :argument}]}))))]
+    (is (= "STRICT-ROUTE" (:id denied)))
+    (is (zero? @evaluated))))
+
+(deftest compiler-module-seed-shape-development-kernel
+  (is (= :unsupported-nested-module-call
+         (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites
+                               {:name 'relay :body '[(let [x 1] (library/identity x))]})) [:facts :reason])))
+  (is (bootstrap/p15-s23-stage2-module-fixed-definition? '(defn identity [x] x)))
+  (doseq [form ['(defn collect [& xs] xs) '(defn identity [x :- I64] x) '(defn identity [x x] x)
+                '(defn identity [x] :- I64 x) '(def initialized (identity 1))]]
+    (is (not (bootstrap/p15-s23-stage2-module-fixed-definition? form))))
+  (doseq [kind [:namespace :local]]
+    (let [source {:request {:references [{:syntax-id :use :symbol 'str :position :operator}]}
+                  :artifact {:binding-table {:bindings [{:binding-id :local-str :binding-class kind}]}
+                             :gravity-resolution-boundary {:resolved-analysis {:resolution-table [{:syntax-id :use :binding-id :local-str}]}}}}]
+      (is (= :unsupported-seed-operator-shadowing
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-shadowing-check!
+                                   source {:call-rules {:builtin-functions '[str]}})) [:facts :reason])))))
+  (let [source {:module {:namespace 'example.shadow} :functions {'helper {}}
+                :request {:references [{:syntax-id :use :symbol 'helper :position :operator}]}
+                :artifact {:binding-table {:bindings [{:binding-id :parameter :binding-class :local}]}
+                           :gravity-resolution-boundary {:resolved-analysis {:resolution-table [{:syntax-id :use :binding-id :parameter}]}}}}]
+    (is (= :unsupported-seed-operator-shadowing
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-shadowing-check! source {})) [:facts :reason]))))
+  (doseq [instruction [{:op :function-call :function 'identity :external-link {}}
+                       {:op :builtin-call :function 'get :compiler-internal-provenance {}}
+                       {:op :builtin-call :function 'sh07-b51-admitted-executable-carrier-validation?}
+                       {:op :literal :source-authority {}} {:op :literal :special-role :producer}]]
+    (is (= :admission-instruction-forbidden
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-instructions
+                                 {:functions {'identity {:instructions [instruction]}}})) [:facts :reason]))))
+  (is (= [{:op :quote :value {:external-link {:special-role :data}}}]
+         (bootstrap/p15-s23-stage2-module-instructions
+          {:functions {'identity {:instructions [{:op :quote :value {:external-link {:special-role :data}}}]}}})))
+  (doseq [inputs [nil true {} {:caller-resolution-artifact {} :dependency-plans true}
+                 {:caller-resolution-artifact {} :dependency-plans [] :authority true}]]
+    (is (= "BOOT2006" (:id (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan {} "module.gravity" "" inputs))))))
+  (let [source "(ns example.seed (:profile :meta) (:target :jvm)) (defn identity [x] x)"
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! "module.gravity" :jvm))
+        forbidden (fn [& _] (throw (ex-info "Raw seed reached a checked frontdoor" {})))
+        raw (with-redefs [bootstrap/compiler-c4-macro-source-artifact forbidden
+                          bootstrap/compiler-c5-resolution-source-artifact forbidden
+                          bootstrap/compiler-c6-lowering-source-artifact forbidden]
+              (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter "module.gravity" source))]
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind raw)))
+    (is (= :clojure-stage0-seed (get-in raw [:compiler :compiled-by])))
+    (is (= {:nested [1 {:data #{:x :y}}]}
+           (bootstrap/p15-s23-stage2-runtime-execute-function runtime raw 'identity [{:nested [1 {:data #{:x :y}}]}])))))
+
+(deftest compiler-module-authenticated-source-and-runtime-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [library-path (module-fixture "seed-library" extension)
+                 caller-path (module-fixture "seed-consumer" extension)
+                 emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+                 library (bootstrap/sh06-resolution-file-artifact library-path)
+                 c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+                 caller (bootstrap/compiler-c5-resolution-file-artifact caller-path c5-inputs)
+                 dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter library-path (slurp library-path))
+                 inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+                 bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path (slurp caller-path) inputs)
+                 nested {:payload [1 {:nested #{:a :b}}] :symbol 'data/identity :quoted '(external-link :special-role)}]
+             (is (= :accepted (:status library) (:status caller)))
+             (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind bundle)))
+             (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+             (is (= :not-checked (get-in bundle [:boundary :effects])))
+             (is (= 2 (count (:modules bundle)) (count (set (map :module-id (:modules bundle))))))
+             (is (= 1 (count (:routes bundle))))
+             (is (= :stage2-local (get-in dependency [:functions 'identity :binding :visibility])))
+             (is (= [:callee 41] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [41])))
+             (is (= [:callee nested] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'relay [nested])))
+             (is (= [:caller nested] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'identity [nested])))
+             (is (= (:artifact-id library) (get-in bundle [:routes 0 :callee-module-id])))
+             (is (= :public (:visibility (first (:exports (first (filter #(= (:artifact-id library) (:module-id %)) (:modules bundle))))))))
+             {:bundle bundle :caller-path caller-path :library library :emitter emitter :inputs inputs :c5-inputs c5-inputs :dependency dependency}))
+         [".gravity" ".qst"])
+        {:keys [bundle caller-path library emitter inputs c5-inputs dependency]} (first cases)]
+    (is (= (get-in cases [0 :bundle :identity-input]) (get-in cases [1 :bundle :identity-input])))
+    (doseq [[name rule] [["hidden" "C5-PRIVATE"] ["missing" "C5-UNRESOLVED"]]]
+      (is (= rule (:id (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                    caller-path (str/replace (slurp caller-path) "library/identity" (str "library/" name)) c5-inputs))))))
+    (is (= :source-emitter-or-dependency-set
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                 emitter caller-path (str (slurp caller-path) " ") inputs)) [:facts :reason])))
+    (let [changed (assoc-in dependency [:functions 'identity :instructions] [{:op :literal :value :forged}])
+          forged (assoc changed :plan-id (str "sha256:" (bootstrap/sha256-hex
+                                                         (pr-str (bootstrap/c-backend-canonical-value (dissoc changed :plan-id))))))]
+      (is (= :independent-raw-plan-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                   emitter caller-path (slurp caller-path) (assoc inputs :dependency-plans [forged]))) [:facts :reason]))))
+    (let [forged (assoc-in bundle [:routes 0 :callee-module-id] (:root-module-id bundle))
+          identity (assoc (:identity-input forged) :routes (:routes forged))
+          forged (assoc forged :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))]
+      (is (= :module-bundle-reconstruction-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'relay [41])) [:facts :reason]))))
+    (doseq [body ["(defn collect [& xs] xs)"
+                  "(defn str [x] x) (defn identity [x] (str x))"
+                  "(defn identity [str] (str 2))"
+                  "(defn helper [x] 1) (defn identity [helper] (helper 2))"]]
+      (let [text (str "(ns example.seed-rejected (:profile :meta) (:target :jvm) (:exports ["
+                      (if (str/includes? body "collect") "collect" "identity") "])) " body)
+            artifact (bootstrap/compiler-c5-resolution-source-artifact caller-path text)]
+        (is (= :accepted (:status artifact)))
+        (if (str/includes? body "collect")
+          (is (= :function-only-unannotated-seed-subset
+                 (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-source artifact)) [:facts :reason])))
+          (is (= :unsupported-seed-operator-shadowing
+                 (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-shadowing-check!
+                                       (bootstrap/p15-s23-stage2-module-source artifact) emitter)) [:facts :reason]))))))))
 
 (deftest small-argument-carriers-preserve-values-and-order
   (doseq [values [[] [1] [1 2] [1 2 3] [1 2 3 4]]]

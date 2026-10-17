@@ -148,6 +148,59 @@ body-effect inference and thrown-error analysis remain pending, and C8 rejects
 it with `:imported-body-effects-pending`. Type checking does not authorize target
 lowering, linking, effect execution or runtime behavior.
 
+### Compiler-artifact module execution
+
+The temporary seed interpreter has a separate, explicitly unadmitted module
+bundle input for developing compiler code across real namespace boundaries.
+This is not the checked C7/C8 user-program path. Keep the existing raw
+three-argument plan constructor for a single source; it does not invoke the
+checked frontdoors. For an ordinary caller with an explicit dependency, use:
+
+```clojure
+(bootstrap/p15-s23-stage2-compiler-artifact-plan
+ emitter caller-path caller-text
+ {:caller-resolution-artifact caller-c5
+  :dependency-plans [independent-callee-plan]})
+```
+
+Build `caller-c5` with the ordinary module-input interface above. Build the
+callee plan independently with the raw three-argument constructor and the
+same emitter. Pass the resulting bundle to the existing
+`p15-s23-stage2-runtime-execute-function` interface. Source reconstruction,
+actual C5 public exports/origins, separate plans and exact callsite routes are
+checked; a matching name or recomputed hash alone does not establish a link.
+The public invocation reconstructs the bundle, and linked-call route and arity
+checks precede argument evaluation. Local function names remain module-local.
+
+The initial subset is fixed-arity, unannotated `defn` modules in `:meta/:jvm`,
+with direct qualified imported calls. Module initializers, variadics, imported
+values and source/seed operator-shadowing mismatches reject. Imported calls
+under `let`, `loop`, nested functions or collection expressions are not yet
+supported; forwarding nested DATA through a parameter is distinct from those
+executable forms. Quoted DATA remains inert. General module initialization and
+checked runtime linking are separate work, not language-level prohibitions.
+
+Use the existing runtime test namespace, not an admission runner:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-route-development-kernel \
+  --exact compiler-module-seed-shape-development-kernel \
+  --exact compiler-module-b51-dispatch-development-kernel
+# Run after module input, compilation or dispatch behavior changes:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-authenticated-source-and-runtime-composition
+```
+
+The direct kernels use normalized inputs and dispatch instrumentation; they
+are not authentic source or admission evidence. The separate composition
+constructs actual caller/callee C5 artifacts and independent plans. Bundle
+records retain the temporary Clojure seed/interpreter boundary and unchecked
+effects status. Neither path grants SOURCE/B51 authority, checked imported-call
+legality, target support, migration acceptance or seed retirement.
+
 Ordinary focused tests do not require fresh authority proofs, frozen migration
 fingerprint refreshes, workstream receipts, broker setup or a new routing record.
 Current-source execution must retain actual identities; it must not inherit a

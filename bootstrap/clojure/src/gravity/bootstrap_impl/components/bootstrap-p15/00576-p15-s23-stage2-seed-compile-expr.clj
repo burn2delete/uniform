@@ -1,4 +1,4 @@
-
+(declare p15-s23-stage2-module-compile-call)
 (defn p15-s23-stage2-seed-compile-expr
   [emitter module locals form]
   (cond
@@ -111,6 +111,10 @@
                           emitter (child-module index) locals argument))
                        (range 1 (count form)) (rest form))})
 
+        (contains? (:p15-s23-stage2-module-routes module)
+                   [(:p15-s23-sh07-enclosing-function module) parent-path])
+        (p15-s23-stage2-module-compile-call emitter module locals form child-module)
+
         (contains? builtin-functions callee)
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
          :function callee
@@ -194,19 +198,14 @@
 
 (def p15-s23-stage2-compiler-artifact-source-relative-path
   "bootstrap/gravity/p15_s23/emitter.gravity")
-
 (def p15-s23-stage2-compiler-artifact-function
   'p15-s23-compile-function)
-
 (def p15-s23-stage2-compiler-artifact-expression-function
   'p15-s23-compile-expr)
-
 (def p15-s23-stage2-compiler-artifact-collection-function
   'p15-s23-compile-collection)
-
 (def p15-s23-stage2-compiler-artifact-let-function
   'p15-s23-compile-let)
-
 (def p15-s23-stage2-compiler-artifact-plan-assembly-function
   'p15-s23-assemble-plan-products)
 

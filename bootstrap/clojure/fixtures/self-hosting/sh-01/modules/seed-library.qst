@@ -1,0 +1,6 @@
+(ns example.seed-library
+  (:profile :meta) (:target :jvm) (:exports [identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity [value] [:callee value])
+(defn hidden [value] [:private value])
