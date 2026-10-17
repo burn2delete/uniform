@@ -1423,13 +1423,18 @@
         records (get core :function-records) functions (get typed :function-type-table)
         ledger (get typed :constraint-ledger []) handlers (get core :error-handlers [])
         lexical (get core :lexical-bindings []) local-facts (get typed :local-binding-facts [])
+        calls (get core :calls []) edges (get core :call-edges []) call-facts (get typed :call-type-facts [])
+        recursive (get core :recursion-components [])
         families? (p15-s23-typed-all [(vector? (get reader :token-stream)) (vector? nodes) (vector? forms) (vector? bindings)
                                      (vector? records) (vector? functions) (map? (get typed :type-table))
-                                     (vector? ledger) (vector? handlers) (vector? lexical) (vector? local-facts)])
+                                     (vector? ledger) (vector? handlers) (vector? lexical) (vector? local-facts)
+                                     (vector? calls) (vector? edges) (vector? call-facts) (vector? recursive)])
         work (if families? (+ (if (string? (get source :text)) (count (get source :text)) 0)
                 (count (get reader :token-stream)) (count nodes) (count forms) (count bindings)
                 (* (count records) (+ 20 (count nodes) (count forms) (count bindings)))
-                (* (+ 1 (count nodes)) (+ (count ledger) (count handlers) (count lexical) (count local-facts)))) 65537)]
+                (* (count calls) (+ 20 (count nodes) (count forms) (count bindings)))
+                (* (+ 1 (count nodes)) (+ (count ledger) (count handlers) (count lexical) (count local-facts)
+                                         (count calls) (count edges) (count call-facts) (count recursive)))) 65537)]
     (if (= false families?) (p15-s23-typed-error :malformed-typed-input-families)
     (if (> work 65536) (p15-s23-typed-error :typed-lowering-work-limit)
     (if (p15-s23-typed-all
@@ -1459,15 +1464,27 @@
                 binding-index (p15-s23-typed-index bindings :binding-id)
                 record-index (p15-s23-typed-index records :definition-name)
                 function-index (p15-s23-typed-index functions :definition-name)
-                lexical-index (p15-s23-typed-index lexical :binding-id) fact-index (p15-s23-typed-index local-facts :binding-id)]
+                lexical-index (p15-s23-typed-index lexical :binding-id) fact-index (p15-s23-typed-index local-facts :binding-id)
+                call-index (p15-s23-typed-index calls :core-node-id) edge-index (p15-s23-typed-index edges :call-core-node-id)
+                call-fact-index (p15-s23-typed-index call-facts :call-core-node-id)
+                call-ids (loop [remaining nodes out #{}]
+                           (if (= 0 (count remaining)) out
+                             (recur (rest remaining) (if (= :call (get (first remaining) :core-form)) (conj out (get (first remaining) :node-id)) out))))]
             (if (p15-s23-typed-all [(map? node-index) (map? form-index) (map? binding-index)
                                    (map? record-index) (map? function-index) (= (count record-index) (count function-index))
                                    (map? lexical-index) (map? fact-index)
                                    (= (set (keys lexical-index)) (set (keys fact-index)))
-                                   (= lexical (get (get typed :function-products) :lexical-bindings []))])
+                                   (= lexical (get (get typed :function-products) :lexical-bindings []))
+                                   (map? call-index) (map? edge-index) (map? call-fact-index)
+                                   (= call-ids (set (keys call-index)) (set (keys edge-index)) (set (keys call-fact-index)))
+                                   (= edges (get (get typed :function-products) :call-edges []))])
               (p15-s23-compiler-result {:core core :typed typed :nodes node-index :forms form-index :bindings binding-index
                 :records record-index :functions function-index :types (get typed :type-table)
-                :observation observation :ledger ledger :error-handlers handlers :lexical lexical :local-facts fact-index :budget (- 65536 work)})
+                :observation observation :ledger ledger :error-handlers handlers :lexical lexical :local-facts fact-index
+                :calls call-index :edges edge-index :call-facts call-fact-index :recursion-components recursive
+                :call-order (loop [remaining calls i 0 out {}]
+                              (if (= 0 (count remaining)) out (recur (rest remaining) (+ i 1) (assoc out (get (first remaining) :core-node-id) i))))
+                :budget (- 65536 work)})
               (p15-s23-typed-error :typed-source-index-census)))
           (p15-s23-typed-error :typed-source-bytes-mismatch))
       (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
@@ -1755,11 +1772,117 @@
           (p15-s23-typed-node-error :typed-let-source-or-census-mismatch node)))))
       (p15-s23-typed-node-error :malformed-typed-let-family node)))))
 
+(defn p15-s23-typed-call-constraint [context id]
+  (loop [remaining (get context :ledger) found nil]
+    (if (= 0 (count remaining)) found
+      (let [row (first remaining) request (get row :constraint-id-request)]
+        (if (if (= :gravity/sh08-function-call-constraint-v1 (get request :domain)) (= id (get request :call-core-node-id)) false)
+          (if (= found nil) (recur (rest remaining) row) nil) (recur (rest remaining) found))))))
+
+(defn p15-s23-typed-call-fact [context node edge arguments result]
+  (let [source (get node :source) module (get (get context :core) :module)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id (get node :node-id)
+                       :callee-function-syntax-id (get edge :callee-function-syntax-id) :argument-types arguments :result-type result}
+     :call-core-node-id (get node :node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id (get edge :callee-function-syntax-id) :argument-types arguments :result-type result
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get module :effects)
+     :capabilities (get module :capabilities) :status :inferred}))
+
+(defn p15-s23-typed-compile-call [context node budget]
+  (let [id (get node :node-id) call (get (get context :calls) id) edge (get (get context :edges) id)
+        forms (get context :forms) children (get node :children) owner (get forms (get (get node :source) :form-id))
+        ids (get owner :child-form-ids)
+        callee-record (loop [remaining (get (get context :core) :function-records) found nil]
+                        (if (= 0 (count remaining)) found
+                          (if (= (get (first remaining) :definition-binding-id) (get edge :callee-binding-id))
+                            (if (= found nil) (recur (rest remaining) (first remaining)) nil) (recur (rest remaining) found))))
+        name (get callee-record :definition-name) joined (p15-s23-typed-definition context name) callee (get (get joined :value) :function)
+        definition-node (get (get context :nodes) (get callee-record :definition-core-node-id))
+        definition-form (get forms (get (get definition-node :source) :form-id))
+        definition-name-form (get forms (get (get definition-form :child-form-ids) 1))
+        caller (get context :current-function)]
+    (if (= false (p15-s23-typed-all [(vector? children) (vector? ids) (vector? (get call :argument-node-ids))]))
+      (p15-s23-typed-node-error :malformed-typed-call-family node)
+    (if (if (> (count children) 0) (= (count ids) (count children)) false)
+    (if (< budget (+ 16 (count children))) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+      (let [arguments (subvec children 1 (count children)) operator (get (get context :nodes) (first children))
+            binding-id (get call :operator-binding-id) binding (get (get context :bindings) binding-id)
+            operator-form (get forms (first ids)) parameters (get callee :parameters)
+            types (loop [remaining arguments out []]
+                    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (get context :types) (first remaining))))))
+            result (loop [remaining types]
+                     (if (= 0 (count remaining)) (get callee :return)
+                       (if (= :gravity.type/never (first remaining)) :gravity.type/never (recur (rest remaining)))))
+            pairs (loop [i 0 out []]
+                    (if (= i (count parameters)) out (recur (+ i 1)
+                      (conj out {:parameter (get (get parameters i) :binding-id) :argument (get types i) :chosen (get (get parameters i) :type)}))))
+            expected-call {:core-node-id id :operator-node-id (first children) :operator-binding-id binding-id
+                           :argument-node-ids arguments :ordered-evaluation-node-ids children
+                           :evaluation-order :operator-then-arguments :result-policy :call-result}
+            expected-edge {:ordinal (get (get context :call-order) id) :call-core-node-id id
+                           :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                           :callee-binding-id (get callee-record :definition-binding-id) :callee-definition-syntax-id (get binding :definition-syntax-id)
+                           :callee-function-syntax-id (get callee-record :function-syntax-id) :callee-function-core-node-id (get callee-record :function-core-node-id)
+                           :argument-core-node-ids arguments :ordered-evaluation-node-ids children
+                           :evaluation-order :operator-then-arguments :classification :local-function}
+            row {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id id
+                                         :callee-function-syntax-id (get callee-record :function-syntax-id)}
+                 :kind :equality :lhs (get callee-record :function-syntax-id) :rhs pairs :origin (get (get node :source) :origin-chain)
+                 :profile :meta :target :jvm :status :solved :diagnostics []}
+            view [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects]]
+        (if (< budget (+ 16 (count arguments))) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+        (if (p15-s23-typed-all
+              [(p15-s23-compiler-complete? joined) (= :named-top-level (get callee-record :definition-kind))
+               (= [] (get context :recursion-components)) (= expected-call call) (= expected-edge edge)
+               (= :reference (get operator :core-form)) (= [binding-id] (get operator :resolved-binding-ids) (get node :resolved-binding-ids))
+               (= binding-id (get (get operator :attributes) :binding-id))
+               (= (get caller :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+               (= :operator-then-arguments (get (get node :evaluation) :kind))
+               (= (loop [i 0 out []] (if (= i (count children)) out
+                    (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+               (= (get node :source) (p15-s23-typed-source owner)) (= :list (get owner :kind))
+               (= (get operator :source) (p15-s23-typed-source operator-form))
+               (= :symbol (get operator-form :kind))
+               (if (= (get binding :name) (get operator-form :value)) true
+                 (= (str (get binding :namespace) "/" (get binding :name)) (str (get operator-form :value))))
+               (= {:symbol (get operator-form :value) :position :operator :binding-id binding-id
+                   :binding-class (get binding :binding-class) :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+               (= (get owner :form-id) (get operator-form :parent-form-id))
+               (= (get binding :definition-syntax-id) (get definition-name-form :syntax-id))
+               (= name (get binding :name) (get definition-name-form :value))
+               (= :namespace (get binding :binding-class)) (= :function (get binding :kind))
+               (= (get (get (get context :core) :module) :namespace) (get binding :namespace))
+               (= (get definition-form :form-id) (get definition-name-form :parent-form-id))
+               (= {:operator-child-index 0 :argument-count (count arguments) :argument-child-indexes (p15-s23-typed-index-range 1 (count children))
+                   :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+               (= (count parameters) (count arguments) (get callee-record :fixed-arity))
+               (= (p15-s23-typed-project callee view) (p15-s23-typed-project (get (get context :types) (first children)) view))
+               (= result (get (get context :types) id))
+               (= row (p15-s23-typed-call-constraint context id))
+               (= (p15-s23-typed-call-fact context node edge types result) (get (get context :call-facts) id))
+               (loop [i 0]
+                 (if (= i (count arguments)) true
+                   (let [source-form (get forms (get ids (+ i 1))) argument (get (get context :nodes) (get arguments i)) type (get types i)]
+                     (if (p15-s23-typed-all [(= (get owner :form-id) (get source-form :parent-form-id))
+                           (= (get argument :source) (p15-s23-typed-source source-form))
+                           (if (= type :gravity.type/never) true (= type (get (get parameters i) :type)))])
+                       (recur (+ i 1)) false))))])
+          (let [compiled (p15-s23-typed-compile-children context arguments (- budget 16 (count arguments)) [])]
+            (if (p15-s23-compiler-complete? compiled)
+              (assoc (p15-s23-compiler-result {:op :function-call :function name :args (get compiled :value)})
+                :work-count (+ 16 (count arguments) (get compiled :work-count))) compiled))
+          (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node)))))
+      (p15-s23-typed-node-error :malformed-typed-call-family node)))))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
     (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
       (if (if (map? node) (= false (contains? #{nil :gravity.type/unknown} type)) false)
+        (if (= form :call) (p15-s23-typed-compile-call context node budget)
         (if (= form :let) (p15-s23-typed-compile-let context node budget)
         (if (= form :try) (p15-s23-typed-compile-try context node budget)
         (if (= form :quote) (p15-s23-typed-symbol-quote context node budget)
@@ -1784,7 +1907,7 @@
                         (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
                           {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
                 (p15-s23-typed-node-error :typed-control-shape-mismatch node))
-              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node)))))))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))))))
         (p15-s23-typed-node-error :missing-typed-core-node node)))))
 
 (defn p15-s23-typed-provenance [context]
@@ -1801,7 +1924,7 @@
     (if (p15-s23-compiler-complete? joined)
       (if (= definition (get value :definition))
         (let [compiled (p15-s23-typed-compile-node
-                         (assoc (assoc context :locals (get value :locals)) :parameter-types (get value :parameter-types))
+                         (assoc context :locals (get value :locals) :parameter-types (get value :parameter-types) :current-function (get value :record))
                          (get (get value :record) :body-core-node-id) (get context :budget))
               function (get value :function)]
           (if (p15-s23-compiler-complete? compiled)

@@ -534,6 +534,60 @@ The first real composition remains failed (nine passed assertions, one error),
 not relabeled by the later pass. Counts overlap and are not additive; timings
 measure different workloads, not a speedup.
 
+### Canonical direct same-module calls
+
+Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls
+between named functions in one actual module. The lowerer joins canonical C6
+call/edge records, resolved binding and definition/function identities, ordered
+arguments and C7 call facts/constraints. A qualified current-module spelling
+can select the same resolved binding; spelling alone never selects executable
+code. A `Never` argument makes the call non-returning without changing the
+callee's declared normal return type.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-direct-call-lowering-development-kernel \
+  --exact current-gravity-direct-call-runtime-development-kernel
+# Affected source -> current typed call lowering -> Gravity runtime:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-direct-call-authenticated-composition --fail-fast
+```
+
+The closed plan supplies its existing function table to the private Gravity
+evaluator context. Legacy evaluator/helper entrypoints use an empty table;
+public plan execution keeps its existing record shape. Validate the target,
+fixed parameter vector and arity before argument effects. Evaluate arguments
+once, left-to-right in the caller environment, then bind values in a fresh
+callee environment. A thrown or rejected argument prevents later arguments and
+invocation. Callee output and control return unchanged to the caller.
+
+An active call path rejects cycles before argument evaluation. The current
+256-entry path ceiling is a bounded consumer limitation, not a new language
+legality rule or proof of host-stack fit, termination, total runtime cost or
+memory use. Shallow target-body shape checks are not whole-plan validation.
+Do not add host lookup, ambient callbacks or host exception translation to
+implement these guest calls. Existing cross-plan continuation machinery is
+separate and unchanged. Imports, callable parameters, closures, variadics and
+recursive components remain later slices, as do complete profile/provider
+legality, whole-runtime compilation and authoritative migration.
+The supported declarations are those accepted by current C7. Qualified
+references work, but qualified declaration names currently fail C7's
+simple-binding-name versus definition-name equality before this lowerer.
+That is an implementation gap to resolve in C7, not a new L2/L3 prohibition;
+changing the call consumer alone would not close it.
+
+The focused batch passed nine tests/592 assertions. The sole affected paired
+composition passed one test/214 assertions in about 869 seconds of execution
+plus eight seconds of loading. It builds each accepted input once per extension
+for thirteen-function assembly and execution, then exercises the current C5
+unknown-call and C7 arity, type and nonfunction-call boundaries. Current C7
+verification runs once per public lowering operation; input tampering rejects
+and every guest execution is observed for zero seed throw transport. The
+sixteen-function runtime projection is not whole-module compilation. Counts
+overlap and timings describe different workloads, not a speedup comparison.
+
 ### Current Gravity emitter throw lowering
 
 Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned
@@ -1082,6 +1136,16 @@ representation, inspect expected/candidate duplication, identity preimages,
 source copies and the applicability of value versus serialized-output limits
 using available data and construction code. Keep that bounded investigation
 separate from semantic implementation and scheduling changes.
+
+One concrete caller to inspect is the SH09 test helper `fresh-products` in
+`sh09_body_effect_test.clj`: it eagerly constructs and digests an SH09 binding,
+including the request, typed result and verification report. The typed-lowering
+composition tests select only the original triplet and do not consume that
+binding. This is statically unused construction in those callers, not evidence
+of runtime dominance or a measured speedup. A bounded follow-up can use the
+existing C7 interfaces to avoid that unused SH09 product while preserving the
+callers that genuinely need it; no new lane, cache or authority shortcut is
+required. Do not change a helper used by a live frozen composition.
 
 Bounded follow-up: observe one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity

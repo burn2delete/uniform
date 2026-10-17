@@ -290,7 +290,7 @@
       (is (= :rejected (:status (invoke 'p15-s23-typed-assemble-plan-products emitter module definitions input observation)))))
     (let [source {:syntax-id :original-syntax :semantic-span {:source "original.gravity" :start 12 :end 19}
                   :origin-chain [:original] :generated-origin {:macro :original}}
-          node {:node-id :unsupported :core-form :call :source source :binding-context {:scope :original}}
+          node {:node-id :unsupported :core-form :loop :source source :binding-context {:scope :original}}
           context (:value (invoke 'p15-s23-typed-context module input observation))
           context (-> context (assoc-in [:nodes :unsupported] node) (assoc-in [:types :unsupported] :gravity.type/string))
           rejected (invoke 'p15-s23-typed-compile-node context :unsupported 65536)
@@ -329,7 +329,7 @@
       (is (= {:op :do :body [branch]} (:value (invoke 'p15-s23-typed-compile-node context :sequence 65536))))
       (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :sequence 1) [:facts :reason])))
       (is (= :unsupported-typed-lowering-operation
-             (get-in (invoke 'p15-s23-typed-compile-node (assoc-in context [:nodes :sequence :core-form] :call) :sequence 65536) [:facts :reason]))))))
+             (get-in (invoke 'p15-s23-typed-compile-node (assoc-in context [:nodes :sequence :core-form] :loop) :sequence 65536) [:facts :reason]))))))
 
 (deftest typed-lowering-public-orchestration-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -370,6 +370,8 @@
         runtime-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
         names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
+                 p15-s23-runtime-evaluate-arguments-in-context p15-s23-runtime-evaluate-bindings-in-context p15-s23-runtime-evaluate-sequence-in-context
+                 p15-s23-runtime-select-handler-in-context p15-s23-runtime-evaluate-in-context p15-s23-runtime-call-target-valid? p15-s23-runtime-evaluate-call
                  p15-s23-runtime-typed-handlers-valid? p15-s23-runtime-atomic-error-match? p15-s23-runtime-select-typed-handler
                  p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (names (second %))) runtime-forms)
@@ -382,7 +384,7 @@
                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
                     'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         verifier 'sh08-verify-function-type-result original bootstrap/p15-s23-stage2-runtime-execute-function]
-    (is (= 9 (count selected)))
+    (is (= 16 (count selected)))
     (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in runtime-plan [:source :sha256])))
     (is (not= (bootstrap/sha256-hex runtime-text) (bootstrap/sha256-hex projection)))
     (doseq [extension [".gravity" ".qst"]]
@@ -449,6 +451,8 @@
         path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity")) text (slurp path)
         forms (bootstrap/read-forms path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+                 'p15-s23-runtime-evaluate-arguments-in-context 6 'p15-s23-runtime-evaluate-bindings-in-context 5 'p15-s23-runtime-evaluate-sequence-in-context 5
+                 'p15-s23-runtime-select-handler-in-context 5 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 5
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1
                  'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3}
@@ -458,13 +462,235 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path projection)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 9 (count selected) (count (set (map second selected)))))
+    (is (= 16 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest (bootstrap/read-forms path projection)))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
     (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in plan [:source :sha256])))
     (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
     {:plan plan :parent-source {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}}))
+
+(defn- typed-direct-call-kernel-context [base]
+  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
+        record (assoc (get-in base [:records 'identity]) :definition-binding-id :target-binding)
+        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :target-binding :argument-node-ids [:argument]
+              :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id :caller-fn :caller-function-core-node-id :caller-core
+              :callee-binding-id :target-binding :callee-definition-syntax-id :target-name :callee-function-syntax-id :fn :callee-function-core-node-id :function
+              :argument-core-node-ids [:argument] :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :classification :local-function}
+        module (get-in base [:core :module])
+        fact {:artifact :gravity/c7-call-type-fact
+              :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id :call :callee-function-syntax-id :fn
+                                :argument-types [:gravity.type/string] :result-type :gravity.type/string}
+              :call-core-node-id :call :caller-function-syntax-id :caller-fn :callee-function-syntax-id :fn
+              :argument-types [:gravity.type/string] :result-type :gravity.type/string :evaluation-order :operator-then-arguments
+              :source-span nil :syntax-id :call-form :origin-chain nil :generated-origin nil
+              :profile (:profile module) :target (:target module) :effects (:effects module) :capabilities (:capabilities module) :status :inferred}
+        row {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id :call :callee-function-syntax-id :fn}
+             :kind :equality :lhs :fn :rhs [{:parameter :parameter :argument :gravity.type/string :chosen :gravity.type/string}]
+             :origin nil :profile :meta :target :jvm :status :solved :diagnostics []}]
+    (-> base (assoc :locals {:caller-parameter 'problem} :parameter-types {:caller-parameter :gravity.type/string}
+                    :current-function {:function-syntax-id :caller-fn :function-core-node-id :caller-core}
+                    :calls {:call call} :edges {:call edge} :call-facts {:call fact} :call-order {:call 0} :recursion-components [] :ledger [row])
+        (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+        (assoc-in [:bindings :target-binding] {:binding-id :target-binding :name 'identity :definition-syntax-id :target-name
+                                              :binding-class :namespace :kind :function :namespace (:namespace module)})
+        (update :nodes merge {:operator {:node-id :operator :core-form :reference :children [] :resolved-binding-ids [:target-binding]
+                                         :attributes {:binding-id :target-binding :symbol 'identity :position :operator :binding-class :namespace :definition-syntax-id :target-name}
+                                         :source (source :operator-form)}
+                              :argument {:node-id :argument :core-form :reference :children [] :resolved-binding-ids [:caller-parameter]
+                                         :attributes {:binding-id :caller-parameter} :source (source :argument-form)}
+                              :call {:node-id :call :core-form :call :children [:operator :argument] :resolved-binding-ids [:target-binding]
+                                     :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1] :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                                     :evaluation {:kind :operator-then-arguments :owner-function-syntax-id :caller-fn
+                                                  :order [{:index 0 :core-node-id :operator} {:index 1 :core-node-id :argument}]} :source (source :call-form)}})
+        (update :types merge {:operator (get-in base [:functions 'identity]) :argument :gravity.type/string :call :gravity.type/string})
+        (update :forms merge {:name-form {:form-id :name-form :syntax-id :target-name :value 'identity :parent-form-id :definition-form}
+                              :call-form {:form-id :call-form :syntax-id :call-form :kind :list :child-form-ids [:operator-form :argument-form]}
+                              :operator-form {:form-id :operator-form :syntax-id :operator-form :kind :symbol :value 'identity :parent-form-id :call-form}
+                              :argument-form {:form-id :argument-form :syntax-id :argument-form :kind :symbol :value 'problem :parent-form-id :call-form}}))))
+
+(deftest current-gravity-direct-call-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation)) context (typed-direct-call-kernel-context base)
+        compile #(invoke 'p15-s23-typed-compile-node % :call 65536)]
+    (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value (compile context))))
+    (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]}
+           (:value (compile (-> context (assoc-in [:forms :operator-form :value] 'example.typed/identity)
+                                        (assoc-in [:nodes :operator :attributes :symbol] 'example.typed/identity))))))
+    (doseq [mutate [#(assoc-in % [:nodes :call :children] 42) #(assoc-in % [:forms :call-form :child-form-ids] 42)
+                    #(assoc-in % [:calls :call :argument-node-ids] 42)
+                    #(assoc-in % [:calls :call :operator-binding-id] :caller-parameter)
+                    #(assoc-in % [:edges :call :classification] :nonlocal-or-nonfunction)
+                    #(assoc-in % [:edges :call :callee-definition-syntax-id] :def)
+                    #(assoc-in % [:edges :call :callee-function-syntax-id] :caller-fn)
+                    #(assoc-in % [:edges :call :caller-function-core-node-id] :wrong)
+                    #(assoc-in % [:call-facts :call :argument-types] [:gravity.type/bool])
+                    #(assoc-in % [:call-facts :call :result-type] :gravity.type/never)
+                    #(assoc-in % [:bindings :target-binding :namespace] 'foreign)
+                    #(assoc-in % [:bindings :target-binding :binding-class] :lexical)
+                    #(assoc-in % [:forms :operator-form :value] 'relay)
+                    #(-> % (assoc-in [:forms :operator-form :value] 'foreign/identity) (assoc-in [:nodes :operator :attributes :symbol] 'foreign/identity))
+                    #(assoc-in % [:nodes :operator :attributes :definition-syntax-id] :def)
+                    #(assoc-in % [:forms :argument-form :parent-form-id] :sibling)
+                    #(assoc-in % [:nodes :call :evaluation :order] [{:index 0 :core-node-id :argument} {:index 1 :core-node-id :operator}])
+                    #(assoc-in % [:types :call] :gravity.type/bool)
+                    #(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                    #(assoc-in % [:ledger 0 :rhs 0 :chosen] :gravity.type/bool)
+                    #(assoc % :recursion-components [{:kind :self-recursive}])]]
+      (let [result (compile (mutate context))]
+        (is (= :rejected (:status result))) (is (= "P15S23Q002" (:diagnostic result)))))
+    (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :call 1) [:facts :reason])))
+    (let [huge (-> context (assoc-in [:nodes :call :children] (vec (repeat 65537 :argument)))
+                          (assoc-in [:forms :call-form :child-form-ids] (vec (repeat 65537 :argument-form))))]
+      (is (= :typed-lowering-work-limit (get-in (compile huge) [:facts :reason]))))
+    (doseq [[path value] [[[:request :canonical-core-artifact :calls] 42]
+                          [[:request :canonical-core-artifact :call-edges] 42]
+                          [[:request :canonical-core-artifact :recursion-components] 42]
+                          [[:typed :call-type-facts] 42]
+                          [[:request :canonical-core-artifact :calls] [{:core-node-id :extra} {:core-node-id :extra}]]
+                          [[:typed :call-type-facts] [{:call-core-node-id :extra}]]]]
+      (is (= :rejected (:status (invoke 'p15-s23-typed-context module (assoc-in input path value) observation)))))
+    (let [context (-> context (assoc-in [:nodes :argument :core-form] :throw) (assoc-in [:nodes :argument :attributes] {})
+                      (assoc-in [:nodes :argument :children] [:caller-value])
+                      (assoc-in [:nodes :caller-value] {:node-id :caller-value :core-form :reference :children [] :attributes {:binding-id :caller-parameter}})
+                      (assoc-in [:types :caller-value] :gravity.type/string) (assoc-in [:types :argument] :gravity.type/never) (assoc-in [:types :call] :gravity.type/never)
+                      (assoc-in [:call-facts :call :argument-types] [:gravity.type/never]) (assoc-in [:call-facts :call :result-type] :gravity.type/never)
+                      (assoc-in [:call-facts :call :fact-id-request :argument-types] [:gravity.type/never])
+                      (assoc-in [:call-facts :call :fact-id-request :result-type] :gravity.type/never)
+                      (assoc-in [:ledger 0 :rhs 0 :argument] :gravity.type/never))]
+      (is (= {:op :function-call :function 'identity :args [{:op :throw :value {:op :local :name 'problem}}]} (:value (compile context)))))))
+
+(deftest current-gravity-direct-call-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        literal (fn [value] {:op :literal :value value}) local (fn [name] {:op :local :name name})
+        call (fn [name args] {:op :function-call :function name :args args})
+        escape (fn [value] {:op :throw :value value})
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+        recover (fn [value] {:op :try :protected value :handlers [{:type :gravity.type/string :name 'error :body (local 'error)}]})
+        functions {'identity {:arity 1 :params '[problem] :instructions [(local 'problem)]}
+                   'relay {:arity 1 :params '[clash] :instructions [(call 'identity [(local 'clash)])]}
+                   'pair {:arity 2 :params '[left right] :instructions [(say "callee" (local 'right))]}
+                   'boom {:arity 1 :params '[problem] :instructions [(escape (local 'problem))]}
+                   'rethrow {:arity 1 :params '[problem] :instructions [{:op :try :protected (escape (local 'problem))
+                                                                        :handlers [{:type :gravity.type/string :name 'error :body (escape (local 'error))}]}]}}
+        evaluate (fn [instruction] (invoke 'p15-s23-runtime-evaluate-in-context instruction {'clash :caller-only} "" functions ['main]))
+        payload (String. "original")]
+    (doseq [name '[identity relay]]
+      (let [result (evaluate (call name [(literal payload)]))]
+        (is (identical? payload (first result))) (is (= ["" :normal] (subvec result 1)))))
+    (doseq [value [nil false {:op :throw :value payload} [payload "" :thrown] (ex-info "inert" {})]]
+      (doseq [[name control] [['identity :normal] ['boom :thrown]]]
+        (let [result (evaluate (call name [(literal value)]))]
+          (is (identical? value (first result))) (is (= ["" control] (subvec result 1))))))
+    (is (= [payload "first\nsecond\ncallee\n" :normal]
+           (evaluate (call 'pair [(say "first" (literal :first)) (say "second" (literal payload))]))))
+    (is (= [payload "first\n" :thrown]
+           (evaluate (call 'pair [(say "first" (escape (literal payload))) (say "unreachable" (literal :second))]))))
+    (doseq [name '[boom rethrow]]
+      (let [result (evaluate (recover (call name [(literal payload)])))]
+        (is (identical? payload (first result))) (is (= ["" :normal] (subvec result 1)))))
+    (let [result (invoke 'p15-s23-runtime-evaluate-in-context (call 'identity [(literal payload)]) {'clash :caller-only} ""
+                        (assoc-in functions ['identity :instructions] [(local 'clash)]) ['main])]
+      (is (= ["" :rejected] (subvec result 1))))
+    (doseq [[target active table args]
+            [['missing ['main] functions [(say "unreachable" (literal payload))]]
+             ['identity ['main] (assoc-in functions ['identity :params] 42) [(say "unreachable" (literal payload))]]
+             ['identity ['main] (assoc-in functions ['identity :params] '[x x]) [(say "unreachable" (literal payload))]]
+             ['identity ['main] (assoc-in functions ['identity :params] [42]) [(say "unreachable" (literal payload))]]
+             ['identity ['main] (assoc-in functions ['identity :arity] 2) [(say "unreachable" (literal payload))]]
+             ['identity ['main] (assoc-in functions ['identity :instructions] [42]) [(say "unreachable" (literal payload))]]
+             ['identity ['identity] functions [(say "unreachable" (literal payload))]]
+             ['identity (vec (repeat 256 'frame)) functions [(say "unreachable" (literal payload))]]
+             ['identity ['main] functions []]
+             ['identity ['main] functions 42]]]
+      (let [result (invoke 'p15-s23-runtime-evaluate-in-context (call target args) {} "" table active)]
+        (is (= ["" :rejected] (subvec result 1))) (is (= "P15S23X002" (:diagnostic (first result))))))
+    (is (= :rejected (get (invoke 'p15-s23-runtime-evaluate-closed-instruction (call 'identity [(say "unreachable" (literal payload))]) {} "") 2)))
+    (let [table (assoc functions 'cycle {:arity 0 :params [] :instructions [(call 'cycle [])]})
+          result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle []) {} "" table ['main])]
+      (is (= ["" :rejected] (subvec result 1))))
+    (let [table (assoc functions 'main {:arity 0 :params [] :instructions [(call 'relay [(literal payload)])]})
+          result (invoke 'p15-s23-runtime-execute-closed-plan {:entrypoint 'main :functions table})]
+      (is (= :complete (:status result))) (is (identical? payload (:entrypoint-result result)))
+      (is (= #{:artifact :entrypoint :stdout :entrypoint-result :status :clojure-seed-boundary? :self-hosted?} (set (keys result)))))
+    (let [fatal (AssertionError. "fatal primitive") value (proxy [Object] [] (toString [] (throw fatal)))
+          observed (seed-throw-test-capture #(evaluate (call 'identity [{:op :builtin-call :function 'str :args [(literal value)]}])))]
+      (is (identical? fatal observed)))))
+
+(deftest current-gravity-direct-call-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        {:keys [plan parent-source]} (typed-catch-runtime-projection)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        original bootstrap/p15-s23-stage2-runtime-execute-function
+        transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
+        verifications (atom 0)
+        operation (fn [thunk]
+                    (let [before @verifications
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (when (= 'sh08-verify-function-type-result function) (swap! verifications inc))
+                                                 (original runtime plan function args))] (thunk))]
+                      (is (= 1 (- @verifications before))) result))]
+    (is (= (str "sha256:" (bootstrap/sha256-hex (slurp (:path parent-source)))) (:sha256 parent-source)))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-direct-call" extension)
+            source-path (.getPath (io/file root relative)) p (fresh relative) input (select-keys p [:request :typed :verification])
+            macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+            original-forms (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            module (assoc (bootstrap/parse-module source-path original-forms) :forms (:expanded-forms macro-artifact))
+            definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+            assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+            functions (:functions assembled) payload (String. "original")
+            execute (fn [name env]
+                      (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+                        #(original runtime plan 'p15-s23-runtime-evaluate-in-context
+                           [(first (get-in functions [name :instructions])) env "" functions [name]])))]
+        (is (= :accepted (get-in input [:typed :status]))) (is (= :passed (get-in input [:verification :status])))
+        (is (= 13 (count functions)))
+        (is (= (count (get-in input [:request :canonical-core-artifact :calls])) (get-in assembled [:instruction-summary :function-call])))
+        (is (= 'identity (get-in functions ['qualified :instructions 0 :function])))
+        (doseq [name (keys definitions)]
+          (let [compiled (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions name) input))]
+            (is (= compiled (get functions name)))
+            (is (= :pending-c8-and-profile-authority (get-in compiled [:typed-lowering-provenance :effect-legality])))
+            (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in compiled [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))))
+        (doseq [[name env control expected]
+                [['identity {'problem payload} :normal payload] ['relay {'clash payload 'problem :caller-only} :normal payload]
+                 ['aliased {'problem payload 'clash :caller-only} :normal payload] ['qualified {'problem payload} :normal payload]
+                 ['thrower {'problem payload} :thrown payload] ['recover {'problem payload} :normal payload]
+                 ['rethrow {'problem payload} :thrown payload] ['outer {'problem payload} :normal payload]
+                 ['never-arg {'problem payload} :normal payload] ['first-arg {'problem payload} :normal payload]
+                 ['bool-callee {'value payload} :thrown false]]]
+          (let [result (execute name env)] (is (identical? expected (first result))) (is (= ["" control] (subvec result 1)))))
+        (with-redefs-fn {transport (fn [& args] (swap! transports inc) (apply original-transport args))}
+          #(let [result (original runtime plan 'p15-s23-runtime-execute-closed-plan [assembled])]
+             (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main :stdout ""
+                     :entrypoint-result "recovered" :status :complete :clojure-seed-boundary? true :self-hosted? false} result))))
+        (doseq [changed [(assoc-in input [:typed :call-type-facts 0 :result-type] :gravity.type/bool)
+                         (assoc-in input [:request :canonical-core-artifact :calls 0 :operator-binding-id] :wrong)
+                         (assoc-in input [:request :canonical-core-artifact :call-edges 0 :callee-function-syntax-id] :wrong)]]
+          (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'main) changed))))]
+            (is (= "P15S23Q002" (:id failure))))))
+      (let [source-path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-call-unknown" extension)))]
+        (is (= "C5-UNRESOLVED" (:id (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact source-path))))))
+      (doseq [[suffix rule reason] [["arity" "C7-TYPE-MISMATCH" :call-arity-mismatch]
+                                    ["type" "C7-TYPE-MISMATCH" :call-argument-type-mismatch]
+                                    ["nonfunction" "C7-ANNOTATION" :unsupported-nonlocal-call]]]
+        (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-call-" suffix extension)
+              p (fresh relative) typed (:typed p)]
+          (is (= :rejected (:status typed)))
+          (is (= rule (get-in typed [:diagnostics 0 :rule]))) (is (= reason (get-in typed [:diagnostics 0 :reason])))
+          (is (= :type-checking (get-in typed [:diagnostics 0 :stage])))
+          (is (= :passed (get-in p [:verification :status]))))))
+    (is (= 0 @transports))))
 
 (defn- typed-let-kernel-context [base names]
   (let [n (count names) binding-ids (mapv #(keyword (str "let-binding-" %)) (range n))
@@ -711,8 +937,9 @@
                    (is (= [expected "" control] result))
                    (when (identical? expected payload) (is (identical? payload (first result))))
                    (is (= :pending-c8-and-profile-authority (get-in function [:typed-lowering-provenance :effect-legality]))))))
-            (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'call-catch) input))))]
-              (is (= "P15S23Q002" (:id failure))) (is (= :unsupported-typed-lowering-operation (:reason failure)))))
+            (let [compiled (compile-function 'call-catch)]
+              (is (= :function-call (get-in compiled [:instructions 0 :protected :op])))
+              (is (= 'partial (get-in compiled [:instructions 0 :protected :function])))))
           (let [assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
                 functions (:functions assembled)]
             (is (= {:try 5 :throw 5 :local 5 :quote 1 :literal 4} (:instruction-summary assembled)))
@@ -796,6 +1023,8 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! fixture-path :jvm))
         parent-forms (bootstrap/read-forms source-path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+                 'p15-s23-runtime-evaluate-arguments-in-context 6 'p15-s23-runtime-evaluate-bindings-in-context 5 'p15-s23-runtime-evaluate-sequence-in-context 5
+                 'p15-s23-runtime-select-handler-in-context 5 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 5
                  'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1}
@@ -816,7 +1045,7 @@
     ;; subset. Compile exact original function forms as a fresh projection;
     ;; retain its own hash and the distinct complete parent-source provenance.
     (is (= text (slurp source-path)))
-    (is (= 9 (count selected) (count (set (map second selected)))))
+    (is (= 16 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest (bootstrap/read-forms source-path projection)))))
     (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in compiled [:source :sha256])))

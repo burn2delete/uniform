@@ -1763,15 +1763,19 @@
 ; declared :io/write operation.
 (defn p15-s23-runtime-evaluate-arguments
   [arguments environment output values]
+  (p15-s23-runtime-evaluate-arguments-in-context arguments environment output values {} []))
+
+(defn p15-s23-runtime-evaluate-arguments-in-context
+  [arguments environment output values functions path]
   (if (= (count arguments) 0)
     [values output :normal]
     (let [head-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (first arguments) environment output)]
+          (p15-s23-runtime-evaluate-in-context
+           (first arguments) environment output functions path)]
       (if (= :normal (get head-result 2))
-        (p15-s23-runtime-evaluate-arguments
+        (p15-s23-runtime-evaluate-arguments-in-context
          (rest arguments) environment (second head-result)
-         (conj values (first head-result)))
+         (conj values (first head-result)) functions path)
         head-result))))
 
 (defn p15-s23-runtime-println-output
@@ -1786,30 +1790,38 @@
 
 (defn p15-s23-runtime-evaluate-bindings
   [bindings environment output]
+  (p15-s23-runtime-evaluate-bindings-in-context bindings environment output {} []))
+
+(defn p15-s23-runtime-evaluate-bindings-in-context
+  [bindings environment output functions path]
   (if (= (count bindings) 0)
     [environment output :normal]
     (let [binding (first bindings)
           value-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (get binding :expr) environment output)]
+          (p15-s23-runtime-evaluate-in-context
+           (get binding :expr) environment output functions path)]
       (if (= :normal (get value-result 2))
-        (p15-s23-runtime-evaluate-bindings
+        (p15-s23-runtime-evaluate-bindings-in-context
          (rest bindings)
          (assoc environment (get binding :name) (first value-result))
-         (second value-result))
+         (second value-result) functions path)
         value-result))))
 
 (defn p15-s23-runtime-evaluate-sequence
   [instructions environment output]
+  (p15-s23-runtime-evaluate-sequence-in-context instructions environment output {} []))
+
+(defn p15-s23-runtime-evaluate-sequence-in-context
+  [instructions environment output functions path]
   (if (= (count instructions) 0)
     [nil output :normal]
     (let [head-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (first instructions) environment output)]
+          (p15-s23-runtime-evaluate-in-context
+           (first instructions) environment output functions path)]
       (if (if (= :normal (get head-result 2)) (= (count instructions) 1) true)
         head-result
-        (p15-s23-runtime-evaluate-sequence
-         (rest instructions) environment (second head-result))))))
+        (p15-s23-runtime-evaluate-sequence-in-context
+         (rest instructions) environment (second head-result) functions path)))))
 
 (defn p15-s23-runtime-typed-handlers-valid? [instruction]
   (if (= #{:op :protected :handlers} (set (keys instruction)))
@@ -1832,16 +1844,56 @@
         (if (= type :gravity.type/keyword) (keyword? value) false)))))
 
 (defn p15-s23-runtime-select-typed-handler [handlers result environment]
+  (p15-s23-runtime-select-handler-in-context handlers result environment {} []))
+
+(defn p15-s23-runtime-select-handler-in-context [handlers result environment functions path]
   (loop [remaining handlers]
     (if (= 0 (count remaining)) result
       (let [handler (first remaining)]
         (if (p15-s23-runtime-atomic-error-match? (get handler :type) (first result))
-          (p15-s23-runtime-evaluate-closed-instruction (get handler :body)
-            (assoc environment (get handler :name) (first result)) (second result))
+          (p15-s23-runtime-evaluate-in-context (get handler :body)
+            (assoc environment (get handler :name) (first result)) (second result) functions path)
           (recur (rest remaining)))))))
 
 (defn p15-s23-runtime-evaluate-closed-instruction
   [instruction environment output]
+  (p15-s23-runtime-evaluate-in-context instruction environment output {} []))
+
+(defn p15-s23-runtime-call-target-valid? [instruction functions path]
+  (if (map? functions)
+  (if (vector? path)
+  (if (< (count path) 256)
+  (if (symbol? (get instruction :function))
+  (if (= false (contains? (set path) (get instruction :function)))
+  (let [target (get functions (get instruction :function)) params (get target :params) args (get instruction :args)]
+    (if (map? target)
+      (if (vector? params)
+        (if (vector? args)
+          (if (<= (count params) 65536)
+            (if (= (get target :arity) (count params) (count args))
+              (if (vector? (get target :instructions))
+                (if (if (> (count (get target :instructions)) 0) (<= (count (get target :instructions)) 65536) false)
+                  (loop [remaining params seen #{}]
+                    (if (= 0 (count remaining))
+                      (loop [body (get target :instructions)]
+                        (if (= 0 (count body)) true
+                          (if (map? (first body)) (recur (rest body)) false)))
+                      (if (symbol? (first remaining))
+                        (if (contains? seen (first remaining)) false (recur (rest remaining) (conj seen (first remaining)))) false))) false)
+                false) false) false) false) false) false)) false) false) false) false) false))
+
+(defn p15-s23-runtime-evaluate-call [instruction environment output functions path]
+  (let [arguments (p15-s23-runtime-evaluate-arguments-in-context (get instruction :args) environment output [] functions path)]
+    (if (= :normal (get arguments 2))
+      (let [target (get functions (get instruction :function)) params (get target :params)
+            locals (loop [index 0 out {}]
+                     (if (= index (count params)) out
+                       (recur (+ index 1) (assoc out (get params index) (get (first arguments) index)))))]
+        (p15-s23-runtime-evaluate-sequence-in-context (get target :instructions) locals (second arguments)
+          functions (conj path (get instruction :function)))) arguments)))
+
+(defn p15-s23-runtime-evaluate-in-context
+  [instruction environment output functions path]
   (let [operation (get instruction :op)
         fields (if (map? instruction) (set (keys instruction)) #{})
         arguments (get instruction :args)
@@ -1851,6 +1903,8 @@
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
           (if (= operation :try) (p15-s23-runtime-typed-handlers-valid? instruction)
+          (if (= operation :function-call)
+            (if (= fields #{:op :function :args}) (p15-s23-runtime-call-target-valid? instruction functions path) false)
           (if (= operation :local)
             (if (contains? fields :name)
               (if (symbol? (get instruction :name)) (contains? environment (get instruction :name)) false) false)
@@ -1883,13 +1937,14 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false))))))))) false)]
+            false)))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :function-call) (p15-s23-runtime-evaluate-call instruction environment output functions path)
     (if (= operation :try)
-      (let [result (p15-s23-runtime-evaluate-closed-instruction (get instruction :protected) environment output)]
+      (let [result (p15-s23-runtime-evaluate-in-context (get instruction :protected) environment output functions path)]
         (if (= :thrown (get result 2))
-          (p15-s23-runtime-select-typed-handler (get instruction :handlers) result environment) result))
+          (p15-s23-runtime-select-handler-in-context (get instruction :handlers) result environment functions path) result))
     (if (= operation :literal)
       [(get instruction :value) output :normal]
       (if (= operation :quote)
@@ -1897,14 +1952,14 @@
         (if (= operation :local)
           [(get environment (get instruction :name)) output :normal]
           (if (= operation :throw)
-            (let [value-result (p15-s23-runtime-evaluate-closed-instruction (get instruction :value) environment output)]
+            (let [value-result (p15-s23-runtime-evaluate-in-context (get instruction :value) environment output functions path)]
               (if (= :normal (get value-result 2))
                 [(first value-result) (second value-result) :thrown]
                 value-result))
           (if (= operation :builtin-call)
             (let [arguments-result
-                  (p15-s23-runtime-evaluate-arguments
-                   arguments environment output [])]
+                  (p15-s23-runtime-evaluate-arguments-in-context
+                   arguments environment output [] functions path)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
               (if (if comparison? (if (integer? left) (integer? right) false) true)
@@ -1927,41 +1982,41 @@
               arguments-result))
             (if (= operation :println)
               (let [arguments-result
-                    (p15-s23-runtime-evaluate-arguments
-                     (get instruction :args) environment output [])]
+                    (p15-s23-runtime-evaluate-arguments-in-context
+                     (get instruction :args) environment output [] functions path)]
                 (if (= :normal (get arguments-result 2))
                 [nil
                  (p15-s23-runtime-println-output
                   (first arguments-result) (second arguments-result)) :normal]
                 arguments-result))
               (if (= operation :do)
-                (p15-s23-runtime-evaluate-sequence
-                 (get instruction :body) environment output)
+                (p15-s23-runtime-evaluate-sequence-in-context
+                 (get instruction :body) environment output functions path)
                 (if (= operation :if)
                   (let [test-result
-                        (p15-s23-runtime-evaluate-closed-instruction
-                         (get instruction :test) environment output)]
+                        (p15-s23-runtime-evaluate-in-context
+                         (get instruction :test) environment output functions path)]
                     (if (= :normal (get test-result 2))
                     (if (first test-result)
-                      (p15-s23-runtime-evaluate-closed-instruction
+                      (p15-s23-runtime-evaluate-in-context
                        (get instruction :then)
                        environment
-                       (second test-result))
-                      (p15-s23-runtime-evaluate-closed-instruction
+                       (second test-result) functions path)
+                      (p15-s23-runtime-evaluate-in-context
                        (get instruction :else)
                        environment
-                       (second test-result))) test-result))
+                       (second test-result) functions path)) test-result))
                   (if (= operation :let)
                   (let [binding-result
-                        (p15-s23-runtime-evaluate-bindings
-                         (get instruction :bindings) environment output)]
+                        (p15-s23-runtime-evaluate-bindings-in-context
+                         (get instruction :bindings) environment output functions path)]
                     (if (= :normal (get binding-result 2))
-                    (p15-s23-runtime-evaluate-sequence
+                    (p15-s23-runtime-evaluate-sequence-in-context
                      (get instruction :body)
                      (first binding-result)
-                     (second binding-result)) binding-result))
+                     (second binding-result) functions path) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected])))))))))))))
+                     output :rejected]))))))))))))))
 
 ; Pinned public entrypoint for the authenticated closed hosted-core plan.  The
 ; Clojure seed invokes this Gravity function once for the authoritative packet
@@ -1974,8 +2029,8 @@
   (let [entrypoint (get plan :entrypoint)
         function (get (get plan :functions) entrypoint)
         result
-        (p15-s23-runtime-evaluate-sequence
-         (get function :instructions) {} "")]
+        (p15-s23-runtime-evaluate-sequence-in-context
+         (get function :instructions) {} "" (get plan :functions) [entrypoint])]
     (let [record {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
      :entrypoint entrypoint
      :stdout (second result)

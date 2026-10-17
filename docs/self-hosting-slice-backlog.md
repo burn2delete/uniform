@@ -2009,6 +2009,60 @@ migration remain separate gates. Current-source lowering/execution does not
 refresh old admitted compiler identities or establish self-hosting, release
 support or seed retirement.
 
+### Canonical direct same-module calls
+
+The Gravity emitter now lowers fixed-arity direct calls between current-C7-
+accepted named functions in one acyclic module. Canonical call/edge records,
+operator binding, declaration/function/body identities, argument order, C7
+constraints and call facts determine the target. Qualified references to the
+same local binding emit the same target; no runtime string lookup is used.
+Arguments with type `Never` make the call non-returning without changing the
+callee's normal return declaration. Existing source and thrown-type facts are
+retained; effect/profile authority stays pending.
+
+The Gravity runtime carries the closed plan's function table and active call
+path explicitly through one private evaluator/helper implementation. Legacy
+entrypoints remain thin empty-context compatibility calls. Target shape,
+parameter uniqueness, arity and active cycles reject before argument effects.
+Arguments evaluate once, left-to-right, in the caller environment. Normal
+values enter a fresh callee environment; thrown/rejected argument control
+aborts the remaining arguments and invocation. Callee output and control return
+unchanged. Fatal host failures are not converted into guest throw values.
+
+The focused batch passed nine tests/592 assertions, including 55 direct-call
+lowering and 63 runtime assertions alongside overlapping regressions. Earlier
+stale unsupported-call oracle failures and a new-test reader EOF remain failed
+attempts. Qualified-reference and declaration/binding identity checks were
+reviewed before the real composition, not repaired by relaxing authority.
+
+The sole affected paired composition passed one test/214 assertions in about
+869 seconds of execution plus eight seconds of loading. Each accepted input is
+constructed once per extension and reused for thirteen-function assembly,
+public-function parity and runtime cases. Real chains, same-module qualified
+references, let aliases, original payload identities, caller catches, callee
+rethrow and first-throwing-argument abort pass. The actual C5 unknown-call and
+C7 wrong-arity, wrong-type and nonfunction calls reject. Each public lowering
+operation checks fresh current C7 verification; coherent input mutations reject
+and the seed throw transport is never used by guest execution. These results
+do not make overlapping focused counts additive or compare equivalent timing
+workloads.
+
+The current consumer's 256-entry active-path limit is not a language legality
+rule or proof of host-stack, total-cost or memory fit. Target body checks are
+shallow. The runtime test projection contains 16 exact original definitions,
+not the whole runtime module. Existing cross-plan continuation machinery and
+admitted identities are unchanged. Imports, recursion, callable parameters,
+closures, variadics, full profile/provider legality, authoritative migration
+and seed retirement remain open.
+
+Qualified declarations are a separate existing C7 gap: macro/C5/C6 preserve the
+original qualified declaration but C7 requires equality with the simple binding
+name before typed acceptance. The new lowerer does not claim to fix this
+upstream mismatch or turn it into a language-law prohibition. A future C7
+identity-join correction needs its own accepted/rejected source cases and
+affected validation; qualified references are already a distinct supported
+case here.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
