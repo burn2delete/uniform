@@ -1,5 +1,9 @@
-
-
+(defn- p15-s23-stage2-seed-throw-arity! [module form]
+  (when-not (= 2 (count form))
+    (fail! "L2-THROW-ILLEGAL" "seed throw requires exactly one operand"
+           {:source-span {:source (:source-path module)} :operator 'throw :reason :throw-arity
+            :expected-arity 1 :actual-arity (dec (count form))
+            :remediation "Use exactly (throw value) in the single-source seed subset."})))
 (defn p15-s23-stage2-seed-validate-recur!
   [module form target-arity tail-position?]
   ;; Source forms are untrusted at this boundary.  Carry tail context on an
@@ -21,6 +25,10 @@
                 (cond
                   (= callee 'quote)
                   []
+
+                  (= callee 'throw)
+                  (do (p15-s23-stage2-seed-throw-arity! module current)
+                      [[(second current) current-target false]])
 
                   (= callee 'recur)
                   (let [arguments (vec (rest current))

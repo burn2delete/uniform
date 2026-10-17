@@ -125,12 +125,14 @@
         reserved (into (set (get-in emitter [:call-rules :builtin-functions]))
                        (concat (keys (:special-form-rules emitter))
                                (keys (get-in emitter [:call-rules :compiler-internal-builtin-arities]))
-                               '[println do if let loop recur quote host-reflect]))]
+                               '[println do if let loop recur throw quote host-reflect]))]
     (doseq [reference (get-in source [:request :references])
             :when (and (= :operator (:position reference))
                        (or (contains? reserved (:symbol reference)) (contains? (:functions source) (:symbol reference))
                            (contains? (:literals source) (:symbol reference))))]
       (let [binding (get bindings (:binding-id (get resolved (:syntax-id reference))))]
+        (when (= 'throw (:symbol reference))
+          (p15-s23-stage2-module-fail! :single-source-throw-only {:source-path (:source-path source)}))
         (when-not (if (contains? reserved (:symbol reference))
                     (= :core (:binding-class binding))
                     (and (= :namespace (:binding-class binding)) (= :function (:kind binding))

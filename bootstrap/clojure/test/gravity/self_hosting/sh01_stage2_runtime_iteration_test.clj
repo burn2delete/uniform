@@ -72,6 +72,144 @@
       (.getPath (io/file directory (str "bootstrap/clojure/fixtures/self-hosting/sh-01/modules/" name extension)))
       (recur (.getParentFile directory)))))
 
+(defn- seed-throw-test-plan [forms]
+  (let [path (module-fixture "seed-library" ".gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        source (str "(ns example.seed.throw (:profile :meta) (:target :jvm) (:effects #{:error/throw})) " forms)]
+    (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path source)))
+(defn- seed-throw-test-capture [operation]
+  (try (operation) nil (catch Throwable failure failure)))
+(defn- seed-throw-test-transport? [failure]
+  (and (instance? clojure.lang.ExceptionInfo failure)
+       (identical? (var-get (module-private 'p15-s23-stage2-runtime-source-throw-token))
+                   (:gravity.bootstrap/source-throw (ex-data failure)))))
+
+(deftest seed-throw-lowering-and-arity-development-kernel
+  (let [compiled (seed-throw-test-plan "(defn f [problem] (throw problem))")
+        boundary (module-private 'p15-s23-stage2-seed-throw-plan-boundary)
+        plain (seed-throw-test-plan "(defn f [problem] problem)")
+        legacy (with-redefs-fn {boundary identity} #(seed-throw-test-plan "(defn f [problem] problem)"))]
+    (is (= {:op :throw :value {:op :local :name 'problem}} (get-in compiled [:functions 'f :instructions 0])))
+    (is (= {:throw 1 :local 1} (:instruction-summary compiled)))
+    (is (= :clojure-stage0-seed (get-in compiled [:compiler :owner])))
+    (is (= :temporary-single-source-seed-throw (get-in compiled [:compiler :lowering-boundary])))
+    (is (= :pending-seed-effect-inference (get-in compiled [:effect-summary :inferred])))
+    (is (= :not-checked (get-in compiled [:effect-summary :legality])))
+    (is (= {:throw 1} (get-in compiled [:effect-summary :source-operation-occurrences])))
+    (is (= #{:error/throw} (set (get-in compiled [:effect-summary :declared]))))
+    (is (= plain legacy))
+    (is (= :gravity-source (get-in plain [:compiler :owner])))
+    (is (= #{} (get-in plain [:effect-summary :inferred]))))
+  (doseq [form ["(throw)" "(throw unknown extra)" "(throw (recur false) extra)"]]
+    (let [compiled-forms (atom []) original bootstrap/p15-s23-stage2-seed-compile-expr
+          data (with-redefs [bootstrap/p15-s23-stage2-seed-compile-expr
+                             (fn [& args] (swap! compiled-forms conj (last args)) (apply original args))]
+                 (diagnostic #(seed-throw-test-plan (str "(defn f [] " form ")"))))]
+      (is (= "L2-THROW-ILLEGAL" (:id data)))
+      (is (= :throw-arity (:reason data)))
+      (is (= 1 (:expected-arity data)))
+      (is (= [] @compiled-forms))))
+  (is (= "L2-RECUR-TARGET" (:id (diagnostic #(seed-throw-test-plan "(defn f [x] (throw (recur x)))")))))
+  (let [compiled (seed-throw-test-plan "(defn f [] '(throw unknown))")]
+    (is (= '(throw unknown) (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f [])))
+    (is (= {:quote 1} (:instruction-summary compiled))))
+  (is (= {:throw 2 :literal 1}
+         (bootstrap/stage0-instruction-summary {:op :throw :value {:op :throw :value {:op :literal :value :payload}}}))))
+
+(deftest seed-throw-transport-and-nesting-development-kernel
+  (let [compiled (seed-throw-test-plan "(defn f [problem] (throw problem))")
+        payloads [nil false {:kind :gravity/recur :values [false] :op :throw}
+                  {:gravity.bootstrap/source-throw (Object.) :payload :data}
+                  (ex-info "payload data" {:id "PAYLOAD"}) (AssertionError. "payload data")]]
+    (is (true? (:private (meta (module-private 'p15-s23-stage2-runtime-source-throw!)))))
+    (doseq [payload payloads]
+      (let [failure (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f [payload]))]
+        (is (seed-throw-test-transport? failure))
+        (is (identical? payload (:payload (ex-data failure))))
+        (is (= (:source compiled) (:source (ex-data failure))))
+        (is (= 'example.seed.throw (:module (ex-data failure))))
+        (is (nil? (:id (ex-data failure))))
+        (is (not (identical? payload failure)))
+        (is (identical? payload (bootstrap/p15-s23-stage2-runtime-execute-instruction runtime plan {} {:op :literal :value payload}))))))
+  (let [compiled (seed-throw-test-plan "(defn f [] (throw (throw \"inner\")))")
+        transport (module-private 'p15-s23-stage2-runtime-source-throw!) original (var-get transport) seen (atom []) emitted (atom nil)
+        failure (with-redefs-fn {transport (fn [active-plan payload]
+                                           (swap! seen conj payload)
+                                           (try (original active-plan payload)
+                                                (catch clojure.lang.ExceptionInfo error (reset! emitted error) (throw error))))}
+                  #(seed-throw-test-capture (fn [] (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f []))))]
+    (is (seed-throw-test-transport? failure))
+    (is (identical? @emitted failure))
+    (is (= ["inner"] @seen))
+    (is (= "inner" (:payload (ex-data failure)))))
+  (doseq [instruction [{:op :throw} {:op :throw :value nil} {:op :throw :value false}
+                       {:op :throw :value {:op :literal :value :payload} :extra true}]]
+    (let [evaluated (atom 0) execute (module-private 'p15-s23-stage2-runtime-execute-value-scoped)
+          data (with-redefs-fn {execute (fn [& _] (swap! evaluated inc))}
+                 #(diagnostic (fn [] (bootstrap/p15-s23-stage2-runtime-execute-instruction runtime plan {} instruction))))]
+      (is (= "L2-THROW-ILLEGAL" (:id data)))
+      (is (= :malformed-throw-instruction (:reason data)))
+      (is (zero? @evaluated))))
+  (is (= "L2-RECUR-TARGET" (:id (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-instruction
+                                              runtime plan {} {:op :throw :value {:op :recur :args []}}))))))
+
+(deftest seed-throw-evaluation-order-development-kernel
+  (let [mark (fn [value] {:op :builtin-call :function 'str :args [{:op :literal :value value}]})
+        before (mark "before") payload (mark "problem") after (mark "after") throw {:op :throw :value payload}
+        original bootstrap/p15-s23-stage2-runtime-invoke-builtin]
+    (doseq [instruction [{:op :do :body [before throw after]}
+                         {:op :vector-literal :items [before throw after]}
+                         {:op :set-literal :items [before throw after]}
+                         {:op :builtin-call :function 'str :args [before throw after]}
+                         {:op :let :bindings [{:name 'x :expr before} {:name 'y :expr throw} {:name 'z :expr after}]
+                          :body [after]}
+                         {:op :map-literal :entries [{:key before :value throw} {:key after :value after}]}]]
+      (let [seen (atom [])
+            failure (with-redefs [bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                                 (fn [active-runtime active-plan function arguments]
+                                   (swap! seen conj (first arguments)) (original active-runtime active-plan function arguments))]
+                      (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-instruction runtime plan {} instruction)))]
+        (is (seed-throw-test-transport? failure))
+        (is (= "problem" (:payload (ex-data failure))))
+        (is (= ["before" "problem"] @seen)))))
+  (let [compiled (seed-throw-test-plan "(defn f [flag problem] (if flag (recur false problem) (throw problem)))")
+        transfers (atom []) original bootstrap/p15-s23-stage2-runtime-recur-signal
+        failure (with-redefs [bootstrap/p15-s23-stage2-runtime-recur-signal
+                             (fn [values] (swap! transfers conj values) (original values))]
+                  (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f [true "problem"])))]
+    (is (= [[false "problem"]] @transfers))
+    (is (seed-throw-test-transport? failure)))
+  (let [compiled (seed-throw-test-plan "(defn fail [problem] (throw problem)) (defn f [] (loop [again true] (if again (fail \"problem\") \"done\")))")
+        failure (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled 'f []))]
+    (is (seed-throw-test-transport? failure))
+    (is (= "problem" (:payload (ex-data failure))))))
+
+(deftest seed-throw-host-error-and-module-fences-development-kernel
+  (doseq [failure [(RuntimeException. "host runtime") (ex-info "host diagnostic" {:id "HOST"}) (AssertionError. "host fatal")]]
+    (let [carrier (ThrowingAssociative. failure)
+          instruction {:op :throw :value {:op :builtin-call :function 'assoc :args (literal-instructions [carrier :key :value])}}
+          observed (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-instruction runtime plan {} instruction))]
+      (is (not (seed-throw-test-transport? observed)))
+      (if (instance? RuntimeException failure)
+        (if (instance? clojure.lang.ExceptionInfo failure) (is (identical? failure observed))
+          (is (= "L2-BUILTIN-ERROR" (:id (ex-data observed)))))
+        (is (identical? failure observed)))))
+  (doseq [instruction [{:op :throw :value {:op :literal :value :payload}}
+                       {:op :vector-literal :items [{:op :throw :value {:op :literal :value :payload}}]}]]
+    (is (= :single-source-throw-only
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-instructions {:functions {'f {:instructions [instruction]}}})) [:facts :reason]))))
+  (is (= [{:op :literal :value :payload}]
+         (bootstrap/p15-s23-stage2-module-instruction-children {:op :throw :value {:op :literal :value :payload}})))
+  (is (= [{:op :quote :value '(throw unknown)}]
+         (bootstrap/p15-s23-stage2-module-instructions {:functions {'f {:instructions [{:op :quote :value '(throw unknown)}]}}})))
+  (let [source {:source-path "module.gravity" :functions {} :literals {}
+                :request {:references [{:position :operator :symbol 'throw :syntax-id :throw}]}
+                :artifact {:binding-table {:bindings [{:binding-id :core-throw :binding-class :core}]}
+                           :gravity-resolution-boundary {:resolved-analysis {:resolution-table [{:syntax-id :throw :binding-id :core-throw}]}}}}]
+    (is (= :single-source-throw-only
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-shadowing-check! source {})) [:facts :reason])))
+    (is (nil? (bootstrap/p15-s23-stage2-module-shadowing-check! (assoc-in source [:request :references] []) {})))))
+
 (deftest seed-function-declaration-headers-development-kernel
   (let [table #(bootstrap/stage0-function-table {:source-path "seed-header.gravity" :forms [%]})]
     (is (true? (:private (meta (module-private 'normalize-seed-function-header)))))

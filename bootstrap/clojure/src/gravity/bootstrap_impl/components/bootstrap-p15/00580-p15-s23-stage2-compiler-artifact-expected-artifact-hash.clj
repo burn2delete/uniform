@@ -90,6 +90,15 @@
                                         p15-s23-stage2-compiler-artifact-builtins))))))
 
 (declare p15-s23-stage2-module-bundle p15-s23-stage2-module-literals)
+(defn- p15-s23-stage2-seed-throw-plan-boundary [plan]
+  (if (pos? (get-in plan [:instruction-summary :throw] 0))
+    (-> plan
+        (assoc-in [:compiler :owner] :clojure-stage0-seed)
+        (assoc-in [:compiler :lowering-boundary] :temporary-single-source-seed-throw)
+        (assoc-in [:effect-summary :inferred] :pending-seed-effect-inference)
+        (assoc-in [:effect-summary :source-operation-occurrences] {:throw (get-in plan [:instruction-summary :throw])})
+        (assoc-in [:effect-summary :legality] :not-checked))
+    plan))
 (defn p15-s23-stage2-compiler-artifact-plan-raw
   [emitter artifact-source artifact-text module-routes]
   (let [records (read-source-form-records artifact-source artifact-text)
@@ -143,7 +152,8 @@
          :instruction-summary instruction-summary
          :effect-summary {:declared (:effects module)
                           :inferred #{}
-                          :capabilities (:capabilities module)}}]
+                          :capabilities (:capabilities module)}}
+        plan-base (p15-s23-stage2-seed-throw-plan-boundary plan-base)]
     (assoc plan-base
            :plan-id (str "sha256:"
                          (sha256-hex

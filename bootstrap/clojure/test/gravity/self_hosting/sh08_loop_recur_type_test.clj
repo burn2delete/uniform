@@ -651,6 +651,43 @@
     (is (= (slurp (path (fixture disposition basename ".gravity")))
            (slurp (path (fixture disposition basename ".qst")))))))
 
+(deftest direct-typed-throw-annotated-seed-execution
+  ;; Reuse completed paired C5-C8 typing/body-effect/source-allowance evidence for these exact
+  ;; bytes. This observes the temporary single-source Clojure seed, not a JVM ABI.
+  (let [transport (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw!)
+        token (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw-token))
+        original (var-get transport)
+        expected "755e5b876b8fde5f1be48b0dce2cea96c17da24d967b4d9e641c720a46617f23"
+        gravity (slurp (path (fixture "accepted" "direct-typed-throw" ".gravity")))]
+    (doseq [extension [".gravity" ".qst"]]
+      (let [source (path (fixture "accepted" "direct-typed-throw" extension)) text (slurp source)
+            emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
+            compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source text)
+            payload (String. "problem") seen (atom [])
+            [normal failure]
+            (with-redefs-fn {transport (fn [active-plan value] (swap! seen conj value) (original active-plan value))}
+              #(let [normal (bootstrap/p15-s23-stage2-runtime-execute-function
+                              {:engine :direct-typed-throw-annotated-seed-observation} compiled 'choose [false payload])
+                     failure (try (bootstrap/p15-s23-stage2-runtime-execute-function
+                                    {:engine :direct-typed-throw-annotated-seed-observation} compiled 'choose [true payload])
+                                  nil (catch clojure.lang.ExceptionInfo error error))]
+                 [normal failure]))]
+        (is (= gravity text))
+        (is (= expected (bootstrap/sha256-hex text)))
+        (is (= (str "sha256:" expected) (get-in compiled [:source :sha256])))
+        (is (= {:parameters '[flag :- Bool problem :- String] :return '[typed/return (quote String)]}
+               (get-in compiled [:functions 'choose :source-declarations])))
+        (is (= '[flag problem] (get-in compiled [:functions 'choose :params])))
+        (is (identical? payload normal))
+        (is (instance? clojure.lang.ExceptionInfo failure))
+        (is (identical? token (:gravity.bootstrap/source-throw (ex-data failure))))
+        (is (identical? payload (:payload (ex-data failure))))
+        (is (= [payload] @seen))
+        (is (= (:source compiled) (:source (ex-data failure))))
+        (is (= :clojure-stage0-seed (get-in compiled [:compiler :owner])))
+        (is (= :temporary-single-source-seed-throw (get-in compiled [:compiler :lowering-boundary])))
+        (is (= :pending-seed-effect-inference (get-in compiled [:effect-summary :inferred])))))))
+
 (deftest function-recur-annotated-seed-execution
   ;; Legality is covered by function-recur-authenticated-paired-composition
   ;; over these exact files. This selector executes their unchanged bytes.

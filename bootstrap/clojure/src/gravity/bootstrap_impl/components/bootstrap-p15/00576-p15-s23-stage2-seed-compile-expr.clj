@@ -21,11 +21,8 @@
                          (assoc module :p15-s23-sh07-callsite-path
                                 (conj parent-path index)))
           special-rule (get-in emitter [:special-form-rules callee])
-          builtin-functions (set (get-in emitter
-                                         [:call-rules :builtin-functions]))
-          internal-arities
-          (get-in emitter [:call-rules
-                           :compiler-internal-builtin-arities])]
+          builtin-functions (set (get-in emitter [:call-rules :builtin-functions]))
+          internal-arities (get-in emitter [:call-rules :compiler-internal-builtin-arities])]
       (cond
         (= callee 'println)
         {:op (:op special-rule)
@@ -71,6 +68,10 @@
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
                      (range 1 (count form)) (rest form))}
+
+        (= callee 'throw)
+        (do (p15-s23-stage2-seed-throw-arity! module form)
+            {:op :throw :value (p15-s23-stage2-seed-compile-expr emitter (child-module 1) locals (second form))})
 
         (= callee 'quote)
         {:op (:op special-rule) :value (second form)}

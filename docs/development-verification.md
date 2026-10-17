@@ -288,8 +288,48 @@ that never returns preserves the outer source record without inventing a
 local caller or callee owns these new throw facts remain unsupported until
 their propagation is implemented. Imported concrete throws remain fenced by
 C8's existing foreign-summary check, not a new C7 import guarantee. `try`,
-handlers, cleanup, host-exception normalization, runtime execution, general
+handlers, cleanup, host-exception normalization, general runtime execution,
 error legality and authoritative migration remain separate work.
+
+### Single-source seed throw execution
+
+The temporary seed lowers one-operand `throw` in the existing three-argument
+compiler-artifact plan interface. It evaluates the operand once and transfers
+out without a normal value. The private seed transport retains the original
+payload as DATA, actual plan source hash and module; it does not throw the
+payload object itself or classify arbitrary host errors as source throws.
+Nested throws escape before an outer transfer can occur. Ordinary control-key
+maps remain DATA, and the existing host-error and recur boundaries remain in
+force. Malformed source arity and missing operand instructions reject before
+operand work.
+
+The owning seed files are `bootstrap-p15/00575`, `00576`, `00590` and `00592`,
+with operand summary traversal in `foundation/00555`. The existing `00580` raw
+plan builder marks throw-containing plans as Clojure-seed lowering with pending
+effect inference and unchecked legality; source declarations and plan identity
+remain present. Unchanged no-throw plans retain their previous shape. The
+existing module-source and module-bundle checks reject executable throw in the
+four-argument module route, while preserving quoted throw DATA.
+
+Run the focused transfer checks without constructing upstream proof products:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact seed-throw-lowering-and-arity-development-kernel \
+  --exact seed-throw-transport-and-nesting-development-kernel \
+  --exact seed-throw-evaluation-order-development-kernel \
+  --exact seed-throw-host-error-and-module-fences-development-kernel
+```
+
+Use `direct-typed-throw-annotated-seed-execution` in the existing
+`gravity.self-hosting.sh08-loop-recur-type-test` namespace to execute both
+unchanged typed-throw fixtures. It reuses the accepted compiler composition for
+those exact bytes, then observes both the ordinary branch and a real escaping
+throw. It does not rerun the unchanged compiler proof. This is explicit seed
+execution, not Gravity-authored emitter/runtime ownership, imported-error
+execution, a public JVM exception ABI, deterministic resource cleanup, complete
+profile legality or authoritative migration.
 
 ### Imported-call type development
 

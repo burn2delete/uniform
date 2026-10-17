@@ -117,6 +117,14 @@
      (p15-s23-stage2-runtime-execute-values-scoped
       runtime plan env (:args instruction) :recur-inside-recur-argument
       public-invocation-scope))
+    :throw
+    (do
+      (when-not (and (= #{:op :value} (set (keys instruction))) (map? (:value instruction)))
+        (fail! "L2-THROW-ILLEGAL" "seed throw instruction requires one operand instruction"
+               {:source-span {:source (get-in plan [:source :path])} :reason :malformed-throw-instruction}))
+      (p15-s23-stage2-runtime-source-throw! plan
+        (p15-s23-stage2-runtime-execute-value-scoped
+         runtime plan env (:value instruction) :recur-inside-throw-operand public-invocation-scope)))
     :builtin-call
     (let [function (:function instruction)
           argument-instructions (:args instruction)

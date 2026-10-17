@@ -61,6 +61,7 @@
   (case (:op instruction)
     (:println :builtin-call :function-call :compiler-module-call :recur) (:args instruction)
     :do (:body instruction)
+    :throw [(:value instruction)]
     :if [(:test instruction) (:then instruction) (:else instruction)]
     (:let :loop) (concat (map :expr (:bindings instruction)) (:body instruction))
     (:vector-literal :set-literal) (:items instruction)
@@ -77,6 +78,7 @@
                                                   :source-authority :special-role :p15-s23-sh07-source-authority])
                   (= 'sh07-b51-admitted-executable-carrier-validation? (:function instruction)))
           (p15-s23-stage2-module-fail! :admission-instruction-forbidden {}))
+        (when (= :throw (:op instruction)) (p15-s23-stage2-module-fail! :single-source-throw-only {}))
         (recur (into (pop pending) (p15-s23-stage2-module-instruction-children instruction)) (conj result instruction))))))
 
 (defn p15-s23-stage2-module-entry [source plan]

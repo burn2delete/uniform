@@ -1644,12 +1644,46 @@ real rejection families. It completed within the unchanged 2 GiB/30-minute
 development bound. No public C8 compiler bundle was reconstructed. This is
 accepted development composition evidence, not refreshed migration authority.
 
-Runtime throw execution, handlers and cleanup, throwing-call propagation,
-general error/profile/provider legality, authoritative migration, target
-completion, self-hosting and seed retirement remain separate gates. Source
+At this compiler-slice boundary, runtime throw execution remained open; the
+following seed increment closes the exact fixture's explicit seed observation.
+Handlers and cleanup, throwing-call propagation, general error/profile/provider
+legality, authoritative migration, target completion, self-hosting and seed
+retirement remain separate gates. Source
 allowance checks do not establish the complete authority intersection. The
 legacy normalized `:error/raise` registry is not silently treated as the source
 `:error/throw` registration.
+
+### Exact-source single-source seed throw
+
+The existing raw three-argument plan constructor now lowers one-operand throw
+through the temporary Clojure seed. Arity rejects before operand compilation;
+execution evaluates one operand and escapes through a private intentional
+transport. The payload remains DATA, including control-looking maps and host
+Throwable objects supplied to the raw executor. They are not themselves thrown
+or interpreted as control. A nested throw preserves the original inner
+exception, with no second outer transfer. Existing host diagnostics and fatal
+failures keep their prior propagation; ordinary builtin failures keep their
+existing diagnostic mapping. This does not complete host-error normalization.
+
+Summary traversal includes the operand. Throw-containing plans explicitly name
+seed ownership and pending effect inference/unchecked legality, rather than
+claiming Gravity-emitter execution or purity. Original source hashes,
+declarations and full plan identity are retained; no-throw plans preserve exact
+parity. The existing module-source and instruction-census boundaries reject
+executable throw for the four-argument module route, while quoted DATA remains
+inert. No new public API, namespace, test lane or authority path was added.
+
+Focused seed checks pass 12 tests/202 assertions, including arity, malformed
+instruction, ordering, early escape, nested transfer identity, function/loop
+control, host errors, module fences and ordinary plan regressions. A separate
+one-test/28-assertion observation executes both unchanged typed-throw fixture
+extensions. The ordinary branch returns the identical original String payload;
+the throwing branch escapes once with that payload and actual source hash.
+Annotations and logical parameters are preserved. The accepted 62-assertion
+compiler composition is reused only for those unchanged bytes, not replayed to
+renew a receipt. These results do not establish Gravity-authored emitter/runtime
+ownership, imported errors, handlers, resource cleanup, a public target exception
+ABI, full profile legality, migration authority, self-hosting or seed retirement.
 
 ## Current Baseline
 
