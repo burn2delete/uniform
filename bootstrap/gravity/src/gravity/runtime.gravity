@@ -231,6 +231,13 @@
         shape?
         (if (map? instruction)
           (if (contains? #{:literal :quote} operation) true
+          (if (= operation :vector-literal)
+            (if (= fields #{:op :items})
+              (if (vector? (get instruction :items))
+                (if (<= (count (get instruction :items)) 65536)
+                  (loop [remaining (get instruction :items)]
+                    (if (= 0 (count remaining)) true
+                      (if (map? (first remaining)) (recur (rest remaining)) false))) false) false) false)
           (if (= operation :try) (p15-s23-runtime-typed-handlers-valid? instruction)
           (if (= operation :function-call)
             (if (= fields #{:op :function :args}) (p15-s23-runtime-call-target-valid? instruction functions path) false)
@@ -268,9 +275,11 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false)))))))))))) false)]
+            false))))))))))))) false)]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :vector-literal)
+      (p15-s23-runtime-evaluate-arguments-in-context (get instruction :items) environment output [] functions path [])
     (if (= operation :loop) (p15-s23-runtime-evaluate-loop instruction environment output functions path targets)
     (if (= operation :recur)
       (let [arguments (p15-s23-runtime-evaluate-arguments-in-context (get instruction :args) environment output [] functions path [])]
@@ -351,7 +360,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected]))))))))))))))))
+                     output :rejected])))))))))))))))))
 
 ; Development entrypoint for a closed instruction plan. The result records
 ; normal completion, a thrown value, or rejection with accumulated output.

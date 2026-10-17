@@ -897,6 +897,79 @@ execution, full effect/profile legality, target support, authoritative migration
 self-hosting and seed retirement remain outstanding. The direct focused and
 affected commands are in `docs/development-verification.md`.
 
+### Canonical evaluated vectors: development implementation
+
+The existing Gravity emitter lowers C6 vector-constructor children with C7's
+known positional types into `:vector-literal` instructions. The actual
+`gravity.runtime` evaluator now supports those instructions by reusing its
+ordered argument traversal. Empty, mixed and nested vectors, typed Bool/String
+parameters, quoted DATA elements, let forwarding and direct same-module returns
+are supported within the compiler-internal `:meta/:jvm` development route.
+Source collection values are not substituted for evaluated children.
+
+Items evaluate once from left to right with operand recur targets cleared.
+The first throw or rejection preserves its original payload and accumulated
+output and prevents later item execution. Quoted control-looking records are
+ordinary DATA, not transfers. The new descriptor is closed, bounded to 65,536
+immediate instruction maps, and checked shallowly before item execution. Fatal
+host failures remain fatal. Lowering reserves its join work before traversal
+and cumulatively charges child compilation within the unchanged cap; these are
+logical work units, not a total VM or heap guarantee.
+
+The final focused batch passed six tests/212 assertions: vector lowering and
+runtime behavior, independent existing C8 equations, recursive quote regression,
+runtime catalog/unchanged-body conservation and public orchestration. The first
+six-test/210-assertion pass preceded a diagnostic correction: valid but
+unsupported maps/sets now retain `:unsupported-typed-lowering-operation` rather
+than being mislabeled malformed vectors. Two new controls check that boundary.
+Unknown/incoherent type, Never, source/count/order and descriptor cases reject;
+runtime controls cover transfers in each position, skipped output and fatal
+failure identity.
+
+Only the existing evaluator body changed in the runtime leaf; its 22 functions,
+arities and four exports remain. Current conservation checks preserve all 23
+catalog DATA values and the unchanged 21 leaf/29 reconstructed original
+function bodies, explicitly excluding that intentionally changed owner. The
+earlier complete C/D body-conservation result remains historical evidence for
+its own revision, not a refreshed whole-runtime claim.
+
+The paired `local-runtime-evaluated-vector` fixture contains nine functions and
+twelve vector nodes. Its affected composition reuses each original input for
+public compile/whole assembly, runtime checks and independent actual C8 body
+analysis. A new String-versus-vector result fixture exercises the owning C7
+diagnostic. Existing public typed inputs, fresh C7 verification and source
+provenance remain unchanged; no old quote/module proof matrix is refreshed.
+
+The first affected run failed overall: 71 assertions passed, 54 failed and
+none errored. The new C8 test consumer passed the outer typed artifact instead
+of its required `:identity-input` facts, then asserted against a missing graph.
+The failed result remains failed. Independent count/dataflow reconciliation
+attributes all 54 failures to those 27 C8 checks per extension, leaving the 71
+non-C8 source/lowering/runtime/provenance/tamper/rejection assertions completed
+and passed. The first raw output chunk was truncated; this attribution uses
+the exact failed test, deterministic missing-graph checks and terminal counts,
+not a claim that all stdout was retained. Production code was unchanged by the
+subsequent test-only correction. A focused two-test/13-assertion check pins the
+correct facts object and prevents missing-graph cascades. The corrected C8-only
+source check then passed one test/31 assertions on `.gravity` alone, including
+full body coverage, constructor/operand effects, order rejection and missing
+declaration rejection. It took 126.439 seconds plus 7.397 seconds of loading at
+2 GiB; the failed aggregate took 328.618 seconds plus 7.528 seconds of loading.
+These are different workloads, not a speedup comparison. Compiler and fixture
+bytes were unchanged across both runs; only the C8 test calls and guard changed.
+The completed lowering/runtime/public verification work was not repeated. The
+corrected combined selector was not rerun or relabeled passed; selective
+validation and its limits remain explicit.
+
+P3 permits compiler-owned internal allocation; an empty direct constructor
+effect set does not imply zero physical allocation or grant runtime authority.
+Operand effects, ordered body coverage and declaration rejection are retained.
+Full C8/profile/provider legality is still explicitly pending and is required
+before MIR/admission claims. Evaluated maps/sets, general collection operations,
+hosted/constrained representations, target support, authoritative migration,
+self-hosting and seed retirement remain outstanding. Commands and boundaries
+are in `docs/development-verification.md`.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
@@ -1197,15 +1270,16 @@ No C5/C7 products, old native proof or authoritative runtime binding were rebuil
 The historical pinned adapter's source-byte and 22-definition fences remain
 unchanged and stale for current source. Catalog representation compatibility
 does not renew provider/grant claims, admit a runtime revision, prove whole
-runtime conformance or retire the Clojure seed. The next ownership step is the
-actual call-closed evaluator module in `gravity.runtime`, with thin compatibility
-entrypoints and real module composition.
+runtime conformance or retire the Clojure seed. The subsequent stage-owned
+runtime increment below completes the call-closed `gravity.runtime` extraction
+with thin compatibility entrypoints and real module composition.
 
 ### Stage-owned runtime evaluator: development implementation
 
 The complete 22-function evaluator/activation closure now lives in
 `bootstrap/gravity/src/gravity/runtime.gravity`, namespace `gravity.runtime`.
-Its function forms and arities are preserved. It exports only closed-plan
+At that extraction checkpoint, all function forms and arities were preserved.
+It exports only closed-plan
 execution, closed-instruction evaluation, context evaluation and function
 activation; the other 18 helpers remain private. The old runtime module keeps
 23 unchanged catalog values, formatting/main and B51 helpers, plus four direct

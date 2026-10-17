@@ -2152,6 +2152,47 @@
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node)))))
       (p15-s23-typed-node-error :malformed-typed-call-family node)))))
 
+(defn p15-s23-typed-compile-vector [context node budget]
+  (let [children (get node :children) attrs (get node :attributes) forms (get context :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        type (get (get context :types) (get node :node-id)) never? (= :gravity.type/never type)
+        elements (get type :element-types)]
+    (if (= false (p15-s23-typed-all [(vector? children) (vector? ids) (= :vector (get owner :kind))
+              (= :vector (get attrs :literal-kind)) (= [] (get node :resolved-binding-ids))]))
+      (p15-s23-typed-node-error :malformed-typed-vector node)
+      (let [n (count children) charge (+ 12 (* 10 n))]
+        (if (< budget charge) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+          (if (p15-s23-typed-all [(= n (count ids) (get attrs :element-count))
+                (= (get owner :form-id) (get (get node :source) :form-id))
+                (= (get owner :syntax-id) (get (get node :source) :syntax-id))
+                (p15-s23-typed-ordered-node? node :left-to-right)
+                (if never? true (if (map? type)
+                  (p15-s23-typed-all [(= :gravity.type/vector (get type :kind)) (= :literal (get type :shape))
+                    (vector? elements) (= n (count elements))]) false))])
+            (let [checked
+                  (loop [index 0 transfer? false]
+                    (if (= index n) {:valid? (= never? transfer?)}
+                      (let [id (get children index) child (get (get context :nodes) id)
+                            form (get forms (get ids index)) child-type (get (get context :types) id)
+                            expected (get elements index)]
+                        (if (p15-s23-typed-all [(map? child) (map? form)
+                              (= (get owner :form-id) (get form :parent-form-id))
+                              (= (get ids index) (get (get child :source) :form-id))
+                              (= (get form :syntax-id) (get (get child :source) :syntax-id))
+                              (= false (= nil child-type)) (= false (= :gravity.type/unknown child-type))
+                              (if never? true
+                                (= (if (map? expected) (get expected :kind) expected)
+                                   (if (map? child-type) (get child-type :kind) child-type)))])
+                          (recur (+ index 1) (if (= :gravity.type/never child-type) true transfer?))
+                          {:valid? false}))))]
+              (if (= true (get checked :valid?))
+                (let [compiled (p15-s23-typed-compile-children-mode context children (- budget charge) [] :none 0)]
+                  (if (p15-s23-compiler-complete? compiled)
+                    (assoc (p15-s23-compiler-result {:op :vector-literal :items (get compiled :value)})
+                      :work-count (+ charge (get compiled :work-count))) compiled))
+                (p15-s23-typed-node-error :typed-vector-source-or-type-mismatch node)))
+            (p15-s23-typed-node-error :typed-vector-source-or-type-mismatch node)))))))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
@@ -2163,6 +2204,9 @@
         (if (= form :let) (p15-s23-typed-compile-let context node budget)
         (if (= form :try) (p15-s23-typed-compile-try context node budget)
         (if (= form :quote) (p15-s23-typed-quote context node budget)
+        (if (= form :collection-literal)
+          (if (= :vector (get (get node :attributes) :literal-kind)) (p15-s23-typed-compile-vector context node budget)
+            (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))
         (if (= form :literal)
           (if (if (= :decimal (get (get node :attributes) :literal-kind)) true (map? (get source :value)))
             (p15-s23-typed-node-error :unelaborated-typed-numeric-literal node)
@@ -2185,7 +2229,7 @@
                         (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
                           {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
                 (p15-s23-typed-node-error :typed-control-shape-mismatch node))
-              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))))))))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node)))))))))))
         (p15-s23-typed-node-error :missing-typed-core-node node)))))
 
 (defn p15-s23-typed-provenance [context]

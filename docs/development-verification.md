@@ -30,6 +30,19 @@ Tests are in `bootstrap/clojure/test/gravity/self_hosting/sh07_*_test.clj`;
 paired `.gravity`/`.qst` fixtures are under
 `bootstrap/clojure/fixtures/self-hosting/`.
 
+Follow the owning boundary when the next change is downstream of SH-07:
+
+| Behavior being changed | Implementation owner | Focused workflow below |
+| --- | --- | --- |
+| Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` | Default SH-07 commands here. |
+| Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Loop/recur and the matching type-development section. |
+| Typed Core to executable development IR | `bootstrap/gravity/p15_s23/emitter.gravity` | Explicit typed input, then the matching lowering section. |
+| Development IR evaluation and control | `bootstrap/gravity/src/gravity/runtime.gravity` | Runtime namespace boundary, then the matching execution section. |
+
+Change the owning Gravity implementation, not only a compatibility adapter or
+fixture expectation. Select the relevant exact tests; this table is not a
+requirement to run every upstream/downstream namespace for each edit.
+
 Check `git status --short`, preserve unrelated work, then use existing commands:
 
 ```bash
@@ -552,8 +565,9 @@ Keyword, Symbol, list, vector, map and set, including empty and nested mixed
 containers. Qualified symbols and symbol map keys remain inert; quoted
 `(throw unresolved/data)` and `(quote nested)` are lists, not executed forms.
 Immutable let forwarding and direct same-module returns preserve the value.
-Numeric elaboration, unquote, evaluated collection constructors, general match
+Numeric elaboration, unquote, evaluated map/set constructors, general match
 execution, complete effect/profile legality and migration remain separate.
+Evaluated vectors have their own development boundary below.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -583,6 +597,57 @@ through the actual runtime leaf. Deep payload, type and source forgeries are
 rejected by fresh public C7 verification. Existing owning C5/C6/C7 malformed
 quote, unresolved-name, annotation and numeric-representation rejection
 evidence is not rebuilt merely because this lowerer changed.
+
+### Canonical evaluated vectors
+
+Edit the same Gravity emitter and `bootstrap/gravity/src/gravity/runtime.gravity`.
+C6 already supplies ordered constructor children and source coordinates; C7
+supplies positional element types and Never propagation. Lowering compiles
+those verified children into existing `:vector-literal` IR. It does not return
+the source form's `:source-value` as an evaluated result. Empty and nested
+vectors, mixed represented values, typed parameters, quoted DATA elements,
+immutable let forwarding and direct local calls use this path.
+
+The runtime checks the closed `{:op :vector-literal :items [...]}` descriptor,
+including a vector of at most 65,536 immediate instruction maps, before item
+execution. This is shallow descriptor validation, not a whole nested-IR proof.
+Items run once from left to right with operand recur targets cleared. Normal
+values accumulate into a vector; the first thrown or rejected result keeps its
+payload/output and skips later items. Control-looking quoted DATA remains a
+normal element. Fatal host failures remain fatal, not guest throw values.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-evaluated-vector-lowering-development-kernel \
+  --exact current-gravity-evaluated-vector-runtime-development-kernel \
+  --exact current-gravity-evaluated-vector-c8-development-kernel
+# Affected source/type/lowering/runtime composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-evaluated-vector-authenticated-composition
+```
+
+The lowerer reserves `12 + 10 * element-count` logical join units before its
+per-element checks, then passes the remaining budget through child lowering.
+The existing cumulative cap is unchanged. This is not a bound on every VM
+operation, total heap use or program execution. Missing/unknown types and
+incoherent Never, source, order or count facts reject with `P15S23Q002`.
+Malformed runtime descriptors reject with `P15S23X002`. Evaluated map/set
+constructors retain `:unsupported-typed-lowering-operation`; unsupported
+language forms are not described as malformed vectors.
+
+This selects compiler-internal `:meta/:jvm` value construction. P3 permits
+internal compiler allocation, and L10 makes its visibility regime-dependent;
+neither empty declarations nor C7 acceptance grants arbitrary allocator or
+runtime authority. Independent current C8 body checks retain element effects,
+ordered coverage and declaration rejection. The existing internal
+`body-analyze-module` consumes the original request and `typed.identity-input`
+facts, not the outer typed artifact. These checks do not replace the missing
+full C8-to-lowering/MIR legality boundary. The existing public typed input,
+fresh C7 verification, source provenance and explicit pending effect/profile
+legality status are unchanged. No MIR, deployable-program, hosted allocator,
+target, authoritative migration or self-hosting acceptance follows.
 
 ### Canonical direct same-module calls
 
@@ -1309,7 +1374,11 @@ entire actual `gravity.runtime` leaf once, not the older selected-function
 projection. The separate two-file composition validates the compatibility
 module's actual bundle and routes. Explicit catalog quotes preserve symbolic
 DATA without evaluating labels as variable references. Conservation checks are
-development regression oracles, not refreshed authority pins. The
+development regression oracles, not refreshed authority pins. After evaluated
+vector support intentionally changes one evaluator body, the current check
+compares the unchanged 21 leaf/29 reconstructed original function bodies and
+all catalog DATA; functional vector checks cover the changed owner. The earlier
+whole-body conservation result stays attributed to its original revision. The
 historical pinned runtime adapter remains separately stale and fail-closed;
 repairing its byte counts, definition set or contract hashes is not a prerequisite
 for this current-source check.

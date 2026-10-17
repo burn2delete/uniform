@@ -466,6 +466,246 @@
     ;; This affected composition freshly exercises E's public verification boundary.
     (is (= 8 (count @verified)))))
 
+(defn- typed-vector-kernel-context [base]
+  (let [source (fn [id] {:form-id id :syntax-id id})
+        children [:vector-left :vector-right]
+        forms {:vector-form {:form-id :vector-form :syntax-id :vector-form :kind :vector
+                             :child-form-ids [:vector-left-form :vector-right-form] :value [:not-evaluated]}
+               :vector-left-form {:form-id :vector-left-form :syntax-id :vector-left-form :parent-form-id :vector-form :kind :boolean :value true}
+               :vector-right-form {:form-id :vector-right-form :syntax-id :vector-right-form :parent-form-id :vector-form :kind :string :value "right"}}
+        nodes {:vector {:node-id :vector :core-form :collection-literal :children children :resolved-binding-ids []
+                        :source (source :vector-form) :attributes {:literal-kind :vector :element-count 2 :source-value [:not-evaluated]}
+                        :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :vector-left} {:index 1 :core-node-id :vector-right}]}}
+               :vector-left {:node-id :vector-left :core-form :literal :children [] :source (source :vector-left-form)
+                             :attributes {:literal-kind :boolean :value true}}
+               :vector-right {:node-id :vector-right :core-form :literal :children [] :source (source :vector-right-form)
+                              :attributes {:literal-kind :string :value "right"}}}]
+    (-> base (update :forms merge forms) (update :nodes merge nodes)
+        (update :types merge {:vector {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/bool :gravity.type/string]}
+                              :vector-left :gravity.type/bool :vector-right :gravity.type/string})
+        (assoc :tail? true))))
+
+(deftest current-gravity-evaluated-vector-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))
+        context (typed-vector-kernel-context base)
+        expected {:op :vector-literal :items [{:op :literal :value true} {:op :literal :value "right"}]}
+        compile #(invoke 'p15-s23-typed-compile-node %1 :vector %2)]
+    (is (= expected (:value (compile context 34))))
+    (is (= 34 (:work-count (compile context 34))))
+    (is (= :typed-lowering-work-limit (get-in (compile context 33) [:facts :reason])))
+    (doseq [kind [:map :set]]
+      (let [unsupported (-> context (assoc-in [:nodes :vector :attributes :literal-kind] kind)
+                            (assoc-in [:forms :vector-form :kind] kind)
+                            (assoc-in [:types :vector :kind] (if (= kind :map) :gravity.type/map :gravity.type/set)))]
+        (is (= :unsupported-typed-lowering-operation (get-in (compile unsupported 128) [:facts :reason])))))
+    (doseq [mutate [#(assoc-in % [:nodes :vector :attributes :literal-kind] :map)
+                    #(assoc-in % [:nodes :vector :attributes :element-count] 1)
+                    #(assoc-in % [:nodes :vector :children] [:vector-right :vector-left])
+                    #(assoc-in % [:nodes :vector :resolved-binding-ids] [:binding])
+                    #(assoc-in % [:nodes :vector :evaluation :order 0 :core-node-id] :vector-right)
+                    #(assoc-in % [:forms :vector-form :child-form-ids] [:vector-right-form :vector-left-form])
+                    #(assoc-in % [:forms :vector-left-form :parent-form-id] :other)
+                    #(assoc-in % [:forms :vector-left-form :syntax-id] :other)
+                    #(assoc-in % [:types :vector :element-types] [:gravity.type/string :gravity.type/bool])
+                    #(assoc-in % [:types :vector :element-types] [:gravity.type/bool])
+                    #(assoc-in % [:types :vector-left] :gravity.type/unknown)
+                    #(assoc-in % [:types :vector] :gravity.type/never)
+                    #(assoc-in % [:types :vector] :gravity.type/string)]]
+      (is (= :rejected (:status (compile (mutate context) 128)))))
+    (let [empty (-> context (assoc-in [:nodes :vector :children] [])
+                    (assoc-in [:nodes :vector :attributes :element-count] 0)
+                    (assoc-in [:nodes :vector :evaluation :order] [])
+                    (assoc-in [:forms :vector-form :child-form-ids] [])
+                    (assoc-in [:types :vector :element-types] []))]
+      (is (= {:op :vector-literal :items []} (:value (compile empty 12))))
+      (is (= 12 (:work-count (compile empty 12)))))
+    (let [never (-> context (assoc-in [:types :vector] :gravity.type/never)
+                    (assoc-in [:types :vector-left] :gravity.type/never)
+                    (assoc-in [:nodes :vector-left :core-form] :throw)
+                    (assoc-in [:nodes :vector-left :children] [:vector-right]))
+          result (compile never 35)]
+      (is (= :complete (:status result))) (is (= 35 (:work-count result)))
+      (is (= :throw (get-in result [:value :items 0 :op])))
+      (is (= :rejected (:status (compile (assoc-in never [:types :vector-right] :gravity.type/unknown) 128)))))
+    (let [forms (bootstrap/read-forms path (slurp path))
+          helper (first (filter #(= 'p15-s23-typed-compile-vector (second %)) forms))]
+      (is (some #{'(p15-s23-typed-compile-children-mode context children (- budget charge) [] :none 0)} (tree-seq coll? seq helper)))
+      (is (not-any? #{'(get attrs :source-value) '(get owner :value)} (tree-seq coll? seq helper))))))
+
+(deftest current-gravity-evaluated-vector-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        lit (fn [value] {:op :literal :value value}) vector-ir (fn [items] {:op :vector-literal :items items})
+        say (fn [label value] {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} value]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        payload (String. "vector payload") data '{:op :throw :kind :gravity/recur :values [false]}]
+    (is (= [[] "" :normal] (evaluate (vector-ir []))))
+    (is (= [[payload false data] "left\nright\n" :normal]
+           (evaluate (vector-ir [(say "left" (lit payload)) (say "right" (lit false)) {:op :quote :value data}]))))
+    (is (= [[[1] []] "nested\n" :normal]
+           (evaluate (vector-ir [(vector-ir [(say "nested" (lit 1))]) (vector-ir [])]))))
+    (doseq [position (range 3)]
+      (let [items (mapv #(if (= position %) {:op :throw :value (lit payload)} (say (str %) (lit %))) (range 3))
+            result (evaluate (vector-ir items))]
+        (is (= [payload (apply str (map #(str % "\n") (range position))) :thrown] result))
+        (is (identical? payload (first result)))))
+    (let [result (evaluate (vector-ir [(say "before" (lit 1)) {:op :unknown} (say "later" (lit 2))]))]
+      (is (= ["before\n" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    (doseq [bad [{:op :vector-literal} {:op :vector-literal :items nil} {:op :vector-literal :items '()}
+                 {:op :vector-literal :items [42]} {:op :vector-literal :items [(say "never" (lit 1))] :extra true}
+                 {:op :vector-literal :items (vec (repeat 65537 (lit 1)))}]]
+      (is (= ["" :rejected] (subvec (evaluate bad) 1))))
+    (let [result (evaluate {:op :loop :target "outer" :bindings []
+                           :body [(vector-ir [{:op :recur :target "outer" :args []} (say "later" (lit 2))])]})]
+      (is (= ["" :rejected] (subvec result 1))))
+    (let [failure (AssertionError. "fatal vector item") value (proxy [Object] [] (toString [] (throw failure)))
+          observed (seed-throw-test-capture #(evaluate (vector-ir [{:op :builtin-call :function 'str :args [(lit value)]}
+                                                                  (say "later" (lit 1))])))]
+      (is (identical? failure observed)))))
+
+(deftest current-gravity-evaluated-vector-c8-development-kernel
+  ;; Independent existing C8 body algorithms over normalized DATA, not a legality grant.
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        id #(str "sha256:" (bootstrap/sha256-hex (str %)))
+        node (fn [n kind children] {:node-id (id n) :core-form kind :children (mapv id children)
+                                   :source {:syntax-id (id n)}
+                                   :evaluation {:kind :left-to-right :order (mapv (fn [i child] {:index i :core-node-id (id child)}) (range) children)}})
+        literal (node 1 :literal []) thrown (node 2 :throw [1]) vector-node (node 3 :collection-literal [2])
+        core {:nodes [literal thrown vector-node] :function-records [] :call-edges []}
+        facts {:module {:effects [:error/throw]} :function-type-table []
+               :type-table {(id 1) :gravity.type/string (id 2) :gravity.type/never (id 3) :gravity.type/never}}
+        analyzed (c8 'body-derive-nodes core facts) graph {:nodes (:nodes analyzed) :functions {}}
+        record (get-in graph [:nodes (id 3)])]
+    (is (= :accepted (:status analyzed)))
+    (is (= #{} (:direct record)))
+    (is (= #{:error/throw} (:transitive record)))
+    (is (= [(id 2)] (:evaluated-children record)))
+    (is (true? (c8 'body-order-valid? vector-node)))
+    (is (false? (c8 'body-order-valid? (assoc-in vector-node [:evaluation :order] []))))
+    (is (= :accepted (:status (c8 'body-allowance-check core facts graph 65536))))
+    (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph 65536))))))
+
+(defn- evaluated-vector-c8-checks [input]
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request (:request input) facts (get-in input [:typed :identity-input])
+        core (:canonical-core-artifact request)
+        vectors (filterv #(= :collection-literal (:core-form %)) (:nodes core))
+        analyzed (c8 'body-analyze-module request facts {} 65536)]
+    (is (= :accepted (:status analyzed)) (pr-str (select-keys analyzed [:reason :diagnostics])))
+    (when (= :accepted (:status analyzed))
+      (let [graph (:graph analyzed) nonempty (first (filter #(seq (:children %)) vectors))]
+        (is (= 12 (count vectors)))
+        (doseq [node vectors]
+          (is (= #{} (get-in graph [:nodes (:node-id node) :direct])))
+          (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
+        (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) vectors))
+        (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph 65536))))))))
+
+(deftest evaluated-vector-c8-consumer-development-kernel
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
+        input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
+        calls (atom []) reports (atom [])]
+    (with-redefs-fn {leaf (fn [function & args]
+                           (swap! calls conj [function (vec args)])
+                           {:status :rejected :reason :normalized-failure})
+                    #'clojure.test/report (fn [event] (swap! reports conj event))}
+      #(evaluated-vector-c8-checks input))
+    (is (= 1 (count @calls)))
+    (is (= 'body-analyze-module (ffirst @calls)))
+    (is (identical? request (get-in @calls [0 1 0])))
+    (is (identical? facts (get-in @calls [0 1 1])))
+    (is (= [:fail] (mapv :type @reports)))))
+
+(deftest current-gravity-evaluated-vector-c8-authenticated-composition
+  ;; Affected successor to the failed C8 consumer in v1. Do not replay the
+  ;; separate lowering/runtime/public-tamper work completed by that run.
+  (let [fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-evaluated-vector.gravity")
+        input (select-keys products [:request :typed :verification])]
+    (is (= :accepted (get-in input [:typed :status])))
+    (is (= :passed (get-in input [:verification :status])))
+    (evaluated-vector-c8-checks input)))
+
+(deftest current-gravity-evaluated-vector-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "vector source payload")
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-evaluated-vector" extension)
+                 path (.getPath (io/file root relative)) text (slurp path)
+                 products (fresh relative) input (select-keys products [:request :typed :verification])
+                 macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                 definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                 standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'packed) input))
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 vectors (filterv #(= :collection-literal (:core-form %)) (get-in input [:request :canonical-core-artifact :nodes]))
+                 specifications [['empty-vector [] []] ['mixed-vector [] [nil true 17 \a "text" :key]]
+                                 ['packed [true payload] [true payload]]
+                                 ['nested-vector [] '[[] [true ["text"]] [unresolved/data (throw unresolved/data)]]]
+                                 ['let-forward [payload] [true payload]] ['build [payload] [payload]]
+                                 ['direct-forward [payload] [payload]] ['caught [payload] [payload]] ['main [] [true "payload"]]]
+                 results (into {} (map (fn [[name args expected]]
+                                        (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                                          (is (= [expected "" :normal] result)) [name (first result)])) specifications))]
+             (is (= :accepted (get-in input [:typed :status])))
+             (is (= :passed (get-in input [:verification :status])))
+             (is (= 9 (count (:functions assembled))))
+             (is (= 12 (count vectors) (get-in assembled [:instruction-summary :vector-literal])))
+             (is (= standalone (get-in assembled [:functions 'packed])))
+             (is (= :pending-c8-and-profile-authority (get-in standalone [:typed-lowering-provenance :effect-legality])))
+             (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+             (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+             (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+             (is (some #(= :gravity.type/never (get-in input [:typed :type-table (:node-id %)])) vectors))
+             (doseq [[name position] [['packed 1] ['let-forward 1] ['build 0] ['direct-forward 0] ['caught 0]]]
+               (is (identical? payload (get (get results name) position))))
+             (evaluated-vector-c8-checks input)
+             {:input input :module module :definitions definitions :typed (:typed products)}))
+         [".gravity" ".qst"])
+        {:keys [input module definitions]} (first cases)
+        nodes (get-in input [:request :canonical-core-artifact :nodes])
+        vector-index (first (keep-indexed #(when (and (= :collection-literal (:core-form %2)) (= 2 (count (:children %2)))
+                                                     (= [:gravity.type/bool :gravity.type/string] (get-in input [:typed :type-table (:node-id %2) :element-types]))) %1) nodes))
+        vector-node (get nodes vector-index) node-id (:node-id vector-node) child-id (first (:children vector-node))]
+    (is (= (get-in cases [0 :typed :identity-input]) (get-in cases [1 :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :type-table node-id] :gravity.type/never)
+                     (assoc-in input [:typed :type-table child-id] :gravity.type/unknown)
+                     (assoc-in input [:request :canonical-core-artifact :nodes vector-index :children] (vec (reverse (:children vector-node))))]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'packed) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 7 (count @verified)))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-vector-result-type.gravity")
+          typed (:typed products) failure (first (:diagnostics typed))]
+      (is (= :rejected (:status typed)))
+      (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))))
+
 (deftest current-gravity-typed-catch-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -2613,6 +2853,7 @@
         implementation-forms (bootstrap/read-forms implementation-path implementation-text)
         implementation-functions (vec (rest implementation-forms))
         functions (vec (concat (take 4 compatibility-functions) implementation-functions (drop 8 compatibility-functions)))
+        preserved-functions (fn [forms] (filterv #(not= 'p15-s23-runtime-evaluate-with-targets (second %)) forms))
         underlying (fn [value] (if (and (seq? value) (= 'quote (first value))) (second value) value))
         data (mapv #(vector (second %) (underlying (nth % 2))) definitions)
         digest #(bootstrap/sha256-hex (pr-str (bootstrap/c-backend-canonical-value %)))
@@ -2648,14 +2889,18 @@
         execute #(invoke 'p15-s23-runtime-execute-closed-plan
                          {:entrypoint 'main :functions {'main {:arity 0 :params [] :instructions [%]}}})
         payload (String. "original runtime payload")]
-    ;; These pre-edit conservation digests cover DATA and function forms, not admission authority.
+    ;; C/D's complete-body conservation result is historical. F intentionally
+    ;; changes evaluate-with-targets; these digests cover the other 21/29 bodies.
+    ;; Catalog DATA and current complete source identities remain checked.
     (is (= 23 (count data)))
     (is (= "68697377c7914c2442f2c6ae916984ddfebfb3fd77aa4b3ba3b385ea2db1bfe0" (digest data)))
-    (is (= "525d55d6bcb05f28b7b8c627caf0c5febbb8d721f2c292dff9d325444d6c07b8" (digest functions)))
+    (is (= 29 (count (preserved-functions functions))))
+    (is (= "680b2af4243eacd44211249930dd521728fc0cf625957817c617599519831984" (digest (preserved-functions functions))))
     (is (= 30 (count functions)))
     (is (= 12 (count compatibility-functions)))
     (is (= 22 (count implementation-functions) (count (:functions compiled))))
-    (is (= "f810ae4e8976d32cf686cd7c5bfe28a18e53d5015cac119b43481280e0ff8d52" (digest implementation-functions)))
+    (is (= 21 (count (preserved-functions implementation-functions))))
+    (is (= "d78ce93eb159ce90c31d23c29d588744b336c46301d21b593dc06240ac2ab8c1" (digest (preserved-functions implementation-functions))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) functions))))
     (is (= (select-keys arities (map second implementation-functions))
            (into {} (map (fn [[name function]] [name (:arity function)]) (:functions compiled)))))
