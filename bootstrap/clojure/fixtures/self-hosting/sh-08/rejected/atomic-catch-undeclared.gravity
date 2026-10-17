@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.atomic-catch-undeclared
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn recover [problem :- String] :- String
+  (try (throw problem) (catch String e e)))

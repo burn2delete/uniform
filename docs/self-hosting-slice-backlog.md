@@ -1822,6 +1822,48 @@ its migration boundary, not a prerequisite for every semantic edit. Generic seed
 interpretation and primitive execution remain; this is not seed retirement or
 full SH-07/self-hosting completion.
 
+### Atomic typed catch and residual source errors
+
+C7 now resolves canonical atomic catch types from authenticated C6 bindings,
+seeds each handler's lexical binder with that type, and joins protected/handler
+normal results with the existing `Never` rules. Ordered handlers remove matching
+protected source errors; a handler's own throws escape that try and can be
+caught by an outer try, not a sibling clause. Acyclic direct-local calls carry
+the residual error types. C8 independently checks the source joins, handler
+premises and residual equations. Covered source errors do not grant effect
+discharge: performed `:error/throw` and the source allowance remain required,
+with profile/provider/capability authority explicitly pending.
+
+The paired accepted fixture covers recovery, partial handling, nested catches,
+rethrow, an unreachable handler, ordered repeated types and a local call under
+a catch. Rejected pairs cover incompatible normal results, unsupported resolved
+catch types, missing effect allowance, unresolved types and illegal binder use
+in protected, sibling or outside scopes. Coherent mutations of type/binder,
+clause order, source premises, residual summaries and effect graphs reject.
+
+The broad focused regression passed 41 tests/1,186 assertions. A separate source
+scope check passed six tests/80 assertions, including eight real C5 rejection
+assertions. The affected authenticated paired composition passed one test/220
+assertions with fresh C7 verification and C8 checking. These overlapping checks
+are not additive coverage totals. An earlier new-helper reader-delimiter failure
+remains a failed attempt. The final rejected-diagnostic provenance correction
+passed the six-test/82-assertion direct handler batch, including ten original
+source-location/origin assertions. It does not change accepted typed products
+or justify repeating their expensive composition.
+
+Optional plain-EDN retention exceeded its chosen serialization cap for both
+accepted triplets (43,392,705 and 43,328,121 characters); no retained product file
+was written. The optional capture is removed from the normal test rather than
+growing caps, stripping proofs or replaying solely to obtain a file. A bounded
+representation follow-up is described in `docs/development-verification.md`.
+
+Runtime catch execution, type-authoritative lowering inputs, complete Error
+hierarchy/subtyping, target/profile error lowering, resource unwinding and
+authoritative migration remain open. This increment does not establish full
+SH-07/SH-08, self-hosting, release support or seed retirement. The next executable
+boundary is an explicit current C7 typed input to the existing Gravity lowerer;
+raw type spelling or an old admitted compiler binding is not type authority.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

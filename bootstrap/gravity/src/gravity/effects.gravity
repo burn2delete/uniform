@@ -1064,8 +1064,8 @@
     (loop [remaining (get core :nodes) out []]
       (if (= 0 (count remaining)) out
         (let [node (first remaining)]
-          (if (if (= :throw (get node :core-form)) (body-throw-source-record-valid? core projection (get node :attributes)) true)
-            (recur (rest remaining) (conj out (if (= :throw (get node :core-form))
+              (if (if (contains? #{:throw :try} (get node :core-form)) (body-throw-source-record-valid? core projection (get node :attributes)) true)
+            (recur (rest remaining) (conj out (if (contains? #{:throw :try} (get node :core-form))
               (assoc node :attributes (body-throw-semantic-record projection (get node :attributes))) node))) nil))))))
 
 (defn body-throw-semantic-transfers [core]
@@ -1598,13 +1598,14 @@
 
 (defn body-conditional-coverage [node]
   (let [kind (get node :core-form) children (get node :children) attrs (get node :attributes)]
-    (if (contains? #{:if :match} kind)
+    (if (contains? #{:if :match :try} kind)
       (loop [index 1 result []]
         (if (= index (count children)) result
           (recur (+ index 1)
             (conj result {:node-id (get children index) :child-index index
-                          :role (if (= kind :if) (if (= index 1) :then :else)
-                                  (if (contains? (set (get attrs :guard-child-indexes)) index) :guard :branch))})))) [])))
+                          :role (if (= kind :try) :source-ordered-typed-handler
+                                (if (= kind :if) (if (= index 1) :then :else)
+                                  (if (contains? (set (get attrs :guard-child-indexes)) index) :guard :branch)))})))) [])))
 
 (defn body-order-ids [order]
   (loop [remaining order ids []]
@@ -1616,6 +1617,286 @@
     (if (= 0 (count remaining)) out
       (recur (rest remaining) (if (contains? seen (first remaining)) out (conj out (first remaining)))
              (conj seen (first remaining))))))
+
+(defn body-eh-atomic-type [name]
+  (get '{I8 :gravity.type/i8 I16 :gravity.type/i16 I32 :gravity.type/i32 I64 :gravity.type/i64
+         U8 :gravity.type/u8 U16 :gravity.type/u16 U32 :gravity.type/u32 U64 :gravity.type/u64
+         F32 :gravity.type/f32 F64 :gravity.type/f64 Bool :gravity.type/bool
+         String :gravity.type/string Symbol :gravity.type/symbol Keyword :gravity.type/keyword Ratio :gravity.type/ratio} name))
+
+(defn body-eh-error [rule reason node expected actual]
+  (assoc (body-failure reason) :node node :expected expected :actual actual))
+
+(defn body-eh-tree [nodes root]
+  (loop [pending [root] seen #{}]
+    (if (= 0 (count pending)) seen
+      (let [id (first pending) rest-ids (vec (rest pending))]
+        (if (contains? seen id) (recur rest-ids seen)
+          (recur (loop [children (get (get nodes id) :children) out rest-ids]
+                   (if (= 0 (count children)) out (recur (rest children) (conj out (first children)))))
+                 (conj seen id)))))))
+
+(defn body-eh-uses [nodes tree binding-id]
+  (loop [remaining nodes out []]
+    (if (= 0 (count remaining)) out
+      (let [node (first remaining)]
+        (recur (rest remaining)
+          (if (body-all? [(= :reference (get node :core-form)) (= binding-id (get (get node :attributes) :binding-id))
+                          (contains? tree (get node :node-id))])
+            (conj out (get (get node :source) :syntax-id)) out))))))
+
+(defn body-eh-source-products [core source-forms bindings budget]
+  (let [sequence (get core :nodes) records (get core :error-handlers)]
+    (if (body-all? [(vector? sequence) (vector? source-forms) (vector? bindings)
+                            (if (= records nil) true (vector? records))])
+    (if (> (count sequence) budget) (body-eh-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits (count sequence))
+  (let [tries (body-select sequence :core-form :try)
+        records (get core :error-handlers) count-records (if (vector? records) (count records) 0)
+        shapes? (loop [remaining tries]
+                  (if (= 0 (count remaining)) true
+                    (let [node (first remaining) attrs (get node :attributes)]
+                      (if (if (vector? (get node :children))
+                            (if (map? attrs) (vector? (get attrs :handler-clauses)) false) false)
+                        (recur (rest remaining)) false))))
+        work (+ (* 8 (count sequence)) (count source-forms) (count bindings)
+                (* count-records (+ 100 (* 4 (count sequence)) (* 4 (count (get core :error-transfers))))))]
+    (if (= 0 (count tries))
+      (if (if (= records nil) true (= [] records))
+        {:status :accepted :groups {} :seeds {} :work-count (count sequence) :diagnostics []}
+        (body-eh-error "C7-VERIFY" :unexpected-error-handlers {} :no-handler-records records))
+      (if (= false shapes?) (body-eh-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-vectors nil)
+      (if (> work budget) (body-eh-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits work)
+      (let [nodes (body-index sequence :node-id) forms (body-index source-forms :form-id)
+            binding-index (body-index bindings :binding-id) owners (body-throw-owners core (- budget work))]
+        (if (= :accepted (get owners :status))
+        (loop [remaining tries ordinal 0 groups {} seeds {}]
+          (if (= 0 (count remaining))
+            (if (if (= ordinal count-records)
+                  (= (loop [remaining records out []]
+                       (if (= 0 (count remaining)) out
+                         (recur (rest remaining) (conj out (body-throw-semantic-record
+                           (get (get (get core :identity-preimage) :lineage) :sh06-semantic-projection-id) (first remaining))))))
+                     (get (get core :identity-preimage) :error-handlers)) false)
+              {:status :accepted :groups groups :seeds seeds :work-count (+ work (get owners :work-count)) :diagnostics []}
+              (body-eh-error "C7-VERIFY" :error-handler-census {} :exact-handler-records records))
+            (let [node (first remaining) id (get node :node-id) source (get node :source)
+                  form (get forms (get source :form-id)) ids (get form :child-form-ids)
+                  children (get node :children) attrs (get node :attributes)
+                  clauses (get attrs :handler-clauses) owner (get (get owners :owners) id)
+                  tree (body-eh-tree nodes (first children))
+                  candidates (loop [transfers (get core :error-transfers) out []]
+                               (if (= 0 (count transfers)) out
+                                 (let [transfer (first transfers)]
+                                   (recur (rest transfers)
+                                     (if (if (contains? tree (get transfer :core-node-id))
+                                           (= owner (get transfer :evaluation-owner-function-syntax-id)) false)
+                                       (conj out (body-project transfer [:ordinal :core-node-id])) out)))))
+                  result
+                  (if (if (vector? clauses) (<= (+ ordinal (count clauses)) count-records) false)
+                  (loop [index 0 values [] next-seeds seeds]
+                    (if (= index (count clauses)) {:status :accepted :clauses values :seeds next-seeds}
+                      (let [clause (get clauses index) record (get records (+ ordinal index))
+                            catch-form (get forms (get ids (+ index 2))) catch-ids (get catch-form :child-form-ids)
+                            operator (get forms (get catch-ids 0)) type-form (get forms (get catch-ids 1))
+                            binder-form (get forms (get catch-ids 2)) body-form (get forms (get catch-ids 3))
+                            type-binding (get binding-index (get clause :error-type-binding-id))
+                            binder (get binding-index (get clause :catch-binding-id))
+                            type (body-eh-atomic-type (get type-binding :name)) body (get nodes (get children (+ index 1)))
+                            body-tree (body-eh-tree nodes (get body :node-id))
+                            uses (body-eh-uses sequence body-tree (get binder :binding-id))
+                            all-uses (body-eh-uses sequence (set (keys nodes)) (get binder :binding-id))
+                            expected-clause {:clause-ordinal index :handler-child-index (+ index 1)
+                              :catch-clause-form-id (get catch-form :form-id) :catch-clause-syntax-id (get catch-form :syntax-id)
+                              :error-type-form-id (get type-form :form-id) :error-type-syntax-id (get type-form :syntax-id)
+                              :error-type-binding-id (get type-binding :binding-id)
+                              :catch-binding-form-id (get binder-form :form-id) :catch-binding-syntax-id (get binder-form :syntax-id)
+                              :catch-binding-id (get binder :binding-id) :catch-binding-scope-id (get binder :scope-id)}
+                            expected-record (assoc
+                              (body-project attrs [:construction-order :runtime-reachability :selection-policy :result-policy
+                                :authenticated-sh06-artifact-id :sh06-semantic-projection-id :type-coverage-legality
+                                :result-type-join-legality :effect-registry-legality :effect-profile-capability-legality
+                                :profile-error-lowering-legality :ownership-legality :safety-classification])
+                              :ordinal (+ ordinal index) :clause-ordinal index :clause-count (count clauses)
+                              :handler-child-index (+ index 1) :core-node-id id
+                              :form-id (get form :form-id) :syntax-id (get form :syntax-id)
+                              :protected-core-node-id (first children) :handler-core-node-id (get body :node-id)
+                              :catch-clause-form-id (get catch-form :form-id) :catch-clause-syntax-id (get catch-form :syntax-id)
+                              :error-type-form-id (get type-form :form-id) :error-type-syntax-id (get type-form :syntax-id)
+                              :error-type-binding-id (get type-binding :binding-id)
+                              :catch-binding-form-id (get binder-form :form-id) :catch-binding-syntax-id (get binder-form :syntax-id)
+                              :catch-binding-id (get binder :binding-id) :catch-binding-scope-id (get binder :scope-id)
+                              :catch-binding-use-syntax-ids uses :candidate-error-transfers candidates
+                              :evaluation-region (get (get node :evaluation) :region)
+                              :evaluation-owner-function-syntax-id owner
+                              :ordered-steps [:evaluate-protected :conditionally-select-source-ordered-typed-handler]
+                              :construction-order :protected-then-handlers-source-order-then-try
+                              :runtime-evaluation :protected-then-conditional-handler-chain)]
+                        (if (body-all?
+                              [(= 4 (count catch-ids)) (= :list (get catch-form :kind))
+                               (if (seq? (get catch-form :value))
+                                 (= ['catch (get type-form :value) (get binder-form :value) (get body-form :value)] (vec (get catch-form :value))) false)
+                               (= 'catch (get operator :value)) (= :symbol (get operator :kind))
+                               (= (get form :form-id) (get catch-form :parent-form-id))
+                               (= (get catch-form :form-id) (get operator :parent-form-id) (get type-form :parent-form-id)
+                                  (get binder-form :parent-form-id) (get body-form :parent-form-id))
+                               (= :symbol (get type-form :kind) (get binder-form :kind))
+                               (= (get type-binding :name) (get type-form :value))
+                               (= [:core :type 'gravity.core] [(get type-binding :binding-class) (get type-binding :kind) (get type-binding :namespace)])
+                               (= [:lexical :local] [(get binder :binding-class) (get binder :kind)])
+                               (= (get binder :name) (get binder-form :value))
+                               (= (get binder :definition-syntax-id) (get binder-form :syntax-id))
+                               (= (get binder :scope-id) (get binder-form :scope-id))
+                               (= (get body :source) (body-throw-source body-form))
+                               (= uses all-uses) (= expected-clause clause) (= expected-record record)])
+                          (if (= type nil)
+                            (body-eh-error "C7-ANNOTATION" :unsupported-atomic-catch-type node :canonical-atomic-error-type (get type-form :value))
+                            (recur (+ index 1) (conj values {:record record :error-type type :handler-core-node-id (get body :node-id)})
+                              (assoc next-seeds (get binder :binding-id) type)))
+                          (body-eh-error "C7-VERIFY" :typed-handler-source-join node :exact-canonical-handler record)))))
+                    (body-eh-error "C7-VERIFY" :error-handler-census node :exact-handler-records records))]
+              (if (body-all?
+                    [(vector? records) (vector? clauses) (> (count clauses) 0)
+                     (= (+ 1 (count clauses)) (count children)) (= (+ 2 (count clauses)) (count ids))
+                     (= source (body-throw-source form)) (= :list (get form :kind))
+                     (= 'try (get (get forms (first ids)) :value))
+                     (if (seq? (get form :value))
+                       (= (loop [remaining (rest ids) out ['try]]
+                            (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (get forms (first remaining)) :value)))))
+                          (vec (get form :value))) false)
+                     (= (get (get nodes (first children)) :source) (body-throw-source (get forms (get ids 1))))
+                     (= 0 (get attrs :protected-child-index)) (= (count clauses) (get attrs :handler-count))
+                     (= (loop [i 1 out []] (if (= i (count children)) out (recur (+ i 1) (conj out i)))) (get attrs :handler-child-indexes))
+                     (= :protected-then-ordered-typed-handler-candidates (get attrs :evaluation-order) (get (get node :evaluation) :kind))
+                     (= owner (get (get node :evaluation) :owner-function-syntax-id))
+                     (= (loop [remaining clauses out []]
+                          (if (= 0 (count remaining)) out
+                            (recur (rest remaining) (conj (conj out (get (first remaining) :error-type-binding-id))
+                                                          (get (first remaining) :catch-binding-id)))))
+                        (get node :resolved-binding-ids))
+                     (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
+                     (= :source-ordered-typed-handler-candidates (get attrs :selection-policy))
+                     (= :protected-or-selected-handler-last (get attrs :result-policy))
+                     (= :not-asserted-by-sh07-b9 (get attrs :runtime-reachability))
+                     (= [:pending-sh08 :pending-sh08 :pending-sh09 :pending-sh09 :pending-sh09 :pending-sh10 :pending-sh11]
+                        [(get attrs :type-coverage-legality) (get attrs :result-type-join-legality) (get attrs :effect-registry-legality)
+                         (get attrs :effect-profile-capability-legality) (get attrs :profile-error-lowering-legality)
+                         (get attrs :ownership-legality) (get attrs :safety-classification)])])
+                (if (= :accepted (get result :status))
+                  (recur (rest remaining) (+ ordinal (count clauses)) (assoc groups id (get result :clauses)) (get result :seeds)) result)
+                (body-eh-error "C7-VERIFY" :typed-try-source-join node :exact-canonical-try attrs))))) owners)))))))
+      (body-eh-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-input-vectors nil))))
+
+(defn body-eh-partition [protected clauses graph]
+  (loop [remaining clauses candidates protected handler-errors [] handled []]
+    (if (= 0 (count remaining))
+      {:residual (body-error-type-union candidates handler-errors) :handled handled}
+      (let [clause (first remaining) type (get clause :error-type)
+            classified (loop [errors candidates matched [] residual []]
+                         (if (= 0 (count errors)) {:matched matched :residual residual}
+                           (if (= type (first errors))
+                             (recur (rest errors) (conj matched (first errors)) residual)
+                             (recur (rest errors) matched (conj residual (first errors))))))
+            matched (get classified :matched)
+            own (if (= 0 (count matched)) [] (body-error-types graph (get clause :handler-core-node-id)))]
+        (recur (rest remaining) (get classified :residual) (body-error-type-union handler-errors own)
+          (conj handled {:source-handler (get clause :record) :error-type type
+                         :candidate-error-types candidates :matched-error-types matched
+                         :handler-error-types own :remaining-error-types (get classified :residual)}))))))
+
+(defn body-eh-child-types [ids types]
+  (loop [remaining ids out []]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (conj out (get types (first remaining) :gravity.type/unknown))))))
+
+(defn body-eh-normal-join [types]
+  (loop [remaining types result :gravity.type/never]
+    (if (= 0 (count remaining)) result
+      (let [type (first remaining)]
+        (if (contains? #{nil :gravity.type/unknown} type) :gravity.type/unknown
+          (if (= type :gravity.type/never) (recur (rest remaining) result)
+            (if (= result :gravity.type/never) (recur (rest remaining) type)
+              (if (= result type) (recur (rest remaining) result) :gravity.type/unknown))))))))
+
+(defn body-eh-constraint [node clauses types graph]
+  (let [ids (get node :children)
+        source-errors (loop [remaining ids out []]
+                        (if (= 0 (count remaining)) out
+                          (recur (rest remaining) (conj out (body-error-types graph (first remaining))))))
+        partition (body-eh-partition (first source-errors) clauses graph)
+        premise {:version :sh08-atomic-typed-catch-v1 :source-node node
+                 :source-handlers (loop [remaining clauses out []]
+                                    (if (= 0 (count remaining)) out
+                                      (recur (rest remaining) (conj out (get (first remaining) :record)))))
+                 :catch-types (loop [remaining clauses out []]
+                                (if (= 0 (count remaining)) out
+                                  (recur (rest remaining) (conj out (get (first remaining) :error-type)))))
+                 :child-types (body-eh-child-types ids types) :child-source-error-types source-errors
+                 :partition partition :normal-result-type (get types (get node :node-id))
+                 :matching :exact-canonical-atomic-type :effect-label-discharge :pending-profile-handler-capability-authority}]
+    {:constraint-id-request {:domain :gravity/sh08-atomic-typed-catch-v1 :premise premise}
+     :kind :equality :producer-rule :sh08-atomic-typed-catch-v1
+     :lhs {:core-node-id (get node :node-id) :projection :source-error-handler-result}
+     :rhs (get partition :residual) :dependencies premise :origin (get (get node :source) :origin-chain)
+     :solution {:normal-result-type (get premise :normal-result-type) :thrown-error-effects (get partition :residual)
+                :handled-source-errors (get partition :handled) :effect-label-discharge :pending-profile-handler-capability-authority}
+     :invalidation [:error-handlers :error-transfers :catch-type-bindings :catch-lexical-bindings :type-table :source-forms :evaluation-order]
+     :status :solved :diagnostics []}))
+
+(defn body-eh-verify [request core facts groups graph budget]
+  (let [tries (body-select (get core :nodes) :core-form :try)
+        records (get core :error-handlers)
+        rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-atomic-typed-catch-v1)
+        resolutions (body-path request [:b47-context :authenticated-core-request :resolution-table])
+        source-forms (body-path request [:b47-context :authenticated-core-request :forms])
+        work (+ (count (get core :nodes)) (count (get facts :constraint-ledger)) (if (vector? resolutions) (count resolutions) 0)
+                (count source-forms)
+                (* (count records) (+ 100 (* 4 (count (get core :nodes))))))]
+    (if (= 0 (count tries))
+      (if (= [] rows) {:status :accepted :work-count (+ (count (get core :nodes)) (count (get facts :constraint-ledger)))}
+        (body-failure :unexpected-typed-catch-constraints))
+      (if (= false (body-maps? resolutions)) (body-failure :malformed-catch-resolution-table)
+      (if (> work budget) (body-failure :body-deferred-work-limit)
+      (let [indexed (body-index resolutions :reference-syntax-id) types (get facts :type-table)
+            forms (body-index source-forms :form-id)
+            syntax-nodes (loop [remaining (get core :nodes) out {}]
+                           (if (= 0 (count remaining)) out
+                             (let [node (first remaining)]
+                               (recur (rest remaining) (assoc out (get (get node :source) :syntax-id) node)))))
+            expected
+            (loop [remaining tries values []]
+              (if (= 0 (count remaining)) {:status :accepted :rows values}
+                (let [node (first remaining) id (get node :node-id) clauses (get groups id)
+                      child-types (body-eh-child-types (get node :children) types)
+                      joined (body-eh-normal-join child-types)
+                      binders-valid?
+                      (loop [remaining-clauses clauses]
+                        (if (= 0 (count remaining-clauses)) true
+                          (let [clause (first remaining-clauses) record (get clause :record)
+                                resolution (get indexed (get record :error-type-syntax-id))
+                                uses-valid?
+                                (loop [uses (get record :catch-binding-use-syntax-ids)]
+                                  (if (= 0 (count uses)) true
+                                    (let [use-id (first uses) resolved (get indexed use-id)
+                                          reference (get syntax-nodes use-id)]
+                                      (if (body-all? [(= (get record :catch-binding-id) (get resolved :binding-id))
+                                              (= (get resolved :symbol) (get (get forms (get (get reference :source) :form-id)) :value))
+                                              (= (get clause :error-type) (get types (get reference :node-id)))])
+                                        (recur (rest uses)) false))))]
+                            (if (body-all? [(map? resolution) (= :type (get resolution :position))
+                                    (= (get resolution :symbol) (get (get forms (get record :error-type-form-id)) :value))
+                                    (= (get record :error-type-binding-id) (get resolution :binding-id)) uses-valid?])
+                              (recur (rest remaining-clauses)) false))))
+                      row (assoc (body-eh-constraint node clauses types graph)
+                            :profile (get (get core :module) :profile) :target (get (get core :module) :target))]
+                  (if (body-all? [binders-valid? (= false (= joined :gravity.type/unknown)) (= joined (get types id))
+                                  (= (get row :rhs) (body-error-types graph id))
+                                  (= (get (get row :solution) :handled-source-errors) (get (get graph id) :covered-source-errors))
+                                  (= :pending-profile-handler-capability-authority (get (get graph id) :effect-label-discharge))])
+                    (recur (rest remaining) (conj values row))
+                    (body-failure :incoherent-atomic-typed-catch-body-equation)))))]
+        (if (body-all? [(map? indexed) (= :accepted (get expected :status)) (= rows (get expected :rows))])
+          {:status :accepted :work-count work}
+          (body-failure :incoherent-atomic-typed-catch-ledger))))))))
 
 (defn body-call-invokes? [node types]
   (loop [remaining (get node :children)]
@@ -1675,12 +1956,12 @@
             (if (= :recur kind)
               (if (contains? #{:loop :function} (get (get node :attributes) :target-kind))
                 (sh09-sha256-id? (get (get node :attributes) :target-id)) false)
-              (contains? #{:collection-literal :let :do :call :match :loop} kind))))) false)))
+              (contains? #{:collection-literal :let :do :call :match :loop :try} kind))))) false)))
 
 (defn body-order-valid? [node]
   (let [kind (get node :core-form) children (get node :children) order (get (get node :evaluation) :order)
         expected (if (contains? #{:fn :quote} kind) []
-                   (if (contains? #{:if :match} kind) [(first children)] children))]
+                   (if (contains? #{:if :match :try} kind) [(first children)] children))]
     (if (vector? order)
       (if (= (count expected) (count order))
         (loop [index 0]
@@ -1713,6 +1994,13 @@
 
 (defn body-control-node-record [node target graph type facts edge core source-target]
   (let [base (body-local-node-record node target graph type facts edge)
+        base (if (= :try (get node :core-form))
+               (let [partition (body-eh-partition (body-error-types graph (first (get node :children)))
+                                 (get (get facts :atomic-typed-handlers {}) (get node :node-id) []) graph)]
+                 (assoc base :escaping-thrown-error-types (get partition :residual)
+                   :escaping-thrown-errors (set (get partition :residual))
+                   :covered-source-errors (get partition :handled)
+                   :effect-label-discharge :pending-profile-handler-capability-authority)) base)
         invoked? (body-call-invokes? node (get facts :type-table))
         base (if (if (= :call (get node :core-form))
                    (if (= false invoked?) true (contains? base :escaping-thrown-error-types)) false)
@@ -1980,7 +2268,12 @@
        (= (body-project transfer shared) (body-project attrs shared))])))
 
 (defn body-tc-scope [core direct budget]
-  (loop [scope (set (keys direct)) next (set (keys direct)) edges (get core :call-edges) touched #{} work 0]
+  (let [owners (loop [remaining (get core :error-handlers) out #{}]
+                 (if (= 0 (count remaining)) out
+                   (recur (rest remaining) (conj out (get (first remaining) :evaluation-owner-function-syntax-id)))))
+        initial (loop [remaining (keys direct) out owners]
+                  (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))]
+  (loop [scope initial next initial edges (get core :call-edges) touched owners work (count (get core :error-handlers))]
     (if (>= work budget) (body-failure :body-deferred-work-limit)
       (if (= 0 (count edges))
         (if (= scope next) {:status :accepted :scope touched :active? (> (count touched) 0) :work-count work}
@@ -1990,7 +2283,7 @@
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (= false local?) false) (body-failure :unsupported-throwing-call-component)
             (recur scope (if touches? (conj (conj next caller) callee) next) (rest edges)
-                   (if touches? (conj (conj touched caller) callee) touched) (+ work 1))))))))
+                   (if touches? (conj (conj touched caller) callee) touched) (+ work 1)))))))))
 
 (defn body-throw-joins-checked [request facts budget]
   (let [core (get request :canonical-core-artifact) nodes (get core :nodes)
@@ -2000,9 +2293,15 @@
       (if (body-all? [(if (= transfers nil) true (= [] transfers)) (= [] rows)
               (loop [functions (get facts :function-type-table)]
                 (if (= 0 (count functions)) true
-                  (if (= [:pending-sh09] (get (first functions) :thrown-error-effects))
+                  (if (if (> (count (get core :error-handlers)) 0) true (= [:pending-sh09] (get (first functions) :thrown-error-effects)))
                     (recur (rest functions)) false)))])
-        {:status :accepted :work-count 0} (body-failure :incoherent-throw-census-or-summary))
+        (let [scoped (body-tc-scope core {} budget)
+              owners (if (get scoped :active?) (body-throw-owners core (- budget (get scoped :work-count 0)))
+                         {:status :accepted :owners {} :work-count 0})]
+          (if (body-all? [(= :accepted (get scoped :status)) (= :accepted (get owners :status))])
+            {:status :accepted :scope (get scoped :scope) :active? (get scoped :active?) :direct-throws {}
+             :owners (get owners :owners) :work-count (+ (get scoped :work-count) (get owners :work-count))} scoped))
+        (body-failure :incoherent-throw-census-or-summary))
       (let [source-forms (body-path request [:b47-context :authenticated-core-request :forms])
             work (+ (* 6 (count nodes)) (count source-forms) (count (get facts :constraint-ledger))
                     (* 70 (count throwing)) (count (get core :call-edges))
@@ -2013,7 +2312,6 @@
                 (vector? transfers) (= (count throwing) (count (if (vector? transfers) transfers [])) (count rows))
                 (map? (body-index transfers :core-node-id)) (map? (body-index rows :lhs))
                 (= (set (keys (body-index throwing :node-id))) (set (keys (body-index transfers :core-node-id))))
-                (= [] (get core :error-handlers))
                 (= (body-throw-semantic-transfers core) (get (get core :identity-preimage) :error-transfers))])
           (loop [remaining transfers ordinal 0 thrown {} used (+ work (get owners :work-count))]
             (if (= 0 (count remaining))
@@ -2096,7 +2394,7 @@
                (if (= 0 (count remaining)) true
                  (let [node (first remaining)]
                    (if (if (contains? scope (get (get joined :owners) (get node :node-id)))
-                         (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call} (get node :core-form)) true)
+                         (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call :try} (get node :core-form)) true)
                      (recur (rest remaining)) false))))
              (loop [remaining (get core :recursion-components)]
                (if (= 0 (count remaining)) true
@@ -2175,13 +2473,21 @@
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
               (body-local-joins-valid? core facts bindings) false) false) false)
-        (let [throws (body-throw-joins request facts budget)
+        (let [handlers (body-eh-source-products core
+                         (body-path request [:b47-context :authenticated-core-request :forms])
+                         (body-path request [:b47-context :authenticated-core-request :binding-table]) budget)
+              facts (assoc facts :atomic-typed-handlers (get handlers :groups {}))
+              throws (if (= :accepted (get handlers :status))
+                       (body-throw-joins request facts (- budget (get handlers :work-count))) handlers)
               derived (if (= :accepted (get throws :status))
-                        (body-derive-module-nodes core facts foreign (- budget (get throws :work-count))) throws)
+                        (body-derive-module-nodes core facts foreign (- budget (get handlers :work-count) (get throws :work-count))) throws)
               loop? (get derived :recur-control?)]
           (if (= :accepted (get derived :status))
-            (let [propagated (body-tc-verify core facts bindings (get derived :nodes) throws
-                               (- budget (get throws :work-count) (get derived :work-count)))
+            (let [handler-check (body-eh-verify request core facts (get handlers :groups) (get derived :nodes)
+                                  (- budget (get handlers :work-count) (get throws :work-count) (get derived :work-count)))
+                  propagated (if (= :accepted (get handler-check :status))
+                               (body-tc-verify core facts bindings (get derived :nodes) throws
+                                 (- budget (get handlers :work-count) (get throws :work-count) (get derived :work-count) (get handler-check :work-count))) handler-check)
                   graph (let [graph (body-build-graph core facts (get derived :nodes))
                           graph (if loop? (assoc graph :loop-fixed-point
                                   {:algorithm :bottom-initialized-bounded-effect-union
@@ -2198,9 +2504,10 @@
                                 (assoc (get (get out :functions) (first ids)) :throws (get (get propagated :functions) (first ids))))))))
                   allowed (if (= :accepted (get propagated :status))
                             (body-allowance-check core facts graph
-                              (- budget (get throws :work-count) (get derived :work-count) (get propagated :work-count))) propagated)]
+                              (- budget (get handlers :work-count) (get throws :work-count) (get derived :work-count)
+                                        (get handler-check :work-count) (get propagated :work-count))) propagated)]
               (if (= :accepted (get allowed :status))
-                {:status :accepted :graph graph :work-count (+ (get throws :work-count) (get derived :work-count)
+                {:status :accepted :graph graph :work-count (+ (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
                                                              (get propagated :work-count) (get allowed :work-count))} allowed)) derived))
         (body-failure :incoherent-function-or-call-body-type-origin-join))
       (body-failure :incomplete-canonical-core-coverage))))

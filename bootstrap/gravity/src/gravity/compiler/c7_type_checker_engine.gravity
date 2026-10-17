@@ -2621,7 +2621,7 @@
         (if (= 3 (count child-types))
           (if (= :gravity.type/never (first child-types)) :gravity.type/never
             (sh08-ft-loop-kernel-normal-join (subvec child-types 1 3))) :gravity.type/unknown)
-        (if (= form :alternatives) (if (= 0 (count child-types)) nominal (sh08-ft-loop-kernel-normal-join child-types))
+        (if (contains? #{:alternatives :try} form) (if (= 0 (count child-types)) nominal (sh08-ft-loop-kernel-normal-join child-types))
           (loop [remaining child-types]
             (if (= 0 (count remaining)) nominal
               (if (= :gravity.type/never (first remaining)) :gravity.type/never
@@ -4556,7 +4556,11 @@
       (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
 
 (defn sh08-tc-scope [core thrown budget]
-  (loop [scope (set (keys thrown)) remaining (get core :call-edges) next (set (keys thrown)) work 0 touched #{}]
+  (let [handler-owners (loop [remaining (get core :error-handlers) out #{}]
+                         (if (= 0 (count remaining)) out
+                           (recur (rest remaining) (conj out (get (first remaining) :evaluation-owner-function-syntax-id)))))
+        initial (sh08-ft-add-values-to-set handler-owners (set (keys thrown)))]
+  (loop [scope initial remaining (get core :call-edges) next initial work (count (get core :error-handlers)) touched handler-owners]
     (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-call-visits work)
       (if (= 0 (count remaining))
         (if (= scope next) {:status :accepted :scope touched :active? (> (count touched) 0) :work-count work}
@@ -4567,7 +4571,220 @@
           (if (if touches? (= false local?) false)
             (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-call-component {} :direct-local-call edge)
             (recur scope (rest remaining) (if touches? (conj (conj next caller) callee) next)
-                   (+ work 1) (if touches? (conj (conj touched caller) callee) touched))))))))
+                   (+ work 1) (if touches? (conj (conj touched caller) callee) touched)))))))))
+
+(defn sh08-eh-source-products [core source-forms bindings budget]
+  (let [sequence (get core :nodes) records (get core :error-handlers)]
+    (if (sh08-ft-all-true? [(vector? sequence) (vector? source-forms) (vector? bindings)
+                            (if (= records nil) true (vector? records))])
+    (if (> (count sequence) budget) (sh08-th-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits (count sequence))
+  (let [tries (sh08-bm-select sequence :core-form :try)
+        records (get core :error-handlers) count-records (if (vector? records) (count records) 0)
+        shapes? (loop [remaining tries]
+                  (if (= 0 (count remaining)) true
+                    (let [node (first remaining) attrs (get node :attributes)]
+                      (if (if (vector? (get node :children))
+                            (if (map? attrs) (vector? (get attrs :handler-clauses)) false) false)
+                        (recur (rest remaining)) false))))
+        work (+ (* 8 (count sequence)) (count source-forms) (count bindings)
+                (* count-records (+ 100 (* 4 (count sequence)) (* 4 (count (get core :error-transfers))))))]
+    (if (= 0 (count tries))
+      (if (if (= records nil) true (= [] records))
+        {:status :accepted :groups {} :seeds {} :work-count (count sequence) :diagnostics []}
+        (sh08-th-error "C7-VERIFY" :unexpected-error-handlers {} :no-handler-records records))
+      (if (= false shapes?) (sh08-th-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-vectors nil)
+      (if (> work budget) (sh08-th-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits work)
+      (let [nodes (sh08-ft-node-index sequence) forms (sh08-ft-index source-forms :form-id)
+            binding-index (sh08-ft-binding-index bindings) owners (sh08-th-owners core (- budget work))]
+        (if (= :accepted (get owners :status))
+        (loop [remaining tries ordinal 0 groups {} seeds {}]
+          (if (= 0 (count remaining))
+            (if (if (= ordinal count-records)
+                  (= (loop [remaining records out []]
+                       (if (= 0 (count remaining)) out
+                         (recur (rest remaining) (conj out (sh08-ft-semantic-authenticated-record
+                           (get (get (get core :identity-preimage) :lineage) :sh06-semantic-projection-id) (first remaining))))))
+                     (get (get core :identity-preimage) :error-handlers)) false)
+              {:status :accepted :groups groups :seeds seeds :work-count (+ work (get owners :work-count)) :diagnostics []}
+              (sh08-th-error "C7-VERIFY" :error-handler-census {} :exact-handler-records records))
+            (let [node (first remaining) id (get node :node-id) source (get node :source)
+                  form (get forms (get source :form-id)) ids (get form :child-form-ids)
+                  children (get node :children) attrs (get node :attributes)
+                  clauses (get attrs :handler-clauses) owner (get (get owners :owners) id)
+                  tree (sh08-bm-tree nodes (first children))
+                  candidates (loop [transfers (get core :error-transfers) out []]
+                               (if (= 0 (count transfers)) out
+                                 (let [transfer (first transfers)]
+                                   (recur (rest transfers)
+                                     (if (if (contains? tree (get transfer :core-node-id))
+                                           (= owner (get transfer :evaluation-owner-function-syntax-id)) false)
+                                       (conj out (sh08-bm-project transfer [:ordinal :core-node-id])) out)))))
+                  result
+                  (if (if (vector? clauses) (<= (+ ordinal (count clauses)) count-records) false)
+                  (loop [index 0 values [] next-seeds seeds]
+                    (if (= index (count clauses)) {:status :accepted :clauses values :seeds next-seeds}
+                      (let [clause (get clauses index) record (get records (+ ordinal index))
+                            catch-form (get forms (get ids (+ index 2))) catch-ids (get catch-form :child-form-ids)
+                            operator (get forms (get catch-ids 0)) type-form (get forms (get catch-ids 1))
+                            binder-form (get forms (get catch-ids 2)) body-form (get forms (get catch-ids 3))
+                            type-binding (get binding-index (get clause :error-type-binding-id))
+                            binder (get binding-index (get clause :catch-binding-id))
+                            type (sh08-ft-atomic-type-id (get type-binding :name)) body (get nodes (get children (+ index 1)))
+                            body-tree (sh08-bm-tree nodes (get body :node-id))
+                            uses (sh08-bm-uses sequence body-tree (get binder :binding-id))
+                            all-uses (sh08-bm-uses sequence (set (keys nodes)) (get binder :binding-id))
+                            expected-clause {:clause-ordinal index :handler-child-index (+ index 1)
+                              :catch-clause-form-id (get catch-form :form-id) :catch-clause-syntax-id (get catch-form :syntax-id)
+                              :error-type-form-id (get type-form :form-id) :error-type-syntax-id (get type-form :syntax-id)
+                              :error-type-binding-id (get type-binding :binding-id)
+                              :catch-binding-form-id (get binder-form :form-id) :catch-binding-syntax-id (get binder-form :syntax-id)
+                              :catch-binding-id (get binder :binding-id) :catch-binding-scope-id (get binder :scope-id)}
+                            expected-record (assoc
+                              (sh08-bm-project attrs [:construction-order :runtime-reachability :selection-policy :result-policy
+                                :authenticated-sh06-artifact-id :sh06-semantic-projection-id :type-coverage-legality
+                                :result-type-join-legality :effect-registry-legality :effect-profile-capability-legality
+                                :profile-error-lowering-legality :ownership-legality :safety-classification])
+                              :ordinal (+ ordinal index) :clause-ordinal index :clause-count (count clauses)
+                              :handler-child-index (+ index 1) :core-node-id id
+                              :form-id (get form :form-id) :syntax-id (get form :syntax-id)
+                              :protected-core-node-id (first children) :handler-core-node-id (get body :node-id)
+                              :catch-clause-form-id (get catch-form :form-id) :catch-clause-syntax-id (get catch-form :syntax-id)
+                              :error-type-form-id (get type-form :form-id) :error-type-syntax-id (get type-form :syntax-id)
+                              :error-type-binding-id (get type-binding :binding-id)
+                              :catch-binding-form-id (get binder-form :form-id) :catch-binding-syntax-id (get binder-form :syntax-id)
+                              :catch-binding-id (get binder :binding-id) :catch-binding-scope-id (get binder :scope-id)
+                              :catch-binding-use-syntax-ids uses :candidate-error-transfers candidates
+                              :evaluation-region (get (get node :evaluation) :region)
+                              :evaluation-owner-function-syntax-id owner
+                              :ordered-steps [:evaluate-protected :conditionally-select-source-ordered-typed-handler]
+                              :construction-order :protected-then-handlers-source-order-then-try
+                              :runtime-evaluation :protected-then-conditional-handler-chain)]
+                        (if (sh08-ft-all-true?
+                              [(= 4 (count catch-ids)) (= :list (get catch-form :kind))
+                               (if (seq? (get catch-form :value))
+                                 (= ['catch (get type-form :value) (get binder-form :value) (get body-form :value)] (vec (get catch-form :value))) false)
+                               (= 'catch (get operator :value)) (= :symbol (get operator :kind))
+                               (= (get form :form-id) (get catch-form :parent-form-id))
+                               (= (get catch-form :form-id) (get operator :parent-form-id) (get type-form :parent-form-id)
+                                  (get binder-form :parent-form-id) (get body-form :parent-form-id))
+                               (= :symbol (get type-form :kind) (get binder-form :kind))
+                               (= (get type-binding :name) (get type-form :value))
+                               (= [:core :type 'gravity.core] [(get type-binding :binding-class) (get type-binding :kind) (get type-binding :namespace)])
+                               (= [:lexical :local] [(get binder :binding-class) (get binder :kind)])
+                               (= (get binder :name) (get binder-form :value))
+                               (= (get binder :definition-syntax-id) (get binder-form :syntax-id))
+                               (= (get binder :scope-id) (get binder-form :scope-id))
+                               (= (get body :source) (get (sh08-bm-source-node {} body-form) :source))
+                               (= uses all-uses) (= expected-clause clause) (= expected-record record)])
+                          (if (= type nil)
+                            (sh08-th-error "C7-ANNOTATION" :unsupported-atomic-catch-type node :canonical-atomic-error-type (get type-form :value))
+                            (recur (+ index 1) (conj values {:record record :error-type type :handler-core-node-id (get body :node-id)})
+                              (assoc next-seeds (get binder :binding-id) type)))
+                          (sh08-th-error "C7-VERIFY" :typed-handler-source-join node :exact-canonical-handler record)))))
+                    (sh08-th-error "C7-VERIFY" :error-handler-census node :exact-handler-records records))]
+              (if (sh08-ft-all-true?
+                    [(vector? records) (vector? clauses) (> (count clauses) 0)
+                     (= (+ 1 (count clauses)) (count children)) (= (+ 2 (count clauses)) (count ids))
+                     (= source (get (sh08-bm-source-node {} form) :source)) (= :list (get form :kind))
+                     (= 'try (get (get forms (first ids)) :value))
+                     (if (seq? (get form :value))
+                       (= (loop [remaining (rest ids) out ['try]]
+                            (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (get forms (first remaining)) :value)))))
+                          (vec (get form :value))) false)
+                     (= (get (get nodes (first children)) :source) (get (sh08-bm-source-node {} (get forms (get ids 1))) :source))
+                     (= 0 (get attrs :protected-child-index)) (= (count clauses) (get attrs :handler-count))
+                     (= (loop [i 1 out []] (if (= i (count children)) out (recur (+ i 1) (conj out i)))) (get attrs :handler-child-indexes))
+                     (= :protected-then-ordered-typed-handler-candidates (get attrs :evaluation-order) (get (get node :evaluation) :kind))
+                     (= owner (get (get node :evaluation) :owner-function-syntax-id))
+                     (= (loop [remaining clauses out []]
+                          (if (= 0 (count remaining)) out
+                            (recur (rest remaining) (conj (conj out (get (first remaining) :error-type-binding-id))
+                                                          (get (first remaining) :catch-binding-id)))))
+                        (get node :resolved-binding-ids))
+                     (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
+                     (= :source-ordered-typed-handler-candidates (get attrs :selection-policy))
+                     (= :protected-or-selected-handler-last (get attrs :result-policy))
+                     (= :not-asserted-by-sh07-b9 (get attrs :runtime-reachability))
+                     (= [:pending-sh08 :pending-sh08 :pending-sh09 :pending-sh09 :pending-sh09 :pending-sh10 :pending-sh11]
+                        [(get attrs :type-coverage-legality) (get attrs :result-type-join-legality) (get attrs :effect-registry-legality)
+                         (get attrs :effect-profile-capability-legality) (get attrs :profile-error-lowering-legality)
+                         (get attrs :ownership-legality) (get attrs :safety-classification)])])
+                (if (= :accepted (get result :status))
+                  (recur (rest remaining) (+ ordinal (count clauses)) (assoc groups id (get result :clauses)) (get result :seeds)) result)
+                (sh08-th-error "C7-VERIFY" :typed-try-source-join node :exact-canonical-try attrs))))) owners)))))))
+      (sh08-th-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-input-vectors nil))))
+
+; L5/L9: exact canonical atomic matches classify SOURCE error potential.
+; Covered source errors do not establish profile/handler/capability authority.
+(defn sh08-eh-partition [protected clauses graph]
+  (loop [remaining clauses pending protected escaped [] handled []]
+    (if (= 0 (count remaining))
+      {:residual (sh08-tc-union pending escaped) :handled handled}
+      (let [clause (first remaining) type (get clause :error-type)
+            matched (loop [errors pending out []]
+                      (if (= 0 (count errors)) out
+                        (recur (rest errors) (if (= type (first errors)) (conj out (first errors)) out))))
+            unmatched (loop [errors pending out []]
+                        (if (= 0 (count errors)) out
+                          (recur (rest errors) (if (= type (first errors)) out (conj out (first errors))))))
+            own (if (> (count matched) 0) (get graph (get clause :handler-core-node-id) []) [])]
+        (recur (rest remaining) unmatched (sh08-tc-union escaped own)
+          (conj handled {:source-handler (get clause :record) :error-type type
+                         :candidate-error-types pending :matched-error-types matched
+                         :handler-error-types own :remaining-error-types unmatched}))))))
+
+(defn sh08-eh-seed-bindings [initial seeds]
+  (loop [remaining (keys seeds) out initial]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (assoc out (first remaining) (get seeds (first remaining)))))))
+
+(defn sh08-eh-type-checks [groups types nodes]
+  (loop [remaining (keys groups)]
+    (if (= 0 (count remaining)) {:diagnostics []}
+      (let [clauses (get groups (first remaining)) record (get (first clauses) :record)
+            ids (loop [rest-clauses clauses out [(get record :protected-core-node-id)]]
+                  (if (= 0 (count rest-clauses)) out
+                    (recur (rest rest-clauses) (conj out (get (first rest-clauses) :handler-core-node-id)))))
+            child-types (sh08-ft-ordered-child-types ids types)
+            known? (sh08-ft-every-known? child-types)
+            joined (sh08-ft-loop-kernel-normal-join child-types)]
+        (if (if known? (= joined :gravity.type/unknown) false)
+          {:diagnostics [{:rule "C7-TYPE-MISMATCH" :reason :try-normal-result-type-mismatch
+                          :node (get nodes (first remaining)) :expected :compatible-protected-and-handler-normal-results :actual child-types}]}
+          (recur (rest remaining)))))))
+
+(defn sh08-eh-constraint [node clauses types graph]
+  (let [ids (get node :children)
+        source-errors (loop [remaining ids out []]
+                        (if (= 0 (count remaining)) out
+                          (recur (rest remaining) (conj out (get graph (first remaining) [])))))
+        partition (sh08-eh-partition (first source-errors) clauses graph)
+        premise {:version :sh08-atomic-typed-catch-v1 :source-node node
+                 :source-handlers (loop [remaining clauses out []]
+                                    (if (= 0 (count remaining)) out
+                                      (recur (rest remaining) (conj out (get (first remaining) :record)))))
+                 :catch-types (loop [remaining clauses out []]
+                                (if (= 0 (count remaining)) out
+                                  (recur (rest remaining) (conj out (get (first remaining) :error-type)))))
+                 :child-types (sh08-ft-ordered-child-types ids types) :child-source-error-types source-errors
+                 :partition partition :normal-result-type (get types (get node :node-id))
+                 :matching :exact-canonical-atomic-type :effect-label-discharge :pending-profile-handler-capability-authority}]
+    {:constraint-id-request {:domain :gravity/sh08-atomic-typed-catch-v1 :premise premise}
+     :kind :equality :producer-rule :sh08-atomic-typed-catch-v1
+     :lhs {:core-node-id (get node :node-id) :projection :source-error-handler-result}
+     :rhs (get partition :residual) :dependencies premise :origin (get (get node :source) :origin-chain)
+     :solution {:normal-result-type (get premise :normal-result-type) :thrown-error-effects (get partition :residual)
+                :handled-source-errors (get partition :handled) :effect-label-discharge :pending-profile-handler-capability-authority}
+     :invalidation [:error-handlers :error-transfers :catch-type-bindings :catch-lexical-bindings :type-table :source-forms :evaluation-order]
+     :status :solved :diagnostics []}))
+
+(defn sh08-eh-constraints [core groups types graph rows]
+  (loop [remaining (get core :nodes) out rows]
+    (if (= 0 (count remaining)) out
+      (let [node (first remaining)]
+        (recur (rest remaining) (if (= :try (get node :core-form))
+          (conj out (assoc (sh08-eh-constraint node (get groups (get node :node-id)) types graph)
+                      :profile (get (get core :module) :profile) :target (get (get core :module) :target))) out))))))
 
 (defn sh08-tc-error-work [node graph target]
   (let [ids (if (= target nil) (get node :children) (conj (get node :children) target))
@@ -4575,17 +4792,28 @@
                (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (get graph (first remaining) []))))))]
     (+ 1 (count ids) (* (+ 2 (count ids)) (+ 1 size)))))
 
-(defn sh08-tc-node-errors [node graph target types]
+(defn sh08-eh-groups [records bindings]
+  (loop [remaining records groups {}]
+    (if (= 0 (count remaining)) groups
+      (let [record (first remaining) id (get record :core-node-id)]
+        (recur (rest remaining)
+          (assoc groups id (conj (get groups id []) {:record record
+            :handler-core-node-id (get record :handler-core-node-id)
+            :error-type (sh08-ft-atomic-type-id (get (get bindings (get record :error-type-binding-id)) :name))})))))))
+
+(defn sh08-tc-node-errors [node graph target types handlers]
   (let [kind (get node :core-form)]
     (if (contains? #{:fn :quote} kind) []
+      (if (= :try kind)
+        (get (sh08-eh-partition (get graph (first (get node :children)) []) (get handlers (get node :node-id) []) graph) :residual)
       (let [operands (loop [ids (get node :children) out []]
                        (if (= 0 (count ids)) out (recur (rest ids) (sh08-tc-union out (get graph (first ids) [])))))
             called (if (= target nil) operands (sh08-tc-union operands (get graph target [])))
             payload (get types (first (get node :children)))]
         (if (if (= kind :throw) (= false (= payload :gravity.type/never)) false)
-          (sh08-tc-union called [payload]) called)))))
+          (sh08-tc-union called [payload]) called))))))
 
-(defn sh08-tc-graph [core types owners scope budget]
+(defn sh08-tc-graph [core types owners scope budget handlers]
   (let [nodes (sh08-ft-node-index (get core :nodes)) records (sh08-ft-function-record-index (get core :function-records))
         edges (sh08-ft-index (get core :call-edges) :call-core-node-id)
         selected (loop [remaining (get core :nodes) out []]
@@ -4604,8 +4832,8 @@
                 deps (if (= kind :fn) [] (get node :children)) deps (if (= target nil) deps (conj deps target))
                 ready? (loop [ids deps]
                          (if (= 0 (count ids)) true (if (contains? graph (first ids)) (recur (rest ids)) false)))]
-            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call} kind)
-              (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types))
+            (if (contains? #{:literal :quote :reference :fn :def :do :if :let :collection-literal :throw :call :try} kind)
+              (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types handlers))
                                (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
                 (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))
               (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-body-operation node :acyclic-direct-local-body kind))))))))
@@ -4636,12 +4864,12 @@
      :profile (get (get core :module) :profile) :target (get (get core :module) :target) :status :solved :diagnostics []}))
 
 (defn sh08-tc-products [core types functions bindings direct budget]
-  (if (= 0 (count (get direct :throws))) direct
+  (if (if (= 0 (count (get direct :throws))) (= 0 (count (get core :error-handlers))) false) direct
   (let [scoped (sh08-tc-scope core (get direct :throws) budget)]
     (if (= :accepted (get scoped :status))
       (if (= false (get scoped :active?))
         (assoc direct :work-count (+ (get direct :work-count 0) (get scoped :work-count)))
-        (let [scope (get scoped :scope) initial (+ (get scoped :work-count) (* 8 (count (get core :nodes)))
+        (let [scope (get scoped :scope) initial (+ (get scoped :work-count) (* 8 (count (get core :nodes))) (* 100 (count (get core :error-handlers)))
                     (* 70 (count (get core :call-edges))) (count bindings) (count (get core :definitions))
                     (* 3 (count (get core :function-records)))
                     (* (count (get core :calls)) (+ (count bindings) (count (get core :definitions))
@@ -4680,7 +4908,8 @@
                         (if (= :rejected (get owners :status)) owners
                         (if (if (= bad-edge nil) (= false recursive?) false)
                         (if (= :accepted (get owners :status))
-                          (sh08-tc-graph core types (get owners :owners) scope (- budget initial (get owners :work-count))) owners)
+                          (sh08-tc-graph core types (get owners :owners) scope (- budget initial (get owners :work-count))
+                            (sh08-eh-groups (get core :error-handlers) binding-index)) owners)
                         (sh08-th-error (if recursive? "C7-ANNOTATION" "C7-VERIFY")
                           :unsupported-or-incoherent-throwing-call-component
                           (get nodes (get bad-edge :call-core-node-id) {}) :original-acyclic-local-edges bad-edge))))]
@@ -4690,7 +4919,8 @@
                              (let [record (first remaining) id (get record :function-syntax-id)]
                                (recur (rest remaining) (if (contains? scope id)
                                  (assoc out id (get (get derived :nodes) (get record :body-core-node-id) [])) out)))))
-                  rows (loop [edges (get core :call-edges) out (get direct :constraints)
+                  rows (loop [edges (get core :call-edges) out (sh08-eh-constraints core
+                                (sh08-eh-groups (get core :error-handlers) binding-index) types (get derived :nodes) (get direct :constraints))
                               work (+ initial (get owners :work-count) (get derived :work-count))]
                          (if (> work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-row-visits work)
                          (if (= 0 (count edges)) {:status :accepted :constraints out :work-count work}
@@ -4716,6 +4946,7 @@
   [node type-table binding-types function-types edges context]
   (let [core-form (get node :core-form)
         children (get node :children)]
+    (if (= core-form :try) (sh08-bm-join children type-table)
     (if (= core-form :throw) :gravity.type/never
     (if (= core-form :loop) (sh08-ft-last-type children type-table)
     (if (= core-form :recur)
@@ -4768,7 +4999,7 @@
                           (get (get (sh08-im-callee edge context) :function-type) :return :gravity.type/unknown))))
                     (if (= core-form :match)
                       (sh08-bm-join (sh08-gd-branch-ids node) type-table)
-                      :gravity.type/unknown))))))))))))))))
+                      :gravity.type/unknown)))))))))))))))))
 
 (defn sh08-ft-infer-node-with-context
   [node type-table binding-types function-types edges context]
@@ -6759,6 +6990,7 @@
                 (sh08-ft-complete-function-skeletons
                  base-function-skeletons recursive-proof higher-order-proof)
                 quoted-products (sh08-qd-products (get shape :nodes) source-forms module)
+                handler-products (sh08-eh-source-products core-artifact source-forms bindings 65536)
                 unprojected-inference
                 (sh08-ft-infer-acyclic-with-context
                  (get shape :nodes)
@@ -6768,9 +7000,9 @@
                  (get products :calls)
                  (get products :call-edges)
                  function-skeletons
-                 (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
+                 (sh08-eh-seed-bindings (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
                   recursive? higher-order? recursive-proof
-                  higher-order-proof function-skeletons)))
+                  higher-order-proof function-skeletons))) (get handler-products :seeds {}))
                  (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
@@ -6781,13 +7013,15 @@
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)))
-                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table) 65536)
+                handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
+                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
+                                (- 65536 (get handler-products :work-count 0)))
                 throw-products (if (if (= :accepted (get direct-throws :status))
                                      (if (= [] (get unprojected-inference :diagnostics))
                                        (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
                                  (sh08-tc-products core-artifact (get unprojected-inference :type-table)
                                    (get unprojected-inference :function-types) bindings direct-throws
-                                   (- 65536 (get direct-throws :work-count 0))) direct-throws)
+                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws)
                 raw-inference (if (= 0 (count (get throw-products :throws))) unprojected-inference
                   (assoc unprojected-inference
                     :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
@@ -6803,6 +7037,10 @@
                    (get raw-inference :type-table))
                   nil)
                 inference
+                (if (> (count (get handler-products :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get handler-products :diagnostics))
+                (if (> (count (get handler-types :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get handler-types :diagnostics))
                 (if (> (count (get throw-products :diagnostics)) 0)
                   (assoc raw-inference :diagnostics (get throw-products :diagnostics))
                 (if (> (count (get quoted-products :diagnostics)) 0)
@@ -6820,7 +7058,7 @@
                      :reason :unsupported-or-unresolved-core-node-type
                      :expected :concrete-node-type-or-diagnostic
                      :actual :gravity.type/unknown}))
-                  raw-inference))))
+                  raw-inference))))))
                 functions
                 (sh08-ft-function-facts
                  (get inference :function-types)

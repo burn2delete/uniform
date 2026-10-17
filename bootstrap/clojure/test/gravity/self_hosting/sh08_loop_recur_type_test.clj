@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh08-loop-recur-type-test
   (:require [clojure.java.io :as io]
             [clojure.walk :as walk]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-type-test]
@@ -729,6 +730,217 @@
     (is (= :call-argument-type-mismatch
            (-> (invoke (assoc call :argument-node-ids [(id 1)]) (assoc edge :argument-core-node-ids [(id 1)])) :diagnostics first :reason)))))
 
+(defn- typed-handler-kernel-data []
+  (let [[core forms types] (typed-throw-data)
+        source (fn [id] {:form-id (keyword (str (name id) "-form")) :syntax-id id
+                         :semantic-span nil :origin-chain nil :generated-origin nil})
+        clause {:clause-ordinal 0 :handler-child-index 1 :catch-clause-form-id :catch-form :catch-clause-syntax-id :catch
+                :error-type-form-id :type-form :error-type-syntax-id :type :error-type-binding-id :string-type
+                :catch-binding-form-id :binder-form :catch-binding-syntax-id :binder :catch-binding-id :caught :catch-binding-scope-id :catch-scope}
+        attrs {:protected-child-index 0 :handler-count 1 :handler-child-indexes [1] :handler-clauses [clause]
+               :evaluation-order :protected-then-ordered-typed-handler-candidates :runtime-reachability :not-asserted-by-sh07-b9
+               :selection-policy :source-ordered-typed-handler-candidates :result-policy :protected-or-selected-handler-last
+               :authenticated-sh06-artifact-id :authenticated :sh06-semantic-projection-id :projection
+               :type-coverage-legality :pending-sh08 :result-type-join-legality :pending-sh08
+               :effect-registry-legality :pending-sh09 :effect-profile-capability-legality :pending-sh09
+               :profile-error-lowering-legality :pending-sh09 :ownership-legality :pending-sh10 :safety-classification :pending-sh11}
+        handler (assoc (node :handler :reference [] :catch-scope {:binding-id :caught}) :source (source :handler))
+        try-node (-> (node :try :try [:transfer :handler] :function-body attrs) (assoc :source (source :try))
+                     (assoc :resolved-binding-ids [:string-type :caught])
+                     (assoc :evaluation {:kind :protected-then-ordered-typed-handler-candidates
+                                         :order [{:index 0 :core-node-id :transfer}] :region :function-body :owner-function-syntax-id :function}))
+        record (merge (dissoc attrs :protected-child-index :handler-count :handler-child-indexes :handler-clauses :evaluation-order)
+                      (dissoc clause :clause-ordinal)
+                      {:ordinal 0 :clause-ordinal 0 :clause-count 1 :core-node-id :try :form-id :try-form :syntax-id :try
+                       :protected-core-node-id :transfer :handler-core-node-id :handler :catch-binding-use-syntax-ids [:handler]
+                       :candidate-error-transfers [{:ordinal 0 :core-node-id :transfer}]
+                       :evaluation-region :function-body :evaluation-owner-function-syntax-id :function
+                       :ordered-steps [:evaluate-protected :conditionally-select-source-ordered-typed-handler]
+                       :construction-order :protected-then-handlers-source-order-then-try
+                       :runtime-evaluation :protected-then-conditional-handler-chain})
+        core (-> core (assoc :nodes [(first (:nodes core)) (second (:nodes core)) handler try-node
+                                    (assoc (nth (:nodes core) 2) :children [:try]) (last (:nodes core))])
+                      (assoc :error-handlers [record]
+                             :function-records [{:function-syntax-id :function :function-core-node-id :function :body-core-node-id :try}])
+                      (assoc-in [:identity-preimage :error-handlers] [(assoc record :authenticated-sh06-artifact-id :projection)]))
+        forms (-> forms (assoc-in [0 :parent-form-id] :try-form)
+                  (into [{:form-id :try-form :syntax-id :try :kind :list :value '(try (throw problem) (catch String e e))
+                          :child-form-ids [:try-op-form :transfer-form :catch-form]}
+                         {:form-id :try-op-form :syntax-id :try-op :kind :symbol :value 'try :child-form-ids [] :parent-form-id :try-form}
+                         {:form-id :catch-form :syntax-id :catch :kind :list :value '(catch String e e)
+                          :child-form-ids [:catch-op-form :type-form :binder-form :handler-form] :parent-form-id :try-form}
+                         {:form-id :catch-op-form :syntax-id :catch-op :kind :symbol :value 'catch :child-form-ids [] :parent-form-id :catch-form}
+                         {:form-id :type-form :syntax-id :type :kind :symbol :value 'String :child-form-ids [] :parent-form-id :catch-form}
+                         {:form-id :binder-form :syntax-id :binder :kind :symbol :value 'e :child-form-ids [] :parent-form-id :catch-form :scope-id :catch-scope}
+                         {:form-id :handler-form :syntax-id :handler :kind :symbol :value 'e :child-form-ids [] :parent-form-id :catch-form :scope-id :catch-scope}]))
+        bindings [{:binding-id :string-type :name 'String :binding-class :core :kind :type :namespace 'gravity.core}
+                  {:binding-id :caught :name 'e :binding-class :lexical :kind :local :definition-syntax-id :binder :scope-id :catch-scope}]]
+    {:core core :forms forms :bindings bindings :types (assoc types :handler :gravity.type/string :try :gravity.type/string)}))
+
+(deftest atomic-typed-handler-source-development-kernel
+  (let [{:keys [core forms bindings]} (typed-handler-kernel-data)
+        check #(c7-invoke 'sh08-eh-source-products [%1 %2 %3 65536])
+        result (check core forms bindings)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :accepted (:status (effects 'body-eh-source-products core forms bindings 65536))))
+    (is (= {:caught :gravity.type/string} (:seeds result)))
+    (is (= [:gravity.type/string] (mapv :error-type (get-in result [:groups :try]))))
+    (doseq [[bad-core bad-forms bad-bindings]
+            [[(assoc-in core [:error-handlers 0 :candidate-error-transfers] []) forms bindings]
+             [(assoc-in core [:error-handlers 0 :clause-ordinal] 1) forms bindings]
+             [(assoc-in core [:error-handlers 0 :catch-binding-id] :other) forms bindings]
+             [(assoc-in core [:nodes 3 :attributes :handler-child-indexes] [0]) forms bindings]
+             [(assoc core :error-handlers 7) forms bindings]
+             [(assoc-in core [:nodes 3 :children] 7) forms bindings]
+             [(assoc-in core [:nodes 3 :attributes :handler-clauses] 7) forms bindings]
+             [(assoc-in core [:nodes 3 :resolved-binding-ids] [:caught :string-type]) forms bindings]
+             [(assoc-in core [:nodes 3 :evaluation :owner-function-syntax-id] :other) forms bindings]
+             [(assoc-in core [:nodes 0 :attributes :binding-id] :caught) forms bindings]
+             [core forms (assoc-in bindings [0 :kind] :function)]
+             [core forms (assoc-in bindings [1 :scope-id] :sibling)]
+             [core (assoc-in forms [7 :value] 'Bool) bindings]]]
+      (is (= "C7-VERIFY" (get-in (check bad-core bad-forms bad-bindings) [:diagnostics 0 :rule])))
+      (is (= :rejected (:status (effects 'body-eh-source-products bad-core bad-forms bad-bindings 65536)))))
+    (is (= "C7-GENERIC" (get-in (c7-invoke 'sh08-eh-source-products [core forms bindings 1]) [:diagnostics 0 :rule])))
+    (let [plain (assoc core :nodes [(first (:nodes core))] :error-handlers [])
+          result (check plain [] [])]
+      (is (= 1 (:work-count result))))))
+
+(deftest atomic-typed-handler-source-scope-integration
+  (doseq [name ["atomic-catch-unresolved-type" "atomic-catch-protected-scope" "atomic-catch-sibling-scope" "atomic-catch-outside-scope"]
+          extension [".gravity" ".qst"]]
+    (let [failure (try (bootstrap/compiler-c5-resolution-file-artifact (path (fixture "rejected" name extension)))
+                       nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+      (is (= "C5-UNRESOLVED" (:id failure)) (pr-str failure)))))
+
+(deftest atomic-typed-handler-downstream-boundary-development-kernel
+  (let [emitter-path (path "bootstrap/gravity/p15_s23/emitter.gravity")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path (slurp emitter-path))
+        lowered (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} compiled 'p15-s23-compile-expr
+                  [emitter {:module 'example.try :profile :meta :target :jvm} '#{problem} '(try (throw problem) (catch String e e))])
+        runtime-path (path "bootstrap/gravity/p15_s23/runtime.gravity")
+        forms (bootstrap/read-forms runtime-path (slurp runtime-path))
+        names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
+                 p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
+        projection (str/join "\n" (map pr-str (cons (first forms) (filter #(and (seq? %) (= 'defn (first %)) (names (second %))) forms))))
+        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path projection)
+        result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} runtime-plan
+                 'p15-s23-runtime-evaluate-closed-instruction
+                 [{:op :try :body [{:op :println :args [{:op :literal :value "later"}] :effect :io/write :capability :io/stdout}]} {} ""])]
+    (is (= :rejected (:status lowered)))
+    (is (= :unauthenticated-b51-external-link (get-in lowered [:facts :reason])))
+    (is (= ["" :rejected] (subvec result 1)))
+    (is (= "P15S23X002" (get-in result [0 :diagnostic])))))
+
+(deftest atomic-typed-handler-products-development-kernel
+  (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
+        direct {:status :accepted :throws {:function [:gravity.type/string]} :constraints [] :diagnostics [] :work-count 0}
+        products (c7-invoke 'sh08-tc-products [core types {} bindings direct 65536])
+        source (c7-invoke 'sh08-eh-source-products [core forms bindings 65536])
+        initial (c7-invoke 'sh08-eh-seed-bindings [{:problem :gravity.type/string} (:seeds source)])
+        inferred (c7-invoke 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} initial {}])]
+    (is (= :accepted (:status products)) (pr-str products))
+    (is (= [] (get-in products [:throws :function])))
+    (is (= 1 (count (filter #(= :sh08-atomic-typed-catch-v1 (:producer-rule %)) (:constraints products)))))
+    (is (= :gravity.type/string (get-in inferred [:type-table :handler]) (get-in inferred [:type-table :try])))
+    (is (= :gravity.type/never (get-in inferred [:type-table :transfer])))
+    (let [core (-> core
+                   (update :nodes #(mapv (fn [node] (if (= :try (:node-id node)) (assoc node :children [:payload :handler]) node))
+                                        (remove (fn [node] (= :transfer (:node-id node))) %)))
+                   (assoc :error-transfers [])
+                   (assoc-in [:error-handlers 0 :protected-core-node-id] :payload)
+                   (assoc-in [:error-handlers 0 :candidate-error-transfers] []))
+          products (c7-invoke 'sh08-tc-products [core (dissoc types :transfer) {} bindings (assoc direct :throws {}) 65536])]
+      (is (= :accepted (:status products)) (pr-str products))
+      (is (= [] (get-in products [:throws :function])))
+      (is (= 1 (count (filter #(= :sh08-atomic-typed-catch-v1 (:producer-rule %)) (:constraints products))))))))
+
+(deftest atomic-typed-handler-diagnostic-provenance-development-kernel
+  (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
+        source (c7-invoke 'sh08-eh-source-products [core forms bindings 65536])
+        span {:source "handler-source.gravity" :byte-start 21 :byte-end 99}
+        origins [{:kind :macro-expansion :syntax-id :generated-parent}]
+        generated {:kind :macro-expansion :from-syntax-id :source-try}
+        context {:scope-id :original-try-scope :region :function-body}
+        original (-> (nth (:nodes core) 3)
+                     (assoc :binding-context context)
+                     (assoc-in [:source :semantic-span] span)
+                     (assoc-in [:source :origin-chain] origins)
+                     (assoc-in [:source :generated-origin] generated))
+        nodes (assoc (into {} (map (juxt :node-id identity) (:nodes core))) :try original)
+        checked (c7-invoke 'sh08-eh-type-checks [(:groups source) (assoc types :transfer :gravity.type/string :handler :gravity.type/bool) nodes])
+        diagnostic (first (:diagnostics checked))
+        rendered (first (c7-invoke 'sh08-ft-render-inference-diagnostics [(:diagnostics checked) nodes (:module core)]))]
+    (is (= original (:node diagnostic)))
+    (is (= context (get-in diagnostic [:node :binding-context])))
+    (is (= ["C7-TYPE-MISMATCH" :try-normal-result-type-mismatch :compatible-protected-and-handler-normal-results
+            [:gravity.type/string :gravity.type/bool]] ((juxt :rule :reason :expected :actual) diagnostic)))
+    (is (= :try (:syntax-id rendered)))
+    (is (= span (:source-span rendered)))
+    (is (= origins (:origin-chain rendered)))
+    (is (= generated (:generated-origin rendered)))
+    (is (= :string-type (:binding-id rendered)))
+    (is (= (select-keys rendered [:syntax-id :source-span :origin-chain :generated-origin :binding-id :reason :rule :expected-type :actual-type])
+           (select-keys (:diagnostic-id-request rendered) [:syntax-id :source-span :origin-chain :generated-origin :binding-id :reason :rule :expected-type :actual-type])))
+    (is (= {:diagnostics []} (c7-invoke 'sh08-eh-type-checks [(:groups source) types nodes])))))
+
+(deftest atomic-typed-handler-body-development-kernel
+  (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
+        source (c7-invoke 'sh08-eh-source-products [core forms bindings 65536])
+        independent (effects 'body-eh-source-products core forms bindings 65536)
+        owners (c7-invoke 'sh08-th-owners [core 65536])
+        derived (c7-invoke 'sh08-tc-graph [core types (:owners owners) #{:function} 65536 (:groups source)])
+        rows (c7-invoke 'sh08-eh-constraints [core (:groups source) types (:nodes derived) []])
+        facts {:type-table types :constraint-ledger rows :atomic-typed-handlers (:groups independent)}
+        graph (reduce (fn [graph node]
+                        (assoc graph (:node-id node)
+                               (effects 'body-control-node-record node nil graph (get types (:node-id node)) facts {} core nil))) {} (:nodes core))
+        request {:b47-context {:authenticated-core-request {:forms forms :binding-table bindings
+                    :resolution-table [{:reference-syntax-id :type :position :type :symbol 'String :binding-id :string-type}
+                                       {:reference-syntax-id :handler :position :value :symbol 'e :binding-id :caught}]}}}
+        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2 65536)]
+    (is (= :accepted (:status derived)))
+    (is (= [] (get-in derived [:nodes :try])))
+    (is (= :accepted (:status (verify facts graph))) (pr-str (verify facts graph)))
+    (is (= #{:error/throw} (get-in graph [:try :transitive]) (get-in graph [:try :escaping])))
+    (is (= [] (get-in graph [:try :escaping-thrown-error-types])))
+    (is (= [:gravity.type/string] (get-in graph [:try :covered-source-errors 0 :matched-error-types])))
+    (doseq [mutate [(fn [f] (assoc f :constraint-ledger []))
+                    (fn [f] (assoc-in f [:constraint-ledger 0 :solution :thrown-error-effects] [:gravity.type/bool]))
+                    (fn [f] (assoc-in f [:type-table :handler] :gravity.type/bool))
+                    (fn [f] (assoc-in f [:type-table :try] :gravity.type/never))]]
+      (is (= :rejected (:status (verify (mutate facts) graph)))))
+    (is (= :rejected (:status (verify facts (assoc-in graph [:try :escaping-thrown-error-types] [:gravity.type/bool])))))
+    (is (= :rejected (:status (effects 'body-eh-verify (assoc-in request [:b47-context :authenticated-core-request :resolution-table 0 :position] :value)
+                              core facts (:groups independent) graph 65536))))
+    (is (= :gravity.type/string (c7-invoke 'sh08-ft-normal-return-type [:try [:gravity.type/never :gravity.type/string] :gravity.type/unknown])))
+    (is (= "C7-TYPE-MISMATCH" (get-in (c7-invoke 'sh08-eh-type-checks [(:groups source) (assoc types :transfer :gravity.type/string :handler :gravity.type/bool)
+                                            (into {} (map (juxt :node-id identity) (:nodes core)))]) [:diagnostics 0 :rule])))))
+
+(deftest atomic-typed-handler-partition-development-kernel
+  (let [string :gravity.type/string bool :gravity.type/bool
+        clauses [{:record :first :error-type string :handler-core-node-id :handler-a}
+                 {:record :second :error-type string :handler-core-node-id :handler-b}
+                 {:record :third :error-type bool :handler-core-node-id :handler-c}]
+        errors {:handler-a [string] :handler-b [bool] :handler-c []}
+        graph (into {} (map (fn [[id errors]] [id {:escaping-thrown-error-types errors}]) errors))
+        check (fn [protected clauses]
+                (let [typed (c7-invoke 'sh08-eh-partition [protected clauses errors])
+                      effected (effects 'body-eh-partition protected clauses graph)]
+                  (is (= typed effected)) typed))]
+    (is (= [] (:residual (check [] clauses))))
+    (let [result (check [string] clauses)]
+      (is (= [string] (:residual result)))
+      (is (= [[string] [] []] (mapv :matched-error-types (:handled result))))
+      (is (= [[string] [] []] (mapv :handler-error-types (:handled result)))))
+    (is (= [bool string] (:residual (check [string bool] (subvec clauses 0 2)))))
+    (is (= [string] (:residual (check [string bool] clauses))))
+    (is (= [] (:residual (check [string] [(assoc (first clauses) :handler-core-node-id :handler-c)])))))
+  (let [core {:nodes [] :error-handlers []}]
+    (is (= :accepted (:status (c7-invoke 'sh08-eh-source-products [core [] [] 65536]))))
+    (is (= "C7-VERIFY" (get-in (c7-invoke 'sh08-eh-source-products [(assoc core :error-handlers [{}]) [] [] 65536]) [:diagnostics 0 :rule])))))
+
 (deftest local-throw-final-signature-status-development-kernel
   (let [function {:parameters [{:binding-id :unused :type :gravity.type/unknown}]
                   :return :gravity.type/string :status :inferred}]
@@ -811,15 +1023,97 @@
     (let [node {:core-form :call :children [:operator :argument]} graph {:operator [] :argument [:gravity.type/string :gravity.type/bool]
                                                                        :target [:gravity.type/string :gravity.type/integer]}]
       (is (= [:gravity.type/string :gravity.type/bool :gravity.type/integer]
-             (c7-invoke 'sh08-tc-node-errors [node graph :target {:argument :gravity.type/string}])))
+             (c7-invoke 'sh08-tc-node-errors [node graph :target {:argument :gravity.type/string} {}])))
       (is (= [:gravity.type/string :gravity.type/bool]
-             (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never}]))))))
+             (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never} {}]))))))
 
 (defn- local-throw-change-summary [typed function-id errors]
   (-> typed
       (update :function-type-table #(mapv (fn [f] (if (= function-id (:function-id f)) (assoc f :thrown-error-effects errors) f)) %))
       (update :type-table #(into {} (map (fn [[id type]] [id (if (and (map? type) (= function-id (:function-id type)))
                                                                             (assoc type :thrown-error-effects errors) type)])) %))))
+
+(deftest atomic-typed-catch-authenticated-paired-composition
+    (doseq [extension [".gravity" ".qst"]]
+      (let [relative (fixture "accepted" "atomic-typed-catch" extension)
+            p ((body-helper 'fresh-products) relative) typed (:typed p)
+            core (get-in p [:request :canonical-core-artifact])
+            result ((body-helper 'build-leaf) p) graph (:effect-graph result)
+            functions (into {} (map (juxt :definition-name identity) (:function-type-table typed)))
+            rows (filterv #(= :sh08-atomic-typed-catch-v1 (:producer-rule %)) (:constraint-ledger typed))]
+        (is (= :passed (:status (:report p)) (:status (:verification p))))
+        (is (= :accepted (:status typed) (:status result)) (pr-str [(:diagnostics typed) (:diagnostics result)]))
+        (when-not (= :accepted (:status typed) (:status result))
+          (throw (ex-info "Atomic typed catch composition failed" {:typed (:diagnostics typed) :effects (:diagnostics result)})))
+        (is (= 8 (count rows)))
+        (is (= 10 (count (:error-handlers core))))
+        (doseq [[name errors] [['recover []] ['partial [:gravity.type/bool]] ['nested []]
+                              ['ordered [:gravity.type/string]] ['rethrow [:gravity.type/string]] ['bypass []] ['call-catch []]]]
+          (let [function (functions name)]
+            (is (= :gravity.type/string (:return function)))
+            (is (= errors (:thrown-error-effects function)))
+            (is (= errors (get-in graph [:functions (:function-id function) :throws])))))
+        (doseq [row rows]
+          (let [id (get-in row [:lhs :core-node-id])]
+            (is (= (:rhs row) (get-in graph [:nodes id :escaping-thrown-error-types])))
+            (is (= (get-in row [:solution :normal-result-type]) (get-in typed [:type-table id])))
+            (is (= (get-in row [:solution :handled-source-errors]) (get-in graph [:nodes id :covered-source-errors])))
+            (is (= #{:error/throw} (get-in graph [:nodes id :transitive]) (get-in graph [:nodes id :escaping])))
+            (is (= :pending-profile-handler-capability-authority (get-in graph [:nodes id :effect-label-discharge])))))
+        (doseq [record (:error-handlers core)
+                syntax (:catch-binding-use-syntax-ids record)]
+          (let [reference (first (filter #(= syntax (get-in % [:source :syntax-id])) (:nodes core)))
+                binding (first (filter #(= (:error-type-binding-id record) (:binding-id %))
+                                      (get-in p [:request :b47-context :authenticated-core-request :binding-table])))
+                expected (c7-invoke 'sh08-ft-atomic-type-id [(:name binding)])]
+            (is (= expected (get-in typed [:type-table (:node-id reference)])))))
+        (let [ordered-id (:body-core-node-id (functions 'ordered))
+              index (first (keep-indexed #(when (= ordered-id (get-in %2 [:lhs :core-node-id])) %1) (:constraint-ledger typed)))
+              ordered-row (get (:constraint-ledger typed) index)
+              recover-id (:body-core-node-id (functions 'recover))
+              recover-index (first (keep-indexed #(when (= recover-id (get-in %2 [:lhs :core-node-id])) %1) (:constraint-ledger typed)))
+              reference-id (:node-id (first (filter #(= (first (:catch-binding-use-syntax-ids (first (:error-handlers core))))
+                                                              (get-in % [:source :syntax-id])) (:nodes core))))
+              mutations [#(assoc-in % [:constraint-ledger index :lhs :core-node-id] recover-id)
+                         #(assoc-in % [:constraint-ledger index :dependencies :catch-types 0] :gravity.type/bool)
+                         #(assoc-in % [:constraint-ledger index :dependencies :source-handlers 0 :catch-binding-id] :forged)
+                         #(assoc-in % [:constraint-ledger index :dependencies :source-handlers 0 :handler-child-index] 0)
+                         #(update-in % [:constraint-ledger index :dependencies :source-handlers] (comp vec reverse))
+                         #(assoc-in % [:constraint-ledger index :dependencies :partition :handled] [])
+                         #(local-throw-change-summary % (:function-id (functions 'partial)) [])
+                         #(local-throw-change-summary % (:function-id (functions 'rethrow)) [])
+                         #(assoc-in % [:type-table reference-id] :gravity.type/bool)
+                         #(assoc-in % [:constraint-ledger recover-index :solution :normal-result-type] :gravity.type/never)]]
+          (is (= [[:gravity.type/string] [:gravity.type/bool] []]
+                 (mapv :matched-error-types (get-in ordered-row [:solution :handled-source-errors]))))
+          (is (= [:gravity.type/string] (:rhs ordered-row)))
+          (doseq [mutate mutations]
+            (let [coherent ((body-helper 'coherent-typed-mutation) p mutate)]
+              (is (= :rejected (:status (c7-invoke 'sh08-verify-function-type-result [(:request p) (:typed coherent)]))))
+              (is (= :rejected (:status ((body-helper 'build-leaf) coherent))))))
+          (is (= :passed (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+          (doseq [bad [(assoc-in graph [:nodes recover-id :transitive] #{})
+                       (assoc-in graph [:nodes recover-id :escaping] #{})
+                       (assoc-in graph [:nodes ordered-id :escaping-thrown-error-types] [])
+                       (assoc-in graph [:nodes ordered-id :covered-source-errors] [])]]
+            (is (= :rejected (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p)
+                                       ((body-helper 'reseal-effect-graph) result bad)))))))
+        ))
+    (doseq [extension [".gravity" ".qst"]]
+      (doseq [[name rule reason] [["atomic-catch-result-type" "C7-TYPE-MISMATCH" :try-normal-result-type-mismatch]
+                                ["atomic-catch-unsupported-type" "C7-ANNOTATION" :unsupported-atomic-catch-type]]]
+        (let [p ((body-helper 'fresh-products) (fixture "rejected" name extension))]
+          (is (= :rejected (get-in p [:typed :status])))
+          (is (= [rule reason] ((juxt :rule :reason) (first (get-in p [:typed :diagnostics])))))))
+      (let [p ((body-helper 'fresh-products) (fixture "rejected" "atomic-catch-undeclared" extension))
+            result ((body-helper 'build-leaf) p)]
+        (is (= :accepted (get-in p [:typed :status])))
+        (is (= :passed (get-in p [:verification :status])))
+        (is (= :rejected (:status result)))
+        (is (= "C8-UNDECLARED" (get-in result [:diagnostics 0 :rule])))))
+    (doseq [[disposition name] [["accepted" "atomic-typed-catch"] ["rejected" "atomic-catch-result-type"]
+                              ["rejected" "atomic-catch-unsupported-type"] ["rejected" "atomic-catch-undeclared"]]]
+      (is (= (slurp (path (fixture disposition name ".gravity"))) (slurp (path (fixture disposition name ".qst")))))))
 
 (deftest local-throw-propagation-authenticated-paired-composition
   (doseq [extension [".gravity" ".qst"]]

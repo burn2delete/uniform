@@ -327,6 +327,63 @@ the affected component, imported or indirect throwing calls, handlers and
 cleanup remain unsupported here. These checks do not admit a module revision
 or establish Gravity-emitter/runtime ownership, complete legality or self-hosting.
 
+### Atomic typed catch development
+
+The owning compiler files are the existing C7 engine and `gravity.effects`.
+Canonical C6 handler records supply the source/type/binder/scope/clause-order
+boundary; C7 consumes authenticated resolved core rather than reconstructing C5
+resolution through a new API. C8 independently checks its full request and the
+typed handler premises. Keep these joins separate from runtime catch execution.
+
+Start with the direct kernels in the existing loop/type test namespace:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact atomic-typed-handler-partition-development-kernel \
+  --exact atomic-typed-handler-source-development-kernel \
+  --exact atomic-typed-handler-products-development-kernel \
+  --exact atomic-typed-handler-body-development-kernel \
+  --exact atomic-typed-handler-downstream-boundary-development-kernel \
+  --exact atomic-typed-handler-diagnostic-provenance-development-kernel
+```
+
+`atomic-typed-handler-source-scope-integration` calls the ordinary public C5
+constructor on real rejected fixtures. It is not an inner-loop kernel. Its
+initial completed run spent about 169 seconds in that test, compared with about
+one second across the five direct handler/downstream checks and seven seconds
+of namespace loading. This observation identifies upstream product construction
+separately from scheduling overhead; it is not a general C5 benchmark or a
+speedup claim. The selector was renamed after that run without replaying its
+unchanged body.
+
+Handler candidate-transfer lists are source-potential censuses, not escaping
+error summaries. Nested residuals must be derived bottom-up. Global handler
+ordinals follow construction order; per-try clause ordinals follow source order.
+A handler's own throw escapes that try rather than entering a sibling handler.
+
+Covered and residual source error types do not by themselves establish legal
+effect discharge. Preserve performed `:error/throw`, source allowances and
+pending profile/provider permission. Actual C7/effects composition is required
+when these typed facts or interfaces change; it is not a reason to replay old
+unchanged public bundles or refresh admission pins.
+
+For a changed handler boundary, run its affected composition explicitly:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact atomic-typed-catch-authenticated-paired-composition --fail-fast
+```
+
+The initial completed composition passed one test/220 assertions in about
+829 seconds of test execution, plus about eight seconds of startup/loading.
+It constructs fresh accepted `.gravity` and `.qst` products, checks coherent
+typed/effect mutations and semantic rejection cases. This cost belongs to the
+affected product construction and checking, not a requirement before every
+direct-kernel edit. A rejected-diagnostic source-location correction or removal
+of optional test output does not require replaying the unchanged positive proof.
+
 ### Current Gravity emitter throw lowering
 
 Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned
@@ -861,6 +918,20 @@ different workloads, not a speedup comparison or a measurement of which
 construction phase dominates. Use direct kernels for iteration and this
 affected composition for interface changes; adding scheduling machinery would
 not remove its product-construction work.
+
+The typed-catch composition exposed a separate retention limitation. Rendering
+its first original request, typed result and verification report as one EDN
+string produced 43,392,705 characters. The retention attempt used the existing
+16,777,216 scalar-unit bound as its serialized-text cap, so it wrote no file.
+This is not a measurement of UTF-8 bytes or unique retained objects, nor proof
+that the compiler's aggregate carrier bound was exceeded. The observed accepted
+type/effect statuses and passed verifier report do not establish the aggregate
+test verdict. Do not enlarge bounds, strip embedded proof DATA or rerun an
+unchanged proof merely to recover that optional file. Before redesigning this
+representation, inspect expected/candidate duplication, identity preimages,
+source copies and the applicability of value versus serialized-output limits
+using available data and construction code. Keep that bounded investigation
+separate from semantic implementation and scheduling changes.
 
 Bounded follow-up: observe one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity

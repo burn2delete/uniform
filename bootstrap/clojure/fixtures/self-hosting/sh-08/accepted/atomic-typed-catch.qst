@@ -1,0 +1,21 @@
+(ns self-hosting.sh08.atomic-typed-catch
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn recover [flag :- Bool problem :- String] :- String
+  (try (if flag (throw problem) problem) (catch String e e)))
+(defn partial [flag :- Bool problem :- String] :- String
+  (try (if flag (throw problem) (throw flag)) (catch String e e)))
+(defn nested [problem :- String] :- String
+  (try (try (throw problem) (catch String inner (throw inner)))
+       (catch String outer outer)))
+(defn ordered [flag :- Bool problem :- String] :- String
+  (try (if flag (throw problem) (throw flag))
+       (catch String first-error (throw first-error))
+       (catch Bool boolean-error "bool")
+       (catch String later-error later-error)))
+(defn rethrow [problem :- String] :- String
+  (try (throw problem) (catch String e (throw e))))
+(defn bypass [problem :- String] :- String
+  (try problem (catch String e (throw e))))
+(defn call-catch [flag :- Bool problem :- String] :- String
+  (try (partial flag problem) (catch Bool e "bool")))
