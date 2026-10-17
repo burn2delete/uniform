@@ -2141,9 +2141,63 @@ verification once per public operation, unchanged source/ledger tamper rejection
 and zero seed throw transport. The original frozen source, test and fixture
 inputs remained unchanged. No interrupted or failed aggregate is relabeled
 passed, and no full twelve-input final-candidate matrix is claimed.
-Function-target runtime recur, complete
-effect/profile legality, whole-runtime compilation and authoritative migration
-remain open; the twenty-definition evaluator projection is development-only.
+At that loop-only checkpoint, function-target runtime recur remained open.
+Its twenty-definition evaluator projection was development-only. The following
+increment adds function-target execution, not complete effect/profile legality,
+whole-runtime compilation or authoritative migration.
+
+### Canonical function-target recur execution
+
+The current Gravity emitter and runtime now lower and execute fixed-arity
+function recur using the original C6 function target, ordered parameter bindings,
+explicit known C7 parameter slots and transfer ledger. Recur arguments run
+left-to-right in the old environment. A matching backedge replaces all parameters
+together in a fresh local environment, drops prior body locals, preserves output
+and retains the same call path. Ordinary recursive calls retain their cycle
+restriction. Loop targets, tail/try barriers and caller/callee isolation remain
+distinct. Called-function metadata is validated before argument evaluation;
+legacy zero-argument entry records may omit parameter/arity fields, but present
+malformed fields are not defaulted away.
+
+The full source/header join dominates function compilation once. Independent
+review caught a new per-transfer repeat of that join whose source-sized work was
+not covered by the precharge. The correction reuses existing active-function
+records and C7 parameter facts, retaining target, declaration, ordered binding
+and current-type checks without a cache, flag, public input or increased cap.
+The final current-source regression passes fourteen tests/861 assertions,
+including 48 function-target lowering and 63 runtime assertions. These cover
+the exact transfer budget, one-less rejection, no-repeat source control and
+parameter tampering. The smaller affected batches overlap this regression;
+their counts are not additive. Earlier projection-census and test-syntax
+failures remain failed observations.
+
+The affected composition passed once: one test/276 assertions, six freshly
+constructed source inputs, with all frozen code/test/fixture bytes unchanged.
+Both extensions of the existing annotated function fixture return the original
+String through a function restart and an ordinary guest call. Both extensions
+of the new ten-function fixture exercise parameter swaps, shadowing, fresh
+locals, nested loop/function targets, first-argument throw abort, throws after a
+restart, caller catches preserving payload identity, a terminating zero-slot
+case, and the unchanged seven-key main execution record. The existing rejected
+slot-type pair reports the precise C7 String-versus-Bool mismatch and rejects
+public lowering. Target, tail and ledger mutations reject; each public
+operation verifies with current C7 once; no seed throw transport is used.
+These mutations are not claimed as coherently resealed adversarial products.
+The zero-slot case checks lowering, the empty ledger slots and normal entry;
+its false branch does not execute a zero-arity backedge. Rejection of leaked
+prior body locals is covered by the normalized runtime kernel, not by an
+out-of-scope reference in a source fixture.
+
+Selected execution took 660.745 seconds and the completed command took 668.622
+seconds with a 2 GiB heap. This includes real construction and verification,
+not just scheduling; it does not identify a dominant phase or establish a
+speedup. The direct commands are in `docs/development-verification.md`.
+The twenty-two original-source runtime functions are a development projection,
+not a compiled or admitted whole runtime. Arbitrary recursive calls, closure
+execution, full effect/profile/provider legality, termination and total-cost
+proofs, authoritative migration, target completion, self-hosting and seedless
+release remain outstanding. No unchanged expensive proof was replayed to repair
+the cheap tests or documentation.
 
 ## Current Baseline
 

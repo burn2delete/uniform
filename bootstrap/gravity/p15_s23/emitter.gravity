@@ -1775,6 +1775,47 @@
     (if (if (= :loop (get target :target-kind)) (= false (contains? #{nil :gravity.type/unknown} type)) false)
       (= (p15-s23-typed-loop-row context premise initializer) (get (get context :loop-rows) [:loop-slot-type (get record :binding-id)])) false)))
 
+(defn p15-s23-typed-function-target? [context target]
+  (let [record (get context :current-function) node (get (get context :nodes) (get record :function-core-node-id))
+        body (get (get context :nodes) (get record :body-core-node-id))
+        expected {:target-id (get (get node :attributes) :recur-target-id) :target-kind :function :owner-core-node-id (get node :node-id)
+                  :owner-form-id (get (get node :source) :form-id) :owner-syntax-id (get (get node :source) :syntax-id)
+                  :arity (get record :fixed-arity) :binding-ids (get record :parameter-binding-ids)
+                  :body-scope-id (get body :binding-context) :parent-target-id nil :type-compatibility :pending-sh08}]
+    (if (if (map? target) (vector? (get target :binding-ids)) false)
+      (p15-s23-typed-all [(string? (get target :target-id))
+        (if (string? (get target :target-id)) (if (> (count (get target :target-id)) 0) (<= (count (get target :target-id)) 256) false) false)
+        (= :fn (get node :core-form)) (= target expected)
+        (= target (get (get context :targets) (get target :target-id)) (get (get context :target-owners) (get node :node-id)))
+        (= (get target :binding-ids) (get node :resolved-binding-ids))
+        (= (get target :arity) (count (get target :binding-ids)))]) false)))
+
+(defn p15-s23-typed-function-slots [context target]
+  (if (p15-s23-typed-function-target? context target)
+    ; typed-lower-function already joined the complete source/header exactly
+    ; once. Per-transfer work visits only the current ordered parameter facts;
+    ; it must not traverse the function's source body again.
+    (let [record (get context :current-function) declarations (get (get record :signature) :parameters)
+          function (get (get context :functions) (get record :definition-name))
+          parameters (get function :parameters) node (get (get context :nodes) (get record :function-core-node-id))]
+      (if (p15-s23-typed-all [(= record (get (get context :records) (get record :definition-name)))
+            (= (get record :function-syntax-id) (get function :function-id) (get (get node :source) :syntax-id))
+            (= (get record :function-core-node-id) (get function :function-core-node-id))
+            (= (get record :body-core-node-id) (get function :body-core-node-id))
+            (= (get record :parameter-binding-ids) (get function :parameter-binding-ids))
+            (= (get record :signature) (get function :signature) (get (get node :attributes) :signature))
+            (if (vector? parameters) (= (count parameters) (count (get target :binding-ids))) false)])
+        (if (if (= 0 (count (get target :binding-ids))) true
+              (if (vector? declarations) (= (count declarations) (count (get target :binding-ids))) false))
+          (loop [ids (get target :binding-ids) i 0 out []]
+            (if (= 0 (count ids)) out
+              (let [parameter (get parameters i) type (get parameter :type) declaration (get declarations i)]
+                (if (p15-s23-typed-all [(map? declaration) (= (first ids) (get parameter :binding-id))
+                        (= false (contains? #{nil :gravity.type/unknown} type))
+                        (= type (get (get context :parameter-types) (first ids)))
+                        (p15-s23-typed-declaration? declaration type context)])
+                  (recur (rest ids) (+ i 1) (conj out type)) nil)))) nil) nil)) nil))
+
 (defn p15-s23-typed-loop-parent? [context target]
   (let [parent (get context :nearest-target) record (get context :current-function)
         node (get (get context :nodes) (get record :function-core-node-id)) body (get (get context :nodes) (get record :body-core-node-id))
@@ -1955,26 +1996,28 @@
       (p15-s23-typed-node-error :malformed-typed-recur-family node)
     (if (= false (= (count children) (count (get target :binding-ids)))) (p15-s23-typed-node-error :typed-recur-slot-count-mismatch node)
     (if (< budget (+ 20 (* 4 (count children)))) (p15-s23-typed-node-error :typed-lowering-work-limit node)
-      (let [types (loop [remaining children out []]
+      (let [kind (get target :target-kind) function? (= :function kind)
+            types (loop [remaining children out []]
                     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (get context :types) (first remaining))))))
-            slots (loop [remaining (get target :binding-ids) out []]
+            slots (if function? (p15-s23-typed-function-slots context target)
+                    (loop [remaining (get target :binding-ids) out []]
                     (if (= 0 (count remaining)) out
                       (let [record (get (get context :loop-binding-index) (first remaining))]
-                        (recur (rest remaining) (conj out (get (get context :types) (get record :initializer-node-id)))))))
+                        (recur (rest remaining) (conj out (get (get context :types) (get record :initializer-node-id))))))))
             normal? (loop [remaining types]
                       (if (= 0 (count remaining)) true (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
             expected-transfer {:recur-core-node-id (get node :node-id) :recur-form-id (get owner :form-id) :recur-syntax-id (get owner :syntax-id)
-                               :target-id (get target :target-id) :target-kind :loop :argument-node-ids children :arity (count children)
+                               :target-id (get target :target-id) :target-kind kind :argument-node-ids children :arity (count children)
                                :tail-position true :evaluation-order :arguments-left-to-right :transfer-policy :nearest-lexical-recur-target :type-compatibility :pending-sh08}
             premise {:kind :loop-recur-type :source-transfer transfer :source-target target :argument-types types :slot-types slots
                      :result-type :gravity.type/never :normal-transfer? normal? :status :solved}]
         (if (p15-s23-typed-all
-              [(= :loop (get target :target-kind)) (= true (get context :tail?)) (= target (get context :nearest-target))
+              [(contains? #{:loop :function} kind) (vector? slots) (= true (get context :tail?)) (= target (get context :nearest-target))
                (= transfer expected-transfer) (= (count children) (get target :arity) (count slots)) (= (+ 1 (count children)) (count ids))
                (= :list (get owner :kind)) (= 'recur (get (get forms (get ids 0)) :value))
                (= (get owner :form-id) (get (get forms (get ids 0)) :parent-form-id))
                (= (get node :source) (p15-s23-typed-source owner)) (= :gravity.type/never (get (get context :types) (get node :node-id)))
-               (= {:target-id (get target :target-id) :target-kind :loop :arity (count children) :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08} attrs)
+               (= {:target-id (get target :target-id) :target-kind kind :arity (count children) :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08} attrs)
                (= (get target :binding-ids) (get node :resolved-binding-ids)) (p15-s23-typed-ordered-node? node :arguments-left-to-right-then-transfer)
                (= (p15-s23-typed-loop-row context premise node) (get (get context :loop-rows) [:loop-recur-type (get node :node-id)]))
                (loop [i 0]
@@ -1984,7 +2027,7 @@
                          initializer (get (get context :nodes) (get record :initializer-node-id))]
                      (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
                            (= (get argument :source) (p15-s23-typed-source form)) (= (get argument :binding-context) (get form :scope-id))
-                           (p15-s23-typed-loop-slot? context record initializer (get slots i))
+                           (if function? true (p15-s23-typed-loop-slot? context record initializer (get slots i)))
                            (if (= :gravity.type/never (get types i)) true (= (get types i) (get slots i)))])
                        (recur (+ i 1)) false))))])
           (let [compiled (p15-s23-typed-compile-children context children (- budget 20 (* 4 (count children))) [])]
@@ -2147,13 +2190,17 @@
   (let [joined (p15-s23-typed-definition context (get definition :name)) value (get joined :value)]
     (if (p15-s23-compiler-complete? joined)
       (if (= definition (get value :definition))
-        (let [compiled (p15-s23-typed-compile-node
-                         (assoc context :locals (get value :locals) :parameter-types (get value :parameter-types) :current-function (get value :record) :tail? true
-                           :nearest-target (get (get context :targets) (get (get (get (get context :nodes) (get (get value :record) :function-core-node-id)) :attributes) :recur-target-id)))
-                         (get (get value :record) :body-core-node-id) (get context :budget))
+        (let [node (get (get context :nodes) (get (get value :record) :function-core-node-id))
+              targeted? (contains? (get node :attributes) :recur-target-id)
+              target (get (get context :targets) (get (get node :attributes) :recur-target-id))
+              active (assoc context :locals (get value :locals) :parameter-types (get value :parameter-types)
+                       :current-function (get value :record) :tail? true :nearest-target target)
+              compiled (if (if targeted? (p15-s23-typed-function-target? active target) true)
+                         (p15-s23-typed-compile-node active (get (get value :record) :body-core-node-id) (get context :budget))
+                         (p15-s23-typed-node-error :typed-function-target-mismatch node))
               function (get value :function)]
           (if (p15-s23-compiler-complete? compiled)
-            (p15-s23-compiler-result (assoc definition
+            (p15-s23-compiler-result (assoc (if targeted? (assoc definition :recur-target (get target :target-id)) definition)
               :instructions [(get compiled :value)]
               :binding {:name (get definition :name) :kind :function :namespace (get module :module)
                 :profile (get module :profile) :target (get module :target)

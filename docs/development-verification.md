@@ -588,7 +588,7 @@ and every guest execution is observed for zero seed throw transport. The
 sixteen-function runtime projection is not whole-module compilation. Counts
 overlap and timings describe different workloads, not a speedup comparison.
 
-### Canonical loop-target execution
+### Canonical loop and function-target execution
 
 Edit the existing Gravity emitter and runtime for canonical `loop`/`recur`
 lowering and execution. Reuse C6's target, sequential binding and transfer
@@ -599,7 +599,9 @@ or refresh historical migration pins for this work.
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact current-gravity-loop-lowering-development-kernel \
-  --exact current-gravity-loop-runtime-development-kernel
+  --exact current-gravity-loop-runtime-development-kernel \
+  --exact current-gravity-function-recur-lowering-development-kernel \
+  --exact current-gravity-function-recur-runtime-development-kernel
 # Affected source -> current typed lowering -> Gravity runtime composition:
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
@@ -612,23 +614,45 @@ A separate private control position carries the target ID, so ordinary or
 thrown data that resembles a recur instruction stays inert. The matching loop
 consumes its backedge. Non-tail positions, `try` regions and call boundaries
 retain the existing C6 transfer restrictions; a nested loop establishes its
-own target. An implicit function target can be a loop's canonical parent
-without enabling function-target recur execution.
+own target. Function-target recur uses the current function's declared parameter
+slots, not types guessed from a caller. Its matching activation replaces all
+parameters together in a fresh local environment and retains the same call
+path. Ordinary recursive calls still have the existing cycle restriction;
+function recur is a backedge, not another ordinary call.
+
+The function-target increment passed its six-input affected composition: one
+test/276 assertions. Use its existing selector when validating that changed
+boundary:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-function-recur-authenticated-composition --fail-fast
+```
+
+That selector constructs six source products: the existing annotated function
+pair, the new executable function-recur pair, and a representative rejected
+slot-type pair. It includes a terminating zero-parameter case, parameter swaps,
+shadowing, nested loops, and throws before and after a restart. The selected run
+took 660.745 seconds, including product construction and fresh public
+verification. That is not a phase-cost or speedup measurement. Do not repeat
+this unchanged composition, the old C6/C7 matrix, or migration proofs to debug
+these development kernels or correct documentation.
 
 The focused checks exercise normalized producer-shaped data, including rows
 constructed by the current C7 constraint producer. They are not authenticated
 source evidence. The separate paired selector constructs each source input
 once and reuses its products for assembly, lowering, execution and negative
 checks. Run it when this composition changes, not to replay unchanged C6
-tail/arity proofs or to repair a test-only assertion. Its command is not a
-record of a passing run.
+tail/arity proofs or to repair a test-only assertion. Passing results are scoped
+to the actual source and implementation revision tested.
 
 Represented integer values remain generic Integer, not guessed I64 values.
 Unelaborated decimal descriptors still reject at this consumer boundary;
-that is not a language-level prohibition on decimal loops. Function-target
-recur, arbitrary recursive calls, full effect/profile legality, whole-runtime
-compilation and authoritative migration remain separate work. The current
-twenty-function runtime projection and active-target bound do not establish
+that is not a language-level prohibition on decimal loops. Arbitrary recursive
+calls, full effect/profile legality, whole-runtime compilation and authoritative
+migration remain separate work. The current twenty-two-function runtime
+projection and active-target bound do not establish
 termination, total cost, memory bounds or host-stack fit.
 
 If changing C7's source-error composition, edit
@@ -666,7 +690,7 @@ common join requires an affected real multi-function composition as well as
 the focused malformed-root and numeric-diagnostic controls; it does not require
 refreshing authoritative migration pins.
 
-The current source-join candidate passed this bounded affected composition
+The preceding loop-only source-join candidate passed this bounded composition
 (one test/128 assertions):
 
 ```bash

@@ -1860,38 +1860,58 @@
   [instruction environment output]
   (p15-s23-runtime-evaluate-in-context instruction environment output {} []))
 
+(defn p15-s23-runtime-function-valid? [function arity]
+  (if (map? function)
+    (let [params (get function :params []) body (get function :instructions)]
+      (if (if (vector? params) (vector? body) false)
+        (if (if (<= (count params) 65536)
+              (if (> (count body) 0) (<= (count body) 65536) false) false)
+          (if (= arity (get function :arity (count params)) (count params))
+            (if (if (contains? function :recur-target)
+                  (if (string? (get function :recur-target))
+                    (if (> (count (get function :recur-target)) 0) (<= (count (get function :recur-target)) 256) false) false) true)
+              (loop [remaining params seen #{}]
+                (if (= 0 (count remaining))
+                  (loop [instructions body]
+                    (if (= 0 (count instructions)) true (if (map? (first instructions)) (recur (rest instructions)) false)))
+                  (if (symbol? (first remaining))
+                    (if (contains? seen (first remaining)) false (recur (rest remaining) (conj seen (first remaining)))) false))) false)
+            false) false) false)) false))
+
 (defn p15-s23-runtime-call-target-valid? [instruction functions path]
   (if (map? functions)
   (if (vector? path)
   (if (< (count path) 256)
   (if (symbol? (get instruction :function))
   (if (= false (contains? (set path) (get instruction :function)))
-  (let [target (get functions (get instruction :function)) params (get target :params) args (get instruction :args)]
-    (if (map? target)
-      (if (vector? params)
-        (if (vector? args)
-          (if (<= (count params) 65536)
-            (if (= (get target :arity) (count params) (count args))
-              (if (vector? (get target :instructions))
-                (if (if (> (count (get target :instructions)) 0) (<= (count (get target :instructions)) 65536) false)
-                  (loop [remaining params seen #{}]
-                    (if (= 0 (count remaining))
-                      (loop [body (get target :instructions)]
-                        (if (= 0 (count body)) true
-                          (if (map? (first body)) (recur (rest body)) false)))
-                      (if (symbol? (first remaining))
-                        (if (contains? seen (first remaining)) false (recur (rest remaining) (conj seen (first remaining)))) false))) false)
-                false) false) false) false) false) false)) false) false) false) false) false))
+  (let [target (get functions (get instruction :function)) args (get instruction :args)]
+    (if (if (map? target) (if (contains? target :params) (contains? target :arity) false) false)
+      (if (vector? args) (p15-s23-runtime-function-valid? target (count args)) false) false)) false) false) false) false) false))
+
+(defn p15-s23-runtime-activate-function [function values output functions path]
+  ; A backedge restarts this activation, not an ordinary guest call. Rebuilding
+  ; the environment from all collected values drops prior body locals and
+  ; replaces parameters simultaneously without changing the active call path.
+  (if (if (vector? values) (p15-s23-runtime-function-valid? function (count values)) false)
+    (let [params (get function :params []) target (get function :recur-target)
+          targets (if (= target nil) [] [{:id target :names params}])]
+      (loop [arguments values stdout output]
+        (let [locals (loop [index 0 out {}]
+                       (if (= index (count params)) out
+                         (recur (+ index 1) (assoc out (get params index) (get arguments index)))))
+              result (p15-s23-runtime-evaluate-sequence-in-context (get function :instructions) locals stdout functions path targets)]
+          (if (= :recur (get result 2))
+            (if (if (= target (get result 3))
+                  (if (vector? (first result)) (= (count params) (count (first result))) false) false)
+              (recur (first result) (second result))
+              [{:diagnostic "P15S23X002" :reason :unmatched-function-recur} (second result) :rejected]) result))))
+    [{:diagnostic "P15S23X002" :reason :invalid-function-activation} output :rejected]))
 
 (defn p15-s23-runtime-evaluate-call [instruction environment output functions path targets]
   (let [arguments (p15-s23-runtime-evaluate-arguments-in-context (get instruction :args) environment output [] functions path [])]
     (if (= :normal (get arguments 2))
-      (let [target (get functions (get instruction :function)) params (get target :params)
-            locals (loop [index 0 out {}]
-                     (if (= index (count params)) out
-                       (recur (+ index 1) (assoc out (get params index) (get (first arguments) index)))))]
-        (p15-s23-runtime-evaluate-sequence-in-context (get target :instructions) locals (second arguments)
-          functions (conj path (get instruction :function)) [])) arguments)))
+      (p15-s23-runtime-activate-function (get functions (get instruction :function)) (first arguments) (second arguments)
+        functions (conj path (get instruction :function))) arguments)))
 
 (defn p15-s23-runtime-evaluate-in-context
   [instruction environment output functions path]
@@ -2090,8 +2110,7 @@
   (let [entrypoint (get plan :entrypoint)
         function (get (get plan :functions) entrypoint)
         result
-        (p15-s23-runtime-evaluate-sequence-in-context
-         (get function :instructions) {} "" (get plan :functions) [entrypoint] [])]
+        (p15-s23-runtime-activate-function function [] "" (get plan :functions) [entrypoint])]
     (let [record {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
      :entrypoint entrypoint
      :stdout (second result)

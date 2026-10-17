@@ -1,0 +1,35 @@
+(ns self-hosting.sh08.local-runtime-function-recur
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn swap [flag :- Bool left :- String right :- String] :- String
+  (if flag (recur false right left) right))
+
+(defn shadow [flag :- Bool value :- String] :- String
+  (if flag (let [value "shadow"] (recur false value)) value))
+
+(defn locals [flag :- Bool value :- String] :- String
+  (if flag (let [saved value] (recur false saved)) value))
+
+(defn nested [flag :- Bool value :- String] :- String
+  (if flag
+    (let [saved (loop [again true item value]
+                  (if again (recur false item) item))]
+      (recur false saved))
+    value))
+
+(defn abort [flag :- Bool value :- String other :- String] :- String
+  (if flag (recur (throw value) (throw other) other) value))
+
+(defn after [flag :- Bool value :- String] :- String
+  (if flag (recur false value) (throw value)))
+
+(defn catch-abort [problem :- String other :- String] :- String
+  (try (abort true problem other) (catch String error error)))
+
+(defn catch-after [problem :- String] :- String
+  (try (after true problem) (catch String error error)))
+
+(defn zero [] :- String (if false (recur) "zero"))
+
+(defn main [] :- String (swap true "left" "right"))
