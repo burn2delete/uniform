@@ -76,6 +76,23 @@
         verification (invoke 'sh08-verify-function-type-result [request typed])]
     {:c5 c5 :producer-c5 producer-c5 :request request :typed typed :verification verification
      :binding (seal-binding request typed verification)}))
+
+(defn- fresh-recursive-import-products [extension]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [producers (mapv #(bootstrap/compiler-c5-resolution-file-artifact
+                         (path (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" % extension)))
+                       ["function-self-recursive-type" "function-self-recursive-string-type"])
+        requests (mapv fresh-request producers)
+        c5 (bootstrap/compiler-c5-resolution-file-artifact
+             (path (str "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/recursive-imported-body" extension))
+             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts producers})
+        request (assoc (fresh-request c5) :module-type-inputs
+                  {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests requests})
+        invoke (sh08-helper 'invoke-c7)
+        typed (invoke 'sh08-function-type-core-artifact [request])
+        verification (invoke 'sh08-verify-function-type-result [request typed])]
+    {:c5 c5 :request request :typed typed :verification verification
+     :binding (seal-binding request typed verification)}))
 (defn- build-leaf [products]
   (leaf 'build-body-effect-result (:typed products) (:verification products) (:binding products)))
 (defn- coherent-typed-mutation [products mutate]
@@ -361,6 +378,118 @@
       (is (= #{:a} (get-in graphs [a :effect-graph :functions (sha 20) :inferred])))
       (is (= #{:b} (get-in graphs [b :effect-graph :functions (sha 20) :inferred]))))))
 
+(defn- recursive-kernel-data []
+  (let [owner (fn [n] (assoc-in n [:evaluation :owner-function-syntax-id] (sha 20)))
+        nodes [(owner (assoc (node 1 :literal []) :attributes {:literal-kind :boolean :value false}))
+               (owner (assoc (node 2 :reference []) :attributes {:binding-id (sha 50)}))
+               (owner (assoc (node 3 :reference []) :attributes {:binding-id (sha 51)}))
+               (owner (node 4 :call [2 3]))
+               (owner (assoc (node 5 :literal []) :attributes {:literal-kind :integer :value 0}))
+               (owner (assoc (node 6 :if [1 4 5]) :evaluation
+                        {:kind :condition-then-exclusive-branch :owner-function-syntax-id (sha 20)
+                         :order [{:index 0 :core-node-id (sha 1)}]}))
+               (node 7 :fn [6]) (node 8 :def [7])
+               (assoc (node 9 :reference []) :attributes {:binding-id (sha 50)})
+               (assoc (node 10 :literal []) :attributes {:literal-kind :integer :value 7}) (node 11 :call [9 10])]
+        module {:namespace 'example.recursive :profile :meta :target :jvm :effects [] :capabilities []}
+        edge {:ordinal 0 :call-core-node-id (sha 4) :caller-function-syntax-id (sha 20) :caller-function-core-node-id (sha 7)
+              :callee-binding-id (sha 50) :callee-definition-syntax-id (sha 80) :callee-function-syntax-id (sha 20)
+              :callee-function-core-node-id (sha 7) :argument-core-node-ids [(sha 3)]
+              :ordered-evaluation-node-ids [(sha 2) (sha 3)] :evaluation-order :operator-then-arguments :classification :local-function}
+        external-edge (assoc edge :ordinal 1 :call-core-node-id (sha 11) :caller-function-syntax-id nil
+                             :caller-function-core-node-id nil :argument-core-node-ids [(sha 10)]
+                             :ordered-evaluation-node-ids [(sha 9) (sha 10)])
+        call {:core-node-id (sha 4) :argument-node-ids [(sha 3)]}
+        external-call {:core-node-id (sha 11) :argument-node-ids [(sha 10)]
+                       :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments}
+        source (:source (get nodes 3)) external-source (:source (get nodes 10))
+        proof {:domain :gravity/sh08-authoritative-recursive-proof-v1 :function-syntax-id (sha 20)
+               :function-core-node-id (sha 7) :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
+               :parameter-binding-ids [(sha 51)] :fixed-arity 1 :recursive-call-core-node-id (sha 4)
+               :recursive-argument-node-ids [(sha 3)] :recursive-edge edge
+               :recursive-call-source {:syntax-id (:syntax-id source) :source-span (:semantic-span source)
+                                       :origin-chain [] :generated-origin nil}
+               :recursive-call-profile :meta :recursive-call-target :jvm :recursive-call-effects [] :recursive-call-capabilities []
+               :base-node-id (sha 5) :base-type :gravity.type/integer :recursive-definition-binding-id (sha 50)
+               :parameter-evidence-call-core-node-id (sha 11)
+               :parameter-evidence-call {:call-core-node-id (sha 11) :caller-function-syntax-id nil :callee-function-syntax-id (sha 20)
+                 :argument-node-ids [(sha 10)] :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments
+                 :argument-types [:gravity.type/integer] :result-type :gravity.type/integer
+                 :syntax-id (:syntax-id external-source) :source-span (:semantic-span external-source) :origin-chain [] :generated-origin nil
+                 :profile :meta :target :jvm :effects [] :capabilities [] :edge external-edge}
+               :parameter-types [:gravity.type/integer]
+               :proof-bound :one-named-self-recursive-positive-fixed-arity-positional-literal-base
+               :captures? false :higher-order? false :monotone-fixed-point? true}
+        core {:nodes nodes :module module :call-edges [edge external-edge] :calls [call external-call]
+              :definitions [{:binding-id (sha 50) :syntax-id (sha 80)}]
+              :function-records [{:function-syntax-id (sha 20) :function-core-node-id (sha 7) :body-core-node-id (sha 6)
+                                  :definition-binding-id (sha 50) :definition-kind :named-top-level :fixed-arity 1
+                                  :parameter-binding-ids [(sha 51)]}]
+              :recursion-components [{:ordinal 0 :kind :self-recursive :function-syntax-ids [(sha 20)]
+                                       :function-core-node-ids [(sha 7)] :internal-call-edge-ordinals [0]}]}
+        facts {:recursive-proof proof :function-type-table [{:function-id (sha 20) :body-core-node-id (sha 6)
+                  :parameters [{:binding-id (sha 51) :type :gravity.type/integer}] :return :gravity.type/integer}]
+               :type-table {(sha 1) :gravity.type/bool} :call-type-facts []}]
+    [core facts]))
+
+(deftest body-effect-recursive-proof-development-kernel
+  (let [[core facts] (recursive-kernel-data)]
+    (is (true? (leaf 'body-recursive-proof-valid? core facts)))
+    (let [truthy-core (-> core (assoc-in [:nodes 0 :core-form] :reference)
+                              (assoc-in [:nodes 0 :attributes] {:binding-id (sha 51)}))
+          truthy-facts (assoc-in facts [:type-table (sha 1)] :gravity.type/integer)]
+      (is (true? (leaf 'body-recursive-proof-valid? truthy-core truthy-facts)))
+      (is (= :accepted (:status (leaf 'body-derive-recursive-nodes truthy-core truthy-facts {} 65536)))))
+    (doseq [bad [{:recursive-proof {:parameter-types []} :call-type-facts [7]}
+                 {:recursive-proof {:parameter-types []} :call-type-facts [nil]}
+                 {:recursive-proof (:recursive-proof facts) :call-type-facts [7]}
+                 {:recursive-proof (:recursive-proof facts) :call-type-facts [nil]}
+                 {:recursive-proof (:recursive-proof facts) :call-type-facts []}
+                 {:recursive-proof (:recursive-proof facts) :call-type-facts [{:call-core-node-id (sha 4)}]}
+                 {:recursive-proof (:recursive-proof facts) :call-type-facts [{:call-core-node-id (sha 11)}]}]]
+      (is (nil? (leaf 'body-recursive-call-facts bad))))
+    (doseq [mutate [(fn [f] (assoc f :recursive-proof 7))
+                    (fn [f] (assoc-in f [:recursive-proof :parameter-types] 7))
+                    (fn [f] (assoc-in f [:recursive-proof :recursive-call-core-node-id] (sha 99)))
+                    (fn [f] (assoc-in f [:recursive-proof :base-node-id] (sha 10)))
+                    (fn [f] (assoc-in f [:recursive-proof :recursive-edge :callee-function-syntax-id] (sha 99)))
+                    (fn [f] (assoc-in f [:recursive-proof :parameter-evidence-call :argument-types] [:gravity.type/string]))
+                    (fn [f] (assoc-in f [:recursive-proof :captures?] true))]]
+      (is (false? (leaf 'body-recursive-proof-valid? core (mutate facts)))))
+    (doseq [mutate [(fn [c] (assoc-in c [:recursion-components 0 :kind] :mutually-recursive))
+                    (fn [c] (assoc-in c [:recursion-components 0 :internal-call-edge-ordinals] []))
+                    (fn [c] (assoc-in c [:recursion-components 0 :function-syntax-ids] 7))
+                    (fn [c] (assoc-in c [:nodes 2 :attributes :binding-id] (sha 99)))
+                    (fn [c] (assoc-in c [:nodes 9 :attributes :literal-kind] :string))
+                    (fn [c] (update c :nodes #(filterv (fn [n] (not= (sha 5) (:node-id n))) %)))]]
+      (is (false? (leaf 'body-recursive-proof-valid? (mutate core) facts))))))
+
+(deftest body-effect-recursive-fixed-point-development-kernel
+  (let [[core facts] (recursive-kernel-data)
+        derived (leaf 'body-derive-recursive-nodes core facts {} 65536)
+        graph (:nodes derived)]
+    (is (= :accepted (:status derived)))
+    (is (= (set (map :node-id (:nodes core))) (set (keys graph))))
+    (is (= (sha 6) (get-in graph [(sha 4) :call-body-dependency])))
+    (is (= (mapv sha [2 3 6]) (get-in graph [(sha 4) :dependencies])))
+    (is (= #{} (get-in graph [(sha 6) :transitive])))
+    (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
+    (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-recursive-nodes core facts {} (dec (:work-count derived))))))
+    (is (= :accepted (:status (leaf 'body-derive-recursive-nodes core facts {} (:work-count derived)))))
+    (doseq [budget [0 (dec (count (:nodes core)))]]
+      (is (= :body-deferred-work-limit
+             (:reason (leaf 'body-derive-recursive-nodes (update core :nodes conj (node 99 :throw [])) facts {} budget)))))
+    ;; Equations alone permit a nonleast solution. Fresh derivation starts at bottom.
+    (let [inflated (:nodes (leaf 'body-derive-nodes-pass core facts {} 65536 (:recursive-proof facts) #{:compiler/read-ir}))]
+      (is (true? (leaf 'body-graph-equations-valid? core facts {} inflated)))
+      (is (not= graph inflated)))
+    (doseq [bad [(update core :nodes conj (node 99 :throw []))
+                 (update core :nodes #(filterv (fn [n] (not= (sha 2) (:node-id n))) %))
+                 (assoc-in core [:nodes 0 :children] [(sha 1)])]]
+      (is (= :rejected (:status (leaf 'body-derive-recursive-nodes bad facts {} 65536)))))
+    (is (= :cyclic-or-missing-body-effect-dependencies
+           (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 65536))))))
+
 (deftest body-effect-public-forwarding-source-boundary
   (let [forms (read-string (str "[" (slurp (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")) "]"))
         definitions (into {} (keep #(when (and (seq? %) (= 'defn (first %))) [(second %) %]) forms))
@@ -420,6 +549,66 @@
         (is (= :rejected (:status (leaf 'verify-body-effect-result (:typed products) (:verification products) (:binding products) candidate)))))))
   (is (= :imported-body-effects-pending
          (get-in (leaf 'build-body-effect-result {:scope :direct-imported-functions-types-only} {} {}) [:diagnostics 0 :reason]))))
+
+(deftest body-effect-recursive-authenticated-paired-composition
+  (doseq [basename ["function-self-recursive-type" "function-self-recursive-string-type"]]
+    (let [products (mapv #(fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" basename %))
+                         [".gravity" ".qst"])
+          results (mapv build-leaf products)]
+      (doseq [[p result] (map vector products results)]
+        (let [typed (:typed p) core (get-in p [:request :canonical-core-artifact])
+              facts (:identity-input typed) proof (:recursive-proof typed) graph (:effect-graph result)
+              recursive-call (:recursive-call-core-node-id proof)]
+          (is (= :accepted (:status typed) (:status result)) (pr-str (:diagnostics result)))
+          (when-not (= :accepted (:status result))
+            (throw (ex-info "Recursive leaf rejected actual products" {:diagnostics (:diagnostics result)})))
+          (is (= :passed (:status (:report p)) (:status (:verification p))))
+          (is (= :bounded-self-recursive-body-effects-with-thrown-effects-pending (:scope result)))
+          (is (= (:request p) (get-in p [:binding :digest-resolution :preimage :request])))
+          (is (= (set (map :node-id (:nodes core))) (set (keys (:nodes graph)))))
+          (is (= :checked (get-in graph [:recursive-fixed-point :equations])))
+          (is (= (:body-core-node-id (first (:function-type-table typed)))
+                 (get-in graph [:nodes recursive-call :call-body-dependency])))
+          (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+          (is (= #{} (get-in graph [:namespace :inferred])))
+          (is (every? #(and (= #{} (:inferred %)) (= [:pending-sh09] (:throws %))) (vals (:functions graph))))
+          (is (= :passed (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+          (doseq [mutate [(fn [t] (assoc-in t [:recursive-proof :base-node-id] (sha 999)))
+                          (fn [t] (assoc-in t [:recursive-proof :recursive-edge :callee-function-syntax-id] (sha 999)))
+                          (fn [t] (assoc-in t [:recursive-proof :parameter-evidence-call :argument-types] [:gravity.type/bool]))
+                          (fn [t] (assoc-in t [:recursive-call-facts 0 :dispatch] :forged))
+                          (fn [t] (assoc t :scope :first-order-fixed-arity-functions-locals-calls))]]
+            (is (= :rejected (:status (build-leaf (coherent-typed-mutation p mutate))))))
+          (let [inflated (:nodes (leaf 'body-derive-nodes-pass core facts {} 65536 proof #{:compiler/read-ir}))
+                forged (assoc (leaf 'body-build-graph core facts inflated) :recursive-fixed-point (:recursive-fixed-point graph))]
+            (is (true? (leaf 'body-graph-equations-valid? core facts {} inflated)))
+            (is (= :rejected (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p)
+                                           (reseal-effect-graph result forged))))))
+          (let [erased (update graph :functions #(into {} (map (fn [[id f]] [id (assoc f :throws [])]) %)))]
+            (is (= :rejected (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p)
+                                           (reseal-effect-graph result erased))))))))
+      (is (= (:identity-input (first results)) (:identity-input (second results))))))
+  (let [products (mapv fresh-recursive-import-products [".gravity" ".qst"])
+        results (mapv build-leaf products)]
+    (doseq [[p result] (map vector products results)]
+      (is (= :accepted (get-in p [:typed :status]) (:status result)) (pr-str (:diagnostics result)))
+      (when-not (= :accepted (:status result))
+        (throw (ex-info "Imported recursive producer rejected" {:diagnostics (:diagnostics result)})))
+      (is (= :passed (get-in p [:verification :status])))
+      (is (= 2 (count (:producer-effect-graphs result)) (count (:imported-body-dependencies result))))
+      (is (every? #(= :gravity/sh08-recursive-function-typed-core-v1 (get-in % [:sh08-identity-input :domain]))
+                  (vals (:producer-effect-graphs result))))
+      (is (every? #(= :checked (get-in % [:effect-graph :recursive-fixed-point :equations]))
+                  (vals (:producer-effect-graphs result))))
+      (is (= :passed (:status (leaf 'verify-body-effect-result (:typed p) (:verification p) (:binding p) result))))
+      (is (= (:request p) (get-in p [:binding :digest-resolution :preimage :request])))
+      (is (= :rejected (:status (build-leaf (coherent-typed-mutation p
+                    #(assoc-in % [:module-type-producers 0 :identity-input :recursive-proof :base-node-id] (sha 999))))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results)))))
+  (doseq [extension [".gravity" ".qst"]]
+    (let [p (fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-07/b47-function-call-recursion/accepted/function-call-recursion" extension))]
+      (is (= :rejected (get-in p [:typed :status])))
+      (is (= :mutual-recursion-unsupported (get-in p [:typed :diagnostics 0 :actual-type]))))))
 
 (deftest body-effect-imported-authenticated-paired-composition
   ;; One invocation-local pair: actual C5/C6, fresh recursive C7 verification,

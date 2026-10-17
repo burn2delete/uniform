@@ -208,7 +208,7 @@ composition and unchanged forwarding/route checks cover the change. Source and
 plan identities must still describe the current bytes: prior route evidence is
 not proof of a new bundle identity. Keep post-run reject-only or diagnostic
 corrections distinct from the source snapshot exercised by an earlier run.
-Imported bodies, higher-order or recursive propagation, unsupported operations,
+Imported bodies, higher-order or general recursive propagation, unsupported operations,
 throw/try composition, general provider/grant policy and authoritative effect
 identities remain outside this local subset. The legacy imported-type-only
 input still rejects with `:imported-body-effects-pending`. Record actual test
@@ -251,9 +251,57 @@ not build a new public C8 bundle or claim its current identity. Use
 `body-effect-public-forwarding-source-boundary` and affected module-route
 kernels for unchanged-forwarder checks; the public-bundle triggers above still
 apply. Direct leaf producers and scalar imported signatures are the current
-boundary. Transitive imports, callable values, recursive propagation,
+boundary. Transitive imports, callable values, general recursive propagation,
 throw/try, provider/grant legality, target execution and authoritative migration
 remain separate work.
+
+### Bounded self-recursive body analysis
+
+The same body interface also recognizes C7's existing named, capture-free,
+positive-fixed-arity positional-call/literal-base proof. Positive arity means a
+nonzero parameter count, not positive argument values. Ordinary `if` retains
+L2 truthiness; the Bool-only match-guard policy is not an extra `if` restriction.
+The original recursive
+proof, call facts, component, positional arguments, literal base and external
+parameter evidence must agree with the complete consumed core. A direct
+imported producer uses the same per-module analysis and retains its own source
+and artifact coordinates; it is not replaced by a synthetic local result.
+
+Start with the direct checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-recursive-proof-development-kernel \
+  --exact body-effect-recursive-fixed-point-development-kernel
+```
+
+The solver starts function summaries at the empty effect set, then derives a
+least fixed point within the existing shared node-attempt budget. Only the
+authenticated self-body dependency is cut internally while a round is solved.
+The final graph retains that dependency, including a recursive branch under a
+literal false condition, and its equations are checked against the complete
+graph. Equation equality alone is insufficient: fresh candidate verification
+reconstructs from bottom so an inflated, nonleast fixed point cannot pass.
+Classification, iteration, final reconstruction and equation visits share the
+invocation's existing work budget across caller and producers.
+
+The affected real-source composition is separate from these normalized kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-recursive-authenticated-paired-composition --fail-fast
+```
+
+It uses the existing Integer and String recursive fixture pairs, a paired caller
+importing both producers, and the existing real mutual-recursion rejection
+fixture. Fresh C7 products and verification precede body analysis. Test results
+belong in the slice backlog after the actual run; the command itself is not
+evidence of a pass. The unchanged public-bundle triggers above still apply.
+This bounded analysis does not prove program termination, recursion depth,
+tail-call optimization, mutual recursion, callable recursion, completed thrown
+effects, full effect legality, target execution or authoritative migration.
 
 ### Compiler-artifact module execution
 

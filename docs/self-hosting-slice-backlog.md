@@ -1188,7 +1188,7 @@ and the explicitly attributed earlier composition total 13 test executions and
 did not execute the later guards; focused delta checks and static valid-path
 review cover those corrections without repeating the expensive composition.
 
-Transitive imported bodies, higher-order/callable value propagation, recursion,
+Transitive imported bodies, higher-order/callable value propagation, general recursion,
 throw/try/control-transfer composition, general effect legality, provider and
 grant validation, complete effect identities, targets, authoritative migration,
 self-hosting and seedless release remain outstanding. Legacy imported type-only
@@ -1248,9 +1248,63 @@ separate from this current-source upstream-to-leaf composition. The expensive
 public C8 bundle was not rebuilt: previous route evidence is not a new bundle
 identity proof. No new fixture, host implementation, test lane, wrapper,
 authority flag, manifest resource or accepted-proof cache was introduced.
-Transitive imports, callable values, recursive propagation, completed throws,
+Transitive imports, callable values, general recursive propagation, completed throws,
 effect/provider/grant legality, targets, authoritative migration, self-hosting
 and seedless release remain outside this increment.
+
+### Bounded recursive body effects: development implementation
+
+The L2/L5/L6/C7/C8 increment extends `gravity.effects` to C7's existing one
+named, capture-free, positive-fixed-arity self-recursive component. The existing
+positional-parameter call, primitive literal base and external parameter evidence
+must join the original component, core, function, definition, call facts and
+source coordinates. Positive arity means parameter count. Ordinary `if` retains
+L2 truthiness; the Bool-only match-guard policy is unchanged. The actual C7
+recursive identity, typed-core fields and verification checks are preserved.
+Direct imported producers use the same per-module analysis, with their original
+flat recursive C7 facts and separate module coordinates.
+
+The solver classifies the complete body, starts function summaries at the
+empty set, and iterates within the shared 65,536 node-attempt budget. Only the
+authenticated self-body dependency is cut internally during a round. The final
+graph retains the backedge and conditional region, even beneath literal false,
+and checks the complete graph equations. Fresh verification independently
+reconstructs from bottom: an inflated fixed point that satisfies the equations
+still rejects. Classification is budget-checked before traversal; iteration,
+final reconstruction and equation visits retain the same caller/producer work
+counter. This is not an all-CPU bound or a program-termination proof.
+
+The final cheap batch passed 11 tests/155 assertions covering existing local
+and imported behavior, recursive proof joins, retained edges, leastness,
+ordinary truthy conditions, malformed call-fact rejection, exact work-limit
+boundaries and unchanged public forwarding. Four separate route/language tests
+passed 44 assertions. Pre-composition independent review found an incidental
+Bool restriction on `if`, an unchecked call-fact lookup, and classification
+before the remaining-budget check. All were corrected and checked before the
+first real composition attempt. One earlier test-file parenthesis compilation
+failure and overlapping cheap batches remain historical, not extra coverage.
+
+The real paired composition then passed on its first attempt: one test,
+99 assertions, no failures or errors. It constructs and freshly verifies actual
+C5/C6/C7 products for the existing Integer and String recursive fixture pairs,
+then constructs and freshly verifies current-source body effects. A new paired
+caller imports both producers through the ordinary module-input interface.
+The existing SH-07 mutual-recursion pair still receives C7's
+`:mutual-recursion-unsupported` diagnostic. Coherent proof/call-fact changes,
+nonleast effect graphs, erased throws and changed imported proofs reject.
+Paired effect identities agree. Selected execution took 1367.254 seconds after
+6.879 seconds of namespace loading with a 2 GiB heap; no phase-cost or speedup
+claim follows. The nonoverlapping batches total 16 executions/298 assertions.
+
+Production, test and fixture bytes stayed frozen throughout that run. C8's
+requires, exports and public three-/four-argument forwarders remain unchanged;
+the old expensive public-bundle test was not repeated or claimed as a proof of
+the current bundle identity. No new compiler API, host implementation, lane,
+wrapper, authority flag, manifest resource or accepted-proof cache was added.
+This closes only the bounded recursive body-analysis subset. General or mutual
+recursion support, callable recursion, termination, recursion-depth bounds,
+tail-call optimization, thrown-error completion, full legality, target execution,
+authoritative migration, self-hosting and seedless release remain outstanding.
 
 ## Current Baseline
 
