@@ -876,6 +876,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-module-fail!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-bundle.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-module-boundary"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-compiler-artifact-binding.clj", :reader-line 86181, :owner :bootstrap-p15, :first-form "p15-s23-stage2-compiler-artifact-binding!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-typed-lowering-operation.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-typed-lowering-operation"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00582-p15-s23-stage2-construct-emitted-core-plan.clj", :reader-line 86385, :owner :bootstrap-p15, :first-form "p15-s23-stage2-construct-emitted-core-plan"}
  {:resource "gravity/bootstrap_impl/components/foundation/00583-p15-s23-stage2-plan-emission-context.clj", :reader-line 86488, :owner :foundation, :first-form "*p15-s23-stage2-plan-emission-context*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00584-p15-s23-with-stage2-plan-emission-context.clj", :reader-line 86495, :owner :bootstrap-p15, :first-form "p15-s23-with-stage2-plan-emission-context"}

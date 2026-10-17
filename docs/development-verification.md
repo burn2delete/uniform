@@ -384,6 +384,64 @@ affected product construction and checking, not a requirement before every
 direct-kernel edit. A rejected-diagnostic source-location correction or removal
 of optional test output does not require replaying the unchanged positive proof.
 
+### Explicit typed input to current Gravity lowering
+
+The existing `p15-s23-stage2-compile-function` and
+`p15-s23-stage2-assemble-plan-products` interfaces have an ordinary four-argument
+form: emitter, module, definition(s), and `{:request request :typed typed
+:verification report}`. These are actual pass products, not an accepted flag.
+The temporary Clojure orchestration component invokes current Gravity C7
+verification once per operation. The Gravity emitter requires an accepted typed
+result, the exact fresh expected/candidate result and matching supplied report,
+then joins the original source snapshot, module, declarations, function/body
+identities, parameter bindings and types.
+
+The original source comes from the authenticated request's retained C2 tokens;
+ordinary lowering does not require the source file to remain on disk. The
+current C7 and emitter implementation sources are still read and compiled.
+Raw internal kernel arguments are DATA, not cryptographic authority tokens.
+Current-source products expose their actual compiler/source provenance and
+pending effect legality. They do not enter the old pinned `00582` envelope.
+Existing three-argument calls retain their old behavior and bindings.
+
+Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the typed canonical-core
+lowerer. Its initial supported body subset is literals with an implemented
+runtime representation, parameter references, `throw`, `if` and `do` in fixed
+named top-level single-body functions. Unelaborated numeric descriptors and unsupported operations
+reject; raw catch spelling is not type authority. The small `00581` Clojure
+component only orchestrates existing compiler interfaces. It does not implement
+type inference or a second source grammar.
+
+Use the existing runtime-iteration test namespace:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-lowering-input-development-kernel \
+  --exact typed-lowering-public-orchestration-development-kernel
+# Affected source -> current C7 -> lowering -> Gravity evaluator composition:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-lowering-authenticated-composition --fail-fast
+```
+
+The first command uses normalized DATA to check joins, diagnostics and unchanged
+legacy orchestration; it is not authenticated source evidence. The second is
+the affected integration boundary. Build its actual source products once per
+extension and reuse those immutable inputs across assertions. Neither command
+admits a module revision or establishes profile/target legality, runtime catch
+support or self-hosting.
+
+The accepted focused batch passed four tests/283 assertions, including existing
+emitter/runtime throw regressions. The test-only namespace/body correction then
+passed the two typed-input selectors/74 assertions. The sole affected paired
+composition passed one test/65 assertions in about 175 seconds of test execution
+plus seven seconds of loading. These overlapping results are not additive and
+do not compare equivalent workloads. SH05's `:expanded-forms` contains the body,
+not the namespace declaration: parse the retained C2 original forms for the
+module header, then associate the authenticated expanded body for function
+analysis. Do not reconstruct upstream products merely to fix this test setup.
+
 ### Current Gravity emitter throw lowering
 
 Edit `bootstrap/gravity/p15_s23/emitter.gravity` for the Gravity-owned

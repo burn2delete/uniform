@@ -84,6 +84,271 @@
        (identical? (var-get (module-private 'p15-s23-stage2-runtime-source-throw-token))
                    (:gravity.bootstrap/source-throw (ex-data failure)))))
 
+(defn- typed-lowering-kernel-data
+  ([] (typed-lowering-kernel-data false))
+  ([throw?]
+  ;; Normalized DATA checks the Gravity consumer joins, not C7 authentication.
+  (let [source-path "in-memory-typed.gravity"
+        ns-form '(ns example.typed (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+        body (if throw? '(throw problem) 'problem)
+        body-id (if throw? :throw :reference) body-form-id (if throw? :throw-form :body-form)
+        fn-form (list 'fn '[problem :- String] :- 'String body)
+        definition-form (list 'def 'identity fn-form)
+        expanded [definition-form] source-text (str/join "\n" (map pr-str (cons ns-form expanded)))
+        declaration {:type-binding-id :string :type-id :gravity.type/string :type-symbol 'String :type-form-id :type-form :type-syntax-id :type}
+        signature {:body-source-child-index 4 :parameter-source-child-indexes [0] :parameters [declaration] :return declaration}
+        source (fn [form-id syntax-id] {:form-id form-id :syntax-id syntax-id})
+        nodes [{:node-id :reference :core-form :reference :children [] :attributes {:binding-id :parameter} :source (source :body-form :body)}
+               {:node-id :function :core-form :fn :children [body-id] :resolved-binding-ids [:parameter]
+                :attributes {:parameters '[problem] :signature signature} :source (source :function-form :fn)}
+               {:node-id :definition :core-form :def :children [:function] :source (source :definition-form :def)}]
+        nodes (if throw? (conj nodes {:node-id :throw :core-form :throw :children [:reference] :source (source :throw-form :throw)}) nodes)
+        forms [{:form-id :definition-form :syntax-id :def :value definition-form :child-form-ids [:def-op :name-form :function-form]}
+               {:form-id :function-form :syntax-id :fn :value fn-form :child-form-ids [:fn-op :parameter-form :return-marker :type-form body-form-id]}
+               {:form-id :parameter-form :syntax-id :parameters :value '[problem :- String] :child-form-ids [:parameter-name :parameter-marker :type-form]}
+               {:form-id :parameter-name :syntax-id :parameter-name :value 'problem :scope-id :function-scope}
+               {:form-id :type-form :syntax-id :type :value 'String}
+               {:form-id :body-form :syntax-id :body :value 'problem}]
+        forms (if throw? (conj forms {:form-id :throw-form :syntax-id :throw :value body :child-form-ids [:throw-operator :body-form]}) forms)
+        bindings [{:binding-id :parameter :name 'problem :kind :local :binding-class :lexical
+                   :definition-syntax-id :parameter-name :scope-id :function-scope}
+                  {:binding-id :string :name 'String :kind :type :binding-class :core :namespace 'gravity.core}]
+        module {:module 'example.typed :source-path source-path :forms expanded :profile :meta :target :jvm :safety :safe
+                :effects #{} :capabilities #{} :exports []}
+        core-module {:namespace 'example.typed :profile :meta :target :jvm :safety :safe :effects [] :capabilities [] :exports []}
+        record {:definition-name 'identity :definition-kind :named-top-level :function-syntax-id :fn :function-core-node-id :function
+                :definition-core-node-id :definition :body-core-node-id body-id :parameter-binding-ids [:parameter]
+                :fixed-arity 1 :signature signature}
+        function {:definition-name 'identity :function-id :fn :function-core-node-id :function :body-core-node-id body-id
+                  :parameter-binding-ids [:parameter] :parameters [{:binding-id :parameter :type :gravity.type/string}]
+                  :fixed-arity 1 :return :gravity.type/string :signature signature :thrown-error-effects (if throw? [:gravity.type/string] [])}
+        core {:artifact-id :core :module core-module :nodes nodes :function-records [record]}
+        reader {:source-unit-record {:path source-path :bytes-hash (str "sha256:" (bootstrap/sha256-hex source-text))}
+                :token-stream [{:raw source-text}]}
+        macro-artifact {:expanded-forms expanded :gravity-macro-boundary {:authenticated-sh04-artifact {:c2-reader-artifact reader}}}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:module core-module :forms forms :binding-table bindings}
+                  :authenticated-wrapper {:sh06-resolution-artifact {:sh05-macro-artifact macro-artifact}}}}
+        typed {:status :accepted :module core-module :sh07-shaped-artifact-id :core :function-type-table [function]
+               :type-table (cond-> {:reference :gravity.type/string :function function :definition function} throw? (assoc :throw :gravity.type/never))}
+        report {:artifact :gravity/sh08-function-type-verification :status :passed :expected typed :candidate typed}
+        input {:request request :typed typed :verification report}
+        observation {:verification report :source {:path source-path :text source-text :sha256 (get-in reader [:source-unit-record :bytes-hash])}
+                     :compiler-sources {:c7 {:source {:sha256 :current-c7} :plan-id :c7-plan}
+                                        :lowering {:source {:sha256 :current-lowering} :plan-id :lowering-plan}}}
+        definition {:name 'identity :params '[problem] :body (list body) :definition-form :def-fn :arity 1 :body-form-count 1
+                    :source-declarations {:parameters '[problem :- String] :return '[:- String]}}]
+    {:module module :input input :observation observation :definition definition})))
+
+(deftest current-gravity-typed-lowering-input-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation definition]} (typed-lowering-kernel-data)
+        compile #(invoke 'p15-s23-typed-compile-function emitter %1 %2 %3 %4)
+        result (compile module definition input observation)]
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= [{:op :local :name 'problem}] (get-in result [:value :instructions])))
+    (is (= definition (dissoc (:value result) :binding :instructions :type-input :typed-lowering-provenance)))
+    (is (= :non-authoritative (get-in result [:value :typed-lowering-provenance :authority])))
+    (is (= (:compiler-sources observation) (get-in result [:value :typed-lowering-provenance :compiler-sources])))
+    (is (= :current-c6-typed-function-subset (get-in result [:value :typed-lowering-provenance :emission-scope])))
+    (is (= (select-keys (first (get-in input [:typed :function-type-table])) [:function-core-node-id :body-core-node-id])
+           (select-keys (get-in result [:value :type-input]) [:function-core-node-id :body-core-node-id])))
+    (is (= :complete (:status (invoke 'p15-s23-typed-assemble-plan-products emitter module [['identity definition]] input observation))))
+    (let [{:keys [module input observation definition]} (typed-lowering-kernel-data true)
+          result (compile module definition input observation)]
+      (is (= :complete (:status result)))
+      (is (= [{:op :throw :value {:op :local :name 'problem}}] (get-in result [:value :instructions])))
+      (is (= [:gravity.type/string] (get-in result [:value :type-input :thrown-error-effects]))))
+    (doseq [[module definition input observation]
+            [[42 definition input observation]
+             [module definition 42 observation]
+             [(assoc module :module 'other) definition input observation]
+             [(assoc module :profile :hosted) definition input observation]
+             [(assoc module :target :wasm) definition input observation]
+             [(assoc module :source-path "other.gravity") definition input observation]
+             [(assoc module :source-text "changed bytes") definition input observation]
+             [(assoc module :effects 7) definition input observation]
+             [(assoc module :forms []) definition input observation]
+             [module (assoc definition :body '(false)) input observation]
+             [module (assoc-in definition [:source-declarations :parameters] '[problem :- Bool]) input observation]
+             [module definition (assoc input :extra true) observation]
+             [module definition (assoc-in input [:request :canonical-core-artifact :nodes] 7) observation]
+             [module definition (assoc-in input [:verification :status] :rejected) observation]
+             [module definition input (assoc-in observation [:source :text] "changed bytes")]
+             [module definition input (assoc-in observation [:verification :status] :rejected)]]]
+      (let [rejected (compile module definition input observation)]
+        (is (= :rejected (:status rejected))) (is (= "P15S23Q002" (:diagnostic rejected)))))
+    (let [rejected-typed (assoc (:typed input) :status :rejected)
+          passed-rejection {:artifact :gravity/sh08-function-type-verification :status :passed :expected rejected-typed :candidate rejected-typed}]
+      (is (= :rejected (:status (compile module definition (assoc input :typed rejected-typed :verification passed-rejection)
+                                                    (assoc observation :verification passed-rejection))))))
+    (doseq [mutate [#(assoc-in % [:typed :type-table :function :return] :gravity.type/bool)
+                    #(assoc-in % [:request :canonical-core-artifact :function-records 0 :body-core-node-id] :missing)
+                    #(assoc-in % [:request :b47-context :authenticated-core-request :binding-table 0 :scope-id] :sibling)
+                    #(assoc-in % [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact
+                                 :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :token-stream 0 :raw] "changed")]]
+      (let [changed (mutate input) report (assoc (:verification changed) :expected (:typed changed) :candidate (:typed changed))
+            changed (assoc changed :verification report) observation (assoc observation :verification report)]
+        (is (= :rejected (:status (compile module definition changed observation))))))
+    (doseq [definitions [nil 7 [['identity definition] ['identity definition]] [] [['other definition]]
+                        (vec (repeat 65537 ['identity definition]))]]
+      (is (= :rejected (:status (invoke 'p15-s23-typed-assemble-plan-products emitter module definitions input observation)))))
+    (let [source {:syntax-id :original-syntax :semantic-span {:source "original.gravity" :start 12 :end 19}
+                  :origin-chain [:original] :generated-origin {:macro :original}}
+          node {:node-id :unsupported :core-form :try :source source :binding-context {:scope :original}}
+          context (:value (invoke 'p15-s23-typed-context module input observation))
+          context (-> context (assoc-in [:nodes :unsupported] node) (assoc-in [:types :unsupported] :gravity.type/string))
+          rejected (invoke 'p15-s23-typed-compile-node context :unsupported 65536)
+          facts (:facts rejected)
+          transported (diagnostic #(bootstrap/p15-s23-stage2-plan-emitter-fail! (:diagnostic rejected) path node facts))]
+      (is (= :unsupported-typed-lowering-operation (:reason facts)))
+      (is (= (assoc (select-keys source [:syntax-id :origin-chain :generated-origin])
+                    :core-node-id :unsupported :source-span (:semantic-span source) :binding-context (:binding-context node))
+             (select-keys facts [:core-node-id :syntax-id :source-span :origin-chain :generated-origin :binding-context])))
+      (is (= facts (select-keys transported (keys facts))))
+      (is (= "P15S23Q002" (:id transported))))
+    (let [context (:value (invoke 'p15-s23-typed-context module input observation))
+          decimal {:kind :gravity/decimal-occurrence :source "1.25"}
+          context (-> context (assoc-in [:nodes :reference :core-form] :literal)
+                              (assoc-in [:nodes :reference :attributes] {:literal-kind :decimal :value decimal})
+                              (assoc-in [:forms :body-form :value] decimal)
+                              (assoc-in [:types :reference] :gravity.type/decimal))
+          rejected (invoke 'p15-s23-typed-compile-node context :reference 65536)]
+      (is (= :rejected (:status rejected)))
+      (is (= :unelaborated-typed-numeric-literal (get-in rejected [:facts :reason]))))
+    (let [context (:value (invoke 'p15-s23-typed-context module input observation))
+          context (-> context (assoc :locals {:parameter 'problem} :parameter-types {:parameter :gravity.type/string})
+                      (assoc-in [:nodes :condition] {:node-id :condition :core-form :literal :children []
+                                                    :attributes {:literal-kind :boolean :value true} :source {:form-id :condition-form}})
+                      (assoc-in [:forms :condition-form] {:value true})
+                      (assoc-in [:types :condition] :gravity.type/bool)
+                      (assoc-in [:nodes :throw] {:node-id :throw :core-form :throw :children [:reference]})
+                      (assoc-in [:types :throw] :gravity.type/never)
+                      (assoc-in [:nodes :branch] {:node-id :branch :core-form :if :children [:condition :throw :reference]})
+                      (assoc-in [:types :branch] :gravity.type/string)
+                      (assoc-in [:nodes :sequence] {:node-id :sequence :core-form :do :children [:branch]})
+                      (assoc-in [:types :sequence] :gravity.type/string))
+          branch {:op :if :test {:op :literal :value true} :then {:op :throw :value {:op :local :name 'problem}}
+                  :else {:op :local :name 'problem}}]
+      (is (= branch (:value (invoke 'p15-s23-typed-compile-node context :branch 65536))))
+      (is (= {:op :do :body [branch]} (:value (invoke 'p15-s23-typed-compile-node context :sequence 65536))))
+      (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :sequence 1) [:facts :reason])))
+      (is (= :unsupported-typed-lowering-operation
+             (get-in (invoke 'p15-s23-typed-compile-node (assoc-in context [:nodes :sequence :core-form] :try) :sequence 65536) [:facts :reason]))))))
+
+(deftest typed-lowering-public-orchestration-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        {:keys [module input definition]} (typed-lowering-kernel-data)
+        original bootstrap/p15-s23-stage2-runtime-execute-function observed (atom [])
+        operation (fn [call]
+                    (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                  (fn [runtime plan function args]
+                                    (when (= function 'sh08-verify-function-type-result)
+                                      (swap! observed conj {:source (:source plan) :arguments args}))
+                                    (original runtime plan function args))]
+                      (diagnostic call)))]
+    (let [failure (operation #(bootstrap/p15-s23-stage2-compile-function emitter module definition input))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :typed-input-source-or-verification-mismatch (:reason failure)))
+      (is (= 1 (count @observed)))
+      (is (= (str "sha256:" (bootstrap/sha256-hex
+                              (slurp (io/file (.getParentFile (.getParentFile (io/file path)))
+                                             "src/gravity/compiler/c7_type_checker_engine.gravity"))))
+             (get-in @observed [0 :source :sha256])))
+      (is (= [(:request input) (:typed input)] (:arguments (first @observed)))))
+    (let [failure (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module [['identity definition]] input))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= 2 (count @observed))))
+    (let [calls (atom [])]
+      (with-redefs [bootstrap/p15-s23-stage2-compiler-artifact-invoke
+                    (fn [function args] (swap! calls conj [function args]) {:status :complete :value :legacy})]
+        (is (= :legacy (bootstrap/p15-s23-stage2-compile-function emitter module definition)))
+        (is (= :legacy (bootstrap/p15-s23-stage2-assemble-plan-products emitter module [['identity definition]]))))
+      (is (= [['p15-s23-compile-function [emitter module definition]]
+              ['p15-s23-assemble-plan-products [emitter module [['identity definition]]]]] @calls)))))
+
+(deftest current-gravity-typed-lowering-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-products)
+        runtime-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
+        names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
+                 p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (names (second %))) runtime-forms)
+        projection (str/join "\n" (map pr-str (cons (first runtime-forms) selected)))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path projection)
+        execute (fn [instruction env]
+                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                    'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
+        verifier 'sh08-verify-function-type-result original bootstrap/p15-s23-stage2-runtime-execute-function]
+    (is (= 6 (count selected)))
+    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in runtime-plan [:source :sha256])))
+    (is (not= (bootstrap/sha256-hex runtime-text) (bootstrap/sha256-hex projection)))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/direct-typed-throw" extension)
+            source-path (.getPath (io/file root relative)) text (slurp source-path)
+            p (fresh relative) input (select-keys p [:request :typed :verification])
+            expanded (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact :expanded-forms])
+            original-forms (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact
+                                         :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+            module (assoc (bootstrap/parse-module source-path original-forms) :forms expanded)
+            definitions (bootstrap/stage0-function-table module)
+            module (assoc module :function-table definitions) definition (get definitions 'choose)
+            calls (atom []) reads (atom []) read-source bootstrap/read-gravity-source-text
+            operation (fn [thunk]
+                        (let [before (count @calls)
+                              value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                                   (fn [runtime plan function args]
+                                                     (when (= verifier function) (swap! calls conj [(:source plan) args]))
+                                                     (original runtime plan function args))
+                                                 bootstrap/read-gravity-source-text
+                                                   (fn [path] (swap! reads conj path) (read-source path))]
+                                      (thunk))]
+                          (is (= 1 (- (count @calls) before))) value))
+            compiled (operation #(bootstrap/p15-s23-stage2-compile-function emitter module definition input))
+            assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+            instruction (first (:instructions compiled)) payload (String. "problem")
+            transport (module-private 'p15-s23-stage2-runtime-source-throw!) transport-count (atom 0) original-transport (var-get transport)]
+        (is (= "755e5b876b8fde5f1be48b0dce2cea96c17da24d967b4d9e641c720a46617f23" (bootstrap/sha256-hex text)))
+        (is (= :accepted (get-in input [:typed :status])))
+        (is (= :passed (get-in input [:verification :status])))
+        (is (= definition (dissoc compiled :binding :instructions :type-input :typed-lowering-provenance)))
+        (is (= compiled (get-in assembled [:functions 'choose])))
+        (is (= {:if 1 :local 3 :throw 1} (:instruction-summary assembled)))
+        (is (= :non-authoritative (get-in compiled [:typed-lowering-provenance :authority])))
+        (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text))
+               (get-in compiled [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+        (is (not= (get-in compiled [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])
+                  (var-get (module-private 'p15-s23-stage2-compiler-artifact-expected-source-content-hash))))
+        (is (= {:path source-path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}
+               (get-in compiled [:typed-lowering-provenance :source])))
+        (is (not-any? #{source-path} @reads))
+        (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+        (with-redefs-fn {transport (fn [& args] (swap! transport-count inc) (apply original-transport args))}
+          #(doseq [[flag control] [[false :normal] [true :thrown]]]
+             (let [result (execute instruction {'flag flag 'problem payload})]
+               (is (identical? payload (first result)))
+               (is (= ["" control] (subvec result 1))))))
+        (is (= 0 @transport-count))
+        ;; All mutations reuse the original immutable upstream products. Each
+        ;; public operation independently invokes current Gravity C7 once.
+        (doseq [thunk [#(bootstrap/p15-s23-stage2-compile-function emitter (assoc module :module 'other) definition input)
+                       #(bootstrap/p15-s23-stage2-compile-function emitter (assoc module :source-text "changed bytes") definition input)
+                       #(bootstrap/p15-s23-stage2-compile-function emitter module (assoc definition :body '(false)) input)
+                       #(bootstrap/p15-s23-stage2-compile-function emitter module (assoc-in definition [:source-declarations :return] '[:- Bool]) input)
+                       #(bootstrap/p15-s23-stage2-compile-function emitter module definition (assoc-in input [:verification :status] :rejected))
+                       #(bootstrap/p15-s23-stage2-compile-function emitter module definition (assoc-in input [:typed :type-table
+                              (get-in input [:typed :function-type-table 0 :body-core-node-id])] :gravity.type/bool))]]
+          (let [failure (operation #(diagnostic thunk))]
+            (is (= "P15S23Q002" (:id failure)) (pr-str failure))))))))
+
 (deftest current-gravity-runtime-throw-development-kernel
   (let [fixture-path (module-fixture "seed-library" ".gravity")
         root (loop [directory (.getParentFile (io/file fixture-path))]

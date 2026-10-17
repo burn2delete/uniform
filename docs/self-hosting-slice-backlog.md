@@ -1864,6 +1864,53 @@ SH-07/SH-08, self-hosting, release support or seed retirement. The next executab
 boundary is an explicit current C7 typed input to the existing Gravity lowerer;
 raw type spelling or an old admitted compiler binding is not type authority.
 
+### Explicit current C7 input to Gravity lowering
+
+The existing compile-function and assembly interfaces now accept an explicit
+fourth argument containing the original request, typed result and verification
+report. A small temporary Clojure component invokes the actual current Gravity
+C7 verifier once per operation. The Gravity emitter requires an accepted typed
+result and exact fresh report equality, then joins source bytes, expanded forms,
+module metadata, declarations, function/body identities and parameter/type
+bindings. A passed verification of a rejected type result is not acceptance.
+The source snapshot is reconstructed from the same request's retained C2
+tokens; target source files need not be reread or remain on disk.
+
+The typed lowerer consumes canonical nodes rather than introducing another
+source grammar. Its initial supported subset is fixed named top-level
+single-body functions with represented literals, parameter references, `throw`,
+`if` and `do`. Unelaborated numeric descriptors and unsupported operations reject
+with structured diagnostics retaining available source and generated-origin
+information. Current-source provenance includes actual compiler source/plan and
+function/body identities; raw internal DATA arguments are not authority tokens.
+Existing three-argument calls, the old pinned `00582` assembly envelope and
+admission identities remain unchanged. Effect legality stays explicitly pending.
+
+The focused batch passed four tests/283 assertions, including unchanged current
+emitter/runtime throw controls. After the test-only namespace/body correction,
+the two typed-input selectors passed 74 assertions. The sole affected paired
+composition passed one test/65 assertions: it constructs real upstream products
+once per extension, invokes fresh current C7 verification for each public typed
+operation, compares function and module assembly, and executes current Gravity
+instructions through the existing exact runtime projection. Both normal and
+escaping String results preserve the original payload; seed throw transport is
+not called. Changed source/module/declaration/body, stale reports and altered
+type facts reject. These runs overlap and are not additive coverage totals.
+
+Test-reader and emitter delimiter failures, and two omitted-namespace selector
+failures, remain failures. The SH05 body-only expansion versus full namespace
+parse mismatch was caught statically and corrected before the sole expensive
+composition. No proof replay, optional product capture, old pin refresh or
+authority-admission workflow was needed for these development corrections.
+
+Typed runtime catches and quoted-symbol lowering are the next dependency-ready
+semantic work. General calls, bindings, loops, complete numeric representation,
+Error subtyping, resource cleanup, profile/target legality and authoritative
+migration remain outstanding for this typed route. The runtime test uses the
+unchanged exact six-function projection, not whole-runtime compilation. This
+is executable development progress, not full SH-07/SH-08, self-hosting, release
+readiness or Clojure seed retirement.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

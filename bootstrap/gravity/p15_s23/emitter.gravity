@@ -1335,6 +1335,312 @@
           assembled))
       external-index)))
 
+; Explicit typed lowering consumes ordinary verified pass DATA. The temporary
+; Clojure orchestration invokes current Gravity C7 once and supplies its actual
+; fresh report separately. Raw kernel arguments are not authority tokens.
+(defn p15-s23-typed-path [value fields]
+  (loop [remaining fields result value]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (get result (first remaining))))))
+
+(defn p15-s23-typed-error [reason]
+  (p15-s23-compiler-error "P15S23Q002" {:missing-fact :explicit-typed-lowering-input :reason reason}))
+
+(defn p15-s23-typed-node-error [reason node]
+  (let [source (get node :source)
+        facts {:missing-fact :explicit-typed-lowering-input :reason reason :core-node-id (get node :node-id)
+               :syntax-id (get source :syntax-id) :origin-chain (get source :origin-chain)
+               :generated-origin (get source :generated-origin) :binding-context (get node :binding-context)}]
+    (p15-s23-compiler-error "P15S23Q002"
+      (if (map? (get source :semantic-span)) (assoc facts :source-span (get source :semantic-span)) facts))))
+
+(defn p15-s23-typed-index [records field]
+  (if (vector? records)
+    (loop [remaining records out {}]
+      (if (= 0 (count remaining)) out
+        (let [record (first remaining) id (get record field)]
+          (if (if (map? record) (if (= id nil) false (= false (contains? out id))) false)
+            (recur (rest remaining) (assoc out id record)) nil)))) nil))
+
+(defn p15-s23-typed-all [checks]
+  (loop [remaining checks]
+    (if (= 0 (count remaining)) true
+      (if (= true (first remaining)) (recur (rest remaining)) false))))
+
+(defn p15-s23-typed-project [value fields]
+  (loop [remaining fields out {}]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (assoc out (first remaining) (get value (first remaining)))))))
+
+(defn p15-s23-typed-set [values]
+  (if (= values nil) #{}
+    (if (if (set? values) true (vector? values))
+      (if (<= (count values) 65536) (set values) nil) nil)))
+
+(defn p15-s23-typed-atomic-id [name]
+  (get '{I8 :gravity.type/i8 I16 :gravity.type/i16 I32 :gravity.type/i32 I64 :gravity.type/i64
+         U8 :gravity.type/u8 U16 :gravity.type/u16 U32 :gravity.type/u32 U64 :gravity.type/u64
+         F32 :gravity.type/f32 F64 :gravity.type/f64 Bool :gravity.type/bool
+         String :gravity.type/string Symbol :gravity.type/symbol Keyword :gravity.type/keyword Ratio :gravity.type/ratio} name))
+
+(defn p15-s23-typed-declaration? [declaration type context]
+  (if (= declaration nil) true
+    (let [binding (get (get context :bindings) (get declaration :type-binding-id))
+          form (get (get context :forms) (get declaration :type-form-id))]
+      (p15-s23-typed-all [(= [:core :type 'gravity.core] [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
+                         (= type (get declaration :type-id) (p15-s23-typed-atomic-id (get binding :name)))
+                         (= (get binding :name) (get declaration :type-symbol) (get form :value))
+                         (= (get form :syntax-id) (get declaration :type-syntax-id))]))))
+
+(defn p15-s23-typed-source-equal? [tokens text]
+  (if (if (vector? tokens) (string? text) false)
+    (loop [remaining tokens position 0]
+      (if (= 0 (count remaining)) (= position (count text))
+        (let [raw (get (first remaining) :raw)
+              match? (if (string? raw)
+                       (loop [index 0]
+                         (if (= index (count raw)) true
+                           (if (= (get raw index) (get text (+ position index)))
+                             (recur (+ index 1)) false))) false)]
+          (if match? (recur (rest remaining) (+ position (count raw))) false)))) false))
+
+(defn p15-s23-typed-context [module input observation]
+  (if (if (map? module) (map? input) false)
+  (let [request (get input :request) typed (get input :typed) supplied (get input :verification)
+        fresh (get observation :verification) core (get request :canonical-core-artifact)
+        authenticated (p15-s23-typed-path request [:b47-context :authenticated-core-request])
+        macro-artifact (p15-s23-typed-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        reader (p15-s23-typed-path macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
+        source (get observation :source) source-unit (get reader :source-unit-record)
+        nodes (get core :nodes) forms (get authenticated :forms) bindings (get authenticated :binding-table)
+        records (get core :function-records) functions (get typed :function-type-table)
+        families? (p15-s23-typed-all [(vector? (get reader :token-stream)) (vector? nodes) (vector? forms) (vector? bindings)
+                                     (vector? records) (vector? functions) (map? (get typed :type-table))])
+        work (if families? (+ (if (string? (get source :text)) (count (get source :text)) 0)
+                (count (get reader :token-stream)) (count nodes) (count forms) (count bindings)
+                (* (count records) (+ 20 (count nodes) (count forms) (count bindings)))) 65537)]
+    (if (= false families?) (p15-s23-typed-error :malformed-typed-input-families)
+    (if (> work 65536) (p15-s23-typed-error :typed-lowering-work-limit)
+    (if (p15-s23-typed-all
+          [(map? input) (if (if (map? input) (= 3 (count input)) false) (= #{:request :typed :verification} (set (keys input))) false)
+           (map? module) (vector? (get module :forms))
+           (set? (p15-s23-typed-set (get module :effects))) (set? (p15-s23-typed-set (get module :capabilities)))
+           (set? (p15-s23-typed-set (get module :exports)))
+           (= :accepted (get typed :status))
+           (= :gravity/sh08-function-type-verification (get fresh :artifact)) (= :passed (get fresh :status))
+           (= typed (get fresh :expected) (get fresh :candidate)) (= supplied fresh)
+           (= (get core :artifact-id) (get typed :sh07-shaped-artifact-id))
+           (= (get core :module) (get typed :module) (get authenticated :module))
+           (= (get module :module) (get (get core :module) :namespace))
+           (= (get module :profile) (get (get core :module) :profile))
+           (= (get module :target) (get (get core :module) :target))
+           (= (get module :safety) (get (get core :module) :safety))
+           (= (p15-s23-typed-set (get module :effects)) (p15-s23-typed-set (get (get core :module) :effects)))
+           (= (p15-s23-typed-set (get module :capabilities)) (p15-s23-typed-set (get (get core :module) :capabilities)))
+           (= (p15-s23-typed-set (get module :exports)) (p15-s23-typed-set (get (get core :module) :exports)))
+           (= (get module :forms) (get macro-artifact :expanded-forms))
+           (string? (get source :text)) (string? (get source :path))
+           (= (get module :source-path) (get source :path) (get source-unit :path))
+           (if (contains? module :source-text) (= (get module :source-text) (get source :text)) true)
+           (= (get source :sha256) (get source-unit :bytes-hash))])
+        (if (p15-s23-typed-source-equal? (get reader :token-stream) (get source :text))
+          (let [node-index (p15-s23-typed-index nodes :node-id) form-index (p15-s23-typed-index forms :form-id)
+                binding-index (p15-s23-typed-index bindings :binding-id)
+                record-index (p15-s23-typed-index records :definition-name)
+                function-index (p15-s23-typed-index functions :definition-name)]
+            (if (p15-s23-typed-all [(map? node-index) (map? form-index) (map? binding-index)
+                                   (map? record-index) (map? function-index) (= (count record-index) (count function-index))])
+              (p15-s23-compiler-result {:core core :typed typed :nodes node-index :forms form-index :bindings binding-index
+                :records record-index :functions function-index :types (get typed :type-table)
+                :observation observation :budget (- 65536 work)})
+              (p15-s23-typed-error :typed-source-index-census)))
+          (p15-s23-typed-error :typed-source-bytes-mismatch))
+      (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
+    (p15-s23-typed-error :malformed-typed-input-families)))
+
+(defn p15-s23-typed-definition [context name]
+  (let [record (get (get context :records) name) function (get (get context :functions) name)
+        nodes (get context :nodes) forms (get context :forms) bindings (get context :bindings)
+        fn-node (get nodes (get record :function-core-node-id)) def-node (get nodes (get record :definition-core-node-id))
+        fn-form (get forms (get (get fn-node :source) :form-id))
+        def-form (get forms (get (get def-node :source) :form-id)) fn-ids (get fn-form :child-form-ids)
+        signature (get record :signature) body-index (get signature :body-source-child-index 2)
+        body-form (get forms (get fn-ids body-index))
+        parameter-form (get forms (get fn-ids 1)) names (get (get fn-node :attributes) :parameters)
+        parameter-ids (get record :parameter-binding-ids)
+        declared? (contains? record :signature)
+        return? (= body-index 4)
+        definition {:name name :params names :body [(get body-form :value)] :definition-form :def-fn
+                    :arity (count names) :body-form-count 1}
+        definition (if declared? (assoc definition :source-declarations
+                     {:parameters (get parameter-form :value)
+                      :return (if return? [:- (get (get forms (get fn-ids 3)) :value)] nil)}) definition)
+        locals (loop [ids parameter-ids remaining-names names values {}]
+                 (if (= 0 (count ids)) values
+                   (recur (rest ids) (rest remaining-names) (assoc values (first ids) (first remaining-names)))))
+        parameters (get function :parameters)
+        types (loop [remaining parameters values {}]
+                (if (= 0 (count remaining)) values
+                  (recur (rest remaining) (assoc values (get (first remaining) :binding-id) (get (first remaining) :type)))))]
+    (if (p15-s23-typed-all
+          [(map? record) (= :named-top-level (get record :definition-kind)) (= :fn (get fn-node :core-form))
+           (= :def (get def-node :core-form)) (= [name (get fn-form :value)] (vec (rest (get def-form :value))))
+           (= (get record :function-syntax-id) (get (get fn-node :source) :syntax-id) (get function :function-id))
+           (= (get record :function-core-node-id) (get function :function-core-node-id) (first (get def-node :children)))
+           (= (get record :body-core-node-id) (first (get fn-node :children)) (get function :body-core-node-id))
+           (= (get body-form :form-id) (get (get (get nodes (get record :body-core-node-id)) :source) :form-id))
+           (= (get record :signature) (get (get fn-node :attributes) :signature) (get function :signature))
+           (= parameter-ids (get fn-node :resolved-binding-ids) (get function :parameter-binding-ids))
+           (= (p15-s23-typed-project function [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects])
+              (p15-s23-typed-project (get (get context :types) (get record :function-core-node-id))
+                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects])
+              (p15-s23-typed-project (get (get context :types) (get record :definition-core-node-id))
+                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects]))
+           (if (= :gravity.type/never (get (get context :types) (get record :body-core-node-id))) true
+             (= (get function :return) (get (get context :types) (get record :body-core-node-id))))
+           (p15-s23-typed-declaration? (get signature :return) (get function :return) context)
+           (= (count names) (get record :fixed-arity) (get function :fixed-arity) (count parameters))
+           (loop [ids parameter-ids remaining-names names ordinal 0]
+             (if (= 0 (count ids)) true
+               (let [binding (get bindings (first ids)) coordinate (if declared? (get (get signature :parameter-source-child-indexes) ordinal) ordinal)
+                     name-form (get forms (get (get parameter-form :child-form-ids) coordinate))]
+                 (if (p15-s23-typed-all [(= (first remaining-names) (get binding :name))
+                         (= :lexical (get binding :binding-class)) (= :local (get binding :kind))
+                         (= (get binding :name) (get name-form :value))
+                         (= (get binding :definition-syntax-id) (get name-form :syntax-id))
+                         (= (get binding :scope-id) (get name-form :scope-id))
+                         (p15-s23-typed-declaration? (get (get signature :parameters) ordinal) (get types (first ids)) context)
+                         (= false (contains? #{nil :gravity.type/unknown} (get types (first ids))))])
+                   (recur (rest ids) (rest remaining-names) (+ ordinal 1)) false))))])
+      (p15-s23-compiler-result {:definition definition :record record :function function :locals locals :parameter-types types})
+      (p15-s23-typed-node-error :typed-definition-or-declaration-mismatch fn-node))))
+
+(defn p15-s23-typed-compile-children [context ids budget values]
+  (if (= 0 (count ids)) (assoc (p15-s23-compiler-result values) :work-count 0)
+    (let [head (p15-s23-typed-compile-node context (first ids) budget)]
+      (if (p15-s23-compiler-complete? head)
+        (let [tail (p15-s23-typed-compile-children context (rest ids) (- budget (get head :work-count)) (conj values (get head :value)))]
+          (if (p15-s23-compiler-complete? tail)
+            (assoc tail :work-count (+ (get head :work-count) (get tail :work-count))) tail)) head))))
+
+(defn p15-s23-typed-compile-node [context id budget]
+  (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
+        source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
+    (if (<= budget 0) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+      (if (if (map? node) (= false (contains? #{nil :gravity.type/unknown} type)) false)
+        (if (= form :literal)
+          (if (if (= :decimal (get (get node :attributes) :literal-kind)) true (map? (get source :value)))
+            (p15-s23-typed-node-error :unelaborated-typed-numeric-literal node)
+          (if (= (get source :value) (get (get node :attributes) :value))
+            (assoc (p15-s23-compiler-result {:op :literal :value (get source :value)}) :work-count 1)
+            (p15-s23-typed-node-error :typed-literal-source-mismatch node)))
+          (if (= form :reference)
+            (let [binding (get (get node :attributes) :binding-id) name (get (get context :locals) binding)]
+              (if (if (= name nil) false (= type (get (get context :parameter-types) binding)))
+                (assoc (p15-s23-compiler-result {:op :local :name name}) :work-count 1)
+                (p15-s23-typed-node-error :typed-reference-outside-parameters node)))
+            (if (contains? #{:throw :if :do} form)
+              (if (if (= form :throw) (if (= 1 (count children)) (= type :gravity.type/never) false)
+                    (if (= form :if) (= 3 (count children)) true))
+                (let [compiled (p15-s23-typed-compile-children context children (- budget 1) []) values (get compiled :value)]
+                  (if (p15-s23-compiler-complete? compiled)
+                    (assoc (p15-s23-compiler-result
+                      (if (= form :throw) {:op :throw :value (first values)}
+                        (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
+                          {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
+                (p15-s23-typed-node-error :typed-control-shape-mismatch node))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))
+        (p15-s23-typed-node-error :missing-typed-core-node node)))))
+
+(defn p15-s23-typed-provenance [context]
+  (let [observation (get context :observation) source (get observation :source)]
+    {:boundary :current-gravity-typed-lowering :authority :non-authoritative
+     :emission-scope :current-c6-typed-function-subset
+     :compiler-sources (get observation :compiler-sources)
+     :source {:path (get source :path) :sha256 (get source :sha256)}
+     :typed-core-input (get (get context :core) :artifact-id)
+     :type-verifier :current-gravity-c7 :effect-legality :pending-c8-and-profile-authority}))
+
+(defn p15-s23-typed-lower-function [module definition context]
+  (let [joined (p15-s23-typed-definition context (get definition :name)) value (get joined :value)]
+    (if (p15-s23-compiler-complete? joined)
+      (if (= definition (get value :definition))
+        (let [compiled (p15-s23-typed-compile-node
+                         (assoc (assoc context :locals (get value :locals)) :parameter-types (get value :parameter-types))
+                         (get (get value :record) :body-core-node-id) (get context :budget))
+              function (get value :function)]
+          (if (p15-s23-compiler-complete? compiled)
+            (p15-s23-compiler-result (assoc definition
+              :instructions [(get compiled :value)]
+              :binding {:name (get definition :name) :kind :function :namespace (get module :module)
+                :profile (get module :profile) :target (get module :target)
+                :visibility (if (> (count (get module :exports)) 0)
+                              (if (contains? (set (get module :exports)) (get definition :name)) :public :private) :stage2-local)
+                :effects (get module :effects) :capabilities (get module :capabilities)}
+              :type-input {:function-id (get function :function-id) :function-core-node-id (get function :function-core-node-id)
+                           :body-core-node-id (get function :body-core-node-id)
+                           :definition-binding-id (get (get value :record) :definition-binding-id)
+                           :parameters (get function :parameters)
+                           :return (get function :return) :thrown-error-effects (get function :thrown-error-effects)}
+              :typed-lowering-provenance (p15-s23-typed-provenance context))) compiled))
+        (p15-s23-typed-node-error :supplied-definition-does-not-match-typed-source
+          (get (get context :nodes) (get (get value :record) :function-core-node-id)))) joined)))
+
+(defn p15-s23-typed-compile-function [emitter module definition input observation]
+  (let [checked (p15-s23-typed-context module input observation)]
+    (if (p15-s23-compiler-complete? checked)
+      (if (p15-s23-typed-module-table? module (get checked :value))
+        (p15-s23-typed-lower-function module definition (get checked :value))
+        (p15-s23-typed-error :typed-module-function-table-mismatch)) checked)))
+
+(defn p15-s23-typed-module-table? [module context]
+  (if (contains? module :function-table)
+    (let [table (get module :function-table)]
+      (if (if (map? table) (if (= (count table) (count (get context :records)))
+                            (= (set (keys table)) (set (keys (get context :records)))) false) false)
+        (loop [remaining (keys table)]
+          (if (= 0 (count remaining)) true
+            (let [expected (p15-s23-typed-definition context (first remaining))]
+              (if (if (p15-s23-compiler-complete? expected) (= (get table (first remaining)) (get (get expected :value) :definition)) false)
+                (recur (rest remaining)) false)))) false)) true))
+
+(defn p15-s23-typed-assemble-plan-products [emitter module definitions input observation]
+  (let [checked (p15-s23-typed-context module input observation) context (get checked :value)]
+    (if (p15-s23-compiler-complete? checked)
+      (if (if (vector? definitions) (= (count definitions) (count (get context :records))) false)
+        (let [indexed (p15-s23-typed-index
+                  (loop [remaining definitions out []]
+                    (if (= 0 (count remaining)) out
+                      (let [entry (first remaining)]
+                        (if (if (vector? entry) (if (= 2 (count entry))
+                              (if (symbol? (first entry)) (map? (second entry)) false) false) false)
+                          (recur (rest remaining) (conj out {:name (first entry) :definition (second entry)}))
+                          (conj out {}))))) :name)]
+      (if (if (map? indexed) (if (p15-s23-typed-module-table? module context)
+                              (= (set (keys indexed)) (set (keys (get context :records)))) false) false)
+        (loop [remaining definitions functions {} bindings [] summary {}]
+          (if (= 0 (count remaining))
+            (let [entrypoint (get (get emitter :plan-shape) :entrypoint 'main)
+                  main-function (get functions entrypoint)
+                  products (p15-s23-complete-plan-products module
+                             {:functions functions :binding-table bindings :instruction-summary summary}
+                             (if (= main-function nil) nil entrypoint))]
+              (if (if (= main-function nil) false (> (count (get main-function :params)) 0))
+                (p15-s23-compiler-error "L2-MAIN-ARITY" {:params (get main-function :params)})
+                (assoc products :value (assoc (get products :value) :typed-lowering-provenance (p15-s23-typed-provenance context)
+                  :effect-summary (assoc (get (get products :value) :effect-summary)
+                    :legality :pending-c8-and-profile-authority :authority :non-authoritative)))))
+            (let [entry (first remaining) compiled (p15-s23-typed-lower-function module (second entry) context)
+                  function (get compiled :value)]
+              (if (if (= (first entry) (get (second entry) :name)) (p15-s23-compiler-complete? compiled) false)
+                (let [counted (p15-s23-summary-instructions (get function :instructions) summary)]
+                  (if (p15-s23-compiler-complete? counted)
+                    (recur (rest remaining) (assoc functions (first entry) function)
+                      (conj bindings (assoc (get function :binding) :arity (get function :arity))) (get counted :value)) counted))
+                (if (p15-s23-compiler-complete? compiled) (p15-s23-typed-error :typed-definition-name-mismatch) compiled)))))
+        (p15-s23-typed-error :typed-module-definition-census)))
+        (p15-s23-typed-error :typed-module-definition-census)) checked)))
+
 (defn main
   []
   (hash-map :artifact :gravity/stage2-expression-lowering
