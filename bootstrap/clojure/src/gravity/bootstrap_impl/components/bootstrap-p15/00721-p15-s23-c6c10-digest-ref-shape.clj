@@ -53,7 +53,7 @@
 
 (defn p15-s23-c6c10-canonical-identity
   [source-path value]
-  (:form (p15-s23-c6c10-canonical-record source-path value)))
+  (:form (p15-s23-c6c10-canonical-form-and-stats source-path value)))
 
 (defn p15-s23-c6c10-unique-resolved-values!
   [source-path missing-fact values]

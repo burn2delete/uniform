@@ -58,11 +58,53 @@
     (is (= 1 (count (set byte-results))))
     (is (= (first string-results) (first byte-results)))))
 
+(deftest sha256-output-sink-hashes-exact-bytes-once-and-closes
+  (doseq [bytes [(byte-array 0) (.getBytes "abc" "UTF-8")
+                 (byte-array [(byte 0) (unchecked-byte 0xff) (unchecked-byte 0x80)])
+                 (byte-array (map unchecked-byte (range 32769)))]]
+    (let [calls (atom 0) retained (atom nil)
+          actual (digest/sha256-output-hex
+                   (fn [^java.io.OutputStream output]
+                     (swap! calls inc)
+                     (reset! retained output)
+                     (dotimes [index (alength bytes)]
+                       (.write output (bit-and 0xff (aget bytes index))))
+                     :ignored-producer-return))]
+      (is (= 1 @calls))
+      (is (= (digest/sha256-bytes-hex bytes) actual))
+      (is (re-matches #"[0-9a-f]{64}" actual))
+      (is (thrown? java.io.IOException (.write ^java.io.OutputStream @retained (int 0))))))
+  (let [bytes (.getBytes "chunked bytes" "UTF-8")]
+    (is (= (digest/sha256-bytes-hex bytes)
+           (digest/sha256-output-hex
+             (fn [^java.io.OutputStream output]
+               (.write output bytes 0 3)
+               (.write output bytes 3 (- (alength bytes) 3))))))))
+
+(deftest sha256-output-sink-preserves-producer-throwables
+  (doseq [failure [(ex-info "producer failure" {:test :raw-byte-sink})
+                   (AssertionError. "producer error")]]
+    (let [calls (atom 0) retained (atom nil) returned? (atom false)
+          caught (try
+                   (digest/sha256-output-hex
+                     (fn [^java.io.OutputStream output]
+                       (swap! calls inc)
+                       (reset! retained output)
+                       (.write output (int 97))
+                       (throw failure)))
+                   (reset! returned? true)
+                   (catch Throwable observed observed))]
+      (is (identical? failure caught))
+      (is (= 1 @calls))
+      (is (false? @returned?))
+      (is (thrown? java.io.IOException (.write ^java.io.OutputStream @retained (int 0)))))))
+
 (deftest sha256-public-api-is-small-and-stable
-  (is (= #{'sha256-hex 'sha256-bytes-hex}
+  (is (= #{'sha256-hex 'sha256-bytes-hex 'sha256-output-hex}
          (set (keys (ns-publics 'gravity.digest)))))
   (is (= '([text]) (:arglists (meta #'digest/sha256-hex))))
   (is (= '([bytes]) (:arglists (meta #'digest/sha256-bytes-hex))))
+  (is (= '([write-bytes!]) (:arglists (meta #'digest/sha256-output-hex))))
   (is (empty? (ns-aliases 'gravity.digest))))
 
 (deftest sha256-namespace-contract-is-narrow-and-acyclic
@@ -72,14 +114,21 @@
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.digest (:namespace contract)))
     (is (= :stage0-sha256-primitives (:contract-boundary contract)))
-    (is (= #{'sha256-hex 'sha256-bytes-hex}
+    (is (= #{'sha256-hex 'sha256-bytes-hex 'sha256-output-hex}
            (set (keys (:public-api contract)))))
-    (is (= [:utf8-string :byte-array] (:artifact-inputs contract)))
+    (is (= [:utf8-string :byte-array :byte-output-producer] (:artifact-inputs contract)))
     (is (= [:sha256-lowercase-hex] (:artifact-outputs contract)))
-    (is (= ['clojure.core 'java.security.MessageDigest]
+    (is (= ['clojure.core 'java.security.MessageDigest
+             'java.security.DigestOutputStream 'java.io.OutputStream]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.diagnostics]
            (get-in contract [:dependency-direction :forbids])))
+    (is (= {:arglists '([write-bytes!]) :callback-invocations 1
+            :callback-return :ignored
+            :callback-input :scoped-byte-output-stream :callback-trust :host-caller
+            :callback-exceptions :propagated :stream-lifetime :closed-before-return
+            :returns :lowercase-64-character-hex-string}
+           (get-in contract [:public-api 'sha256-output-hex])))
     (doseq [nonclaim [:canonical-encoding
                       :artifact-identity
                       :source-reads

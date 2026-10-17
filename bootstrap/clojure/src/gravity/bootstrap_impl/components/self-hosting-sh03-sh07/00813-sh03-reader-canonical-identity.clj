@@ -1,4 +1,4 @@
-
+(declare ^:private p15-s23-c6c10-digest-validated-form)
 
 (defn sh03-reader-canonical-identity
   [source-path value]
@@ -28,7 +28,7 @@
             sh03-reader-canonical-maximum-total-scalar-bytes]
     (p15-s23-c6c10-canonical-digest source-path value)))
 
-(defn sh03-reader-resolve-digest-requests!
+(defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
   (let [requests (:digest-requests raw-result)
         request-count (count requests)
@@ -42,25 +42,9 @@
        (mapv :key requests) {:expected expected-names}))
     (loop [ordinal 0
            digests []
-           resolved-identities []
            resolved-requests []]
       (if (= ordinal request-count)
-        (let [resolve-complete
-              (fn [value]
-                (p15-s23-c6c10-resolve-digest-references!
-                 source-path value request-count nil digests))
-              resolved-result (resolve-complete raw-result)
-              resolved-result
-              (assoc resolved-result
-                     :digest-requests resolved-requests
-                     :incremental-reader-hashes
-                     (assoc (:incremental-reader-hashes resolved-result)
-                            :status (if (= :accepted (:status raw-result))
-                                      :stable :rejected)))]
-          {:result resolved-result
-           :resolved-digests digests
-           :resolved-requests resolved-requests
-           :reader-result-id (last digests)})
+        {:resolved-digests digests :resolved-requests resolved-requests}
         (let [request (get requests ordinal)
               expected-keys (if (zero? ordinal)
                               sh03-reader-source-digest-request-keys
@@ -116,10 +100,13 @@
                     (str "sha256:"
                          (sha256-bytes-hex
                           (sh03-reader-byte-array resolved-preimage)))
-                    (sh03-reader-canonical-digest
-                     source-path resolved-preimage))]
-              (when (or (some #{resolved-identity} resolved-identities)
-                        (some #{digest} digests)
+                    ;; The identity immediately above is this request's fresh,
+                    ;; fully validated immutable canonical form.
+                    (p15-s23-c6c10-digest-validated-form resolved-identity))]
+              ;; Equal canonical forms have identical fixed encoding and digest.
+              ;; Digest uniqueness therefore also rejects equal forms; this
+              ;; implication does not require the hash to be injective.
+              (when (or (some #{digest} digests)
                         (and raw-request? (not= digest (:observed-id request))))
                 (sh03-reader-boundary-fail!
                  source-path :unique-bound-sh03-reader-digest
@@ -127,11 +114,27 @@
               (recur
                (inc ordinal)
                (conj digests digest)
-               (conj resolved-identities resolved-identity)
                (conj resolved-requests
                      (assoc request
                             :preimage resolved-preimage
                             :digest digest))))))))))
+
+(defn sh03-reader-resolve-digest-requests!
+  [source-path raw-result source-bytes]
+  ;; Complete the identity-checking frame before allocating the final result.
+  (let [{:keys [resolved-digests resolved-requests]}
+        (sh03-reader-resolve-digest-request-sequence! source-path raw-result source-bytes)
+        resolved-result
+        (p15-s23-c6c10-resolve-digest-references!
+         source-path (assoc raw-result :digest-requests [])
+         (count resolved-requests) nil resolved-digests)
+        resolved-result
+        (assoc resolved-result :digest-requests resolved-requests
+               :incremental-reader-hashes
+               (assoc (:incremental-reader-hashes resolved-result) :status
+                      (if (= :accepted (:status raw-result)) :stable :rejected)))]
+    {:result resolved-result :resolved-digests resolved-digests
+     :resolved-requests resolved-requests :reader-result-id (last resolved-digests)}))
 
 (defn sh03-reader-resolve-diagnostic-id
   [source-path diagnostic]
