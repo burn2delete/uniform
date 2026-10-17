@@ -37,6 +37,7 @@ Follow the owning boundary when the next change is downstream of SH-07:
 | Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` | Default SH-07 commands here. |
 | Retained source occurrences to the temporary C6 request | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00887-sh07-core-build-form-tree.clj` and its `00890` caller | `gravity.self-hosting.sh07-mutation-test`, exact `sh07-map-source-order-development-kernel`; affected real source composition before accepting a projection change. |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Loop/recur and the matching type-development section. |
+| Body/latent effects and source allowances | `bootstrap/gravity/src/gravity/effects.gravity` | Constructor allocation effects and the matching body-effect kernels. |
 | Typed Core to executable development IR | `bootstrap/gravity/p15_s23/emitter.gravity` | Explicit typed input, then the matching lowering section. |
 | Development IR evaluation and control | `bootstrap/gravity/src/gravity/runtime.gravity` | Runtime namespace boundary, then the matching execution section. |
 
@@ -978,6 +979,55 @@ clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
   --exact current-gravity-root-map-guard-authenticated-composition --fail-fast
 ```
+
+### Constructor allocation effects
+
+Change `bootstrap/gravity/src/gravity/effects.gravity` for evaluated collection
+allocation inference, latent/caller propagation and source declarations. L6
+already registers `:memory/allocate`; STD3 requires constructor allocation
+behavior to be visible. Start with the current-source kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact body-constructor-allocation-development-kernel \
+  --exact body-allocation-fixtures-development-kernel \
+  --exact body-effect-operation-development-kernel \
+  --exact body-effect-call-metadata-development-kernel \
+  --exact current-gravity-evaluated-vector-c8-development-kernel \
+  --exact current-gravity-keyword-map-lookup-c8-development-kernel
+```
+
+The constructor's own allocation is conditional on normal operand completion.
+A Never operand prevents construction but does not erase operand effects or
+errors. Quote remains inert DATA, not evaluated nested construction. Function
+bodies retain latent effects; defining a function does not execute its body.
+Existing declaration checking rejects inferred allocation outside allowances
+with `C8-UNDECLARED`.
+
+The effect node's allocation record describes static behavior. Extent counts
+constructor input positions: map entries or vector/set elements. It is not
+heap bytes, observed allocations or a set's runtime cardinality after equality
+deduplication.
+Placement, allocator-provider selection and ownership remain pending. Effect
+inference and a source allowance do not grant allocator capabilities or prove
+complete profile/provider legality.
+
+For changes to this rule or its graph representation, run the affected source
+composition separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-allocation-authenticated-paired-composition --fail-fast
+```
+
+It reuses fresh accepted/rejected source/type products and checks the actual
+effect owner plus fresh whole-result reconstruction. It does not rebuild the
+unchanged public C8 module bundle. Select that broader module composition only
+when its forwarding/module interface changes; do not replay unchanged emitter
+or runtime matrices for an effects-only correction.
 
 ### Direct integral ordering
 

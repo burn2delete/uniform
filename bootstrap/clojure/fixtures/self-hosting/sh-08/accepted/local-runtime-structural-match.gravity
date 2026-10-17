@@ -1,5 +1,5 @@
 (ns self-hosting.sh08.local-runtime-structural-match
-  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
 (defn choose [flag :- Bool text :- String fallback :- String] :- String
   (match (packet flag text) {:payload [true {:value item}]} item _ fallback))
 (defn packet [flag :- Bool text :- String] {:extra :retained :payload [flag {:value text}]})

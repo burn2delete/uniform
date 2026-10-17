@@ -1,5 +1,5 @@
 (ns self-hosting.sh08.local-runtime-evaluated-vector
-  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
 
 (defn empty-vector [] [])
 (defn mixed-vector [] [nil true 17 \a "text" :key])

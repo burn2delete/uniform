@@ -1,5 +1,5 @@
 (ns self-hosting.sh08.local-runtime-boolean-match
-  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
 
 (defn true-first [flag :- Bool value :- String] :- String (match flag true value false "false"))
 (defn false-first [flag :- Bool value :- String] :- String (match flag false value true "true"))

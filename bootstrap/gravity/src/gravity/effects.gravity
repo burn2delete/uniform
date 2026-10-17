@@ -2031,14 +2031,32 @@
   (let [ids (if (= target nil) (get node :children) (conj (get node :children) target))
         size (loop [remaining ids out 0]
                (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (body-error-types graph (first remaining)))))))]
-    (if (= 0 size) 0 (* (+ 2 (count ids)) (+ 1 size)))))
+    (+ (if (= :collection-literal (get node :core-form)) (* 2 (+ 1 (count ids))) 0)
+       (if (= 0 size) 0 (* (+ 2 (count ids)) (+ 1 size))))))
+
+; L6/STD3: static constructor behavior, not a claim about observed heap
+; placement. The existing graph binds ordered child types and source identity.
+; Charge the normal-completion scan and its reconstruction in body-error-work.
+(defn body-constructor-allocation [node graph]
+  (if (= :collection-literal (get node :core-form))
+    (let [children (get node :children) kind (get (get node :attributes) :literal-kind)
+          normal? (loop [remaining children]
+                    (if (= 0 (count remaining)) true
+                      (if (= :gravity.type/never (get (get graph (first remaining)) :type)) false (recur (rest remaining)))))]
+      {:rule-version :sh09-evaluated-collection-allocation-v1 :collection-kind kind
+       :behavior :static-constructor-allocation :condition :normal-operand-completion
+       :normal-completion-possible? normal?
+       :extent {:unit (if (= kind :map) :entries :elements) :count (if (= kind :map) (quot (count children) 2) (count children))}
+       :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis}) nil))
 
 (defn body-node-record [node target graph type]
   (let [kind (get node :core-form) children (get node :children) source (get node :source)
         construction? (= kind :fn) latent (if construction? (body-node-effects children graph) #{})
         deps (if construction? [] (if (= target nil) children (conj children target)))
-        direct (if (if (= kind :throw) (= false (= :gravity.type/never (get (get graph (first children)) :type))) false)
-                 #{:error/throw} #{})
+        allocation (body-constructor-allocation node graph)
+        direct (if (= true (get allocation :normal-completion-possible?)) #{:memory/allocate}
+                 (if (if (= kind :throw) (= false (= :gravity.type/never (get (get graph (first children)) :type))) false)
+                   #{:error/throw} #{}))
         effects (body-add direct (body-node-effects deps graph))
         error-ids (if construction? children deps)
         errors (loop [ids error-ids out []]
@@ -2059,7 +2077,8 @@
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :type type :type-fact-id {:resolution :coordinator-digest-required
                               :identity-input {:domain :gravity/sh09-body-node-type-v1
-                                               :core-node-id (get node :node-id) :type type}}}]
+                                               :core-node-id (get node :node-id) :type type}}}
+        record (if (= allocation nil) record (assoc record :allocation allocation))]
     (if error-evidence?
       (assoc record :direct-thrown-errors direct-errors
         :escaping-thrown-errors (if construction? #{} (set (body-error-type-union errors (vec direct-errors))))
@@ -2078,7 +2097,12 @@
               (if (contains? #{:loop :function} (get (get node :attributes) :target-kind))
                 (sh09-sha256-id? (get (get node :attributes) :target-id)) false)
               (if (= kind :keyword-map-lookup) (= 2 (count children))
-                (contains? #{:collection-literal :let :do :call :match :loop :try} kind)))))) false)))
+                (if (= kind :collection-literal)
+                  (body-all? [(contains? #{:vector :map :set} (get (get node :attributes) :literal-kind))
+                              (= (count children) (get (get node :attributes) :element-count))
+                              (if (= :map (get (get node :attributes) :literal-kind))
+                                (= (count children) (* 2 (quot (count children) 2))) true)])
+                  (contains? #{:let :do :call :match :loop :try} kind))))))) false)))
 
 (defn body-order-valid? [node]
   (let [kind (get node :core-form) children (get node :children) order (get (get node :evaluation) :order)
@@ -2158,7 +2182,8 @@
         functions (body-index (get typed :function-type-table) :function-id)]
     (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0 work 0]
       (if (= 0 (count pending))
-        (if (= 0 (count deferred)) {:status :accepted :nodes graph :work-count work}
+        (if (= 0 (count deferred))
+          (if (> work budget) (body-failure :body-deferred-work-limit) {:status :accepted :nodes graph :work-count work})
           (if (if (> progress 0) (< rounds (count (get core :nodes))) false)
             (recur deferred [] graph 0 (+ rounds 1) work)
             {:status :rejected :reason :cyclic-or-missing-body-effect-dependencies}))

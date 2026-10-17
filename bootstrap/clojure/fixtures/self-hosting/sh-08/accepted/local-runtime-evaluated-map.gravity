@@ -1,5 +1,5 @@
 (ns self-hosting.sh08.local-runtime-evaluated-map
-  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
 
 (defn empty-map [] {})
 (defn mixed-map [] {:nil nil :flag true :number 17 :character \a :text "text" :keyword :key})

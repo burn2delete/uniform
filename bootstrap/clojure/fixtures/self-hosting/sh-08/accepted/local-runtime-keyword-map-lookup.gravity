@@ -1,5 +1,5 @@
 (ns self-hosting.sh08.local-runtime-keyword-map-lookup
-  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
 
 (defn constructor-lookup [value :- String] :- String (:value {:value value}))
 (defn let-lookup [value :- String] :- String (let [data {:value value} alias data] (:value alias)))

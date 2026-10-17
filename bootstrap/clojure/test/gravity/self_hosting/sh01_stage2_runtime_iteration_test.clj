@@ -1048,7 +1048,8 @@
         node (fn [n kind children] {:node-id (id n) :core-form kind :children (mapv id children)
                                    :source {:syntax-id (id n)}
                                    :evaluation {:kind :left-to-right :order (mapv (fn [i child] {:index i :core-node-id (id child)}) (range) children)}})
-        literal (node 1 :literal []) thrown (node 2 :throw [1]) vector-node (node 3 :collection-literal [2])
+        literal (node 1 :literal []) thrown (node 2 :throw [1])
+        vector-node (assoc (node 3 :collection-literal [2]) :attributes {:literal-kind :vector :element-count 1})
         core {:nodes [literal thrown vector-node] :function-records [] :call-edges []}
         facts {:module {:effects [:error/throw]} :function-type-table []
                :type-table {(id 1) :gravity.type/string (id 2) :gravity.type/never (id 3) :gravity.type/never}}
@@ -1056,6 +1057,8 @@
         record (get-in graph [:nodes (id 3)])]
     (is (= :accepted (:status analyzed)))
     (is (= #{} (:direct record)))
+    (is (false? (get-in record [:allocation :normal-completion-possible?])))
+    (is (= :normal-operand-completion (get-in record [:allocation :condition])))
     (is (= #{:error/throw} (:transitive record)))
     (is (= [(id 2)] (:evaluated-children record)))
     (is (true? (c8 'body-order-valid? vector-node)))
@@ -1074,7 +1077,9 @@
       (let [graph (:graph analyzed) nonempty (first (filter #(seq (:children %)) vectors))]
         (is (= 12 (count vectors)))
         (doseq [node vectors]
-          (is (= #{} (get-in graph [:nodes (:node-id node) :direct])))
+          (let [normal? (not-any? #(= :gravity.type/never (get-in facts [:type-table %])) (:children node))]
+            (is (= (if normal? #{:memory/allocate} #{}) (get-in graph [:nodes (:node-id node) :direct])))
+            (is (= normal? (get-in graph [:nodes (:node-id node) :allocation :normal-completion-possible?]))))
           (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
         (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) vectors))
         (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))
@@ -1190,7 +1195,9 @@
       (let [graph (:graph analyzed) nonempty (first (filter #(seq (:children %)) collections))]
         (is (= {:map 13 :vector 2} (frequencies (map #(get-in % [:attributes :literal-kind]) collections))))
         (doseq [node collections]
-          (is (= #{} (get-in graph [:nodes (:node-id node) :direct])))
+          (let [normal? (not-any? #(= :gravity.type/never (get-in facts [:type-table %])) (:children node))]
+            (is (= (if normal? #{:memory/allocate} #{}) (get-in graph [:nodes (:node-id node) :direct])))
+            (is (= normal? (get-in graph [:nodes (:node-id node) :allocation :normal-completion-possible?]))))
           (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
         (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) collections))
         (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))

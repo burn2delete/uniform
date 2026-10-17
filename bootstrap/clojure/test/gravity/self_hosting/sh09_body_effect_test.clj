@@ -262,6 +262,79 @@
       (is (nil? (get-in row [:dependencies :callee-source-body-id])))
       (is (= descriptor (get-in row [:dependencies :callee-normal-type]))))))
 
+(deftest body-constructor-allocation-development-kernel
+  ;; Current Gravity algorithms on normalized DATA, not source admission.
+  (doseq [kind [:vector :map :set] empty? [true false]]
+    (let [children (if empty? [] [1 2])
+          constructor (assoc (node 3 :collection-literal children) :attributes {:literal-kind kind :element-count (count children)})
+          core {:nodes [(node 1 :literal []) (node 2 :literal []) constructor] :call-edges []}
+          facts {:type-table {(sha 1) :gravity.type/integer (sha 2) :gravity.type/bool (sha 3) :collection}}
+          result (leaf 'body-derive-nodes core facts) record (get-in result [:nodes (sha 3)])
+          metadata {:rule-version :sh09-evaluated-collection-allocation-v1 :collection-kind kind
+                    :behavior :static-constructor-allocation :condition :normal-operand-completion :normal-completion-possible? true
+                    :extent {:unit (if (= kind :map) :entries :elements) :count (if empty? 0 (if (= kind :map) 1 2))}
+                    :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis}]
+      (is (= :accepted (:status result)))
+      (is (= metadata (:allocation record)))
+      (is (= #{:memory/allocate} (:direct record) (:transitive record)))
+      (is (= (mapv sha children) (:evaluated-children record) (:dependencies record)))
+      (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes result))))
+      (is (= result (leaf 'body-derive-nodes-with-foreign core facts {} (:work-count result))))
+      (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} (dec (:work-count result))))))
+      (doseq [changed [(dissoc record :allocation)
+                       (assoc record :direct #{} :transitive #{} :escaping #{})
+                       (assoc-in record [:allocation :normal-completion-possible?] false)
+                       (assoc-in record [:allocation :extent :unit] :heap-bytes)
+                       (assoc-in record [:allocation :extent :count] 99)
+                       (assoc-in record [:allocation :provider] :observed-jvm-allocation)
+                       (assoc-in record [:allocation :extra] true)]]
+        (is (false? (leaf 'body-graph-equations-valid? core facts {} (assoc (:nodes result) (sha 3) changed)))))))
+  (let [constructor (assoc (node 3 :collection-literal [1 2]) :attributes {:literal-kind :map :element-count 2})
+        graph {(sha 1) {:type :gravity.type/never :transitive #{:error/throw}
+                        :escaping-thrown-errors #{:gravity.type/string} :escaping-thrown-error-types [:gravity.type/string]}
+               (sha 2) {:type :gravity.type/integer :transitive #{:memory/allocate :compiler/read-ir}}}
+        record (leaf 'body-node-record constructor nil graph :gravity.type/never)
+        normal (leaf 'body-node-record constructor nil (assoc-in graph [(sha 1) :type] :gravity.type/keyword) :collection)
+        quote-node (assoc (node 4 :quote []) :attributes {:quoted-value {:nested [#{:data}]}})
+        quote-record (leaf 'body-node-record quote-node nil {} :collection)]
+    (is (= #{} (:direct record)))
+    (is (false? (get-in record [:allocation :normal-completion-possible?])))
+    (is (= #{:error/throw :memory/allocate :compiler/read-ir} (:transitive record)))
+    (is (= [:gravity.type/string] (:escaping-thrown-error-types record)))
+    (is (= (mapv sha [1 2]) (:dependencies record) (:evaluated-children record)))
+    (is (= #{:memory/allocate} (:direct normal)))
+    (is (= #{:error/throw :memory/allocate :compiler/read-ir} (:transitive normal)))
+    (is (nil? (:allocation quote-record)))
+    (is (= #{} (:direct quote-record) (:transitive quote-record))))
+  (doseq [attributes [{:literal-kind :unknown :element-count 2} {:literal-kind :map :element-count 3}
+                      {:literal-kind :map :element-count 1} {:literal-kind :vector :element-count nil}]]
+    (is (false? (leaf 'body-node-supported? (assoc (node 3 :collection-literal [1 2]) :attributes attributes)))))
+  (is (false? (leaf 'body-node-supported? (assoc (node 3 :collection-literal [1 2 4])
+                                               :attributes {:literal-kind :map :element-count 3}))))
+  (let [literal (node 1 :literal []) key (node 2 :literal [])
+        inner (assoc (node 3 :collection-literal [1]) :attributes {:literal-kind :vector :element-count 1})
+        outer (assoc (node 4 :collection-literal [2 3]) :attributes {:literal-kind :map :element-count 2})
+        creation (node 5 :fn [4]) definition (node 6 :def [5])
+        operator (node 7 :reference []) call (node 8 :call [7])
+        core {:module {:effects [:memory/allocate]} :nodes [literal key inner outer creation definition operator call]
+              :function-records [{:function-syntax-id (sha 20) :function-core-node-id (sha 5)}]
+              :root-core-node-ids [(sha 6)] :call-edges [{:call-core-node-id (sha 8) :callee-function-syntax-id (sha 20)}]}
+        facts {:module (:module core) :function-type-table [{:function-id (sha 20) :body-core-node-id (sha 4) :latent-effects [:memory/allocate]}]
+               :type-table (zipmap (map sha (range 1 9)) (repeat :value))}
+        result (leaf 'body-derive-nodes core facts) graph (leaf 'body-build-graph core facts (:nodes result))]
+    (is (= :accepted (:status result)))
+    (is (= #{:memory/allocate} (get-in graph [:nodes (sha 3) :direct]) (get-in graph [:nodes (sha 4) :direct])))
+    (is (= #{} (get-in graph [:nodes (sha 5) :direct]) (get-in graph [:nodes (sha 5) :transitive])))
+    (is (= #{:memory/allocate} (get-in graph [:nodes (sha 5) :latent]) (get-in graph [:nodes (sha 8) :transitive])))
+    (is (= #{:memory/allocate} (get-in graph [:functions (sha 20) :inferred])))
+    (is (= #{} (get-in graph [:namespace :inferred])))
+    (is (= :accepted (:status (leaf 'body-allowance-check core facts graph 65536))))
+    (is (= "C8-UNDECLARED" (:rule (leaf 'body-allowance-check core
+                                   (assoc-in facts [:function-type-table 0 :latent-effects] [])
+                                   (assoc-in graph [:functions (sha 20) :declared] #{}) 65536))))
+    (let [namespace-core (assoc core :function-records [])]
+      (is (= "C8-UNDECLARED" (:rule (leaf 'body-allowance-check namespace-core (assoc-in facts [:module :effects] []) graph 65536)))))))
+
 (deftest body-effect-operation-development-kernel
   ;; Actual Gravity algorithm, normalized graph DATA; no authentication claim.
   (let [literal (node 1 :literal []) fn-node (node 2 :fn [1])
@@ -794,12 +867,14 @@
     (when-not (= :accepted (:status result))
       (throw (ex-info "Body leaf rejected actual products before costly C8 loading" {:diagnostics (:diagnostics result)})))
     (is (= (set (map :node-id (:nodes core))) (set (keys (:nodes graph)))))
-    (is (= #{:compiler/read-ir} (get-in graph [:namespace :declared])))
+    (is (= #{:compiler/read-ir :memory/allocate} (get-in graph [:namespace :declared])))
     (is (= #{} (get-in graph [:namespace :inferred])))
     (is (= (count (:function-type-table typed)) (count (:functions graph))))
     (is (every? #(= [:pending-sh09] (:throws %)) (vals (:functions graph))))
-    (is (every? #(= #{:compiler/read-ir} (:declared %)) (vals (:functions graph))))
-    (is (every? #(= #{} (:inferred %)) (vals (:functions graph))))
+    (is (every? #(= #{:compiler/read-ir :memory/allocate} (:declared %)) (vals (:functions graph))))
+    (doseq [function (:function-type-table typed)]
+      (is (= (if (#{'choose 'assemble} (:definition-name function)) #{:memory/allocate} #{})
+             (get-in graph [:functions (:function-id function) :inferred]))))
     (is (some #(and (= :quote (:operation %)) (empty? (:dependencies %))) (vals (:nodes graph))))
     (is (some #(and (= :fn (:operation %)) (empty? (:evaluated-children %)) (seq (:latent-children %))) (vals (:nodes graph))))
     (is (some #(= :guard (:role %)) (mapcat :conditional-coverage (vals (:nodes graph)))))))
@@ -1026,6 +1101,77 @@
               rejected (leaf 'build-body-effect-result typed (:verification p) (seal-binding bad-request typed (:verification p)))]
           (is (= :rejected (:status rejected))))))
     (is (= (:identity-input (first results)) (:identity-input (second results))))))
+
+(deftest body-allocation-fixtures-development-kernel
+  (doseq [relative (into ["sh-09/accepted/local-body-effects"]
+                        (map #(str "sh-08/accepted/local-runtime-" %)
+                             ["evaluated-vector" "evaluated-map" "keyword-map-lookup" "returned-map-shape"
+                              "boolean-match" "structural-match" "root-map-guards"]))]
+    (let [base (str "bootstrap/clojure/fixtures/self-hosting/" relative)
+          source-path (path (str base ".gravity")) text (slurp source-path)
+          ;; Read only the declaration here. Later fixture DATA includes forms
+          ;; whose duplicate keys belong to the Gravity reader contract.
+          namespace-form (binding [*read-eval* false]
+                           (with-open [reader (java.io.PushbackReader. (java.io.StringReader. text))] (read reader)))
+          module (bootstrap/parse-module source-path [namespace-form])]
+      (is (= text (slurp (path (str base ".qst")))))
+      (is (contains? (:effects module) :memory/allocate))))
+  (let [base "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/undeclared-constructor-allocation"
+        source-path (path (str base ".gravity")) text (slurp source-path)]
+    (is (= text (slurp (path (str base ".qst")))))
+    (is (= #{} (:effects (bootstrap/parse-module source-path (bootstrap/read-forms source-path text)))))))
+
+(deftest body-allocation-authenticated-paired-composition
+  ;; Reuse fresh source/type products. This directly exercises the effect owner
+  ;; and whole-result verifier without rebuilding the unchanged C8 facade.
+  (let [products (mapv #(fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/local-body-effects" %))
+                       [".gravity" ".qst"])
+        results (mapv build-leaf products)]
+    (doseq [[p result] (map vector products results)]
+      (assert-body-products p result)
+      (let [typed (:typed p) core (get-in p [:request :canonical-core-artifact]) graph (:effect-graph result)
+            constructors (filterv #(= :collection-literal (:core-form %)) (:nodes core))
+            functions (into {} (map (juxt :definition-name identity) (:function-type-table typed)))
+            choose-id (get-in functions ['choose :function-id])
+            caller (first (filter #(= choose-id (:callee-function-syntax-id %)) (:call-type-facts typed)))]
+        (is (= {:map 2 :vector 1 :set 1} (frequencies (map #(get-in % [:attributes :literal-kind]) constructors))))
+        (doseq [node constructors]
+          (let [record (get-in graph [:nodes (:node-id node)]) map? (= :map (get-in node [:attributes :literal-kind]))]
+            (is (= #{:memory/allocate} (:direct record)))
+            (is (true? (get-in record [:allocation :normal-completion-possible?])))
+            (is (= :normal-operand-completion (get-in record [:allocation :condition])))
+            (is (= {:unit (if map? :entries :elements) :count (if map? (quot (count (:children node)) 2) (count (:children node)))}
+                   (get-in record [:allocation :extent])))))
+        (is (= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id caller) :transitive])))
+        (doseq [record (filter #(= :quote (:operation %)) (vals (:nodes graph)))]
+          (is (nil? (:allocation record)))
+          (is (= #{} (:direct record) (:transitive record))))
+        (is (= :passed (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) result))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (let [p (first products) result (first results) graph (:effect-graph result)
+          id (first (keep (fn [[id record]] (when (:allocation record) id)) (:nodes graph)))
+          erased (update graph :nodes
+                         #(into {} (map (fn [[id record]]
+                                          [id (reduce (fn [out field] (update out field disj :memory/allocate))
+                                                      (dissoc record :allocation) [:direct :latent :transitive :escaping])]) %)))
+          erased (update erased :functions
+                         #(into {} (map (fn [[id function]] [id (-> function (update :inferred disj :memory/allocate)
+                                                                              (update :latent disj :memory/allocate))]) %)))]
+      (doseq [changed [erased (update-in graph [:nodes id] dissoc :allocation)
+                       (assoc-in graph [:nodes id :allocation :normal-completion-possible?] false)
+                       (assoc-in graph [:nodes id :allocation :extent :unit] :heap-bytes)
+                       (assoc-in graph [:nodes id :allocation :provider] :observed-heap)
+                       (assoc-in graph [:nodes id :allocation :extra] true)]]
+        (is (= :rejected (:status (leaf 'verify-body-effect-result (:typed p) (:verification p) (:binding p)
+                                       (reseal-effect-graph result changed)))))))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [p (fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-09/rejected/undeclared-constructor-allocation" extension))
+            result (build-leaf p) diagnostic (first (:diagnostics result))]
+        (is (= :accepted (get-in p [:typed :status])))
+        (is (= :passed (get-in p [:verification :status])))
+        (is (= [:rejected "C8-UNDECLARED" :function-effect-outside-source-allowance :memory/allocate]
+               [(:status result) (:rule diagnostic) (:reason diagnostic) (:effect diagnostic)]))
+        (is (= :passed (:status (leaf 'verify-body-effect-result (:typed p) (:verification p) (:binding p) result))))))))
 
 (deftest body-effect-authenticated-paired-composition
   (let [products (mapv #(fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/local-body-effects" %))

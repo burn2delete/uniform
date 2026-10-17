@@ -1517,7 +1517,7 @@ not claim wrapper purity or close constructor allocation inference. Full
 numeric typing, standard-library, profile/provider legality, target support,
 authoritative migration, self-hosting and release remain outstanding.
 
-### Next legality gap: collection-constructor allocation
+### Collection-constructor allocation: development increment
 
 At `02c1077c`, the body-effect pass's `body-node-record` derives a direct effect
 for a normally transferring throw, but no allocation effect for a collection
@@ -1527,12 +1527,44 @@ inferred collection effect set therefore does not establish allocation-free
 behavior. L6 already registers `:memory/allocate`, and STD3 requires visible
 allocation behavior for constructors and updates.
 
-The next collection slice must close that inference gap and test accepted
-declared allocation versus rejected undeclared allocation before adding
-persistent map association. Reuse the existing body graph and allowance check;
-do not add an admission lane or treat pending provider/profile legality as
-permission to hide the inferred effect. Full allocation-strategy, capability,
-ownership and deployment/provider acceptance remain separate outstanding gates.
+The effect owner now derives conditional `:memory/allocate` for evaluated
+vector/map/set constructors. A Never operand suppresses only the constructor's
+own allocation; operand effects and errors remain. Quoted DATA stays inert,
+function bodies stay latent, and calls propagate their body effects. A static
+allocation record identifies normal operand completion and constructor-input
+extent in map entries or vector/set elements, not observed heap bytes or the
+runtime cardinality of a set after deduplication. Existing graph
+equation checking and whole-result reconstruction bind that record. Constructor
+kind/count checks and the logical work budget remain enforced.
+
+The focused batch passed ten tests/214 assertions in 0.564 seconds execution
+plus 9.092 seconds namespace loading at 2 GiB. The first batch remains failed
+(199 passed, one failed assertion and one error): its fixture check read an
+existing duplicate-key quoted DATA form through the host reader, and its
+normalized function-allowance case lacked the owning function record. Only
+test setup changed: inspect the namespace header for allowance parity and
+include the function record. The production rule was not relaxed.
+
+The narrow accepted/rejected paired source composition passed one test/93
+assertions in 356.126 seconds execution plus 7.655 seconds namespace loading
+at 2 GiB. It reused four fresh source/type products: the accepted body-effects
+pair and the undeclared-constructor pair. Each positive graph records two
+maps, one vector and one set; `choose` and `assemble` infer allocation while
+the other four functions remain empty and namespace definition effects remain
+empty. Both undeclared constructors pass C7 and reject at C8 with
+`C8-UNDECLARED` / `:function-effect-outside-source-allowance` for
+`:memory/allocate`. Ten whole-result verifications cover two accepted results,
+six coherent erased/forged graph rejections and two valid rejected results.
+
+This closes the finite constructor inference/source-declaration boundary. It
+uses the existing effect owner, declaration check and fresh whole-result
+verification without rebuilding the unchanged public C8 module bundle.
+Existing fixture declarations now acknowledge constructor allocation; their
+prior identities and results remain historical, not relabeled current
+evidence. C7, emitter and runtime code are unchanged. Persistent association
+can follow this correction. Full allocation-strategy, capability, ownership
+and deployment/provider acceptance remain separate outstanding gates; a
+source allowance is not an allocator grant.
 
 ### Artifact-backed ordinary module imports: development increment
 
