@@ -759,7 +759,10 @@ lowering and authoritative migration remain separate gates.
 
 ### Current Gravity runtime throw execution
 
-Edit `bootstrap/gravity/p15_s23/runtime.gravity` for the local closed evaluator.
+Edit `bootstrap/gravity/src/gravity/runtime.gravity` for the local closed
+evaluator. The namespace is `gravity.runtime`; the older
+`bootstrap/gravity/p15_s23/runtime.gravity` retains formatting, historical
+catalog DATA, B51 machine helpers and four direct compatibility forwarders.
 Its internal result is `[value output control]`, with `:normal`, `:thrown` and
 `:rejected` kept separate from payload DATA. Argument, binding, sequence and
 conditional evaluation propagate a transfer before doing later work. Ordinary
@@ -773,12 +776,11 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-emitter-throw-development-kernel
 ```
 
-The runtime check freshly compiles the exact six evaluator function forms from
-the current source. It distinguishes the projection's hash from its parent
-source hash and checks names, arities and dependency closure. This is not
-whole-module compilation: older manifest literal declarations in that file are
-outside the direct compiler interface's literal subset. No function is spliced
-into an old plan, and no admission pin is refreshed.
+The runtime check freshly compiles the entire current `gravity.runtime` file,
+checks its 22 function names/arities and call closure, and retains its actual
+source hash separately from the compatibility file's identity. It no longer
+selects or concatenates function forms. No function is spliced into an old plan,
+and no admission pin is refreshed.
 
 The affected composition lowers the unchanged accepted paired throw fixture
 with the current Gravity emitter and evaluates its returned instruction with
@@ -787,6 +789,67 @@ implement guest error transfer. The generic seed interpreter and primitive
 boundary remain. Old admitted packet validation still excludes throw; these
 development checks do not widen it or establish a target exception ABI,
 handlers, resource cleanup, complete profile legality or authoritative migration.
+
+### Runtime namespace boundary
+
+`gravity.runtime` owns evaluator traversal, guest activation, typed handler
+selection and loop/function-target transfer. It has no module imports. The
+compatibility module depends on this leaf, never the reverse. L2/L3 control and
+module semantics, C5 origins/privacy, C15 diagnostics, P4/R4 hosted boundaries
+and BOOT3's development/migration distinction govern this boundary.
+
+The leaf exports only these existing entrypoints; its other 18 functions are
+private:
+
+| Entry point | Arguments | Result |
+| --- | --- | --- |
+| `p15-s23-runtime-execute-closed-plan` | plan | Normal, thrown or rejected execution record. |
+| `p15-s23-runtime-evaluate-closed-instruction` | instruction, environment, output | Internal value/output/control tuple. |
+| `p15-s23-runtime-evaluate-in-context` | instruction, environment, output, functions, path | Internal tuple with explicit guest function context. |
+| `p15-s23-runtime-activate-function` | function, values, output, functions, path | Internal tuple with fresh activation locals. |
+
+Inputs are development instruction/function DATA, not newly admitted typed
+programs. Payloads remain DATA; internal `:recur` control additionally carries
+its target identity. Normal public completion preserves the seven-key record.
+The evaluator retains `P15S23X002` rejection behavior; module-development
+reconstruction/routing failures remain `BOOT2006`. Existing diagnostics and
+control representations do not become a target error ABI.
+
+The leaf declares managed allocation. Output is accumulated as a string, not
+written to a live stdout provider. Source declarations do not grant allocator,
+provider or host authority. The generic Clojure interpreter and primitive
+boundary remain. Focused checks compile the actual whole leaf directly;
+compatibility source/export/import/routing changes require the separate actual
+two-file composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact compiler-module-runtime-extraction-authenticated-composition
+```
+
+That composition uses real ordinary C5 root/leaf artifacts and an independent
+leaf plan through the existing module interface. Do not merge function tables,
+rewrite namespaces or inject its bundle into the stale pinned runtime adapter.
+It is development integration, not checked imported-user legality, whole-runtime
+conformance, authoritative migration or seed retirement.
+
+The present module consumer does more than these foundational contracts
+prescribe: `00580` calls full public C5 verification, including SH05 and envelope
+verification, during every public bundle reconstruction. That is an existing
+tool implementation choice, not a prerequisite imposed by BOOT3 or TEST2 on
+every development invocation. Do not rerun it for unrelated semantic edits.
+Verifier entry counts are not replay or allocation counts: existing permitted
+proof-transaction object reuse may apply within an invocation.
+If this cost blocks a needed integration decision, first distinguish initial
+C5 construction, bundle construction, public reconstruction and execution;
+then locate replay, hashing or equality cost at the owning boundary. Compare
+source-derived semantic reconstruction in this same interface with sharing
+immutable products within one invocation. Either approach must still reject
+source/export/private/profile/origin/plan/route substitutions and preserve
+traceable inputs, canonical identities and stale-authority status. Accepting
+rehashed maps or `:passed` fields is not a substitute. No redesign, proof cache,
+new runner or additional admission lane is selected here.
 
 ### Single-source seed throw execution
 
@@ -1191,10 +1254,12 @@ The compile-time literal table is not another raw-plan field: actual source
 identity binds unused declarations, while embedded literal instructions bind
 values a function reads. Changing an unused catalog therefore changes module
 identity without changing an otherwise identical function-semantic projection.
-The whole-runtime check constructs the actual complete runtime file once, not
-the older selected-function projection. Its explicit catalog quotes preserve
-symbolic DATA without evaluating labels as variable references. Conservation
-checks are development regression oracles, not refreshed authority pins. The
+The whole-runtime check parses compatibility catalog DATA and compiles the
+entire actual `gravity.runtime` leaf once, not the older selected-function
+projection. The separate two-file composition validates the compatibility
+module's actual bundle and routes. Explicit catalog quotes preserve symbolic
+DATA without evaluating labels as variable references. Conservation checks are
+development regression oracles, not refreshed authority pins. The
 historical pinned runtime adapter remains separately stale and fail-closed;
 repairing its byte counts, definition set or contract hashes is not a prerequisite
 for this current-source check.

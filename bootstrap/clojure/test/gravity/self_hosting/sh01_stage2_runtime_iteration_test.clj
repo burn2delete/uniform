@@ -495,7 +495,9 @@
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        runtime-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        runtime-path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity"))
+        compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        compatibility-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}
         runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
         names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
                  p15-s23-runtime-evaluate-arguments-in-context p15-s23-runtime-evaluate-bindings-in-context p15-s23-runtime-evaluate-sequence-in-context
@@ -505,18 +507,19 @@
                  p15-s23-runtime-typed-handlers-valid? p15-s23-runtime-atomic-error-match? p15-s23-runtime-select-typed-handler
                  p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (names (second %))) runtime-forms)
-        projection (str/join "\n" (map pr-str (cons (first runtime-forms) selected)))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path projection)
+        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path runtime-text)
         execute (fn [instruction env]
                   (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
                     'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         verifier 'sh08-verify-function-type-result original bootstrap/p15-s23-stage2-runtime-execute-function]
     (is (= 22 (count selected)))
-    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in runtime-plan [:source :sha256])))
-    (is (not= (bootstrap/sha256-hex runtime-text) (bootstrap/sha256-hex projection)))
+    (is (= selected (vec (rest runtime-forms))))
+    (is (= (str "sha256:" (bootstrap/sha256-hex runtime-text)) (get-in runtime-plan [:source :sha256])))
+    (is (not= (:path compatibility-source) runtime-path))
+    (is (= (:sha256 compatibility-source) (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))))
     (doseq [extension [".gravity" ".qst"]]
       (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/direct-typed-throw" extension)
             source-path (.getPath (io/file root relative)) text (slurp source-path)
@@ -578,7 +581,8 @@
 (defn- typed-catch-runtime-projection []
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity")) text (slurp path)
+        path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity")) text (slurp path)
+        compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         forms (bootstrap/read-forms path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
                  'p15-s23-runtime-evaluate-arguments-in-context 7 'p15-s23-runtime-evaluate-bindings-in-context 6 'p15-s23-runtime-evaluate-sequence-in-context 6
@@ -589,18 +593,18 @@
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1
                  'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) forms)
-        projection (str/join "\n" (map pr-str (cons (first forms) selected)))
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
-        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path projection)
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
     (is (= 22 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
-    (is (= selected (vec (rest (bootstrap/read-forms path projection)))))
+    (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
-    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in plan [:source :sha256])))
-    (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
-    {:plan plan :parent-source {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}}))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in plan [:source :sha256])))
+    (is (= 'gravity.runtime (get-in plan [:module :module])))
+    {:plan plan :implementation-source {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))}
+     :parent-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}}))
 
 (defn- typed-loop-kernel-data [module]
   ;; Source-linked normalized DATA. The test invokes the current C7 ledger
@@ -1867,7 +1871,9 @@
   (let [fixture-path (module-fixture "seed-library" ".gravity")
         root (loop [directory (.getParentFile (io/file fixture-path))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        source-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        source-path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity"))
+        compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        compatibility-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}
         text (slurp source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! fixture-path :jvm))
         parent-forms (bootstrap/read-forms source-path text)
@@ -1880,8 +1886,7 @@
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) parent-forms)
-        projection (str/join "\n" (map pr-str (cons (first parent-forms) selected)))
-        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path projection)
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path text)
         invoke (fn [function & args]
                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled function (vec args)))
         literal (fn [value] {:op :literal :value value})
@@ -1892,15 +1897,14 @@
         execute #(invoke 'p15-s23-runtime-execute-closed-plan {:entrypoint 'main :functions {'main {:instructions [%]}}})
         payload (Object.) transport (module-private 'p15-s23-stage2-runtime-source-throw!)
         seed-transports (atom 0) original (var-get transport)]
-    ;; The parent manifests contain bare-symbol DATA outside raw3's literal
-    ;; subset. Compile exact original function forms as a fresh projection;
-    ;; retain its own hash and the distinct complete parent-source provenance.
+    ;; Compile the entire implementation file and retain the separate compatibility source identity.
     (is (= text (slurp source-path)))
     (is (= 22 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
-    (is (= selected (vec (rest (bootstrap/read-forms source-path projection)))))
-    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in compiled [:source :sha256])))
-    (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
+    (is (= selected (vec (rest parent-forms))))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
+    (is (not= (:path compatibility-source) source-path))
+    (is (= (:sha256 compatibility-source) (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))))
     (let [builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
           calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
       (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls)))
@@ -2453,7 +2457,12 @@
                           "gravity/p15_s23/runtime.gravity")
         text (slurp path) forms (bootstrap/read-forms path text)
         definitions (filterv #(= 'def (first %)) forms)
-        functions (filterv #(= 'defn (first %)) forms)
+        compatibility-functions (filterv #(= 'defn (first %)) forms)
+        implementation-path (str/replace path "gravity/p15_s23/runtime.gravity" "gravity/src/gravity/runtime.gravity")
+        implementation-text (slurp implementation-path)
+        implementation-forms (bootstrap/read-forms implementation-path implementation-text)
+        implementation-functions (vec (rest implementation-forms))
+        functions (vec (concat (take 4 compatibility-functions) implementation-functions (drop 8 compatibility-functions)))
         underlying (fn [value] (if (and (seq? value) (= 'quote (first value))) (second value) value))
         data (mapv #(vector (second %) (underlying (nth % 2))) definitions)
         digest #(bootstrap/sha256-hex (pr-str (bootstrap/c-backend-canonical-value %)))
@@ -2477,7 +2486,7 @@
         compiled (with-redefs-fn {literals-var (fn [forms]
                                                (let [result (original-literals forms)]
                                                  (swap! observed conj result) result))}
-                   #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text))
+                   #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter implementation-path implementation-text))
         invoke (fn [function & args]
                  (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled function (vec args)))
         lit (fn [value] {:op :literal :value value}) local (fn [name] {:op :local :name name})
@@ -2493,20 +2502,25 @@
     (is (= 23 (count data)))
     (is (= "68697377c7914c2442f2c6ae916984ddfebfb3fd77aa4b3ba3b385ea2db1bfe0" (digest data)))
     (is (= "525d55d6bcb05f28b7b8c627caf0c5febbb8d721f2c292dff9d325444d6c07b8" (digest functions)))
-    (is (= 30 (count functions) (count (:functions compiled))))
-    (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) functions))
+    (is (= 30 (count functions)))
+    (is (= 12 (count compatibility-functions)))
+    (is (= 22 (count implementation-functions) (count (:functions compiled))))
+    (is (= "f810ae4e8976d32cf686cd7c5bfe28a18e53d5015cac119b43481280e0ff8d52" (digest implementation-functions)))
+    (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) functions))))
+    (is (= (select-keys arities (map second implementation-functions))
            (into {} (map (fn [[name function]] [name (:arity function)]) (:functions compiled)))))
     (is (= 18 (count (filter #(seq? (nth % 2)) definitions))))
     (is (= '#{p15-s23-reference-runtime-service-manifest p15-s23-reference-managed-runtime-adapter
               p15-s23-reference-memory-provider-manifest p15-s23-reference-runtime-failure-policy
               p15-s23-runtime-b51-machine-contract}
            (set (map second (filter #(map? (nth % 2)) definitions)))))
-    (is (= [(into (sorted-map) data)] @observed))
-    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in compiled [:source :sha256])))
-    (is (= 'gravity.bootstrap.p15-s23.runtime (get-in compiled [:module :module])))
+    (is (= (into (sorted-map) data) (original-literals forms)))
+    (is (= [{}] @observed))
+    (is (= (str "sha256:" (bootstrap/sha256-hex implementation-text)) (get-in compiled [:source :sha256])))
+    (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex implementation-text)))
+    (is (= 'gravity.runtime (get-in compiled [:module :module])))
     (is (= [:hosted :jvm] [(get-in compiled [:module :profile]) (get-in compiled [:module :target])]))
     (is (not (contains? compiled :literal-data)))
-    (is (= "gravity-stage2-runtime" (invoke 'main)))
     (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main
             :stdout "normal\n" :entrypoint-result 7 :status :complete :clojure-seed-boundary? true :self-hosted? false}
            (execute (say "normal" (lit 7)))))
@@ -2543,6 +2557,94 @@
       (is (not= text unquoted))
       (is (= :unsupported-literal-data
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path unquoted)) [:facts :reason]))))))
+
+(deftest compiler-module-runtime-extraction-authenticated-composition
+  (let [caller-path (str/replace (module-fixture "seed-library" ".gravity")
+                                 "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
+                                 "gravity/p15_s23/runtime.gravity")
+        leaf-path (str/replace caller-path "gravity/p15_s23/runtime.gravity" "gravity/src/gravity/runtime.gravity")
+        caller-text (slurp caller-path) leaf-text (slurp leaf-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+        leaf (bootstrap/sh06-resolution-file-artifact leaf-path)
+        c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
+        caller (bootstrap/compiler-c5-resolution-file-artifact caller-path c5-inputs)
+        dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path leaf-text)
+        inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path caller-text inputs)
+        root-entry (first (filter #(= (:artifact-id caller) (:module-id %)) (:modules bundle)))
+        leaf-entry (first (filter #(= (:artifact-id leaf) (:module-id %)) (:modules bundle)))
+        forwarders '{p15-s23-runtime-execute-closed-plan [plan]
+                     p15-s23-runtime-evaluate-closed-instruction [instruction environment output]
+                     p15-s23-runtime-evaluate-in-context [instruction environment output functions path]
+                     p15-s23-runtime-activate-function [function values output functions path]}
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle function (vec args)))
+        lit (fn [value] {:op :literal :value value}) local (fn [name] {:op :local :name name})
+        branch (fn [test then else] {:op :if :test test :then then :else else})
+        again (fn [target args] {:op :recur :target target :args args})
+        escape (fn [value] {:op :throw :value value})
+        say (fn [label value] {:op :do :body [{:op :println :args [(lit label)] :effect :io/write :capability :io/stdout} value]})
+        payload (String. "original extracted runtime payload")
+        swap {:recur-target "swap" :arity 3 :params '[flag left right]
+              :instructions [(branch (local 'flag)
+                               (again "swap" [(lit false) (local 'right) (local 'left)]) (local 'right))]}
+        loop-instruction {:op :loop :target "once"
+                          :bindings [{:name 'again :expr (lit true)} {:name 'value :expr (say "init" (lit 0))}]
+                          :body [(branch (local 'again) (again "once" [(lit false) (say "step" (lit 7))])
+                                   (say "final" (local 'value)))]}]
+    (is (= :accepted (:status leaf) (:status caller)))
+    (is (= [12 22] [(count (get-in root-entry [:plan :functions])) (count (get-in leaf-entry [:plan :functions]))]))
+    (doseq [[entry text namespace] [[root-entry caller-text 'gravity.bootstrap.p15-s23.runtime] [leaf-entry leaf-text 'gravity.runtime]]]
+      (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in entry [:plan :source :sha256])))
+      (is (= namespace (get-in entry [:plan :module :module])))
+      (is (= [:hosted :jvm] [(get-in entry [:plan :module :profile]) (get-in entry [:plan :module :target])]))
+      (is (= namespace (get-in entry [:resolution-artifact :gravity-resolution-boundary :authenticated-resolution-request :module :namespace]))))
+    (is (= (set (keys forwarders)) (set (map :name (:exports leaf-entry)))))
+    (is (= 18 (count (filter #(and (= :namespace (:binding-class %)) (= :function (:kind %)) (= :private (:visibility %)))
+                               (get-in leaf [:binding-table :bindings])))))
+    (is (= [] (get-in leaf [:gravity-resolution-boundary :authenticated-resolution-request :imports])))
+    (is (= 4 (count (:routes bundle))))
+    (doseq [route (:routes bundle)]
+      (is (= (:artifact-id caller) (:caller-module-id route)))
+      (is (= (:artifact-id leaf) (:callee-module-id route) (get-in route [:origin :ordinary-module-artifact-id])))
+      (is (= (:caller-function route) (:callee-function route)))
+      (is (= (count (get forwarders (:caller-function route))) (:arity route))))
+    (doseq [form (filter #(and (= 'defn (first %)) (contains? forwarders (second %)))
+                         (bootstrap/read-forms caller-path caller-text))]
+      (let [name (second form) params (get forwarders name)]
+        (is (= (list 'defn name params (apply list (symbol "runtime" (str name)) params)) form))))
+    (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+    (is (= :not-checked (get-in bundle [:boundary :effects])))
+    (is (= "gravity-stage2-runtime" (invoke 'main)))
+    (let [record (invoke 'p15-s23-runtime-execute-closed-plan
+                         {:entrypoint 'main :functions {'main {:arity 0 :params [] :instructions [loop-instruction]}}})]
+      (is (= :complete (:status record)))
+      (is (= 7 (:entrypoint-result record)))
+      (is (= "init\nstep\nfinal\n" (:stdout record))))
+    (doseq [[handler-body control] [[(local 'error) :normal] [(escape (local 'error)) :thrown]]]
+      (let [result (invoke 'p15-s23-runtime-evaluate-closed-instruction
+                           {:op :try :protected (escape (lit payload))
+                            :handlers [{:type :gravity.type/string :name 'error :body handler-body}]} {} "")]
+        (is (= [payload "" control] result)) (is (identical? payload (first result)))))
+    (let [result (invoke 'p15-s23-runtime-evaluate-in-context
+                         {:op :function-call :function 'swap :args [(lit true) (lit payload) (lit :right)]}
+                         {} "" {'swap swap} ['main])]
+      (is (= [payload "" :normal] result)) (is (identical? payload (first result))))
+    (let [result (invoke 'p15-s23-runtime-activate-function swap [true payload :right] "" {} ['main])]
+      (is (= [payload "" :normal] result)) (is (identical? payload (first result))))
+    (doseq [[name rule] [["p15-s23-runtime-evaluate-with-targets" "C5-PRIVATE"] ["missing-runtime-function" "C5-UNRESOLVED"]]]
+      (is (= rule (:id (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                    caller-path (str/replace caller-text "runtime/p15-s23-runtime-execute-closed-plan" (str "runtime/" name)) c5-inputs))))))
+    (is (= :source-emitter-or-dependency-set
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path (str caller-text " ") inputs)) [:facts :reason])))
+    (let [changed (assoc-in dependency [:functions 'p15-s23-runtime-activate-function :arity] 4)
+          forged (assoc changed :plan-id (str "sha256:" (bootstrap/sha256-hex (pr-str (bootstrap/c-backend-canonical-value (dissoc changed :plan-id))))))]
+      (is (= :independent-raw-plan-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path caller-text (assoc inputs :dependency-plans [forged]))) [:facts :reason]))))
+    (let [forged (assoc-in bundle [:routes 0 :origin :ordinary-module-artifact-id] (:artifact-id caller))
+          identity (assoc (:identity-input forged) :routes (:routes forged))
+          forged (assoc forged :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))]
+      (is (= :module-bundle-reconstruction-mismatch
+             (get-in (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'main [])) [:facts :reason]))))))
 
 (deftest compiler-module-route-development-kernel
   ;; Normalized routing DATA, not authenticated module input or admission.

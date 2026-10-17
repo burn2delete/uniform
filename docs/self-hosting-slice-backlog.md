@@ -1148,6 +1148,41 @@ runtime conformance or retire the Clojure seed. The next ownership step is the
 actual call-closed evaluator module in `gravity.runtime`, with thin compatibility
 entrypoints and real module composition.
 
+### Stage-owned runtime evaluator: development implementation
+
+The complete 22-function evaluator/activation closure now lives in
+`bootstrap/gravity/src/gravity/runtime.gravity`, namespace `gravity.runtime`.
+Its function forms and arities are preserved. It exports only closed-plan
+execution, closed-instruction evaluation, context evaluation and function
+activation; the other 18 helpers remain private. The old runtime module keeps
+23 unchanged catalog values, formatting/main and B51 helpers, plus four direct
+qualified compatibility calls. Dependency direction is old root to leaf only.
+The guide records the four APIs, DATA inputs/results, diagnostic ownership,
+allocation/output boundary and direct test commands.
+
+Existing SH01 and SH08 runtime loaders now compile the entire actual leaf file,
+not selected or concatenated function forms. Focused checks passed 12 tests and
+474 assertions, including throw/catch, loop and function backedges, original
+payload identity, downstream handler behavior and module guards. A subsequent
+comment-only correction removed obsolete pinned-entry instructions without
+replaying those unchanged semantic checks.
+
+The single genuine two-file composition passed one test and 53 assertions
+against the final source. It constructs real ordinary C5 root/leaf artifacts
+and an independent leaf plan, retains actual source/module/export/origin facts,
+executes all four forwarders, and rejects private/missing imports, stale source,
+rehashed independent plans and forged route origins. It took 1,429.233 seconds
+of selected execution after 7.274 seconds of loading with a 2 GiB heap. That
+total does not isolate construction, verification, hashing or execution cost;
+the guide describes a bounded follow-up rather than another test wrapper.
+
+This moves development implementation ownership, not authoritative stage
+ownership. No host adapter, historical catalog principal, admission pin, stage
+proof or TCB record was renewed. Source declarations are not provider grants;
+output remains accumulated DATA. Full runtime/profile conformance, checked
+imported-user legality, target ABI/lowering, authoritative migration,
+self-hosting and seed retirement remain outstanding.
+
 ### Literal module DATA: development implementation
 
 The L2/L3/C5/BOOT2 increment adds source-local literal DATA declarations to the

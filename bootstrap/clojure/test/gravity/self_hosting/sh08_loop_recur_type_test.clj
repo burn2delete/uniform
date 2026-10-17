@@ -918,17 +918,16 @@
         compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path (slurp emitter-path))
         lowered (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} compiled 'p15-s23-compile-expr
                   [emitter {:module 'example.try :profile :meta :target :jvm} '#{problem} '(try (throw problem) (catch String e e))])
-        runtime-path (path "bootstrap/gravity/p15_s23/runtime.gravity")
-        forms (bootstrap/read-forms runtime-path (slurp runtime-path))
-        names '#{p15-s23-runtime-evaluate-arguments p15-s23-runtime-println-output p15-s23-runtime-evaluate-bindings
-                 p15-s23-runtime-evaluate-sequence p15-s23-runtime-evaluate-closed-instruction p15-s23-runtime-execute-closed-plan}
-        projection (str/join "\n" (map pr-str (cons (first forms) (filter #(and (seq? %) (= 'defn (first %)) (names (second %))) forms))))
-        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path projection)
+        runtime-path (path "bootstrap/gravity/src/gravity/runtime.gravity")
+        runtime-text (slurp runtime-path)
+        runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path runtime-text)
         result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} runtime-plan
                  'p15-s23-runtime-evaluate-closed-instruction
                  [{:op :try :body [{:op :println :args [{:op :literal :value "later"}] :effect :io/write :capability :io/stdout}]} {} ""])]
     (is (= :rejected (:status lowered)))
     (is (= :unauthenticated-b51-external-link (get-in lowered [:facts :reason])))
+    (is (= (str "sha256:" (bootstrap/sha256-hex runtime-text)) (get-in runtime-plan [:source :sha256])))
+    (is (= 22 (count (:functions runtime-plan))))
     (is (= ["" :rejected] (subvec result 1)))
     (is (= "P15S23X002" (get-in result [0 :diagnostic])))))
 
