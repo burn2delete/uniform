@@ -1128,6 +1128,74 @@ confer migration, complete effect/profile legality, target, self-hosting or
 release authority. Existing authoritative pins remain unchanged and are not
 evidence for the new code.
 
+### Local call-return shapes: development implementation
+
+The C7 shape path now follows actual same-module acyclic calls into their
+callee bodies. Constructor, quoted and immutable-let shape evidence can cross
+a forwarding call and feed the existing Keyword lookup and structural-match
+consumers. Call, edge, operator binding, definition, function/body, source and
+type joins remain explicit in retained ancestry and invalidation conditions.
+Same-arity functions with equal member-type vectors do not establish equal
+map keys. Caller argument values do not specialize the callee's shape.
+
+The corrected normalized group passed six tests/155 assertions: new call-shape and
+fixture checks, the existing lookup lowerer, and structural inference,
+pattern-alias and quoted-shape regressions. Controls include caller-before-callee
+inference, body/edge/binding/source mutations, absent keys with unchanged member
+types, unknown parameter-carried shapes, duplicate records, depth, cumulative
+sibling/failure work and unused-index avoidance. New logical index/join and
+retained-evidence charges share the inference budget; separately bounded seed
+and helper reconstruction is not an aggregate CPU-visit claim. Earlier cheap
+runs exposed a source delimiter error and an unsupported seed `symbol` builtin;
+both failed invocations remain failed. The correction did not extend the seed.
+
+At 2 GiB the corrected group took 1.732 seconds of outer test execution, with 7.802
+seconds of runtime-test namespace loading and 0.325 seconds for the additional
+type-test namespace. These normalized results do not establish source
+composition. The first affected source run failed on its first input with
+`P15S23Q002` / `:malformed-typed-input-families` before guest execution. Its six
+passing assertions checked only whole-runtime projection; they are not
+call-return evidence. The test attempted lowering before reporting the
+upstream typed status. One narrow diagnostic recovered C7's source/type-join
+rejection. Static producer/validator comparison then found a sufficient cause:
+the canonical edge carries a definition's name-syntax ID, while a dormant
+validator compared it with the whole definition's syntax ID. The new normalized
+test had mirrored that incorrect expectation. The corrected validator retains
+both source joins, and the test now derives its edge from the owning producer,
+uses distinct IDs and rejects the old wrong edge. The composition reports typed
+acceptance and verification before lowering. A separate affected existing edge
+test passed one test/five assertions after its normalized source record was
+corrected; this is not a combined seven-test run. The failed composition remains
+failed. The narrow diagnostic printed only the first two of eight diagnostics;
+the static mismatch was not a measured sole-predicate attribution.
+
+The corrected candidate's single composition passed one test/149 assertions.
+Two real source spellings each supplied one fresh product reused for public
+function lowering, complete sixteen-function assembly, sixteen top-level guest
+executions and C8 body analysis. Seven public operations freshly entered C7
+verification, including three ancestry/key tamper rejections. The functions
+exercise forward calls before their definitions, nested/quoted/let-returned
+maps, equal return types with different literal keys, present nil, established
+absence, catches and original payload identity. No emitter or runtime API
+change was needed.
+
+Three additional fresh compiler inputs reject an extracted String declared as
+Bool with `C7-TYPE-MISMATCH`, accept an exhaustive constructor-derived structural
+match, and reject the old wildcard fallback with `L7-UNREACHABLE`. The last check
+preserves the second clause's exact syntax/span/origin coordinates. Only the
+`.gravity` structural-match input was type-checked; its `.qst` pair was checked
+for byte parity. Structural-match execution remains unsupported. At 2 GiB the
+corrected selected composition took 551.919 seconds, outer execution 551.921
+seconds and namespace loading 7.385 seconds. These costs are separate from
+focused feedback and do not identify individual construction phases or prove
+a speedup. Corrected production/test/fixture bytes stayed fixed during this
+composition; no unchanged old lookup/map/vector/quote proof matrix was replayed.
+
+No runtime match,
+imported/recursive return-shape, unknown map-parameter, unresolved alternative
+shape, complete profile-legality, target, migration or self-hosting claim
+follows. Runtime and emitter APIs and authoritative pins are unchanged.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

@@ -792,6 +792,197 @@
       (is (= (+ (:work-count result) (:work-count loop-only)) (:loop-work-count high)))
       (is (some #(= :loop-type-work-limit (:reason %)) (:diagnostics narrow))))))
 
+(defn- returned-map-shape-kernel-data []
+  (let [base (typed-keyword-lookup-kernel-context {}) map-type (get-in base [:types :vector])
+        source (fn [form syntax] {:form-id form :syntax-id syntax})
+        function-record (fn [name ordinal body parameters]
+                          {:ordinal ordinal :function-core-node-id (keyword (str name "-fn"))
+                           :function-form-id (keyword (str name "-fn-form")) :function-syntax-id (keyword (str name "-syntax"))
+                           :body-core-node-id body :parameter-binding-ids parameters :fixed-arity (count parameters)
+                           :definition-kind :named-top-level :definition-binding-id (keyword (str name "-binding"))
+                           :definition-core-node-id (keyword (str name "-def")) :definition-name (symbol name)})
+        definitions (mapv (fn [name] {:name (symbol name) :binding-id (keyword (str name "-binding"))
+                                     :core-node-id (keyword (str name "-def")) :value-node-id (keyword (str name "-fn"))
+                                     :syntax-id (keyword (str name "-def-syntax"))}) ["builder" "caller"])
+        records {:builder-syntax (function-record "builder" 0 :vector [:builder-parameter])
+                 :caller-syntax (function-record "caller" 1 :lookup [])}
+        call {:core-node-id :builder-call :operator-node-id :builder-operator :operator-binding-id :builder-binding
+              :argument-node-ids [:builder-argument] :ordered-evaluation-node-ids [:builder-operator :builder-argument]
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 0 :call-core-node-id :builder-call :caller-function-syntax-id :caller-syntax :caller-function-core-node-id :caller-fn
+              :callee-binding-id :builder-binding :callee-definition-syntax-id :builder-name-syntax
+              :callee-function-syntax-id :builder-syntax :callee-function-core-node-id :builder-fn
+              :argument-core-node-ids [:builder-argument] :ordered-evaluation-node-ids [:builder-operator :builder-argument]
+              :evaluation-order :operator-then-arguments :classification :local-function}
+        context (-> base
+                    (assoc-in [:nodes :vector-right :core-form] :reference)
+                    (assoc-in [:nodes :vector-right :attributes] {:binding-id :builder-parameter})
+                    (assoc-in [:forms :vector-right-form :kind] :symbol)
+                    (assoc-in [:forms :vector-right-form :value] 'value)
+                    (assoc-in [:forms :vector-form :parent-form-id] :builder-fn-form)
+                    (assoc-in [:nodes :lookup :children] [:lookup-key :builder-call])
+                    (assoc-in [:nodes :lookup :evaluation :order 1 :core-node-id] :builder-call)
+                    (assoc-in [:forms :lookup-form :child-form-ids] [:lookup-key-form :builder-call-form])
+                    (assoc-in [:forms :lookup-form :parent-form-id] :caller-fn-form)
+                    (assoc-in [:core :keyword-lookups 0 :map-node-id] :builder-call)
+                    (assoc-in [:core :keyword-lookups 0 :ordered-evaluation-node-ids] [:lookup-key :builder-call])
+                    (assoc-in [:nodes :builder-operator] {:node-id :builder-operator :core-form :reference :children []
+                                                        :attributes {:binding-id :builder-binding :definition-syntax-id :builder-name-syntax :symbol 'builder}
+                                                        :source (source :builder-operator-form :builder-operator-syntax)})
+                    (assoc-in [:nodes :builder-argument] {:node-id :builder-argument :core-form :literal :children []
+                                                        :attributes {:literal-kind :string :value "caller"}
+                                                        :source (source :builder-argument-form :builder-argument-syntax)})
+                    (assoc-in [:nodes :builder-call] {:node-id :builder-call :core-form :call :children [:builder-operator :builder-argument]
+                                                    :resolved-binding-ids [:builder-binding] :source (source :builder-call-form :builder-call-syntax)
+                                                    :evaluation {:kind :operator-then-arguments :owner-function-syntax-id :caller-syntax
+                                                                 :order [{:index 0 :core-node-id :builder-operator} {:index 1 :core-node-id :builder-argument}]}})
+                    (assoc-in [:forms :builder-call-form] {:form-id :builder-call-form :syntax-id :builder-call-syntax :kind :list
+                                                         :parent-form-id :lookup-form :child-form-ids [:builder-operator-form :builder-argument-form]})
+                    (assoc-in [:forms :builder-operator-form] {:form-id :builder-operator-form :syntax-id :builder-operator-syntax :kind :symbol :value 'builder :parent-form-id :builder-call-form})
+                    (assoc-in [:forms :builder-argument-form] {:form-id :builder-argument-form :syntax-id :builder-argument-syntax :kind :string :value "caller" :parent-form-id :builder-call-form})
+                    (assoc-in [:types :builder-call] map-type))
+        context (reduce (fn [ctx name]
+                          (let [record (get records (keyword (str name "-syntax"))) fn-id (:function-core-node-id record) def-id (:definition-core-node-id record)
+                                fn-form (:function-form-id record) def-form (keyword (str name "-def-form")) name-form (keyword (str name "-name-form"))
+                                name-syntax (keyword (str name "-name-syntax")) params (:parameter-binding-ids record) body (:body-core-node-id record)]
+                            (-> ctx
+                                (assoc-in [:nodes fn-id] {:node-id fn-id :core-form :fn :children [body] :resolved-binding-ids params
+                                                         :attributes {:parameters (if (seq params) '[value] []) :fixed-arity (count params)}
+                                                         :lowering-rule-version :sh07-b11-v12 :source (source fn-form (:function-syntax-id record))})
+                                (assoc-in [:nodes def-id] {:node-id def-id :core-form :def :children [fn-id] :resolved-binding-ids [(:definition-binding-id record)]
+                                                          :attributes {:name (symbol name) :name-syntax-id name-syntax} :source (source def-form (keyword (str name "-def-syntax")))})
+                                (assoc-in [:forms fn-form] {:form-id fn-form :syntax-id (:function-syntax-id record) :kind :list :parent-form-id def-form
+                                                           :child-form-ids [:fn-op :params (get-in ctx [:nodes body :source :form-id])]})
+                                (assoc-in [:forms def-form] {:form-id def-form :syntax-id (keyword (str name "-def-syntax")) :kind :list :child-form-ids [:def-op name-form fn-form]})
+                                (assoc-in [:forms name-form] {:form-id name-form :syntax-id name-syntax :kind :symbol :value (symbol name) :parent-form-id def-form})))) context ["builder" "caller"])
+        bindings {:builder-binding {:binding-id :builder-binding :name 'builder :kind :function :binding-class :namespace :namespace 'example.returned
+                                    :definition-syntax-id :builder-name-syntax}
+                  :caller-binding {:binding-id :caller-binding :name 'caller :kind :function :binding-class :namespace :namespace 'example.returned
+                                   :definition-syntax-id :caller-name-syntax}
+                  :builder-parameter {:binding-id :builder-parameter :name 'value :binding-class :lexical}}
+        products {:module {:namespace 'example.returned} :calls [call] :call-edges [edge] :definitions definitions :function-index records :recursion-components []}]
+    {:context context :products products :bindings bindings :binding-types {:builder-parameter :gravity.type/string}
+     :functions {:builder-syntax {:return map-type} :caller-syntax {:return :gravity.type/string}}}))
+
+(deftest current-gravity-returned-map-shape-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [invoke (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        {:keys [context products bindings binding-types functions]} (returned-map-shape-kernel-data)
+        prepared (invoke 'sh08-sm-call-context [products {} 65536])
+        work-context {:lookup-core (:core context) :lookup-nodes (:nodes context) :lookup-forms (:forms context)
+                      :lookup-bindings bindings :shape-call-context prepared}
+        step #(invoke 'sh08-kl-step [(get-in context [:nodes :lookup]) (:types context) binding-types functions %1 %2])
+        result (step work-context 65536)]
+    (is (= (:call-edges products)
+           (invoke 'sh08-ft-build-call-edges [(vec (vals (:nodes context))) (:definitions products) (vec (vals bindings))
+                                             (:calls products) (vec (vals (:function-index products)))])))
+    (is (not= (get-in products [:definitions 0 :syntax-id]) (get-in bindings [:builder-binding :definition-syntax-id])))
+    (is (= :accepted (:status result)) (pr-str (select-keys result [:reason :expected :actual])))
+    (is (= :gravity.type/string (:type result)))
+    (is (= 1 (count (get-in result [:constraint :dependencies :operand-shape :call-links]))))
+    (is (= :present (get-in result [:constraint :solution :presence])))
+    (is (= :accepted (:status (step work-context (:work-count result)))))
+    (is (= :keyword-lookup-type-work-limit (:reason (step work-context (dec (:work-count result))))))
+    (doseq [changed [(assoc-in work-context [:shape-call-context :edges :builder-call :callee-function-core-node-id] :caller-fn)
+                     (assoc-in work-context [:shape-call-context :edges :builder-call :callee-definition-syntax-id] :builder-def-syntax)
+                     (assoc-in work-context [:shape-call-context :definitions 0 :value-node-id] :caller-fn)
+                     (assoc-in work-context [:shape-call-context :definition-index :builder-binding :value-node-id] :caller-fn)
+                     (assoc-in work-context [:shape-call-context :function-records :builder-syntax :body-core-node-id] :lookup)
+                     (assoc-in work-context [:lookup-bindings :builder-binding :definition-syntax-id] :forged)
+                     (assoc-in work-context [:lookup-nodes :builder-operator :attributes :symbol] 'forged)
+                     (assoc-in work-context [:lookup-forms :builder-call-form :child-form-ids] [:builder-argument-form :builder-operator-form])
+                     (assoc-in work-context [:lookup-forms :vector-form :parent-form-id] :caller-fn-form)]]
+      (let [failed (step changed 65536)]
+        (is (= :rejected (:status failed)))
+        (is (pos? (:work-count failed)))))
+    (let [same-types (-> work-context
+                         (assoc-in [:lookup-nodes :vector-left :attributes :value] :other)
+                         (assoc-in [:lookup-forms :vector-left-form :value] :other))
+          missing (step same-types 65536)]
+      (is (= :gravity.type/nil (:type missing)))
+      (is (= :absent (get-in missing [:constraint :solution :presence]))))
+    (let [changed (assoc-in work-context [:shape-call-context :edges :builder-call :classification] :nonlocal-or-nonfunction)
+          failed (step changed 65536)]
+      (is (= ["C7-ANNOTATION" :unsupported-nonlocal-return-shape] ((juxt :rule :reason) failed))))
+    (let [changed (assoc-in work-context [:shape-call-context :recursion-components] [{:function-syntax-ids [:builder-syntax]}])
+          failed (step changed 65536)]
+      (is (= :unsupported-recursive-return-shape (:reason failed))))
+    (let [duplicate (update products :calls conj (first (:calls products)))
+          failed (invoke 'sh08-sm-call-context [duplicate {} 65536])]
+      (is (= :duplicate-structural-call-record (:reason failed))))
+    (let [initial (:work-count prepared)]
+      (is (= (dissoc prepared :budget-left) (dissoc (invoke 'sh08-sm-call-context [products {} initial]) :budget-left)))
+      (is (= :structural-call-index-work-limit (:reason (invoke 'sh08-sm-call-context [products {} (dec initial)])))))
+    (let [types (dissoc (:types context) :vector :vector-left :vector-right)
+          prior (:types context)
+          data [(get-in context [:nodes :builder-call]) (:nodes context) types binding-types functions [] bindings (:forms context) #{} 0 {}
+                (assoc prepared :prior-types prior)]
+          shape (invoke 'sh08-sm-call-shape data)]
+      (is (= :accepted (:status shape)))
+      (is (= :map (:shape-kind shape)))
+      (is (= :key (get-in shape [:parts 0 :key]))))
+    (let [shape (invoke 'sh08-sm-shape-with-bindings [:builder-call (:nodes context) (:types context) binding-types functions [] bindings (:forms context)
+                                                    #{} 129 {} prepared])]
+      (is (= :structural-shape-depth-limit (:reason shape))))
+    (let [changed (-> work-context
+                      (assoc-in [:shape-call-context :function-records :builder-syntax :body-core-node-id] :vector-right)
+                      (assoc-in [:lookup-nodes :builder-fn :children] [:vector-right])
+                      (assoc-in [:lookup-forms :builder-fn-form :child-form-ids 2] :vector-right-form)
+                      (assoc-in [:lookup-forms :vector-right-form :parent-form-id] :builder-fn-form))
+          failed (invoke 'sh08-kl-step [(get-in context [:nodes :lookup])
+                                        (assoc (:types context) :vector-right (get-in context [:types :vector]))
+                                        {:builder-parameter (get-in context [:types :vector])} functions changed 65536])]
+      (is (= ["C7-ANNOTATION" :unestablished-structural-return-shape] ((juxt :rule :reason) failed))))
+    (let [nodes (mapv (:nodes context) [:lookup-key :builder-operator :builder-argument :builder-call :lookup :caller-fn :caller-def
+                                       :vector-left :vector-right :vector :builder-fn :builder-def])
+          skeletons (invoke 'sh08-ft-function-skeletons [(vec (vals (:function-index products))) (:module products)])
+          inference (invoke 'sh08-ft-infer-acyclic-with-context
+                            [nodes (:nodes context) [] (:definitions products) (:calls products) (:call-edges products) skeletons binding-types 8
+                             (assoc work-context :shape-call-products products)])]
+      (is (= :converged (:convergence-status inference)))
+      (is (= :gravity.type/string (get-in inference [:type-table :lookup])))
+      (is (some #(seq (get-in % [:dependencies :operand-shape :call-links])) (:constraints inference))))
+    (let [no-demand (invoke 'sh08-ft-infer-pass-with-context [[] [] [] [] [] {} {} {:shape-call-products products}])]
+      (is (zero? (:loop-work-count no-demand)))
+      (is (nil? (get-in no-demand [:shape-call-context :calls]))))
+    (let [clone-id #(keyword (str (name %) "-2"))
+          source-ids [:builder-call :builder-operator :builder-argument]
+          nodes (reduce (fn [out id]
+                          (let [node (get out id) cloned (-> node (assoc :node-id (clone-id id))
+                                                                            (update :source #(-> % (update :form-id clone-id) (update :syntax-id clone-id))))]
+                            (assoc out (clone-id id)
+                                   (if (= id :builder-call)
+                                     (-> cloned (update :children #(mapv clone-id %))
+                                         (update-in [:evaluation :order] #(mapv (fn [row] (update row :core-node-id clone-id)) %))) cloned))))
+                        (:nodes context) source-ids)
+          forms (reduce (fn [out id]
+                          (let [form-id (get-in context [:nodes id :source :form-id]) form (get out form-id)]
+                            (assoc out (clone-id form-id)
+                                   (cond-> (-> form (update :form-id clone-id) (update :syntax-id clone-id))
+                                     (= id :builder-call) (update :child-form-ids #(mapv clone-id %))
+                                     (not= id :builder-call) (update :parent-form-id clone-id))))) (:forms context) source-ids)
+          second-call (-> (first (:calls products)) (update :core-node-id clone-id) (update :operator-node-id clone-id)
+                          (update :argument-node-ids #(mapv clone-id %)) (update :ordered-evaluation-node-ids #(mapv clone-id %)))
+          second-edge (-> (first (:call-edges products)) (assoc :ordinal 1) (update :call-core-node-id clone-id)
+                          (update :argument-core-node-ids #(mapv clone-id %)) (update :ordered-evaluation-node-ids #(mapv clone-id %)))
+          products (-> products (update :calls conj second-call) (update :call-edges conj second-edge))
+          prepared (invoke 'sh08-sm-call-context [products {} 65536])
+          vector-node {:node-id :sibling-vector :core-form :collection-literal :children [:builder-call :builder-call-2]
+                       :attributes {:literal-kind :vector :element-count 2} :source {:form-id :sibling-form :syntax-id :sibling-syntax}}
+          nodes (assoc nodes :sibling-vector vector-node)
+          forms (assoc forms :sibling-form {:form-id :sibling-form :syntax-id :sibling-syntax :kind :vector
+                                            :child-form-ids [:builder-call-form :builder-call-form-2]})
+          types (assoc (:types context) :builder-call-2 (get-in context [:types :vector]))
+          join-work (get-in result [:constraint :dependencies :operand-shape :call-join-work])
+          shape #(invoke 'sh08-sm-shape-with-bindings [:sibling-vector nodes types binding-types functions [] bindings %1 #{} 0 {}
+                                                     (assoc prepared :budget-left %2)])
+          narrow (shape forms join-work)
+          failed-source (shape (assoc-in forms [:sibling-form :child-form-ids 1] :missing-form) (* 2 join-work))]
+      (is (= :structural-call-join-work-limit (:reason narrow)))
+      (is (= (* 2 join-work) (:call-join-work narrow)))
+      (is (= :constructor-child-source-mismatch (:reason failed-source)))
+      (is (= (* 2 join-work) (:call-join-work failed-source))))))
+
 (deftest current-gravity-keyword-map-lookup-c8-development-kernel
   (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         id #(str "sha256:" (bootstrap/sha256-hex (str %)))
@@ -1219,6 +1410,139 @@
             typed (:typed products) failure (first (:diagnostics typed))]
         (is (= :rejected (:status typed)))
         (is (= expected ((juxt :rule :reason) failure)))))))
+
+(deftest current-gravity-returned-map-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition basename functions] [["accepted" "local-runtime-returned-map-shape" 16]
+                                             ["rejected" "local-runtime-returned-map-bool-result" 2]
+                                             ["accepted" "function-structural-match-call-return" 2]]]
+      (let [path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" basename ".gravity")))
+            paired (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" basename ".qst")))
+            text (slurp path)]
+        (is (= text (slurp paired)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(deftest current-gravity-returned-map-shape-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "returned map payload")
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-returned-map-shape" extension)
+                 path (.getPath (io/file root relative)) text (slurp path)
+                 products (fresh relative) input (select-keys products [:request :typed :verification])
+                 macro-artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in macro-artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms macro-artifact))
+                 definitions (bootstrap/stage0-function-table module) module (assoc module :function-table definitions)
+                 typed-check (is (= :accepted (get-in input [:typed :status]))
+                                 (pr-str (take 2 (get-in input [:typed :diagnostics]))))
+                 verification-check (is (= :passed (get-in input [:verification :status])))
+                 ready (when-not (and typed-check verification-check)
+                         (throw (ex-info "Returned-map source products were rejected before typed lowering"
+                                         {:typed-status (get-in input [:typed :status]) :verification-status (get-in input [:verification :status])
+                                          :diagnostics (vec (take 2 (get-in input [:typed :diagnostics])))})))
+                 standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'lookup) input))
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 rows (filterv #(= :sh08-keyword-map-lookup-v1 (:producer-rule %)) (get-in input [:typed :constraint-ledger]))
+                 function-facts (into {} (map (juxt :definition-name identity)) (get-in input [:typed :function-type-table]))
+                 specifications [['lookup [payload] payload :normal] ['forward [payload] {:value payload} :normal]
+                                 ['build [payload] {:value payload} :normal] ['nested [] "nested" :normal]
+                                 ['nested-build [] {:outer {:value "nested"}} :normal] ['missing [] nil :normal]
+                                 ['other-build [payload] {:other payload} :normal] ['present-nil [] nil :normal] ['nil-build [] {:value nil} :normal]
+                                 ['quoted-lookup [] "quoted" :normal] ['quoted-builder [] {:value "quoted"} :normal]
+                                 ['let-body-lookup [payload] payload :normal] ['let-builder [payload] {:value payload} :normal]
+                                 ['caught [payload] payload :normal] ['throw-builder [payload] payload :thrown] ['main [] "payload" :normal]]
+                 results (into {} (map (fn [[name args expected status]]
+                                        (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                                          (is (= [expected "" status] result)) [name (first result)])) specifications))
+                 core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                 effects (c8 'body-analyze-module (:request input) facts {} 65536)
+                 lookups (filterv #(= :keyword-map-lookup (:core-form %)) (:nodes core))]
+             (is (= 16 (count (:functions assembled))))
+             (is (= 8 (count rows) (get-in assembled [:instruction-summary :keyword-map-lookup])))
+             (is (= 6 (get-in assembled [:instruction-summary :map-literal])))
+             (is (= 1 (get-in assembled [:instruction-summary :quote])))
+             (is (= {:present 6 :absent 1 :no-normal-result 1} (frequencies (map #(get-in % [:solution :presence]) rows))))
+             (is (= (get-in function-facts ['build :return]) (get-in function-facts ['other-build :return])))
+             (is (= 1 (get-in function-facts ['build :fixed-arity]) (get-in function-facts ['other-build :fixed-arity])))
+             (is (some #(= 2 (count (get-in % [:dependencies :operand-shape :call-links]))) rows))
+             (is (every? #(if (= :no-normal-result (get-in % [:solution :presence])) true
+                             (seq (get-in % [:dependencies :operand-shape :call-links]))) rows))
+             (is (= standalone (get-in assembled [:functions 'lookup])))
+             (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+             (is (= (str "sha256:" (bootstrap/sha256-hex emitter-text)) (get-in standalone [:typed-lowering-provenance :compiler-sources :lowering :source :sha256])))
+             (is (= {:path path :sha256 (str "sha256:" (bootstrap/sha256-hex text))} (get-in standalone [:typed-lowering-provenance :source])))
+             (doseq [name ['lookup 'let-body-lookup 'caught 'throw-builder]] (is (identical? payload (get results name))))
+             (doseq [[name key] [['forward :value] ['build :value] ['other-build :other] ['let-builder :value]]]
+               (is (identical? payload (get (get results name) key))))
+             (is (= :accepted (:status effects)) (pr-str (select-keys effects [:reason :diagnostics])))
+             (when (= :accepted (:status effects))
+               (is (= 8 (count lookups)))
+               (doseq [node lookups]
+                 (is (= (:children node) (get-in effects [:graph :nodes (:node-id node) :evaluated-children])))
+                 (is (= #{} (get-in effects [:graph :nodes (:node-id node) :direct]))))
+               (let [never (first (filter #(= :gravity.type/never (get-in facts [:type-table (:node-id %)])) lookups))]
+                 (is (= #{:gravity.type/string} (get-in effects [:graph :nodes (:node-id never) :escaping-thrown-errors]))))
+               (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects) 65536)))))
+             {:input input :module module :definitions definitions :rows rows :function-facts function-facts}))
+         [".gravity" ".qst"])
+        {:keys [input module definitions rows function-facts]} (first cases)
+        ledger (get-in input [:typed :constraint-ledger])
+        row (first (filter #(seq (get-in % [:dependencies :operand-shape :call-links])) rows))
+        row-index (first (keep-indexed #(when (= (:lhs row) (:lhs %2)) %1) ledger))
+        constructor-id (get-in row [:dependencies :operand-shape :constructor-node-id])
+        nodes (get-in input [:request :canonical-core-artifact :nodes])
+        constructor (first (filter #(= constructor-id (:node-id %)) nodes))
+        key-id (first (:children constructor))
+        key-index (first (keep-indexed #(when (= key-id (:node-id %2)) %1) nodes))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [(assoc-in input [:typed :constraint-ledger row-index :dependencies :operand-shape :call-links] [])
+                     (assoc-in input [:typed :constraint-ledger row-index :dependencies :operand-shape :call-links 0 :edge :callee-function-syntax-id]
+                               (get-in function-facts ['other-build :function-id]))
+                     (assoc-in input [:request :canonical-core-artifact :nodes key-index :attributes :value] :forged)]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'lookup) changed))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 7 (count @verified)))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/local-runtime-returned-map-bool-result.gravity")
+          failure (first (get-in products [:typed :diagnostics]))]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))
+    ;; This shared shape consumer is compiler-only. No match runtime is emitted.
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/function-structural-match-call-return.gravity")
+          typed (:typed products) match-rows (filterv #(= :sh08-structural-match-v1 (:producer-rule %)) (:constraint-ledger typed))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (get-in products [:verification :status])))
+      (is (= 1 (count match-rows)))
+      (is (= :gravity.type/i64 (:rhs (first match-rows))))
+      (is (seq (get-in match-rows [0 :constructor-shape :call-links]))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/function-structural-match-return-shape.gravity")
+          failure (first (get-in products [:typed :diagnostics]))
+          core (get-in products [:request :canonical-core-artifact])
+          pattern (first (filter #(and (zero? (:depth %)) (= 1 (:clause-ordinal %))) (:match-pattern-records core)))
+          form (first (filter #(= (:pattern-form-id pattern) (:form-id %)) (get-in products [:request :b47-context :authenticated-core-request :forms]))) ]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (= ["L7-UNREACHABLE" :unreachable-structural-match-clause] ((juxt :rule :reason) failure)))
+      (is (= [(:syntax-id form) (:source-span form) (:origin-chain form) (:generated-origin form)]
+             ((juxt :syntax-id :source-span :origin-chain :generated-origin) failure))))))
 
 (deftest current-gravity-typed-catch-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)

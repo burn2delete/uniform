@@ -779,6 +779,45 @@ upstream regression, not an arity kernel or a prerequisite for every downstream
 lookup edit. Select it when changing canonical lookup arity/shape behavior;
 do not add it automatically to the focused lookup command above.
 
+### Constructor shapes returned by local calls
+
+Shape propagation belongs to the existing C7 engine, not runtime dispatch or a
+caller-provided shape summary. Follow the actual same-module acyclic callee's
+body using its established parameter types and authenticated call, edge,
+binding, definition and function records. Retain that ancestry in the existing
+lookup or structural-match constraint. Equal return-type vectors do not prove
+equal map keys. Do not specialize a callee from caller argument values.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-returned-map-shape-development-kernel \
+  --exact current-gravity-keyword-map-lookup-lowering-development-kernel
+```
+
+Use these normalized checks while editing the shape path. Affected composition
+must separately build a real map-returning function, forward its result and
+look up the member through current typed lowering and runtime execution. Reuse
+each source product within that test; do not rerun the unchanged lookup matrix
+as a prerequisite. Structural-match compiler acceptance does not establish
+runtime match lowering.
+
+```bash
+# Affected source/type/lowering/runtime composition, separately:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-returned-map-shape-authenticated-composition --fail-fast
+```
+
+Current facts take precedence over prior-round facts within the same fresh
+inference invocation, permitting caller-before-callee source order without a
+cache. New call-index/join and retained-evidence logical charges use the
+existing inference budget; existing seed/reconstruction shape caps are
+separate, not an aggregate CPU-visit proof. Avoid constructing unused call-shape
+indexes for unrelated type-only modules. Imported and recursive return shapes,
+unknown map parameters and unresolved alternative return shapes remain
+explicit implementation boundaries.
+
 ### Canonical direct same-module calls
 
 Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls

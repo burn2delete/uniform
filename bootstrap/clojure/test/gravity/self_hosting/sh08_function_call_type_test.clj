@@ -1829,9 +1829,9 @@
         diagnostic (first (:diagnostics result)) core (canonical-core artifact)
         request (function-request artifact) forms (get-in request [:b47-context :authenticated-core-request :forms])
         nodes (:nodes core)
-        pattern (if (= anchor :leaf)
-                  (first (filter #(= value (:pattern-value %)) (:match-pattern-records core)))
-                  (first (:match-pattern-records core)))
+        pattern (cond (= anchor :leaf) (first (filter #(= value (:pattern-value %)) (:match-pattern-records core)))
+                      (= anchor :root-clause) (first (filter #(and (zero? (:depth %)) (= value (:clause-ordinal %))) (:match-pattern-records core)))
+                      :else (first (:match-pattern-records core)))
         source-form (first (filter #(= (:form-id %) (:pattern-form-id pattern)) forms))
         source-node (case anchor
                       :branch (first (filter #(= (:node-id %) (:branch-core-node-id (second (:match-branch-records core)))) nodes))
@@ -1863,7 +1863,7 @@
   (assert-structural-source-rejection "function-structural-match-width" "L7-UNREACHABLE" :unreachable-structural-match-clause :root nil))
 
 (deftest sh08-structural-match-source-boundary-rejections
-  (assert-structural-source-rejection "function-structural-match-return-shape" "C7-ANNOTATION" :unestablished-structural-shape :root nil)
+  (assert-structural-source-rejection "function-structural-match-return-shape" "L7-UNREACHABLE" :unreachable-structural-match-clause :root-clause 1)
   (assert-structural-source-rejection "function-structural-match-computed-key" "C7-ANNOTATION" :unsupported-structural-map-key :key nil)
   (let [basename "function-structural-match-scope-escape"
         diagnostic (try (fixture-artifact "rejected" basename ".gravity") nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
@@ -2541,6 +2541,7 @@
         callee-binding-id (sha-id "8")
         callee-definition-id (sha-id "9")
         callee-definition-syntax-id (sha-id "a")
+        callee-name-syntax-id (sha-id "e")
         call
         {:core-node-id call-id
          :operator-node-id operator-id
@@ -2555,7 +2556,7 @@
          :caller-function-syntax-id caller-syntax-id
          :caller-function-core-node-id caller-core-id
          :callee-binding-id callee-binding-id
-         :callee-definition-syntax-id callee-definition-syntax-id
+         :callee-definition-syntax-id callee-name-syntax-id
          :callee-function-syntax-id callee-syntax-id
          :callee-function-core-node-id callee-core-id
          :argument-core-node-ids [argument-id]
@@ -2576,12 +2577,18 @@
         nodes
         {call-id
          {:evaluation
-          {:owner-function-syntax-id caller-syntax-id}}}
+          {:owner-function-syntax-id caller-syntax-id}}
+         callee-definition-id
+         {:node-id callee-definition-id :core-form :def :children [callee-core-id]
+          :resolved-binding-ids [callee-binding-id]
+          :attributes {:name-syntax-id callee-name-syntax-id}
+          :source {:syntax-id callee-definition-syntax-id}}}
         valid?
         (fn [candidate]
           (invoke-c7 'sh08-ft-call-edge-valid?
                      [candidate call functions definitions nodes]))]
     (is (true? (valid? edge)))
+    (is (false? (valid? (assoc edge :callee-definition-syntax-id callee-definition-syntax-id))))
     (is (false?
          (valid?
           (assoc edge :callee-definition-syntax-id (sha-id "b")))))
