@@ -1779,6 +1779,49 @@ lowering and fresh authoritative migration remain outstanding. The emitter
 development revision does not inherit its old admitted source identity or
 establish full SH-07, self-hosting or seed retirement.
 
+### Current Gravity runtime throw propagation
+
+The local Gravity evaluator in `p15_s23/runtime.gravity` now propagates throw
+control through arguments, binding initializers, sequences, conditionals and
+top-level outcomes. Its private three-slot result separates normal values,
+thrown payloads and rejected instructions. Payload maps, vectors, nil, false
+and Throwable objects are DATA, not control records. A transfer preserves prior
+output and skips later work. Unknown operations and builtins no longer fall
+through to let or comparison evaluation. Ordinary success keeps its seven-key
+record, formatting and metadata tolerance; malformed instructions are distinct
+from language error values and host failures.
+
+The focused current-function check passes 147 assertions. The final ordinary
+regression passes ten tests/419 assertions, including that check, current emitter
+lowering and existing raw seed/declaration controls. The same unchanged paired
+throw fixture is lowered by the actual Gravity emitter, then evaluated by the
+actual Gravity evaluator: false returns normally and true propagates the same
+String payload. The seed's private throw transport is not invoked. Controls
+include nested transfers, each argument/binding/sequence/branch position,
+preserved prior output, inert control-looking DATA, invalid dispatch before child
+work, legacy metadata accepted by existing validation, and original fatal host
+failure identity. These overlapping runs are not separate coverage totals.
+
+The first whole-runtime direct compilation failed on preexisting manifest
+bare-symbol DATA outside that compiler interface's literal subset. Focused tests
+instead select the exact six mutually dependent evaluator function forms from
+the current source and freshly compile that projection. Names, arities, form
+equality and dependency closure are checked. Projection and full parent source
+hashes are distinct; this is not whole-module compilation or an admitted runtime
+binding. A subsequent test-reader delimiter failure is retained separately.
+Review caught and corrected an initial restriction that would have rejected
+legacy instruction metadata; the existing ingress and comparison semantics were
+not weakened to pass the tests.
+
+No old packet validator, catalog identity or admission pin changes here. The
+admitted packet subset still excludes throw. Handler execution, guest function
+dispatch, loops/recur in this closed evaluator, resource unwinding, profile/target
+error lowering, host normalization and authoritative migration remain open.
+Whole-runtime manifest literal compatibility needs a bounded investigation at
+its migration boundary, not a prerequisite for every semantic edit. Generic seed
+interpretation and primitive execution remain; this is not seed retirement or
+full SH-07/self-hosting completion.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

@@ -84,6 +84,141 @@
        (identical? (var-get (module-private 'p15-s23-stage2-runtime-source-throw-token))
                    (:gravity.bootstrap/source-throw (ex-data failure)))))
 
+(deftest current-gravity-runtime-throw-development-kernel
+  (let [fixture-path (module-fixture "seed-library" ".gravity")
+        root (loop [directory (.getParentFile (io/file fixture-path))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        source-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
+        text (slurp source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! fixture-path :jvm))
+        parent-forms (bootstrap/read-forms source-path text)
+        arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+                 'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
+                 'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1}
+        selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) parent-forms)
+        projection (str/join "\n" (map pr-str (cons (first parent-forms) selected)))
+        compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path projection)
+        invoke (fn [function & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime compiled function (vec args)))
+        literal (fn [value] {:op :literal :value value})
+        say (fn [value] {:op :println :args [(literal value)] :effect :io/write :capability :io/stdout})
+        marked (fn [label value] {:op :do :body [(say label) (literal value)]})
+        escape (fn [value] {:op :throw :value (literal value)})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        execute #(invoke 'p15-s23-runtime-execute-closed-plan {:entrypoint 'main :functions {'main {:instructions [%]}}})
+        payload (Object.) transport (module-private 'p15-s23-stage2-runtime-source-throw!)
+        seed-transports (atom 0) original (var-get transport)]
+    ;; The parent manifests contain bare-symbol DATA outside raw3's literal
+    ;; subset. Compile exact original function forms as a fresh projection;
+    ;; retain its own hash and the distinct complete parent-source provenance.
+    (is (= text (slurp source-path)))
+    (is (= 6 (count selected) (count (set (map second selected)))))
+    (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
+    (is (= selected (vec (rest (bootstrap/read-forms source-path projection)))))
+    (is (= (str "sha256:" (bootstrap/sha256-hex projection)) (get-in compiled [:source :sha256])))
+    (is (not= (bootstrap/sha256-hex text) (bootstrap/sha256-hex projection)))
+    (let [builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
+          calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
+      (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls)))
+    (is (nil? (:scope compiled)))
+    (with-redefs-fn {transport (fn [& args] (swap! seed-transports inc) (apply original args))}
+      (fn []
+        (doseq [value [nil false payload {:op :throw :kind :gravity/recur :values [false]}
+                       [:payload "output" :thrown] {:status :rejected :diagnostic :data}
+                       (ex-info "payload" {}) (AssertionError. "payload")]]
+          (is (= [value "" :normal] (evaluate (literal value))))
+          (is (= [value "" :normal] (evaluate {:op :quote :value value})))
+          (let [result (evaluate (escape value))]
+            (is (identical? value (first result)))
+            (is (= ["" :thrown] (subvec result 1)))))
+        (is (= [payload "once\n" :thrown]
+               (evaluate {:op :throw :value {:op :throw :value (marked "once" payload)}})))
+        (doseq [position (range 3)]
+          (let [items (mapv #(if (= position %) (escape payload) (marked (str %) %)) (range 3))
+                before (apply str (map #(str % "\n") (range position)))]
+            (doseq [instruction [{:op :do :body items}
+                                 {:op :println :args items :effect :io/write :capability :io/stdout}
+                                 {:op :let :bindings (mapv (fn [n expr] {:name (symbol (str "x" n)) :expr expr}) (range) items)
+                                  :body [(say "later")]}]]
+              (is (= [payload before :thrown] (evaluate instruction))))))
+        (doseq [position (range 2)]
+          (let [items (mapv #(if (= position %) (escape payload) (marked "before" "value")) (range 2))]
+            (is (= [payload (if (zero? position) "" "before\n") :thrown]
+                   (evaluate {:op :builtin-call :function 'str :args items})))))
+        (doseq [instruction [{:op :if :test (escape payload) :then (say "later") :else (say "later")}
+                             {:op :if :test (literal true) :then (escape payload) :else (say "later")}
+                             {:op :if :test (literal false) :then (say "later") :else (escape payload)}]]
+          (is (= [payload "" :thrown] (evaluate instruction))))
+        (doseq [test [nil false]]
+          (is (= [:else "" :normal]
+                 (evaluate {:op :if :test (literal test) :then (escape payload) :else (literal :else)}))))
+        (doseq [bad [nil false {} {:op :mystery :bindings [{:name 'x :expr (say "later")}] :body [(say "later")]}
+                     {:op :function-call :function 'unknown :args [(say "later")]}
+                     {:op :builtin-call :function 'unknown :args [(say "later") (say "later")]}
+                     {:op :builtin-call :function 'str :args [(say "later") (say "later") (say "later")]}
+                     {:op :builtin-call :function '< :args [(say "later")]}
+                     {:op :throw} {:op :throw :value nil} {:op :throw :value (say "later") :extra true}
+                     {:op :if :test (say "later") :then nil :else (literal 0)}
+                     {:op :let :bindings [{:name 'x :expr (say "later")} {:name 'x :expr (literal 0)}] :body []}
+                     {:op :let :bindings [{:name 'x :expr (say "later")} {:name 'y :expr nil}] :body []}
+                     {:op :local :name 'unknown}]]
+          (let [result (evaluate bad)]
+            (is (= ["" :rejected] (subvec result 1)))
+            (is (= "P15S23X002" (:diagnostic (first result))))
+            (is (= result (evaluate {:op :throw :value (if (map? bad) bad {})})))))
+        (doseq [function '[= < <= > >=]]
+          (is (= [(case function = false < true <= true > false >= false) "" :normal]
+                 (evaluate {:op :builtin-call :function function :args [(literal 1) (literal 2)]})))
+          (is (= :rejected (get (evaluate {:op :builtin-call :function function :args [(literal "bad") (literal 2)]}) 2))))
+        (doseq [values [["a"] ["a" "b"] [nil false]]]
+          (is (= [(apply str values) "" :normal]
+                 (evaluate {:op :builtin-call :function 'str :args (mapv literal values)}))))
+        (doseq [values [[] ["a"] ["a" "b"] ["\u03bb\u0000" false nil]]]
+          (let [instruction {:op :println :args (mapv literal values) :effect :io/write :capability :io/stdout}
+                expected (str (str/join " " (map str values)) "\n")]
+            (is (= [nil expected :normal] (evaluate instruction)))
+            (is (= {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint 'main
+                    :entrypoint-result nil :stdout expected :status :complete :clojure-seed-boundary? true :self-hosted? false}
+                   (execute instruction)))))
+        (is (= [2 "" :normal] (evaluate {:op :let :bindings [{:name 'x :expr (literal 2)}
+                                                                        {:name 'y :expr {:op :local :name 'x}}]
+                                           :body [{:op :local :name 'y}]})))
+        (doseq [instruction [(assoc (literal 2) :source-span {:line 1})
+                             {:op :let :source-span {:line 2}
+                              :bindings [{:name 'x :expr (assoc (literal 2) :source-span {:line 3}) :source-span {:line 3}}]
+                              :body [{:op :local :name 'x :source-span {:line 4}}]}]]
+          (let [guest {:entrypoint 'main :functions {'main {:arity 0 :params [] :instructions [instruction]}}}]
+            (is (nil? (diagnostic #(bootstrap/p15-s23-closed-runtime-plan-validation! fixture-path :jvm guest))))
+            (is (= [2 "" :normal] (evaluate instruction)))))
+        (let [thrown (execute {:op :do :body [(say "before") (escape payload) (say "later")]})
+              rejected (execute {:op :do :body [(say "before") {:op :unknown} (say "later")]})]
+          (is (= #{:artifact :entrypoint :stdout :status :clojure-seed-boundary? :self-hosted? :thrown-value} (set (keys thrown))))
+          (is (= #{:artifact :entrypoint :stdout :status :clojure-seed-boundary? :self-hosted? :diagnostic} (set (keys rejected))))
+          (is (= :rejected (:status rejected)))
+          (is (= "P15S23X002" (get-in rejected [:diagnostic :diagnostic])))
+          (is (= :thrown (:status thrown))) (is (identical? payload (:thrown-value thrown)))
+          (is (= "before\n" (:stdout thrown) (:stdout rejected))))
+        (let [failure (AssertionError. "host primitive failure")
+              value (proxy [Object] [] (toString [] (throw failure)))
+              observed (seed-throw-test-capture #(evaluate {:op :builtin-call :function 'str :args [(literal value)]}))]
+          (is (identical? failure observed)))
+        (doseq [extension [".gravity" ".qst"]]
+          (let [emitter-path (.getPath (io/file root "bootstrap/gravity/p15_s23/emitter.gravity"))
+                emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path (slurp emitter-path))
+                path (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/direct-typed-throw" extension)))
+                source (slurp path) artifact (bootstrap/macro-source-artifact path source)
+                module (assoc (:module artifact) :forms (:expanded-forms artifact))
+                definitions (bootstrap/stage0-function-table module)
+                result (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan 'p15-s23-compile-function
+                         [emitter (assoc module :function-table definitions) (get definitions 'choose)])
+                instruction (get-in result [:value :instructions 0]) payload (String. "problem")]
+            (is (= "755e5b876b8fde5f1be48b0dce2cea96c17da24d967b4d9e641c720a46617f23" (bootstrap/sha256-hex source)))
+            (doseq [[flag control] [[false :normal] [true :thrown]]]
+              (let [result (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {'flag flag 'problem payload} "")]
+                (is (identical? payload (first result)))
+                (is (= ["" control] (subvec result 1)))))))
+        (is (= 0 @seed-transports))))))
+
 (deftest current-gravity-emitter-throw-development-kernel
   (let [fixture-path (module-fixture "seed-library" ".gravity")
         root (loop [directory (.getParentFile (io/file fixture-path))]

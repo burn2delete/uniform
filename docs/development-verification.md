@@ -351,6 +351,37 @@ behavior or interface changes. Do not refresh old admission pins to run this
 development check. Gravity-owned runtime error transfer, handlers, target error
 lowering and authoritative migration remain separate gates.
 
+### Current Gravity runtime throw execution
+
+Edit `bootstrap/gravity/p15_s23/runtime.gravity` for the local closed evaluator.
+Its internal result is `[value output control]`, with `:normal`, `:thrown` and
+`:rejected` kept separate from payload DATA. Argument, binding, sequence and
+conditional evaluation propagate a transfer before doing later work. Ordinary
+top-level success retains its existing seven-key record and output order;
+escaping errors and rejected instructions do not publish normal completion.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-runtime-throw-development-kernel \
+  --exact current-gravity-emitter-throw-development-kernel
+```
+
+The runtime check freshly compiles the exact six evaluator function forms from
+the current source. It distinguishes the projection's hash from its parent
+source hash and checks names, arities and dependency closure. This is not
+whole-module compilation: older manifest literal declarations in that file are
+outside the direct compiler interface's literal subset. No function is spliced
+into an old plan, and no admission pin is refreshed.
+
+The affected composition lowers the unchanged accepted paired throw fixture
+with the current Gravity emitter and evaluates its returned instruction with
+the current Gravity evaluator. The seed's private throw transport must not
+implement guest error transfer. The generic seed interpreter and primitive
+boundary remain. Old admitted packet validation still excludes throw; these
+development checks do not widen it or establish a target exception ABI,
+handlers, resource cleanup, complete profile legality or authoritative migration.
+
 ### Single-source seed throw execution
 
 The temporary seed lowers one-operand `throw` in the existing three-argument
