@@ -53,12 +53,35 @@
         verification (invoke 'sh08-verify-function-type-result [request typed])]
     {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
      :binding (seal-binding request typed verification)}))
+
+(defn- fresh-request [c5]
+  (let [artifact (bootstrap/sh07-core-from-resolution-artifact c5)
+        report (bootstrap/sh07-core-artifact-verification artifact)
+        coordinator ((sh08-helper 'coordinator-verification) artifact report)
+        context ((sh08-helper 'b47-context) artifact report coordinator)]
+    {:canonical-core-artifact (:canonical-core-artifact context)
+     :b47-context context :coordinator-verification coordinator}))
+
+(defn- fresh-import-products [extension]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [prefix "bootstrap/clojure/fixtures/self-hosting/sh-08/modules/"
+        producer-c5 (bootstrap/compiler-c5-resolution-file-artifact (path (str prefix "inferred-values" extension)))
+        producer-request (fresh-request producer-c5)
+        c5 (bootstrap/compiler-c5-resolution-file-artifact (path (str prefix "inferred-consumer" extension))
+             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [producer-c5]})
+        request (assoc (fresh-request c5) :module-type-inputs
+                  {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer-request]})
+        invoke (sh08-helper 'invoke-c7)
+        typed (invoke 'sh08-function-type-core-artifact [request])
+        verification (invoke 'sh08-verify-function-type-result [request typed])]
+    {:c5 c5 :producer-c5 producer-c5 :request request :typed typed :verification verification
+     :binding (seal-binding request typed verification)}))
 (defn- build-leaf [products]
   (leaf 'build-body-effect-result (:typed products) (:verification products) (:binding products)))
 (defn- coherent-typed-mutation [products mutate]
   (let [typed (mutate (:typed products))
-        typed (assoc typed :typed-core (leaf 'sh09-adapter-function-typed-core typed))
-        identity (leaf 'sh09-adapter-function-identity-input typed)
+        typed (assoc typed :typed-core (leaf 'body-caller-typed-core typed))
+        identity (leaf 'body-caller-identity typed)
         typed (assoc typed :identity-input identity :artifact-id-request identity)
         verification (assoc (:verification products) :expected typed :candidate typed)]
     (assoc products :typed typed :verification verification
@@ -118,7 +141,7 @@
                                       :latent-effects [] :capabilities []}]
                :type-table {(sha 1) :int (sha 2) :fn (sha 3) :fn}
                :call-type-facts [] :local-binding-facts []
-               :function-products (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])}]
+               :function-records (:function-records core) :call-edges [] :recursion-components [] :lexical-bindings []}]
     (is (true? (leaf 'body-shape-valid? core typed)))
     (is (false? (leaf 'body-shape-valid? core (update typed :type-table #(-> % (dissoc (sha 1)) (assoc (sha 99) :int))))))
     (is (false? (leaf 'body-shape-valid? (seal (update core :nodes conj (node 9 :literal [])))
@@ -132,7 +155,7 @@
     (is (false? (leaf 'body-function-joins-valid? core (assoc-in typed [:type-table (sha 2)] 7) {})))
     (is (false? (leaf 'body-call-valid? {} {} {:argument-types 7} {} {} {} {} {})))
     (is (false? (leaf 'body-shape-valid? (seal (assoc core :function-records []))
-                     (-> typed (assoc :function-type-table []) (assoc-in [:function-products :function-records] [])))))))
+                     (-> typed (assoc :function-type-table []) (assoc :function-records [])))))))
 
 (deftest body-effect-guard-development-kernel
   (let [match-node (assoc (node 1 :match [2 3 4 5])
@@ -215,7 +238,142 @@
     (is (true? (run fact)))
     (is (false? (run (assoc fact :profile :hosted))))
     (is (false? (run (assoc fact :target :javascript))))
-    (is (false? (run (assoc fact :argument-types 7))))))
+    (is (false? (run (assoc fact :argument-types 7))))
+    (let [coordinate {:binding-id (sha 50) :producer-sh06-artifact-id (sha 60)
+                      :producer-sh07-artifact-id (sha 61) :definition-binding-id (sha 70) :function-id (sha 20)}
+          imported {:coordinate coordinate :binding {:definition-syntax-id (sha 60)}
+                    :function (assoc target :body-core-node-id (sha 80)) :body-core-node-id (sha 80)
+                    :summary {:function-id (sha 20) :body-core-node-id (sha 80)
+                              :inferred #{} :throws [:pending-sh09]}}
+          imported-edge (assoc edge :classification :nonlocal-or-nonfunction
+                                    :callee-function-syntax-id nil :callee-function-core-node-id nil)
+          imported-fact (-> fact (assoc :callee-function-syntax-id nil :dispatch :direct-imported-function
+                                        :imported-function coordinate :effect-status :pending-sh09-imported-body
+                                        :legality-status :pending-imported-effects :effect-facts-source :callee-module-declarations)
+                            (update :fact-id-request assoc :callee-function-syntax-id nil :imported-function coordinate
+                                    :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects))
+          run-import (fn [f foreign]
+                       (leaf 'body-import-call-valid? imported-edge call f
+                             {(sha 1) reference (sha 2) argument (sha 3) call-node} {} foreign
+                             {(sha 2) :gravity.type/bool (sha 3) :gravity.type/bool}))]
+      (is (true? (run-import imported-fact imported)))
+      (doseq [f [(assoc imported-fact :callee-function-syntax-id (sha 20))
+                 (assoc-in imported-fact [:imported-function :producer-sh06-artifact-id] (sha 99))
+                 (assoc-in imported-fact [:fact-id-request :callee-function-syntax-id] (sha 20))
+                 (assoc imported-fact :argument-types 7)
+                 (assoc imported-fact :profile :hosted) (assoc imported-fact :target :native)]]
+        (is (false? (run-import f imported))))
+      (doseq [foreign [(assoc-in imported [:summary :body-core-node-id] (sha 99))
+                       (assoc-in imported [:summary :function-id] (sha 99))
+                       (assoc-in imported [:summary :inferred] [])
+                       (assoc-in imported [:summary :throws] [])]]
+        (is (false? (run-import imported-fact foreign)))))))
+
+(deftest body-effect-import-origin-development-kernel
+  ;; Normalized retained C5/C6 data and flat C7 facts; no accepted producer wrapper.
+  (let [module {:namespace 'producer.values :package nil :profile :meta :target :jvm :exports ['ready]}
+        original {:binding-id (sha 1) :name 'ready :kind :function :namespace 'producer.values :package nil
+                  :binding-class :namespace :visibility :public :definition-artifact-id (sha 2) :definition-syntax-id (sha 3)}
+        origin {:ordinary-module-artifact-id (sha 4) :origin-binding-id (sha 1) :origin-analysis-id (sha 5)
+                :origin-definition-artifact-id (sha 2) :origin-definition-syntax-id (sha 3)
+                :origin-definition (into {} (map (fn [k] [k (get original k)])
+                     [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref :effects :capabilities :safety]))}
+        binding {:binding-id (sha 6) :upstream-binding-id (sha 7) :name 'ready :namespace 'producer.values
+                 :package nil :visibility :public :binding-class :import :semantic-span origin}
+        caller-c5 {:binding-table {:bindings [(assoc binding :binding-id (sha 7))]}}
+        producer-c5 {:artifact-id (sha 4) :binding-table {:bindings [original]}
+                     :gravity-resolution-boundary {:resolved-analysis {:artifact-id (sha 5) :module-contract module}}}
+        function {:artifact :gravity/c7-function-type :function-id (sha 10) :body-core-node-id (sha 11)
+                  :function-core-node-id (sha 12) :definition-name 'ready :parameter-binding-ids [] :parameters []
+                  :return :gravity.type/bool :fixed-arity 0 :signature nil :latent-effects [] :capabilities []
+                  :ownership-constraints [] :profile-constraints [] :thrown-error-effects [:pending-sh09] :status :inferred}
+        entry {:producer-sh06-artifact-id (sha 4) :producer-sh07-artifact-id (sha 8) :module-key [(sha 4) (sha 8)]
+               :request {:canonical-core-artifact {:function-records [{:definition-binding-id (sha 9) :function-syntax-id (sha 10)}]}
+                         :b47-context {:authenticated-wrapper {:sh06-resolution-artifact producer-c5}
+                                       :authenticated-core-request {:binding-table [{:binding-id (sha 9) :upstream-binding-id (sha 1)}]}}}
+               :facts {:function-type-table [function]}}
+        request {:canonical-core-artifact {:module module}
+                 :b47-context {:authenticated-wrapper {:sh06-resolution-artifact caller-c5}
+                               :authenticated-core-request {:binding-table [binding]}}}
+        proof {:status :accepted :binding-id (sha 6) :origin origin :producer-sh06-artifact-id (sha 4)
+               :producer-sh07-artifact-id (sha 8) :definition-binding-id (sha 9) :function-type function
+               :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects}
+        joined (leaf 'body-import-origin request binding entry proof)]
+    (is (= (sha 11) (:body-core-node-id joined)))
+    (is (= (leaf 'body-import-coordinate proof) (:coordinate joined)))
+    (doseq [p [(assoc proof :origin {}) (assoc proof :producer-sh06-artifact-id (sha 99))
+               (assoc proof :producer-sh07-artifact-id (sha 99)) (assoc proof :definition-binding-id (sha 99))
+               (assoc-in proof [:function-type :body-core-node-id] (sha 99))
+               (assoc-in proof [:function-type :function-id] (sha 99))]]
+      (is (nil? (leaf 'body-import-origin request binding entry p))))
+    (doseq [e [(assoc-in entry [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :binding-table :bindings 0 :visibility] :private)
+               (assoc-in entry [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :gravity-resolution-boundary :resolved-analysis :module-contract :exports] [])
+               (assoc-in entry [:request :b47-context :authenticated-core-request :binding-table 0 :upstream-binding-id] (sha 99))]]
+      (is (nil? (leaf 'body-import-origin request binding e proof))))
+    (let [key (:module-key entry)
+          bank {key (assoc entry :graph {:functions {(sha 10) {:function-id (sha 10) :body-core-node-id (sha 11)
+                                                             :inferred #{} :throws [:pending-sh09]}}})}
+          facts {:imported-function-types [proof]}]
+      (is (= :accepted (:status (leaf 'body-foreign-bindings request facts bank))))
+      (doseq [bad [(assoc-in bank [key :graph :functions (sha 10) :body-core-node-id] (sha 99))
+                   (assoc-in bank [key :graph :functions (sha 10) :throws] []) {}]]
+        (is (= :rejected (:status (leaf 'body-foreign-bindings request facts bad))))))))
+
+(deftest body-effect-import-bounds-development-kernel
+  (is (true? (leaf 'body-import-tables-valid? {:module-type-producers [] :imported-function-types []})))
+  (doseq [field [:module-type-producers :imported-function-types]
+          malformed [7 nil {} [7] [nil] (vec (repeat 257 {}))]]
+    (is (false? (leaf 'body-import-tables-valid?
+                     (assoc {:module-type-producers [] :imported-function-types []} field malformed)))))
+  (let [entry {:request {:canonical-core-artifact {:nodes []}} :facts {:function-type-table []}}]
+    (is (true? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table (vec (repeat 256 {}))} [])))
+    (is (false? (leaf 'body-aggregate-valid? {:nodes (vec (repeat 65536 {}))} {:function-type-table []}
+                      [(assoc-in entry [:request :canonical-core-artifact :nodes] [{}])])) )
+    (is (false? (leaf 'body-aggregate-valid? {:nodes []} {:function-type-table (vec (repeat 256 {}))}
+                      [(assoc-in entry [:facts :function-type-table] [{}])]))))
+  (let [core {:nodes [(node 2 :def [1]) (node 1 :literal [])] :call-edges []}
+        facts {:function-type-table [] :type-table {}}]
+    (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-nodes-with-foreign core facts {} 2))))
+    (is (= 3 (:work-count (leaf 'body-derive-nodes-with-foreign core facts {} 3))))) )
+
+(deftest body-effect-foreign-summary-development-kernel
+  (let [coordinate {:binding-id (sha 50) :producer-sh06-artifact-id (sha 60)
+                    :producer-sh07-artifact-id (sha 61) :definition-binding-id (sha 70) :function-id (sha 20)}
+        imported {:coordinate coordinate :body-core-node-id (sha 1)
+                  :function {:latent-effects [:declared-only]}
+                  :summary {:inferred #{:compiler/read-ir} :throws [:pending-sh09]}}
+        core {:nodes [(node 3 :call [1]) (node 1 :reference [])]
+              :call-edges [{:call-core-node-id (sha 3) :callee-binding-id (sha 50)}]}
+        result (leaf 'body-derive-nodes-with-foreign core {:function-type-table [] :type-table {}} {(sha 50) imported} 65536)
+        call (get-in result [:nodes (sha 3)])]
+    (is (= :accepted (:status result)))
+    (is (= #{:compiler/read-ir} (:transitive call)))
+    (is (= [(sha 1)] (:dependencies call)))
+    (is (nil? (:call-body-dependency call)))
+    (is (= (assoc coordinate :body-core-node-id (sha 1)) (:foreign-body-dependency call)))
+    (let [other (assoc coordinate :producer-sh06-artifact-id (sha 62))
+          a [(:producer-sh06-artifact-id coordinate) (:producer-sh07-artifact-id coordinate)]
+          b [(:producer-sh06-artifact-id other) (:producer-sh07-artifact-id other)]
+          graphs (leaf 'body-producer-graph-identities
+                       {a {:facts {:module :a} :graph {:functions {(sha 20) {:inferred #{:a}}}}}
+                        b {:facts {:module :b} :graph {:functions {(sha 20) {:inferred #{:b}}}}}})]
+      (is (= 2 (count graphs)))
+      (is (= #{:a} (get-in graphs [a :effect-graph :functions (sha 20) :inferred])))
+      (is (= #{:b} (get-in graphs [b :effect-graph :functions (sha 20) :inferred]))))))
+
+(deftest body-effect-public-forwarding-source-boundary
+  (let [forms (read-string (str "[" (slurp (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")) "]"))
+        definitions (into {} (keep #(when (and (seq? %) (= 'defn (first %))) [(second %) %]) forms))
+        namespace (first (filter #(and (seq? %) (= 'ns (first %))) forms))
+        exports (second (first (filter #(and (seq? %) (= :exports (first %))) namespace)))]
+    (is (some #{'(:requires [gravity.effects :as effects])} namespace))
+    (is (every? (set exports) '[sh09-build-authenticated-body-effect-result sh09-verify-authenticated-body-effect-result]))
+    (is (= '(defn sh09-build-authenticated-body-effect-result [typed verification binding]
+              (effects/build-body-effect-result typed verification binding))
+           (get definitions 'sh09-build-authenticated-body-effect-result)))
+    (is (= '(defn sh09-verify-authenticated-body-effect-result [typed verification binding candidate]
+              (effects/verify-body-effect-result typed verification binding candidate))
+           (get definitions 'sh09-verify-authenticated-body-effect-result)))))
 
 (defn- assert-body-products [products result]
   (let [typed (:typed products) core (get-in products [:request :canonical-core-artifact]) graph (:effect-graph result)]
@@ -262,6 +420,61 @@
         (is (= :rejected (:status (leaf 'verify-body-effect-result (:typed products) (:verification products) (:binding products) candidate)))))))
   (is (= :imported-body-effects-pending
          (get-in (leaf 'build-body-effect-result {:scope :direct-imported-functions-types-only} {} {}) [:diagnostics 0 :reason]))))
+
+(deftest body-effect-imported-authenticated-paired-composition
+  ;; One invocation-local pair: actual C5/C6, fresh recursive C7 verification,
+  ;; full original four-key binding, and current Gravity effects source.
+  (let [products (mapv fresh-import-products [".gravity" ".qst"])
+        results (mapv build-leaf products)]
+    (doseq [[p result] (map vector products results)]
+      (let [typed (:typed p) request (:request p) graph (:effect-graph result)
+            producer-request (first (get-in request [:module-type-inputs :module-requests]))
+            producer-core (:canonical-core-artifact producer-request)
+            facts (get-in typed [:module-type-producers 0 :identity-input])
+            key [(get-in typed [:module-type-producers 0 :producer-sh06-artifact-id]) (:artifact-id producer-core)]
+            producer-graph (get-in result [:producer-effect-graphs key :effect-graph])
+            private-function (first (filter #(= 'integer-base (:definition-name %)) (:function-type-table facts)))
+            chain-function (first (filter #(= 'integer-chain (:definition-name %)) (:function-type-table facts)))]
+        (is (= :accepted (:status (:c5 p)) (:status (:producer-c5 p)) (:status typed)))
+        (is (= :passed (:status (:verification p))))
+        (is (= request (get-in p [:binding :digest-resolution :preimage :request])))
+        (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+        (when-not (= :accepted (:status result))
+          (throw (ex-info "Imported leaf rejected actual products" {:diagnostics (:diagnostics result)})))
+        (is (= :direct-imported-body-effects-with-thrown-effects-pending (:scope result)))
+        (is (= :gravity/sh09-direct-imported-body-effects-v1 (get-in result [:identity-input :domain])))
+        (is (= (set (map :node-id (get-in request [:canonical-core-artifact :nodes]))) (set (keys (:nodes graph)))))
+        (is (= (set (map :node-id (:nodes producer-core))) (set (keys (:nodes producer-graph)))))
+        (is (= (count (:function-type-table facts)) (count (:functions producer-graph))))
+        (is (map? private-function))
+        (is (= (:body-core-node-id private-function)
+               (get-in producer-graph [:nodes (:body-core-node-id chain-function) :call-body-dependency])))
+        (is (= 4 (count (:imported-body-dependencies result))))
+        (is (= 4 (count (filter :foreign-body-dependency (vals (:nodes graph))))))
+        (is (every? #(= #{} (:inferred %)) (concat (vals (:functions graph)) (vals (:functions producer-graph)))))
+        (is (every? #(= [:pending-sh09] (:throws %)) (concat (vals (:functions graph)) (vals (:functions producer-graph)))))
+        (is (= :passed (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+        (is (false? (leaf 'sh09-adapter-compiler-read-request-valid? request typed)))
+        (doseq [field [:module-type-producers :imported-function-types]
+                malformed [7 [7]]]
+          (let [rejected (build-leaf (coherent-typed-mutation p #(assoc % field malformed)))]
+            (is (= :rejected (:status rejected)))
+            (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+        (doseq [mutate [(fn [t] (assoc-in t [:imported-function-types 0 :origin] {}))
+                        (fn [t] (assoc-in t [:imported-function-types 0 :function-type :body-core-node-id] (sha 999)))
+                        (fn [t] (assoc-in t [:call-type-facts 0 :imported-function :producer-sh06-artifact-id] (sha 999)))
+                        (fn [t] (assoc-in t [:module-type-producers 0 :identity-input :function-type-table 0 :body-core-node-id] (sha 999)))]]
+          (is (= :rejected (:status (build-leaf (coherent-typed-mutation p mutate))))))
+        (doseq [candidate [(-> result (assoc :producer-effect-graphs {}) (assoc-in [:identity-input :producer-effect-graphs] {}))
+                           (-> result (assoc :imported-body-dependencies {}) (assoc-in [:identity-input :imported-body-dependencies] {}))
+                           (reseal-effect-graph result (assoc graph :nodes {}))
+                           (reseal-effect-graph result (update graph :functions
+                             #(into {} (map (fn [[id f]] [id (assoc f :throws [])]) %))))]]
+          (is (= :rejected (:status (leaf 'verify-body-effect-result typed (:verification p) (:binding p) candidate)))))
+        (let [bad-request (assoc-in request [:module-type-inputs :module-requests] [])
+              rejected (leaf 'build-body-effect-result typed (:verification p) (seal-binding bad-request typed (:verification p)))]
+          (is (= :rejected (:status rejected))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))))
 
 (deftest body-effect-authenticated-paired-composition
   (let [products (mapv #(fresh-products (str "bootstrap/clojure/fixtures/self-hosting/sh-09/accepted/local-body-effects" %))

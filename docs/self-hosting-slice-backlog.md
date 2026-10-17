@@ -1188,7 +1188,7 @@ and the explicitly attributed earlier composition total 13 test executions and
 did not execute the later guards; focused delta checks and static valid-path
 review cover those corrections without repeating the expensive composition.
 
-Imported bodies, higher-order/callable value propagation, recursion,
+Transitive imported bodies, higher-order/callable value propagation, recursion,
 throw/try/control-transfer composition, general effect legality, provider and
 grant validation, complete effect identities, targets, authoritative migration,
 self-hosting and seedless release remain outstanding. Legacy imported type-only
@@ -1196,6 +1196,61 @@ input still rejects with `:imported-body-effects-pending`. Use the direct
 `sh09-body-effect-test` kernels for semantic iteration and the affected
 composition rules in `development-verification.md`; no new lane or wrapper is
 needed.
+
+### Direct imported body-derived effects: development implementation
+
+The L3/L6/C7/C8 increment extends the same `gravity.effects` constructor and
+fresh verifier to direct imported scalar functions. It consumes the caller's
+actual C7 identity facts and complete original four-key request, including
+`module-type-inputs`, through the existing binding. Each retained producer C5
+artifact, original public export, projected definition, function and body must
+join exactly. Producer facts are the actual flat C7 producer identity, not a
+fabricated accepted typed-result/verification wrapper. The older compiler-read
+interface still requires exactly three request keys, and legacy type-only C8
+adapters still reject pending imported bodies.
+
+The same algorithm derives every producer node and local callee body, including
+private functions, once per distinct exact producer request within the
+invocation. Producer graphs stay indexed by their C5/C6 module coordinates;
+caller coverage includes exactly caller nodes. Foreign dependencies carry the
+caller import binding, both producer artifact IDs, projected producer definition
+binding, function and body. Matching raw node/function IDs in different modules
+cannot replace this coordinate. Full producer core/type identities and derived
+graphs enter the new effect identity. A call propagates the derived body summary,
+not a declaration allowance. Aggregate limits remain 65,536 nodes and 256
+functions before graph indexing; one 65,536-attempt deferred-node budget is
+shared across producers and caller. These units are not an all-CPU guarantee.
+
+Eight direct Gravity kernels passed 112 assertions for origin/export/body joins,
+local compatibility, derived-versus-declared summaries, scoped graph separation,
+malformed tables, aggregate limits and deferred work. Five boundary tests passed
+48 assertions for unchanged public C8 forwarding, module routes, B51 separation,
+historical literal semantic pins and repository language policy. One test-file
+compilation error was corrected before actual composition; the later four-test,
+56-assertion load/recheck overlaps the eight kernels and is not added again.
+
+The existing `inferred-values`/`inferred-consumer` `.gravity`/`.qst` fixtures
+then passed the actual paired composition on its first attempt: one test and
+69 assertions, no failures or errors. It constructs real producer/caller C5/C6
+products, freshly constructs and verifies caller C7, seals the full request,
+and executes the current Gravity effects constructor and fresh verifier.
+Complete graphs retain the `integer-chain` call to private `integer-base`,
+four imported body dependencies, empty inferred effects and pending throws.
+Malformed import tables, coherent origin/body/coordinate substitutions, missing
+producer requests and stripped graph/identity/throw evidence reject. Selected
+execution took 548.399 seconds after 6.931 seconds of namespace loading with a
+2 GiB heap. The three nonoverlapping batches total 14 executions/229 assertions;
+earlier overlapping kernels are not added.
+
+Actual C8 source, exports, requires and public three-/four-argument forwarding
+forms are unchanged. Their static checks and existing route regressions are
+separate from this current-source upstream-to-leaf composition. The expensive
+public C8 bundle was not rebuilt: previous route evidence is not a new bundle
+identity proof. No new fixture, host implementation, test lane, wrapper,
+authority flag, manifest resource or accepted-proof cache was introduced.
+Transitive imports, callable values, recursive propagation, completed throws,
+effect/provider/grant legality, targets, authoritative migration, self-hosting
+and seedless release remain outside this increment.
 
 ## Current Baseline
 

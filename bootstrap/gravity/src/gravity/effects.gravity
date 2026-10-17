@@ -256,7 +256,7 @@
         false)
       false)))
 
-(defn sh09-adapter-compiler-read-b47-context-valid? [context typed]
+(defn body-authenticated-context-valid? [context expected-id provenance]
   (if (sh09-exact-keys?
        context
        #{:artifact-id :artifact-status :artifact-kind :input-domain
@@ -268,9 +268,9 @@
           request (get context :authenticated-core-request)
           wrapper (get context :authenticated-wrapper)
           boundary (get wrapper :gravity-core-boundary)]
-      (if (= artifact-id (get typed :sh07-shaped-artifact-id))
-        (if (= (get typed :provenance) (get core :provenance))
-          (if (= (get (get typed :provenance) :actual-source-path)
+      (if (= artifact-id expected-id)
+        (if (= provenance (get core :provenance))
+          (if (= (get provenance :actual-source-path)
                  (get (get context :provenance) :source-path))
             (if (= :accepted (get context :artifact-status))
           (if (= :gravity/sh07-core-artifact (get context :artifact-kind))
@@ -306,6 +306,9 @@
           false)
         false))
     false))
+
+(defn sh09-adapter-compiler-read-b47-context-valid? [context typed]
+  (body-authenticated-context-valid? context (get typed :sh07-shaped-artifact-id) (get typed :provenance)))
 
 (defn sh09-adapter-compiler-read-coordinator-valid?
   [descriptor context]
@@ -370,22 +373,21 @@
         false))
     false))
 
-(defn sh09-adapter-compiler-read-request-valid? [request typed]
-  (if (sh09-exact-keys?
-       request
-       #{:canonical-core-artifact :b47-context
-         :coordinator-verification})
+(defn body-request-envelope-valid? [request expected-id provenance]
     (let [context (get request :b47-context)
           core (get request :canonical-core-artifact)]
-      (if (sh09-adapter-compiler-read-b47-context-valid? context typed)
+      (if (body-authenticated-context-valid? context expected-id provenance)
         (if (= core (get context :canonical-core-artifact))
           (sh09-adapter-compiler-read-coordinator-valid?
            (get request :coordinator-verification) context)
           false)
-        false))
-    false))
+        false)))
 
-(defn sh09-adapter-compiler-read-binding-valid?
+(defn sh09-adapter-compiler-read-request-valid? [request typed]
+  (if (sh09-exact-keys? request #{:canonical-core-artifact :b47-context :coordinator-verification})
+    (body-request-envelope-valid? request (get typed :sh07-shaped-artifact-id) (get typed :provenance)) false))
+
+(defn body-binding-envelope-valid?
   [typed verification binding]
   (let [policy (sh09-authenticated-compiler-read-policy)
         resolution (get binding :digest-resolution)
@@ -417,8 +419,7 @@
                             (if (= typed (get preimage :typed))
                               (if (= verification
                                      (get preimage :verification))
-                                (sh09-adapter-compiler-read-request-valid?
-                                 (get preimage :request) typed)
+                                true
                                 false)
                               false)
                             false)
@@ -433,6 +434,11 @@
           false)
         false)
       false)))
+
+(defn sh09-adapter-compiler-read-binding-valid? [typed verification binding]
+  (if (body-binding-envelope-valid? typed verification binding)
+    (sh09-adapter-compiler-read-request-valid? (get (get (get binding :digest-resolution) :preimage) :request) typed)
+    false))
 
 ; Declarations are allowances. These classifications derive effects from the
 ; complete graph; they do not establish profile/capability/safety legality.
@@ -487,27 +493,87 @@
 (defn body-core [binding]
   (get (get (get (get binding :digest-resolution) :preimage) :request) :canonical-core-artifact))
 
+(defn body-path [value fields]
+  (loop [remaining fields value value]
+    (if (= 0 (count remaining)) value
+      (recur (rest remaining) (get value (first remaining))))))
+
+(defn body-imported? [typed]
+  (= :direct-imported-functions-types-only (get typed :scope)))
+
+(defn body-caller-identity [typed]
+  (let [base (sh09-adapter-function-identity-input typed)]
+    (if (body-imported? typed)
+      (assoc base :domain :gravity/sh08-direct-imported-function-types-v1
+                  :module-type-producers (get typed :module-type-producers)
+                  :imported-function-types (get typed :imported-function-types)) base)))
+
+(defn body-caller-typed-core [typed]
+  (let [base (sh09-adapter-function-typed-core typed)]
+    (if (body-imported? typed)
+      (assoc base :imported-function-types (get typed :imported-function-types)
+                  :imported-effect-status :pending-sh09-imported-body) base)))
+
+(defn body-module-inputs-valid? [inputs]
+  (if (sh09-exact-keys? inputs #{:artifact :schema-version :module-requests})
+    (if (body-all? [(= :gravity/sh08-module-type-inputs (get inputs :artifact)) (= 1 (get inputs :schema-version))
+                    (vector? (get inputs :module-requests))])
+      (<= (count (get inputs :module-requests)) 256) false) false))
+
+(defn body-caller-request-valid? [request typed]
+  (if (sh09-exact-keys? request
+        (if (body-imported? typed)
+          #{:canonical-core-artifact :b47-context :coordinator-verification :module-type-inputs}
+          #{:canonical-core-artifact :b47-context :coordinator-verification}))
+    (if (if (body-imported? typed) (body-module-inputs-valid? (get request :module-type-inputs)) true)
+      (body-request-envelope-valid? request (get typed :sh07-shaped-artifact-id) (get typed :provenance)) false) false))
+
+(defn body-caller-checks [typed]
+  (if (body-imported? typed)
+    [:fresh-authenticated-module-type-producers :exact-original-upstream-projected-definition-function-join
+     :complete-immutable-imported-signatures :imported-operator-and-call-types :local-inference-remains-separate
+     :origin-and-signature-bound-constraint-ledger :producer-declarations-preserved-with-pending-imported-effects
+     :canonical-producer-and-import-order :source-syntax-origin-links-preserved :path-neutral-identity-input]
+    [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
+     :coherent-b47-lexical-bindings :fixed-arity-first-order-inference :local-binding-facts
+     :call-type-facts :constraint-ledger :source-syntax-origin-generated-origin-links-preserved
+     :path-neutral-identity-input :recursive-inference-rejected-without-annotation]))
+
+(defn body-import-tables-valid? [typed]
+  (loop [tables [(get typed :module-type-producers) (get typed :imported-function-types)]]
+    (if (= 0 (count tables)) true
+      (let [table (first tables)]
+        (if (vector? table)
+          (if (<= (count table) 256)
+            (if (loop [entries table]
+                  (if (= 0 (count entries)) true
+                    (if (map? (first entries)) (recur (rest entries)) false)))
+              (recur (rest tables)) false) false) false)))))
+
 (defn body-input-valid? [typed verification binding]
-  (if (sh09-exact-keys? typed (sh09-adapter-function-top-level-keys (get typed :scope)))
+  (if (sh09-exact-keys? typed
+        (if (body-imported? typed)
+          (conj (conj (sh09-adapter-function-top-level-keys (get typed :scope)) :module-type-producers) :imported-function-types)
+          (sh09-adapter-function-top-level-keys (get typed :scope))))
     (if (body-all?
           [(= :gravity/sh08-function-typed-core-template (get typed :artifact))
            (= 3 (get typed :schema-version)) (= :accepted (get typed :status))
-           (= :first-order-fixed-arity-functions-locals-calls (get typed :scope))
+           (contains? #{:first-order-fixed-arity-functions-locals-calls :direct-imported-functions-types-only} (get typed :scope))
            (= :host-resolved-b47-verification-boundary (get typed :authentication-status))
            (= [] (get typed :diagnostics))
            (= (get typed :artifact-id-request) (get typed :identity-input))
-           (= (sh09-adapter-function-identity-input typed) (get typed :identity-input))
-           (= (sh09-adapter-function-typed-core typed) (get typed :typed-core))
+           (= (body-caller-identity typed) (get typed :identity-input))
+           (= (body-caller-typed-core typed) (get typed :typed-core))
            (= :gravity/sh08-function-type-verification (get verification :artifact))
            (= :passed (get verification :status))
            (= typed (get verification :expected) (get verification :candidate))
-           (= [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
-               :coherent-b47-lexical-bindings :fixed-arity-first-order-inference :local-binding-facts
-               :call-type-facts :constraint-ledger :source-syntax-origin-generated-origin-links-preserved
-               :path-neutral-identity-input :recursive-inference-rejected-without-annotation] (get verification :checks))
+           (= (body-caller-checks typed) (get verification :checks))
            (= :meta (get (get typed :module) :profile)) (= :jvm (get (get typed :module) :target))
            (vector? (get (get typed :module) :effects)) (vector? (get (get typed :module) :capabilities))])
-      (sh09-adapter-compiler-read-binding-valid? typed verification binding) false) false))
+      (if (if (body-imported? typed)
+            (body-import-tables-valid? typed) true)
+      (if (body-binding-envelope-valid? typed verification binding)
+        (body-caller-request-valid? (body-path binding [:digest-resolution :preimage :request]) typed) false) false) false) false))
 
 (defn body-reachable [roots nodes]
   (loop [pending roots seen #{}]
@@ -551,6 +617,107 @@
       (if (body-first-order-value-type? (get (first remaining) :type))
         (recur (rest remaining)) false))))
 
+(defn body-failure [reason]
+  {:status :rejected :reason reason})
+
+(defn body-producer-entries [request facts]
+  (let [requests (body-path request [:module-type-inputs :module-requests])
+        identities (get facts :module-type-producers)
+        retained (body-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
+                                     :gravity-resolution-boundary :module-inputs :module-artifacts])]
+    (loop [remaining requests entries []]
+      (if (= 0 (count remaining))
+        (if (= (count entries) (count identities)) {:status :accepted :entries entries}
+          (body-failure :producer-request-identity-coverage))
+        (let [producer (first remaining)
+              c5 (body-path producer [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
+              c5-id (get c5 :artifact-id) core (get producer :canonical-core-artifact)
+              identity (body-by identities :producer-sh06-artifact-id c5-id)
+              producer-facts (get identity :identity-input)
+              prior (body-by entries :producer-sh06-artifact-id c5-id)]
+          (if (map? prior)
+            (if (= producer (get prior :request)) (recur (rest remaining) entries)
+              (body-failure :conflicting-producer-requests))
+            (if (body-all?
+                  [(sh09-sha256-id? c5-id) (map? identity) (map? producer-facts)
+                   (sh09-exact-keys? identity #{:producer-sh06-artifact-id :producer-sh07-artifact-id :identity-input})
+                   (sh09-exact-keys? producer-facts
+                     #{:domain :sh07-shaped-artifact-id :module :function-records :call-edges :recursion-components
+                       :lexical-bindings :function-type-table :local-binding-facts :call-type-facts :constraint-ledger
+                       :type-table :convergence :pending})
+                   (sh09-exact-keys? producer #{:canonical-core-artifact :b47-context :coordinator-verification})
+                   (contains? #{:gravity/sh08-function-typed-core-v3 :gravity/sh08-atomic-function-signature-typed-core-v1}
+                              (get producer-facts :domain))
+                   (= (get identity :producer-sh07-artifact-id) (get core :artifact-id)
+                      (get producer-facts :sh07-shaped-artifact-id))
+                   (= c5 (body-by retained :artifact-id c5-id))
+                   (= [] (body-path c5 [:gravity-resolution-boundary :module-inputs :module-artifacts]))
+                   (= c5-id (body-path producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id]))
+                   (body-request-envelope-valid? producer (get identity :producer-sh07-artifact-id) (get core :provenance))])
+              (recur (rest remaining)
+                (conj entries {:producer-sh06-artifact-id c5-id :producer-sh07-artifact-id (get core :artifact-id)
+                               :module-key [c5-id (get core :artifact-id)] :request producer :facts producer-facts}))
+              (body-failure :untrusted-or-transitive-body-producer))))))))
+
+(defn body-aggregate-valid? [core facts entries]
+  (loop [remaining (conj entries {:request {:canonical-core-artifact core} :facts facts}) nodes 0 functions 0]
+    (if (= 0 (count remaining)) true
+      (let [entry (first remaining) ns (body-path entry [:request :canonical-core-artifact :nodes])
+            fs (body-path entry [:facts :function-type-table])]
+        (if (if (vector? ns) (vector? fs) false)
+          (if (body-all? [(<= (+ nodes (count ns)) 65536) (<= (+ functions (count fs)) 256)])
+            (recur (rest remaining) (+ nodes (count ns)) (+ functions (count fs))) false) false)))))
+
+(defn body-import-coordinate [proof]
+  {:binding-id (get proof :binding-id) :producer-sh06-artifact-id (get proof :producer-sh06-artifact-id)
+   :producer-sh07-artifact-id (get proof :producer-sh07-artifact-id)
+   :definition-binding-id (get proof :definition-binding-id)
+   :function-id (get (get proof :function-type) :function-id)})
+
+(defn body-import-origin [request binding entry proof]
+  (let [producer (get entry :request) facts (get entry :facts)
+        caller-c5 (body-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
+        callee-c5 (body-path producer [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
+        origin (get binding :semantic-span)
+        caller-row (body-by (body-path caller-c5 [:binding-table :bindings]) :binding-id (get binding :upstream-binding-id))
+        original (body-by (body-path callee-c5 [:binding-table :bindings]) :binding-id (get origin :origin-binding-id))
+        projected (body-by (body-path producer [:b47-context :authenticated-core-request :binding-table]) :upstream-binding-id (get original :binding-id))
+        record (body-by (body-path producer [:canonical-core-artifact :function-records]) :definition-binding-id (get projected :binding-id))
+        function (body-by (get facts :function-type-table) :function-id (get record :function-syntax-id))
+        module (body-path callee-c5 [:gravity-resolution-boundary :resolved-analysis :module-contract])
+        caller-module (body-path request [:canonical-core-artifact :module])]
+    (if (body-all?
+          [(map? caller-row) (map? original) (map? projected) (map? record) (map? function)
+           (sh09-exact-keys? proof #{:status :binding-id :origin :producer-sh07-artifact-id :producer-sh06-artifact-id
+                                    :definition-binding-id :function-type :effect-status :legality-status})
+           (= :accepted (get proof :status))
+           (= (get entry :producer-sh06-artifact-id) (get origin :ordinary-module-artifact-id) (get callee-c5 :artifact-id))
+           (= origin (get caller-row :semantic-span) (get proof :origin))
+           (= :import (get binding :binding-class) (get caller-row :binding-class))
+           (= :namespace (get original :binding-class)) (= :function (get original :kind))
+           (= :public (get original :visibility) (get binding :visibility))
+           (= (get binding :name) (get original :name))
+           (= (get binding :namespace) (get original :namespace) (get module :namespace))
+           (= (get binding :package) (get original :package) (get module :package))
+           (contains? (set (get module :exports)) (get original :name))
+           (= (get origin :origin-analysis-id) (body-path callee-c5 [:gravity-resolution-boundary :resolved-analysis :artifact-id]))
+           (= (get origin :origin-definition-artifact-id) (get original :definition-artifact-id))
+           (= (get origin :origin-definition-syntax-id) (get original :definition-syntax-id))
+           (= (get origin :origin-definition)
+              (body-project original [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref :effects :capabilities :safety]))
+           (= [(get caller-module :profile) (get caller-module :target)] [(get module :profile) (get module :target)])
+           (= (get proof :binding-id) (get binding :binding-id))
+           (= (get proof :producer-sh06-artifact-id) (get entry :producer-sh06-artifact-id))
+           (= (get proof :producer-sh07-artifact-id) (get entry :producer-sh07-artifact-id))
+           (= (get proof :definition-binding-id) (get projected :binding-id))
+           (= (get proof :function-type)
+              (body-project function [:artifact :function-id :function-core-node-id :body-core-node-id :definition-name
+                                      :parameter-binding-ids :parameters :return :fixed-arity :signature :latent-effects
+                                      :capabilities :ownership-constraints :profile-constraints :thrown-error-effects :status]))
+           (= :pending-sh09-imported-body (get proof :effect-status)) (= :pending-imported-effects (get proof :legality-status))])
+      {:coordinate (body-import-coordinate proof) :module-key (get entry :module-key) :binding binding
+       :function function :body-core-node-id (get function :body-core-node-id)} nil)))
+
 (defn body-function-shapes? [functions]
   (if (body-maps? functions)
     (loop [remaining functions]
@@ -592,7 +759,7 @@
             (count (body-index calls :core-node-id)) (count (body-index edges :call-core-node-id))
             (count (body-index (get typed :call-type-facts) :call-core-node-id)))
          (= [] (get core :recursion-components))
-         (= (get typed :function-products)
+         (= (body-project typed [:function-records :call-edges :recursion-components :lexical-bindings])
             {:function-records records :call-edges edges :recursion-components [] :lexical-bindings locals})
          (= (get core :artifact-id) (get typed :sh07-shaped-artifact-id))
          (= (get (get core :identity-preimage) :nodes) nodes)
@@ -624,6 +791,8 @@
        (= (get record :definition-name) (get function :definition-name) (get definition :name) (get binding :name))
        (= (get record :parameter-binding-ids) (get function :parameter-binding-ids) (get node :resolved-binding-ids))
        (= (get record :fixed-arity) (get function :fixed-arity) (count (get function :parameters)))
+       (if (contains? record :signature) (= (get record :signature) (get function :signature))
+         (= false (contains? function :signature)))
        (= (get record :definition-core-node-id) (get definition :core-node-id))
        (= (get definition :value-node-id) (get record :function-core-node-id))
        (= :def (get def-node :core-form))
@@ -711,6 +880,67 @@
                   (body-arguments-valid? (get edge :argument-core-node-ids) (get (get facts id) :argument-types)
                     (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get typed :type-table)) false) false)
             (recur (rest remaining) (+ ordinal 1)) false))))))
+
+(defn body-import-call-valid? [edge call fact nodes records foreign types]
+  (let [node (get nodes (get edge :call-core-node-id)) source (get node :source)
+        target (get foreign :function) coordinate (get foreign :coordinate)
+        operator (get nodes (first (get node :children)))
+        caller (get records (get edge :caller-function-syntax-id))
+        expected-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id (get node :node-id)
+                          :callee-function-syntax-id nil
+                          :argument-types (get fact :argument-types) :result-type (get fact :result-type)
+                          :imported-function coordinate :effect-status :pending-sh09-imported-body
+                          :legality-status :pending-imported-effects}]
+    (if (vector? (get fact :argument-types))
+      (body-all?
+        [(= :nonlocal-or-nonfunction (get edge :classification)) (= :call (get node :core-form))
+         (= :direct-imported-function (get fact :dispatch)) (= :inferred (get fact :status))
+         (= :gravity/c7-call-type-fact (get fact :artifact))
+         (= (get edge :call-core-node-id) (get call :core-node-id) (get fact :call-core-node-id))
+         (= (get coordinate :binding-id) (get edge :callee-binding-id) (get call :operator-binding-id)
+            (get (get operator :attributes) :binding-id))
+         (= :reference (get operator :core-form))
+         (= nil (get edge :callee-function-syntax-id) (get edge :callee-function-core-node-id) (get fact :callee-function-syntax-id))
+         (= (get edge :callee-definition-syntax-id) (get (get foreign :binding) :definition-syntax-id))
+         (= (get coordinate :function-id) (get target :function-id) (get (get foreign :summary) :function-id))
+         (= (get foreign :body-core-node-id) (get target :body-core-node-id) (get (get foreign :summary) :body-core-node-id))
+         (set? (get (get foreign :summary) :inferred))
+         (= [:pending-sh09] (get (get foreign :summary) :throws))
+         (= coordinate (get fact :imported-function)) (= expected-request (get fact :fact-id-request))
+         (= (get edge :caller-function-syntax-id) (get fact :caller-function-syntax-id))
+         (= (get edge :caller-function-core-node-id) (get caller :function-core-node-id))
+         (= (get edge :argument-core-node-ids) (get call :argument-node-ids) (vec (rest (get node :children))))
+         (= (get edge :ordered-evaluation-node-ids) (get call :ordered-evaluation-node-ids) (get node :children))
+         (= :operator-then-arguments (get edge :evaluation-order) (get call :evaluation-order) (get fact :evaluation-order))
+         (= (get source :syntax-id) (get fact :syntax-id)) (= (get source :semantic-span) (get fact :source-span))
+         (= (get source :origin-chain) (get fact :origin-chain)) (= (get source :generated-origin) (get fact :generated-origin))
+         (= (get fact :result-type) (get target :return) (get types (get node :node-id)))
+         (= (get fact :effects) (get target :latent-effects)) (= (get fact :capabilities) (get target :capabilities))
+         (= (get fact :profile) (get target :profile)) (= (get fact :target) (get target :target))
+         (= :pending-sh09-imported-body (get fact :effect-status)) (= :pending-imported-effects (get fact :legality-status))
+         (= :callee-module-declarations (get fact :effect-facts-source))
+         (body-arguments-valid? (get edge :argument-core-node-ids) (get fact :argument-types)
+                              (get target :parameters) types)]) false)))
+
+(defn body-call-joins-with-foreign-valid? [core facts bindings foreign]
+  (let [nodes (body-index (get core :nodes) :node-id)
+        functions (body-index (get facts :function-type-table) :function-id)
+        records (body-index (get core :function-records) :function-syntax-id)
+        calls (body-index (get core :calls) :core-node-id)
+        call-facts (body-index (get facts :call-type-facts) :call-core-node-id)]
+    (loop [remaining (get core :call-edges) ordinal 0 used #{}]
+      (if (= 0 (count remaining)) (= (count used) (count foreign))
+        (let [edge (first remaining) id (get edge :call-core-node-id)
+              imported (get foreign (get edge :callee-binding-id))
+              local? (= :local-function (get edge :classification))]
+          (if (if (= ordinal (get edge :ordinal))
+                (if local?
+                  (if (body-call-valid? edge (get calls id) (get call-facts id) nodes functions records bindings (get facts :type-table))
+                    (body-arguments-valid? (get edge :argument-core-node-ids) (get (get call-facts id) :argument-types)
+                      (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get facts :type-table)) false)
+                  (if (map? imported)
+                    (body-import-call-valid? edge (get calls id) (get call-facts id) nodes records imported (get facts :type-table)) false)) false)
+            (recur (rest remaining) (+ ordinal 1) (if local? used (conj used (get edge :callee-binding-id)))) false))))))
 
 (defn body-select [records field value]
   (loop [remaining records result []]
@@ -833,28 +1063,42 @@
                                               (= (get expected index) (get entry :core-node-id))]) false)
                 (recur (+ index 1)) false)))) false) false)))
 
-(defn body-derive-nodes [core typed]
+(defn body-foreign-node-record [node imported graph type]
+  (let [base (body-node-record node nil graph type)
+        effects (body-add (get (get imported :summary) :inferred) (get base :transitive))]
+    (assoc base :foreign-body-dependency (assoc (get imported :coordinate) :body-core-node-id (get imported :body-core-node-id))
+                :transitive effects :escaping effects)))
+
+(defn body-derive-nodes-with-foreign [core typed foreign budget]
   (let [edges (body-index (get core :call-edges) :call-core-node-id)
         functions (body-index (get typed :function-type-table) :function-id)]
-    (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0]
+    (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0 work 0]
       (if (= 0 (count pending))
-        (if (= 0 (count deferred)) {:status :accepted :nodes graph}
+        (if (= 0 (count deferred)) {:status :accepted :nodes graph :work-count work}
           (if (if (> progress 0) (< rounds (count (get core :nodes))) false)
-            (recur deferred [] graph 0 (+ rounds 1))
+            (recur deferred [] graph 0 (+ rounds 1) work)
             {:status :rejected :reason :cyclic-or-missing-body-effect-dependencies}))
+        (if (>= work budget) (body-failure :body-deferred-work-limit)
         (let [node (first pending) kind (get node :core-form) id (get node :node-id)
               edge (get edges id) function (get functions (get edge :callee-function-syntax-id))
-              target (if (= kind :call) (get function :body-core-node-id) nil)
+              imported (get foreign (get edge :callee-binding-id))
+              target (if (= kind :call) (if (= imported nil) (get function :body-core-node-id) nil) nil)
               deps (if (= target nil) (get node :children) (conj (get node :children) target))]
           (if (if (body-node-supported? node) (body-order-valid? node) false)
-            (if (if (= kind :call) (map? function)
+            (if (if (= kind :call) (if (map? imported) true (map? function))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
-                       (assoc graph id (body-node-record node target graph (get (get typed :type-table) id))) (+ progress 1) rounds)
-                (recur (rest pending) (conj deferred node) graph progress rounds))
+                       (assoc graph id (if (= imported nil)
+                                         (body-node-record node target graph (get (get typed :type-table) id))
+                                         (body-foreign-node-record node imported graph (get (get typed :type-table) id))))
+                       (+ progress 1) rounds (+ work 1))
+                (recur (rest pending) (conj deferred node) graph progress rounds (+ work 1)))
               {:status :rejected :reason :unsupported-nonlocal-or-higher-order-call :node node})
-            {:status :rejected :reason :unsupported-body-operation :node node}))))))
+            {:status :rejected :reason :unsupported-body-operation :node node})))))))
+
+(defn body-derive-nodes [core facts]
+  (body-derive-nodes-with-foreign core facts {} 65536))
 
 (defn body-function-effects [functions graph]
   (loop [remaining functions result {}]
@@ -875,39 +1119,99 @@
      :build-effects :pending-policy :replay-required :pending-policy :ordering-constraints (get core :evaluation-order)
      :residual-effects :pending-legality :diagnostics [] :pending (body-effect-pending)}))
 
+(defn body-analyze-module [request facts foreign budget]
+  (let [core (get request :canonical-core-artifact)
+        bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
+    (if (body-shape-valid? core facts)
+      (if (if (body-function-joins-valid? core facts bindings)
+            (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
+              (body-local-joins-valid? core facts bindings) false) false)
+        (let [derived (body-derive-nodes-with-foreign core facts foreign budget)]
+          (if (= :accepted (get derived :status))
+            {:status :accepted :graph (body-build-graph core facts (get derived :nodes)) :work-count (get derived :work-count)} derived))
+        (body-failure :incoherent-function-or-call-body-type-origin-join))
+      (body-failure :incomplete-canonical-core-coverage))))
+
+(defn body-analyze-producers [entries]
+  (loop [remaining entries bank {} work 0]
+    (if (= 0 (count remaining)) {:status :accepted :bank bank :work-count work}
+      (let [entry (first remaining)
+            analyzed (body-analyze-module (get entry :request) (get entry :facts) {} (- 65536 work))]
+        (if (= :accepted (get analyzed :status))
+          (recur (rest remaining) (assoc bank (get entry :module-key) (assoc entry :graph (get analyzed :graph)))
+                 (+ work (get analyzed :work-count)))
+          (assoc analyzed :producer-module (get entry :module-key) :producer-facts (get entry :facts)))))))
+
+(defn body-foreign-bindings [request facts bank]
+  (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
+    (loop [remaining (get facts :imported-function-types) foreign {} used #{}]
+      (if (= 0 (count remaining))
+        (if (= (count used) (count bank)) {:status :accepted :foreign foreign}
+          (body-failure :unused-body-producer))
+        (let [proof (first remaining) id (get proof :binding-id)
+              key [(get proof :producer-sh06-artifact-id) (get proof :producer-sh07-artifact-id)]
+              entry (get bank key) joined (body-import-origin request (get bindings id) entry proof)
+              summary (get (get (get entry :graph) :functions) (get (get proof :function-type) :function-id))]
+          (if (if (contains? foreign id) false (body-all? [(map? joined) (map? summary)
+                 (= (get joined :body-core-node-id) (get summary :body-core-node-id))
+                 (= (get (get joined :function) :function-id) (get summary :function-id))
+                 (set? (get summary :inferred)) (= [:pending-sh09] (get summary :throws))]))
+            (recur (rest remaining) (assoc foreign id (assoc joined :summary summary)) (conj used key))
+            (body-failure :imported-body-origin-or-summary-mismatch)))))))
+
+(defn body-producer-graph-identities [bank]
+  (loop [keys (keys bank) result {}]
+    (if (= 0 (count keys)) result
+      (let [key (first keys) entry (get bank key)]
+        (recur (rest keys)
+          (assoc result key {:canonical-core-identity-input (body-path entry [:request :canonical-core-artifact :identity-preimage])
+                             :sh08-identity-input (get entry :facts) :effect-graph (get entry :graph)}))))))
+
+(defn body-accepted-result [typed binding core graph bank foreign]
+  (let [imported? (body-imported? typed)
+        scope (if imported? :direct-imported-body-effects-with-thrown-effects-pending
+                           :local-first-order-body-effects-with-thrown-effects-pending)
+        producer-graphs (body-producer-graph-identities bank)
+        dependencies (loop [ids (keys foreign) result {}]
+                       (if (= 0 (count ids)) result
+                         (let [id (first ids) target (get foreign id)]
+                           (recur (rest ids) (assoc result id (assoc (get target :coordinate) :body-core-node-id (get target :body-core-node-id)))))))
+        identity {:domain (if imported? :gravity/sh09-direct-imported-body-effects-v1 :gravity/sh09-local-body-effects-v1)
+                  :canonical-core-identity-input (get core :identity-preimage)
+                  :sh08-identity-input (get typed :identity-input) :effect-graph graph :scope scope :pending (body-effect-pending)}
+        identity (if imported? (assoc identity :producer-effect-graphs producer-graphs :imported-body-dependencies dependencies) identity)
+        result {:artifact :gravity/sh09-authenticated-effected-core-template :schema-version 1 :status :accepted
+                :scope scope :authentication-status :host-resolved-sh08-function-binding
+                :upstream-binding (body-project binding [:artifact :schema-version :boundary :status])
+                :sh08-shaped-artifact-id (get typed :sh07-shaped-artifact-id) :module (get typed :module)
+                :typed-core (get typed :typed-core) :type-table (get typed :type-table)
+                :function-type-table (get typed :function-type-table) :local-binding-facts (get typed :local-binding-facts)
+                :call-type-facts (get typed :call-type-facts) :effect-graph graph :identity-input identity
+                :identity-resolution :coordinator-digest-required :diagnostics [] :pending (body-effect-pending)
+                :provenance (get typed :provenance) :self-hosted? false :clojure-seed-boundary? true}]
+    (if imported? (assoc result :producer-effect-graphs producer-graphs :imported-body-dependencies dependencies) result)))
+
 (defn build-body-effect-result [typed verification binding]
-  (if (= :direct-imported-functions-types-only (get typed :scope))
-    (body-error typed :imported-body-effects-pending {})
-    (if (body-input-valid? typed verification binding)
-      (let [core (body-core binding)
-            request (get (get (get binding :digest-resolution) :preimage) :request)
-            bindings (body-index (get (get (get request :b47-context) :authenticated-core-request) :binding-table) :binding-id)]
-        (if (body-shape-valid? core typed)
-          (if (if (body-function-joins-valid? core typed bindings)
-                (if (body-call-joins-valid? core typed bindings)
-                  (body-local-joins-valid? core typed bindings) false) false)
-            (let [derived (body-derive-nodes core typed)]
-              (if (= :accepted (get derived :status))
-                (let [graph (body-build-graph core typed (get derived :nodes))
-                      identity {:domain :gravity/sh09-local-body-effects-v1
-                                :canonical-core-identity-input (get core :identity-preimage)
-                                :sh08-identity-input (get typed :identity-input) :effect-graph graph
-                                :scope :local-first-order-body-effects-with-thrown-effects-pending
-                                :pending (body-effect-pending)}]
-                  {:artifact :gravity/sh09-authenticated-effected-core-template :schema-version 1 :status :accepted
-                   :scope :local-first-order-body-effects-with-thrown-effects-pending
-                   :authentication-status :host-resolved-sh08-function-binding
-                   :upstream-binding (body-project binding [:artifact :schema-version :boundary :status])
-                   :sh08-shaped-artifact-id (get typed :sh07-shaped-artifact-id) :module (get typed :module)
-                   :typed-core (get typed :typed-core) :type-table (get typed :type-table)
-                   :function-type-table (get typed :function-type-table) :local-binding-facts (get typed :local-binding-facts)
-                   :call-type-facts (get typed :call-type-facts) :effect-graph graph :identity-input identity
-                   :identity-resolution :coordinator-digest-required :diagnostics [] :pending (body-effect-pending)
-                   :provenance (get typed :provenance) :self-hosted? false :clojure-seed-boundary? true})
-                (body-error typed (get derived :reason) (get derived :node {}))))
-            (body-error typed :incoherent-function-or-call-body-type-origin-join {}))
-          (body-error typed :incomplete-canonical-core-coverage {})))
-      (body-error typed :untrusted-sh08-body-effect-input {}))))
+  (if (body-input-valid? typed verification binding)
+    (let [request (body-path binding [:digest-resolution :preimage :request])
+          core (get request :canonical-core-artifact) facts (get typed :identity-input)
+          producers (body-producer-entries request facts)]
+      (if (= :accepted (get producers :status))
+        (if (body-aggregate-valid? core facts (get producers :entries))
+          (let [derived (body-analyze-producers (get producers :entries))]
+            (if (= :accepted (get derived :status))
+              (let [imports (body-foreign-bindings request facts (get derived :bank))]
+                (if (= :accepted (get imports :status))
+                  (let [caller (body-analyze-module request facts (get imports :foreign) (- 65536 (get derived :work-count)))]
+                    (if (= :accepted (get caller :status))
+                      (body-accepted-result typed binding core (get caller :graph) (get derived :bank) (get imports :foreign))
+                      (body-error typed (get caller :reason) (get caller :node {}))))
+                  (body-error typed (get imports :reason) {})))
+              (assoc (body-error (get derived :producer-facts typed) (get derived :reason) (get derived :node {}))
+                     :producer-module (get derived :producer-module))))
+          (body-error typed :aggregate-body-node-or-function-limit {}))
+        (body-error typed (get producers :reason) {})))
+    (body-error typed (if (body-imported? typed) :imported-body-effects-pending :untrusted-sh08-body-effect-input) {})))
 
 (defn verify-body-effect-result [typed verification binding candidate]
   (let [expected (build-body-effect-result typed verification binding)]

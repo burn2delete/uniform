@@ -144,8 +144,10 @@ producer-local inference, in the same namespace. Run the one affected by the
 change, not both merely to refresh an aggregate. They exercise the ordinary
 C5 -> C6 -> C7 path, not authoritative module migration.
 The imported result is type-only: declared effects/capabilities are preserved,
-body-effect inference and thrown-error analysis remain pending, and C8 rejects
-it with `:imported-body-effects-pending`. Type checking does not authorize target
+body-effect inference and thrown-error analysis remain pending. The legacy C8
+type-only adapter rejects it with `:imported-body-effects-pending`; the separate
+body-analysis interface below requires the complete original producer requests.
+Type checking does not authorize target
 lowering, linking, effect execution or runtime behavior.
 
 ### Body-effect development
@@ -175,7 +177,10 @@ clojure -J-Xmx2g -M:dev-test \
   --exact body-effect-coverage-development-kernel \
   --exact body-effect-guard-development-kernel \
   --exact body-effect-final-input-fences-development-kernel \
-  --exact body-effect-call-metadata-development-kernel
+  --exact body-effect-call-metadata-development-kernel \
+  --exact body-effect-import-origin-development-kernel \
+  --exact body-effect-import-bounds-development-kernel \
+  --exact body-effect-foreign-summary-development-kernel
 ```
 
 These use normalized graph DATA for development feedback, not authenticated
@@ -208,6 +213,47 @@ throw/try composition, general provider/grant policy and authoritative effect
 identities remain outside this local subset. The legacy imported-type-only
 input still rejects with `:imported-body-effects-pending`. Record actual test
 results separately from migration, target support and self-hosting status.
+
+### Direct imported body analysis
+
+The same `gravity.effects` body interface consumes the existing imported C7
+result and fresh verification, with the original four-key request retained in
+its binding. Each actual producer request must match the caller's retained C5
+module input and C7 producer identity. Analysis follows the original public
+export through its projected definition to the function and body; private
+producer-local callees are analyzed within their own module, not exported as
+new APIs. No declaration-only effect summary or synthetic accepted producer
+result replaces the body.
+
+Caller and producer graphs have separate module coordinates. A foreign body
+dependency records both producer artifact IDs, the caller's imported binding,
+the producer's projected definition binding, function and body. The original
+C5 export identity remains in the validated origin join. Whole producer graphs enter the effect
+identity; caller node coverage still covers only the caller. The existing
+aggregate node/function limits apply across this invocation. The deferred-work
+budget counts node-analysis attempts, not all VM operations or a CPU guarantee.
+Legality and thrown-error facts remain pending. C7's original type-only facts
+and pending labels are preserved as upstream evidence, not rewritten as if C7
+performed effect analysis. The older compiler-read request validator continues
+requiring exactly three keys.
+
+Run affected real producer/consumer composition separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-effect-imported-authenticated-paired-composition --fail-fast
+```
+
+This uses the existing paired inferred module fixtures, actual C5/C6 products,
+fresh caller C7 construction/verification and the current effects leaf. It does
+not build a new public C8 bundle or claim its current identity. Use
+`body-effect-public-forwarding-source-boundary` and affected module-route
+kernels for unchanged-forwarder checks; the public-bundle triggers above still
+apply. Direct leaf producers and scalar imported signatures are the current
+boundary. Transitive imports, callable values, recursive propagation,
+throw/try, provider/grant legality, target execution and authoritative migration
+remain separate work.
 
 ### Compiler-artifact module execution
 
