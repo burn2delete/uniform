@@ -395,6 +395,262 @@
         (is (= (slurp (path (fixture "rejected" basename ".gravity")))
                (slurp (path (fixture "rejected" basename ".qst")))))))))
 
+(defn- typed-throw-data []
+  (let [attrs {:value-child-index 0 :evaluation-order :value-then-transfer
+               :construction-order :postorder-after-value :runtime-reachability :not-asserted-by-sh07-b7
+               :transfer-policy :error-transfer :result-policy :never :required-effect :error/throw
+               :authenticated-sh06-artifact-id :authenticated :sh06-semantic-projection-id :projection
+               :type-legality :pending-sh08 :effect-registry-legality :pending-sh09
+               :effect-profile-capability-legality :pending-sh09 :profile-error-lowering-legality :pending-sh09
+               :ownership-legality :pending-sh10 :safety-classification :pending-sh11}
+        source (fn [id] {:form-id (keyword (str (name id) "-form")) :syntax-id id
+                         :semantic-span nil :origin-chain nil :generated-origin nil})
+        payload (assoc (node :payload :reference [] :function-body {:binding-id :problem}) :source (source :payload))
+        transfer-node (-> (node :transfer :throw [:payload] :function-body attrs)
+                          (assoc :source (source :transfer))
+                          (assoc :evaluation {:kind :value-then-transfer :order [{:index 0 :core-node-id :payload}]
+                                              :region :function-body :owner-function-syntax-id :function}))
+        function (assoc (node :function :fn [:transfer] :namespace {}) :source (source :function))
+        definition (assoc (node :definition :def [:function] :namespace {}) :source (source :definition))
+        transfer (merge (dissoc attrs :value-child-index :evaluation-order)
+                        {:ordinal 0 :core-node-id :transfer :form-id :transfer-form :syntax-id :transfer
+                         :value-core-node-id :payload :evaluated-children [:payload] :evaluation-region :function-body
+                         :evaluation-owner-function-syntax-id :function :ordered-steps [:evaluate-value :transfer-error]})
+        forms [{:form-id :transfer-form :syntax-id :transfer :kind :list :value '(throw problem)
+                :child-form-ids [:operator-form :payload-form]}
+               {:form-id :operator-form :syntax-id :operator :kind :symbol :value 'throw :child-form-ids [] :parent-form-id :transfer-form}
+               {:form-id :payload-form :syntax-id :payload :kind :symbol :value 'problem :child-form-ids [] :parent-form-id :transfer-form}]
+        core {:nodes [payload transfer-node function definition] :root-core-node-ids [:definition]
+              :module {:profile :meta :target :jvm :effects [:error/throw]}
+              :error-transfers [transfer] :identity-preimage {:error-transfers [(assoc transfer :authenticated-sh06-artifact-id :projection)]}
+              :calls [] :call-edges [] :error-handlers []}
+        types {:payload :gravity.type/string :transfer :gravity.type/never}]
+    [core forms types]))
+
+(deftest direct-typed-throw-source-and-type-development-kernel
+  (let [[core forms types] (typed-throw-data)
+        checked (c7-invoke 'sh08-th-products [core forms types 65536])
+        invoke #(c7-invoke 'sh08-th-products [% forms types 65536])]
+    (is (= :accepted (:status checked)))
+    (is (= {:function [:gravity.type/string]} (:throws checked)))
+    (is (= :sh08-direct-typed-throw-v1 (-> checked :constraints first :producer-rule)))
+    (is (= :equality (-> checked :constraints first :kind)))
+    (is (contains? (first (:constraints checked)) :origin))
+    (is (= [:error-transfers :throw-source :payload-source :payload-type :function-owner :evaluation-order]
+           (-> checked :constraints first :invalidation)))
+    (is (= :gravity.type/never (c7-invoke 'sh08-ft-infer-node-nominal [(second (:nodes core)) types {} {} [] {}])))
+    (is (= :gravity.type/string (c7-invoke 'sh08-ft-normal-return-type [:if [:gravity.type/bool :gravity.type/never :gravity.type/string] :gravity.type/unknown])))
+    (doseq [bad [(assoc core :error-transfers [])
+                 (update core :error-transfers conj (first (:error-transfers core)))
+                 (assoc core :error-transfers 7)
+                 (assoc-in core [:error-transfers 0 :value-core-node-id] :function)
+                 (assoc-in core [:error-transfers 0 :evaluation-owner-function-syntax-id] :forged)
+                 (assoc-in core [:error-transfers 0 :ordered-steps] [:transfer-error :evaluate-value])
+                 (assoc-in core [:nodes 1 :evaluation :order 0 :core-node-id] :function)]]
+      (is (= "C7-VERIFY" (-> (invoke bad) :diagnostics first :rule))))
+    (is (= "C7-ANNOTATION" (-> (c7-invoke 'sh08-th-products [core forms (assoc types :payload :gravity.type/unknown) 65536]) :diagnostics first :rule)))
+    (is (= "C7-VERIFY" (-> (c7-invoke 'sh08-th-products [core (assoc-in forms [1 :value] 'identity) types 65536]) :diagnostics first :rule)))
+    (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-th-products [core forms types 1]) :diagnostics first :rule)))
+    (let [never (c7-invoke 'sh08-th-products [core forms (assoc types :payload :gravity.type/never) 65536])]
+      (is (= {:function []} (:throws never)))
+      (is (false? (-> never :constraints first :solution :normal-transfer?))))
+    (is (= [{:function-id :plain :thrown-error-effects [:pending-sh09]}]
+           (c7-invoke 'sh08-th-functions [[{:function-id :plain :thrown-error-effects [:pending-sh09]}] (:throws checked)])))
+    (doseq [edge [{:callee-function-syntax-id :function} {:caller-function-syntax-id :function :callee-function-syntax-id :plain}]]
+      (is (= "C7-ANNOTATION" (:rule (c7-invoke 'sh08-th-call-fence [(assoc core :call-edges [edge]) (:throws checked)])))))
+    (is (nil? (c7-invoke 'sh08-th-call-fence [(assoc core :call-edges [{:caller-function-syntax-id :other :callee-function-syntax-id :plain}]) (:throws checked)])))))
+
+(deftest direct-typed-throw-effect-replay-development-kernel
+  ;; Exercise the real coverage guard with distinct authenticated occurrence
+  ;; and semantic projection ids, exactly as the existing C6 producer emits.
+  (let [[core _ types] (typed-throw-data)
+        record {:function-syntax-id :function :function-core-node-id :function}
+        core (merge core {:artifact-id :canonical-core :function-records [record] :definitions []
+                          :lineage {:authenticated-sh06-artifact-id :authenticated :sh06-semantic-projection-id :projection}
+                          :lexical-bindings [] :match-branch-records [] :evaluation-order [] :recursion-components []})
+        core (assoc-in core [:identity-preimage :lineage]
+                       {:authenticated-sh06-artifact-id :projection :sh06-semantic-projection-id :projection})
+        preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                          :lexical-bindings :match-branch-records :evaluation-order])
+                        :lineage (get-in core [:identity-preimage :lineage])
+                        :nodes (effects 'body-throw-semantic-nodes core)
+                        :error-transfers (effects 'body-throw-semantic-transfers core))
+        core (assoc core :identity-preimage preimage)
+        facts {:module (:module core) :sh07-shaped-artifact-id :canonical-core
+               :function-type-table [{:function-id :function :parameters [] :parameter-binding-ids []
+                                      :latent-effects [:error/throw] :capabilities []}]
+               :type-table (assoc types :function :fn :definition :fn) :call-type-facts [] :local-binding-facts []
+               :function-records [record] :call-edges [] :recursion-components [] :lexical-bindings []}]
+    (is (not= (:nodes core) (get-in core [:identity-preimage :nodes])))
+    (is (true? (effects 'body-shape-valid? core facts)))
+    (doseq [bad [(assoc-in core [:identity-preimage :lineage :sh06-semantic-projection-id] :wrong-projection)
+                 (assoc-in core [:nodes 1 :attributes :result-policy] :normal-value)
+                 (assoc-in core [:nodes 1 :attributes :forged-field] true)
+                 (-> core (assoc-in [:nodes 1 :attributes :authenticated-sh06-artifact-id] :wrong-authenticated)
+                          (assoc-in [:error-transfers 0 :authenticated-sh06-artifact-id] :wrong-authenticated))]]
+      (is (false? (effects 'body-shape-valid? bad facts)))))
+  (let [[core forms types] (typed-throw-data)
+        c7 (c7-invoke 'sh08-th-products [core forms types 65536])
+        facts {:constraint-ledger (:constraints c7) :type-table types
+               :function-type-table [{:function-id :function :thrown-error-effects [:gravity.type/string]}]}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms forms}}}
+        check #(effects 'body-throw-joins %1 %2 65536)]
+    (is (= :accepted (:status (check request facts))))
+    (is (= :accepted (:status (check (assoc-in request [:canonical-core-artifact :call-edges]
+                                             [{:caller-function-syntax-id :other :callee-function-syntax-id :plain}]) facts))))
+    (doseq [bad [(assoc-in request [:canonical-core-artifact :error-transfers] [])
+                 (assoc-in request [:canonical-core-artifact :error-transfers] 7)
+                 (update-in request [:canonical-core-artifact :error-transfers] conj (first (:error-transfers core)))
+                 (assoc-in request [:b47-context :authenticated-core-request :forms 1 :value] 'identity)
+                 (assoc-in request [:canonical-core-artifact :call-edges] [{:callee-function-syntax-id :function}])]]
+      (is (= :rejected (:status (check bad facts)))))
+    (doseq [bad [(assoc facts :constraint-ledger [])
+                 (assoc-in facts [:constraint-ledger 0 :solution :payload-type] :gravity.type/bool)
+                 (assoc-in facts [:type-table :payload] :gravity.type/bool)
+                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [])
+                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [:pending-sh09])]]
+      (is (= :rejected (:status (check request bad)))))
+    (doseq [ledger [7 nil {} [7]]
+            throw? [true false]]
+      (let [request (if throw? request (assoc request :canonical-core-artifact {:nodes [] :error-transfers []}))
+            rejected (check request (assoc facts :constraint-ledger ledger))]
+        (is (= :rejected (:status rejected)))
+        (is (= :malformed-thrown-error-constraint-ledger (:reason rejected)))))
+    (let [node (second (:nodes core)) graph {:payload {:type :gravity.type/string :transitive #{} :escaping-thrown-errors #{}}}
+          derived (effects 'body-control-node-record node nil graph :gravity.type/never facts {} core)]
+      (is (= #{:error/throw} (:direct derived) (:transitive derived) (:escaping derived)))
+      (is (= #{:gravity.type/string} (:direct-thrown-errors derived) (:escaping-thrown-errors derived)))
+      (is (= [:evaluate-value :transfer-error] (get-in derived [:error-transfer :ordered-steps])))
+      (is (= (first (:error-transfers core)) (get-in derived [:error-transfer :source-transfer])))
+      (let [outer (effects 'body-control-node-record node nil (assoc-in graph [:payload :type] :gravity.type/never)
+                      :gravity.type/never facts {} core)]
+        (is (= #{} (:direct outer) (:direct-thrown-errors outer)))
+        (is (false? (get-in outer [:error-transfer :normal-transfer?])))))))
+
+(deftest direct-typed-throw-nested-and-allowance-development-kernel
+  (let [[core forms types] (typed-throw-data)
+        inner (second (:nodes core))
+        outer (-> inner (assoc :node-id :outer-transfer :children [:transfer])
+                  (assoc :source {:form-id :outer-transfer-form :syntax-id :outer-transfer
+                                  :semantic-span nil :origin-chain nil :generated-origin nil})
+                  (assoc-in [:evaluation :order] [{:index 0 :core-node-id :transfer}]))
+        outer-record (-> (first (:error-transfers core))
+                         (assoc :ordinal 1 :core-node-id :outer-transfer :form-id :outer-transfer-form
+                                :syntax-id :outer-transfer :value-core-node-id :transfer :evaluated-children [:transfer]))
+        core (-> core (assoc :nodes [(first (:nodes core)) inner outer
+                                    (assoc (nth (:nodes core) 2) :children [:outer-transfer]) (last (:nodes core))])
+                      (update :error-transfers conj outer-record))
+        core (assoc-in core [:identity-preimage :error-transfers]
+                       (mapv #(assoc % :authenticated-sh06-artifact-id :projection) (:error-transfers core)))
+        forms (-> forms (assoc-in [0 :parent-form-id] :outer-transfer-form)
+                        (conj {:form-id :outer-transfer-form :syntax-id :outer-transfer :kind :list :value '(throw (throw problem))
+                               :child-form-ids [:outer-operator-form :transfer-form]}
+                              {:form-id :outer-operator-form :syntax-id :outer-operator :kind :symbol :value 'throw
+                               :child-form-ids [] :parent-form-id :outer-transfer-form}))
+        types (assoc types :outer-transfer :gravity.type/never)
+        checked (c7-invoke 'sh08-th-products [core forms types 65536])
+        facts {:constraint-ledger (:constraints checked) :type-table types
+               :function-type-table [{:function-id :function :thrown-error-effects [:gravity.type/string]}]}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms forms}}}
+        inner-graph (effects 'body-control-node-record inner nil {:payload {:type :gravity.type/string :transitive #{}}}
+                             :gravity.type/never facts {} core)
+        outer-graph (effects 'body-control-node-record outer nil {:transfer inner-graph}
+                             :gravity.type/never facts {} core)]
+    (is (= :accepted (:status checked)))
+    (is (= 2 (count (:constraints checked))))
+    (is (= {:function [:gravity.type/string]} (:throws checked)))
+    (is (false? (get-in checked [:constraints 1 :solution :normal-transfer?])))
+    (is (= :accepted (:status (effects 'body-throw-joins request facts 65536))))
+    (is (= #{} (:direct outer-graph) (:direct-thrown-errors outer-graph)))
+    (is (= #{:error/throw} (:escaping outer-graph)))
+    (is (= #{:gravity.type/string} (:escaping-thrown-errors outer-graph))))
+  (let [[core forms types] (typed-throw-data)
+        outer (-> (nth (:nodes core) 2) (assoc :node-id :outer :children [:function])
+                  (assoc-in [:source :syntax-id] :outer) (assoc-in [:source :form-id] :outer-form))
+        nested (-> core (update :nodes #(vec (concat (take 3 %) [outer (assoc (last %) :children [:outer])]))))
+        checked (c7-invoke 'sh08-th-products [nested forms types 65536])]
+    (is (= :accepted (:status checked)))
+    (is (= {:function [:gravity.type/string]} (:throws checked)))
+    (is (= [{:function-id :outer :thrown-error-effects [:pending-sh09]}
+            {:function-id :function :thrown-error-effects [:gravity.type/string]}]
+           (c7-invoke 'sh08-th-functions [[{:function-id :outer :thrown-error-effects [:pending-sh09]}
+                                           {:function-id :function :thrown-error-effects [:pending-sh09]}] (:throws checked)]))))
+  (let [core {:nodes [{:node-id :first} {:node-id :second} {:node-id :top}]
+              :function-records [{:function-syntax-id :first} {:function-syntax-id :second}]}
+        facts {:module {:effects []} :function-type-table [{:function-id :second :function-core-node-id :second}
+                                                          {:function-id :first :function-core-node-id :first}]}
+        graph {:functions {:first {:declared #{} :inferred #{:error/throw}}
+                           :second {:declared #{} :inferred #{:error/throw}}}
+               :nodes {:first {:direct #{}} :second {:direct #{}} :top {:direct #{:error/throw}}}}
+        first-failure (effects 'body-allowance-check core facts graph 65536)
+        namespace-failure (effects 'body-allowance-check core facts
+                            (-> graph (assoc-in [:functions :first :declared] #{:error/throw})
+                                      (assoc-in [:functions :second :declared] #{:error/throw})) 65536)]
+    (is (= "C8-UNDECLARED" (:rule first-failure) (:rule namespace-failure)))
+    (is (= :first (get-in first-failure [:node :node-id])))
+    (is (= :first (:function first-failure)))
+    (is (= {:rule "C8-UNDECLARED" :function :first :core-node-id :first}
+           (select-keys (-> (effects 'body-error-result facts first-failure) :diagnostics first)
+                        [:rule :function :core-node-id])))
+    (is (= :top (get-in namespace-failure [:node :node-id])))
+    (is (= :error/throw (:effect namespace-failure)))
+    (is (= "C8-UNDECLARED" (-> (effects 'body-error-result facts namespace-failure) :diagnostics first :rule)))
+    (is (= "C8-VERIFY" (-> (effects 'body-error-result facts {:reason :forged}) :diagnostics first :rule)))
+    (is (= :rejected (:status (effects 'body-allowance-check core facts graph 0))))))
+
+(deftest direct-typed-throw-authenticated-paired-composition
+  ;; Actual source/compiler products; no seed execution or host exception claim.
+  (doseq [extension [".gravity" ".qst"]]
+    (let [p ((body-helper 'fresh-products) (fixture "accepted" "direct-typed-throw" extension))
+          typed (:typed p) core (get-in p [:request :canonical-core-artifact])
+          transfer (first (:error-transfers core)) id (:core-node-id transfer) payload (:value-core-node-id transfer)
+          rows (filterv #(= :sh08-direct-typed-throw-v1 (:producer-rule %)) (:constraint-ledger typed))
+          result ((body-helper 'build-leaf) p) graph (:effect-graph result)
+          function (first (:function-type-table typed))]
+      (is (= :passed (:status (:report p)) (:status (:verification p))))
+      (is (= :accepted (:status typed) (:status result)) (pr-str [(:diagnostics typed) (:diagnostics result)]))
+      (when-not (= :accepted (:status typed) (:status result))
+        (throw (ex-info "Direct typed throw composition failed" {:typed typed :result result})))
+      (is (= :gravity.type/string (get (:type-table typed) payload) (:return function)))
+      (is (= :gravity.type/never (get (:type-table typed) id)))
+      (is (= [:gravity.type/string] (:thrown-error-effects function)))
+      (is (= 1 (count rows)))
+      (is (= transfer (get-in (first rows) [:dependencies :source-transfer])))
+      (is (= #{:error/throw} (get-in graph [:nodes id :direct]) (get-in graph [:nodes id :escaping])
+             (get-in graph [:functions (:function-id function) :inferred])))
+      (is (= #{:gravity.type/string} (get-in graph [:nodes id :direct-thrown-errors])
+             (get-in graph [:nodes id :escaping-thrown-errors])))
+      (is (= [:gravity.type/string] (get-in graph [:functions (:function-id function) :throws])))
+      (is (= [:evaluate-value :transfer-error] (get-in graph [:nodes id :error-transfer :ordered-steps])))
+      (is (= :passed (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) result))))
+      (doseq [bad [(assoc-in typed [:type-table payload] :gravity.type/bool)
+                   (assoc typed :constraint-ledger (filterv #(not= :sh08-direct-typed-throw-v1 (:producer-rule %)) (:constraint-ledger typed)))
+                   (assoc-in typed [:function-type-table 0 :thrown-error-effects] [])]]
+        (is (= :rejected (:status (c7-invoke 'sh08-verify-function-type-result [(:request p) bad])))))
+      (doseq [bad [(assoc-in result [:effect-graph :nodes id :direct] #{})
+                   (assoc-in result [:effect-graph :nodes id :escaping-thrown-errors] #{:gravity.type/bool})
+                   (assoc-in result [:effect-graph :nodes id :error-transfer :ordered-steps] [:transfer-error :evaluate-value])
+                   (assoc-in result [:effect-graph :functions (:function-id function) :throws] [])]]
+        (is (= :rejected (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p) bad)))))
+      (doseq [mutate [#(assoc-in % [:function-type-table 0 :thrown-error-effects] [])
+                      #(assoc % :constraint-ledger (filterv (fn [row] (not= :sh08-direct-typed-throw-v1 (:producer-rule row))) (:constraint-ledger %)))]]
+        (is (= :rejected (:status ((body-helper 'build-leaf) ((body-helper 'coherent-typed-mutation) p mutate)))))))
+    (doseq [[basename expected] [["direct-throw-unknown-payload" "C7-ANNOTATION"]
+                                 ["direct-throw-result-type" "C7-TYPE-MISMATCH"]]]
+      (let [p ((body-helper 'fresh-products) (fixture "rejected" basename extension))]
+        (is (= :rejected (get-in p [:typed :status])))
+        (is (= expected (get-in p [:typed :diagnostics 0 :rule])) (pr-str (get-in p [:typed :diagnostics])))))
+    (let [p ((body-helper 'fresh-products) (fixture "rejected" "direct-throw-undeclared" extension))
+          result ((body-helper 'build-leaf) p)]
+      (is (= :accepted (get-in p [:typed :status])))
+      (is (= :passed (get-in p [:verification :status])))
+      (is (= :rejected (:status result)))
+      (is (= "C8-UNDECLARED" (get-in result [:diagnostics 0 :rule])) (pr-str (:diagnostics result)))))
+  (doseq [[disposition basename] [["accepted" "direct-typed-throw"] ["rejected" "direct-throw-unknown-payload"]
+                                  ["rejected" "direct-throw-result-type"] ["rejected" "direct-throw-undeclared"]]]
+    (is (= (slurp (path (fixture disposition basename ".gravity")))
+           (slurp (path (fixture disposition basename ".qst")))))))
+
 (deftest function-recur-annotated-seed-execution
   ;; Legality is covered by function-recur-authenticated-paired-composition
   ;; over these exact files. This selector executes their unchanged bytes.

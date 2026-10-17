@@ -248,6 +248,49 @@ The four-argument module constructor retains its unannotated-definition policy;
 the direct compiled-emitter path retains its hosted-profile requirement. No
 annotation stripping, unchecked imported execution or new authority follows.
 
+### Direct typed-throw development
+
+The bounded source path checks a direct `throw` payload after local type
+inference. A known payload type is retained as a thrown-error fact; the transfer
+expression has type `Never`, so it does not become a normal branch result.
+Unknown payloads require an annotation. The owning files are
+`bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` and
+`bootstrap/gravity/src/gravity/effects.gravity`; paired examples live under
+`bootstrap/clojure/fixtures/self-hosting/sh-08/` as `direct-typed-throw` and the
+three `direct-throw-*` rejected cases.
+
+Use the existing direct kernels for edit feedback:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact direct-typed-throw-source-and-type-development-kernel \
+  --exact direct-typed-throw-effect-replay-development-kernel \
+  --exact direct-typed-throw-nested-and-allowance-development-kernel
+```
+
+For an affected source/type/effect interface change, the existing
+`direct-typed-throw-authenticated-paired-composition` selector constructs fresh
+C5/C6/C7 products and checks the current C8 effect leaf over both extensions.
+It checks payload/result typing, source effect allowances and tampered products;
+it does not reconstruct the public C8 compiler bundle. Do not rerun this
+unchanged composition merely for a later seed-execution observation or commit.
+
+C8 independently joins the original payload-before-transfer record and checks
+inferred effects against original source allowances. Missing `:error/throw`
+declarations report `C8-UNDECLARED`; this is not the full package/provider/grant
+or profile-lowering legality intersection. The normalized legacy C8 registry's
+`:error/raise` label is not silently renamed or aliased.
+
+Nested function ownership is separate, quoted DATA is inert, and an operand
+that never returns preserves the outer source record without inventing a
+`Never`-typed error. Unrelated calls keep their existing behavior. Calls whose
+local caller or callee owns these new throw facts remain unsupported until
+their propagation is implemented. Imported concrete throws remain fenced by
+C8's existing foreign-summary check, not a new C7 import guarantee. `try`,
+handlers, cleanup, host-exception normalization, runtime execution, general
+error legality and authoritative migration remain separate work.
+
 ### Imported-call type development
 
 The owning C7 implementation is

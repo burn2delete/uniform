@@ -1605,6 +1605,52 @@ owners. Composite signatures, variadics, checked imported-user execution and
 general typed-runtime conformance remain unsupported. No target legality,
 termination, public proof, seed retirement or self-hosting claim follows.
 
+### Direct typed throw and source effect allowances
+
+The next bounded C7/C8 increment retains a concrete direct-throw payload type,
+types the transfer expression as `Never`, and joins that result with a normal
+branch without treating the thrown value as a normal return. Unknown payloads
+require annotation; a mismatched normal result still rejects. The C7 ledger
+uses the existing equality constraint kind, with original source, payload,
+owner, ordering and invalidation premises. The original C6 transfer census is
+preserved, including an outer transfer whose operand never returns.
+
+C8 reconstructs the typed-transfer facts independently and derives the direct
+`:error/throw` effect before checking original function and namespace source
+allowances. Missing declarations produce `C8-UNDECLARED` with the offending
+function and source node. Nested function errors stay latent at function
+construction, quoted DATA remains inert, and unrelated calls preserve their
+previous behavior. Local calls involving the newly concrete throwing owners
+remain unsupported; selected imported concrete throw summaries remain fenced
+by C8's existing pending-summary requirement, not a new C7 import claim.
+
+Focused development checks pass 24 tests/425 assertions, covering the new
+transfer/type/allowance kernels and existing loop, recur, import, recursion,
+callable and body-effect regressions. These overlapping development runs are
+not added together as independent coverage. The first actual composition run
+failed at C8 canonical-core coverage after fresh C7 acceptance and verification:
+one passing assertion, one failure and one error, with later cases unexecuted.
+The mismatch was raw-versus-semantic authenticated IDs in throw records. The
+correction follows C6's existing one-field identity projection, preserving raw
+source authentication and every other field. A direct coverage-guard regression
+uses distinct IDs and rejects wrong projection, authentication and other-field
+changes. The failed result is retained separately from the corrected run.
+
+The corrected actual composition passes one test/62 assertions over both
+unchanged `.gravity` and `.qst` sources: fresh C5/C6/C7 construction and C7
+verification, the current C8 leaf and fresh result verification, altered typed
+facts and effect graphs, coherently rebound false typed inputs, and all three
+real rejection families. It completed within the unchanged 2 GiB/30-minute
+development bound. No public C8 compiler bundle was reconstructed. This is
+accepted development composition evidence, not refreshed migration authority.
+
+Runtime throw execution, handlers and cleanup, throwing-call propagation,
+general error/profile/provider legality, authoritative migration, target
+completion, self-hosting and seed retirement remain separate gates. Source
+allowance checks do not establish the complete authority intersection. The
+legacy normalized `:error/raise` registry is not silently treated as the source
+`:error/throw` registration.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source

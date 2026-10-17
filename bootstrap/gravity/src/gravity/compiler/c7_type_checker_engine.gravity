@@ -4432,10 +4432,141 @@
                      :node (assoc node :source (get key :source)))))))
       (assoc base :shape-kind :scalar :domain {:values [(get data :value)]}))))
 
+; L2/L5/L9: direct throws retain the original C6 transfer, including transfers
+; whose payload never returns. No call or handler propagation is inferred here.
+(defn sh08-th-error [rule reason node expected actual]
+  {:status :rejected :constraints [] :throws {} :diagnostics
+   [{:rule rule :reason reason :node node :expected expected :actual actual}]})
+
+(defn sh08-th-owners [core budget]
+  (let [nodes (sh08-ft-node-index (get core :nodes))]
+    (loop [pending (loop [ids (get core :root-core-node-ids) out []]
+                     (if (= 0 (count ids)) out
+                       (recur (rest ids) (conj out {:id (first ids) :owner nil}))))
+           owners {} work 0]
+      (if (= 0 (count pending)) {:status :accepted :owners owners :work-count work}
+        (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits work)
+          (let [entry (first pending) id (get entry :id) node (get nodes id) owner (get entry :owner)
+                child-owner (if (= :fn (get node :core-form)) (get (get node :source) :syntax-id) owner)]
+            (if (if (map? node) (= false (contains? owners id)) false)
+              (recur (loop [ids (get node :children) out (vec (rest pending))]
+                       (if (= 0 (count ids)) out
+                         (recur (rest ids) (conj out {:id (first ids) :owner child-owner}))))
+                     (assoc owners id owner) (+ work 1))
+              (sh08-th-error "C7-VERIFY" :typed-throw-owner-graph node :unique-rooted-node id))))))))
+
+(defn sh08-th-transfer-valid? [transfer node payload forms owner ordinal]
+  (let [source (get node :source) form (get forms (get source :form-id)) ids (get form :child-form-ids)
+        operator (get forms (get ids 0)) value (get forms (get ids 1)) attrs (get node :attributes)
+        shared [:construction-order :runtime-reachability :transfer-policy :result-policy :required-effect
+                :authenticated-sh06-artifact-id :sh06-semantic-projection-id :type-legality :effect-registry-legality
+                :effect-profile-capability-legality :profile-error-lowering-legality :ownership-legality :safety-classification]]
+    (sh08-ft-all-true?
+      [(map? transfer) (= ordinal (get transfer :ordinal)) (= :throw (get node :core-form))
+       (= (get node :node-id) (get transfer :core-node-id))
+       (= (get source :form-id) (get transfer :form-id)) (= (get source :syntax-id) (get transfer :syntax-id))
+       (= source (get (sh08-bm-source-node {} form) :source))
+       (= :list (get form :kind)) (vector? ids) (= 2 (count ids)) (sh08-all-unique? ids [])
+       (if (seq? (get form :value)) (= ['throw (get value :value)] (vec (get form :value))) false)
+       (= :symbol (get operator :kind)) (= 'throw (get operator :value)) (= [] (get operator :child-form-ids))
+       (= (get form :form-id) (get operator :parent-form-id) (get value :parent-form-id))
+       (= (get payload :source) (get (sh08-bm-source-node {} value) :source))
+       (= [(get payload :node-id)] (get node :children) (get transfer :evaluated-children))
+       (= (get payload :node-id) (get transfer :value-core-node-id)) (= [] (get node :resolved-binding-ids))
+       (= :value-then-transfer (get (get node :evaluation) :kind) (get attrs :evaluation-order))
+       (= [{:index 0 :core-node-id (get payload :node-id)}] (get (get node :evaluation) :order))
+       (= owner (get transfer :evaluation-owner-function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+       (= (get transfer :evaluation-region) (get (get node :evaluation) :region))
+       (= [:evaluate-value :transfer-error] (get transfer :ordered-steps))
+       (= 0 (get attrs :value-child-index)) (= :postorder-after-value (get attrs :construction-order))
+       (= :error-transfer (get attrs :transfer-policy)) (= :never (get attrs :result-policy))
+       (= :error/throw (get attrs :required-effect))
+       (= :not-asserted-by-sh07-b7 (get attrs :runtime-reachability))
+       (= [:pending-sh08 :pending-sh09 :pending-sh09 :pending-sh09 :pending-sh10 :pending-sh11]
+          [(get attrs :type-legality) (get attrs :effect-registry-legality) (get attrs :effect-profile-capability-legality)
+           (get attrs :profile-error-lowering-legality) (get attrs :ownership-legality) (get attrs :safety-classification)])
+       (= (sh08-bm-project transfer shared) (sh08-bm-project attrs shared))])))
+
+(defn sh08-th-products [core source-forms types budget]
+  (let [nodes (get core :nodes) transfers (get core :error-transfers)
+        throw-nodes (sh08-bm-select nodes :core-form :throw)]
+    (if (= 0 (count throw-nodes))
+      (if (if (= transfers nil) true (if (vector? transfers) (= [] transfers) false))
+        {:status :accepted :constraints [] :throws {} :diagnostics [] :work-count 0}
+        (sh08-th-error "C7-VERIFY" :typed-throw-transfer-census {} :no-extra-error-transfers transfers))
+      ; Precharge bounded indexing, census, projection and fixed-width joins.
+      ; The rooted walk and each transfer then consume their own visit.
+      (let [work (+ (* 6 (count nodes)) (count source-forms) (* 70 (count throw-nodes))
+                    (count (get core :call-edges)) (* 2 (count (get core :function-records))))
+            indexed (sh08-ft-node-index nodes) forms (sh08-ft-index source-forms :form-id)
+            owners (sh08-th-owners core (- budget work))]
+        (if (if (<= work budget) (= :accepted (get owners :status)) false)
+          (if (sh08-ft-all-true? [(vector? transfers) (= (count throw-nodes) (count (if (vector? transfers) transfers [])))
+                 (sh08-ft-unique-records? (if (vector? transfers) transfers []) :core-node-id)
+                 (= (set (keys (sh08-ft-node-index throw-nodes)))
+                    (set (keys (sh08-ft-index (if (vector? transfers) transfers []) :core-node-id))))])
+            (loop [remaining transfers ordinal 0 rows [] thrown {} used (+ work (get owners :work-count))]
+              (if (= 0 (count remaining))
+                {:status :accepted :constraints rows :throws thrown :diagnostics [] :work-count used}
+                (if (>= used budget) (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits used)
+                  (let [transfer (first remaining) node (get indexed (get transfer :core-node-id))
+                        payload (get indexed (get transfer :value-core-node-id))
+                        owner (get (get owners :owners) (get node :node-id))
+                        type (get types (get payload :node-id) :gravity.type/unknown)
+                        occurring? (= false (= type :gravity.type/never))
+                        premise {:version :sh08-direct-typed-throw-v1 :source-transfer transfer :source-node node
+                                 :payload-node payload :payload-type type :owner-function-syntax-id owner
+                                 :normal-transfer? occurring? :result-type :gravity.type/never}]
+                    (if (sh08-th-transfer-valid? transfer node payload forms owner ordinal)
+                      (if (sh08-ft-known? type)
+                        (recur (rest remaining) (+ ordinal 1)
+                          (conj rows {:constraint-id-request {:domain :gravity/sh08-direct-typed-throw-v1 :premise premise}
+                            :kind :equality :producer-rule :sh08-direct-typed-throw-v1
+                            :lhs (get node :node-id) :rhs :gravity.type/never :dependencies premise
+                            :origin (get (get node :source) :origin-chain)
+                            :invalidation [:error-transfers :throw-source :payload-source :payload-type :function-owner :evaluation-order]
+                            :solution {:type :gravity.type/never :payload-type type :normal-transfer? occurring?}
+                            :profile (get (get core :module) :profile) :target (get (get core :module) :target)
+                            :status :solved :diagnostics []})
+                          (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
+                                                (conj (get thrown owner []) type) (get thrown owner [])))
+                          (+ used 1))
+                        (sh08-th-error "C7-ANNOTATION" :typed-throw-payload-type-required payload :concrete-error-value type))
+                      (sh08-th-error "C7-VERIFY" :typed-throw-source-transfer-join node :exact-original-error-transfer transfer))))))
+            (sh08-th-error "C7-VERIFY" :typed-throw-transfer-census {} :complete-unique-error-transfers transfers))
+          (if (= :rejected (get owners :status)) owners
+            (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits work)))))))
+
+(defn sh08-th-functions [functions thrown]
+  (loop [remaining functions out []]
+    (if (= 0 (count remaining)) out
+      (let [function (first remaining) id (get function :function-id)]
+        (recur (rest remaining) (conj out (if (contains? thrown id)
+          (assoc function :thrown-error-effects (get thrown id)) function)))))))
+
+(defn sh08-th-call-fence [core thrown]
+  (loop [remaining (get core :call-edges)]
+    (if (= 0 (count remaining)) nil
+      (let [edge (first remaining)]
+        (if (if (contains? thrown (get edge :callee-function-syntax-id)) true
+              (contains? thrown (get edge :caller-function-syntax-id)))
+          (first (get (sh08-th-error "C7-ANNOTATION" :typed-throw-call-propagation-pending
+            (get (sh08-ft-node-index (get core :nodes)) (get edge :call-core-node-id))
+            :proved-thrown-error-call-propagation (get edge :callee-function-syntax-id)) :diagnostics))
+          (recur (rest remaining)))))))
+
+(defn sh08-th-type-map [table thrown]
+  (loop [ids (keys table) out table]
+    (if (= 0 (count ids)) out
+      (let [id (first ids) type (get table id) owner (get type :function-id)]
+        (recur (rest ids) (if (if (map? type) (contains? thrown owner) false)
+          (assoc out id (assoc type :thrown-error-effects (get thrown owner))) out))))))
+
 (defn sh08-ft-infer-node-nominal
   [node type-table binding-types function-types edges context]
   (let [core-form (get node :core-form)
         children (get node :children)]
+    (if (= core-form :throw) :gravity.type/never
     (if (= core-form :loop) (sh08-ft-last-type children type-table)
     (if (= core-form :recur)
       (if (contains? #{:loop :function} (get (get node :attributes) :target-kind)) :gravity.type/never :gravity.type/unknown)
@@ -4487,7 +4618,7 @@
                           (get (get (sh08-im-callee edge context) :function-type) :return :gravity.type/unknown))))
                     (if (= core-form :match)
                       (sh08-bm-join (sh08-gd-branch-ids node) type-table)
-                      :gravity.type/unknown)))))))))))))))
+                      :gravity.type/unknown))))))))))))))))
 
 (defn sh08-ft-infer-node-with-context
   [node type-table binding-types function-types edges context]
@@ -6478,7 +6609,7 @@
                 (sh08-ft-complete-function-skeletons
                  base-function-skeletons recursive-proof higher-order-proof)
                 quoted-products (sh08-qd-products (get shape :nodes) source-forms module)
-                raw-inference
+                unprojected-inference
                 (sh08-ft-infer-acyclic-with-context
                  (get shape :nodes)
                  nodes
@@ -6500,6 +6631,12 @@
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)))
+                throw-products (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table) 65536)
+                throw-call (sh08-th-call-fence core-artifact (get throw-products :throws))
+                raw-inference (if (= 0 (count (get throw-products :throws))) unprojected-inference
+                  (assoc unprojected-inference
+                    :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
+                    :function-types (sh08-th-type-map (get unprojected-inference :function-types) (get throw-products :throws))))
                 match-checks
                 (sh08-bm-checks (sh08-sm-groups-with-shapes (get products :boolean-matches) (get raw-inference :binding-shapes)) (get raw-inference :type-table)
                                 (get raw-inference :function-types) module)
@@ -6511,6 +6648,9 @@
                    (get raw-inference :type-table))
                   nil)
                 inference
+                (if (> (count (get throw-products :diagnostics)) 0)
+                  (assoc raw-inference :diagnostics (get throw-products :diagnostics))
+                (if (map? throw-call) (assoc raw-inference :diagnostics [throw-call])
                 (if (> (count (get quoted-products :diagnostics)) 0)
                   (assoc raw-inference :diagnostics (get quoted-products :diagnostics))
                 (if (> (count (get match-checks :diagnostics)) 0)
@@ -6526,13 +6666,13 @@
                      :reason :unsupported-or-unresolved-core-node-type
                      :expected :concrete-node-type-or-diagnostic
                      :actual :gravity.type/unknown}))
-                  raw-inference)))
+                  raw-inference)))))
                 functions
                 (sh08-ft-function-facts
                  (get inference :function-types)
                  nodes module)
                 final-functions
-                (sh08-ft-final-functions functions)]
+                (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws))]
             (if (> (count (get inference :diagnostics)) 0)
               {:artifact :gravity/sh08-function-typed-core-template
                :schema-version 3
@@ -6569,7 +6709,7 @@
                        (get inference :function-types)
                        module
                        (assoc higher-order-proof :imported-functions imports))
-                      combined-constraints
+                      base-constraints
                       (sh08-ft-add-values-to-set (get quoted-products :constraints)
                       (sh08-ft-add-values-to-set (get match-checks :constraints) (sh08-ft-add-values-to-set
                         (sh08-ft-signature-constraints (get products :function-records) module)
@@ -6578,6 +6718,7 @@
                          (sh08-ft-recursive-constraint-ledger recursive-proof)
                          (get inference :constraints))
                         (get inference :constraints)))))
+                      combined-constraints (sh08-ft-add-values-to-set (get throw-products :constraints) base-constraints)
                       convergence
                       {:status (get inference :convergence-status)
                        :round-count (get inference :round-count)

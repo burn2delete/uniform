@@ -493,6 +493,14 @@
 (defn body-core [binding]
   (get (get (get (get binding :digest-resolution) :preimage) :request) :canonical-core-artifact))
 
+(defn body-error-result [typed failure]
+  (let [result (body-error typed (get failure :reason) (get failure :node {}))]
+    (if (= "C8-UNDECLARED" (get failure :rule))
+      (assoc result :diagnostics [(assoc (first (get result :diagnostics))
+        :rule "C8-UNDECLARED" :effect (get failure :effect)
+        :function (get failure :function (get (first (get result :diagnostics)) :function))
+        :remediation :declare-the-inferred-effect-in-original-source)]) result)))
+
 (defn body-path [value fields]
   (loop [remaining fields value value]
     (if (= 0 (count remaining)) value
@@ -1039,6 +1047,35 @@
                            (contains? (conj (set (get record :parameter-binding-ids)) (get record :definition-binding-id)) binding) true) true)
                      (recur (rest remaining)) false))))]) false)) false)))
 
+; C6 semantic identity replaces the authenticated SH06 occurrence id with its
+; existing semantic projection id. All other throw fields remain exact.
+(defn body-throw-semantic-record [projection record]
+  (let [id (if (= projection nil) (get record :sh06-semantic-projection-id) projection)]
+    (if (if (= id nil) false (= false (= nil (get record :authenticated-sh06-artifact-id))))
+      (assoc record :authenticated-sh06-artifact-id id) record)))
+
+(defn body-throw-source-record-valid? [core projection record]
+  (let [lineage (get core :lineage) authenticated (get lineage :authenticated-sh06-artifact-id)]
+    (body-all? [(if (= authenticated nil) true (= authenticated (get record :authenticated-sh06-artifact-id)))
+                (if (= projection nil) true (= projection (get record :sh06-semantic-projection-id)))])))
+
+(defn body-throw-semantic-nodes [core]
+  (let [projection (get (get (get core :identity-preimage) :lineage) :sh06-semantic-projection-id)]
+    (loop [remaining (get core :nodes) out []]
+      (if (= 0 (count remaining)) out
+        (let [node (first remaining)]
+          (if (if (= :throw (get node :core-form)) (body-throw-source-record-valid? core projection (get node :attributes)) true)
+            (recur (rest remaining) (conj out (if (= :throw (get node :core-form))
+              (assoc node :attributes (body-throw-semantic-record projection (get node :attributes))) node))) nil))))))
+
+(defn body-throw-semantic-transfers [core]
+  (let [projection (get (get (get core :identity-preimage) :lineage) :sh06-semantic-projection-id)]
+    (if (vector? (get core :error-transfers))
+    (loop [remaining (get core :error-transfers) out []]
+      (if (= 0 (count remaining)) out
+        (if (body-throw-source-record-valid? core projection (first remaining))
+          (recur (rest remaining) (conj out (body-throw-semantic-record projection (first remaining)))) nil))) nil)))
+
 (defn body-shape-valid? [core typed]
   (let [nodes (get core :nodes) functions (get typed :function-type-table)
         records (get core :function-records) edges (get core :call-edges)
@@ -1073,7 +1110,7 @@
          (= (body-project typed [:function-records :call-edges :recursion-components :lexical-bindings])
             {:function-records records :call-edges edges :recursion-components (get core :recursion-components) :lexical-bindings locals})
          (= (get core :artifact-id) (get typed :sh07-shaped-artifact-id))
-         (= (get (get core :identity-preimage) :nodes) nodes)
+         (= (get (get core :identity-preimage) :nodes) (body-throw-semantic-nodes core))
          (= (get (get core :identity-preimage) :root-core-node-ids) (get core :root-core-node-ids))
          (= (get (get core :identity-preimage) :definitions) (get core :definitions))
          (= (get (get core :identity-preimage) :function-records) records)
@@ -1115,7 +1152,7 @@
        (= (get function :profile) (get module :profile)) (= (get function :target) (get module :target))
        (= (get function :latent-effects) (get module :effects))
        (= (get function :capabilities) (get module :capabilities))
-       (= [:pending-sh09] (get function :thrown-error-effects))])))
+       (vector? (get function :thrown-error-effects))])))
 
 (defn body-normal-compatible? [actual expected]
   (if (= actual :gravity.type/never) true (= actual expected)))
@@ -1578,9 +1615,19 @@
   (let [kind (get node :core-form) children (get node :children) source (get node :source)
         construction? (= kind :fn) latent (if construction? (body-node-effects children graph) #{})
         deps (if construction? [] (if (= target nil) children (conj children target)))
-        effects (body-node-effects deps graph)]
-    {:artifact :gravity/c8-effect-node :core-node-id (get node :node-id) :operation kind
-     :direct #{} :latent latent :transitive effects :escaping effects :handled []
+        direct (if (if (= kind :throw) (= false (= :gravity.type/never (get (get graph (first children)) :type))) false)
+                 #{:error/throw} #{})
+        effects (body-add direct (body-node-effects deps graph))
+        errors (loop [ids children out #{}]
+                 (if (= 0 (count ids)) out
+                   (recur (rest ids) (body-add (get (get graph (first ids)) :escaping-thrown-errors #{}) out))))
+        direct-errors (if (= direct #{:error/throw}) #{(get (get graph (first children)) :type)} #{})
+        error-evidence? (if (= kind :throw) true
+                          (loop [ids children]
+                            (if (= 0 (count ids)) false
+                              (if (contains? (get graph (first ids)) :escaping-thrown-errors) true (recur (rest ids))))))
+        record {:artifact :gravity/c8-effect-node :core-node-id (get node :node-id) :operation kind
+     :direct direct :latent latent :transitive effects :escaping effects :handled []
      :evaluated-children (if construction? [] (body-order-ids (get (get node :evaluation) :order)))
      :latent-children (if construction? children [])
      :call-body-dependency target :dependencies deps
@@ -1589,14 +1636,18 @@
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :type type :type-fact-id {:resolution :coordinator-digest-required
                               :identity-input {:domain :gravity/sh09-body-node-type-v1
-                                               :core-node-id (get node :node-id) :type type}}}))
+                                               :core-node-id (get node :node-id) :type type}}}]
+    (if error-evidence?
+      (assoc record :direct-thrown-errors direct-errors
+        :escaping-thrown-errors (if construction? #{} (body-add direct-errors errors))
+        :latent-thrown-errors (if construction? errors #{})) record)))
 
 (defn body-node-supported? [node]
   (let [kind (get node :core-form) children (get node :children)]
     (if (body-all? [(map? node) (vector? children) (sh09-sha256-id? (get node :node-id))
                     (map? (get node :source)) (map? (get node :evaluation))])
       (if (contains? #{:literal :quote :reference} kind) (= [] children)
-        (if (contains? #{:def :fn} kind) (= 1 (count children))
+        (if (contains? #{:def :fn :throw} kind) (= 1 (count children))
           (if (= :if kind) (= 3 (count children))
             (if (= :recur kind)
               (if (contains? #{:loop :function} (get (get node :attributes) :target-kind))
@@ -1639,6 +1690,11 @@
 
 (defn body-control-node-record [node target graph type facts edge core]
   (let [base (body-local-node-record node target graph type facts edge)]
+    (if (= :throw (get node :core-form))
+      (let [transfer (body-by (get core :error-transfers) :core-node-id (get node :node-id))
+            payload-type (get (get graph (get transfer :value-core-node-id)) :type)]
+        (assoc base :error-transfer {:source-transfer transfer :payload-type payload-type
+          :normal-transfer? (= false (= payload-type :gravity.type/never)) :ordered-steps [:evaluate-value :transfer-error]}))
     (if (= :recur (get node :core-form))
       (let [bodies (body-loop-body-ids node core)
             transfer (body-by (get core :recur-transfers) :recur-core-node-id (get node :node-id))
@@ -1648,7 +1704,7 @@
           :loop-backedge {:target-id (get transfer :target-id) :body-core-node-ids bodies
                           :argument-core-node-ids (get transfer :argument-node-ids)
                           :source-transfer transfer :source-target target-record}
-          :transitive effects :escaping effects)) base)))
+          :transitive effects :escaping effects)) base))))
 
 (defn body-loop-summary-graph [graph ids summaries]
   (loop [remaining ids graph graph]
@@ -1839,6 +1895,158 @@
                     (body-derive-nodes-with-foreign core facts foreign budget)))]
     (assoc derived :recur-control? control?)))
 
+(defn body-throw-source [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id)
+   :semantic-span (get form :source-span) :origin-chain (get form :origin-chain)
+   :generated-origin (get form :generated-origin)})
+
+(defn body-throw-owners [core budget]
+  (let [nodes (body-index (get core :nodes) :node-id)]
+    (loop [pending (loop [ids (get core :root-core-node-ids) out []]
+                     (if (= 0 (count ids)) out (recur (rest ids) (conj out {:id (first ids) :owner nil}))))
+           out {} work 0]
+      (if (= 0 (count pending)) {:status :accepted :owners out :work-count work}
+        (if (>= work budget) (body-failure :body-deferred-work-limit)
+          (let [entry (first pending) id (get entry :id) node (get nodes id) owner (get entry :owner)]
+            (if (if (map? node) (= false (contains? out id)) false)
+              (recur (loop [ids (get node :children) stack (vec (rest pending))]
+                       (if (= 0 (count ids)) stack
+                         (recur (rest ids) (conj stack {:id (first ids)
+                           :owner (if (= :fn (get node :core-form)) (get (get node :source) :syntax-id) owner)}))))
+                     (assoc out id owner) (+ work 1))
+              (body-failure :incoherent-throw-owner-graph))))))))
+
+(defn body-throw-transfer-valid? [transfer node payload forms owner ordinal]
+  (let [source (get node :source) form (get forms (get source :form-id)) ids (get form :child-form-ids)
+        operator (get forms (get ids 0)) value (get forms (get ids 1)) attrs (get node :attributes)
+        shared [:construction-order :runtime-reachability :transfer-policy :result-policy :required-effect
+                :authenticated-sh06-artifact-id :sh06-semantic-projection-id :type-legality :effect-registry-legality
+                :effect-profile-capability-legality :profile-error-lowering-legality :ownership-legality :safety-classification]]
+    (body-all?
+      [(= ordinal (get transfer :ordinal)) (= :throw (get node :core-form))
+       (= (get node :node-id) (get transfer :core-node-id))
+       (= source (body-throw-source form)) (= (get source :form-id) (get transfer :form-id))
+       (= (get source :syntax-id) (get transfer :syntax-id)) (= :list (get form :kind))
+       (vector? ids) (= 2 (count ids)) (= 2 (count (set ids)))
+       (if (seq? (get form :value)) (= ['throw (get value :value)] (vec (get form :value))) false)
+       (= :symbol (get operator :kind)) (= 'throw (get operator :value)) (= [] (get operator :child-form-ids))
+       (= (get form :form-id) (get operator :parent-form-id) (get value :parent-form-id))
+       (= (get payload :source) (body-throw-source value))
+       (= [(get payload :node-id)] (get node :children) (get transfer :evaluated-children))
+       (= (get payload :node-id) (get transfer :value-core-node-id)) (= [] (get node :resolved-binding-ids))
+       (= :value-then-transfer (get (get node :evaluation) :kind) (get attrs :evaluation-order))
+       (= [{:index 0 :core-node-id (get payload :node-id)}] (get (get node :evaluation) :order))
+       (= owner (get transfer :evaluation-owner-function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+       (= (get transfer :evaluation-region) (get (get node :evaluation) :region))
+       (= [:evaluate-value :transfer-error] (get transfer :ordered-steps)) (= 0 (get attrs :value-child-index))
+       (= :postorder-after-value (get attrs :construction-order)) (= :error-transfer (get attrs :transfer-policy))
+       (= :never (get attrs :result-policy)) (= :error/throw (get attrs :required-effect))
+       (= :not-asserted-by-sh07-b7 (get attrs :runtime-reachability))
+       (= [:pending-sh08 :pending-sh09 :pending-sh09 :pending-sh09 :pending-sh10 :pending-sh11]
+          [(get attrs :type-legality) (get attrs :effect-registry-legality) (get attrs :effect-profile-capability-legality)
+           (get attrs :profile-error-lowering-legality) (get attrs :ownership-legality) (get attrs :safety-classification)])
+       (= (body-project transfer shared) (body-project attrs shared))])))
+
+(defn body-throw-calls-valid? [core rows]
+  (let [owners (loop [remaining rows out #{}]
+                 (if (= 0 (count remaining)) out
+                   (recur (rest remaining) (conj out (get (get (first remaining) :dependencies) :owner-function-syntax-id)))))]
+    (loop [remaining (get core :call-edges)]
+      (if (= 0 (count remaining)) true
+        (let [edge (first remaining)]
+          (if (if (contains? owners (get edge :callee-function-syntax-id)) true
+                (contains? owners (get edge :caller-function-syntax-id))) false
+            (recur (rest remaining))))))))
+
+(defn body-throw-joins-checked [request facts budget]
+  (let [core (get request :canonical-core-artifact) nodes (get core :nodes)
+        transfers (get core :error-transfers) throwing (body-select nodes :core-form :throw)
+        rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-direct-typed-throw-v1)]
+    (if (= 0 (count throwing))
+      (if (body-all? [(if (= transfers nil) true (= [] transfers)) (= [] rows)
+              (loop [functions (get facts :function-type-table)]
+                (if (= 0 (count functions)) true
+                  (if (= [:pending-sh09] (get (first functions) :thrown-error-effects))
+                    (recur (rest functions)) false)))])
+        {:status :accepted :work-count 0} (body-failure :incoherent-throw-census-or-summary))
+      (let [source-forms (body-path request [:b47-context :authenticated-core-request :forms])
+            work (+ (* 6 (count nodes)) (count source-forms) (count (get facts :constraint-ledger))
+                    (* 70 (count throwing)) (count (get core :call-edges))
+                    (count (get facts :function-type-table)))
+            indexed (body-index nodes :node-id) forms (body-index source-forms :form-id)
+            owners (body-throw-owners core (- budget work)) types (get facts :type-table)]
+        (if (body-all? [(<= work budget) (= :accepted (get owners :status)) (map? indexed) (map? forms)
+                (vector? transfers) (= (count throwing) (count (if (vector? transfers) transfers [])) (count rows))
+                (map? (body-index transfers :core-node-id)) (map? (body-index rows :lhs))
+                (= (set (keys (body-index throwing :node-id))) (set (keys (body-index transfers :core-node-id))))
+                (body-throw-calls-valid? core rows) (= [] (get core :error-handlers))
+                (= (body-throw-semantic-transfers core) (get (get core :identity-preimage) :error-transfers))])
+          (loop [remaining transfers ordinal 0 thrown {} used (+ work (get owners :work-count))]
+            (if (= 0 (count remaining))
+              (if (loop [functions (get facts :function-type-table)]
+                    (if (= 0 (count functions)) true
+                      (let [function (first functions) id (get function :function-id)]
+                        (if (= (get function :thrown-error-effects) (get thrown id [:pending-sh09]))
+                          (recur (rest functions)) false))))
+                {:status :accepted :work-count used} (body-failure :incoherent-function-thrown-errors))
+              (if (>= used budget) (body-failure :body-deferred-work-limit)
+                (let [transfer (first remaining) node (get indexed (get transfer :core-node-id))
+                      payload (get indexed (get transfer :value-core-node-id)) type (get types (get payload :node-id))
+                      owner (get (get owners :owners) (get node :node-id)) occurring? (= false (= type :gravity.type/never))
+                      premise {:version :sh08-direct-typed-throw-v1 :source-transfer transfer :source-node node
+                               :payload-node payload :payload-type type :owner-function-syntax-id owner
+                               :normal-transfer? occurring? :result-type :gravity.type/never}
+                      expected {:constraint-id-request {:domain :gravity/sh08-direct-typed-throw-v1 :premise premise}
+                                :kind :equality :producer-rule :sh08-direct-typed-throw-v1
+                                :lhs (get node :node-id) :rhs :gravity.type/never :dependencies premise
+                                :origin (get (get node :source) :origin-chain)
+                                :invalidation [:error-transfers :throw-source :payload-source :payload-type :function-owner :evaluation-order]
+                                :solution {:type :gravity.type/never :payload-type type :normal-transfer? occurring?}
+                                :profile (get (get core :module) :profile) :target (get (get core :module) :target)
+                                :status :solved :diagnostics []}]
+                  (if (body-all? [(body-throw-transfer-valid? transfer node payload forms owner ordinal)
+                          (= :gravity.type/never (get types (get node :node-id)))
+                          (= false (= type nil)) (= false (= type :gravity.type/unknown))
+                          (= expected (get rows ordinal))])
+                    (recur (rest remaining) (+ ordinal 1)
+                      (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
+                                            (conj (get thrown owner []) type) (get thrown owner []))) (+ used 1))
+                    (assoc (body-failure :incoherent-typed-throw-transfer) :node node))))))
+          (body-failure :incoherent-throw-source-type-census))))))
+
+(defn body-throw-joins [request facts budget]
+  (if (body-maps? (get facts :constraint-ledger))
+    (body-throw-joins-checked request facts budget)
+    (body-failure :malformed-thrown-error-constraint-ledger)))
+
+(defn body-allowance-check [core facts graph budget]
+  (let [nodes (get graph :nodes) indexed (body-index (get core :nodes) :node-id)
+        functions (body-index (get facts :function-type-table) :function-id)
+        initial (+ (count (get core :nodes)) (count (get facts :function-type-table)))]
+    (loop [functions-left (get core :function-records) work initial]
+      (if (> work budget) (body-failure :body-deferred-work-limit)
+      (if (= 0 (count functions-left))
+        (loop [remaining (get core :nodes) work work]
+          (if (> work budget) (body-failure :body-deferred-work-limit)
+          (if (= 0 (count remaining)) {:status :accepted :work-count work}
+            (let [node (first remaining) effects (get (get nodes (get node :node-id)) :direct)
+                  missing (loop [labels (vec effects)]
+                            (if (= 0 (count labels)) nil
+                              (if (contains? (set (get (get facts :module) :effects)) (first labels))
+                                (recur (rest labels)) (first labels))))]
+              (if (= missing nil) (recur (rest remaining) (+ work 1 (count effects)))
+                {:status :rejected :rule "C8-UNDECLARED" :reason :namespace-effect-outside-source-allowance
+                 :node node :effect missing})))))
+        (let [function (get functions (get (first functions-left) :function-syntax-id))
+              effects (get (get graph :functions) (get function :function-id))
+              missing (loop [labels (vec (get effects :inferred))]
+                        (if (= 0 (count labels)) nil
+                          (if (contains? (get effects :declared) (first labels)) (recur (rest labels)) (first labels))))]
+          (if (= missing nil) (recur (rest functions-left) (+ work 1 (count (get effects :inferred))))
+            {:status :rejected :rule "C8-UNDECLARED" :reason :function-effect-outside-source-allowance
+             :node (get indexed (get function :function-core-node-id)) :function (get function :function-id)
+             :effect missing})))))))
+
 (defn body-analyze-module [request facts foreign budget]
   (let [core (get request :canonical-core-artifact)
         bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
@@ -1847,11 +2055,12 @@
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
               (body-local-joins-valid? core facts bindings) false) false) false)
-        (let [derived (body-derive-module-nodes core facts foreign budget)
+        (let [throws (body-throw-joins request facts budget)
+              derived (if (= :accepted (get throws :status))
+                        (body-derive-module-nodes core facts foreign (- budget (get throws :work-count))) throws)
               loop? (get derived :recur-control?)]
           (if (= :accepted (get derived :status))
-            {:status :accepted
-             :graph (let [graph (body-build-graph core facts (get derived :nodes))
+            (let [graph (let [graph (body-build-graph core facts (get derived :nodes))
                           graph (if loop? (assoc graph :loop-fixed-point
                                   {:algorithm :bottom-initialized-bounded-effect-union
                                    :round-count (get derived :fixed-point-rounds) :equations :checked
@@ -1860,7 +2069,9 @@
                         (assoc graph :recursive-fixed-point {:algorithm :bottom-initialized-bounded-effect-union
                           :round-count (get derived :fixed-point-rounds) :equations :checked
                           :recursive-call-core-node-id (get (get facts :recursive-proof) :recursive-call-core-node-id)}) graph))
-             :work-count (get derived :work-count)} derived))
+                  allowed (body-allowance-check core facts graph (- budget (get throws :work-count) (get derived :work-count)))]
+              (if (= :accepted (get allowed :status))
+                {:status :accepted :graph graph :work-count (+ (get throws :work-count) (get derived :work-count) (get allowed :work-count))} allowed)) derived))
         (body-failure :incoherent-function-or-call-body-type-origin-join))
       (body-failure :incomplete-canonical-core-coverage))))
 
@@ -1941,9 +2152,9 @@
                   (let [caller (body-analyze-module request facts (get imports :foreign) (- 65536 (get derived :work-count)))]
                     (if (= :accepted (get caller :status))
                       (body-accepted-result typed binding core (get caller :graph) (get derived :bank) (get imports :foreign))
-                      (body-error typed (get caller :reason) (get caller :node {}))))
+                      (body-error-result typed caller)))
                   (body-error typed (get imports :reason) {})))
-              (assoc (body-error (get derived :producer-facts typed) (get derived :reason) (get derived :node {}))
+              (assoc (body-error-result (get derived :producer-facts typed) derived)
                      :producer-module (get derived :producer-module))))
           (body-error typed :aggregate-body-node-or-function-limit {}))
         (body-error typed (get producers :reason) {})))
