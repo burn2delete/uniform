@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
@@ -3563,6 +3564,184 @@
                               :operator-form {:form-id :operator-form :syntax-id :operator-form :kind :symbol :value 'identity :parent-form-id :call-form}
                               :argument-form {:form-id :argument-form :syntax-id :argument-form :kind :symbol :value 'problem :parent-form-id :call-form}}))))
 
+(deftest current-gravity-integral-ordering-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition basename count-functions]
+            (into [["accepted" "local-runtime-integral-ordering" 10]]
+                  (map #(vector "rejected" (str "integral-ordering-" %) 1)
+                       ["arity" "mixed" "nonintegral" "unknown" "escape" "lexical" "late-invalid"]))]
+      (let [base (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" basename)
+            path (.getPath (io/file root (str base ".gravity"))) text (slurp path)]
+        (is (= text (slurp (io/file root (str base ".qst")))))
+        (is (= count-functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(deftest current-gravity-integral-ordering-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                              (fn [runtime plan function args]
+                                                (let [result (original runtime plan function args)]
+                                                  (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        left (String. "first numeric operand") right (String. "second numeric operand")
+        specifications [['less [Long/MIN_VALUE Long/MAX_VALUE] true] ['less [1 1] false]
+                        ['less-equal [0 18446744073709551615N] true] ['less-equal [18446744073709551615N 18446744073709551615N] true]
+                        ['less-equal [18446744073709551615N 0] false]
+                        ['greater [127 -128] true] ['greater [-128 127] false] ['greater [0 0] false]
+                        ['greater-equal [-2147483648 2147483647] false] ['greater-equal [2147483647 -2147483648] true]
+                        ['greater-equal [-2147483648 -2147483648] true]
+                        ['bounded [Long/MIN_VALUE Long/MAX_VALUE] "below"] ['bounded [2 1] "at-or-above"] ['bounded [1 1] "at-or-above"]
+                        ['caught-first [left right] left] ['caught-right [1 right] right]
+                        ['lexical-shadowed [left right] left] ['main [] true]]
+        cases (mapv
+               (fn [extension]
+                 (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-integral-ordering" extension)
+                       path (.getPath (io/file root relative)) products (fresh relative)
+                       input (select-keys products [:request :typed :verification])
+                       ready (is (= :accepted (get-in input [:typed :status])) (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                       _ (when-not ready (throw (ex-info "Integral ordering products rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                       artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                       parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                       raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                       definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                       standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'bounded) input))
+                       assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                       core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                       numeric (filterv #(= :direct-integral-ordering (:dispatch %)) (:call-type-facts facts))
+                       descriptors (mapv :applied-integral-ordering numeric)
+                       effects (c8 'body-analyze-module (:request input) facts {} 65536)]
+                   (is (= :passed (get-in input [:verification :status])))
+                   (is (= 10 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                   (is (= 9 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+                   (is (= 8 (count numeric) (count (filter #(= :sh08-integral-ordering-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                   (is (= {:normal 6 :not-invoked 2} (frequencies (map :application descriptors))))
+                   (is (= #{:gravity.type/integer :gravity.type/i64 :gravity.type/u64 :gravity.type/i8 :gravity.type/i32 nil}
+                          (set (map #(first (:parameter-types %)) descriptors))))
+                   (is (= standalone (get-in assembled [:functions 'bounded])))
+                   (is (= 8 (get-in assembled [:instruction-summary :builtin-call])))
+                   (is (= 1 (get-in assembled [:instruction-summary :function-call])))
+                   (is (= 1 (get-in assembled [:instruction-summary :structural-match])))
+                   (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                   (doseq [descriptor descriptors]
+                     (is (= 7 (count (:source-call descriptor))))
+                     (is (= 12 (count (:source-edge descriptor))))
+                     (is (= :nonlocal-or-nonfunction (get-in descriptor [:source-edge :classification])))
+                     (is (nil? (get-in descriptor [:source-edge :callee-function-syntax-id]))))
+                   (doseq [[name arguments expected] specifications]
+                     (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                            [{:op :function-call :function name :args (literal-instructions arguments)} {} "" (:functions assembled) []])]
+                       (is (= [expected "" :normal] result) (str extension " " name " " arguments))
+                       (when (or (identical? expected left) (identical? expected right)) (is (identical? expected (first result))))))
+                   (is (= :accepted (:status effects)) (pr-str (select-keys effects [:reason :diagnostics])))
+                   (when (= :accepted (:status effects))
+                     ;; Direct numeric effects are empty. Constructor allocation
+                     ;; inference is a separate pending slice; source declares it.
+                     (is (contains? (set (get-in facts [:module :effects])) :memory/allocate))
+                     (doseq [fact numeric]
+                       (let [id (:call-core-node-id fact)]
+                         (is (= #{} (get-in effects [:graph :nodes id :direct])))
+                         (is (nil? (get-in effects [:graph :nodes id :call-body-dependency])))))
+                     (doseq [name ['caught-first 'caught-right]]
+                       (let [function (first (filter #(= name (:definition-name %)) (:function-type-table facts)))]
+                         (is (= [] (get-in effects [:graph :functions (:function-id function) :throws]))))))
+                   {:input input :module module :definitions definitions :descriptors descriptors})) [".gravity" ".qst"])
+        {:keys [input module definitions descriptors]} (first cases) descriptor (first descriptors)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [(assoc descriptor :numeric-mode :wrapping)
+                     (assoc descriptor :operation '> :intrinsic :gravity.math.core/integral-greater-than)]]
+      (let [typed (walk/postwalk #(if (= % descriptor) changed %) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'bounded)
+                                                                                            (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 6 (count @verified)))
+    (doseq [[suffix reason] [["arity" :integral-ordering-arity-mismatch] ["mixed" :integral-ordering-operand-type-mismatch]
+                             ["nonintegral" :integral-ordering-operand-type-mismatch] ["unknown" :integral-ordering-operand-type-mismatch]
+                             ["late-invalid" :integral-ordering-operand-type-mismatch] ["lexical" :unsupported-nonlocal-call]
+                             ["escape" :unsupported-or-unresolved-core-node-type]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/integral-ordering-" suffix ".gravity"))]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (= reason (get-in products [:typed :diagnostics 0 :reason])) suffix)))))
+
+(deftest current-gravity-integral-ordering-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'integral-ordering-input)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        input (input-fn '< [:gravity.type/i64 :gravity.type/i64])
+        {:keys [core node call edge nodes bindings types module forms]} input
+        descriptor (c7 'sh08-io-descriptor [core node call edge nodes bindings types module])
+        context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call :gravity.type/bool)
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-io-call-fact [descriptor module])} :ledger [(c7 'sh08-io-constraint [descriptor])]
+                 :locals {:arg0 'left :arg1 'right} :parameter-types types}
+        compile #(invoke 'p15-s23-typed-compile-node % :call 65536)
+        result (compile context)]
+    (is (= :complete (:status result)) (pr-str result))
+    (is (= {:op :builtin-call :function '< :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value result)))
+    (doseq [changed [(assoc descriptor :operation '> :intrinsic :gravity.math.core/integral-greater-than)
+                     (assoc descriptor :semantic-owner 'gravity.compare)
+                     (assoc descriptor :profile :hosted) (assoc descriptor :target :wasm)
+                     (assoc descriptor :numeric-mode :wrapping) (assoc descriptor :safety :unsafe-island)
+                     (assoc descriptor :safety-rule :target-default)
+                     (assoc descriptor :parameter-types [:gravity.type/u64 :gravity.type/u64])
+                     (assoc descriptor :result-type :gravity.type/i64)
+                     (assoc-in descriptor [:source-binding :binding-class] :import)
+                     (assoc-in descriptor [:source-binding :package :version] "forged")
+                     (assoc-in descriptor [:source-call :argument-node-ids] [:arg1 :arg0])
+                     (assoc-in descriptor [:source :syntax-id] :forged)
+                     (assoc descriptor :extra true) (dissoc descriptor :invalidation)]]
+      (let [candidate (-> context (assoc-in [:types :operator] changed)
+                          (assoc :call-facts {:call (c7 'sh08-io-call-fact [changed module])}
+                                 :ledger [(c7 'sh08-io-constraint [changed])]))]
+        (is (= :rejected (:status (compile candidate))) (pr-str changed))))
+    (doseq [mutate [#(assoc-in % [:types :operator :numeric-mode] :wrapping)
+                    #(assoc-in % [:types :operator :safety-rule] :backend-default)
+                    #(assoc-in % [:types :operator :parameter-types] [:gravity.type/u64 :gravity.type/u64])
+                    #(assoc-in % [:types :operator :result-type] :gravity.type/i64)
+                    #(assoc-in % [:types :operator :source-binding :package :version] "forged")
+                    #(assoc-in % [:types :operator :extra] true)
+                    #(assoc-in % [:bindings :ordering-binding :binding-class] :import)
+                    #(assoc-in % [:edges :call :callee-function-syntax-id] :fake)
+                    #(assoc-in % [:edges :call :extra] true)
+                    #(assoc-in % [:calls :call :extra] true)
+                    #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                    #(assoc-in % [:nodes :call :evaluation :order] [])
+                    #(assoc-in % [:call-facts :call :effects] [:io/write])
+                    #(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                    #(assoc-in % [:ledger 0 :solution :numeric-mode] :wrapping)]]
+      (is (= :rejected (:status (compile (mutate context))))))
+    (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :call 1) [:facts :reason])))))
+
+(deftest current-gravity-integral-ordering-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        pairs [[-128 127] [-32768 32767] [-2147483648 2147483647] [Long/MIN_VALUE Long/MAX_VALUE]
+               [0 255] [0 65535] [0 4294967295] [0 18446744073709551615N]
+               [-184467440737095516160N 184467440737095516160N] [-1 0] [0 0] [1 -1]]]
+    (doseq [[symbol comparison] [['< <] ['<= <=] ['> >] ['>= >=]] [left right] pairs]
+      (is (= [(comparison left right) "" :normal]
+             (evaluate {:op :builtin-call :function symbol :args [(literal left) (literal right)]}))))
+    (doseq [args [[{:op :throw :value (literal "first")} {:op :throw :value (literal "second")}]
+                  [{:op :throw :value (literal "first")} (literal 1)]]]
+      (is (= ["first" "" :thrown] (evaluate {:op :builtin-call :function '< :args args}))))
+    (is (= ["second" "" :thrown]
+           (evaluate {:op :builtin-call :function '< :args [(literal 1) {:op :throw :value (literal "second")}]})))))
+
 (deftest current-gravity-direct-call-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -3571,6 +3750,8 @@
         base (:value (invoke 'p15-s23-typed-context module input observation)) context (typed-direct-call-kernel-context base)
         compile #(invoke 'p15-s23-typed-compile-node % :call 65536)]
     (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value (compile context))))
+    (is (= :unsupported-or-mismatched-typed-direct-call
+           (get-in (compile (assoc-in context [:edges :call :classification] :nonlocal-or-nonfunction)) [:facts :reason])))
     (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]}
            (:value (compile (-> context (assoc-in [:forms :operator-form :value] 'example.typed/identity)
                                         (assoc-in [:nodes :operator :attributes :symbol] 'example.typed/identity))))))

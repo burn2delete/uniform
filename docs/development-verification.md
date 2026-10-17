@@ -979,6 +979,61 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-root-map-guard-authenticated-composition --fail-fast
 ```
 
+### Direct integral ordering
+
+The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary
+`<`, `<=`, `>` and `>=` typing, effect reconstruction and lowering. The runtime
+already evaluates these operations. Start with the current-source kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-integral-ordering-development-kernel \
+  --exact body-integral-ordering-development-kernel \
+  --exact current-gravity-integral-ordering-lowering-development-kernel \
+  --exact current-gravity-integral-ordering-runtime-development-kernel \
+  --exact current-gravity-integral-ordering-fixtures-development-kernel
+```
+
+This finite rule requires exactly two operands with the same established
+integral type: Integer, I8/I16/I32/I64 or U8/U16/U32/U64. Integer literals are
+not implicitly converted to fixed-width operands. Normally invoked operations
+return Bool. Never operands preserve source-order control transfer; other
+operands still require legality checks even when invocation cannot occur.
+
+An applied intrinsic descriptor belongs to one authenticated operator
+occurrence, not a fabricated function or generally callable binding type.
+Keep the existing C6 call/edge shapes and function census. Fresh C7 verification
+reconstructs the descriptor, numeric-mode constraint and call fact; effects
+and lowering independently join the actual binding, source, order and types.
+The proof-required safety rule is finite same-integral total ordering without
+conversion, overflow or rounding. Local shadowed functions retain ordinary
+dispatch. Numeric semantics belongs to `gravity.math`; the existing core
+catalog remains compatibility resolution, not a newly implemented math import.
+The actual source composition uses unqualified comparison operators. Current
+C5 does not admit `gravity.core/>` as a qualified variable spelling; do not
+infer that source support from normalized intrinsic-descriptor tests.
+
+Run one affected paired source composition separately when those facts or
+execution interfaces change:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integral-ordering-authenticated-composition --fail-fast
+```
+
+It combines ordering, a computed map guard, shadowing and typed catches. Reuse
+each fresh product within that test; do not replay unchanged guard or match
+proof matrices. Empty direct comparison effects do not establish allocation-
+free wrapper execution: the fixture declares allocation, and constructor
+allocation inference is a separate outstanding slice. Mixed numeric families,
+floating/decimal ordering, conversions, escaped operators and complete
+profile/provider, target, standard-library or migration acceptance are not
+established by these development checks.
+
 ### Canonical direct same-module calls
 
 Edit the existing Gravity emitter and runtime for fixed-arity, acyclic calls

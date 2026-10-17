@@ -2075,6 +2075,104 @@
     {:core {:nodes nodes :match-branch-records branches :match-pattern-records patterns :match-decision-skeletons [skeleton]}
      :products products :forms forms :bindings {bid :gravity.type/bool} :remainder rid :match-id mid :scrutinee-id sid :bodies bodies}))
 
+(defn- integral-ordering-input [operation argument-types]
+  ;; Normalized DATA for the actual Gravity algorithms; no source admission.
+  (let [module {:namespace 'example.ordering :profile :meta :target :jvm :effects [] :capabilities []}
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        arguments (mapv #(keyword (str "arg" %)) (range (count argument-types)))
+        children (into [:operator] arguments)
+        binding {:binding-id :ordering-binding :binding-class :core :kind :var :name operation :namespace 'gravity.core
+                 :package {:name 'gravity/core :version "bootstrap-contract-v1"} :type-ref :gravity.type/core-var
+                 :safety :safe :effects [] :capabilities [] :profile-set [:meta] :target-set [:all]
+                 :definition-syntax-id :ordering-definition}
+        operator {:node-id :operator :core-form :reference :children [] :resolved-binding-ids [:ordering-binding]
+                  :attributes {:symbol operation :position :operator :binding-id :ordering-binding :binding-class :core
+                               :definition-syntax-id :ordering-definition} :source (source :operator) :evaluation {:order []}}
+        operands (mapv (fn [id] {:node-id id :core-form :reference :children [] :attributes {:binding-id id}
+                                 :source (source id) :evaluation {:order []}}) arguments)
+        node {:node-id :call :core-form :call :children children :resolved-binding-ids [:ordering-binding]
+              :attributes {:operator-child-index 0 :argument-count (count arguments) :argument-child-indexes (vec (range 1 (count children)))
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+              :source (source :call) :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
+                                                :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
+        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :ordering-binding :argument-node-ids arguments
+              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id :ordering-binding :callee-definition-syntax-id :ordering-definition
+              :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids arguments
+              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        nodes (into [operator] (conj operands node))
+        core {:module module :nodes nodes :function-records [] :calls [call] :call-edges [edge]}
+        bindings {:ordering-binding binding}
+        types (zipmap arguments argument-types)]
+    {:module module :core core :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) nodes))
+     :bindings bindings :types types :seeds types
+     :forms (into {} (map (fn [id] [id {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                      :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
+                                      :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
+
+(defn- integral-ordering-descriptor [{:keys [core node call edge nodes bindings types module]}]
+  (invoke-c7 'sh08-io-descriptor [core node call edge nodes bindings types module]))
+
+(deftest sh08-integral-ordering-development-kernel
+  (doseq [operation '[< <= > >=]
+          type [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64]]
+    (let [input (integral-ordering-input operation [type type]) descriptor (integral-ordering-descriptor input)
+          row (invoke-c7 'sh08-io-constraint [descriptor])]
+      (is (= :gravity.type/applied-integral-ordering (:kind descriptor)))
+      (is (= [type type] (:parameter-types descriptor)))
+      (is (= [:gravity.type/bool :normal :proof-required :proven-safe]
+             ((juxt :result-type :application :numeric-mode :safety) descriptor)))
+      (is (= ['gravity.math 'gravity.math.core] ((juxt :semantic-owner :layer0-owner) descriptor)))
+      (is (= [:numeric-mode :solved] ((juxt :kind :status) row)))
+      (is (= 7 (count (:call input)))) (is (= 12 (count (:edge input))))))
+  (doseq [types [[:gravity.type/never :gravity.type/i64] [:gravity.type/u8 :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
+    (let [descriptor (integral-ordering-descriptor (integral-ordering-input '< types))]
+      (is (= [:gravity.type/never :not-invoked] ((juxt :result-type :application) descriptor)))
+      (is (= (when-not (every? #{:gravity.type/never} types) (vec (repeat 2 (first (remove #{:gravity.type/never} types))))) (:parameter-types descriptor)))))
+  (doseq [types [[] [:gravity.type/i64] [:gravity.type/i64 :gravity.type/i64 :gravity.type/i64]
+                 [:gravity.type/i64 :gravity.type/integer] [:gravity.type/i8 :gravity.type/u8]
+                 [:gravity.type/f32 :gravity.type/f32] [:gravity.type/decimal :gravity.type/decimal]
+                 [:gravity.type/string :gravity.type/string] [:gravity.type/unknown :gravity.type/never]
+                 [:gravity.type/never :gravity.type/string] [nil :gravity.type/i64]]]
+    (is (nil? (integral-ordering-descriptor (integral-ordering-input '< types))) (pr-str types)))
+  (let [input (integral-ordering-input '< [:gravity.type/i64 :gravity.type/i64])
+        context {:ordering-core (:core input) :lookup-nodes (:nodes input) :lookup-bindings (vec (vals (:bindings input)))}
+        inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                   [(get-in input [:core :nodes]) (:nodes input) [] [] [(:call input)] [(:edge input)] {} (:seeds input) 10 context])]
+    (is (= :converged (:convergence-status inferred)))
+    (is (= [] (:diagnostics inferred)))
+    (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+    (is (= (integral-ordering-descriptor input) (get-in inferred [:type-table :operator])))
+    (is (= (:seeds input) (:binding-types inferred)))
+    (is (= 1 (count (:constraints inferred))))
+    (doseq [[types reason] [[[:gravity.type/i64] :integral-ordering-arity-mismatch]
+                            [[:gravity.type/i64 :gravity.type/u64] :integral-ordering-operand-type-mismatch]
+                            [[:gravity.type/unknown :gravity.type/never] :integral-ordering-operand-type-mismatch]
+                            [[:gravity.type/string :gravity.type/string] :integral-ordering-operand-type-mismatch]]]
+      (let [data (integral-ordering-input '< types)
+            context {:ordering-core (:core data) :lookup-nodes (:nodes data) :lookup-bindings (vec (vals (:bindings data)))}
+            pass (invoke-c7 'sh08-ft-infer-pass-with-context
+                   [(get-in data [:core :nodes]) [] [] [(:call data)] [(:edge data)] {} (:seeds data) context])]
+        (is (= ["C7-TYPE-MISMATCH" reason] ((juxt :rule :reason) (first (:diagnostics pass)))))))
+    (doseq [mutation [#(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                      #(update-in % [:bindings :ordering-binding] assoc :binding-class :namespace :kind :function :namespace 'example.ordering)
+                      #(assoc-in % [:bindings :ordering-binding :kind] :function)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:bindings :ordering-binding :namespace] 'gravity.math)
+                      #(assoc-in % [:bindings :ordering-binding :name] '+)
+                      #(assoc-in % [:bindings :ordering-binding :target-set] [:other])
+                      #(assoc-in % [:edge :classification] :local-function)
+                      #(assoc-in % [:edge :callee-function-syntax-id] :fake)
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :extra] true)
+                      #(assoc-in % [:node :evaluation :order] [])]]
+      (is (nil? (integral-ordering-descriptor (mutation input)))))
+    (is (= :gravity.type/unknown
+           (invoke-c7 'sh08-ft-infer-node-nominal [(assoc-in (get-in input [:nodes :operator]) [:node-id] :escaped)
+                                                 {} {} {} [] context])))))
+
 (deftest sh08-boolean-match-development-kernel
   (let [{:keys [core products forms bindings remainder match-id scrutinee-id bodies]} (boolean-match-input)
         joined (invoke-c7 'sh08-bm-products [core products forms])

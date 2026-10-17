@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.integral-ordering-mixed
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn rejected [value :- I64] :- Bool (< value 7))

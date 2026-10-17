@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.integral-ordering-escape
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn rejected [] (let [ordering <] ordering))

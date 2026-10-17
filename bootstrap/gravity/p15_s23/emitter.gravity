@@ -2076,7 +2076,142 @@
      :profile (get module :profile) :target (get module :target) :effects (get module :effects)
      :capabilities (get module :capabilities) :status :inferred}))
 
+(defn p15-s23-io-child-types [ids types]
+  (loop [remaining ids out []]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (conj out (get types (first remaining) :gravity.type/unknown))))))
+
+; L5/L13/STD5/SAFE9: an applied intrinsic is evidence at one direct
+; operator occurrence, never a callable type on a binding or a math import.
+(defn p15-s23-io-binding? [binding module]
+  (p15-s23-typed-all
+    [(contains? '#{< <= > >=} (get binding :name))
+     (= [:core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]))
+
+(defn p15-s23-io-descriptor [core node call edge nodes bindings types module]
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        binding-id (get call :operator-binding-id) binding (get bindings binding-id)
+        arguments (get call :argument-node-ids)
+        args (p15-s23-io-child-types arguments types)
+        normal (loop [remaining args out []]
+                 (if (= 0 (count remaining)) out
+                   (recur (rest remaining) (if (= :gravity.type/never (first remaining)) out (conj out (first remaining))))))
+        family (first normal) invoked? (= (count normal) (count args))
+        integral? (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                              :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} family)
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id binding-id
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id binding-id :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil
+                       :argument-core-node-ids arguments :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        operation (get binding :name)]
+    (if (p15-s23-typed-all
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge)
+           (p15-s23-io-binding? binding module)
+           (= [binding-id] (get operator :resolved-binding-ids) (get node :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id binding-id
+               :binding-class :core :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (if (= operation (get (get operator :attributes) :symbol)) true
+             (= (str "gravity.core/" operation) (str (get (get operator :attributes) :symbol))))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (if (= 0 (count normal)) true
+             (if integral? (loop [remaining normal]
+                            (if (= 0 (count remaining)) true
+                              (if (= family (first remaining)) (recur (rest remaining)) false))) false))])
+      {:kind :gravity.type/applied-integral-ordering :version :sh08-integral-ordering-v1
+       :operation operation :intrinsic (get '{< :gravity.math.core/integral-less-than <= :gravity.math.core/integral-less-or-equal
+                                             > :gravity.math.core/integral-greater-than >= :gravity.math.core/integral-greater-or-equal} operation)
+       :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core :resolution :gravity.core-compatibility
+       :operator-node-id (get operator :node-id) :operator-binding-id binding-id :call-core-node-id (get node :node-id)
+       :source (get node :source) :operator-source (get operator :source) :source-call call :source-edge edge :source-binding binding
+       :argument-types args :parameter-types (if (= 0 (count normal)) nil [family family])
+       :return :gravity.type/bool :result-type (if invoked? :gravity.type/bool :gravity.type/never)
+       :profile (get module :profile) :target (get module :target)
+       :numeric-mode :proof-required :safety :proven-safe
+       :safety-rule :same-integral-total-order-no-conversion-overflow-or-rounding
+       :latent-effects [] :capabilities [] :thrown-error-effects [] :application (if invoked? :normal :not-invoked)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :profile :target :evaluation-order]}
+      nil)))
+
+(defn p15-s23-io-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-integral-ordering-constraint-v1 :application descriptor}
+   :kind :numeric-mode :producer-rule :sh08-integral-ordering-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :integral-ordering}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:numeric-mode :proof-required :safety :proven-safe
+              :safety-rule :same-integral-total-order-no-conversion-overflow-or-rounding
+              :result-type (get descriptor :result-type) :application (get descriptor :application)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-io-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-integral-ordering-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
+     :dispatch :direct-integral-ordering :applied-integral-ordering descriptor :effect-facts-source :audited-numeric-intrinsic}))
+
+(defn p15-s23-typed-compile-ordering [context node budget]
+  (let [id (get node :node-id) core (get context :core) forms (get context :forms) nodes (get context :nodes)
+        call (get (get context :calls) id) edge (get (get context :edges) id)
+        descriptor (p15-s23-io-descriptor core node call edge nodes (get context :bindings) (get context :types) (get core :module))
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        children (get node :children) arguments (get call :argument-node-ids)
+        rows (loop [remaining (get context :ledger) out []]
+               (if (= 0 (count remaining)) out
+                 (let [row (first remaining)]
+                   (recur (rest remaining) (if (if (= :sh08-integral-ordering-v1 (get row :producer-rule))
+                     (= {:core-node-id id :projection :integral-ordering} (get row :lhs)) false) (conj out row) out)))))]
+    (if (< budget 64) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+      (if (if (map? descriptor)
+            (p15-s23-typed-all
+              [(= descriptor (get (get context :types) (first children)))
+               (= (get descriptor :result-type) (get (get context :types) id))
+               (= (get edge :ordinal) (get (get context :call-order) id))
+               (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+               (= (p15-s23-io-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+               (= [(p15-s23-io-constraint descriptor)] rows)
+               (= :list (get owner :kind)) (= 3 (count ids) (count children))
+               (= (get node :source) (p15-s23-typed-source owner))
+               (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                   :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+               (loop [i 0]
+                 (if (= i 3) true
+                   (let [form (get forms (get ids i)) child (get nodes (get children i))]
+                     (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
+                           (= (get child :source) (p15-s23-typed-source form))
+                           (if (= i 0) (if (= :symbol (get form :kind)) (= (get form :value) (get (get child :attributes) :symbol)) false) true)])
+                       (recur (+ i 1)) false))))]) false)
+        (let [compiled (p15-s23-typed-compile-children context arguments (- budget 64) [])]
+          (if (p15-s23-compiler-complete? compiled)
+            (assoc (p15-s23-compiler-result {:op :builtin-call :function (get descriptor :operation) :args (get compiled :value)})
+              :work-count (+ 64 (get compiled :work-count))) compiled))
+        (p15-s23-typed-node-error :unsupported-or-mismatched-typed-integral-ordering node)))))
+
 (defn p15-s23-typed-compile-call [context node budget]
+  (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
+        (= :gravity.type/applied-integral-ordering (get (get (get context :types) (first (get node :children))) :kind)) false)
+    (p15-s23-typed-compile-ordering context node budget)
   (let [id (get node :node-id) call (get (get context :calls) id) edge (get (get context :edges) id)
         forms (get context :forms) children (get node :children) owner (get forms (get (get node :source) :form-id))
         ids (get owner :child-form-ids)
@@ -2160,7 +2295,7 @@
               (assoc (p15-s23-compiler-result {:op :function-call :function name :args (get compiled :value)})
                 :work-count (+ 16 (count arguments) (get compiled :work-count))) compiled))
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node)))))
-      (p15-s23-typed-node-error :malformed-typed-call-family node)))))
+      (p15-s23-typed-node-error :malformed-typed-call-family node))))))
 
 (defn p15-s23-typed-compile-collection [context node budget]
   (let [children (get node :children) attrs (get node :attributes) forms (get context :forms)

@@ -195,6 +195,73 @@
       (is (= [[request typed verification] [request typed verification]] @seals))
       (is (= 2 (count @consumers))))))
 
+(deftest body-integral-ordering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'integral-ordering-input)
+        c7 (ns-resolve upstream 'invoke-c7)
+        base (input-fn '< [:gravity.type/i64 :gravity.type/i64])
+        id (zipmap [:operator :arg0 :arg1 :call] (map sha (range 900 904)))
+        convert-node (fn [node] (-> node (update :node-id id) (update :children #(mapv id %))
+                                    (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id id)) %))))
+        node-list (mapv convert-node (get-in base [:core :nodes]))
+        call (-> (:call base) (update :core-node-id id) (update :operator-node-id id)
+                 (update :argument-node-ids #(mapv id %)) (update :ordered-evaluation-node-ids #(mapv id %)))
+        edge (-> (:edge base) (update :call-core-node-id id) (update :argument-core-node-ids #(mapv id %))
+                 (update :ordered-evaluation-node-ids #(mapv id %)))
+        input (assoc base :core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+                     :node (last node-list) :nodes (into {} (map (juxt :node-id identity) node-list)) :call call :edge edge
+                     :types (into {} (map (fn [[k v]] [(id k) v]) (:types base))))
+        {:keys [core node call edge nodes bindings types module]} input
+        descriptor (c7 'sh08-io-descriptor [core node call edge nodes bindings types module])
+        facts {:module module :type-table (assoc types (id :operator) descriptor (id :call) :gravity.type/bool)
+               :function-type-table [] :call-type-facts [(c7 'sh08-io-call-fact [descriptor module])]
+               :constraint-ledger [(c7 'sh08-io-constraint [descriptor])]}
+        valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+        graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)]
+    (is (true? (valid facts)))
+    (is (= :accepted (:status graph)))
+    (is (= #{} (get-in graph [:nodes (id :call) :direct])))
+    (is (= #{} (get-in graph [:nodes (id :call) :transitive])))
+    (is (nil? (get-in graph [:nodes (id :call) :call-body-dependency])))
+    (is (= (mapv id [:operator :arg0 :arg1]) (get-in graph [:nodes (id :call) :dependencies])))
+    (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+    (doseq [changed [(assoc descriptor :operation '> :intrinsic :gravity.math.core/integral-greater-than)
+                     (assoc descriptor :semantic-owner 'gravity.compare)
+                     (assoc descriptor :profile :hosted) (assoc descriptor :target :wasm)
+                     (assoc descriptor :numeric-mode :wrapping) (assoc descriptor :safety :unsafe-island)
+                     (assoc descriptor :safety-rule :target-default)
+                     (assoc descriptor :parameter-types [:gravity.type/u64 :gravity.type/u64])
+                     (assoc descriptor :result-type :gravity.type/i64)
+                     (assoc-in descriptor [:source-binding :binding-class] :import)
+                     (assoc-in descriptor [:source-binding :package :version] "forged")
+                     (assoc-in descriptor [:source-call :argument-node-ids] (vec (reverse (:argument-node-ids call))))
+                     (assoc-in descriptor [:source :syntax-id] :forged)
+                     (assoc descriptor :extra true) (dissoc descriptor :invalidation)]]
+      (let [candidate (-> facts (assoc-in [:type-table (id :operator)] changed)
+                          (assoc :call-type-facts [(c7 'sh08-io-call-fact [changed module])]
+                                 :constraint-ledger [(c7 'sh08-io-constraint [changed])]))]
+        (is (false? (valid candidate)) (pr-str changed))))
+    (doseq [candidate [(assoc-in facts [:type-table (id :operator) :numeric-mode] :wrapping)
+                       (assoc-in facts [:type-table (id :operator) :safety-rule] :backend-default)
+                       (assoc-in facts [:type-table (id :operator) :latent-effects] [:io/write])
+                       (assoc-in facts [:type-table (id :operator) :extra] true)
+                       (assoc-in facts [:call-type-facts 0 :result-type] :gravity.type/i64)
+                       (assoc facts :call-type-facts [])
+                       (assoc facts :constraint-ledger [])
+                       (update facts :constraint-ledger conj (assoc (first (:constraint-ledger facts)) :lhs {:core-node-id :nonexistent :projection :integral-ordering}))
+                       (update facts :constraint-ledger into (:constraint-ledger facts))]]
+      (is (false? (valid candidate))))
+    (doseq [key [:numeric-mode :safety-rule :latent-effects :extra]]
+      (is (= :rejected (:status (leaf 'body-derive-nodes-with-foreign core
+                                     (assoc-in facts [:type-table (id :operator) key] :forged) {} 65536)))))
+    (let [graph (assoc (:nodes graph) (id :arg0) {:transitive #{:error/throw} :escaping-thrown-error-types [:gravity.type/string]})
+          row (leaf 'body-tc-constraint core edge {(id :call) call} nodes {} bindings (:type-table facts) {} graph)]
+      (is (= [:gravity.type/string] (:rhs row)))
+      (is (= [] (get-in row [:dependencies :callee-error-types])))
+      (is (nil? (get-in row [:dependencies :callee-source-body-id])))
+      (is (= descriptor (get-in row [:dependencies :callee-normal-type]))))))
+
 (deftest body-effect-operation-development-kernel
   ;; Actual Gravity algorithm, normalized graph DATA; no authentication claim.
   (let [literal (node 1 :literal []) fn-node (node 2 :fn [1])

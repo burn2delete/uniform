@@ -1448,6 +1448,92 @@ not establish full L7, profile/provider legality, documented target support,
 authoritative migration, self-hosting or release completion. Historical
 authority pins remain unchanged.
 
+### Direct integral ordering: development increment
+
+The comparison increment adds direct binary `<`, `<=`, `>` and `>=`
+over two operands of one established integral type. Integer remains distinct
+from the eight fixed-width signed/unsigned types; no implicit conversion,
+floating ordering or first-class operator value is supplied. The finite
+proof-required safety rule derives Bool on normal invocation and Never when
+an operand cannot return, while still checking other operands.
+
+C7 reconstructs an occurrence-specific intrinsic descriptor, call fact and
+numeric-mode constraint from the actual existing core binding. C8 and lowering
+check the finite rule independently without inventing function/body identities
+or changing C6's call and edge shapes. The semantic owner is `gravity.math`;
+the existing core catalog is compatibility resolution, not a fabricated math
+module artifact. Runtime code is unchanged. Inference reuses per-pass indexes
+instead of rebuilding a node index inside every scope edge; this is not a
+measured speedup or a total CPU-accounting claim.
+
+The focused candidate passed seventeen tests/720 assertions, including the
+four numeric kernels, paired fixture checks and affected guard, structural,
+Boolean, direct-call and body-effect regressions. Execution took 2.968 seconds
+plus 7.868 and 0.343 seconds of namespace loading at 2 GiB. The first group
+remains failed: 383 assertions passed and three new runtime test expectations
+used `:throw` instead of the existing `:thrown` control tag. Only those test
+oracles were corrected; the production runtime was not changed. Overlapping
+groups are not summed as unique coverage.
+
+A subsequent dispatch-preservation correction restricts intrinsic lowering to
+nonlocal calls whose operator occurrence has the applied-ordering descriptor.
+Other calls keep their original direct-call rejection reason. Four affected
+lowering kernels passed 140 assertions on that correction (2.282 seconds
+execution plus 7.707 seconds loading at 2 GiB); this is separate evidence, not
+a claim that the earlier 720-assertion group was rerun on changed bytes.
+
+The first affected real-source composition failed before numeric checking:
+six assertions passed, then C5 rejected the fixture's `gravity.core/>` variable
+spelling with `C5-ALIAS` / `:unknown-namespace-alias`. It took 38.007 seconds
+execution plus 8.047 seconds loading at 2 GiB. This establishes no paired
+numeric, guest execution, C8 or negative-source coverage. Qualified core
+variable resolution is not implemented by this slice; normalized descriptor
+tests do not establish that source admission.
+
+The fixture-only correction uses unqualified `>` and an ordinary String
+parameter named `>` passed to a local function. This tests lexical value
+shadowing without pretending it is a qualified core call or an intrinsic.
+The final fixture/type kernels passed two tests/308 assertions in 0.742 seconds
+plus 7.486 and 0.343 seconds loading at 2 GiB. Production code did not change
+for this fixture correction.
+
+The corrected paired source composition passed one test/202 assertions in
+915.956 seconds execution plus 8.315 seconds loading at 2 GiB. It constructed
+two fresh positive products, executed 36 guest cases, analyzed two C8 body
+graphs and tracked six public-emitter fresh C7 verification entries: four
+positive standalone/assembly calls and two coherent descriptor forgeries.
+Seven actual rejected `.gravity` fixtures checked arity, mixed/nonintegral/
+unknown types, invalid operands after Never, lexical operator calls and
+escaped operator values; their `.qst` counterparts have focused pair parity,
+not separate actual construction. Each positive retains ten functions, nine
+calls and eight numeric descriptors (six normally invoked, two not invoked).
+It covers all four operations, signed/unsigned boundaries, exact Integer
+literals, lexical core-name shadowing, a computed guard and one/both Never
+operands under typed catches. The runtime remained unchanged. The failed
+first composition remains failed; no unchanged expensive matrix was replayed.
+
+Source fixtures declare `:memory/allocate`; empty direct numeric effects do
+not claim wrapper purity or close constructor allocation inference. Full
+numeric typing, standard-library, profile/provider legality, target support,
+authoritative migration, self-hosting and release remain outstanding.
+
+### Next legality gap: collection-constructor allocation
+
+At `02c1077c`, the body-effect pass's `body-node-record` derives a direct effect
+for a normally transferring throw, but no allocation effect for a collection
+literal. The development runtime constructs maps and vectors when evaluating
+their instructions; quoted DATA instead returns its retained value. An empty
+inferred collection effect set therefore does not establish allocation-free
+behavior. L6 already registers `:memory/allocate`, and STD3 requires visible
+allocation behavior for constructors and updates.
+
+The next collection slice must close that inference gap and test accepted
+declared allocation versus rejected undeclared allocation before adding
+persistent map association. Reuse the existing body graph and allowance check;
+do not add an admission lane or treat pending provider/profile legality as
+permission to hide the inferred effect. Full allocation-strategy, capability,
+ownership and deployment/provider acceptance remain separate outstanding gates.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
