@@ -483,6 +483,25 @@
                'sh09-verify-authenticated-pure-effect-result
                [typed verification candidate])))))))
 
+(deftest sh09-imported-type-only-diagnostic-development-kernel
+  ;; DATA-only selection check; authentic C7/C8 composition lives in SH08.
+  (let [base (function-typed-result "imported-types.gravity")
+        local (assoc (first (:call-type-facts base)) :dispatch :direct-local-function)
+        imported (assoc local :call-core-node-id sha-a :syntax-id sha-b :dispatch :direct-imported-function
+                              :source-span {:source "imported-types.gravity" :start-byte 9 :end-byte 10})
+        typed (assoc base :scope :direct-imported-functions-types-only :call-type-facts [local imported])
+        result (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed (upstream-verification typed)])
+        diagnostic (first (:diagnostics result))]
+    (is (= :rejected (:status result)))
+    (is (= :imported-body-effects-pending (:reason diagnostic)))
+    (is (= sha-a (:core-node-id diagnostic)))
+    (is (= sha-b (:syntax-id diagnostic)))
+    (is (= (:source-span imported) (:source-span diagnostic)))
+    (is (every? #(some? (get diagnostic %)) [:profile :target :namespace :function :remediation]))
+    (let [top-level (assoc typed :call-type-facts [(assoc imported :caller-function-syntax-id nil)])
+          d (first (:diagnostics (invoke-c8 'sh09-build-authenticated-pure-effect-result [top-level {}])))]
+      (is (= (get-in typed [:module :namespace]) (:function d))))))
+
 (deftest sh09-c7-adapter-derives-declared-pure-function-call-effects
   (let [typed-a (function-typed-result "/checkout-a/function.gravity")
         typed-b (function-typed-result "/checkout-b/function.qst")

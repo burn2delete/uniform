@@ -1497,8 +1497,9 @@
 (defn sh08-ft-authenticated-core [request]
   (if (sh08-ft-record-shape?
        request
-       #{:canonical-core-artifact :b47-context
-         :coordinator-verification})
+       (if (contains? request :module-type-inputs)
+         #{:canonical-core-artifact :b47-context :coordinator-verification :module-type-inputs}
+         #{:canonical-core-artifact :b47-context :coordinator-verification}))
     (let [context (get request :b47-context)
           core (get request :canonical-core-artifact)]
       (if (sh08-ft-context-valid? context)
@@ -4143,7 +4144,7 @@
                                  (get context :inner-call-core-node-id))
                               false)
                           (get context :value-type :gravity.type/unknown)
-                          :gravity.type/unknown)))
+                          (get (get (sh08-im-callee edge context) :function-type) :return :gravity.type/unknown))))
                     (if (= core-form :match)
                       (sh08-bm-join (sh08-gd-branch-ids node) type-table)
                       :gravity.type/unknown)))))))))))))
@@ -5340,6 +5341,7 @@
        :diagnostics diagnostics}
       (let [call (first remaining)
             edge (first remaining-edges)
+            imported (sh08-im-callee edge context)
             callee
             (if (map? edge)
               (get function-types (get edge :callee-function-syntax-id))
@@ -5365,6 +5367,11 @@
                            :gravity.type/unknown)}]
               (if (map? callee) (get callee :parameters) []))
             arity-ok (= (count args) (count parameters))]
+        (if (map? imported)
+          (let [checked (sh08-im-call-constraint call edge args imported nodes)]
+            (recur (rest remaining) (rest remaining-edges) next-bindings
+                   (conj constraints (get checked :constraint))
+                   (sh08-ft-add-values-to-set (get checked :diagnostics) diagnostics)))
         (if (if (= (get edge :classification) :local-function)
               true
               higher-order-call?)
@@ -5464,7 +5471,7 @@
                   :rule "C7-ANNOTATION"
                   :reason :unsupported-nonlocal-call
                   :expected :supported-local-first-order-call
-                  :actual (get edge :classification)})})))))
+                  :actual (get edge :classification)})}))))))
 
 (defn sh08-ft-call-constraints
   [calls edges nodes type-table binding-types function-types]
@@ -5743,8 +5750,10 @@
       (let [call (first remaining)
             edge (first remaining-edges)
             node (get nodes (get call :core-node-id))
+            imported (sh08-im-callee edge context)
             callee
-            (get function-types (get edge :callee-function-syntax-id))
+            (if (map? imported) (get imported :function-type)
+              (get function-types (get edge :callee-function-syntax-id)))
             higher-order-call?
             (if (= :accepted (get context :status))
               (= (get call :core-node-id)
@@ -5829,7 +5838,16 @@
         (recur
          (rest remaining)
          (rest remaining-edges)
-         (conj values call-fact))))))
+         (conj values (if (map? imported)
+                        (assoc call-fact :dispatch :direct-imported-function
+                               :fact-id-request (assoc (get call-fact :fact-id-request) :imported-function (sh08-im-reference imported)
+                                                        :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects)
+                               :imported-function (sh08-im-reference imported) :effect-status :pending-sh09-imported-body
+                               :effects (get (get imported :function-type) :latent-effects)
+                               :capabilities (get (get imported :function-type) :capabilities)
+                               :effect-facts-source :callee-module-declarations
+                               :legality-status :pending-imported-effects)
+                        call-fact)))))))
 
 (defn sh08-ft-call-facts
   [calls edges nodes type-table function-types module]
@@ -6028,7 +6046,7 @@
   (if (= (count records) 0) false
     (if (contains? (first records) :signature) true (sh08-ft-any-signature? (rest records)))))
 
-(defn sh08-ft-function-type-core-artifact-with-origins [core-artifact bindings source-forms]
+(defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
   (if (map? core-artifact)
     (let [shape (sh08-validate-core-shape core-artifact)
           module (if (map? (get core-artifact :module))
@@ -6104,9 +6122,9 @@
                  (get products :calls)
                  (get products :call-edges)
                  function-skeletons
-                 (sh08-ft-declaration-seeds function-skeletons (sh08-ft-inference-context
+                 (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
                   recursive? higher-order? recursive-proof
-                  higher-order-proof function-skeletons))
+                  higher-order-proof function-skeletons)))
                  (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
                   (get shape :nodes)
                   (get products :function-records)
@@ -6114,7 +6132,8 @@
                   (get products :lexical-bindings)))
                  (assoc (sh08-ft-context-proof
                   recursive? higher-order? recursive-proof higher-order-proof)
-                   :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)))
+                   :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
+                   :imported-functions imports))
                 match-checks
                 (sh08-bm-checks (sh08-sm-groups-with-shapes (get products :boolean-matches) (get raw-inference :binding-shapes)) (get raw-inference :type-table)
                                 (get raw-inference :function-types) module)
@@ -6183,7 +6202,7 @@
                        (get inference :type-table)
                        (get inference :function-types)
                        module
-                       higher-order-proof)
+                       (assoc higher-order-proof :imported-functions imports))
                       combined-constraints
                       (sh08-ft-add-values-to-set (get quoted-products :constraints)
                       (sh08-ft-add-values-to-set (get match-checks :constraints) (sh08-ft-add-values-to-set
@@ -6369,33 +6388,296 @@
    :host-digest-authority-retained? true
    :native-gravity-cryptographic-verification :pending})
 
+(defn sh08-ft-function-type-core-artifact-with-origins [core-artifact bindings source-forms]
+  (sh08-ft-function-type-core-artifact-with-imports core-artifact bindings source-forms {}))
+
 (defn sh08-ft-function-type-core-artifact [core-artifact bindings]
   (sh08-ft-function-type-core-artifact-with-origins core-artifact bindings []))
 
-(defn sh08-function-type-core-artifact [request]
-  (let [resolution (sh08-ft-authenticated-core request)]
-    (if (= :accepted (get resolution :status))
-      (sh08-ft-function-type-core-artifact-with-origins
-       (get resolution :core) (get resolution :binding-table)
-       (get (get (get request :b47-context) :authenticated-core-request) :forms))
-      {:artifact :gravity/sh08-function-typed-core-template
-       :schema-version 3
-       :status :rejected
-       :scope :first-order-fixed-arity-functions-locals-calls
-       :authentication-status :host-resolved-b47-verification-required
-       :module {}
-       :diagnostics
-       [(sh08-ft-diagnostic
-         "C7-VERIFY" {} {}
-         :host-resolved-authentic-b47-context
-         (get resolution :reason)
-         (get resolution :reason) {})]
-       :pending [:native-gravity-cryptographic-verification
-                 :recursive-type-annotations :higher-order-functions
-                 :records :unions :protocols :generics :casts
-                 :dynamic-boundaries]})))
+; L3/L5/C7: imported signatures come from freshly derived authenticated producer
+; requests. The invocation-local memo shares work, never admission authority.
+(defn sh08-im-path [value fields]
+  (loop [remaining fields result value]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining) (get result (first remaining))))))
 
-(defn sh08-ft-verification-checks [expected]
+(defn sh08-im-failure [rule reason actual]
+  {:status :rejected :rule rule :reason reason :actual actual})
+
+(defn sh08-im-callee [edge context]
+  (if (= :nonlocal-or-nonfunction (get edge :classification))
+    (get (get context :imported-functions) (get edge :callee-binding-id)) nil))
+
+(defn sh08-im-seeds [imports initial]
+  (loop [ids (keys imports) result initial]
+    (if (= (count ids) 0) result
+      (recur (rest ids) (assoc result (first ids) (get (get imports (first ids)) :function-type))))))
+
+(defn sh08-im-reference [imported]
+  (assoc (sh08-bm-project imported [:binding-id :producer-sh07-artifact-id :producer-sh06-artifact-id :definition-binding-id])
+         :function-id (get (get imported :function-type) :function-id)))
+
+(defn sh08-im-call-constraint [call edge args imported nodes]
+  (let [function (get imported :function-type) parameters (get function :parameters)
+        arity? (= (count args) (count parameters))
+        mismatch (loop [as args ps parameters]
+                   (if (= (count as) 0) nil
+                     (if (if (sh08-ft-known? (first as))
+                           (= false (= (first as) (get (first ps) :type))) false)
+                       {:expected (get (first ps) :type) :actual (first as)}
+                       (recur (rest as) (rest ps)))))
+        diagnostic (if (= false arity?)
+                     {:call call :rule "C7-TYPE-MISMATCH" :reason :call-arity-mismatch
+                      :expected (count parameters) :actual (count args)}
+                     (if (map? mismatch)
+                       (assoc mismatch :call call :rule "C7-TYPE-MISMATCH" :reason :call-argument-type-mismatch) nil))]
+    {:constraint {:constraint-id-request {:domain :gravity/sh08-imported-call-constraint-v1
+                                          :call-core-node-id (get call :core-node-id) :imported-function (sh08-im-reference imported)}
+                  :kind :equality :producer-rule :sh08-imported-function-call-v1 :lhs (sh08-im-reference imported) :rhs args
+                  :profile (first (get (get (get imported :origin) :origin-definition) :profile-set))
+                  :target (first (get (get (get imported :origin) :origin-definition) :target-set))
+                  :dependencies {:imported-function (sh08-im-reference imported) :arguments (get call :argument-node-ids)}
+                  :solution {:argument-types args :result-type (get function :return)
+                             :arguments-complete? (sh08-ft-every-known? args)}
+                  :invalidation [:producer-request :module-artifact :origin-binding :complete-signature :argument-types
+                                 :producer-declared-effects :producer-declared-capabilities :imported-body-effects]
+                  :status (if (map? diagnostic) :rejected :solved)
+                  :origin (get (get (get nodes (get call :core-node-id)) :source) :origin-chain)
+                  :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects
+                  :diagnostics (if (map? diagnostic) [diagnostic] [])}
+     :diagnostics (if (map? diagnostic) [diagnostic] [])}))
+
+(defn sh08-im-complete-signature? [record function]
+  (let [signature (get record :signature)]
+    (if (if (map? signature) (map? (get signature :return)) false)
+      (if (= (get (get signature :return) :type-id) (get function :return))
+        (if (= (count (get signature :parameters)) (get record :fixed-arity) (count (get function :parameters)))
+          (loop [ds (get signature :parameters) ps (get function :parameters)]
+            (if (= (count ds) 0) true
+              (if (if (map? (first ds))
+                    (= (get (first ds) :type-id) (get (first ps) :type)) false)
+                (recur (rest ds) (rest ps)) false))) false) false) false)))
+
+(defn sh08-im-origin [caller binding producer typed]
+  (let [caller-c5 (sh08-im-path caller [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
+        callee-c5 (sh08-im-path producer [:b47-context :authenticated-wrapper :sh06-resolution-artifact])
+        origin (get binding :semantic-span)
+        id (get origin :ordinary-module-artifact-id)
+        retained (sh08-bm-select (sh08-im-path caller-c5 [:gravity-resolution-boundary :module-inputs :module-artifacts]) :artifact-id id)
+        caller-rows (sh08-bm-select (sh08-im-path caller-c5 [:binding-table :bindings]) :binding-id (get binding :upstream-binding-id))
+        originals (sh08-bm-select (sh08-im-path callee-c5 [:binding-table :bindings]) :binding-id (get origin :origin-binding-id))
+        original (first originals)
+        projected (sh08-bm-select (sh08-im-path producer [:b47-context :authenticated-core-request :binding-table])
+                                  :upstream-binding-id (get original :binding-id))
+        records (sh08-bm-select (sh08-im-path producer [:canonical-core-artifact :function-records])
+                                :definition-binding-id (get (first projected) :binding-id))
+        record (first records)
+        functions (sh08-bm-select (get typed :function-type-table) :function-id (get record :function-syntax-id))
+        function (first functions)
+        module (sh08-im-path callee-c5 [:gravity-resolution-boundary :resolved-analysis :module-contract])
+        caller-module (sh08-im-path caller [:canonical-core-artifact :module])
+        exact? (sh08-ft-all-true?
+                 [(= 1 (count retained) (count caller-rows) (count originals) (count projected))
+                  (= (first retained) callee-c5)
+                  (= id (get callee-c5 :artifact-id)
+                     (sh08-im-path producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id]))
+                  (= origin (get (first caller-rows) :semantic-span))
+                  (= :import (get binding :binding-class) (get (first caller-rows) :binding-class))
+                  (= (get binding :name) (get original :name))
+                  (= (get binding :namespace) (get original :namespace) (get module :namespace))
+                  (= :namespace (get original :binding-class))
+                  (= :public (get original :visibility) (get binding :visibility))
+                  (sh08-vector-contains? (get module :exports) (get original :name))
+                  (= (get origin :origin-analysis-id) (sh08-im-path callee-c5 [:gravity-resolution-boundary :resolved-analysis :artifact-id]))
+                  (= (get origin :origin-definition-artifact-id) (get original :definition-artifact-id))
+                  (= (get origin :origin-definition-syntax-id) (get original :definition-syntax-id))
+                  (= (get origin :origin-definition)
+                     (sh08-bm-project original [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref :effects :capabilities :safety]))])]
+    (if exact?
+      (if (= [(get caller-module :profile) (get caller-module :target)] [(get module :profile) (get module :target)])
+        (if (if (= :function (get original :kind)) (= 1 (count records) (count functions)) false)
+          (if (sh08-im-complete-signature? record function)
+            {:status :accepted :binding-id (get binding :binding-id) :origin origin
+             :producer-sh07-artifact-id (sh08-im-path producer [:b47-context :artifact-id])
+             :producer-sh06-artifact-id id :producer-identity (get typed :identity-input)
+             :definition-binding-id (get (first projected) :binding-id)
+             :function-type (sh08-bm-project function
+                              [:artifact :function-id :function-core-node-id :definition-name :parameters :return :fixed-arity
+                               :signature :latent-effects :capabilities :ownership-constraints :profile-constraints :thrown-error-effects :status])
+             :effect-status :pending-sh09-imported-body :legality-status :pending-imported-effects}
+            (sh08-im-failure "C7-ANNOTATION" :incomplete-imported-function-signature (get binding :name)))
+          (sh08-im-failure "C7-ANNOTATION" :unsupported-imported-function (get binding :name)))
+        (sh08-im-failure "C7-ANNOTATION" :unsupported-cross-profile-imported-typing (get module :profile)))
+      (sh08-im-failure "C7-VERIFY" :imported-function-origin-mismatch origin))))
+
+(defn sh08-im-imports [request resolution producers]
+  (let [core (get resolution :core) bindings (get resolution :binding-table)]
+    (loop [nodes (get core :nodes) imports {} consumed #{}]
+      (if (= (count nodes) 0)
+        (if (= (count consumed) (count producers)) {:status :accepted :imports imports}
+          (sh08-im-failure "C7-VERIFY" :unused-module-type-request nil))
+        (let [node (first nodes) id (get (get node :attributes) :binding-id)
+              binding (sh08-ft-binding-by-id bindings id)
+              origin (get binding :semantic-span)
+              ordinary? (if (= :reference (get node :core-form))
+                          (if (= :import (get binding :binding-class)) (contains? origin :ordinary-module-artifact-id) false) false)]
+          (if ordinary?
+            (if (= :operator (get (get node :attributes) :position))
+              (if (contains? imports id) (recur (rest nodes) imports consumed)
+                (let [producer (get producers (get origin :ordinary-module-artifact-id))]
+                  (if (map? producer)
+                    (let [joined (sh08-im-origin request binding (get producer :request) (get producer :result))]
+                      (if (= :accepted (get joined :status))
+                        (recur (rest nodes) (assoc imports id joined) (conj consumed (get origin :ordinary-module-artifact-id)))
+                        (assoc joined :node node :binding binding)))
+                    (assoc (sh08-im-failure "C7-ANNOTATION" :missing-imported-function-typing (get binding :name)) :node node :binding binding))))
+              (assoc (sh08-im-failure "C7-ANNOTATION" :unsupported-higher-order-import (get binding :name)) :node node :binding binding))
+            (recur (rest nodes) imports consumed)))))))
+
+(defn sh08-im-result [result imports]
+  (if (if (= :accepted (get result :status)) (> (count imports) 0) false)
+    (let [pending (conj (conj (get result :pending) :imported-body-effects) :imported-effect-legality)
+          proof (loop [ids (vec (sort-by-pr-str (keys imports))) result []]
+                  (if (= (count ids) 0) result
+                    (recur (rest ids)
+                      (conj result (sh08-bm-project (get imports (first ids))
+                                     [:status :binding-id :origin :producer-sh07-artifact-id :producer-sh06-artifact-id
+                                      :definition-binding-id :function-type :effect-status :legality-status])))))
+          producer-map (loop [ids (keys imports) result {}]
+                         (if (= (count ids) 0) result
+                           (let [imported (get imports (first ids))]
+                             (recur (rest ids) (assoc result (get imported :producer-sh06-artifact-id)
+                                                {:producer-sh07-artifact-id (get imported :producer-sh07-artifact-id)
+                                                 :producer-sh06-artifact-id (get imported :producer-sh06-artifact-id)
+                                                 :identity-input (get imported :producer-identity)})))))
+          producers (loop [ids (vec (sort-by-pr-str (keys producer-map))) result []]
+                      (if (= (count ids) 0) result
+                        (recur (rest ids) (conj result (get producer-map (first ids))))))
+          identity (assoc (get result :identity-input) :domain :gravity/sh08-direct-imported-function-types-v1
+                          :module-type-producers producers :imported-function-types proof :pending pending)
+          core (assoc (get result :typed-core) :imported-function-types proof
+                      :imported-effect-status :pending-sh09-imported-body)]
+      (assoc result :scope :direct-imported-functions-types-only
+             :module-type-producers producers :imported-function-types proof :typed-core core :pending pending
+             :identity-input identity :artifact-id-request identity)) result))
+
+(defn sh08-im-failure-node [request failure]
+  (if (map? (get failure :node)) (get failure :node)
+    (let [bindings (sh08-im-path request [:b47-context :authenticated-core-request :binding-table])]
+      (loop [nodes (sh08-im-path request [:canonical-core-artifact :nodes])]
+        (if (= (count nodes) 0) {}
+          (let [node (first nodes) binding (sh08-ft-binding-by-id bindings (get (get node :attributes) :binding-id))
+                module-id (get (get binding :semantic-span) :ordinary-module-artifact-id)]
+            (if (sh08-ft-all-true? [(= :reference (get node :core-form)) (= :import (get binding :binding-class))
+                                   (sh08-sha256-id? module-id)
+                                   (if (contains? failure :producer-sh06-artifact-id)
+                                     (= module-id (get failure :producer-sh06-artifact-id)) true)])
+              node (recur (rest nodes)))))))))
+
+(defn sh08-im-rejected-result [request failure]
+  {:artifact :gravity/sh08-function-typed-core-template :schema-version 3 :status :rejected
+   :scope :direct-imported-functions-types-only :authentication-status :host-resolved-b47-verification-required
+   :module (get (get request :canonical-core-artifact) :module {})
+   :diagnostics [(sh08-ft-diagnostic (get failure :rule "C7-VERIFY") (sh08-im-failure-node request failure) (get (get request :canonical-core-artifact) :module {})
+                    :authentic-complete-imported-function-type (get failure :actual) (get failure :reason) {})]
+   :pending [:imported-body-effects :imported-effect-legality :runtime-linking]})
+
+(defn sh08-im-producers [requests memo active retained]
+  (loop [remaining requests current memo producers {}]
+    (if (= (count remaining) 0) {:status :accepted :memo current :producers producers}
+      (let [request (first remaining)
+            id (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact :artifact-id])]
+        (if (if (sh08-sha256-id? id) (= false (contains? producers id)) false)
+          (if (let [matches (sh08-bm-select retained :artifact-id id)]
+                (if (= 1 (count matches))
+                  (= (first matches) (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact])) false))
+          (let [derived (sh08-im-derive request current active) result (get derived :result)]
+            (if (= :accepted (get result :status))
+              (recur (rest remaining) (get derived :memo) (assoc producers id {:request request :result result}))
+              (assoc (sh08-im-failure
+                       (if (= "C7-VERIFY" (get (first (get result :diagnostics)) :rule)) "C7-VERIFY" "C7-ANNOTATION")
+                       :invalid-module-type-producer (get result :diagnostics))
+                     :producer-sh06-artifact-id id :memo (get derived :memo))))
+          (assoc (sh08-im-failure "C7-VERIFY" :undeclared-module-type-producer id) :memo current))
+          (assoc (sh08-im-failure "C7-VERIFY" :duplicate-or-invalid-module-type-producer id) :memo current))))))
+
+(defn sh08-im-inputs-check [inputs]
+  (if (sh08-exact-keys? inputs #{:artifact :schema-version :module-requests})
+    (if (= [:gravity/sh08-module-type-inputs 1] [(get inputs :artifact) (get inputs :schema-version)])
+      (if (vector? (get inputs :module-requests))
+        (if (<= (count (get inputs :module-requests)) (get (sh08-local-bounds-value) :maximum-root-nodes))
+          {:status :accepted}
+          (sh08-im-failure "C7-VERIFY" :module-type-input-count-limit nil))
+        (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
+      (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
+    (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil)))
+
+(defn sh08-im-usage [entries pending?]
+  (loop [ids (keys entries) result {:nodes 0 :scalar-units 0}]
+    (if (= (count ids) 0) result
+      (let [entry (get entries (first ids)) usage (if pending? entry (get entry :usage))]
+        (recur (rest ids) {:nodes (+ (get result :nodes) (get usage :nodes 0))
+                          :scalar-units (+ (get result :scalar-units) (get usage :scalar-units 0))})))))
+
+(defn sh08-im-work-check [memo active usage]
+  ; Units are distinct authenticated producers and their canonical-core DATA
+  ; visits, not raw repeated proof bytes, VM operations, or a CPU guarantee.
+  (let [bounds (sh08-local-bounds-value) complete (sh08-im-usage memo false) pending (sh08-im-usage active true)
+        total {:producers (+ (count memo) (count active) 1) :dependency-depth (+ (count active) 1)
+               :nodes (+ (get complete :nodes) (get pending :nodes) (get usage :nodes 0))
+               :scalar-units (+ (get complete :scalar-units) (get pending :scalar-units) (get usage :scalar-units 0))}]
+    (if (= :accepted (get usage :status))
+      (if (<= (get total :producers) (get bounds :maximum-root-nodes))
+        (if (<= (get total :dependency-depth) (get bounds :maximum-carrier-depth))
+          (if (<= (get total :nodes) (get bounds :maximum-carrier-nodes))
+            (if (<= (get total :scalar-units) (get bounds :maximum-scalar-units)) {:status :accepted :usage total}
+              (sh08-im-failure "C7-VERIFY" :module-type-total-scalar-work-limit total))
+            (sh08-im-failure "C7-VERIFY" :module-type-total-core-work-limit total))
+          (sh08-im-failure "C7-VERIFY" :module-type-dependency-depth-limit total))
+        (sh08-im-failure "C7-VERIFY" :module-type-distinct-producer-limit total))
+      (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound usage))))
+
+(defn sh08-im-derive [request memo active]
+  (let [id (sh08-im-path request [:b47-context :artifact-id]) previous (get memo id)
+        preliminary (sh08-im-work-check memo active {:status :accepted :nodes 0 :scalar-units 0})
+        resolution (if (if (map? previous) true (if (contains? active id) true (= :rejected (get preliminary :status))))
+                     {} (sh08-ft-authenticated-core request))
+        inputs (get request :module-type-inputs {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests []})]
+    (if (map? previous)
+      (if (= request (get previous :request)) {:result (get previous :result) :memo memo}
+        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :substituted-module-type-request id)) :memo memo})
+      (if (contains? active id)
+        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :cyclic-module-type-request id)) :memo memo}
+      (if (= :rejected (get preliminary :status))
+        {:result (sh08-im-rejected-result request preliminary) :memo memo}
+      (if (= :accepted (get resolution :status))
+        (let [usage (sh08-carrier-preflight (get resolution :core))
+              work (sh08-im-work-check memo active usage)
+              input-check (if (= :accepted (get work :status)) (sh08-im-inputs-check inputs) work)
+              producers (if (= :accepted (get input-check :status))
+                          (sh08-im-producers (get inputs :module-requests) memo (assoc active id usage)
+                            (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
+                                                  :gravity-resolution-boundary :module-inputs :module-artifacts])) input-check)
+              imports (if (= :accepted (get producers :status))
+                        (sh08-im-imports request resolution (get producers :producers)) producers)
+              result (if (= :accepted (get imports :status))
+                       (sh08-im-result
+                         (sh08-ft-function-type-core-artifact-with-imports
+                           (get resolution :core) (get resolution :binding-table)
+                           (sh08-im-path request [:b47-context :authenticated-core-request :forms]) (get imports :imports))
+                         (get imports :imports))
+                       (sh08-im-rejected-result request imports))
+              next (get producers :memo memo)]
+          {:result result :memo (assoc next id {:request request :result result :usage usage})})
+        {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo}))))))
+
+(defn sh08-function-type-core-artifact [request]
+  (let [result (get (sh08-im-derive request {} {}) :result)]
+    (if (if (= :accepted (get result :status)) (= :direct-imported-functions-types-only (get result :scope)) false)
+      (if (= :accepted (get (sh08-carrier-preflight result) :status)) result
+        (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-limit nil))) result)))
+
+(defn sh08-ft-local-verification-checks [expected]
   (if (= :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
          (get expected :scope))
     [:coherent-b47-function-records
@@ -6438,6 +6720,14 @@
      :source-syntax-origin-generated-origin-links-preserved
      :path-neutral-identity-input
      :recursive-inference-rejected-without-annotation])))
+
+(defn sh08-ft-verification-checks [expected]
+  (if (= :direct-imported-functions-types-only (get expected :scope))
+    [:fresh-authenticated-module-type-producers :exact-original-upstream-projected-definition-function-join
+     :complete-immutable-imported-signatures :imported-operator-and-call-types :local-inference-remains-separate
+     :origin-and-signature-bound-constraint-ledger :producer-declarations-preserved-with-pending-imported-effects
+     :canonical-producer-and-import-order :source-syntax-origin-links-preserved :path-neutral-identity-input]
+    (sh08-ft-local-verification-checks expected)))
 
 (defn sh08-verify-function-type-result [request candidate]
   (let [expected (sh08-function-type-core-artifact request)]

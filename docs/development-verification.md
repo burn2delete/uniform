@@ -93,6 +93,53 @@ interface changes. Local artifact verification checks the supplied semantic
 inputs; it does not admit a module revision, refresh historical migration
 proofs, or establish imported-call typing, execution or self-hosting support.
 
+### Imported-call type development
+
+The owning C7 implementation is
+`bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
+Use its existing `sh08-function-type-core-artifact` and
+`sh08-verify-function-type-result` interfaces. Extend the existing authenticated
+caller request with actual callee C7 requests, not copied signatures or stored
+verification results:
+
+```clojure
+(assoc caller-c7-request
+  :module-type-inputs
+  {:artifact :gravity/sh08-module-type-inputs
+   :schema-version 1
+   :module-requests [callee-c7-request]})
+```
+
+Each callee request must refer to the same real C5 module artifact already
+supplied to the caller's resolution step. C7 freshly derives the selected
+exported signature and joins its original binding to the projected C6 function.
+Imported parameters are immutable premises, not variables specialized by the
+caller. Missing typing inputs and incomplete signatures require a C7 annotation
+diagnostic; they do not trigger ambient module discovery or dynamic fallback.
+This first imported-call boundary requires complete callee parameter/return
+annotations. That is an implementation limit, not a language-level ban on
+inferred exported signatures. The paired fixtures cover annotated I64, Bool and
+String direct calls in the same `:meta/:jvm` profile/target. Inferred imported
+signatures, higher-order imports, cross-profile typing, generic specialization
+and runtime module linking remain separate work.
+
+Start with the existing direct checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-imported-function-types-development-kernel \
+  --exact sh08-atomic-signature-inference-development-kernel
+```
+
+The affected real composition is
+`sh08-imported-function-authenticated-source-composition` in the same namespace.
+It exercises the ordinary C5 -> C6 -> C7 path, not authoritative module migration.
+The imported result is type-only: declared effects/capabilities are preserved,
+body-effect inference and thrown-error analysis remain pending, and C8 rejects
+it with `:imported-body-effects-pending`. Type checking does not authorize target
+lowering, linking, effect execution or runtime behavior.
+
 Ordinary focused tests do not require fresh authority proofs, frozen migration
 fingerprint refreshes, workstream receipts, broker setup or a new routing record.
 Current-source execution must retain actual identities; it must not inherit a
@@ -159,6 +206,16 @@ metadata stripping in `sh07-core-execute!`, producer replay in template and
 resolved verification, and canonicalization/hashing in digest resolution.
 Repeated DATA fields can share objects: these call sites do not establish
 allocation counts, runtime dominance or a speedup opportunity by themselves.
+
+The imported-call type slice provides another concrete separation: its five
+direct kernel tests executed in 0.893 seconds after 7.131 seconds of namespace
+loading, while its one real-source composition test executed in 950.667 seconds
+after 6.963 seconds of loading. The latter constructs paired modules and three
+source mismatch variants and checks fresh composition and replay. These are
+different workloads, not a speedup comparison or a measurement of which
+construction phase dominates. Use direct kernels for iteration and this
+affected composition for interface changes; adding scheduling machinery would
+not remove its product-construction work.
 
 Bounded follow-up: measure one existing authentic-composition test on one
 stable revision. Separate upstream/projection, metadata stripping, Gravity

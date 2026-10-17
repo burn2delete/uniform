@@ -479,7 +479,7 @@
              (require 'gravity.self-hosting.sh08-function-call-type-test)
              (let [typed ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'function-result) core-artifact)]
                (is (= :rejected (:status typed)))
-               (is (= :unsupported-nonlocal-call (get-in typed [:diagnostics 0 :reason]))))
+               (is (= :missing-imported-function-typing (get-in typed [:diagnostics 0 :reason]))))
              {:library library :caller caller :core core-artifact}))
          [".gravity" ".qst"])]
     (is (= (get-in results [0 :library :artifact-id]) (get-in results [1 :library :artifact-id])))

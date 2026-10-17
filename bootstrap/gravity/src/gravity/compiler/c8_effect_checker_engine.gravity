@@ -2764,7 +2764,7 @@
        :pending
        (get (sh09-authenticated-sh08-adapter-policy) :pending)})))
 
-(defn sh09-build-authenticated-pure-effect-result [typed verification]
+(defn sh09-build-authenticated-pure-effect-result-without-imports [typed verification]
   (if (sh09-adapter-function-upstream-valid? typed verification)
     (sh09-build-authenticated-function-effect-result typed verification)
     (if (sh09-adapter-upstream-valid? typed verification)
@@ -2833,6 +2833,27 @@
      :diagnostics
      [(sh09-adapter-diagnostic typed :untrusted-or-effectful-sh08-typed-core)]
      :pending (get (sh09-authenticated-sh08-adapter-policy) :pending)})))
+
+(defn sh09-imported-effect-diagnostic [typed]
+  (let [fact (loop [facts (get typed :call-type-facts)]
+               (if (= (count facts) 0) {}
+                 (if (= :direct-imported-function (get (first facts) :dispatch))
+                   (first facts) (recur (rest facts)))))
+        diagnostic (sh09-adapter-diagnostic
+                     (assoc typed :type-facts [(assoc fact :core-node-id (get fact :call-core-node-id))])
+                     :imported-body-effects-pending)]
+    (assoc diagnostic
+      :function (if (= nil (get fact :caller-function-syntax-id)) (get diagnostic :function)
+                    (get fact :caller-function-syntax-id))
+      :remediation :derive-imported-body-and-reachable-call-effects-before-legality)))
+
+(defn sh09-build-authenticated-pure-effect-result [typed verification]
+  (if (= :direct-imported-functions-types-only (get typed :scope))
+    {:artifact :gravity/sh09-authenticated-effected-core-template
+     :schema-version 1 :status :rejected :scope :imported-function-effects-unsupported
+     :diagnostics [(sh09-imported-effect-diagnostic typed)]
+     :pending [:imported-body-effects :imported-effect-legality]}
+    (sh09-build-authenticated-pure-effect-result-without-imports typed verification)))
 
 (defn sh09-verify-authenticated-pure-effect-result
   [typed verification candidate]

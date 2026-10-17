@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh08-function-call-type-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]))
 
@@ -184,6 +185,138 @@
         (when (= :passed (:status report))
           (.put *function-request-cache* artifact request))
         request))))
+
+(deftest sh08-imported-function-types-development-kernel
+  ;; Normalized DATA exercises Gravity's joins and inference, not B47 authority.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        module {:namespace 'example.types :profile :meta :target :jvm :exports '[identity-i64]
+                :effects [:io/write] :capabilities [:io/stdout]}
+        original {:binding-id (sha 1) :name 'identity-i64 :namespace 'example.types :kind :function
+                  :binding-class :namespace :visibility :public :definition-artifact-id (sha 2)
+                  :definition-syntax-id (sha 3) :package {:name 'example.types}
+                  :profile-set [:meta] :target-set [:jvm] :type-ref :gravity.type/function
+                  :effects [:io/write] :capabilities [:io/stdout] :safety :safe}
+        origin {:ordinary-module-artifact-id (sha 4) :origin-analysis-id (sha 5) :origin-binding-id (sha 1)
+                :origin-definition-artifact-id (sha 2) :origin-definition-syntax-id (sha 3)
+                :origin-definition (select-keys original [:name :kind :namespace :package :visibility :profile-set :target-set :type-ref :effects :capabilities :safety])}
+        c5 {:artifact-id (sha 4) :binding-table {:bindings [original]}
+            :gravity-resolution-boundary {:resolved-analysis {:artifact-id (sha 5) :module-contract module}}}
+        caller-binding (assoc original :binding-id (sha 6) :upstream-binding-id (sha 7) :binding-class :import :semantic-span origin)
+        caller {:canonical-core-artifact {:module module}
+                :b47-context {:authenticated-wrapper {:sh06-resolution-artifact
+                              {:binding-table {:bindings [(assoc caller-binding :binding-id (sha 7))]}
+                               :gravity-resolution-boundary {:module-inputs {:module-artifacts [c5]}}}}}}
+        declaration {:type-id :gravity.type/i64}
+        record {:definition-binding-id (sha 8) :function-syntax-id (sha 9) :fixed-arity 1
+                :signature {:parameters [declaration] :return declaration}}
+        producer {:b47-context {:artifact-id (sha 10) :authenticated-wrapper {:sh06-resolution-artifact c5}
+                                :authenticated-core-request {:lineage {:authenticated-sh06-artifact-id (sha 4)}
+                                                             :binding-table [{:binding-id (sha 8) :upstream-binding-id (sha 1)}]}}
+                  :canonical-core-artifact {:function-records [record]}}
+        function {:artifact :gravity/c7-function-type :function-id (sha 9) :parameters [{:binding-id (sha 11) :type :gravity.type/i64}]
+                  :return :gravity.type/i64 :fixed-arity 1 :latent-effects [:io/write] :capabilities [:io/stdout]
+                  :thrown-error-effects [:pending-sh09] :status :inferred}
+        typed {:function-type-table [function] :identity-input {:derived-producer :kernel}}
+        join #(invoke-c7 'sh08-im-origin [caller %1 %2 %3])
+        imported (join caller-binding producer typed)
+        context {:imported-functions {(sha 6) imported}}
+        call {:core-node-id (sha 12) :argument-node-ids [(sha 13)] :evaluation-order :operator-then-arguments}
+        edge {:call-core-node-id (sha 12) :callee-binding-id (sha 6) :classification :nonlocal-or-nonfunction}
+        constrained #(invoke-c7 'sh08-ft-call-constraints-with-context
+                       [[call] [edge] {} {(sha 13) %} {(sha 99) :gravity.type/string} {} context])]
+    (is (= :accepted (:status imported)))
+    (is (= [:io/write] (get-in imported [:function-type :latent-effects])))
+    (is (= [:io/stdout] (get-in imported [:function-type :capabilities])))
+    (is (= [:pending-sh09] (get-in imported [:function-type :thrown-error-effects])))
+    (is (= :pending-sh09-imported-body (:effect-status imported)))
+    (is (= :pending-imported-effects (:legality-status imported)))
+    (is (= [] (:diagnostics (constrained :gravity.type/i64))))
+    (is (= {(sha 99) :gravity.type/string} (:binding-types (constrained :gravity.type/i64))))
+    (doseq [actual [:gravity.type/string :gravity.type/bool :gravity.type/integer :gravity.type/u64]]
+      (let [diagnostic (first (:diagnostics (constrained actual)))]
+        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+        (is (= [:gravity.type/i64 actual] ((juxt :expected :actual) diagnostic)))))
+    (is (false? (get-in (constrained :gravity.type/unknown) [:constraints 0 :solution :arguments-complete?])))
+    (is (= :equality (get-in (constrained :gravity.type/i64) [:constraints 0 :kind])))
+    (is (= :sh08-imported-function-call-v1 (get-in (constrained :gravity.type/i64) [:constraints 0 :producer-rule])))
+    (is (every? #(contains? (get-in (constrained :gravity.type/i64) [:constraints 0]) %)
+                [:dependencies :solution :invalidation :profile :target]))
+    (let [fact (first (invoke-c7 'sh08-ft-call-facts-with-context
+                        [[call] [edge] {} {(sha 13) :gravity.type/i64} {} (assoc module :effects [] :capabilities []) context]))]
+      (is (= [:io/write] (:effects fact)))
+      (is (= [:io/stdout] (:capabilities fact)))
+      (is (= :callee-module-declarations (:effect-facts-source fact)))
+      (is (= (invoke-c7 'sh08-im-reference [imported]) (get-in fact [:fact-id-request :imported-function])))
+      (is (not (contains? (:imported-function fact) :producer-identity))))
+    (let [other (assoc imported :binding-id (sha 16))
+          base {:status :accepted :pending [] :typed-core {} :identity-input {}}
+          left (invoke-c7 'sh08-im-result [base (array-map (sha 6) imported (sha 16) other)])
+          right (invoke-c7 'sh08-im-result [base (array-map (sha 16) other (sha 6) imported)])]
+      (is (= left right))
+      (is (= 2 (count (:imported-function-types left))))
+      (is (= 1 (count (:module-type-producers left)))))
+    (doseq [value [nil 1 true "wrong" {}]]
+      (let [checked (invoke-c7 'sh08-im-inputs-check
+                      [{:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests value}])]
+        (is (= "C7-VERIFY" (:rule checked)))
+        (is (= :malformed-module-type-inputs (:reason checked)))))
+    (is (= :call-arity-mismatch (get-in (invoke-c7 'sh08-im-call-constraint [call edge [] imported {}]) [:diagnostics 0 :reason])))
+    (is (= :gravity.type/i64
+           (invoke-c7 'sh08-ft-infer-node-with-context
+             [{:node-id (sha 12) :core-form :call} {} {} {} [edge] context])))
+    (is (= (:function-type imported)
+           (invoke-c7 'sh08-ft-infer-node-with-context
+             [{:core-form :reference :attributes {:binding-id (sha 6)}} {}
+              (invoke-c7 'sh08-im-seeds [{(sha 6) imported} {}]) {} [] context])))
+    (doseq [key [:ordinary-module-artifact-id :origin-analysis-id :origin-binding-id :origin-definition-artifact-id :origin-definition-syntax-id :origin-definition]]
+      (is (= "C7-VERIFY" (:rule (join (update caller-binding :semantic-span dissoc key) producer typed)))))
+    (is (= "C7-VERIFY" (:rule (join caller-binding (assoc-in producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id] (sha 999)) typed))))
+    (is (= "C7-ANNOTATION" (:rule (join caller-binding (assoc-in producer [:canonical-core-artifact :function-records 0 :signature :parameters] [nil]) typed))))
+    (is (= "C7-ANNOTATION" (:rule (join caller-binding (update-in producer [:canonical-core-artifact :function-records 0 :signature] dissoc :return) typed))))
+    (is (= "C7-ANNOTATION" (:rule (join caller-binding producer (assoc-in typed [:function-type-table 0 :return] :gravity.type/bool)))))))
+
+(deftest sh08-imported-work-boundaries-development-kernel
+  ;; Invocation-local memo/limit policy DATA. Public C7 always starts empty.
+  (let [bounds (invoke-c7 'sh08-local-bounds-value [])
+        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        c5 {:artifact-id module-id}
+        request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
+        usage {:status :accepted :nodes 1 :scalar-units 1}
+        memo {id {:request request :result {:status :accepted} :usage usage}}
+        check #(invoke-c7 'sh08-im-work-check [%1 %2 %3])]
+    (is (= :accepted (:status (check {} {} usage))))
+    (is (= :module-type-distinct-producer-limit
+           (:reason (check (zipmap (range (:maximum-root-nodes bounds)) (repeat {:usage usage})) {} usage))))
+    (is (= :module-type-dependency-depth-limit
+           (:reason (check {} (zipmap (range (:maximum-carrier-depth bounds)) (repeat usage)) usage))))
+    (is (= :module-type-total-core-work-limit
+           (:reason (check {id {:usage (assoc usage :nodes (:maximum-carrier-nodes bounds))}} {} usage))))
+    (is (= :module-type-total-scalar-work-limit
+           (:reason (check {id {:usage (assoc usage :scalar-units (:maximum-scalar-units bounds))}} {} usage))))
+    (is (= :module-type-producer-core-bound (:reason (check {} {} {:status :rejected :reason :carrier-width-bound}))))
+    (is (= {:status :accepted} (:result (invoke-c7 'sh08-im-derive [request memo {}]))))
+    (is (= :substituted-module-type-request
+           (get-in (invoke-c7 'sh08-im-derive [(assoc request :extra true) memo {}]) [:result :diagnostics 0 :reason])))
+    (is (= :cyclic-module-type-request
+           (get-in (invoke-c7 'sh08-im-derive [request {} {id usage}]) [:result :diagnostics 0 :reason])))
+    (is (= :undeclared-module-type-producer (:reason (invoke-c7 'sh08-im-producers [[request] memo {} []]))))
+    (is (= :undeclared-module-type-producer
+           (:reason (invoke-c7 'sh08-im-producers [[request] memo {} [(assoc c5 :forged true)]]))))
+    (is (= :duplicate-or-invalid-module-type-producer
+           (:reason (invoke-c7 'sh08-im-producers [[request request] memo {} [c5]]))))
+    (is (= :module-type-input-count-limit
+           (:reason (invoke-c7 'sh08-im-inputs-check
+                      [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
+                        :module-requests (vec (repeat (inc (:maximum-root-nodes bounds)) request))}]))))
+    (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
+          supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
+                    :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
+      ;; Container validation does not re-flatten proof bodies. This malformed
+      ;; producer still rejects through the unchanged full authentication path.
+      (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
+      (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
@@ -1984,6 +2117,80 @@
     (is (= "C5-UNRESOLVED" (:id diagnostic)))
     (is (= (slurp (fixture-path "rejected" basename ".gravity"))
            (slurp (fixture-path "rejected" basename ".qst"))))))
+
+(deftest sh08-imported-function-authenticated-source-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [library-c5 (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "type-values" extension))
+                 library (bootstrap/sh07-core-from-resolution-artifact library-c5)
+                 producer (function-request library)
+                 source-path (fixture-path "modules" "type-consumer" extension)
+                 inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
+                 c5 (bootstrap/compiler-c5-resolution-file-artifact source-path inputs)
+                 core (bootstrap/sh07-core-from-resolution-artifact c5)
+                 request (assoc (function-request core) :module-type-inputs
+                           {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
+                 result (invoke-c7 'sh08-function-type-core-artifact [request])]
+             (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
+             (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+             (when (= :accepted (:status result))
+               (is (= :direct-imported-functions-types-only (:scope result)))
+               (is (= 3 (count (:imported-function-types result)) (count (:function-type-table result)) (count (:call-type-facts result))))
+               (is (= 1 (count (:module-type-producers result))))
+               (is (= #{:gravity.type/i64 :gravity.type/bool :gravity.type/string}
+                      (set (map :return (:function-type-table result)))
+                      (set (map :result-type (:call-type-facts result)))))
+               (is (every? #(= :direct-imported-function (:dispatch %)) (:call-type-facts result)))
+               (doseq [call (:calls (canonical-core core))]
+                 (let [operator-type (get (:type-table result) (:operator-node-id call))]
+                   (is (= :gravity/c7-function-type (:artifact operator-type)))
+                   (is (= 1 (:fixed-arity operator-type)))))
+               (is (every? #(= (:artifact-id library-c5) (:producer-sh06-artifact-id %)) (:imported-function-types result)))
+               (is (every? #(= [:pending-sh09] (get-in % [:function-type :thrown-error-effects])) (:imported-function-types result)))
+               (is (= :passed (:status (invoke-c7 'sh08-verify-function-type-result [request result]))))
+               (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result
+                                         [request (assoc-in result [:imported-function-types 0 :function-type :return] :gravity.type/bool)]))))
+               (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
+               (let [rejected ((ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8)
+                               'sh09-build-authenticated-pure-effect-result
+                               [result (invoke-c7 'sh08-verify-function-type-result [request result])])
+                     diagnostic (first (:diagnostics rejected))]
+                 (is (= :rejected (:status rejected)))
+                 (is (= :imported-body-effects-pending (:reason diagnostic)))
+                 (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation]))))
+             {:library-c5 library-c5 :producer producer :core core :request request :result result :source-path source-path :inputs inputs}))
+         [".gravity" ".qst"])
+        {:keys [request result core producer source-path inputs]} (first cases)]
+    (is (= (get-in cases [0 :result :identity-input]) (get-in cases [1 :result :identity-input])) )
+    (let [missing (invoke-c7 'sh08-function-type-core-artifact [(dissoc request :module-type-inputs)])
+          diagnostic (first (:diagnostics missing))]
+      (is (= "C7-ANNOTATION" (:rule diagnostic)))
+      (is (= :missing-imported-function-typing (:reason diagnostic)))
+      (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation])))
+    (doseq [bad [nil 1 true "wrong" {}]]
+      (let [rejected (invoke-c7 'sh08-function-type-core-artifact [(assoc-in request [:module-type-inputs :module-requests] bad)])]
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= :malformed-module-type-inputs (get-in rejected [:diagnostics 0 :reason])))))
+    (doseq [bad [(assoc producer :signature {:return :gravity.type/bool})
+                 (assoc-in producer [:canonical-core-artifact :function-records 0 :signature :return :type-id] :gravity.type/bool)
+                 (assoc-in producer [:b47-context :authenticated-core-request :lineage :authenticated-sh06-artifact-id] "sha256:stale")]]
+      (let [rejected (invoke-c7 'sh08-function-type-core-artifact [(assoc-in request [:module-type-inputs :module-requests] [bad])])]
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (doseq [[source expected-reason]
+            [[(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64 true)") :call-argument-type-mismatch]
+             [(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64)") :call-arity-mismatch]
+             [(clojure.string/replace (slurp source-path) "[value :- I64] :- I64" "[value :- I64] :- String") :function-result-type-mismatch]]]
+      (let [c5 (bootstrap/compiler-c5-resolution-source-artifact source-path source inputs)
+            artifact (bootstrap/sh07-core-from-resolution-artifact c5)
+            q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
+            rejected (invoke-c7 'sh08-function-type-core-artifact [q])
+            diagnostic (first (:diagnostics rejected))]
+        (is (= :accepted (:status artifact)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+        (is (= expected-reason (:reason diagnostic)))
+        (is (every? #(some? (get diagnostic %)) [:core-node-id :syntax-id :source-span :profile :target :remediation]))))))
 
 (deftest sh08-atomic-signature-authenticated-source-composition
   (let [artifacts (mapv #(fixture-artifact "accepted" "function-atomic-signatures" %) [".gravity" ".qst"])

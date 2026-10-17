@@ -922,6 +922,72 @@ variants and package solving remain later work. This increment does not admit
 an authoritative module revision or establish full SH-06/SH-07, self-hosting,
 seed-retirement, target or release completion.
 
+### Imported direct-call types: development implementation
+
+The current L3/L5/C7 increment derives imported function types from actual
+authenticated callee C7 requests. The owning pass is
+`gravity/compiler/c7_type_checker_engine.gravity`; the request interface and
+direct test commands are in `docs/development-verification.md`. An exported
+callee is joined through the actual C5 module and original binding to its
+projected C6 function, not selected by spelling or a copied caller signature.
+
+The initial boundary requires explicit complete callee parameter/return
+annotations; inferred exported signatures are still unsupported here, not
+forbidden by L5. Imported parameter and return types are immutable premises.
+Argument/result types and arity are checked without specializing a producer
+from caller input.
+Operator references also receive their function type. Function signatures and
+producer identities are retained in shared, deterministically ordered tables;
+call facts and equality constraints refer to stable coordinates rather than
+copying a complete producer identity per call. Existing finite input/output
+bounds and fresh reconstruction remain in force.
+
+Producer-declared effects and capabilities are preserved as declarations,
+not relabeled inferred purity. Imported body effects, effect legality and
+thrown-error analysis remain pending. The distinct type-only scope is rejected
+by C8 with `:imported-body-effects-pending`, including when declarations are
+empty. Runtime linking, higher-order imports, cross-profile typing, generic
+specialization, complete error/effect semantics and authoritative migration
+remain separate work.
+
+The corrected direct C7 batch passed four tests and 102 assertions; the C8
+boundary/local-adapter batch passed two tests and 21 assertions. The C7 groups
+include overlapping regressions and are not added as unique coverage. An
+earlier test-namespace read failed before tests and was corrected; it is not
+passing evidence.
+
+The first real source run reached accepted library/caller C5/C6 construction,
+then C7 rejected `:module-type-input-carrier-limit`. The new aggregate check
+traversed an entire retained producer request, including repeated core/wrapper
+and coordinator preimages, rather than the existing per-producer boundary.
+The owned JVM was interrupted after this known blocker instead of constructing
+the remaining blocked variants. It exited 130 without a final timing receipt
+or complete test counts. The diagnostic did not retain the specific failed
+carrier counter; no exact size or node-count claim follows. The corrected
+boundary checks the closed input container and actual retained callees, then
+fully authenticates and types each distinct producer. It retains the existing
+limits: 1,024 distinct producers, depth 128, and summed distinct canonical-core
+visits of at most 1,048,576 nodes and 16,777,216 scalar units. Individual core
+shape/product/signature limits and the imported output bound remain unchanged.
+These counters do not claim to bound every VM operation, raw proof byte or CPU
+second. Five direct tests and 118 assertions passed, including the earlier
+regressions; a separate local-inference group passed three tests and 31
+assertions. The bounds correction passed independent static review.
+
+The corrected real-source composition passed one test and 72 assertions: both
+extensions produced I64/Bool/String imported types, fresh replay passed,
+signature tampering rejected, and separately reconstructed argument, arity and
+declared-result mismatches rejected with source-linked diagnostics. C8 rejected
+the authentic accepted result for pending imported body effects. The original
+interrupted run remains separate, not relabeled as passing. Final focused
+batches also passed local inference (3/31), higher-order regressions (2/27),
+recursive regressions (2/33), the C8 boundary/local adapter (2/21), and the
+language boundary (6/11). Together with the corrected direct batch (5/118) and
+source composition (1/72), these are 21 test executions and 313 assertions,
+not a count of unique semantic cases. JVMs were serialized at a 2 GiB heap.
+This is development implementation evidence, not authoritative migration,
+runtime linking, complete SH-07/SH-08/SH-09 or self-hosting completion.
+
 ## Current Baseline
 
 The repository has a working Clojure stage0, Gravity-authored compiler source
