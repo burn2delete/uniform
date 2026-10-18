@@ -873,6 +873,129 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-boolean-match-authenticated-composition --fail-fast
 ```
 
+### Root Keyword match typing: development implementation
+
+The current C7 extension reuses structural matching's existing scalar domain,
+ordered partition, branch-local extraction and type-join machinery. Start with
+the owning type kernel:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-keyword-match-development-kernel \
+  --exact sh08-keyword-call-match-development-kernel \
+  --exact sh08-keyword-match-fallback-and-source-development-kernel \
+  --exact sh08-keyword-loop-match-cold-inference-development-kernel
+```
+
+An established Keyword parameter has an open domain. Literal clauses remove
+their values from that domain; a fallback binder retains those exclusions.
+An inner match on the binder or its immutable alias must not forget them.
+Known literal/quote and validated alias domains remain exact, rather than
+being widened to all Keywords. Open partial Keyword matches are currently
+unsupported; this is not a language-wide totality rule or proof of closed-type
+exhaustiveness. Existing Bool-only guard semantics are unchanged.
+
+A private root-scalar demand may use an independently established Keyword
+result without reconstructing a selected constructor coordinate. It does not
+establish that type, authenticate a call, or grant deep selected-shape/callee
+ancestry. The ordinary C7 call/source checks and guarded nth proof remain
+required. Constructor, lookup, callee-body and literal-nth projection paths
+retain their existing shape obligations.
+
+The first kernel covers parameter inference, residual-binder and alias
+preservation, exact literal domains, wrong-family patterns and source/binding
+mutations. The fallback/source kernel adds wildcard coverage, duplicate-clause
+rejection, escaped or wrong-scope binders and exact quoted/aliased domains.
+The cold kernel starts with empty type/proof tables, derives the
+existing loop and guarded-index facts, and then types the residual Keyword
+binder. Binder seeding consumes the established Keyword result instead of
+losing it through nominal call re-inference. A normally returning String branch
+remains String and cannot acquire the loop's Never premise. No second range
+solver or inference-order change is involved.
+
+The call-shape kernel supplies an established Keyword result and checks its
+shallow call/source joins and work boundary. It does not independently infer a
+real callee's result or recover its constructor ancestry.
+
+The existing emitter lowers scalar Keyword matches to the existing
+`structural-match` instruction. Its focused check joins the current scrutinee
+type, source, ordered rows and branch-local binder evidence:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-match-lowering-development-kernel
+```
+
+These kernels provide focused development feedback, not migration or
+self-hosting evidence. The combined regression batch passed 13 tests and 332
+assertions; the final lowering/fixture batch passed two tests and 37 assertions.
+They overlap and are not summed as unique coverage. An earlier extra closing
+delimiter stopped the fallback test's namespace load before assertions; the
+corrected fallback kernel separately passed 15 assertions.
+
+Run the affected source composition separately once the candidate is stable:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-match-authenticated-composition --fail-fast
+```
+
+Its paired fixture connects parameter and local-call scrutinees, exact literal
+aliases, function recur, guarded vector indexing and Keyword throws. Rejected
+source fixtures and fresh C7/C8 checks are separate from the normalized kernels.
+The source `escape` fixture tests first-class `nth` escape, not a match binder
+escaping its clause; binder-use and scope rejection currently have focused
+ownership coverage. Parsing paired fixtures is not source-to-execution evidence.
+
+The single frozen composition completed one test with 243 passing assertions,
+one failure and no errors. Test-var execution took 1,044.249 seconds plus 8.248
+seconds of namespace loading at 2 GiB. All 31 observed compiler, runtime, test
+and fixture hashes remained unchanged. The original aggregate remains failed.
+Both positive extensions passed actual local-call return typing, five matches
+and eleven clause rows, function/loop recur, and seventeen guest outcomes each.
+The scan returns three or throws the actual unmatched Keyword value; the catch
+returns 99. Ordinary Keyword truthiness in `if` remains distinct from Bool-only
+guards.
+
+Seven mandatory fresh public C7 operations cover four positive operations and
+three altered candidates. The stale nth source echo still passes its finite
+helper but fails full reconstruction. Fictional exclusions and a changed
+binder extraction are rejected by public reconstruction; these are not an
+isolated partition-causality or comprehensive verifier-correctness proof.
+Positive extraction and accepted/nonempty C8 graph guards prevent trivial
+missing-value rejection credit. Both whole-effect verifications and the three
+coherently resealed effect-graph hostiles passed.
+
+All ten rejected `.gravity` fixtures rejected. The sole failed assertion was
+the outside-guard diagnostic set: an unestablished match binder reaches the
+earlier `C7-ANNOTATION :typed-throw-payload-type-required` prerequisite, rather
+than one of the three anticipated later diagnostics. The expectation now
+includes that observed pair; compiler behavior was not weakened. Other allowed
+diagnostic memberships do not uniquely identify which alternative matched.
+Rejected `.qst` files have byte parity, not separate execution coverage. The
+unchanged expensive composition is not replayed merely to make its aggregate
+green. Check unknown throw-payload diagnostic ownership directly:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact direct-typed-throw-source-and-type-development-kernel
+```
+
+The existing unknown-payload assertion now checks the exact rule and reason.
+It passed 23 assertions; together with the unchanged lowering and fixture
+checks, the post-correction batch passed three tests/60 assertions. Only the
+two test files changed after the composition; its original verdict is intact.
+
+Open partial Keyword matches, other root scalar families, generalized unions
+and deep selected-shape propagation remain separate implementation work.
+Quoted Keyword domain propagation has focused coverage only; this source
+fixture does not exercise quoted-match composition. This is scoped executable
+development support, not authoritative migration or a target/release claim.
+
 ### Constructor-linked structural match execution
 
 For unguarded structural matches, edit the existing emitter and stage-owned

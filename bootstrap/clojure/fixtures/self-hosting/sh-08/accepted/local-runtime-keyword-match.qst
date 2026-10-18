@@ -1,0 +1,26 @@
+(ns self-hosting.sh08.local-runtime-keyword-match
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn route [command :- Keyword]
+  (if command (match command :read :hit _ command) :unreachable))
+(defn called [command :- Keyword]
+  (match (route command) :hit :called remainder remainder))
+(defn literal []
+  (let [tag :read copy tag] (match copy :read :literal)))
+(defn bounce [command :- Keyword again :- Bool]
+  (match command
+    :read (if again (recur :write false) "read")
+    :write "done"
+    _ "other"))
+(defn scan [middle :- Keyword]
+  (let [tags [:read middle :write]]
+    (loop [cursor 0]
+      (if (< cursor (count tags))
+        (match (nth tags cursor)
+          :read (recur (inc cursor))
+          :write (recur (inc cursor))
+          unexpected (throw unexpected))
+        cursor))))
+(defn caught []
+  (try (scan :unexpected) (catch Keyword problem 99)))
+(defn main [] (scan :read))

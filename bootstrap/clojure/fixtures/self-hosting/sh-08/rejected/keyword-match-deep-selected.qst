@@ -1,0 +1,11 @@
+(ns self-hosting.sh08.keyword-match-deep-selected
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn invalid []
+  (let [tags [{:kind :read} {:kind :read}]]
+    (loop [cursor 0]
+      (if (< cursor (count tags))
+        (match (nth tags cursor)
+          {:kind :read} (recur (inc cursor))
+          _ (throw :unexpected))
+        cursor))))

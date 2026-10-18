@@ -449,7 +449,8 @@
                  (assoc-in core [:error-transfers 0 :ordered-steps] [:transfer-error :evaluate-value])
                  (assoc-in core [:nodes 1 :evaluation :order 0 :core-node-id] :function)]]
       (is (= "C7-VERIFY" (-> (invoke bad) :diagnostics first :rule))))
-    (is (= "C7-ANNOTATION" (-> (c7-invoke 'sh08-th-products [core forms (assoc types :payload :gravity.type/unknown) 65536]) :diagnostics first :rule)))
+    (is (= ["C7-ANNOTATION" :typed-throw-payload-type-required]
+           ((juxt :rule :reason) (-> (c7-invoke 'sh08-th-products [core forms (assoc types :payload :gravity.type/unknown) 65536]) :diagnostics first))))
     (is (= "C7-VERIFY" (-> (c7-invoke 'sh08-th-products [core (assoc-in forms [1 :value] 'identity) types 65536]) :diagnostics first :rule)))
     (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-th-products [core forms types 1]) :diagnostics first :rule)))
     (let [never (c7-invoke 'sh08-th-products [core forms (assoc types :payload :gravity.type/never) 65536])]

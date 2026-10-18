@@ -5353,7 +5353,9 @@
     (if (= (count remaining) 0) result
       (let [group (first remaining)
             scrutinee (get nodes (first (get (get group :node) :children)))
-            type (sh08-ft-infer-node-with-context scrutinee prior-types bindings functions edges context)]
+            established (get prior-types (get scrutinee :node-id) :gravity.type/unknown)
+            type (if (= :gravity.type/keyword established) established
+                   (sh08-ft-infer-node-with-context scrutinee prior-types bindings functions edges context))]
         (recur (rest remaining)
           (if (sh08-sm-applicable? group type)
             (sh08-sm-seed group prior-types result functions)
@@ -7214,10 +7216,51 @@
             :vector-nth-selection {:application descriptor :projection-links (get selected :vector-projection-links)})))
       (assoc result :call-join-work work)))))
 
+(defn sh08-sm-root-keyword-call-shape [node nodes types bindings forms context]
+  ; A root scalar demand uses the independently established result type.
+  ; It carries no selected constructor or callee-body ancestry.
+  (let [id (get node :node-id) children (get node :children)
+        sources (get (get context :source-core) :calls []) work (+ 32 (* 8 (count children)) (count sources))]
+    (if (> work (get context :budget-left 0))
+      (assoc (sh08-sm-failure "C7-GENERIC" :root-scalar-match-work-limit nil :remaining-scalar-source-joins work) :call-join-work work)
+      (let [call (if (contains? (get context :calls {}) id) (get (get context :calls) id)
+                   (sh08-si-record sources :core-node-id id))
+            operator (get nodes (first children)) bid (get call :operator-binding-id)
+            expected {:core-node-id id :operator-node-id (first children) :operator-binding-id (get call :operator-binding-id)
+                      :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                      :evaluation-order :operator-then-arguments :result-policy :call-result}]
+      (if (if (= :gravity.type/keyword (get types id))
+            (if (= call expected) (sh08-ft-call-valid? call nodes bindings) false) false)
+        (if (sh08-ft-all-true? [(= :reference (get operator :core-form))
+              (= bid (get (get operator :attributes) :binding-id)) (= [bid] (get operator :resolved-binding-ids))
+              (sh08-si-call-forms? node nodes forms)])
+          {:status :accepted :shape-kind :scalar :type :gravity.type/keyword
+           :node-id id :source (get node :source) :binding-links [] :shape-size 1
+           :domain {:excluded-values []} :call-join-work work}
+          (assoc (sh08-sm-failure "C7-VERIFY" :root-scalar-match-source-mismatch nil :original-scalar-call-source id) :call-join-work work))
+        (assoc (sh08-sm-failure "C7-VERIFY" :root-scalar-match-type-or-call-mismatch nil :independently-established-keyword-call id) :call-join-work work))))))
+
 (defn sh08-sm-shape-with-bindings [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context]
   (if (map? (get call-context :vector-coordinate-demand))
     (sh08-vn-project-input id nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context)
-    (sh08-sm-shape-with-bindings-base id nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context)))
+    (let [node (get nodes id) kind (get node :core-form)
+          root? (= :gravity.type/keyword (get call-context :root-scalar-match-demand))
+          keyword? (= :gravity.type/keyword (get types id))
+          literal-selection? (= :sh08-vector-nth-v1 (get (get types (first (get node :children))) :version))
+          form (get forms (get (get node :source) :form-id))
+          source-valid? (if (if root? keyword? false)
+                          (if (= (get node :source) (sh08-ma-form-source form))
+                            (if (= :reference kind) (sh08-si-ref? node (get (get node :attributes) :binding-id) forms bindings) true) false) true)
+          context (if (if root? (if keyword? (contains? #{:reference :let :call} kind) false) false)
+                    call-context (assoc call-context :root-scalar-match-demand nil))]
+      (if source-valid?
+        (if (if root? (if keyword? (if (= :call kind)
+              (if (= false literal-selection?)
+                (if (<= depth (get (sh08-local-bounds-value) :maximum-carrier-depth)) (= false (contains? seen id)) false) false) false) false) false)
+          (sh08-sm-root-keyword-call-shape node nodes types bindings forms context)
+          (sh08-sm-shape-with-bindings-base id nodes types binding-types functions lexical bindings forms seen depth binding-shapes
+            (if literal-selection? (assoc context :root-scalar-match-demand nil) context)))
+        (sh08-sm-failure "C7-VERIFY" :root-scalar-match-source-mismatch nil :original-scalar-source id)))))
 
 (defn sh08-sm-shape-with-bindings-base [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context]
   (if (> depth (get (sh08-local-bounds-value) :maximum-carrier-depth))
@@ -7377,7 +7420,8 @@
 
 (defn sh08-sm-applicable? [group type]
   (if (= true (get group :structural?)) true
-    (if (map? type) (contains? #{:gravity.type/map :gravity.type/vector} (get type :kind)) false)))
+    (if (= :gravity.type/keyword type) true
+      (if (map? type) (contains? #{:gravity.type/map :gravity.type/vector} (get type :kind)) false))))
 
 (defn sh08-sm-extractions [shape tree constructor-path]
   (sh08-sm-extractions-with-origins shape tree constructor-path (get shape :case-origins {})))
@@ -7493,7 +7537,8 @@
 
 (defn sh08-sm-group-shape [group types binding-types functions]
   (sh08-sm-shape-with-bindings (first (get (get group :node) :children)) (get group :nodes) types binding-types functions
-                 (get group :lexical-bindings) (get group :binding-index) (get group :forms) #{} 0 (get group :binding-shapes {}) (get group :shape-call-context {})))
+                 (get group :lexical-bindings) (get group :binding-index) (get group :forms) #{} 0 (get group :binding-shapes {})
+                 (assoc (get group :shape-call-context {}) :root-scalar-match-demand :gravity.type/keyword)))
 
 (defn sh08-sm-extraction-type [values]
   (let [type (get (first values) :type)]
@@ -7638,9 +7683,12 @@
                                    (if (= declared nil) :unsupported-heterogeneous-structural-match-join :structural-match-branch-type-mismatch)
                                    body expected type)})
                 {:diagnostic (sh08-bm-error "C7-ANNOTATION" :unknown-structural-match-branch-type body :established-branch-type type)}))))
-        {:diagnostic (sh08-bm-error (if (= :formal (get module :profile)) "L7-NONEXHAUSTIVE" "C7-ANNOTATION")
+        {:diagnostic (if (= :gravity.type/keyword (get shape :type))
+                       (sh08-bm-error "C7-ANNOTATION" :unsupported-partial-keyword-match node
+                         :keyword-fallback-or-partiality-evidence (get partition :remaining))
+                       (sh08-bm-error (if (= :formal (get module :profile)) "L7-NONEXHAUSTIVE" "C7-ANNOTATION")
                          (if (= :formal (get module :profile)) :nonexhaustive-structural-match :unsupported-partial-structural-match)
-                         node :exhaustive-constructor-match (get partition :remaining))})
+                         node :exhaustive-constructor-match (get partition :remaining)))})
       {:diagnostic (sh08-sm-diagnostic group partition)})]
     (assoc result :call-join-work (get shape :call-join-work 0))))
 

@@ -1962,6 +1962,71 @@ deep selected-shape propagation and dynamic bounds-failure APIs remain separate
 work, not language bans. Profile/provider/ownership legality, authoritative
 migration, target support, self-hosting and seedless release remain outstanding.
 
+### Root Keyword match typing: development implementation
+
+The existing C7 and typed-emitter owners now extend scalar matching to an
+established Keyword scrutinee. Parameters, validated immutable aliases and
+ordinary local-call results retain their current type. Literal clauses remove
+values from an open domain; a fallback binder and its immutable aliases keep
+those exclusions. Known literal and quoted domains stay exact in the focused
+shape checks. Wildcards consume the remaining domain without a binding.
+Open partial Keyword matches reject with an implementation annotation
+requirement, not a language-wide totality rule. A known literal caller does not
+specialize away a declared Keyword parameter's open domain.
+
+The cold inference check starts without type/proof tables: existing loop and
+guarded-index facts establish the Keyword result, and binder seeding preserves
+it. A normally returning String branch is not treated as Never. The private
+root-scalar demand does not establish a type or authenticate a whole callee;
+it avoids demanding deep constructor ancestry for an already established root
+scalar. Existing literal-index projection and variable-index deep-shape fences
+remain intact. Lowering joins the current Keyword type and existing ordered
+source, clause, scope and extraction records, then emits the existing
+`structural-match` instruction. Runtime and C8 production code are unchanged.
+
+The combined focused batch passed 13 tests/332 assertions; a separate final
+lowering/fixture batch passed two tests/37 assertions. These overlap. The
+fallback test initially had a load-time delimiter error, then passed its 15
+assertions after correction. Paired fixture parsing is not execution evidence.
+
+The one frozen source composition completed 244 assertions: 243 passed, one
+failed and none errored. Test-var execution took 1,044.249 seconds plus 8.248
+seconds of namespace loading at 2 GiB; all 31 observed input hashes remained
+unchanged. The aggregate remains failed. Both positive extensions passed seven
+function types, eight call facts, five Keyword matches and eleven clause rows.
+Thirty-four guest outcomes cover parameter dispatch, local-call return typing,
+ordinary if truthiness, exact literal aliases, function recur, guarded vector
+scans, unmatched Keyword throws, catch recovery and normal entrypoints.
+Seven fresh public C7 operations cover four positives and three altered
+candidates. A stale source echo remains finite-helper-valid but fails public
+reconstruction; fictional exclusions and changed extraction types also fail.
+Actual extraction guards and accepted/nonempty effect graphs make those
+checks nonvacuous. Both C8 whole-result verifications and three coherently
+resealed graph hostiles passed.
+
+All ten negative `.gravity` fixtures rejected. The single failure omitted the
+observed outside-guard diagnostic from its allowed set: the unestablished
+binder's throw payload is unknown, so the `C7-ANNOTATION` diagnostic
+`:typed-throw-payload-type-required` precedes later match/index diagnostics.
+The test-only expectation now includes it; no compiler change or expensive
+unchanged replay is warranted. The existing direct throw kernel now checks the
+exact unknown-payload rule and reason and passed 23 assertions. The combined
+post-correction batch passed three tests/60 assertions, including unchanged
+lowering and fixture checks. Only two test files changed after the original
+composition; these checks do not turn its failed aggregate into a pass.
+Other allowed diagnostic memberships are not
+uniquely observed diagnostic traces. Negative `.qst` coverage is pair parity
+only. The source escape fixture rejects first-class `nth`; match-binder escape
+has normalized ownership checks, not an authentic source rejection claim.
+
+Use the owning commands in `docs/development-verification.md`. Open partial
+Keyword matching, additional scalar families, union joins and deep
+selected-shape propagation remain separate implementation work. Quoted
+Keyword domain propagation has focused coverage, but quoted-match source
+composition is not exercised by this fixture. This is scoped executable
+development support, not authoritative migration, profile/provider or
+ownership admission, target support, self-hosting or seedless release.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
