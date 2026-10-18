@@ -1429,7 +1429,11 @@
       (p15-s23-typed-all [(= [:core :type 'gravity.core] [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
                          (= type (get declaration :type-id)
                             (if (= 'List (get binding :name)) :gravity.type/list (p15-s23-typed-atomic-id (get binding :name))))
-                         (= (get binding :name) (get declaration :type-symbol) (get form :value))
+                         (= (get binding :name) (get declaration :type-symbol))
+                         (if (= (get binding :name) (get form :value)) true
+                           (if (symbol? (get form :value))
+                             (= (str (get binding :namespace) "/" (get binding :name))
+                                (str (get form :value))) false))
                          (= (get form :syntax-id) (get declaration :type-syntax-id))]))))
 
 (defn p15-s23-typed-parameter-declaration? [declaration type context]

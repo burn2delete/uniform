@@ -594,6 +594,112 @@
            (is (thrown? clojure.lang.ExceptionInfo
                         (bootstrap/sh06-resolution-current-binding! "<operation-drift>"))))))))
 
+(deftest sh06-qualified-core-var-development-kernel
+  (let [binding (bootstrap/sh06-resolution-current-binding! "<qualified-core-kernel>")
+        invoke #(bootstrap/sh06-resolution-execute! "<qualified-core-kernel>" binding %1 %2)
+        core (bootstrap/sh06-resolution-core-record 'count :var 0)
+        reference {:syntax-id (sha256-text "qualified-count") :symbol 'gravity.core/count
+                   :qualifier 'gravity.core :name 'count :position :operator :scope-chain []
+                   :semantic-span {:ordinal 0} :source-span {:source "<qualified-core-kernel>"}}
+        request (assoc (module-policy-input 'demo.qualified [] [] [] [reference]) :core-bindings [core])
+        candidates (fn [request reference]
+                     (let [records (vec (concat (:definitions request) (:core-bindings request) (:import-bindings request)))
+                           bindings (mapv #(assoc %1 :binding-id %2) records (range))]
+                       (invoke 'sh06-reference-candidates [request bindings reference])))
+        check (fn [request reference]
+                (let [records (vec (concat (:definitions request) (:core-bindings request) (:import-bindings request)))
+                      bindings (mapv #(assoc %1 :binding-id %2) records (range))
+                      result (invoke 'sh06-reference-check [request bindings reference])]
+                  (is (= (:rule result) (invoke 'sh06-reference-rule [request bindings reference])))
+                  result))
+        reject (fn [request reference rule reason]
+                 (let [result (check request reference)]
+                   (is (= rule (:rule result)))
+                   (is (= reason (get-in result [:facts :reason])))
+                   result))]
+    (doseq [position [:operator :expression]]
+      (let [reference (assoc reference :position position)
+            unqualified (assoc reference :symbol 'count :qualifier nil)]
+        (is (= [0] (mapv :binding-id (candidates request reference))))
+        (is (= (candidates request reference) (candidates request unqualified)))
+        (is (nil? (check request reference)))
+        (is (nil? (check request unqualified)))))
+    (let [local {:name 'count :kind :local}
+          request (assoc request :lexical-scopes [{:scope-id :scope :bindings [local]}])
+          bindings [(assoc core :binding-id :core)
+                    (assoc local :scope-id :scope :binding-class :lexical :binding-id :local)]]
+      (is (= [:local] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                       [request bindings (assoc reference :qualifier nil :scope-chain [:scope])]))))
+      (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                      [request bindings (assoc reference :scope-chain [:scope])])))))
+    (reject request (assoc reference :name 'missing :symbol 'gravity.core/missing)
+            "C5-UNRESOLVED" :no-legal-binding)
+    (reject request (assoc reference :qualifier 'other.core)
+            "C5-ALIAS" :unknown-namespace-alias)
+    (doseq [position [:macro :declaration nil]]
+      (reject request (assoc reference :position position) "C5-UNRESOLVED" :no-legal-binding))
+    (doseq [[kind position] [[:special-form :operator] [:macro :operator] [:type :expression]]]
+      (let [changed (assoc request :core-bindings [(assoc core :kind kind)])]
+        (reject changed (assoc reference :position position) "C5-UNRESOLVED" :no-legal-binding)))
+    (doseq [changed-core [(assoc core :namespace 'other.core) (assoc core :binding-class :import)]]
+      (reject (assoc request :core-bindings [changed-core]) reference "C5-UNRESOLVED" :no-legal-binding))
+    (doseq [owner [{:imports [{:alias 'gravity.core :namespace 'owned.library}]}
+                  {:imports [{:alias 'owned :namespace 'gravity.core}]}
+                  {:definitions [(assoc core :name 'another :kind :function :binding-class :namespace)]}
+                  {:module (assoc (:module request) :namespace 'gravity.core)}]]
+      (reject (merge request owner) reference "C5-UNRESOLVED" :no-legal-binding))
+    (let [private-import (assoc core :binding-class :import :namespace 'owned.library :visibility :private)
+          owned (assoc request :imports [{:alias 'gravity.core :namespace 'owned.library}]
+                               :import-bindings [private-import])]
+      (is (= :import (:binding-class (first (candidates owned reference)))))
+      (reject owned reference "C5-PRIVATE" :private-binding-access))
+    (let [private-core (assoc core :visibility :private :profile-set nil :target-set nil)]
+      (reject (assoc request :core-bindings [private-core]) reference "C5-PRIVATE" :private-binding-access)
+      (reject (assoc request :core-bindings [core private-core]) reference "C5-AMBIGUOUS" :multiple-legal-bindings))
+    (doseq [kind [:var :type :special-form]
+            qualified? [false true]
+            :when (or (= kind :var) (= kind :type) (not qualified?))]
+      (let [reference (assoc reference :qualifier (when qualified? 'gravity.core)
+                                       :position (if (= kind :type) :type :operator))
+            request (assoc request :core-bindings [(assoc core :kind kind)])]
+        (is (nil? (check request reference)))
+        (is (nil? (check (assoc-in request [:core-bindings 0 :target-set] [:all]) reference)))
+        (is (nil? (check (assoc-in request [:core-bindings 0 :target-set] [:jvm]) reference)))
+        (doseq [[key value] [[:profile-set nil] [:profile-set :meta] [:profile-set '(:meta)]
+                            [:profile-set [[:meta]]] [:profile-set [nil]] [:profile-set ["meta"]]
+                            [:target-set nil] [:target-set :all] [:target-set #{:all}]
+                            [:target-set [[:jvm]]] [:target-set ["jvm"]]]]
+          (reject (assoc-in request [:core-bindings 0 key] value) reference
+                  "C5-UNRESOLVED" :malformed-core-binding-availability))
+        (doseq [targets [[] [:llvm]]]
+          (reject (assoc-in request [:core-bindings 0 :target-set] targets) reference
+                  "C5-TARGET" :core-binding-target-excluded))
+        (doseq [profiles [[] [:core] [:native]]]
+          (reject (assoc-in request [:core-bindings 0 :profile-set] profiles) reference
+                  "C5-CROSS-PROFILE" :core-binding-profile-excluded))
+        (reject (-> request (assoc-in [:core-bindings 0 :profile-set] [:core])
+                            (assoc-in [:core-bindings 0 :target-set] [:llvm])) reference
+                "C5-TARGET" :core-binding-target-excluded)))
+    (let [second-reference (assoc reference :qualifier nil :symbol 'count :syntax-id (sha256-text "plain-count"))
+          request (assoc request :references [reference second-reference])
+          result (bootstrap/sh06-resolution-run-request! "<qualified-core-kernel>" binding request)
+          analysis (:resolved-analysis result)
+          rows (:resolution-table analysis)
+          selected (first (filter #(= 'count (:name %)) (:binding-table analysis)))]
+      (is (= 2 (count rows)))
+      (is (apply = (map :binding-id rows)))
+      (is (= 2 (count (set (map :syntax-id rows)))))
+      (is (= [:fully-qualified-namespace-binding :profile-allowed-core-binding] (mapv :resolution-order rows)))
+      (is (= (dissoc core :source-span) (dissoc selected :source-span :binding-id :artifact)))
+      (is (= :passed (:status (invoke 'sh06-verify-resolution-resolved
+                                    [analysis (:digest-requests result) (:resolved-digests result)]))))
+      (doseq [[key value] [[:profile-set [:core]] [:target-set [:llvm]]
+                          [:effects [:io/write]] [:capabilities [:io/stdout]]
+                          [:binding-class :import] [:visibility :private]]]
+        (is (= :failed (:status (invoke 'sh06-verify-resolution-resolved
+                                       [(assoc-in analysis [:binding-table 0 key] value)
+                                        (:digest-requests result) (:resolved-digests result)]))))))))
+
 (deftest sh06-list-parameter-type-projection-development-kernel
   (let [references (atom [])
         project (var-get (private-bootstrap-var 'sh06-resolution-analysis-inputs))

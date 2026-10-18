@@ -747,7 +747,9 @@
           (let [qualified-definitions
                 (sh06-find-definitions-in-namespace
                  namespace-definitions qualifier name)]
-            (if (> (count qualified-definitions) 0)
+            (if (if (= qualifier (get module :namespace)) true
+                  (sh06-definition-namespace-present?
+                   namespace-definitions qualifier))
               (sh06-materialize-definitions bindings qualified-definitions)
               (let [namespace-imports
                     (sh06-find-import-by-namespace imports qualifier)]
@@ -756,7 +758,26 @@
                    bindings
                    (sh06-import-binding-definitions
                     request namespace-imports name))
-                  [])))))))))
+                  (if (if (= qualifier 'gravity.core)
+                        (sh06-vector-contains? [:operator :expression]
+                                              (get reference :position)) false)
+                    (sh06-materialize-definitions
+                     bindings
+                     (loop [remaining core-definitions found []]
+                       (if (= (count remaining) 0)
+                         found
+                         (let [definition (first remaining)]
+                           (recur
+                            (rest remaining)
+                            (if (if (= (get definition :namespace) 'gravity.core)
+                                  (if (= (get definition :name) name)
+                                    (if (= (get definition :kind) :var)
+                                      (= (get definition :binding-class) :core)
+                                      false)
+                                    false)
+                                  false)
+                              (conj found definition) found))))))
+                    []))))))))))
 
 (defn sh06-type-definitions [definitions]
   (loop [remaining definitions values []]
@@ -975,40 +996,48 @@
                    :foreign-record-complete?
                    (get dependency :foreign-record-complete?)}})))))
 
-(defn sh06-reference-rule [request bindings reference]
-  (let [candidates (sh06-reference-candidates request bindings reference)]
-    (if (= (count candidates) 0)
-      (if (= (get reference :qualifier) nil)
-        "C5-UNRESOLVED"
-        (if (sh06-definition-namespace-present?
-             (get request :definitions) (get reference :qualifier))
-          "C5-UNRESOLVED"
-          (if (= (count (sh06-find-import-by-alias
-                         (get request :imports)
-                         (get reference :qualifier))) 0)
-            (if (= (count (sh06-find-import-by-namespace
-                           (get request :imports)
-                           (get reference :qualifier))) 0)
-              "C5-ALIAS"
-              "C5-UNRESOLVED")
-            "C5-UNRESOLVED")))
-      (if (> (count candidates) 1)
-        "C5-AMBIGUOUS"
-        (let [candidate (first candidates)]
-          (if (= (get candidate :visibility) :private)
-            (if (sh06-same-source-definition? request candidate)
-              nil
-              "C5-PRIVATE")
-            nil))))))
+(defn sh06-availability-vector? [values]
+  (if (vector? values)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (keyword? (first remaining))
+          (recur (rest remaining)) false)))
+    false))
+
+(defn sh06-core-availability-check [module candidate]
+  (if (= (get candidate :binding-class) :core)
+    (let [profiles (get candidate :profile-set)
+          targets (get candidate :target-set)]
+      (if (if (sh06-availability-vector? profiles)
+            (sh06-availability-vector? targets) false)
+        (if (if (sh06-vector-contains? targets :all) true
+              (sh06-vector-contains? targets (get module :target)))
+          (if (sh06-vector-contains? profiles (get module :profile))
+            nil
+            {:rule "C5-CROSS-PROFILE" :reason :core-binding-profile-excluded})
+          {:rule "C5-TARGET" :reason :core-binding-target-excluded})
+        {:rule "C5-UNRESOLVED" :reason :malformed-core-binding-availability}))
+    nil))
 
 (defn sh06-reference-check [request bindings reference]
   (let [candidates (sh06-reference-candidates request bindings reference)
+        candidate (if (= (count candidates) 1) (first candidates) nil)
+        availability
+        (if (= candidate nil) nil
+          (if (if (= (get candidate :visibility) :private)
+                (sh06-same-source-definition? request candidate) true)
+            (sh06-core-availability-check (get request :module) candidate)
+            nil))
         rule
         (if (= (count candidates) 0)
           (if (= (get reference :qualifier) nil)
             "C5-UNRESOLVED"
-            (if (sh06-definition-namespace-present?
-                 (get request :definitions) (get reference :qualifier))
+            (if (if (= (get reference :qualifier) 'gravity.core) true
+                  (if (= (get reference :qualifier)
+                         (get (get request :module) :namespace)) true
+                    (sh06-definition-namespace-present?
+                     (get request :definitions) (get reference :qualifier))))
               "C5-UNRESOLVED"
               (if (= (count (sh06-find-import-by-alias
                              (get request :imports)
@@ -1020,11 +1049,10 @@
                 "C5-UNRESOLVED")))
           (if (> (count candidates) 1)
             "C5-AMBIGUOUS"
-            (let [candidate (first candidates)]
-              (if (= (get candidate :visibility) :private)
+            (if (= (get candidate :visibility) :private)
                 (if (sh06-same-source-definition? request candidate)
-                  nil "C5-PRIVATE")
-                nil))))]
+                  (get availability :rule) "C5-PRIVATE")
+                (get availability :rule))))]
     (if (= rule nil)
       nil
       {:rule rule
@@ -1033,19 +1061,29 @@
        (sh06-prefix candidates
                     (get (sh06-bounds-value) :maximum-candidates))
        :dependency-edge nil
-       :facts {:reason
-               (if (= rule "C5-UNRESOLVED")
-                 :no-legal-binding
-                 (if (= rule "C5-AMBIGUOUS")
-                   :multiple-legal-bindings
-                   (if (= rule "C5-PRIVATE")
-                     :private-binding-access
-                     :unknown-namespace-alias)))
+       :facts (let [facts {:reason
+               (if (= rule "C5-AMBIGUOUS")
+                 :multiple-legal-bindings
+                 (if (= rule "C5-PRIVATE")
+                   :private-binding-access
+                   (if (= availability nil)
+                     (if (= rule "C5-UNRESOLVED")
+                       :no-legal-binding :unknown-namespace-alias)
+                     (get availability :reason))))
                :qualifier (get reference :qualifier)
                :name (sh06-reference-name reference)
                :position (get reference :position)
                :scope-chain (get reference :scope-chain)
-               :candidate-count (count candidates)}})))
+               :candidate-count (count candidates)}]
+                (if (= availability nil) facts
+                  (assoc (assoc (assoc (assoc facts
+                    :active-profile (get (get request :module) :profile))
+                    :active-target (get (get request :module) :target))
+                    :profile-set (get candidate :profile-set))
+                    :target-set (get candidate :target-set))))})))
+
+(defn sh06-reference-rule [request bindings reference]
+  (get (sh06-reference-check request bindings reference) :rule))
 
 (defn sh06-first-reference-rule [request bindings]
   (loop [remaining (get request :references)]

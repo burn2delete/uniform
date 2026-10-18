@@ -44,6 +44,7 @@ Follow the owning boundary when the next change is downstream of SH-07:
 | Behavior being changed | Implementation owner | Focused workflow below |
 | --- | --- | --- |
 | Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` | Default SH-07 commands here. |
+| Namespace/reference binding and core availability | `bootstrap/gravity/src/gravity/resolution.gravity` | SH06 adapter namespace with exact owning resolution selectors; affected source composition when selected bindings or diagnostics change. |
 | Reader literal kind in syntax transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and the `00853-sh04-syntax-reader-binding.clj` consumer | Character occurrence transport checks below. |
 | Retained source occurrences to the temporary C6 request | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00887-sh07-core-build-form-tree.clj` and its `00890` caller | `gravity.self-hosting.sh07-mutation-test`, exact `sh07-map-source-order-development-kernel`; affected real source composition before accepting a projection change. |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Loop/recur and the matching type-development section. |
@@ -94,6 +95,48 @@ when combining different-cost checks. In the SH08 function-test namespace,
 inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
+
+### Qualified core resolution and availability
+
+Edit `bootstrap/gravity/src/gravity/resolution.gravity` for binding selection
+and its C5 diagnostics, not the core catalog or a host namespace resolver.
+Use the existing direct owning checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --exact sh06-qualified-core-var-development-kernel \
+  --exact sh06-atomic-signature-type-namespace-development-kernel \
+  --exact sh06-ordinary-module-policy-development-kernel
+```
+
+These execute the current owning Gravity resolver with normalized requests.
+They check route ownership, selected identity, privacy/ambiguity precedence,
+core profile/target eligibility and diagnostic facts. They are not fresh
+source composition or authoritative migration. Preserve existing failure
+facts unless the new availability check itself rejects; a private or duplicate
+candidate must not disappear through eligibility filtering.
+
+For the emitter's declaration/source-spelling join, use the existing
+`gravity.self-hosting.sh01-stage2-runtime-iteration-test` namespace with exact
+selector `current-gravity-qualified-type-declaration-development-kernel`.
+It checks ordinary and qualified List/String declarations and rejects forged
+spellings, bindings and source identities without rebuilding source products.
+
+When resolution or that lowering join changes, run the affected composition
+separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-qualified-core-authenticated-composition
+```
+
+This checks paired original sources through C5/C6/C7, public lowering, C8 and
+execution, with missing-member rejection at C5. It is not an inner-loop
+prerequisite, a reason to replay unchanged proof products, or authoritative
+module migration. Preserve failed attempts and distinguish their completed
+checks from assertions that never ran.
 
 ### Map source-order projection
 

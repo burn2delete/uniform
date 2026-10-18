@@ -268,6 +268,61 @@
       (is (= [{:op :local :name 'problem}]
              (get-in (invoke 'p15-s23-typed-lower-function module expected context) [:value :instructions]))))))
 
+(deftest current-gravity-qualified-type-declaration-development-kernel
+  ;; Existing typed consumer joins over normalized DATA, without a source build.
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (:value (invoke 'p15-s23-typed-context module input observation))]
+    (doseq [[name type] [['String :gravity.type/string] ['List :gravity.type/list]]
+            qualified? [false true]]
+      (let [context (walk/postwalk #(cond (= % 'String) name (= % :gravity.type/string) type :else %) base)
+            spelling (if qualified? (symbol "gravity.core" (str name)) name)
+            parameters ['problem :- spelling]
+            raw-fn (list 'fn parameters :- spelling 'problem)
+            raw-def (list 'def 'identity raw-fn)
+            context (-> context (assoc-in [:forms :type-form :value] spelling)
+                        (assoc-in [:forms :parameter-form :value] parameters)
+                        (assoc-in [:forms :function-form :value] raw-fn)
+                        (assoc-in [:forms :definition-form :value] raw-def)
+                        (assoc-in [:raw-roots :definition-form] raw-def))
+            declaration (get-in context [:records 'identity :signature :return])
+            expected {:name 'identity :params '[problem] :body ['problem] :definition-form :def-fn :arity 1 :body-form-count 1
+                      :source-declarations {:parameters parameters :return [:- spelling]}}
+            joined (invoke 'p15-s23-typed-definition context 'identity)
+            table-module (assoc module :function-table {'identity expected})]
+        (is (true? (invoke 'p15-s23-typed-declaration? declaration type context)))
+        (is (true? (invoke 'p15-s23-typed-parameter-declaration? declaration type context)))
+        (is (= :complete (:status joined)) (pr-str joined))
+        (is (= expected (get-in joined [:value :definition])))
+        (is (true? (invoke 'p15-s23-typed-module-table? table-module context)))
+        (is (= [{:op :local :name 'problem}]
+               (get-in (invoke 'p15-s23-typed-lower-function table-module expected context) [:value :instructions])))
+        (is (false? (invoke 'p15-s23-typed-module-table? (assoc table-module :function-table {}) context)))
+        (is (false? (invoke 'p15-s23-typed-module-table?
+                           (assoc-in table-module [:function-table 'identity :body] ['other]) context)))
+        (doseq [mutate [#(assoc-in % [:forms :type-form :value] (symbol "other.core" (str name)))
+                        #(assoc-in % [:forms :type-form :value] (symbol "core" (str name)))
+                        #(assoc-in % [:forms :type-form :value] 'gravity.core/Unknown)
+                        #(assoc-in % [:forms :type-form :value] (str "gravity.core/" name))
+                        #(assoc-in % [:forms :type-form :value] nil)
+                        #(assoc-in % [:forms :type-form :syntax-id] :forged)
+                        #(assoc-in % [:bindings :string :namespace] 'other.core)
+                        #(assoc-in % [:bindings :string :name] 'Other)
+                        #(assoc-in % [:bindings :string :binding-class] :import)
+                        #(assoc-in % [:bindings :string :kind] :var)]]
+          (let [changed (mutate context)]
+            (is (false? (invoke 'p15-s23-typed-declaration? declaration type changed)))
+            (is (= :rejected (:status (invoke 'p15-s23-typed-definition changed 'identity))))))
+        (doseq [changed [(assoc declaration :type-binding-id :forged)
+                         (assoc declaration :type-form-id :forged)
+                         (assoc declaration :type-syntax-id :forged)
+                         (assoc declaration :type-symbol 'gravity.core/List)
+                         (assoc declaration :type-id :gravity.type/boolean)]]
+          (is (false? (invoke 'p15-s23-typed-declaration? changed type context))))))))
+
 (defn- typed-catch-kernel-context [context]
   (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
         clause {:clause-ordinal 0 :handler-child-index 1 :catch-clause-form-id :catch :catch-clause-syntax-id :catch
@@ -4087,6 +4142,117 @@
       (is (= ["C7-TYPE-MISMATCH" :collection-count-operand-type-required :one-established-map-vector-or-list [:gravity.type/string]]
              ((juxt :rule :reason :expected-type :actual-type) failure))))
     (is (= 3 (count @built)))))
+
+(deftest current-gravity-qualified-core-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/qualified-core-count"
+        text (slurp (io/file root (str relative ".gravity")))
+        forms (bootstrap/read-source-form-records (str relative ".gravity") text)]
+    (is (= text (slurp (io/file root (str relative ".qst")))))
+    (is (= 4 (count forms)))
+    (is (= '[plain qualified main] (mapv #(second (:form %)) (rest forms))))
+    (is (= '(count items) (last (:form (second forms)))))
+    (is (= '(gravity.core/count items) (last (:form (nth forms 2)))))
+    (is (= '[items :- gravity.core/List] (nth (:form (nth forms 2)) 2)))
+    (is (= '(gravity.core/count (quote (nil false "entry"))) (last (:form (nth forms 3)))))))
+
+(deftest current-gravity-qualified-core-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/qualified-core-count"
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        cases
+        (mapv
+         (fn [extension]
+           (let [source (str relative extension) path (.getPath (io/file root source))
+                 products (fresh source) c5 (:c5 products)
+                 input (select-keys products [:request :typed :verification])
+                 _ (is (= :accepted (:status c5) (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                 _ (when-not (= :accepted (get-in input [:typed :status]))
+                     (throw (ex-info "Qualified core source rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                 rows (filterv #(contains? '#{count gravity.core/count} (:symbol %)) (:resolution-table c5))
+                 count-binding (first (filter #(= (:binding-id (first rows)) (:binding-id %)) (get-in c5 [:binding-table :bindings])))
+                 artifact (:sh05-macro-artifact c5)
+                 parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                 definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                 before (count @verified)
+                 assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                         (fn [runtime plan function args]
+                                           (let [result (original runtime plan function args)]
+                                             (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                             (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                 counts (mapv :applied-collection-count (:call-type-facts facts))
+                 binding (seal (:request input) (:typed input) (:verification input))
+                 effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                 graph (:effect-graph effects)]
+             (is (= :passed (:status (bootstrap/sh06-resolution-artifact-verification c5))))
+             (is (= :passed (:status (:report products)) (get-in input [:verification :status])))
+             (is (= 3 (count rows) (count counts) (count (:calls core)) (count (:functions assembled))))
+             (is (= 1 (count (set (map :binding-id rows)))))
+             (is (= 3 (count (set (map :syntax-id rows)))))
+             (is (= '{count 1 gravity.core/count 2} (frequencies (map :symbol rows))))
+             (is (= [:profile-allowed-core-binding :fully-qualified-namespace-binding :fully-qualified-namespace-binding]
+                    (mapv :resolution-order rows)))
+             (is (= [:core 'gravity.core :var 'count :public]
+                    ((juxt :binding-class :namespace :kind :name :visibility) count-binding)))
+             (is (= [:all] (:target-set count-binding)))
+             (is (some #{:meta} (:profile-set count-binding)))
+             (is (= [] (:effects count-binding) (:capabilities count-binding)))
+             (is (= 1 (- (count @verified) before)))
+             (doseq [descriptor counts]
+               (is (= :sh08-collection-count-v1 (:version descriptor)))
+               (is (= 'count (:operation descriptor)))
+               (is (= :gravity.type/integer (:result-type descriptor)))
+               (is (= :normal (:application descriptor)))
+               (is (= :core (get-in descriptor [:source-binding :binding-class])))
+               (is (= :none (get-in descriptor [:query-semantics :construction])))
+               (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+               (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+               (is (nil? (get-in graph [:nodes (:call-core-node-id descriptor) :allocation]))))
+             (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+             (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+             (doseq [function (:function-type-table facts)]
+               (is (= #{} (get-in graph [:functions (:function-id function) :inferred]))))
+             (doseq [[name args expected] [['plain ['()] 0] ['qualified ['()] 0]
+                                           ['plain ['(nil false ["nested"])] 3]
+                                           ['qualified ['(nil false ["nested"])] 3] ['main [] 3]]]
+               (is (= [expected "" :normal]
+                      (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []]))))
+             (when (= extension ".gravity")
+               (let [index (first (keep-indexed #(when (= (:binding-id count-binding) (:binding-id %2)) %1)
+                                               (get-in c5 [:gravity-resolution-boundary :resolved-analysis :binding-table])))
+                     changed (assoc-in c5 [:gravity-resolution-boundary :resolved-analysis :binding-table index :target-set] [:llvm])
+                     report (bootstrap/sh06-resolution-artifact-verification changed)]
+                 (is (integer? index))
+                 (is (= :failed (:status report)))
+                 (is (seq (:failed-checks report)))))
+             products))
+         [".gravity" ".qst"])
+        source-path (.getPath (io/file root (str relative ".gravity")))
+        source-text (slurp source-path)
+        missing-source (str/replace-first source-text "gravity.core/count" "gravity.core/missing-member")
+        missing (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact source-path missing-source))]
+    (is (= 2 (count @verified)))
+    (is (= (get-in cases [0 :c5 :artifact-id]) (get-in cases [1 :c5 :artifact-id])))
+    (is (= (get-in cases [0 :typed :identity-input]) (get-in cases [1 :typed :identity-input])))
+    (is (not= source-text missing-source))
+    (is (= "C5-UNRESOLVED" (:id missing)))
+    (is (= :name-resolution (:stage missing)))
+    (is (= 'gravity.core/missing-member (:symbol missing)))
+    (is (= :no-legal-binding (get-in missing [:facts :reason])))
+    (is (= [] (:candidate-bindings missing)))
+    (is (= source-path (get-in missing [:source-span :source])))))
 
 (deftest current-gravity-collection-count-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]

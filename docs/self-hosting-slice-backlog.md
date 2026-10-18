@@ -2191,6 +2191,75 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Qualified core vars and availability: development implementation
+
+This slice closes the C5 qualified-core frontier found before the List
+count source run. L3 already permits fully qualified namespaces and STD2 makes
+the permitted core surface available; no new language grant is required.
+The owning `gravity.resolution` pass selects literal `gravity.core` vars
+from supplied core records, preserving their binding identities and metadata.
+Alias, source-definition and import route ownership remains prior to fallback;
+an owned missing/private member must not silently borrow a core definition.
+Type-position lookup remains separate and qualified macros/special forms are
+not admitted by the new var route.
+
+Inspection also found missing checks on supplied direct-core availability
+metadata. The bounded correction validates the selected core
+binding's profile/target fields after existing ambiguity and privacy checks,
+with target exclusion before profile exclusion. Malformed fields reject;
+only target `:all` is a wildcard. The shared check applies to existing core
+vars, types and special forms without changing legal catalog identities.
+It does not synthesize exports, grant capabilities or establish overload
+purity. Focused exclusions and forged metadata accompany affected paired
+source composition and a C5-only missing-member rejection. This work does not
+establish general first-class builtins, unrestricted profile coverage or
+authoritative migration.
+
+The initial focused runs stopped before semantic assertions: an unclosed
+candidate-selection form, then an unsupported bootstrap `merge` call. The
+second correction uses existing `let`/`assoc` forms without extending the seed
+or catalog. The corrected batch passed 3 tests / 400 assertions: 354 new
+qualified-core/availability checks plus existing type-namespace and module
+policy checks. It covers distinct reference IDs sharing the selected binding,
+metadata preservation/forgeries, shadowing, owned-route misses, private and
+duplicate precedence, malformed/excluded profile and target sets, and legal
+type/special-form regressions. Resolution changes remain in the owning
+resolver. A later position-guard refinement passed 363 assertions in the
+owning kernel; the other 46 checks above are unchanged, not additional new
+coverage.
+
+The first paired source integration attempt is retained as failed: 1 test,
+7 passing assertions, no assertion failures and one error. The first source
+extension reached accepted C5/C6/C7 typing, then public plan assembly rejected
+its typed-module definition census (`P15S23Q002`). Execution, the second
+extension and the later rejection/forgery assertions did not run. This is not
+an accepted source composition. Independent inspection found the inherited
+lowering join compared canonical `List` directly with the authenticated source
+spelling `gravity.core/List`. The owning emitter now accepts either the
+canonical symbol or the exact qualified symbol while retaining binding kind,
+namespace, canonical type, declaration and source-syntax checks. It does not
+relax the module census or rewrite the fixture. Focused ordinary/qualified
+String and List declarations, forged spellings/bindings, raw-source joins and
+homogeneous List regressions passed 3 tests / 228 assertions (132 new checks).
+The changed candidate passed its distinct source composition: 1 test / 119
+assertions, including six loader assertions. Both fresh source extensions
+retain one selected count binding and three distinct references, preserve
+legal metadata, pass public C5 verification and C6/C7 typing, complete public
+lowering and independently checked pure C8 effects, and execute ten guest
+cases. A changed resolved binding is rejected by public C5 verification; the
+missing-member source stops at C5 with `C5-UNRESOLVED`. Pair identities agree.
+The selected composition took about 228 seconds with a 2 GiB heap; this is
+development timing, not a speedup claim. The original failed attempt remains
+failed. No unchanged expensive replay or migration credit follows.
+Final fixture formatting removed only one redundant terminal newline byte in
+each paired file; the separate 7-assertion parse/body check passed afterward.
+The 119-assertion result remains attached to its original bytes, not silently
+relabeled as a run on the formatting-only revision.
+
+The prepared independent homogeneous List join for canonical `if` follows this
+existing-contract gap. Its separate L5 clarification and join-specific
+evidence remain unimplemented; AH is not reopened to add that behavior.
+
 ### Persistent List cardinality: development implementation
 
 This slice extends existing unary `count` to established bare, positional
