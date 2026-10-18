@@ -1417,6 +1417,59 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Typed shrinking-List traversal
+
+L5's explicit bare `List` parameter boundary lets a function consume Lists
+without retaining a particular positional length. Change the signature path in
+`checked_core.gravity`, then C7, C8 and the typed emitter for call compatibility;
+the existing runtime owns the List query and recur execution.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh07-b47-function-call-recursion-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh07-b47-atomic-signature-lowering-development-kernel \
+  --exact sh08-bare-list-parameter-development-kernel \
+  --exact sh08-list-empty-development-kernel \
+  --exact body-bare-list-parameter-development-kernel \
+  --exact body-list-query-development-kernel \
+  --exact current-gravity-bare-list-call-lowering-development-kernel \
+  --exact current-gravity-list-empty-traversal-runtime-development-kernel
+```
+
+The actual finite argument type stays in the type table and call facts. A
+separate, reconstructed compatibility premise binds the information-forgetting
+step to the explicit parameter annotation, argument and call source. It is not
+type equality, a runtime conversion or an unannotated inference shortcut.
+Schema, ownership, linearity, region and profile obligations are not erased.
+Imports, higher-order calls and general subtype/coercion rules are not extended
+by this ordinary-local-call rule.
+
+Inside the function, `empty?` returns Bool for an established List and `rest`
+preserves its bare List type. Existing function-target `recur` still checks its
+slot types exactly. These operations permit a real shrinking traversal without
+guessing any element type. Exact bare-List return annotations are separate from
+finite-to-bare return adaptation, which is not supplied by the parameter rule.
+`first` on a bare List still needs head-type evidence; homogeneous element
+annotations, general generics and path-sensitive head refinement remain later
+work. Operand effects and original transfers remain visible.
+
+Run the changed real-source traversal composition only after these kernels and
+proportionate regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-traversal-authenticated-composition --fail-fast
+```
+
+The paired `local-runtime-list-traversal` fixture exercises an annotated tail
+function, shrinking recur slots, finite-to-bare argument compatibility and
+ordinary exact List calls. Manual runtime plans and normalized type premises do
+not establish C5-to-C8 source composition or authoritative module migration.
+
 ### Persistent List head and suffix queries
 
 STD3 owns unary `first` and `rest` on persistent Lists. Change C7, C8, the

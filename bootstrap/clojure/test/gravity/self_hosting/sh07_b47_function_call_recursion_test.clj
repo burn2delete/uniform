@@ -256,7 +256,9 @@
                     cores [{:binding-id (sha 5001) :binding-class :core :kind :type :name 'I64
                             :namespace 'gravity.core :definition-syntax-id (sha 6000)}
                            {:binding-id (sha 5101) :binding-class :core :kind :type :name 'Bool
-                            :namespace 'gravity.core :definition-syntax-id (sha 6100)}]
+                            :namespace 'gravity.core :definition-syntax-id (sha 6100)}
+                           {:binding-id (sha 5201) :binding-class :core :kind :type :name 'List
+                            :namespace 'gravity.core :definition-syntax-id (sha 6200)}]
                     by-name (into {} (map (juxt :name identity) (into locals cores)))
                     resolutions (into {} (for [value (vals @forms)
                                                :when (contains? by-name (:value value))
@@ -317,6 +319,13 @@
         (is (= [:parameter-vector :parameter :function-type-marker :function-type-declaration
                 :parameter :function-type-marker :function-type-declaration :parameter]
                (mapv second (invoke 'sh07-source-core-parameter-events [(input form) (:form-id parameters)])))))
+      (let [form (make! '(fn [items :- List] :- List items))
+            lowered (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])
+            signature (get-in (last (get-in lowered [:state :nodes])) [:attributes :signature])]
+        (is (= :accepted (:status lowered)))
+        (is (= :gravity.type/list (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+        (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+        (is (nil? (invoke 'sh07-atomic-type-id ['List]))))
       (doseq [[value reason actual supported]
               [['(fn 0) :fn-multiple-body-or-shape 2 3]
                ['(fn 0 1) :fn-parameter-vector-required nil nil]

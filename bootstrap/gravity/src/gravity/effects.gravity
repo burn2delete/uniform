@@ -1230,6 +1230,117 @@
               (body-normal-compatible? (first arguments) (get (first parameters) :type)) false)
           (recur (rest ids) (rest arguments) (rest parameters)) false))) false))
 
+; L5: only an authenticated explicit bare List parameter can forget position.
+(defn body-lp-compatibility [core call edge callee index actual nodes bindings budget]
+  (let [parameter (get (get callee :parameters) index)]
+    (if (if (= :gravity.type/list (get parameter :type))
+          (if (map? actual) (= :gravity.type/list (get actual :kind)) false) false)
+      (let [records (get core :function-records) base (+ 32 (count records))
+            validation (body-lc-type-work [actual] (if (> base budget) 0 (- budget base)))
+            work (+ base (get validation :work-count))
+            record (if (> base budget) nil (loop [remaining records]
+                     (if (= 0 (count remaining)) nil
+                       (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
+                         (first remaining) (recur (rest remaining))))))
+            declaration (get (get (get record :signature) :parameters) index)
+            bid (get parameter :binding-id) binding (get bindings bid)
+            type-binding (get bindings (get declaration :type-binding-id))
+            argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
+            node (get nodes (get call :core-node-id))]
+        (if (if (> base budget) true (= :work-limit (get validation :reason)))
+          {:status :rejected :reason :list-parameter-work-limit :work-count work}
+          (if (body-all?
+                [(= :accepted (get validation :status))
+                 (= :local-function (get edge :classification))
+                 (= (get callee :function-id) (get edge :callee-function-syntax-id) (get record :function-syntax-id))
+                 (= (get record :signature) (get callee :signature))
+                 (= (get record :function-core-node-id) (get edge :callee-function-core-node-id))
+                 (= bid (get (get record :parameter-binding-ids) index) (get binding :binding-id))
+                 (= [:lexical :local] [(get binding :binding-class) (get binding :kind)])
+                 (= [:core :type 'gravity.core 'List] [(get type-binding :binding-class) (get type-binding :kind)
+                                                       (get type-binding :namespace) (get type-binding :name)])
+                 (= ['List :gravity.type/list] [(get declaration :type-symbol) (get declaration :type-id)])
+                 (= (get declaration :source-child-index) (+ 1 (get (get (get record :signature) :parameter-source-child-indexes) index -100)))
+                 (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
+                 (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
+                 (= argument-id (get argument :node-id))])
+            {:status :accepted :work-count work
+             :premise {:version :sh08-bare-list-parameter-v1 :relation :forget-positional-list-refinement
+                       :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
+                       :actual-type actual :declared-type :gravity.type/list
+                       :callee-function-syntax-id (get record :function-syntax-id)
+                       :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
+                       :argument-source (get argument :source) :call-source (get node :source)
+                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :forgets [:positional-element-types :static-length]
+                       :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
+                       :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+            {:status :rejected :reason :list-parameter-declaration-required :work-count work})))
+      {:status :not-applicable :work-count 0})))
+
+(defn body-lp-pairs-adapted? [pairs]
+  (loop [remaining pairs]
+    (if (= 0 (count remaining)) false
+      (if (contains? (first remaining) :compatibility) true (recur (rest remaining))))))
+
+(defn body-lp-call-row [row]
+  (if (body-lp-pairs-adapted? (get row :rhs))
+    (assoc row :kind :argument-compatibility :compatibility-rule-version :sh08-bare-list-parameter-v1) row))
+
+(defn body-lp-context [request facts bindings budget]
+  (let [rows (body-select (get facts :constraint-ledger) :kind :argument-compatibility)
+        core (get request :canonical-core-artifact)]
+    (if (= 0 (count rows)) {:status :accepted :work-count 0 :context nil}
+      (let [base (+ (count rows) (count bindings) (count (get core :nodes)) (count (get core :calls))
+                    (count (get core :call-edges)) (count (get facts :function-type-table)))]
+        (if (> base budget) (assoc (body-failure :body-deferred-work-limit) :work-count base)
+          (let [nodes (body-index (get core :nodes) :node-id) calls (body-index (get core :calls) :core-node-id)
+                edges (body-index (get core :call-edges) :call-core-node-id)
+                functions (body-index (get facts :function-type-table) :function-id) types (get facts :type-table)]
+            (loop [remaining rows used base expected {}]
+              (if (= 0 (count remaining)) {:status :accepted :work-count used :context {:rows expected}}
+                (let [row (first remaining) id (get (get row :constraint-id-request) :call-core-node-id)
+                      call (get calls id) edge (get edges id) callee (get functions (get edge :callee-function-syntax-id))
+                      args (get call :argument-node-ids) parameters (get callee :parameters) charge (+ 16 (count args))]
+                  (if (if (> (+ used charge) budget) true
+                        (if (contains? expected id) true (= false (= (count args) (count parameters)))))
+                    (assoc (body-failure :body-list-parameter-context) :work-count (+ used charge))
+                    (let [joined (loop [index 0 pairs [] work (+ used charge)]
+                                   (if (= index (count args)) {:status :accepted :pairs pairs :work-count work}
+                                     (let [actual (get types (get args index)) chosen (get (get parameters index) :type)
+                                           checked (body-lp-compatibility core call edge callee index actual nodes bindings (- budget work))
+                                           pair {:parameter (get (get parameters index) :binding-id) :argument actual :chosen chosen}
+                                           total (+ work (get checked :work-count))]
+                                       (if (= :accepted (get checked :status))
+                                         (recur (+ index 1) (conj pairs (assoc pair :compatibility (get checked :premise))) total)
+                                         (if (if (= :not-applicable (get checked :status)) (body-normal-compatible? actual chosen) false)
+                                           (recur (+ index 1) (conj pairs pair) total)
+                                           {:status :rejected :reason (get checked :reason :incompatible-argument) :work-count total})))))
+                          expected-row (body-lp-call-row
+                                         {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id id
+                                                                  :callee-function-syntax-id (get edge :callee-function-syntax-id)}
+                                          :kind :equality :lhs (get edge :callee-function-syntax-id) :rhs (get joined :pairs)
+                                          :origin (get (get (get nodes id) :source) :origin-chain)
+                                          :profile :meta :target :jvm :status :solved :diagnostics []})]
+                      (if (= :accepted (get joined :status))
+                        (if (= row expected-row)
+                          (recur (rest remaining) (get joined :work-count) (assoc expected id expected-row))
+                          (assoc (body-failure :body-list-parameter-compatibility-mismatch) :work-count (get joined :work-count)))
+                        (assoc (body-failure (get joined :reason)) :work-count (get joined :work-count))))))))))))))
+
+(defn body-local-arguments-valid? [core facts bindings edge call fact target]
+  (let [id (get call :core-node-id) row (get (get (get facts :list-parameter-context) :rows) id)
+        types (get facts :type-table)]
+    (if (map? row)
+      (body-all? [(= (get row :kind) :argument-compatibility)
+                  (= (get fact :argument-types)
+                     (loop [remaining (get call :argument-node-ids) out []]
+                       (if (= 0 (count remaining)) out
+                         (recur (rest remaining) (conj out (get types (first remaining)))))))
+                  (= (get edge :callee-function-syntax-id) (get row :lhs))
+                  (= [row] (body-select (get facts :constraint-ledger) :constraint-id-request (get row :constraint-id-request)))])
+      (body-arguments-valid? (get edge :argument-core-node-ids) (get fact :argument-types) (get target :parameters) types))))
+
 (defn body-call-joins-valid? [core typed bindings]
   (let [nodes (body-index (get core :nodes) :node-id) functions (body-index (get typed :function-type-table) :function-id)
         records (body-index (get core :function-records) :function-syntax-id)
@@ -1239,8 +1350,8 @@
         (let [edge (first remaining) id (get edge :call-core-node-id)]
           (if (if (= ordinal (get edge :ordinal))
                 (if (body-call-valid? edge (get calls id) (get facts id) nodes functions records bindings (get typed :type-table))
-                  (body-arguments-valid? (get edge :argument-core-node-ids) (get (get facts id) :argument-types)
-                    (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get typed :type-table)) false) false)
+                  (body-local-arguments-valid? core typed bindings edge (get calls id) (get facts id)
+                    (get functions (get edge :callee-function-syntax-id))) false) false)
             (recur (rest remaining) (+ ordinal 1)) false))))))
 
 (defn body-import-call-valid? [edge call fact nodes records foreign types]
@@ -1808,7 +1919,7 @@
 (defn body-lq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (body-all?
-    [(contains? '#{first rest} (get binding :name))
+    [(contains? '#{first rest empty?} (get binding :name))
      (= [(get binding :name) :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
         [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
          (get binding :package) (get binding :type-ref) (get binding :safety)])
@@ -1844,25 +1955,32 @@
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
            (if (= 'first (get binding :name))
              (contains? '#{first gravity.core/first} (get (get operator :attributes) :symbol))
-             (contains? '#{rest gravity.core/rest} (get (get operator :attributes) :symbol)))
+             (if (= 'rest (get binding :name))
+               (contains? '#{rest gravity.core/rest} (get (get operator :attributes) :symbol))
+               (contains? '#{empty? gravity.core/empty?} (get (get operator :attributes) :symbol))))
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (= :accepted (get validation :status))
            (let [input (first arguments)]
              (if (= input :gravity.type/never) true
-               (if (= input :gravity.type/list) (= 'rest (get binding :name))
+               (if (= input :gravity.type/list) (= false (= 'first (get binding :name)))
                  (if (map? input) (= :gravity.type/list (get input :kind)) false))))] )
       {:kind :gravity.type/applied-list-query :version :sh08-list-query-v1
        :operation (get binding :name) :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-query
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :query-policy {:input :persistent-list :operand-evaluation :once :payload-evaluation :none
+       :query-policy (if (= 'empty? (get binding :name))
+                       {:input :persistent-list :operand-evaluation :once :payload-evaluation :none
+                        :original :unchanged :test :zero-elements :static-length :not-required}
+                     {:input :persistent-list :operand-evaluation :once :payload-evaluation :none
                       :original :unchanged :order :stored-order :head-knowledge :finite-positional
-                      :suffix-knowledge :available-positional-or-bare}
-       :storage-policy {:representation :development-persistent-list :first :stored-head-value
-                        :rest :existing-immutable-tail :retention :may-retain-input-storage :copy :none}
+                      :suffix-knowledge :available-positional-or-bare})
+       :storage-policy (if (= 'empty? (get binding :name))
+                         {:representation :development-persistent-list :empty? :stored-emptiness-test :copy :none}
+                       {:representation :development-persistent-list :first :stored-head-value
+                        :rest :existing-immutable-tail :retention :may-retain-input-storage :copy :none})
        :value-origin {:kind :list-value-query :operation (get binding :name) :operand-node-id (first args)}
        :operand-type-work (get validation :work-count)
        :application (if invoked? :normal :not-invoked)
@@ -1896,13 +2014,14 @@
 (defn body-lq-finish [header]
   (let [input (first (get header :argument-types))
         type (if (= :not-invoked (get header :application)) :gravity.type/never
-               (if (= 'first (get header :operation))
-                 (if (= 0 (count (get input :element-types))) :gravity.type/nil
-                   (first (get input :element-types)))
-                 (if (= input :gravity.type/list) :gravity.type/list
-                   (assoc input :element-types
-                     (if (= 0 (count (get input :element-types))) []
-                       (subvec (get input :element-types) 1 (count (get input :element-types))))))))]
+               (if (= 'empty? (get header :operation)) :gravity.type/bool
+                 (if (= 'first (get header :operation))
+                   (if (= 0 (count (get input :element-types))) :gravity.type/nil
+                     (first (get input :element-types)))
+                   (if (= input :gravity.type/list) :gravity.type/list
+                     (assoc input :element-types
+                       (if (= 0 (count (get input :element-types))) []
+                         (subvec (get input :element-types) 1 (count (get input :element-types)))))))))]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
 (defn body-lq-context [request facts bindings budget]
@@ -3439,8 +3558,8 @@
                 (if local?
                   (if (if (body-ho-outer-fact-valid? edge (get call-facts id) (get facts :higher-order-proof))
                         (body-call-valid? edge (get calls id) (get call-facts id) nodes functions records bindings (get facts :type-table)) false)
-                    (body-arguments-valid? (get edge :argument-core-node-ids) (get (get call-facts id) :argument-types)
-                      (get (get functions (get edge :callee-function-syntax-id)) :parameters) (get facts :type-table)) false)
+                    (body-local-arguments-valid? core facts bindings edge (get calls id) (get call-facts id)
+                      (get functions (get edge :callee-function-syntax-id))) false)
                   (if (= id (get (get facts :higher-order-proof) :inner-call-core-node-id))
                     (body-ho-inner-call-valid? edge (get calls id) (get call-facts id) nodes facts)
                     (if (map? imported)
@@ -4779,15 +4898,17 @@
                 (body-lc-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0))) concatenations)
         queries (if (= :accepted (get lists :status))
                   (body-lq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0))) lists)
-        counts (if (= :accepted (get queries :status))
-                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0))) queries)
+        parameters (if (= :accepted (get queries :status))
+                     (body-lp-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0))) queries)
+        counts (if (= :accepted (get parameters :status))
+                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0))) parameters)
         selections (if (= :accepted (get counts :status))
-                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get counts :work-count 0))) counts)
+                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0))) counts)
         successors (if (= :accepted (get selections :status))
-                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
-        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
+                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
+        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
         facts (assoc facts :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
-                           :list-query-context (get queries :context) :list-construction-context (get lists :context) :string-concat-context (get concatenations :context) :map-get-context (get lookups :context) :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
+                           :list-parameter-context (get parameters :context) :list-query-context (get queries :context) :list-construction-context (get lists :context) :string-concat-context (get concatenations :context) :map-get-context (get lookups :context) :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
     (if (= :accepted (get successors :status))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
             (if (body-function-joins-valid? core facts bindings)

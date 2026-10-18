@@ -2146,6 +2146,60 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Typed shrinking-List traversal: development implementation
+
+L5 now states the explicit bare `List` parameter boundary. The owning Gravity
+signature path in C6 recognizes List declarations; C7, C8 and the typed emitter
+keep a finite argument's actual type and reconstruct a distinct, versioned
+parameter-compatibility premise. Unequal types are not labeled equal. An
+unannotated parameter, unknown argument, unrelated sequence family, or erased
+premise cannot silently obtain this permission. Schema, ownership, linearity,
+region and profile obligations remain intact. Catch/error type maps and global
+normal compatibility are unchanged.
+
+The existing List-query family now includes unary `empty?`: established Lists
+produce Bool, Never operands preserve their transfer. Query effects remain
+separate from operand allocation/throws. Inside an annotated function, `rest`
+preserves bare List and function-target recur keeps exact slot checks. Exact
+bare-List result annotations are supported separately from finite-to-bare
+result adaptation, which is not provided by the parameter rule.
+
+The stable focused/regression batch passed 53 tests / 4,154 assertions. It
+covers signature lowering, actual-type preservation, compatibility row and
+binding/source mutations, erased-premise rejection, bounded work, independent
+C8 reconstruction, typed ordinary-call lowering, runtime empty/nonempty Lists,
+original transfers, and manual runtime traversal producing empty/singleton/
+two-element markers. Earlier 385-, 594- and 292-assertion batches overlap this
+batch and are not additive. The first C7 test compile failure and the second
+batch's incorrect expectation of immediate rejection for an intermediate
+Unknown are retained; the corrected test requires no compatibility premise for
+Unknown and leaves final unresolved-source rejection to the composed check.
+
+The paired source composition passed once: 1 test / 223 assertions. It compiles
+and executes an annotated tail function and shrinking traversal, preserving
+actual finite argument types through three compatibility rows and exact List
+calls and recur slots. The pair covers 28 guest executions, two original thrown
+payload identities, six selected tail-storage identities, six fresh public C7
+verification gates, two accepted whole C8 graphs and two coherent graph
+hostiles. Five real C7 rejected sources and one C8 allocation rejection preserve
+the unsupported boundaries. The owning C8 analysis also passes at its observed
+exact work budget and rejects one unit below it for the first fixture only.
+The negative `.qst` files are parity fixtures, not additional executions.
+
+Selected source-test execution took about 763 seconds; namespace loading took
+about 8.3 seconds in the same 2 GiB JVM. These are non-authoritative development
+timings, not a benchmark or evidence that scheduling dominates product
+construction. The prior focused counts overlap and must not be added to the
+source result. Selected persistent-List tail sharing is not a general ownership
+or no-allocation guarantee; coherent whole-product mutations do not isolate a
+deep source-causality check. The unknown-call rejection permits either of the
+two documented unresolved-type diagnostics.
+
+Homogeneous element annotations, guarded head typing, general generics,
+imported/higher-order adaptation, full profile and provider legality,
+authoritative migration, self-hosting and seed retirement remain outstanding.
+Direct commands are in `docs/development-verification.md`.
+
 ### Persistent List head and suffix queries: development implementation
 
 STD3 now defines empty and nonempty persistent List queries explicitly.

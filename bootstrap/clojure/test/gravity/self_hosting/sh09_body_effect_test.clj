@@ -356,6 +356,43 @@
     (is (= #{:memory/allocate :error/throw} (get-in functions [(sha 50) :inferred])))
     (is (= [] (get-in functions [(sha 50) :throws])))))
 
+(deftest body-bare-list-parameter-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'bare-list-parameter-input)
+        constrain (ns-resolve upstream 'bare-list-parameter-constraints)
+        actual {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/string] :shape :literal}
+        {:keys [core call edge callee nodes bindings types] :as input} (input-fn actual)
+        row (first (:constraints (constrain input)))
+        facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
+        request {:canonical-core-artifact core}
+        context (leaf 'body-lp-context request facts bindings 65536)
+        facts (assoc facts :list-parameter-context (:context context))
+        fact {:argument-types [actual]}
+        valid #(leaf 'body-local-arguments-valid? core % bindings edge call fact callee)]
+    (is (= :accepted (:status context)) (pr-str context))
+    (is (= row (get-in context [:context :rows :call])))
+    (is (true? (valid facts)))
+    (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
+    (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+    (doseq [changed [(assoc row :kind :equality)
+                     (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
+                     (assoc-in row [:rhs 0 :compatibility :actual-type] :gravity.type/list)
+                     (assoc-in row [:rhs 0 :compatibility :argument-index] 1)
+                     (assoc-in row [:rhs 0 :compatibility :declaration :type-symbol] 'Vector)
+                     (assoc-in row [:rhs 0 :compatibility :preserves] [])
+                     (assoc row :compatibility-rule-version :forged)]]
+      (let [candidate (assoc facts :constraint-ledger [changed])
+            checked (leaf 'body-lp-context request candidate bindings 65536)
+            candidate (assoc candidate :list-parameter-context (:context checked))]
+        (is (or (= :rejected (:status checked)) (false? (valid candidate))))))
+    (is (false? (valid (dissoc facts :list-parameter-context))))
+    (is (false? (valid (assoc facts :constraint-ledger []))))
+    (is (false? (leaf 'body-normal-compatible? actual :gravity.type/list)))
+    (is (= :rejected (:status (leaf 'body-lp-context request facts (assoc-in bindings [:parameter :binding-class] :namespace) 65536))))
+    (is (= :rejected (:status (leaf 'body-lp-context request (assoc-in facts [:type-table :argument] :gravity.type/unknown) bindings 65536))))
+    (is (false? (leaf 'body-arguments-valid? [:argument] [actual] [{:binding-id :parameter :type :gravity.type/list}] types)))))
+
 (deftest body-list-query-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -365,7 +402,10 @@
                                    ['rest {:kind :gravity.type/list :element-types [] :shape :literal}]
                                    ['first {:kind :gravity.type/list :element-types [:gravity.type/bool :gravity.type/nil] :shape :literal}]
                                    ['rest {:kind :gravity.type/list :element-types [:gravity.type/bool :gravity.type/nil] :shape :literal}]
-                                   ['rest :gravity.type/list] ['first :gravity.type/never] ['rest :gravity.type/never]]]
+                                   ['rest :gravity.type/list] ['first :gravity.type/never] ['rest :gravity.type/never]
+                                   ['empty? :gravity.type/list]
+                                   ['empty? {:kind :gravity.type/list :element-types [] :shape :literal}]
+                                   ['empty? :gravity.type/never]]]
       (let [base (-> (input-fn operation [input-type]) (assoc-in [:module :effects] [:memory/allocate])
                      (assoc-in [:core :module :effects] [:memory/allocate])) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
             convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))

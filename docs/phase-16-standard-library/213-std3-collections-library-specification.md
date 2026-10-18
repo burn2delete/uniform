@@ -54,9 +54,10 @@ map. This rule does not select a representation or grant profile support.
 
 For persistent Lists, `(first items)` returns the first stored value, or nil
 for an empty List. `(rest items)` returns the ordered List suffix after the
-first element, or an empty List when items is empty. The operand is evaluated
-under L2 before querying its value. Neither query mutates the original List
-or evaluates stored payloads.
+first element, or an empty List when items is empty. `(empty? items)` returns
+Bool true exactly when the List contains no elements, and false otherwise.
+The operand is evaluated under L2 before querying its value. These queries
+do not mutate the original List or evaluate stored payloads.
 
 The implementation must declare whether its suffix retains input storage,
 borrows, or copies under the memory and profile rules. A no-allocation claim

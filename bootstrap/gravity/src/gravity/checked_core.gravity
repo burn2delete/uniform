@@ -4280,11 +4280,14 @@
 (defn sh07-annotation-failure [form reason]
   {:status :rejected :rule "C6-LOWERING-GAP" :form form :facts {:reason reason}})
 
+(defn sh07-signature-type-id [name]
+  (if (= name 'List) :gravity.type/list (sh07-atomic-type-id name)))
+
 (defn sh07-type-declaration [request marker type-form coordinate]
   (let [indexes (get request :internal-indexes)
         resolution (sh07-find-resolution indexes (get type-form :syntax-id))
         binding (sh07-find-binding indexes (get resolution :binding-id))
-        type-id (sh07-atomic-type-id (get binding :name))]
+        type-id (sh07-signature-type-id (get binding :name))]
     (if (= [(get marker :kind) (get marker :value)] [:keyword :-])
       (if (if (= (get type-form :kind) :symbol) (= (get type-form :value) ':-) true)
         (sh07-annotation-failure marker :atomic-type-annotation-required)
@@ -4401,7 +4404,7 @@
         (if (sh07-sha256-id-vector? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
               (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)])
           (if (= (get declaration :type-id) nil) false
-            (= (get declaration :type-id) (sh07-atomic-type-id (get declaration :type-symbol)))) false) false) false) false))
+            (= (get declaration :type-id) (sh07-signature-type-id (get declaration :type-symbol)))) false) false) false) false))
 
 (defn sh07-signature-valid? [signature arity]
   (if (sh07-exact-keys? signature

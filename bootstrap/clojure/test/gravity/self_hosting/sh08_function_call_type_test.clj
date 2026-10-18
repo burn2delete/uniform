@@ -2424,6 +2424,119 @@
         (is (= 1090 (:work-count (list-query-derived input))))))
     (is (= :rejected (:status (list-query-derived (list-query-input 'rest [(positional (vec (repeat 1025 s)))])))))))
 
+(defn- bare-list-parameter-input [actual]
+  (let [sha #(str "sha256:" (format "%064x" %))
+        declaration {:source-child-index 1 :marker-form-id (sha 1) :marker-syntax-id (sha 2)
+                     :type-form-id (sha 3) :type-syntax-id (sha 4) :type-symbol 'List :type-binding-id (sha 5) :type-id :gravity.type/list}
+        signature {:rule-version :sh07-atomic-function-signature-v1 :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+                   :parameters [declaration] :return nil :parameter-source-child-indexes [0] :body-source-child-index 2}
+        record {:function-syntax-id :callee :function-core-node-id :function :body-core-node-id :body
+                :parameter-binding-ids [:parameter] :fixed-arity 1 :definition-kind :named-top-level
+                :definition-binding-id :definition :signature signature}
+        module {:namespace 'example.list-parameter :profile :meta :target :jvm :effects [] :capabilities []}
+        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [record module]) :return :gravity.type/string)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :definition :argument-node-ids [:argument]
+              :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id nil :caller-function-core-node-id nil
+              :callee-binding-id :definition :callee-definition-syntax-id :definition-source
+              :callee-function-syntax-id :callee :callee-function-core-node-id :function
+              :argument-core-node-ids [:argument] :ordered-evaluation-node-ids [:operator :argument]
+              :evaluation-order :operator-then-arguments :classification :local-function}
+        node {:node-id :call :core-form :call :children [:operator :argument] :source (source :call)
+              :resolved-binding-ids [:definition] :evaluation {:kind :operator-then-arguments}}
+        nodes {:call node :argument {:node-id :argument :source (source :argument)}
+               :operator {:node-id :operator :core-form :reference :source (source :operator)
+                          :attributes {:binding-id :definition} :resolved-binding-ids [:definition]}}
+        bindings {(sha 5) {:binding-id (sha 5) :name 'List :kind :type :binding-class :core :namespace 'gravity.core}
+                  :parameter {:binding-id :parameter :name 'items :kind :local :binding-class :lexical :definition-syntax-id :parameter-source}
+                  :definition {:binding-id :definition :name 'consume :kind :function :binding-class :namespace :namespace 'example.list-parameter}}
+        core {:module module :function-records [record] :nodes (vec (vals nodes)) :calls [call] :call-edges [edge]}
+        types {:argument actual :call :gravity.type/string :operator callee}
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings)) :loop-work-left 65536}]
+    {:core core :node node :call call :edge edge :callee callee :nodes nodes :bindings bindings :types types
+     :functions {:callee callee} :seeds {:parameter :gravity.type/list} :context context :declaration declaration :signature signature}))
+
+(defn- bare-list-parameter-constraints [{:keys [call edge nodes types seeds functions context]}]
+  (invoke-c7 'sh08-ft-call-constraints-with-context [[call] [edge] nodes types seeds functions context]))
+
+(deftest sh08-bare-list-parameter-development-kernel
+  (let [actual {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/string] :shape :literal}
+        {:keys [core call edge callee nodes bindings types signature declaration] :as input} (bare-list-parameter-input actual)
+        constrained (bare-list-parameter-constraints input)
+        row (first (:constraints constrained)) pair (first (:rhs row)) premise (:compatibility pair)
+        facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes types {:callee callee} (:module core) {}])
+        scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings %])]
+    (is (= [] (:diagnostics constrained)))
+    (is (= :argument-compatibility (:kind row)))
+    (is (= :sh08-bare-list-parameter-v1 (:compatibility-rule-version row) (:version premise)))
+    (is (= actual (:argument pair) (:actual-type premise) (get-in facts [0 :argument-types 0]) (get-in input [:types :argument])))
+    (is (= :gravity.type/list (:chosen pair) (:declared-type premise) (get-in constrained [:binding-types :parameter])))
+    (is (not= (:argument pair) (:chosen pair)))
+    (is (= [:positional-element-types :static-length] (:forgets premise)))
+    (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations] (:preserves premise)))
+    (is (= [0 :argument :parameter declaration] [(:argument-index premise) (:argument-node-id premise) (:parameter-binding-id premise) (:declaration premise)]))
+    (is (= :accepted (:status (scan (:work-count (scan 65536))))))
+    (is (= :list-parameter-work-limit (:reason (scan (dec (:work-count (scan 65536)))))))
+    (let [work (:compatibility-work-count constrained)]
+      (is (= constrained (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] work))))
+      (is (= ["C7-GENERIC" :list-parameter-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec work)))))))))
+    (doseq [value [:gravity.type/list :gravity.type/never]]
+      (let [result (bare-list-parameter-constraints (bare-list-parameter-input value))]
+        (is (= [] (:diagnostics result)))
+        (is (= :equality (get-in result [:constraints 0 :kind])))
+        (is (nil? (get-in result [:constraints 0 :rhs 0 :compatibility])))))
+    (is (nil? (get-in (bare-list-parameter-constraints (bare-list-parameter-input :gravity.type/unknown))
+                     [:constraints 0 :rhs 0 :compatibility])))
+    (doseq [value [:gravity.type/string :gravity.type/vector :gravity.type/nil
+                   {:kind :gravity.type/list :element-types [:gravity.type/unknown] :shape :literal}
+                   (assoc actual :ownership :owned) (assoc actual :schema :secret)]]
+      (is (seq (:diagnostics (bare-list-parameter-constraints (bare-list-parameter-input value))))))
+    (doseq [mutate [#(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :type-symbol] 'Vector)
+                    #(assoc-in % [:context :ordering-bindings :parameter :binding-class] :namespace)
+                    #(assoc-in % [:context :ordering-bindings (get-in input [:declaration :type-binding-id]) :name] 'Vector)
+                    #(update-in % [:context :ordering-core :function-records 0] dissoc :signature)
+                    #(assoc-in % [:edge :callee-function-core-node-id] :forged)]]
+      (is (seq (:diagnostics (bare-list-parameter-constraints (mutate input))))))
+    (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
+    (is (nil? (invoke-c7 'sh08-ft-atomic-type-id ['List])))
+    (is (false? (invoke-c7 'sh08-im-scalar-type? [:gravity.type/list])))
+    (let [transfer {:argument-node-ids [:next :marks]}
+          target {:target-kind :function :binding-ids [:items :marks]}
+          check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types
+                    [transfer target {} {:next % :marks :gravity.type/string}
+                     [:gravity.type/list :gravity.type/string] 65536])]
+      (is (= :accepted (:status (check :gravity.type/list))))
+      (is (= :accepted (:status (check :gravity.type/never))))
+      (doseq [wrong [actual :gravity.type/vector :gravity.type/string]]
+        (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))
+    (let [record (assoc (first (:function-records core)) :signature (assoc signature :return (assoc (:declaration input) :source-child-index 2)
+                                                                                                :body-source-child-index 4))
+          functions (invoke-c7 'sh08-ft-function-skeletons [[record] (:module core)])
+          seeds (invoke-c7 'sh08-ft-declaration-seeds [functions {}])
+          body {:node-id :body :core-form :reference :children [] :attributes {:binding-id :parameter}}
+          function {:node-id :function :core-form :fn :children [:body] :source {:syntax-id :callee}}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic [[body function] {:body body :function function} [] [] [] [] functions seeds 8])]
+      (is (= :converged (:convergence-status inferred)))
+      (is (= :gravity.type/list (get-in inferred [:function-types :callee :return]) (get-in inferred [:type-table :body]))))))
+
+(deftest sh08-list-empty-development-kernel
+  (doseq [type [:gravity.type/list
+                {:kind :gravity.type/list :element-types [] :shape :literal}
+                {:kind :gravity.type/list :element-types [:gravity.type/nil :gravity.type/bool] :shape :literal}
+                :gravity.type/never]]
+    (let [result (list-query-derived (list-query-input 'empty? [type])) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= (if (= type :gravity.type/never) :gravity.type/never :gravity.type/bool) (:type result)))
+      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+      (is (= :zero-elements (get-in descriptor [:query-policy :test])))
+      (is (= :stored-emptiness-test (get-in descriptor [:storage-policy :empty?])))))
+  (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/vector :gravity.type/string]]
+    (is (= :rejected (:status (list-query-derived (list-query-input 'empty? [type]))))))
+  (doseq [arguments [[] [:gravity.type/list :gravity.type/list]]]
+    (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input 'empty? arguments)))))))
+
 (defn- list-construction-input [argument-types]
   (let [input (integral-ordering-input 'list argument-types)]
     (assoc input :binding-types (:types input)

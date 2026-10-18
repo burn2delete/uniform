@@ -1,0 +1,17 @@
+(ns example.local-runtime-list-traversal
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn tail [items :- List] :- List (rest items))
+(defn drain [items :- List marks :- String] :- String
+  (if (empty? items) marks
+      (recur (tail items) (str marks "."))))
+(defn relay [items :- List] :- String (drain items ""))
+(defn empty [] :- String (drain (list) ""))
+(defn singleton [value :- String] :- String (drain (list value) ""))
+(defn aborting [problem :- String] :- String (drain (throw problem) ""))
+(defn shadowed [empty? :- String] :- String empty?)
+(defn main [] :- String (drain (list 'quote "payload") ""))

@@ -1,0 +1,9 @@
+(ns example.list-parameter-unknown
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn consume [items :- List] :- Bool (empty? items))
+(defn main [items] :- Bool (consume items))

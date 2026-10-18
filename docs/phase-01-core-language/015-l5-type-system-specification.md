@@ -93,6 +93,20 @@ Type inference is local and evidence-producing. It must not invent hidden dynami
 
 Subtyping/coercion is explicit or profile-defined. Numeric widening, pointer casts, host object casts, and schema coercions are not silently inserted in systems profiles.
 
+### Bare List Parameters
+
+Bare `List` in a parameter annotation denotes persistent List values without
+static element-type or length information. An explicitly annotated parameter
+may receive a List whose actual type carries positional refinements. This
+boundary forgets those refinements for the parameter, not the value or its
+provenance; type artifacts must retain the actual argument type and the
+justification for compatibility with the declared type.
+
+It does not imply `Dynamic`, arbitrary sequence compatibility, an element type,
+or profile/memory legality. Recur operands remain subject to L2 parameter
+compatibility. Other type obligations, including schema identity, ownership,
+linearity and regions, are not erased.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -226,6 +240,7 @@ L5 rejects:
 ## Conformance Criteria
 
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
+- Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.
