@@ -4268,6 +4268,214 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-string-concat-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] (concat [["accepted" "local-runtime-string-concat" 8]]
+                                                (map #(vector "rejected" (str "string-concat-" %) 1)
+                                                     ["arity-one" "numeric" "unknown" "result-annotation" "allocation"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
+
+(deftest current-gravity-string-concat-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        smile (String. (Character/toChars 0x1f600))
+        left-error (String. "left transfer") right-error (String. "right transfer")
+        specs [['join ["left" "right"] "leftright" :normal] ['join ["a\u0000" "b"] "a\u0000b" :normal]
+               ['join [smile "x"] (str smile "x") :normal]
+               ['join ["e" "\u0301"] "e\u0301" :normal] ['join ["\u00e9" ""] "\u00e9" :normal]
+               ['nested ["a" "b"] "ab" :normal] ['default-on-hit ["unused"] "stored" :normal]
+               ['left-throws [left-error] left-error :thrown] ['right-throws [right-error] right-error :thrown]
+               ['both-throw [left-error right-error] left-error :thrown]
+               ['shadowed ["parameter"] "parameter" :normal] ['main [] "" :normal]]
+        cases (mapv
+                (fn [extension]
+                  (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-string-concat" extension)
+                        path (.getPath (io/file root relative)) products (fresh relative)
+                        input (select-keys products [:request :typed :verification])
+                        ready (= :accepted (get-in input [:typed :status]))
+                        _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                        _ (when-not ready (throw (ex-info "String concat source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                        calls (:call-type-facts facts) descriptors (mapv :applied-string-concat (filter #(= :direct-string-concat (:dispatch %)) calls))
+                        getter (:applied-map-get (first (filter #(= :direct-map-get (:dispatch %)) calls)))
+                        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding) graph (:effect-graph effects)]
+                    (is (= :passed (get-in input [:verification :status])))
+                    (is (= 8 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                    (is (= 11 (count (:calls core)) (count (:call-edges core)) (count calls)))
+                    (is (= {:direct-string-concat 10 :direct-map-get 1} (frequencies (map :dispatch calls))))
+                    (is (= 10 (count descriptors) (count (filter #(= :sh08-string-concat-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                    (is (= {:normal 7 :not-invoked 3} (frequencies (map :application descriptors))))
+                    (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                    (doseq [descriptor descriptors]
+                      (let [normal? (= :normal (:application descriptor))]
+                        (is (= [:memory/allocate] (:latent-effects descriptor)))
+                        (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
+                        (is (= (if normal? :gravity.type/string :gravity.type/never) (:result-type descriptor)))
+                        (is (= :normal-invocation-even-empty (get-in descriptor [:concatenation-policy :allocation])))))
+                    (doseq [[name args expected tag] specs]
+                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                     [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                        (is (= [expected "" tag] result) (str extension " " name))
+                        (when (= tag :thrown) (is (identical? expected (first result))))))
+                    (let [ready (and (= :accepted (:status effects)) (map? graph) (seq (:nodes graph)))]
+                      (is (true? (boolean ready)) (pr-str (:diagnostics effects)))
+                      (when-not ready (throw (ex-info "String concat C8 graph missing before whole verification" {:effects effects})))
+                      (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+                      (doseq [descriptor descriptors]
+                        (let [record (get-in graph [:nodes (:call-core-node-id descriptor)]) normal? (= :normal (:application descriptor))]
+                          (is (= (if normal? #{:memory/allocate} #{}) (:direct record)))
+                          (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+                          (is (= {:unit :concatenation-operands :count 2} (get-in record [:allocation :extent])))
+                          (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+                      (doseq [name ['join 'nested 'default-on-hit 'main]]
+                        (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+                      (doseq [name ['left-throws 'both-throw]]
+                        (is (= #{:error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+                      (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions ['right-throws :function-id]) :inferred])))
+                      (is (map? getter))
+                      (is (= #{} (get-in graph [:nodes (:call-core-node-id getter) :direct])))
+                      (is (= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id getter) :transitive])))
+                      (is (= #{:memory/allocate} (get-in graph [:nodes (get-in getter [:source-call :argument-node-ids 2]) :direct]))))
+                    {:input input :module module :definitions definitions :descriptors descriptors :getter getter :effects effects :binding binding}))
+                [".gravity" ".qst"])
+        {:keys [input module definitions descriptors getter effects binding]} (first cases)
+        descriptor (first (filter #(= :normal (:application %)) descriptors))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? descriptor))
+    (when-not (map? descriptor) (throw (ex-info "String concat descriptor absent before hostile checks" {})))
+    (doseq [changed [(assoc-in descriptor [:source-binding :package :version] "forged")
+                     (-> descriptor (assoc-in [:argument-types 0] :gravity.type/bool) (assoc-in [:parameter-types 0] :gravity.type/bool))
+                     (-> descriptor (update-in [:source-call :ordered-evaluation-node-ids] #(vec (reverse %)))
+                         (update-in [:source-edge :ordered-evaluation-node-ids] #(vec (reverse %))))
+                     (-> descriptor (assoc :latent-effects [] :direct-effects []) (assoc-in [:concatenation-policy :allocation] :none))]]
+      (let [changed-call (c7 'sh08-sc-call-fact [changed (get-in input [:request :canonical-core-artifact :module])])
+            changed-row (c7 'sh08-sc-constraint [changed]) id (:call-core-node-id descriptor) operator (:operator-node-id descriptor)
+            left-id (get-in descriptor [:source-call :argument-node-ids 0])
+            typed (walk/postwalk
+                    (fn [value]
+                      (cond
+                        (= value descriptor) changed
+                        (and (map? value) (= :gravity/c7-call-type-fact (:artifact value)) (= id (:call-core-node-id value))) changed-call
+                        (and (map? value) (= :sh08-string-concat-v1 (:producer-rule value)) (= id (get-in value [:lhs :core-node-id]))) changed-row
+                        (and (map? value) (= changed (get value operator)) (contains? value left-id)) (assoc value left-id (first (:argument-types changed)))
+                        :else value)) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'join) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 6 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)
+          getter-id (:call-core-node-id getter)]
+      (doseq [changed [(update-in graph [:nodes id] #(-> % (dissoc :allocation) (assoc :direct #{} :transitive #{} :escaping #{})))
+                       (-> graph (update-in [:nodes getter-id :dependencies] pop)
+                           (assoc-in [:nodes getter-id :transitive] #{}) (assoc-in [:nodes getter-id :escaping] #{}))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (doseq [[suffix expected] [["arity-one" #{["C7-TYPE-MISMATCH" :string-concat-arity-mismatch]}]
+                               ["numeric" #{["C7-TYPE-MISMATCH" :string-concat-operand-type-required]}]
+                               ["unknown" #{["C7-TYPE-MISMATCH" :string-concat-operand-type-required]
+                                            ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]}]
+                               ["result-annotation" #{["C7-TYPE-MISMATCH" :function-result-type-mismatch]}]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-concat-" suffix ".gravity"))
+            failure (get-in products [:typed :diagnostics 0])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (contains? expected ((juxt :rule :reason) failure)) (pr-str [suffix failure]))))
+    (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-concat-allocation.gravity")
+          effects (c8 'build-body-effect-result typed verification (seal request typed verification))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (:status verification)))
+      (is (= :rejected (:status effects)))
+      (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance]
+             ((juxt :rule :reason) (first (:diagnostics effects))))))))
+
+(deftest current-gravity-string-concat-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'string-concat-input)
+        derive (ns-resolve upstream 'string-concat-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[:gravity.type/string :gravity.type/string] [:gravity.type/never :gravity.type/string]
+                       [:gravity.type/string :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn arguments)
+            result (derive input) descriptor (:descriptor result) normal? (= :normal (:application descriptor))
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-sc-call-fact [descriptor module])} :ledger [(c7 'sh08-sc-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'str :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc descriptor :latent-effects [])
+                         (assoc descriptor :direct-effects (if normal? [] [:memory/allocate]))
+                         (assoc-in descriptor [:concatenation-policy :normalization] :nfc)
+                         (assoc-in descriptor [:concatenation-policy :allocation] :none)
+                         (assoc descriptor :result-type :gravity.type/bool :return :gravity.type/bool)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:call (c7 'sh08-sc-call-fact [changed module])} :ledger [(c7 'sh08-sc-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :effects] [])]]
+          (when (or normal? (not= context (mutate context)))
+            (is (= :rejected (:status (compile (mutate context) 65536))))))))))
+
+(deftest current-gravity-string-concat-existing-runtime-development-kernel
+  ;; AA narrows source admission; the pre-existing runtime str path is intact.
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        concat-ir (fn [left right] {:op :builtin-call :function 'str :args [left right]})
+        smile (String. (Character/toChars 0x1f600))]
+    (doseq [[left right expected] [["" "" ""] ["left" "" "left"] ["" "right" "right"]
+                                  ["a\u0000" "b" "a\u0000b"] [smile "x" (str smile "x")]
+                                  ["e" "\u0301" "e\u0301"] ["\u00e9" "" "\u00e9"]]]
+      (is (= [expected "" :normal] (evaluate (concat-ir (literal left) (literal right))))))
+    (is (not= "\u00e9" (first (evaluate (concat-ir (literal "e") (literal "\u0301"))))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          left-error (String. "left concat operand") right-error (String. "right concat operand")
+          left-throw (evaluate (concat-ir (say "left" {:op :throw :value (literal left-error)}) (say "unreachable" (literal "right"))))
+          right-throw (evaluate (concat-ir (say "left" (literal "left")) (say "right" {:op :throw :value (literal right-error)})))]
+      (is (= ["leftright" "left\nright\n" :normal] (evaluate (concat-ir (say "left" (literal "left")) (say "right" (literal "right"))))))
+      (is (= [left-error "left\n" :thrown] left-throw))
+      (is (= [right-error "left\nright\n" :thrown] right-throw))
+      (is (identical? left-error (first left-throw)))
+      (is (identical? right-error (first right-throw))))))
+
 (deftest current-gravity-map-get-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

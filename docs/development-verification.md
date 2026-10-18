@@ -1417,6 +1417,48 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Binary String concatenation
+
+STD4 owns the binary String overload of the compatibility spelling `str`.
+Change C7, C8 and the typed emitter for its applied type, allocation and
+lowering. The existing runtime's `str` route does not establish typing or
+permission to format arbitrary values.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-string-concat-development-kernel \
+  --exact body-string-concat-development-kernel \
+  --exact current-gravity-string-concat-lowering-development-kernel \
+  --exact current-gravity-string-concat-existing-runtime-development-kernel
+```
+
+Both normally returning operands must have established String types. They
+evaluate once, left-to-right; a transfer prevents invocation and preserves
+operand effects. The applied overload retains latent `:memory/allocate`, while
+direct allocation occurs only on normal invocation, including empty Strings.
+C8 independently reconstructs these facts and checks the source allowance;
+the generic compatibility binding's empty effect row is not overload purity.
+Concatenation preserves exact scalar sequences without normalization, coercion
+or general formatting. Variadic calls, other overloads, library exports and
+provider/profile legality remain separate frontiers.
+
+For the affected source composition, run separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-concat-authenticated-composition --fail-fast
+```
+
+It assembles each accepted extension once and checks nested calls, eager Map
+fallback allocation, actual transfers and representative source rejections.
+Public verification remains fresh for every selected operation. The negative
+fixture siblings are parity checks, not duplicate source proofs. Do not replay
+the unchanged Map lookup or earlier compositions as a prerequisite.
+
 ### Map lookup with an explicit default
 
 STD3 defines `(get map key default)` as an eager ordinary call. A present value

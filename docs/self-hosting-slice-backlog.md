@@ -2146,6 +2146,62 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Binary String concatenation: development implementation
+
+STD4's binary String overload of the compatibility spelling `str` now has
+owning Gravity C7, C8 and typed-emitter paths. Both normally returning operands
+must be established Strings. The result preserves their exact scalar sequences
+without normalization, coercion or general formatting. Operands evaluate once,
+left-to-right; a transfer aborts invocation but does not erase operand effects.
+
+The applied overload retains latent `:memory/allocate` even when it is not
+invoked. Direct allocation is conditional on normal invocation, including for
+empty Strings. C8 independently derives this distinction and enforces source
+allowances. The authenticated generic C5 binding's empty effect row remains
+unchanged; it is not a claim that the applied overload is pure. Runtime
+production code remains unchanged.
+
+The final focused batch passed 29 tests / 2,203 assertions across the new
+typing, effects, lowering, existing-runtime and fixture kernels and affected
+Map lookup/membership, not, association, append, constructor-allocation,
+Keyword-lookup and throw regressions. These counts overlap earlier focused
+results and are not additive. Two earlier cheap namespace-load failures were
+test-parenthesis defects, not semantic passes; their failed attempts remain
+historical evidence.
+
+The single affected source composition passed 1 test / 269 assertions, with no
+failures or errors. The two complete paired assemblies each contain eight
+functions and eleven calls: ten concatenations (seven normally invoked, three
+not invoked) and one explicit-default Map lookup. Twenty-four guest executions
+and six original String payload-identity checks cover nested calls, empty/NUL
+and supplementary Unicode Strings, composed/decomposed distinctions, parameter
+shadowing and transfer behavior. The eager `get` default retains its normal
+concatenation allocation even on a Map hit.
+
+Six fresh public C7 checks cover two whole assemblies and four coherent
+binding, operand-type, order and latent/direct-allocation mutations. Two ready,
+nonempty C8 results pass whole-result verification, and two resealed graph
+mutations reject allocation/dependency erasure. Four actual rejected `.gravity`
+fixtures cover arity, numeric/unknown operands and a result annotation. A fifth
+source is accepted by C7 and its verifier, then rejects in C8 with
+`C8-UNDECLARED` / `function-effect-outside-source-allowance`. Negative `.qst`
+siblings receive parity checks only; the unknown-type case permits two stated
+diagnostic pairs rather than claiming one unique first diagnostic.
+
+All eighteen source/test/fixture hashes, the owning STD4 document and unchanged
+runtime remained stable through the sole run. It measured 666.852492834 seconds
+in the selected test and 8.240701291 seconds in namespace loading with a 2 GiB
+heap. This is whole-composition development timing, not a phase-cost or speedup
+comparison. Independent component and pre-source review accepted the stable
+candidate. No authoritative module migration, target support, self-hosting or
+seed-retirement claim follows. The unchanged Map and equality compositions
+were not replayed.
+
+Variadic and first-class invocation, other String/formatting overloads, numeric
+or Character conversion, implemented library exports and complete profile,
+provider and backend legality remain separate frontiers. Direct commands and
+the affected composition selector are in `docs/development-verification.md`.
+
 ### Map lookup with an explicit default: development implementation
 
 STD3 now states the three-argument Map lookup rule explicitly: evaluate Map,

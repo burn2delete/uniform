@@ -2347,6 +2347,64 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- string-concat-input [argument-types]
+  (let [input (integral-ordering-input 'str argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- string-concat-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-sc-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-string-concat-development-kernel
+  (let [s :gravity.type/string nv :gravity.type/never]
+    (doseq [arguments [[s s] [nv s] [s nv] [nv nv]]]
+      (let [{:keys [core node call edge nodes forms bindings types products binding-types] :as input} (string-concat-input arguments)
+            result (string-concat-derived input) descriptor (:descriptor result)
+            normal? (= arguments [s s]) expected (if normal? s nv)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= (if normal? :normal :not-invoked) (:application descriptor)))
+        (is (= [:memory/allocate] (:latent-effects descriptor)))
+        (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
+        (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= 'gravity.text (:semantic-owner descriptor)))
+        (is (= {:domain :binary-strings :order :left-then-right :scalars :exact-sequence-concatenation :normalization :none
+                :coercion :none :formatting :none :operand-evaluation :once :allocation :normal-invocation-even-empty}
+               (:concatenation-policy descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-sc-constraint [descriptor])] (:constraints inferred)))
+        (is (true? (invoke-c7 'sh08-sc-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator descriptor)])))
+        (is (false? (invoke-c7 'sh08-sc-inferred-call-valid?
+                      [core node call edge nodes bindings (assoc types :operator (assoc descriptor :latent-effects []))])))))
+    (doseq [bad [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool :gravity.type/integer
+                  :gravity.type/character :gravity.type/symbol :gravity.type/keyword
+                  {:kind :gravity.type/map :member-types []} {:kind :gravity.type/vector :element-types []}]
+            arguments [[bad s] [s bad] [bad nv] [nv bad]]]
+      (is (= :rejected (:status (string-concat-derived (string-concat-input arguments)))) (pr-str arguments)))
+    (doseq [arguments [[] [s] [s s s] [s s s s]]]
+      (is (= :string-concat-arity-mismatch (:reason (string-concat-derived (string-concat-input arguments))))))
+    (let [input (string-concat-input [s s])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :right-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'format)]]
+        (is (= :rejected (:status (string-concat-derived (mutate input))))))
+      (let [{:keys [core node call edge nodes bindings types forms]} input work (:work-count (string-concat-derived input))
+            derive #(invoke-c7 'sh08-sc-derive [core node call edge nodes bindings types forms %])]
+        (is (= 66 work))
+        (is (= :accepted (:status (derive work))))
+        (is (= :string-concat-work-limit (:reason (derive (dec work)))))))))
+
 (defn- map-get-input [argument-types]
   (let [input (integral-ordering-input 'get argument-types)]
     (assoc input :binding-types (:types input)

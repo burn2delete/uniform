@@ -1,0 +1,23 @@
+(ns example.local-runtime-string-concat
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn join [left :- String right :- String] :- String (str left right))
+
+(defn nested [left :- String right :- String] :- String
+  (str (str left "") (str "" right)))
+
+(defn default-on-hit [fallback :- String] :- String
+  (get '{"hit" "stored"} "hit" (str fallback "")))
+
+(defn left-throws [payload :- String] (str (throw payload) "right"))
+
+(defn right-throws [payload :- String]
+  (str (str "" "") (throw payload)))
+
+(defn both-throw [left :- String right :- String]
+  (str (throw left) (throw right)))
+
+(defn shadowed [str :- String] :- String str)
+
+(defn main [] (str "" ""))
