@@ -505,6 +505,53 @@
           (is (= #{:memory/allocate :error/throw} (:transitive stopped)))
           (is (= [:gravity.type/string] (:escaping-thrown-error-types stopped))))))))
 
+(deftest body-bounded-successor-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'bounded-successor-input) derive (ns-resolve upstream 'bounded-successor-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [extent [0 1 3]]
+      (let [{:keys [core nodes bindings types forms] :as input} (input-fn extent)
+            result (derive input 65536) descriptor (:descriptor result)
+            count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms 65536])
+            count-descriptor (:descriptor count-result)
+            ordering (c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
+            facts {:module (:module core) :type-table (assoc types :inc-op descriptor :count-op count-descriptor :less-op ordering)
+                   :function-type-table []
+                   :call-type-facts [(c7 'sh08-cq-call-fact [count-descriptor (:module core)]) (c7 'sh08-io-call-fact [ordering (:module core)])
+                                     (c7 'sh08-si-call-fact [descriptor (:module core)])]
+                   :constraint-ledger [(c7 'sh08-cq-constraint [count-descriptor]) (c7 'sh08-io-constraint [ordering]) (c7 'sh08-si-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            counts (leaf 'body-cq-context request facts bindings 65536)
+            context (leaf 'body-si-context request facts bindings 65536)
+            facts (assoc facts :count-context (:context counts) :successor-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})]
+        (is (= :accepted (:status result) (:status count-result) (:status context)))
+        (is (true? (valid facts)))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-si-context request facts bindings (dec (:work-count context))))))
+        (is (= context (leaf 'body-si-context request facts bindings (:work-count context))))
+        (doseq [changed [(assoc descriptor :numeric-mode :wrapping) (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc descriptor :direct-effects [:memory/allocate]) (assoc descriptor :thrown-error-effects [:error/throw])
+                         (assoc descriptor :return :gravity.type/i64 :result-type :gravity.type/i64)
+                         (assoc-in descriptor [:range-proof :vector-extent] (inc extent))
+                         (assoc-in descriptor [:range-proof :invariant :upper] (inc extent))
+                         (assoc-in descriptor [:range-proof :backedge-paths] [])
+                         (assoc-in descriptor [:range-proof :backedge-paths] [7])
+                         (assoc-in descriptor [:range-proof :backedge-paths] [nil])
+                         (assoc-in descriptor [:range-proof :backedge-paths] [{}])
+                         (assoc-in descriptor [:range-proof :backedge-paths] ["path"])
+                         (assoc-in descriptor [:range-proof :incoming-transfers] [])
+                         (assoc-in descriptor [:range-proof :normal-exit :core-node-id] :inc-slot)
+                         (assoc-in descriptor [:range-proof :check-elision] :authorized)]]
+          (let [candidate (-> facts (assoc-in [:type-table :inc-op] changed)
+                              (assoc-in [:call-type-facts 2] (c7 'sh08-si-call-fact [changed (:module core)]))
+                              (assoc-in [:constraint-ledger 2] (c7 'sh08-si-constraint [changed])))]
+            (is (false? (valid candidate)) (pr-str changed))))
+        (doseq [candidate [(update facts :constraint-ledger pop) (update facts :constraint-ledger conj (last (:constraint-ledger facts)))
+                           (assoc-in facts [:successor-context :forms :inc-op :value] 'forged)
+                           (assoc-in facts [:type-table :count-query] :gravity.type/i64)]]
+          (is (false? (valid candidate))))))))
+
 (deftest body-constructor-allocation-development-kernel
   ;; Current Gravity algorithms on normalized DATA, not source admission.
   (doseq [kind [:vector :map :set] empty? [true false]]

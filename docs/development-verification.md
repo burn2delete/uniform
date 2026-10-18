@@ -1202,6 +1202,60 @@ clojure -J-Xmx2g -M:dev-test \
 This finite operation does not establish full
 collection, profile, provider, target or self-hosting support.
 
+### Bounded counter successor
+
+The same C7, effect, emitter and runtime owners implement the finite
+proof-required Integer `inc` rule. Use the existing direct tests:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-bounded-successor-development-kernel \
+  --exact sh08-bounded-successor-multiple-backedges-development-kernel \
+  --exact sh08-bounded-successor-extent-bound-development-kernel \
+  --exact sh08-bounded-successor-guard-relations-development-kernel \
+  --exact body-bounded-successor-development-kernel \
+  --exact current-gravity-bounded-successor-lowering-development-kernel \
+  --exact current-gravity-bounded-successor-runtime-development-kernel \
+  --exact current-gravity-bounded-successor-fixtures-development-kernel
+```
+
+The supported source relation is a zero-initialized immutable Integer counter,
+a dominating strict `<` comparison against runtime `count` of the same
+immutable vector, and a unit successor on every incoming backedge. C7 checks
+the original target, slot, source, guard, count and complete transfer census.
+The established vector extent `N` is bounded by the existing 1024-child limit.
+The invariant `0 <= i <= N` and true-edge fact `i < N` prove the successor
+remains within the finite range. A zero-length vector has an unsatisfiable
+increment edge and a normal zero-iteration exit; this does not manufacture a
+Never result or an executed increment.
+
+Integer typing remains separate from the numeric-mode and range records. It
+does not silently select I64 or arbitrary-precision arithmetic. Count still
+executes in the original condition; no folding, hoisting, termination claim or
+check elision follows. The runtime retains integer, current-counter and range
+guards before addition. Hostile development-IR rejection does not define a
+source overflow-error API. The successor adds no allocation or error effect;
+operand effects and control transfer remain visible.
+
+Changes to this numeric/control relation or its emitted instruction require
+the affected source-to-type/effect/lowering/runtime composition, separately
+from these normalized kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-bounded-successor-authenticated-composition \
+  --timing-receipt /tmp/sh01-bounded-successor-composition.edn
+```
+
+General arithmetic, arbitrary starts or steps,
+unproved extents, fixed-width checked errors, BigInt support, target admission
+and authoritative migration remain separate work. This rule is a supported
+finite analysis domain, not a prohibition on other documented numeric forms.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary

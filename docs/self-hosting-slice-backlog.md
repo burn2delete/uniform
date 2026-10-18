@@ -1771,6 +1771,94 @@ The direct kernels and separate composition command are documented in
 collection types, profile/provider/ownership legality, authoritative migration,
 target support, self-hosting and seedless release remain outstanding.
 
+### Bounded counter successor: development increment
+
+The current-source C7 engine, effect owner, typed emitter and stage-owned
+runtime implement a finite proof-required Integer `inc`. The supported loop
+starts its counter at zero, compares it strictly against runtime `count` of
+the same established immutable vector, and advances that same slot by one on
+every incoming backedge. The original loop target, slot, initializer, guard,
+count operand, vector origin and complete transfer census are checked. The
+existing vector child limit bounds its extent to 1024.
+
+The invariant `0 <= i <= N` and dominating true-edge fact `i < N` establish
+`0 < i + 1 <= N`. An empty vector has an unsatisfiable increment edge and a
+normal zero-iteration exit; it does not produce a fictitious executed increment
+or Never result. Immutable vector aliases and multiple coherent backedges are
+covered. The result remains Integer, with a separate numeric-mode/range record,
+not an implicit I64 or arbitrary-precision arithmetic choice.
+
+The successor adds no allocation or error effect, but preserves operand effects
+and control transfer. Count remains at its original evaluation site. No
+folding, hoisting, check elision or general termination claim follows. The
+runtime retains integer, current-slot and range checks before addition.
+Defensive rejection of malformed development IR is not a source overflow API.
+
+The combined focused batch passed seven tests/301 assertions in 2.067 seconds
+of selected execution plus 8.157 seconds of namespace loading at 2 GiB. Its
+fixture parsing preceded removal of unsupported Integer result annotations;
+the corrected paired fixtures subsequently passed 22 parsing assertions.
+The final strict-guard/fixture batch passed two tests/29 assertions, and four
+affected loop/control regressions passed 186 assertions in 2.137 seconds plus
+9.061 seconds of loading. Overlapping batches are not summed as unique coverage.
+
+Earlier focused failures remain recorded: unsupported private `vals` and
+`merge` calls were replaced with existing bounded operations, delimiter errors
+were corrected, normalized vector-origin fixture joins were completed, and
+budget exhaustion now retains its owning diagnostic. No seed extension was
+introduced. Scalar, nil, map and string path controls motivated guarded path
+consumers rather than host exceptions; the finite consumers do not replace
+fresh public C7 reconstruction of the complete candidate.
+
+The first affected source-composition attempt stopped before source processing:
+the selector resolved the SH08 test helper before requiring its namespace.
+Its result remains one test, zero passes and one setup error, not semantic
+validation. After a one-line test-only dependency correction, the cold
+namespace/fixture check passed one test/22 assertions. It did not execute the
+composition body containing the new require; that dependency path received
+targeted static review.
+
+The changed selector's composition completed one test/280 assertions with
+278 passes, two failures and no errors. Selected execution took 1,052.035
+seconds plus 9.456 seconds of namespace loading at 2 GiB. Both failures were
+the paired call-census expectation: ordinary local call facts omit `:dispatch`;
+that label exists only on a different higher-order branch. The intrinsic counts
+matched, but the expected local dispatch tag did not. The pre-run review missed
+this schema distinction too. The failed aggregate remains failed history; no
+production change is justified by this test-oracle error.
+
+Both positive extensions completed typing, lowering and execution: four
+functions, eleven calls (four successors, three counts, three comparisons and
+one local call), three loop bindings, seven recur targets and four transfers.
+All twelve guest invocations passed with results zero, one and three, including
+the immutable alias and both backedges. Four positive public C7 operations and
+three coherently altered candidate rejections passed. The unused source-echo
+mutation still satisfies the finite successor predicate before fresh public C7
+rejects the full candidate; this is not an isolated callee-body ancestry test
+or a comprehensive verifier-correctness proof.
+
+Two accepted whole-C8 verifications and three coherently resealed graph
+rejections passed. All ten negative `.gravity` fixtures passed exact rule/reason
+checks; paired `.qst` negatives have byte parity, not separately executed
+negative-source coverage. The mode-named source fixture lacks the required
+range proof; it is not an explicit wrapping-mode syntax test. Descriptor and
+development-IR mutations separately cover unsupported represented modes.
+All 29 compiler, test and fixture hashes remained unchanged during the run.
+The subsequent test-only correction expects the existing nil dispatch and
+explicitly joins the local call's node, caller and callee to its canonical
+edge/function table. The existing direct-call lowering and paired-fixture
+checks passed two tests/78 assertions in 0.629 seconds plus 8.424 seconds of
+loading. Those checks do not execute the corrected composition body or its new
+local-join assertions. The expensive source composition was not replayed solely
+to repair this oracle; no result for the corrected aggregate is claimed.
+
+The direct kernels and separate composition command are documented in
+`docs/development-verification.md`. General arithmetic, arbitrary starts and
+steps, unproved extents, fixed-width checked errors, BigInt, profile/provider
+legality, authoritative migration, target support, self-hosting and seedless
+release remain outstanding. This finite domain is not a language-level ban on
+other documented numeric behavior.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
