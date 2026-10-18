@@ -1417,6 +1417,43 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Persistent List prepend: focused feedback
+
+STD3 defines binary `(conj items value)` for persistent Lists as prepend,
+leaving the original ordered values after the new head. The development slice
+supports reverse-and-join with persistent List accumulators. C7 owns receiver-type dispatch and result typing; C8 owns
+independent reconstruction and allocation; the typed emitter and runtime own
+execution. Preserve the existing vector-append path rather than treating a
+List as a Vector.
+
+Start with the existing direct component selectors:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-list-prepend-development-kernel \
+  --exact sh08-vector-append-development-kernel \
+  --exact body-list-prepend-development-kernel \
+  --exact current-gravity-list-prepend-lowering-development-kernel \
+  --exact current-gravity-list-prepend-runtime-development-kernel \
+  --exact current-gravity-list-prepend-fixtures-development-kernel
+```
+
+The new rule preserves a matching homogeneous member type, prepends to finite
+positional types, and leaves a bare List bare. Unknown values do not invent
+membership. Operand/result validation, finite width/depth and construction
+work remain bounded; an aborted invocation adds no prepend allocation.
+These focused checks include normalized downstream and runtime kernels, not
+fresh source composition or authoritative migration. When the source-to-typed
+interface or affected composition changes, use the existing
+`current-gravity-list-prepend-authenticated-composition` selector in the SH01
+namespace once on the stable candidate. It checks the real reverse-and-join
+source path and semantic rejection cases. Do not rebuild unchanged source
+products to repeat a green aggregate; do not update admission fingerprints for
+ordinary development.
+
 ### Homogeneous List traversal: focused feedback
 
 The `(List T)` parameter and guarded-head slice supports content-consuming
@@ -2906,6 +2943,26 @@ different workloads, not a speedup comparison or a measurement of which
 construction phase dominates. Use direct kernels for iteration and this
 affected composition for interface changes; adding scheduling machinery would
 not remove its product-construction work.
+
+The homogeneous-List composition later spent 1,211.036 seconds in its selected
+test; the prepend slice's combined focused batch spent 13.700 seconds in test
+execution. These are different workloads, not a speedup comparison. The prepend
+source selector deliberately constructs eleven distinct sources, then reuses
+the accepted products for runtime cases. `fresh-type-products` constructs and
+verifies C5/C6/C7 products; `sh08-verify-function-type-result` reconstructs the
+expected typed result. Coordinator and C8 binding preimages embed overlapping
+request, artifact and verification DATA. Sharing immutable objects does not
+remove repeated canonical serialization occurrences. The existing
+`p15-s23-c11-mir-digest` also realizes canonical DATA and a complete `pr-str`
+before hashing. These call sites identify candidates, not measured dominance
+or permission to omit fresh verification.
+
+Alongside the next necessary changed composition, a bounded cost investigation
+can time/count those existing construction, verification and digest boundaries
+without printing products. If canonical realization is material, investigate
+only its transient representation/lifetime first, preserving exact bytes,
+digests, ordering, diagnostics and hostile checks. No extra unchanged proof run,
+accepted-result cache, new lane or wrapper is required by this investigation.
 
 The typed-catch composition exposed a separate retention limitation. Rendering
 its first original request, typed result and verification report as one EDN

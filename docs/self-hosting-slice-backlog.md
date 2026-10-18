@@ -2146,6 +2146,51 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Persistent List prepend: development implementation
+
+STD3 now specifies binary List `conj` as prepend, with ordinary left-to-right
+argument evaluation, original-value preservation and explicit allocation and
+storage/lifetime obligations. It does not mandate universal physical sharing
+or extend variadic/arbitrary-sequence behavior.
+
+The C7 focused batch passed two tests / 271 assertions: 196 new List-prepend
+checks and 75 existing vector-append regressions. They cover homogeneous,
+positional and bare List result types, heterogeneous/Nil positional values,
+Never, rejected member/source/binding mutations, computed-result depth/width,
+exact and one-less work, malformed argument containers and large arity.
+Early shape/budget checks now precede argument-type collection. The first two
+batches stopped at syntax errors in the new test; a third reached an
+unsupported `dissoc` in the new Gravity helper, with zero passing assertions
+and two errors. The helper now carries its result type directly, avoiding the
+unnecessary temporary field without expanding the seed builtin surface.
+Those failures remain separate from the passing batch.
+
+C8 reconstruction/allocation and typed lowering/runtime component checks now
+pass. The stable combined focused batch passed 72 tests / 5,351 assertions,
+including the existing traversal and vector-append regressions, malformed
+children, exact/one-less budgets and paired fixture shape checks. Counts overlap
+the earlier component batches; they are not additional independent coverage.
+Earlier delimiter errors and a C8 call-join dispatch failure remain recorded as
+failed attempts, not passing evidence.
+
+The single affected source composition passed 1 test / 245 assertions at the
+unchanged 2 GiB heap. Paired Gravity/QST sources exercise eight functions and
+24 calls, four prepend descriptors (three normally invoked and one aborted),
+32 guest execution cases, ordered reverse-and-join, old-input preservation and
+original throw identity. It checks fresh public C7 lowering gates, independently
+reconstructed C8 graphs and allocation facts, exact/one-less C8 work, hostile
+mutations, eight C7 rejection families and the missing allocation allowance.
+The selected test took 1,026.331 seconds after 8.643 seconds of namespace loading;
+these timings are development observations, not benchmarks or speedup evidence.
+
+Source homogeneous-member coverage is String; other supported atomic types
+and finite/bare results have focused kernel coverage. Bare-List head knowledge,
+homogeneous-to-bare compatibility and compound return annotations remain
+separate frontiers. Profile-specific representation, provider and ownership
+legality, other targets, authoritative migration, self-hosting and release
+gates remain outstanding. This is accepted executable development behavior,
+not completion of those broader contracts.
+
 ### Homogeneous List traversal: development implementation
 
 The L5 rule for `(List T)` parameters is implemented in the owning C6 signature

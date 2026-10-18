@@ -3388,6 +3388,117 @@
 (defn- vector-append-derived [{:keys [core node nodes types bindings forms products]}]
   (invoke-c7 'sh08-va-derive [core node (first (:calls products)) (first (:call-edges products)) nodes bindings types forms 65536]))
 
+(defn- list-prepend-input [receiver value]
+  ;; Normalized reference/type DATA, not authenticated source authority.
+  (integral-ordering-input 'conj [receiver value]))
+
+(defn- list-prepend-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-list-prepend-development-kernel
+  (let [s :gravity.type/string k :gravity.type/keyword b :gravity.type/bool
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
+        positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)]
+    (doseq [[receiver value expected]
+            [[(positional []) :gravity.type/nil (positional [:gravity.type/nil])]
+             [(positional [b s]) k (positional [k b s])]
+             [:gravity.type/list s :gravity.type/list]
+             [homogeneous s homogeneous]
+             [(positional [homogeneous]) b (positional [b homogeneous])]
+             [(positional (vec (repeat 1023 s))) s (positional (vec (repeat 1024 s)))]]]
+      (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-prepend-input receiver value)
+            result (list-prepend-derived input) descriptor (:descriptor result)
+            check #(invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms %])
+            facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes (assoc types :operator descriptor :call expected) {} (:module core) {}])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= expected (:type result) (:result-type descriptor) (:return descriptor)))
+        (is (= :gravity.type/applied-list-prepend (:kind descriptor)))
+        (is (= :direct-list-prepend (get-in facts [0 :dispatch])))
+        (is (= [:memory/allocate] (:direct-effects descriptor)))
+        (is (= [] (:latent-effects descriptor)))
+        (is (= :normal-operand-completion (get-in descriptor [:allocation-policy :condition])))
+        (is (= :memory/allocate (get-in descriptor [:allocation-policy :effect])))
+        (is (= :complete-ordered-input (get-in descriptor [:prepend-semantics :suffix])))
+        (is (= :may-retain-input-storage (get-in descriptor [:storage-policy :retention])))
+        (is (= result (check (:work-count result))))
+        (is (= ["C7-GENERIC" :list-prepend-work-limit] ((juxt :rule :reason) (check (dec (:work-count result))))))
+        (is (true? (invoke-c7 'sh08-pl-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator descriptor :call expected)])))
+        (doseq [changed [(assoc descriptor :direct-effects [])
+                         (assoc-in descriptor [:prepend-semantics :head] :last-operand)
+                         (assoc-in descriptor [:storage-policy :retention] :copies-all)
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :result-type-work 0)
+                         (assoc descriptor :result-type :gravity.type/unknown)]]
+          (is (false? (invoke-c7 'sh08-pl-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator changed :call expected)]))))
+        (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                        #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                        #(assoc-in % [:node :evaluation :order] [])
+                        #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)]]
+          (is (= :rejected (:status (list-prepend-derived (mutate input))))))))
+    (doseq [receiver [:gravity.type/list homogeneous (positional (vec (repeat 1024 s)))]]
+      (let [result (list-prepend-derived (list-prepend-input receiver :gravity.type/never)) descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (:application descriptor)))
+        (is (= [] (:direct-effects descriptor)))
+        (is (nil? (:result-extent descriptor)))))
+    (doseq [[receiver value reason]
+            [[homogeneous k :list-prepend-element-type-mismatch]
+             [homogeneous :gravity.type/nil :list-prepend-element-type-mismatch]
+             [homogeneous :gravity.type/unknown :list-prepend-operand-type-required]
+             [:gravity.type/unknown s :list-prepend-operand-type-required]
+             [:gravity.type/nil s :list-prepend-list-type-required]
+             [{:kind :gravity.type/vector :shape :literal :element-types []} s :list-prepend-list-type-required]
+             [(positional (vec (repeat 1024 s))) s :list-prepend-type-width-limit]
+             [(positional 42) s :list-prepend-operand-type-required]
+             [(positional [:gravity.type/unknown]) s :list-prepend-operand-type-required]
+             [(assoc homogeneous :schema :secret) s :list-prepend-operand-type-required]]]
+      (is (= reason (:reason (list-prepend-derived (list-prepend-input receiver value))))))
+    (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]
+      (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))
+      (is (= :list-prepend-result-type-required (:reason (list-prepend-derived (list-prepend-input (positional []) (nested 128)))))))
+    (doseq [args [[] [:arg0] [:arg0 :arg1 :arg0]]]
+      (is (= :list-prepend-arity-mismatch (:reason (list-prepend-derived (assoc-in (list-prepend-input homogeneous s) [:call :argument-node-ids] args))))))
+    (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)
+          run (fn [args budget]
+                (invoke-c7 'sh08-pl-derive [core node (assoc call :argument-node-ids args) edge nodes bindings types forms budget]))
+          valid? (fn [args]
+                   (invoke-c7 'sh08-pl-inferred-call-valid? [core node (assoc call :argument-node-ids args) edge nodes bindings types]))]
+      (doseq [args [nil 42 :not-arguments '(:arg0 :arg1)]]
+        (is (= :list-prepend-call-shape-required
+               (:reason (run args 65536))))
+        (is (false? (valid? args))))
+      (let [many (vec (repeat 8192 :arg0))]
+        (is (= :list-prepend-work-limit (:reason (run many 0))))
+        (is (= :list-prepend-arity-mismatch (:reason (run many 65536))))
+        (is (false? (valid? many))))
+      (is (= :list-prepend-work-limit (:reason (run [:arg0 :arg1] 0)))))
+    (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input homogeneous s)]
+      (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
+        (let [node (assoc node :children children)]
+          (is (= :list-prepend-call-shape-required
+                 (:reason (invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms 65536]))))
+          (is (false? (invoke-c7 'sh08-pl-inferred-call-valid? [core node call edge nodes bindings types]))))))
+    (doseq [[receiver value kind status]
+            [[homogeneous s :gravity.type/applied-list-prepend :accepted]
+             [{:kind :gravity.type/vector :shape :literal :element-types []} s :gravity.type/applied-vector-append :accepted]
+             [:gravity.type/never s :gravity.type/applied-vector-append :accepted]
+             [:gravity.type/unknown s nil :deferred]
+             [homogeneous :gravity.type/unknown nil :deferred]]]
+      (let [{:keys [core node call edge nodes bindings types forms]} (list-prepend-input receiver value)
+            context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
+                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+            result (invoke-c7 'sh08-va-step [node types {} {} context 65536])]
+        (is (= status (:status result)))
+        (is (= kind (get-in result [:descriptor :kind])))
+        (when (= receiver :gravity.type/never)
+          (is (= :gravity.type/never (:type result)))
+          (is (= [] (get-in result [:descriptor :direct-effects]))))
+        (when (= status :deferred)
+          (is (= :gravity.type/unknown (:type result)))
+          (is (= :conj-dispatch-work-limit
+                 (:reason (invoke-c7 'sh08-va-step [node types {} {} context 1])))))))))
+
 (deftest sh08-vector-append-development-kernel
   (doseq [[elements value] [[[] :gravity.type/keyword]
                             [[:gravity.type/integer] :gravity.type/string]

@@ -63,6 +63,19 @@ The implementation must declare whether its suffix retains input storage,
 borrows, or copies under the memory and profile rules. A no-allocation claim
 requires the selected representation.
 
+## Persistent List Prepend
+
+For persistent Lists, `(conj items value)` returns a List whose first stored
+value is `value` and whose remaining ordered values are those of `items`.
+Both operands are ordinary L2 arguments evaluated left to right; a control
+transfer aborts invocation. The old List is unchanged, and stored payloads are
+not evaluated.
+
+The selected representation must declare allocation and storage/lifetime
+policy for constructing the returned List under effects, ownership and profile
+rules. The ordered suffix need not use the identical storage object. This
+binary rule does not grant variadic or arbitrary sequence support.
+
 ## Dependencies
 
 - `D1` and `D3` for literal data, metadata, namespaces, and syntax objects.
@@ -126,6 +139,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent operations preserve old collection values in all supported profiles.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Persistent List queries cover empty and nonempty ordered values without executing stored payloads, and declare their suffix storage policy.
+- Binary persistent List prepend preserves the old ordered values after the new head, ordinary operand evaluation and the original List, with explicit allocation/storage policy.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.
 - Equality and hash fixtures agree with STD2 across targets.
 - Bounded systems profiles reject unbounded collection construction.

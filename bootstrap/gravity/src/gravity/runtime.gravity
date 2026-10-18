@@ -554,10 +554,12 @@
                     [{:diagnostic "P15S23X002" :reason :bounded-successor-counter-and-range-required :operation operation}
                      (second arguments-result) :rejected]))
               (if (= function 'conj)
+                (if (list? left)
+                  [(conj left right) (second arguments-result) :normal]
                 (if (if (vector? left) (< (count left) 1024) false)
                   [(conj left right) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :vector-append-vector-and-extent-required :operation operation}
-                   (second arguments-result) :rejected])
+                   (second arguments-result) :rejected]))
               (if (= function 'nth)
                 (if (if (vector? left) (if (integer? right) (if (<= 0 right) (< right (count left)) false) false) false)
                   [(get left right) (second arguments-result) :normal]

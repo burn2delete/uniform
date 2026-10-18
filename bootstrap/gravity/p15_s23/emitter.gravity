@@ -2536,6 +2536,179 @@
                (assoc (first arguments) :element-types (conj (get (first arguments) :element-types) (get arguments 1))) :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
+(defn p15-s23-pl-list? [type]
+  (if (= :gravity.type/list type) true
+    (if (map? type) (= :gravity.type/list (get type :kind)) false)))
+
+(defn p15-s23-pl-type-work [arguments budget]
+  (if (= 2 (count arguments))
+    (let [checked (p15-s23-lc-type-work arguments budget) used (get checked :work-count)]
+      (if (= :accepted (get checked :status))
+        (let [receiver (first arguments) value (get arguments 1) invoked? (= false (= :gravity.type/never value))
+              homogeneous? (p15-s23-hl-type? receiver) positional? (= :literal (get receiver :shape))
+              elements (get receiver :element-types) width (if (vector? elements) (count elements) 0)
+              construction (if (if invoked? positional? false) (+ 1 width) 0)
+              work (+ used construction)]
+          (if (= false (p15-s23-pl-list? receiver))
+            {:status :rejected :reason :list-prepend-list-type-required :work-count used}
+            (if (if homogeneous? (if invoked? (= false (= value (get receiver :element-type))) false) false)
+              {:status :rejected :reason :list-prepend-element-type-mismatch :work-count used}
+              (if (if positional? (if invoked? (>= width 1024) false) false)
+                {:status :rejected :reason :list-prepend-type-width-limit :work-count used}
+                (if (> work budget)
+                  {:status :rejected :reason :list-prepend-work-limit :work-count work}
+                  (let [result (if (= false invoked?) :gravity.type/never
+                                 (if positional?
+                                   {:kind :gravity.type/list :shape :literal
+                                    :element-types (loop [remaining elements out [value]]
+                                                     (if (= 0 (count remaining)) out
+                                                       (recur (rest remaining) (conj out (first remaining)))))}
+                                   receiver))
+                        validation (p15-s23-lc-type-work [result] (- budget work))
+                        total (+ work (get validation :work-count))]
+                    (if (= :accepted (get validation :status))
+                      {:status :accepted :work-count total :operand-work used :result-work (get validation :work-count)
+                       :construction-work construction :result-type result}
+                      {:status :rejected :reason (if (= :work-limit (get validation :reason)) :list-prepend-work-limit :list-prepend-result-type-required)
+                       :type-check-reason (get validation :reason) :work-count total})))))))
+        {:status :rejected :reason (if (= :work-limit (get checked :reason)) :list-prepend-work-limit :list-prepend-operand-type-required)
+         :type-check-reason (get checked :reason) :work-count used}))
+    {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0}))
+
+(defn p15-s23-pl-source [core node call edge nodes bindings types module validation]
+  (if (if (vector? (get call :argument-node-ids))
+        (if (= 2 (count (get call :argument-node-ids)))
+          (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (p15-s23-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (p15-s23-typed-all
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-va-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{conj gravity.core/conj} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :accepted (get validation :status))] )
+      {:kind :gravity.type/applied-list-prepend :version :sh08-list-prepend-v1
+       :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-prepend
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :prepend-semantics {:operation :persistent-list-prepend :head :second-operand :suffix :complete-ordered-input
+                           :input-preserved? true :prepended-values 1 :operand-evaluation :once :payload-evaluation :none}
+       :allocation-policy {:behavior :persistent-head-construction :condition :normal-operand-completion :effect :memory/allocate}
+       :storage-policy {:representation :development-persistent-list :head :new-stored-value
+                        :suffix :existing-list-tail :retention :may-retain-input-storage :lifetime :result-retains-tail}
+       :input-extent (if (= :literal (get (first arguments) :shape)) (count (get (first arguments) :element-types)) nil)
+       :result-extent (if (if invoked? (= :literal (get (first arguments) :shape)) false)
+                        (+ 1 (count (get (first arguments) :element-types))) nil)
+       :operand-type-work (get validation :operand-work) :result-type-work (get validation :result-work)
+       :type-construction-work (get validation :construction-work) :result-type (get validation :result-type)
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)) nil))
+
+(defn p15-s23-pl-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-list-prepend-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-list-prepend-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-prepend}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-pl-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-list-prepend-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-list-prepend :applied-list-prepend descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+
+(defn p15-s23-pl-finish [header]
+  (assoc header :parameter-types (get header :argument-types) :return (get header :result-type)))
+
+(defn p15-s23-typed-compile-prepend [context node budget]
+  (let [id (get node :node-id) core (get context :core)
+        call (get (get context :calls) id) args (get call :argument-node-ids)]
+    (if (= false (vector? args))
+      (assoc (p15-s23-typed-node-error :typed-list-prepend-call-shape-required node) :work-count 1)
+      (let [base (+ 64 (count args) (count (get core :function-records)) (count (get context :ledger)))]
+        (if (< budget base) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
+          (if (= false (= 2 (count args)))
+            (assoc (p15-s23-typed-node-error :typed-list-prepend-arity-required node) :work-count base)
+            (if (= false (if (vector? (get node :children)) (= 3 (count (get node :children))) false))
+              (assoc (p15-s23-typed-node-error :typed-list-prepend-call-shape-required node) :work-count base)
+            (let [validation (p15-s23-pl-type-work [(get (get context :types) (get args 0) :gravity.type/unknown)
+                                                   (get (get context :types) (get args 1) :gravity.type/unknown)] (- budget base))
+                  charge (+ base (get validation :work-count))]
+              (if (= :list-prepend-work-limit (get validation :reason))
+                (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+                (if (= false (= :accepted (get validation :status)))
+                  (assoc (p15-s23-typed-node-error (get validation :reason) node) :work-count charge)
+      (let [edge (get (get context :edges) id)
+            forms (get context :forms) nodes (get context :nodes)
+            owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+            header (p15-s23-pl-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) validation)
+            descriptor (if (map? header) (p15-s23-pl-finish header) nil)
+            rows (loop [remaining (get context :ledger) out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining)
+                         (if (if (contains? #{:sh08-list-prepend-v1 :sh08-vector-append-v1} (get row :producer-rule))
+                               (= id (get (get row :lhs) :core-node-id)) false) (conj out row) out)))))]
+        (if (if (map? descriptor)
+              (p15-s23-typed-all
+                [(= descriptor (get (get context :types) (get call :operator-node-id)))
+                 (= (get descriptor :result-type) (get (get context :types) id))
+                 (= (get edge :ordinal) (get (get context :call-order) id))
+                 (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+                 (= [(p15-s23-pl-constraint descriptor)] rows)
+                 (= (p15-s23-pl-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+                 (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
+                 (= (get node :source) (p15-s23-typed-source owner))
+                 (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                 (loop [i 0]
+                   (if (= i 3) true
+                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                       (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
+                             (= (get child :source) (p15-s23-typed-source form))
+                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                         (recur (+ i 1)) false))))]) false)
+          (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
+            (if (p15-s23-compiler-complete? compiled)
+              (assoc (p15-s23-compiler-result {:op :builtin-call :function 'conj :args (get compiled :value)})
+                :work-count (+ charge (get compiled :work-count)))
+              (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-prepend node) :work-count charge)))))))))))))
+
 (defn p15-s23-typed-compile-append [context node budget]
   (let [id (get node :node-id) core (get context :core)
         charge (+ 64 2 1024 (count (get core :function-records)))]
@@ -4495,8 +4668,10 @@
         (= :gravity.type/applied-atomic-equality (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-equality context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (= :gravity.type/applied-vector-append (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (p15-s23-typed-compile-append context node budget)
+        (contains? #{:gravity.type/applied-vector-append :gravity.type/applied-list-prepend}
+          (get (get (get context :types) (first (get node :children))) :kind)) false)
+    (if (= :gravity.type/applied-list-prepend (get (get (get context :types) (first (get node :children))) :kind))
+      (p15-s23-typed-compile-prepend context node budget) (p15-s23-typed-compile-append context node budget))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (= :gravity.type/applied-bounded-successor (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-successor context node budget)
