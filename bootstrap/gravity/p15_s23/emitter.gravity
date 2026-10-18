@@ -1565,7 +1565,10 @@
                                  (if (= :recur (get (first remaining) :core-form)) (conj out (get (first remaining) :node-id)) out))))
                 call-ids (loop [remaining nodes out #{}]
                            (if (= 0 (count remaining)) out
-                             (recur (rest remaining) (if (= :call (get (first remaining) :core-form)) (conj out (get (first remaining) :node-id)) out))))]
+                             (recur (rest remaining) (if (= :call (get (first remaining) :core-form)) (conj out (get (first remaining) :node-id)) out))))
+                returns (p15-s23-lr-context core typed binding-index form-index (- 65536 work))]
+            (if (= :rejected (get returns :status))
+              (assoc (p15-s23-typed-error (get returns :reason)) :work-count (+ work (get returns :work-count)))
             (if (p15-s23-typed-all [(map? node-index) (map? form-index) (map? binding-index)
                                    (map? record-index) (map? function-index) (= (count record-index) (count function-index))
                                    (map? raw-roots)
@@ -1592,11 +1595,203 @@
                 :targets target-index :target-owners owner-index :transfers transfer-index
                 :call-order (loop [remaining calls i 0 out {}]
                               (if (= 0 (count remaining)) out (recur (rest remaining) (+ i 1) (assoc out (get (first remaining) :core-node-id) i))))
-                :budget (- 65536 work)})
-              (p15-s23-typed-error :typed-source-index-census)))
+                :return-context (get returns :context) :budget (- 65536 work (get returns :work-count))})
+              (p15-s23-typed-error :typed-source-index-census))))
           (p15-s23-typed-error :typed-source-bytes-mismatch))
       (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
     (p15-s23-typed-error :malformed-typed-input-families)))
+
+(defn p15-s23-lr-declaration? [declaration bindings]
+  (if (map? declaration)
+    (let [constructor (get bindings (get declaration :type-binding-id))
+          member (get bindings (get declaration :element-binding-id))]
+      (p15-s23-typed-all
+        [(symbol? (get declaration :constructor-reference-symbol)) (symbol? (get declaration :element-reference-symbol))
+         (= #{:rule-version :source-child-index :marker-form-id :marker-syntax-id :type-form-id :type-syntax-id
+               :type-symbol :type-binding-id :type-id :constructor-form-id :constructor-syntax-id
+               :element-form-id :element-syntax-id :element-symbol :element-binding-id
+               :constructor-reference-symbol :element-reference-symbol} (set (keys declaration)))
+         (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
+         (= ['List :core :type 'gravity.core] [(get constructor :name) (get constructor :binding-class)
+                                             (get constructor :kind) (get constructor :namespace)])
+         (= [:core :type 'gravity.core] [(get member :binding-class) (get member :kind) (get member :namespace)])
+         (= ['List (get member :name)] [(get declaration :type-symbol) (get declaration :element-symbol)])
+         (p15-s23-hl-type? (get declaration :type-id))
+         (= (get (get declaration :type-id) :element-type) (p15-s23-typed-atomic-id (get member :name)))
+         (if (integer? (get declaration :source-child-index)) (>= (get declaration :source-child-index) 0) false)
+         (loop [ids [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+           (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)
+           (get declaration :constructor-form-id) (get declaration :constructor-syntax-id)
+           (get declaration :element-form-id) (get declaration :element-syntax-id) (get declaration :element-binding-id)]]
+           (if (= 0 (count ids)) true (if (string? (first ids)) (recur (rest ids)) false)))])) false))
+
+(defn p15-s23-lr-source [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
+   :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
+
+(defn p15-s23-lr-type-work [declared actual budget]
+  (let [members (if (map? actual) (get actual :element-types) nil)
+        finite? (if (map? actual) (= [:gravity.type/list :literal] [(get actual :kind) (get actual :shape)]) false)
+        member-work (if (if finite? (vector? members) false) (count members) 0)
+        base (+ 1 member-work)]
+    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+      (if (= false (p15-s23-hl-type? declared))
+        {:status :rejected :reason :list-return-declaration-required :work-count base}
+        (let [validation (p15-s23-lc-type-work [actual declared] (- budget base))
+              work (+ base (get validation :work-count))]
+          (if (= :accepted (get validation :status))
+            (let [relation (if (= actual :gravity.type/never) :non-returning-bottom
+                             (if (= actual declared) :homogeneous-list-identity
+                               (if finite?
+                                 (if (loop [remaining members]
+                                       (if (= 0 (count remaining)) true
+                                         (if (= (first remaining) (get declared :element-type))
+                                           (recur (rest remaining)) false))) :all-positional-elements-match nil) nil)))]
+              (if (= relation nil)
+                {:status :rejected :reason :homogeneous-list-return-incompatible :work-count work}
+                {:status :accepted :relation relation :work-count work :member-work member-work
+                 :type-work (get validation :work-count) :checked-member-count (if finite? (count members) nil)}))
+            {:status :rejected :reason (if (= :work-limit (get validation :reason)) :list-return-work-limit :homogeneous-list-return-incompatible)
+             :type-check-reason (get validation :reason) :work-count work}))))))
+
+(defn p15-s23-lr-derive [core record function nodes types bindings forms budget]
+  (let [signature (get record :signature) declaration (get signature :return)
+        declared (get declaration :type-id) body-id (get record :body-core-node-id)
+        actual (get types body-id :gravity.type/unknown)
+        base (+ 64 (if (vector? (get signature :parameters)) (count (get signature :parameters)) 0))]
+    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+      (let [validation (p15-s23-lr-type-work declared actual (- budget base)) work (+ base (get validation :work-count))]
+        (if (= :accepted (get validation :status))
+          (let [fn-node (get nodes (get record :function-core-node-id)) body (get nodes body-id)
+                fn-form (get forms (get (get fn-node :source) :form-id))
+                body-form (get forms (get (get body :source) :form-id))
+                ids (get fn-form :child-form-ids) parameter-form (get forms (get ids 1))
+                marker (get forms (get declaration :marker-form-id)) application (get forms (get declaration :type-form-id))
+                constructor (get forms (get declaration :constructor-form-id)) member (get forms (get declaration :element-form-id))
+                type-binding (get bindings (get declaration :type-binding-id))
+                element-binding (get bindings (get declaration :element-binding-id))
+                definition-binding (get bindings (get record :definition-binding-id))]
+            (if (p15-s23-typed-all
+                  [(p15-s23-lr-declaration? declaration bindings)
+                   (= :fn (get fn-node :core-form)) (= [body-id] (get fn-node :children))
+                   (= :list (get fn-form :kind)) (vector? ids) (= 5 (if (vector? ids) (count ids) 0))
+                   (= (get record :function-syntax-id) (get function :function-id) (get (get fn-node :source) :syntax-id))
+                   (= (get record :function-core-node-id) (get function :function-core-node-id))
+                   (= body-id (get function :body-core-node-id) (get body :node-id))
+                   (= (get record :function-form-id) (get fn-form :form-id))
+                   (= signature (get function :signature) (get (get fn-node :attributes) :signature))
+                   (= declared (get function :return))
+                   (= [2 4] [(get declaration :source-child-index) (get signature :body-source-child-index)])
+                   (= [(get marker :form-id) (get application :form-id) (get body-form :form-id)]
+                      [(get ids 2) (get ids 3) (get ids 4)])
+                   (= [(get marker :kind) (get marker :value)] [:keyword ':-])
+                   (= (get marker :syntax-id) (get declaration :marker-syntax-id))
+                   (= :list (get application :kind))
+                   (= [(get constructor :form-id) (get member :form-id)] (get application :child-form-ids))
+                   (= (get application :syntax-id) (get declaration :type-syntax-id))
+                   (= (get constructor :syntax-id) (get declaration :constructor-syntax-id))
+                   (= (get member :syntax-id) (get declaration :element-syntax-id))
+                   (= (get fn-form :form-id) (get marker :parent-form-id) (get application :parent-form-id) (get body-form :parent-form-id))
+                   (= (get application :form-id) (get constructor :parent-form-id) (get member :parent-form-id))
+                   (= (get application :scope-id) (get constructor :scope-id) (get member :scope-id) (get parameter-form :scope-id))
+                   (= :symbol (get constructor :kind) (get member :kind))
+                   (= [(get constructor :value) (get member :value)]
+                      [(get declaration :constructor-reference-symbol) (get declaration :element-reference-symbol)])
+                   (= (get fn-node :source) (p15-s23-lr-source fn-form))
+                   (= (get body :source) (p15-s23-lr-source body-form))
+                   (= (get record :definition-binding-id) (get definition-binding :binding-id))
+                   (= (get record :definition-name) (get definition-binding :name))])
+              {:status :accepted :work-count work
+               :premise {:version :sh08-homogeneous-list-return-v1 :relation (get validation :relation)
+                         :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
+                         :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
+                         :declaration declaration :function-record record :definition-binding definition-binding
+                         :type-binding type-binding :element-binding element-binding
+                         :function-source (get fn-node :source) :body-source (get body :source)
+                         :return-source (p15-s23-lr-source application) :constructor-source (p15-s23-lr-source constructor)
+                         :element-source (p15-s23-lr-source member)
+                         :checked-element-type (get declared :element-type) :checked-element-count (get validation :checked-member-count)
+                         :type-work (get validation :type-work) :member-work (get validation :member-work)
+                         :normal-completion? (= false (= actual :gravity.type/never))
+                         :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
+                         :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
+                         :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+              {:status :rejected :reason :list-return-source-mismatch :work-count work}))
+          (assoc validation :work-count work))))))
+
+(defn p15-s23-lr-row [premise]
+  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v1 :return-compatibility premise}
+   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v1
+   :lhs {:function-id (get premise :function-id) :body-core-node-id (get premise :body-core-node-id) :role :return}
+   :rhs {:actual-body-type (get premise :actual-body-type) :declared-return-type (get premise :declared-return-type)}
+   :dependencies premise
+   :solution {:return-type (get premise :declared-return-type) :actual-body-type (get premise :actual-body-type)
+              :normal-completion? (get premise :normal-completion?)}
+   :invalidation [:function-records :function-signature :body-core-node :body-type :return-declaration :source-forms
+                  :type-bindings :definition-binding :profile :target]
+   :profile (get premise :profile) :target (get premise :target) :status :solved :diagnostics []})
+
+(defn p15-s23-lr-context [core facts bindings source-forms budget]
+  (let [records (get core :function-records) ledger (get facts :constraint-ledger)
+        scan (+ (count records) (count ledger))]
+    (if (> scan budget) {:status :rejected :reason :list-return-work-limit :work-count scan}
+      (let [rows (loop [remaining ledger out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining)
+                         (if (if (= :sh08-homogeneous-list-return-v1 (get row :producer-rule)) true
+                               (= :return-compatibility (get row :kind))) (conj out row) out)))))
+            active? (loop [remaining records]
+                      (if (= 0 (count remaining)) false
+                        (if (= :sh07-list-return-declaration-v1 (get (get (get (first remaining) :signature) :return) :rule-version))
+                          true (recur (rest remaining)))))]
+        (if (= false active?)
+          (if (= [] rows) {:status :accepted :work-count scan :context {:premises {}}}
+            {:status :rejected :reason :list-return-constraint-census :work-count scan})
+          (let [base (+ scan (count (get core :nodes)) (count (get facts :function-type-table))
+                        (if (map? source-forms) 0 (count source-forms)))]
+            (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+              (let [nodes (p15-s23-typed-index (get core :nodes) :node-id)
+                    functions (p15-s23-typed-index (get facts :function-type-table) :function-id)
+                    forms (if (map? source-forms) source-forms (p15-s23-typed-index source-forms :form-id))
+                    types (get facts :type-table)]
+                (if (= false (= (count functions) (count records) (count (get facts :function-type-table))))
+                  {:status :rejected :reason :list-return-function-census :work-count base}
+                  (loop [remaining records used base expected [] premises {}]
+                    (if (= 0 (count remaining))
+                      (if (= expected rows) {:status :accepted :work-count used :context {:premises premises}}
+                        {:status :rejected :reason :list-return-constraint-census :work-count used})
+                      (let [record (first remaining) id (get record :function-syntax-id) function (get functions id)]
+                        (if (= :sh07-list-return-declaration-v1 (get (get (get record :signature) :return) :rule-version))
+                          (let [checked (p15-s23-lr-derive core record function nodes types bindings forms (- budget used))
+                                total (+ used (get checked :work-count)) premise (get checked :premise)]
+                            (if (= :accepted (get checked :status))
+                              (if (if (= (get function :return-actual-type) (get types (get record :body-core-node-id)))
+                                    (= premise (get function :return-compatibility)) false)
+                                (recur (rest remaining) total (conj expected (p15-s23-lr-row premise)) (assoc premises id premise))
+                                {:status :rejected :reason :list-return-function-evidence :work-count total})
+                              (assoc checked :work-count total)))
+                          (if (if (contains? function :return-compatibility) true (contains? function :return-actual-type))
+                            {:status :rejected :reason :list-return-function-evidence :work-count used}
+                            (recur (rest remaining) used expected premises)))))))))))))))
+
+(defn p15-s23-typed-return-declaration? [declaration type context]
+  (let [forms (get context :forms) bindings (get context :bindings)
+        form (get forms (get declaration :type-form-id))
+        constructor (get forms (get declaration :constructor-form-id)) member (get forms (get declaration :element-form-id))
+        marker (get forms (get declaration :marker-form-id))]
+    (p15-s23-typed-all
+      [(p15-s23-lr-declaration? declaration bindings) (= type (get declaration :type-id))
+       (= :list (get form :kind)) (= [:keyword ':-] [(get marker :kind) (get marker :value)])
+       (= (get marker :syntax-id) (get declaration :marker-syntax-id))
+       (= [(get constructor :form-id) (get member :form-id)] (get form :child-form-ids))
+       (= (get form :syntax-id) (get declaration :type-syntax-id))
+       (= (get constructor :syntax-id) (get declaration :constructor-syntax-id))
+       (= (get member :syntax-id) (get declaration :element-syntax-id))
+       (= (get form :form-id) (get constructor :parent-form-id) (get member :parent-form-id))
+       (= (get form :scope-id) (get constructor :scope-id) (get member :scope-id))
+       (= [(get constructor :value) (get member :value)]
+          [(get declaration :constructor-reference-symbol) (get declaration :element-reference-symbol)])])))
 
 (defn p15-s23-typed-definition [context name]
   (let [record (get (get context :records) name) function (get (get context :functions) name)
@@ -1643,14 +1838,24 @@
            (= (get body-form :form-id) (get (get (get nodes (get record :body-core-node-id)) :source) :form-id))
            (= (get record :signature) (get (get fn-node :attributes) :signature) (get function :signature))
            (= parameter-ids (get fn-node :resolved-binding-ids) (get function :parameter-binding-ids))
-           (= (p15-s23-typed-project function [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects])
+           (= (p15-s23-typed-project function [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects :return-actual-type :return-compatibility])
               (p15-s23-typed-project (get (get context :types) (get record :function-core-node-id))
-                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects])
+                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects :return-actual-type :return-compatibility])
               (p15-s23-typed-project (get (get context :types) (get record :definition-core-node-id))
-                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects]))
-           (if (= :gravity.type/never (get (get context :types) (get record :body-core-node-id))) true
-             (= (get function :return) (get (get context :types) (get record :body-core-node-id))))
-           (p15-s23-typed-declaration? (get signature :return) (get function :return) context)
+                [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects :return-actual-type :return-compatibility]))
+           (if (= :sh07-list-return-declaration-v1 (get (get signature :return) :rule-version))
+             (let [premise (get (get (get context :return-context) :premises) (get record :function-syntax-id))]
+               (if (map? premise)
+                 (p15-s23-typed-all [(= premise (get function :return-compatibility))
+                   (= (get function :return-actual-type) (get (get context :types) (get record :body-core-node-id)))
+                   (= (get function :return) (get (get signature :return) :type-id))]) false))
+             (if (= :gravity.type/never (get (get context :types) (get record :body-core-node-id))) true
+               (= (get function :return) (get (get context :types) (get record :body-core-node-id)))))
+           (if (= :sh07-list-return-declaration-v1 (get (get signature :return) :rule-version))
+             (p15-s23-typed-all [(p15-s23-typed-return-declaration? (get signature :return) (get function :return) context)
+               (= [(get (get signature :return) :marker-form-id) (get (get signature :return) :type-form-id)]
+                  [(get fn-ids 2) (get fn-ids 3)])])
+             (p15-s23-typed-declaration? (get signature :return) (get function :return) context))
            (= (count names) (get record :fixed-arity) (get function :fixed-arity) (count parameters))
            (loop [ids parameter-ids remaining-names names ordinal 0]
              (if (= 0 (count ids)) true

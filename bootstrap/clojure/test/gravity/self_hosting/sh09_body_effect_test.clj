@@ -1001,6 +1001,74 @@
      :descriptor descriptor :result result :facts facts
      :request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}}))
 
+(deftest body-homogeneous-list-return-function-joins-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'homogeneous-list-return-definition-input)
+        s :gravity.type/string homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}]
+    (doseq [actual [{:kind :gravity.type/list :shape :literal :element-types []}
+                   {:kind :gravity.type/list :shape :literal :element-types [s]} homogeneous :gravity.type/never]]
+      (let [{:keys [core facts bindings forms record]} (input-fn actual)
+            returns (leaf 'body-lr-context core facts bindings forms 65536)
+            facts (assoc facts :return-context (:context returns))
+            check #(leaf 'body-function-joins-valid? core % bindings)]
+        (is (= :accepted (:status returns)) (pr-str returns))
+        (is (true? (check facts)))
+        (doseq [changed [(dissoc facts :return-context)
+                         (assoc-in facts [:function-type-table 0 :return-compatibility :relation] :parameter-compatibility)
+                         (assoc-in facts [:type-table (:function-core-node-id record) :return-actual-type] :gravity.type/list)
+                         (assoc-in facts [:function-type-table 0 :return-actual-type] :gravity.type/list)]]
+          (is (false? (check changed))))))))
+
+(deftest body-homogeneous-list-return-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [products (sh08-helper 'homogeneous-list-return-products)
+        positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        atomics [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
+                 :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
+    (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
+      (let [type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+            result (leaf 'body-lr-type-work type (positional members) 65536)]
+        (is (= :accepted (:status result)))
+        (is (= result (leaf 'body-lr-type-work type (positional members) (:work-count result))))
+        (is (= :list-return-work-limit (:reason (leaf 'body-lr-type-work type (positional members) (dec (:work-count result))))))))
+    (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}
+          actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
+          {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
+          ids (mapv :function-syntax-id (:function-records core))
+          run (fn [facts budget] (leaf 'body-lr-context core facts bindings (vec (vals forms)) budget))
+          result (run facts 65536) rows (:constraint-ledger facts)
+          first-id (first ids) index (.indexOf (mapv :function-id (:function-type-table facts)) first-id)
+          body-id (get-in inputs [0 :record :body-core-node-id])]
+      (is (= :accepted (:status checked) (:status result)) (pr-str result))
+      (is (= 12 (count rows) (count (get-in result [:context :premises]))))
+      (is (not= ids (vec (keys functions))))
+      (is (= ids (mapv #(get-in % [:lhs :function-id]) rows)))
+      (is (= (set ids) (set (keys (get-in result [:context :premises])))))
+      (is (= result (run facts (:work-count result))))
+      (is (= :list-return-work-limit (:reason (run facts (dec (:work-count result))))))
+      (doseq [changed [(assoc facts :constraint-ledger [])
+                       (update facts :constraint-ledger conj (first rows))
+                       (assoc facts :constraint-ledger (vec (reverse rows)))
+                       (update facts :constraint-ledger conj (assoc-in (first rows) [:lhs :function-id] :orphan))
+                       (assoc-in facts [:constraint-ledger 0 :producer-rule] :sh08-list-parameter-compatibility-v2)
+                       (assoc-in facts [:constraint-ledger 0 :kind] :equality)
+                       (assoc-in facts [:constraint-ledger 0 :dependencies :actual-body-type] :gravity.type/list)
+                       (assoc-in facts [:function-type-table index :return-compatibility :version] :sh08-homogeneous-list-parameter-v1)
+                       (assoc-in facts [:function-type-table index :return-actual-type] :gravity.type/list)
+                       (assoc-in facts [:function-type-table index :return] :gravity.type/list)
+                       (assoc-in facts [:type-table body-id] (positional [:gravity.type/keyword]))]]
+        (is (= :rejected (:status (run changed 65536)))))
+      (doseq [changed-bindings [(assoc-in bindings [(get-in inputs [0 :declaration :element-binding-id]) :kind] :var)]]
+        (is (= :list-return-source-mismatch
+               (:reason (leaf 'body-lr-context core facts changed-bindings (vec (vals forms)) 65536)))))
+      (is (= :list-return-constraint-census
+             (:reason (leaf 'body-lr-context (assoc core :function-records []) facts bindings (vec (vals forms)) 65536)))))
+    (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
+                    (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
+                    (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]
+      (is (= :rejected (:status (leaf 'body-lr-type-work {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual 65536)))))))
+
 (deftest body-list-prepend-development-kernel
   (let [s :gravity.type/string homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
         positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)]

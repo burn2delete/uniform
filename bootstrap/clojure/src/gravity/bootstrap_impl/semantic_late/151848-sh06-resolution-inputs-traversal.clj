@@ -18,8 +18,12 @@
            (recur (next remaining))))))
    (walk-function-body [body scope-chain syntax]
      (let [annotated? (= ':- (first body))]
-       (when (and annotated? (symbol? (second body)) (not= ':- (second body)))
-         (walk-form (second body) scope-chain syntax :type))
+       (when annotated?
+         (let [type (second body)]
+           (if (and (symbol? type) (not= ':- type))
+             (walk-form type scope-chain syntax :type)
+             (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+               (doseq [item type] (walk-form item scope-chain syntax :type))))))
        (doseq [item (if annotated? (drop 2 body) body)]
          (walk-form item scope-chain syntax :expression))))
    (walk-form

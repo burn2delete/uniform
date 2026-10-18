@@ -126,7 +126,7 @@
               (reject! :malformed-return-declaration-wrapper))
             (let [type (if return? (second body) (when wrapped? (second quoted)))
                   logical-body (cond return? (nnext body) wrapped? (rest block) :else body)]
-            (when (and (or return? wrapped?) (not (type-token? type)))
+            (when (and (or return? wrapped?) (not (parameter-type? type)))
               (reject! :atomic-return-type-required))
             (when (and (or return? wrapped?) (= :- (first logical-body)))
               (reject! :repeated-return-declaration))

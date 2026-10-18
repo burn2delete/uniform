@@ -1167,6 +1167,183 @@
     (if (= (get fact :result-type) actual)
       (= actual (if (body-has-never? (get node :children) types) :gravity.type/never nominal)) false)))
 
+(defn body-lr-declaration? [declaration bindings]
+  (if (map? declaration)
+    (let [constructor (get bindings (get declaration :type-binding-id))
+          member (get bindings (get declaration :element-binding-id))]
+      (body-all?
+        [(symbol? (get declaration :constructor-reference-symbol)) (symbol? (get declaration :element-reference-symbol))
+         (= #{:rule-version :source-child-index :marker-form-id :marker-syntax-id :type-form-id :type-syntax-id
+               :type-symbol :type-binding-id :type-id :constructor-form-id :constructor-syntax-id
+               :element-form-id :element-syntax-id :element-symbol :element-binding-id
+               :constructor-reference-symbol :element-reference-symbol} (set (keys declaration)))
+         (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
+         (= ['List :core :type 'gravity.core] [(get constructor :name) (get constructor :binding-class)
+                                             (get constructor :kind) (get constructor :namespace)])
+         (= [:core :type 'gravity.core] [(get member :binding-class) (get member :kind) (get member :namespace)])
+         (= ['List (get member :name)] [(get declaration :type-symbol) (get declaration :element-symbol)])
+         (body-hl-type? (get declaration :type-id))
+         (= (get (get declaration :type-id) :element-type) (get '{I8 :gravity.type/i8 I16 :gravity.type/i16 I32 :gravity.type/i32 I64 :gravity.type/i64
+         U8 :gravity.type/u8 U16 :gravity.type/u16 U32 :gravity.type/u32 U64 :gravity.type/u64
+         F32 :gravity.type/f32 F64 :gravity.type/f64 Bool :gravity.type/bool
+         String :gravity.type/string Symbol :gravity.type/symbol Keyword :gravity.type/keyword Ratio :gravity.type/ratio} (get member :name)))
+         (if (integer? (get declaration :source-child-index)) (>= (get declaration :source-child-index) 0) false)
+         (loop [ids [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+           (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)
+           (get declaration :constructor-form-id) (get declaration :constructor-syntax-id)
+           (get declaration :element-form-id) (get declaration :element-syntax-id) (get declaration :element-binding-id)]]
+           (if (= 0 (count ids)) true (if (sh09-sha256-id? (first ids)) (recur (rest ids)) false)))])) false))
+
+(defn body-lr-source [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
+   :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
+
+(defn body-lr-type-work [declared actual budget]
+  (let [members (if (map? actual) (get actual :element-types) nil)
+        finite? (if (map? actual) (= [:gravity.type/list :literal] [(get actual :kind) (get actual :shape)]) false)
+        member-work (if (if finite? (vector? members) false) (count members) 0)
+        base (+ 1 member-work)]
+    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+      (if (= false (body-hl-type? declared))
+        {:status :rejected :reason :list-return-declaration-required :work-count base}
+        (let [validation (body-lc-type-work [actual declared] (- budget base))
+              work (+ base (get validation :work-count))]
+          (if (= :accepted (get validation :status))
+            (let [relation (if (= actual :gravity.type/never) :non-returning-bottom
+                             (if (= actual declared) :homogeneous-list-identity
+                               (if finite?
+                                 (if (loop [remaining members]
+                                       (if (= 0 (count remaining)) true
+                                         (if (= (first remaining) (get declared :element-type))
+                                           (recur (rest remaining)) false))) :all-positional-elements-match nil) nil)))]
+              (if (= relation nil)
+                {:status :rejected :reason :homogeneous-list-return-incompatible :work-count work}
+                {:status :accepted :relation relation :work-count work :member-work member-work
+                 :type-work (get validation :work-count) :checked-member-count (if finite? (count members) nil)}))
+            {:status :rejected :reason (if (= :work-limit (get validation :reason)) :list-return-work-limit :homogeneous-list-return-incompatible)
+             :type-check-reason (get validation :reason) :work-count work}))))))
+
+(defn body-lr-derive [core record function nodes types bindings forms budget]
+  (let [signature (get record :signature) declaration (get signature :return)
+        declared (get declaration :type-id) body-id (get record :body-core-node-id)
+        actual (get types body-id :gravity.type/unknown)
+        base (+ 64 (if (vector? (get signature :parameters)) (count (get signature :parameters)) 0))]
+    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+      (let [validation (body-lr-type-work declared actual (- budget base)) work (+ base (get validation :work-count))]
+        (if (= :accepted (get validation :status))
+          (let [fn-node (get nodes (get record :function-core-node-id)) body (get nodes body-id)
+                fn-form (get forms (get (get fn-node :source) :form-id))
+                body-form (get forms (get (get body :source) :form-id))
+                ids (get fn-form :child-form-ids) parameter-form (get forms (get ids 1))
+                marker (get forms (get declaration :marker-form-id)) application (get forms (get declaration :type-form-id))
+                constructor (get forms (get declaration :constructor-form-id)) member (get forms (get declaration :element-form-id))
+                type-binding (get bindings (get declaration :type-binding-id))
+                element-binding (get bindings (get declaration :element-binding-id))
+                definition-binding (get bindings (get record :definition-binding-id))]
+            (if (body-all?
+                  [(body-lr-declaration? declaration bindings)
+                   (= :fn (get fn-node :core-form)) (= [body-id] (get fn-node :children))
+                   (= :list (get fn-form :kind)) (vector? ids) (= 5 (if (vector? ids) (count ids) 0))
+                   (= (get record :function-syntax-id) (get function :function-id) (get (get fn-node :source) :syntax-id))
+                   (= (get record :function-core-node-id) (get function :function-core-node-id))
+                   (= body-id (get function :body-core-node-id) (get body :node-id))
+                   (= (get record :function-form-id) (get fn-form :form-id))
+                   (= signature (get function :signature) (get (get fn-node :attributes) :signature))
+                   (= declared (get function :return))
+                   (= [2 4] [(get declaration :source-child-index) (get signature :body-source-child-index)])
+                   (= [(get marker :form-id) (get application :form-id) (get body-form :form-id)]
+                      [(get ids 2) (get ids 3) (get ids 4)])
+                   (= [(get marker :kind) (get marker :value)] [:keyword ':-])
+                   (= (get marker :syntax-id) (get declaration :marker-syntax-id))
+                   (= :list (get application :kind))
+                   (= [(get constructor :form-id) (get member :form-id)] (get application :child-form-ids))
+                   (= (get application :syntax-id) (get declaration :type-syntax-id))
+                   (= (get constructor :syntax-id) (get declaration :constructor-syntax-id))
+                   (= (get member :syntax-id) (get declaration :element-syntax-id))
+                   (= (get fn-form :form-id) (get marker :parent-form-id) (get application :parent-form-id) (get body-form :parent-form-id))
+                   (= (get application :form-id) (get constructor :parent-form-id) (get member :parent-form-id))
+                   (= (get application :scope-id) (get constructor :scope-id) (get member :scope-id) (get parameter-form :scope-id))
+                   (= :symbol (get constructor :kind) (get member :kind))
+                   (= [(get constructor :value) (get member :value)]
+                      [(get declaration :constructor-reference-symbol) (get declaration :element-reference-symbol)])
+                   (= (get fn-node :source) (body-lr-source fn-form))
+                   (= (get body :source) (body-lr-source body-form))
+                   (= (get record :definition-binding-id) (get definition-binding :binding-id))
+                   (= (get record :definition-name) (get definition-binding :name))])
+              {:status :accepted :work-count work
+               :premise {:version :sh08-homogeneous-list-return-v1 :relation (get validation :relation)
+                         :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
+                         :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
+                         :declaration declaration :function-record record :definition-binding definition-binding
+                         :type-binding type-binding :element-binding element-binding
+                         :function-source (get fn-node :source) :body-source (get body :source)
+                         :return-source (body-lr-source application) :constructor-source (body-lr-source constructor)
+                         :element-source (body-lr-source member)
+                         :checked-element-type (get declared :element-type) :checked-element-count (get validation :checked-member-count)
+                         :type-work (get validation :type-work) :member-work (get validation :member-work)
+                         :normal-completion? (= false (= actual :gravity.type/never))
+                         :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
+                         :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
+                         :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+              {:status :rejected :reason :list-return-source-mismatch :work-count work}))
+          (assoc validation :work-count work))))))
+
+(defn body-lr-row [premise]
+  {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v1 :return-compatibility premise}
+   :kind :return-compatibility :producer-rule :sh08-homogeneous-list-return-v1
+   :lhs {:function-id (get premise :function-id) :body-core-node-id (get premise :body-core-node-id) :role :return}
+   :rhs {:actual-body-type (get premise :actual-body-type) :declared-return-type (get premise :declared-return-type)}
+   :dependencies premise
+   :solution {:return-type (get premise :declared-return-type) :actual-body-type (get premise :actual-body-type)
+              :normal-completion? (get premise :normal-completion?)}
+   :invalidation [:function-records :function-signature :body-core-node :body-type :return-declaration :source-forms
+                  :type-bindings :definition-binding :profile :target]
+   :profile (get premise :profile) :target (get premise :target) :status :solved :diagnostics []})
+
+(defn body-lr-context [core facts bindings source-forms budget]
+  (let [records (get core :function-records) ledger (get facts :constraint-ledger)
+        scan (+ (count records) (count ledger))]
+    (if (> scan budget) {:status :rejected :reason :list-return-work-limit :work-count scan}
+      (let [rows (loop [remaining ledger out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining)
+                         (if (if (= :sh08-homogeneous-list-return-v1 (get row :producer-rule)) true
+                               (= :return-compatibility (get row :kind))) (conj out row) out)))))
+            active? (loop [remaining records]
+                      (if (= 0 (count remaining)) false
+                        (if (= :sh07-list-return-declaration-v1 (get (get (get (first remaining) :signature) :return) :rule-version))
+                          true (recur (rest remaining)))))]
+        (if (= false active?)
+          (if (= [] rows) {:status :accepted :work-count scan :context {:premises {}}}
+            {:status :rejected :reason :list-return-constraint-census :work-count scan})
+          (let [base (+ scan (count (get core :nodes)) (count (get facts :function-type-table))
+                        (if (map? source-forms) 0 (count source-forms)))]
+            (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
+              (let [nodes (body-index (get core :nodes) :node-id)
+                    functions (body-index (get facts :function-type-table) :function-id)
+                    forms (if (map? source-forms) source-forms (body-index source-forms :form-id))
+                    types (get facts :type-table)]
+                (if (= false (= (count functions) (count records) (count (get facts :function-type-table))))
+                  {:status :rejected :reason :list-return-function-census :work-count base}
+                  (loop [remaining records used base expected [] premises {}]
+                    (if (= 0 (count remaining))
+                      (if (= expected rows) {:status :accepted :work-count used :context {:premises premises}}
+                        {:status :rejected :reason :list-return-constraint-census :work-count used})
+                      (let [record (first remaining) id (get record :function-syntax-id) function (get functions id)]
+                        (if (= :sh07-list-return-declaration-v1 (get (get (get record :signature) :return) :rule-version))
+                          (let [checked (body-lr-derive core record function nodes types bindings forms (- budget used))
+                                total (+ used (get checked :work-count)) premise (get checked :premise)]
+                            (if (= :accepted (get checked :status))
+                              (if (if (= (get function :return-actual-type) (get types (get record :body-core-node-id)))
+                                    (= premise (get function :return-compatibility)) false)
+                                (recur (rest remaining) total (conj expected (body-lr-row premise)) (assoc premises id premise))
+                                {:status :rejected :reason :list-return-function-evidence :work-count total})
+                              (assoc checked :work-count total)))
+                          (if (if (contains? function :return-compatibility) true (contains? function :return-actual-type))
+                            {:status :rejected :reason :list-return-function-evidence :work-count used}
+                            (recur (rest remaining) used expected premises)))))))))))))))
+
 (defn body-function-joins-valid? [core typed bindings]
   (let [nodes (body-index (get core :nodes) :node-id) types (get typed :type-table)
         functions (body-index (get typed :function-type-table) :function-id)]
@@ -1181,7 +1358,10 @@
                                      :source-span (get function :source-span) :syntax-id (get function :syntax-id)
                                      :origin-chain (get function :origin-chain) :generated-origin (get function :generated-origin)
                                      :profile (get function :profile) :target (get function :target)))
-                 (body-normal-compatible? (get types (get record :body-core-node-id)) (get function :return))])
+                 (if (= :sh07-list-return-declaration-v1 (get (get (get record :signature) :return) :rule-version))
+                   (let [premise (get (get (get typed :return-context) :premises) (get record :function-syntax-id))]
+                     (if (map? premise) (= premise (get function :return-compatibility)) false))
+                   (body-normal-compatible? (get types (get record :body-core-node-id)) (get function :return)))])
             (recur (rest remaining) (+ ordinal 1)) false) false))))))
 
 (defn body-call-valid? [edge call fact nodes functions records bindings types]
@@ -5328,10 +5508,14 @@
                      (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0))) counts)
         successors (if (= :accepted (get selections :status))
                      (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
-        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
-        facts (assoc facts :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
+        prior-source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get concatenations :work-count 0) (get lists :work-count 0) (get queries :work-count 0) (get parameters :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
+        returns (if (= :accepted (get successors :status))
+                  (body-lr-context core facts bindings (body-path request [:b47-context :authenticated-core-request :forms]) (- budget prior-source-work))
+                  successors)
+        source-work (+ prior-source-work (get returns :work-count 0))
+        facts (assoc facts :return-context (get returns :context) :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
                            :list-parameter-context (get parameters :context) :list-query-context (get queries :context) :list-construction-context (get lists :context) :string-concat-context (get concatenations :context) :map-get-context (get lookups :context) :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
-    (if (= :accepted (get successors :status))
+    (if (= :accepted (get returns :status))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
@@ -5372,7 +5556,9 @@
               (if (= :accepted (get allowed :status))
                 {:status :accepted :graph graph :work-count (+ source-work (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
                                                              (get propagated :work-count) (get allowed :work-count))} allowed)) derived))
-        (body-failure :incoherent-function-or-call-body-type-origin-join)) successors))
+        (body-failure :incoherent-function-or-call-body-type-origin-join))
+      (if (= :accepted (get successors :status))
+        (assoc returns :work-count (+ prior-source-work (get returns :work-count 0))) returns)))
       (body-failure :incomplete-canonical-core-coverage))))
 
 (defn body-analyze-producers [entries]

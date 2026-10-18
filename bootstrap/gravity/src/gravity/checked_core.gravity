@@ -2263,7 +2263,7 @@
 (defn sh07-source-core-return-events [request form]
   (let [ids (get form :child-form-ids)]
     (if (= (get (sh07-find-form (get request :internal-indexes) (get ids 2)) :value) :-)
-      [[(get ids 2) :function-type-marker false] [(get ids 3) :function-type-declaration false]] [])))
+      [[(get ids 2) :function-type-marker false] [(get ids 3) :function-type-declaration true]] [])))
 
 (defn sh07-source-core-handler-events [request clause-ids]
   (loop [remaining clause-ids events []]
@@ -4309,7 +4309,7 @@
            :facts {:reason :type-annotation-resolution-mismatch}}))
       (sh07-annotation-failure marker :type-annotation-marker-required))))
 
-(defn sh07-parameter-type-declaration [request marker type-form coordinate]
+(defn sh07-list-type-declaration [request marker type-form coordinate rule]
   (if (= (get type-form :kind) :list)
     (let [ids (get type-form :child-form-ids) indexes (get request :internal-indexes)]
       (if (= 2 (count ids))
@@ -4322,16 +4322,30 @@
                 (if (= ['List :gravity.type/list] [(get declaration :type-symbol) (get declaration :type-id)])
                   (if (= (get member :type-id) (sh07-atomic-type-id (get member :type-symbol)))
                     {:status :accepted
-                     :value (assoc declaration :rule-version :sh07-list-parameter-declaration-v1
+                     :value (assoc declaration :rule-version rule
                               :type-form-id (get type-form :form-id) :type-syntax-id (get type-form :syntax-id)
                               :constructor-form-id (get constructor :form-id) :constructor-syntax-id (get constructor :syntax-id)
                               :element-form-id (get element :form-id) :element-syntax-id (get element :syntax-id)
                               :element-symbol (get member :type-symbol) :element-binding-id (get member :type-binding-id)
                               :type-id {:kind :gravity.type/list :shape :homogeneous :element-type (get member :type-id)})}
                     (sh07-annotation-failure element :unsupported-list-element-type-annotation))
-                  (sh07-annotation-failure constructor :unsupported-parameter-type-constructor))) inner) outer))
-        (sh07-annotation-failure type-form :closed-list-parameter-type-required)))
+                  (sh07-annotation-failure constructor (if (= rule :sh07-list-return-declaration-v1)
+                                                        :unsupported-return-type-constructor :unsupported-parameter-type-constructor)))) inner) outer))
+        (sh07-annotation-failure type-form (if (= rule :sh07-list-return-declaration-v1)
+                                            :closed-list-return-type-required :closed-list-parameter-type-required))))
     (sh07-type-declaration request marker type-form coordinate)))
+
+(defn sh07-parameter-type-declaration [request marker type-form coordinate]
+  (sh07-list-type-declaration request marker type-form coordinate :sh07-list-parameter-declaration-v1))
+
+(defn sh07-return-type-declaration [request marker type-form coordinate]
+  (let [result (sh07-list-type-declaration request marker type-form coordinate :sh07-list-return-declaration-v1)]
+    (if (= :accepted (get result :status))
+      (if (= :sh07-list-return-declaration-v1 (get (get result :value) :rule-version))
+        (let [indexes (get request :internal-indexes) ids (get type-form :child-form-ids)]
+          (assoc result :value (assoc (get result :value)
+            :constructor-reference-symbol (get (sh07-find-form indexes (get ids 0)) :value)
+            :element-reference-symbol (get (sh07-find-form indexes (get ids 1)) :value)))) result) result)))
 
 (defn sh07-binding-descriptors-for-symbol-vector
   [request vector-form destructuring-reason variadic-reason]
@@ -4390,7 +4404,7 @@
         return? (= (get (sh07-find-form indexes (get ids 2)) :value) ':-)
         body-index (if return? 4 2)
         result (if return?
-                 (sh07-type-declaration request (sh07-find-form indexes (get ids 2))
+                 (sh07-return-type-declaration request (sh07-find-form indexes (get ids 2))
                    (sh07-find-form indexes (get ids 3)) 2)
                  {:status :accepted :value nil})]
     (if (= (count ids) (+ body-index 1))
@@ -4448,6 +4462,26 @@
                    [(get declaration :type-symbol) (get declaration :type-id)]))) false) false) false) false)
     (sh07-type-declaration-valid? declaration)))
 
+(defn sh07-return-type-declaration-valid? [declaration]
+  (if (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
+    (if (sh07-exact-keys? declaration
+          #{:rule-version :source-child-index :marker-form-id :marker-syntax-id :type-form-id :type-syntax-id
+            :type-symbol :type-binding-id :type-id :constructor-form-id :constructor-syntax-id
+            :element-form-id :element-syntax-id :element-symbol :element-binding-id
+            :constructor-reference-symbol :element-reference-symbol})
+      (if (integer? (get declaration :source-child-index))
+        (if (>= (get declaration :source-child-index) 0)
+          (if (sh07-sha256-id-vector? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+                (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)
+                (get declaration :constructor-form-id) (get declaration :constructor-syntax-id)
+                (get declaration :element-form-id) (get declaration :element-syntax-id) (get declaration :element-binding-id)])
+            (let [element (sh07-atomic-type-id (get declaration :element-symbol))]
+              (if (= element nil) false
+                (if (if (symbol? (get declaration :constructor-reference-symbol)) (symbol? (get declaration :element-reference-symbol)) false)
+                  (= ['List {:kind :gravity.type/list :shape :homogeneous :element-type element}]
+                     [(get declaration :type-symbol) (get declaration :type-id)]) false))) false) false) false) false)
+    (sh07-type-declaration-valid? declaration)))
+
 (defn sh07-signature-valid? [signature arity]
   (if (sh07-exact-keys? signature
         #{:rule-version :mapping-rule-version :parameters :return :parameter-source-child-indexes :body-source-child-index})
@@ -4459,7 +4493,7 @@
           (if (sh07-bounded-vector? coordinates 1024)
             (if (= [(count parameters) (count coordinates)] [arity arity])
               (if (if (= result nil) (= (get signature :body-source-child-index) 2)
-                    (if (sh07-type-declaration-valid? result)
+                    (if (sh07-return-type-declaration-valid? result)
                       (= [(get result :source-child-index) (get signature :body-source-child-index)] [2 4]) false))
                 (loop [declarations parameters positions coordinates coordinate 0 annotated? (if (= result nil) false true)]
                   (if (= (count declarations) 0) annotated?

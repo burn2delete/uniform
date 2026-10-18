@@ -1454,6 +1454,86 @@ source path and semantic rejection cases. Do not rebuild unchanged source
 products to repeat a green aggregate; do not update admission fingerprints for
 ordinary development.
 
+### Homogeneous List returns: declaration feedback
+
+The explicit `(List T)` return slice is in development. L5 requires the body
+type to be established independently and retained alongside return-specific
+compatibility evidence. Start declaration and transport changes with these
+existing selectors; their names also cover the earlier parameter boundary:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --namespace gravity.self-hosting.sh07-b47-function-call-recursion-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh06-list-parameter-type-projection-development-kernel \
+  --exact sh07-b47-list-parameter-reference-projection-development-kernel \
+  --exact seed-function-declaration-headers-development-kernel \
+  --exact seed-function-declaration-rejections-development-kernel \
+  --exact seed-function-declaration-plan-parity-development-kernel
+```
+
+Both the C5 walk and retained C6 mirror must visit the constructor and member
+in type positions, preserving scope, occurrence identities and body coordinates.
+The temporary header normalizer checks shape, not constructor spelling;
+authenticated C6 binding resolution owns constructor legality. These checks do
+not establish return typing, effect reconstruction, typed lowering or actual
+source composition. Those remain separate required checks for the new slice.
+
+For return compatibility itself, edit the C7 engine and use its direct checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-homogeneous-list-return-development-kernel \
+  --exact sh08-homogeneous-list-parameter-development-kernel \
+  --exact sh08-bare-list-parameter-development-kernel
+```
+
+The return rule retains the declared outward type separately from the actual
+body type. It must debit member/type work across functions and inference
+rounds, and reject changed source/binding premises. Passing these kernels does
+not replace independent C8 reconstruction, typed lowering or source composition.
+
+For C8 or lowering return-context changes, use the matching existing kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact body-homogeneous-list-return-development-kernel \
+  --exact body-homogeneous-list-return-function-joins-development-kernel \
+  --exact current-gravity-homogeneous-list-return-consumer-development-kernel \
+  --exact current-gravity-homogeneous-list-return-definition-development-kernel
+```
+
+These compare independently reconstructed return premises and strict ordered
+row censuses, including function maps whose iteration order differs from source
+order, and validate complete normalized definition joins. They are not
+whole-module or fresh source acceptance. For changes to independent body
+inference, also select
+`sh08-homogeneous-list-return-branch-independence-development-kernel` and
+`sh08-homogeneous-list-return-structural-independence-development-kernel` in
+the SH08 namespace. Differing finite branch types remain an inference frontier;
+the return annotation must not supply a common type. The affected source
+composition must also be reviewed before accepting the new return slice.
+
+Run the affected source composition only for a stable changed candidate:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-homogeneous-list-return-authenticated-composition
+```
+
+It constructs the accepted Gravity/QST pair and representative C7/C8 negatives
+once each, plus one C5-only rejection. Accepted products are reused across the
+runtime cases and hostile checks. This is development integration evidence,
+not authoritative migration. Preserve a failed run and diagnose its actual
+scope: a test-accessor correction alone does not justify repeating unchanged
+expensive source construction. Validate such a correction with the affected
+cheap projection check and review the retained actual results.
+
 ### Homogeneous List traversal: focused feedback
 
 The `(List T)` parameter and guarded-head slice supports content-consuming

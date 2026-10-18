@@ -362,9 +362,40 @@
           (is (true? (get (last (invoke 'sh07-source-core-parameter-events [request (:form-id parameter-vector)])) 2)))
           (is (= (mapv #(vector % :function-type-declaration (:form-id form)) (:child-form-ids type-form))
                  (invoke 'sh07-source-core-intent-children [request type-form :function-type-declaration (:form-id form)])))))
+      (doseq [value ['(fn [] :- (List I64) 0)
+                     '(fn [parts :- (List I64)] :- (List I64) parts)
+                     '(fn [parts :- List] :- (gravity.core/List gravity.core/Bool) parts)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              declaration (:return signature)
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              type-form (get @forms (get (:child-form-ids form) 3))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :sh07-list-return-declaration-v1 (:rule-version declaration)))
+          (is (= 2 (:source-child-index declaration)))
+          (is (= 4 (:body-source-child-index signature)))
+          (is (true? (invoke 'sh07-return-type-declaration-valid? [declaration])))
+          (is (true? (invoke 'sh07-signature-valid? [signature (count (:parameters signature))])))
+          (is (= [(:constructor-reference-symbol declaration) (:element-reference-symbol declaration)]
+                 (mapv #(get-in @forms [% :value]) (:child-form-ids type-form))))
+          (doseq [id (into [(:form-id type-form)] (:child-form-ids type-form))]
+            (is (true? (invoke 'sh07-source-core-map-declaration-join?
+                              [request (get @forms id) form node indexes :function-type-declaration]))))
+          (is (true? (get (second (invoke 'sh07-source-core-return-events [request form])) 2)))
+          (doseq [field [:constructor-form-id :constructor-syntax-id :element-form-id :element-syntax-id :element-binding-id
+                         :constructor-reference-symbol :element-reference-symbol]]
+            (let [bad (assoc declaration field (if (contains? #{:constructor-reference-symbol :element-reference-symbol} field) 'Wrong (sha 8888)))
+                  changed (assoc-in node [:attributes :signature :return] bad)
+                  changed-indexes (assoc-in indexes [:functions [(:node-id node) nil] :signature :return] bad)]
+              (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                 [request type-form form changed changed-indexes :function-type-declaration])))))))
       (doseq [value ['(fn [parts :- (List)] parts) '(fn [parts :- (List I64 Bool)] parts)
                      '(fn [parts :- (List (List I64))] parts) '(fn [parts :- (I64 Bool)] parts)
-                     '(fn [parts :- (List List)] parts) '(fn [] :- (List I64) 0)]]
+                     '(fn [parts :- (List List)] parts) '(fn [] :- (Vector I64) 0)
+                     '(fn [] :- (List) 0) '(fn [] :- (List I64 Bool) 0)
+                     '(fn [] :- (List (List I64)) 0)]]
         (let [form (make! value) result (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])]
           (is (= :rejected (:status result)))
           (is (= "C6-LOWERING-GAP" (:rule result)))))
@@ -439,6 +470,56 @@
             (let [failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
               (is (= "C6-VERIFY" (:id failure)))
               (is (contains? #{:sh06-reference-projection-mismatch :sh06-resolution-projection-incomplete} (:reason failure)))))))
+      (doseq [[form expected]
+              [['(fn [parts] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [parts :expression]]]
+               ['(fn [parts :- (List String) text :- String] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [String :type] [List :type] [String :type] [parts :expression]]]
+               ['(fn named [parts :- (List String)] :- (gravity.core/List gravity.core/String) parts)
+                '[[fn :operator] [List :type] [String :type] [gravity.core/List :type] [gravity.core/String :type] [parts :expression]]]
+               ['(fn named [parts] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [parts :expression]]]]]
+        (let [data (input form) projected (project data) resolutions (:resolution-table projected)
+              by-form (into {} (map (juxt :form-id identity) (:forms projected)))
+              fn-form (first (filter #(= form (:value %)) (:forms projected)))
+              header-index (if (symbol? (second form)) 3 2)
+              application (get by-form (get (:child-form-ids fn-form) (inc header-index)))
+              child-ids (:child-form-ids application)
+              child-syntax-ids (mapv #(get-in by-form [% :syntax-id]) child-ids)
+              type-resolutions (filterv #(contains? (set child-syntax-ids) (:reference-syntax-id %)) resolutions)]
+          (is (= expected (mapv (juxt :symbol :position) resolutions)))
+          (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+                 (mapv (juxt :symbol :position) resolutions)))
+          (is (= 2 (count child-ids) (count type-resolutions)))
+          (is (= (mapv #(get-in by-form [% :syntax-id]) child-ids) (mapv :reference-syntax-id type-resolutions)))
+          (is (some? (:scope-id application)))
+          (is (= [(:scope-id application) (:scope-id application)] (mapv #(get-in by-form [% :scope-id]) child-ids)))
+          (doseq [changed [(assoc-in data [:request :references 1 :position] :operator)
+                           (update-in data [:request :references] #(assoc % 1 (get % 2) 2 (get % 1)))
+                           (update-in data [:resolved :resolution-table] pop)]]
+            (let [failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+              (is (= "C6-VERIFY" (:id failure)))
+              (is (contains? #{:sh06-reference-projection-mismatch :sh06-resolution-projection-incomplete} (:reason failure)))))))
+      (let [data (input '(fn [parts] :- (List String) parts)) projected (project data)
+            c5-fields #{:syntax-id :symbol :position :semantic-span :source-span :resolution-order :binding-id}
+            c5-rows (mapv #(select-keys % c5-fields) (get-in data [:resolved :resolution-table]))
+            c6-rows (:resolution-table projected)]
+        ;; C5 resolution.gravity's closed row schema uses :syntax-id. The C6
+        ;; projection uses :reference-syntax-id; its install checks every C5
+        ;; raw/resolved ID against the occurrence before consuming that row.
+        (is (every? #(= c5-fields (set (keys %))) c5-rows))
+        (is (every? #(and (string? (:syntax-id %)) (not (contains? % :reference-syntax-id))) c5-rows))
+        (is (= (count c5-rows) (count (set (map :syntax-id c5-rows)))
+               (count c6-rows) (count (set (map :reference-syntax-id c6-rows)))))
+        (is (= 1 (count (set (map :reference-syntax-id c5-rows)))))
+        (is (> (count c5-rows) 1))
+        (is (= (mapv (juxt :symbol :position) c5-rows) (mapv (juxt :symbol :position) c6-rows)))
+        (let [duplicate (get-in data [:request :references 1 :syntax-id])
+              changed (-> data (assoc-in [:request :references 2 :syntax-id] duplicate)
+                               (assoc-in [:resolved :resolution-table 2 :syntax-id] duplicate))
+              failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-VERIFY" (:id failure)))
+          (is (= :sh06-reference-projection-mismatch (:reason failure)))))
       (let [data (input '(fn [parts :- List text :- String] :- String parts))
             projected (project data)]
         (is (= '[[fn :operator] [List :type] [String :type] [String :type] [parts :expression]]
@@ -448,7 +529,9 @@
       (doseq [form ['(fn [parts :- (List)] :- String parts)
                      '(fn [parts :- (List String Bool)] :- String parts)
                      '(fn [parts :- (List (List String))] :- String parts)
-                     '(fn [parts] :- (List String) parts)]]
+                     '(fn [parts] :- (List) parts)
+                     '(fn [parts] :- (List String Bool) parts)
+                     '(fn [parts] :- (List (List String)) parts)]]
         (let [data (input form) projected (project data)]
           (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
                  (mapv (juxt :symbol :position) (:resolution-table projected))))

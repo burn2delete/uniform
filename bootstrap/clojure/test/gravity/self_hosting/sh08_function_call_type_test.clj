@@ -2477,6 +2477,186 @@
                 :types types :functions {:callee callee} :seeds {:parameter type} :homogeneous-type type
                 :context (assoc (:context base) :ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))))))
 
+(defn- homogeneous-list-return-input [actual element ordinal]
+  ;; Normalized independent body/type DATA; no authenticated source claim.
+  (let [sha #(str "sha256:" (format "%064x" (+ (* ordinal 100) %)))
+        nids (zipmap [:function :body] [(sha 1) (sha 2)])
+        fids (zipmap [:function :parameters :marker :application :constructor :member :body :operator] (map sha (range 10 18)))
+        sids (zipmap (keys fids) (map sha (range 30 38))) scope (sha 50)
+        name (symbol (str "produce" ordinal)) type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+        element-name (get (into {} (map (fn [[name type]] [type name]) {'I8 :gravity.type/i8 'I16 :gravity.type/i16 'I32 :gravity.type/i32 'I64 :gravity.type/i64
+                                                 'U8 :gravity.type/u8 'U16 :gravity.type/u16 'U32 :gravity.type/u32 'U64 :gravity.type/u64
+                                                 'F32 :gravity.type/f32 'F64 :gravity.type/f64 'Bool :gravity.type/bool
+                                                 'String :gravity.type/string 'Symbol :gravity.type/symbol 'Keyword :gravity.type/keyword 'Ratio :gravity.type/ratio})) element)
+        make (fn [role kind value parent children]
+               {:form-id (fids role) :syntax-id (sids role) :kind kind :value value
+                :parent-form-id (fids parent) :child-form-ids (mapv fids children) :scope-id scope
+                :source-span nil :origin-chain [] :generated-origin []})
+        forms (into {} (map (juxt :form-id identity)
+                           [(make :function :list (list 'fn [] ':- (list 'List element-name) 'independent-body) nil
+                                  [:operator :parameters :marker :application :body])
+                            (make :operator :symbol 'fn :function []) (make :parameters :vector [] :function [])
+                            (make :marker :keyword ':- :function []) (make :application :list (list 'List element-name) :function [:constructor :member])
+                            (make :constructor :symbol 'List :application []) (make :member :symbol element-name :application [])
+                            (make :body :symbol 'independent-body :function [])]))
+        source (fn [role] (let [form (get forms (fids role))]
+                           {:form-id (:form-id form) :syntax-id (:syntax-id form) :semantic-span nil :origin-chain [] :generated-origin []}))
+        declaration {:rule-version :sh07-list-return-declaration-v1 :source-child-index 2
+                     :marker-form-id (fids :marker) :marker-syntax-id (sids :marker)
+                     :type-form-id (fids :application) :type-syntax-id (sids :application)
+                     :type-symbol 'List :type-binding-id (sha 60) :type-id type
+                     :constructor-form-id (fids :constructor) :constructor-syntax-id (sids :constructor)
+                     :element-form-id (fids :member) :element-syntax-id (sids :member) :element-symbol element-name :element-binding-id (sha 61)
+                     :constructor-reference-symbol 'List :element-reference-symbol element-name}
+        signature {:rule-version :sh07-atomic-function-signature-v1 :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+                   :parameters [] :return declaration :parameter-source-child-indexes [] :body-source-child-index 4}
+        record {:ordinal ordinal :function-syntax-id (sids :function) :function-form-id (fids :function) :function-core-node-id (nids :function)
+                :body-core-node-id (nids :body) :signature signature :fixed-arity 0 :parameter-binding-ids []
+                :definition-kind :named-top-level :definition-name name :definition-binding-id (sha 62)}
+        module {:namespace 'normalized.list-return :profile :meta :target :jvm :effects [:memory/allocate] :capabilities []}
+        function (invoke-c7 'sh08-ft-function-type-skeleton [record module])
+        body {:node-id (nids :body) :core-form :reference :children [] :source (source :body) :attributes {:binding-id (sha 63)}}
+        fn-node {:node-id (nids :function) :core-form :fn :children [(nids :body)] :source (source :function)
+                 :attributes {:signature signature :parameters [] :fixed-arity 0} :resolved-binding-ids []}
+        nodes {(nids :body) body (nids :function) fn-node}
+        bindings {(sha 60) {:binding-id (sha 60) :name 'List :binding-class :core :kind :type :namespace 'gravity.core}
+                  (sha 61) {:binding-id (sha 61) :name element-name :binding-class :core :kind :type :namespace 'gravity.core}
+                  (sha 62) {:binding-id (sha 62) :name name :binding-class :namespace :kind :function :namespace (:namespace module)}}
+        core {:module module :function-records [record] :nodes [body fn-node] :calls [] :call-edges []}
+        types {(nids :body) actual (nids :function) function}]
+    {:core core :record record :function function :nodes nodes :types types :forms forms :bindings bindings
+     :ids nids :declaration declaration :declared-type type :signature signature :body-binding-id (sha 63)
+     :context {:ordering-core core :lookup-forms forms :lookup-bindings bindings}}))
+
+(defn- homogeneous-list-return-products [actuals element]
+  (let [inputs (mapv #(homogeneous-list-return-input %1 element %2) actuals (range))
+        first-input (first inputs)
+        core (assoc (:core first-input) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs)) :function-records (mapv :record inputs))
+        nodes (apply merge (map :nodes inputs)) types (apply merge (map :types inputs))
+        forms (apply merge (map :forms inputs)) bindings (apply merge (map :bindings inputs))
+        functions (into (sorted-map-by #(compare %2 %1))
+                        (map #(vector (get-in % [:function :function-id]) (:function %)) inputs))
+        context {:ordering-core core :lookup-forms forms :lookup-bindings bindings}
+        checked (invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context 65536])
+        updated (:function-types checked)
+        function-facts (invoke-c7 'sh08-ft-function-facts [updated nodes (:module core)])
+        types (reduce (fn [table function] (assoc table (:function-core-node-id function) function)) types (vals updated))
+        facts {:module (:module core) :function-type-table function-facts :type-table types :constraint-ledger (:constraints checked)}]
+    {:inputs inputs :core core :nodes nodes :types types :forms forms :bindings bindings :functions functions :checked checked :facts facts}))
+
+(defn- homogeneous-list-return-definition-input [actual]
+  (let [base (homogeneous-list-return-input actual :gravity.type/string 0)
+        {:keys [core record forms nodes bindings types function]} base
+        sha #(str "sha256:" (format "%064x" (+ 90000 %)))
+        fn-id (:function-core-node-id record) body-id (:body-core-node-id record)
+        fn-form-id (get-in nodes [fn-id :source :form-id]) name (:definition-name record)
+        form (fn [id kind value parent children]
+               {:form-id (sha id) :syntax-id (sha (+ id 20)) :kind kind :value value :parent-form-id parent
+                :child-form-ids children :scope-id (sha 50) :source-span nil :origin-chain [] :generated-origin []})
+        raw-fn (get-in forms [fn-form-id :value]) raw-def (list 'def name raw-fn)
+        def-form (form 0 :list raw-def nil [(sha 1) (sha 2) fn-form-id])
+        forms (-> forms (assoc-in [fn-form-id :parent-form-id] (:form-id def-form))
+                        (assoc (sha 0) def-form (sha 1) (form 1 :symbol 'def (sha 0) [])
+                               (sha 2) (form 2 :symbol name (sha 0) [])))
+        source {:form-id (sha 0) :syntax-id (sha 20) :semantic-span nil :origin-chain [] :generated-origin []}
+        def-node {:node-id (sha 60) :core-form :def :children [fn-id] :source source
+                  :attributes {:name-syntax-id (sha 22)}}
+        record (assoc record :definition-core-node-id (:node-id def-node))
+        nodes (assoc nodes (:node-id def-node) def-node)
+        bindings (assoc-in bindings [(:definition-binding-id record) :definition-syntax-id] (sha 22))
+        definition {:binding-id (:definition-binding-id record) :name name :core-node-id (:node-id def-node) :value-node-id fn-id}
+        core (assoc core :nodes [(get nodes body-id) (get nodes fn-id) def-node] :function-records [record] :definitions [definition])
+        function (invoke-c7 'sh08-ft-function-type-skeleton [record (:module core)])
+        checked (invoke-c7 'sh08-ft-update-function-returns-with-context
+                          [{(:function-id function) function} nodes types {:ordering-core core :lookup-forms forms :lookup-bindings bindings} 65536])
+        updated (get-in checked [:function-types (:function-id function)])
+        typed-function (first (invoke-c7 'sh08-ft-function-facts [{(:function-id function) updated} nodes (:module core)]))
+        types (assoc types fn-id updated (:node-id def-node) updated)
+        facts {:module (:module core) :function-type-table [typed-function] :type-table types :constraint-ledger (:constraints checked)}
+        context {:core core :records {name record} :functions {name typed-function} :nodes nodes :forms forms :bindings bindings
+                 :types types :ledger (:constraints checked) :raw-roots {(:form-id def-form) raw-def} :budget 65536}]
+    (assoc base :core core :record record :forms forms :nodes nodes :bindings bindings :types types :facts facts
+                :function typed-function :definition definition :definition-name name :def-node-id (:node-id def-node) :context context)))
+
+(deftest sh08-homogeneous-list-return-development-kernel
+  (let [positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        atomics [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
+                 :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
+    (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
+      (let [{:keys [core record function nodes types bindings forms signature declared-type] :as input}
+            (homogeneous-list-return-input (positional members) element 0)
+            derive #(invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms %])
+            result (derive 65536) premise (:premise result) row (invoke-c7 'sh08-lr-row [premise])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :sh08-homogeneous-list-return-v1 (:version premise)))
+        (is (= :all-positional-elements-match (:relation premise)))
+        (is (= [(positional members) declared-type (count members)]
+               [(:actual-body-type premise) (:declared-return-type premise) (:checked-element-count premise)]))
+        (is (= :return-compatibility (:kind row)))
+        (is (= :return (get-in row [:lhs :role])))
+        (is (= premise (:dependencies row)))
+        (is (= result (derive (:work-count result))))
+        (is (= :list-return-work-limit (:reason (derive (dec (:work-count result))))))
+        (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 0 bindings])))
+        (is (false? (invoke-c7 'sh08-hl-declaration? [(:declaration input) bindings])))))
+    (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
+      (doseq [[actual relation] [[type :homogeneous-list-identity] [:gravity.type/never :non-returning-bottom]]]
+        (let [{:keys [core record function nodes types bindings forms]} (homogeneous-list-return-input actual s 0)
+              result (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536])]
+          (is (= :accepted (:status result)))
+          (is (= relation (get-in result [:premise :relation])))))
+      (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/string :gravity.type/unknown
+                     (positional [s :gravity.type/keyword]) (positional [:gravity.type/never]) (positional [:gravity.type/nil])
+                     (positional [:gravity.type/unknown]) (positional [type]) (positional (vec (repeat 1025 s)))]]
+        (is (= :rejected (:status (invoke-c7 'sh08-lr-type-work [type actual 65536]))) (pr-str actual)))
+      (let [{:keys [core record function nodes types bindings forms declaration signature] :as input} (homogeneous-list-return-input (positional [s]) s 0)]
+        (doseq [mutate [#(assoc-in % [:record :signature :return :element-binding-id] "forged")
+                        #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)
+                        #(assoc-in % [:forms (:element-form-id declaration) :value] 'Keyword)
+                        #(assoc-in % [:forms (:type-form-id declaration) :child-form-ids] [])
+                        #(assoc-in % [:forms (:constructor-form-id declaration) :scope-id] :sibling)
+                        #(assoc-in % [:record :signature :body-source-child-index] 2)
+                        #(assoc-in % [:function :return] :gravity.type/list)
+                        #(assoc-in % [:nodes (:body-core-node-id record) :source :form-id] :sibling)]]
+          (let [{:keys [core record function nodes types bindings forms]} (mutate input)]
+            (is (= :rejected (:status (invoke-c7 'sh08-lr-derive [core record function nodes types bindings forms 65536]))))))
+        (is (= [] (invoke-c7 'sh08-ft-signature-constraints [[record] (:module core)])))
+        (let [functions {(:function-id function) function}
+              update #(invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types (:context input) %])
+              result (update 65536) returned (get-in result [:function-types (:function-id function)])]
+          (is (= :accepted (:status result)))
+          (is (= type (:return returned)))
+          (is (= (positional [s]) (:return-actual-type returned)))
+          (is (nil? (:return-conflict returned)))
+          (is (= :sh08-homogeneous-list-return-v1 (get-in returned [:return-compatibility :version])))
+          (is (= 1 (count (:constraints result))))
+          (is (= result (update (:work-count result))))
+          (is (= :list-return-work-limit (get-in (update (dec (:work-count result))) [:diagnostics 0 :reason])))))
+      (let [inputs [(homogeneous-list-return-input (positional (vec (repeat 1024 s))) s 0)
+                    (homogeneous-list-return-input (positional []) s 1)]
+            core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
+                                               :function-records (mapv :record inputs))
+            nodes (apply merge (map :nodes inputs)) types (apply merge (map :types inputs))
+            forms (apply merge (map :forms inputs)) bindings (apply merge (map :bindings inputs))
+            functions (into {} (map #(vector (get-in % [:function :function-id]) (:function %)) inputs))
+            seeds (into {} (map #(vector (:body-binding-id %) (get-in % [:types (get-in % [:ids :body])])) inputs))
+            context {:ordering-core core :lookup-forms forms :lookup-bindings bindings :loop-work-left 65536}
+            update #(invoke-c7 'sh08-ft-update-function-returns-with-context [functions nodes types context %])
+            updated (update 65536) work (:work-count updated)
+            infer #(invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes [] [] [] [] functions seeds 10 (assoc context :loop-work-left %)])
+            inferred (infer 65536) cumulative (- 65536 (:type-join-work-left inferred))]
+        (is (= :accepted (:status updated)))
+        (is (= 2 (count (:constraints updated))))
+        (is (= updated (update work)))
+        (is (= :list-return-work-limit (get-in (update (dec work)) [:diagnostics 0 :reason])))
+        (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (> cumulative work))
+        (is (> (:round-count inferred) 1))
+        (is (= :converged (:convergence-status (infer cumulative))))
+        (is (= :list-return-work-limit (get-in (infer (dec cumulative)) [:diagnostics 0 :reason])))))))
+
 (deftest sh08-homogeneous-list-parameter-development-kernel
   (let [s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
         type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
@@ -4611,6 +4791,57 @@
              ((juxt :rule :expected :actual) diagnostic)))
       (is (= (first bodies) (get-in diagnostic [:node :node-id]))))
     (is (false? (invoke-c7 'sh08-ft-match-preimage-valid? [core (assoc core :match-pattern-records []) nil])))))
+
+(deftest sh08-homogeneous-list-return-branch-independence-development-kernel
+  (let [{:keys [core products forms match-id scrutinee-id bodies]} (boolean-match-input)
+        group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products forms])))
+        owner :return-owner group (assoc-in group [:node :evaluation :owner-function-syntax-id] owner)
+        finite {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+        different (assoc finite :element-types [])
+        functions {owner {:body-core-node-id match-id :signature {:return {:rule-version :sh07-list-return-declaration-v1
+                                                                          :type-id {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}}}}}
+        types {scrutinee-id :gravity.type/bool (first bodies) finite (second bodies) finite}
+        checked (invoke-c7 'sh08-bm-check [group types functions {:profile :meta}])]
+    (is (nil? (:diagnostic checked)) (pr-str checked))
+    (is (= finite (:type checked)))
+    (is (= :unsupported-heterogeneous-boolean-match-join
+           (get-in (invoke-c7 'sh08-bm-check [group (assoc types (second bodies) different) functions {:profile :meta}]) [:diagnostic :reason])))
+    (let [unknown (invoke-c7 'sh08-bm-check [group (assoc types (second bodies) :gravity.type/unknown) functions {:profile :meta}])]
+      (is (nil? (:type unknown)))
+      (is (= ["C7-ANNOTATION" :unknown-boolean-match-branch-type :gravity.type/unknown]
+             ((juxt :rule :reason :actual) (:diagnostic unknown))))))
+  (let [owner :structural-return body :structural-body
+        functions {owner {:body-core-node-id body :signature {:return {:rule-version :sh07-list-return-declaration-v1
+                                                                      :type-id {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}}}}}
+        group {:node {:node-id body :evaluation {:owner-function-syntax-id owner}} :nodes {}}]
+    (is (nil? (invoke-c7 'sh08-sm-expected-return [group functions])))
+    (is (= :gravity.type/string
+           (invoke-c7 'sh08-sm-expected-return [group (assoc-in functions [owner :signature :return] {:type-id :gravity.type/string})])))))
+
+(deftest sh08-homogeneous-list-return-structural-independence-development-kernel
+  (let [{:keys [core products forms nodes lexical binding-types match-id]} (structural-match-products-input)
+        groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches groups}])
+        group (first (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)]))
+        owner :structural-return group (assoc-in group [:node :evaluation :owner-function-syntax-id] owner)
+        bodies (mapv :branch-core-node-id (:branches group))
+        finite {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+        types (reduce #(assoc %1 %2 finite) (:type-table inference) bodies)
+        functions {owner {:body-core-node-id match-id :signature {:return {:rule-version :sh07-list-return-declaration-v1
+                                                                          :type-id {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}}}}}
+        check #(invoke-c7 'sh08-sm-check [group % functions {:profile :meta}]) result (check types)]
+    (is (= :converged (:convergence-status inference)))
+    (is (nil? (:diagnostic result)) (pr-str result))
+    (is (= finite (:type result)))
+    (is (= :unsupported-heterogeneous-structural-match-join
+           (get-in (check (assoc types (last bodies) (assoc finite :element-types []))) [:diagnostic :reason])))
+    (is (= ["C7-ANNOTATION" :unknown-structural-match-branch-type :gravity.type/unknown]
+           ((juxt :rule :reason :actual) (:diagnostic (check (assoc types (last bodies) :gravity.type/unknown))))))
+    (is (= ["C7-TYPE-MISMATCH" :structural-match-branch-type-mismatch :gravity.type/string]
+           ((juxt :rule :reason :expected)
+            (:diagnostic (invoke-c7 'sh08-sm-check
+                                   [group types (assoc-in functions [owner :signature :return] {:type-id :gravity.type/string}) {:profile :meta}])))))))
 
 (deftest sh08-boolean-match-c8-ledger-composition
   ;; Normalized identity/verifier oracle for the final equality representation;

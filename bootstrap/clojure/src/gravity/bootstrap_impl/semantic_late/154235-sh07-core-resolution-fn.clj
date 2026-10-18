@@ -62,7 +62,13 @@
         (recur (inc index)))))
   (let [header-index (inc parameter-index)
         annotated? (= ':- (get items header-index))]
-    (when (and annotated? (symbol? (get items (inc header-index))) (not= ':- (get items (inc header-index))))
-      (walk syntax (get items (inc header-index)) (conj path (inc header-index)) nested :type))
+    (when annotated?
+      (let [type (get items (inc header-index)) type-path (conj path (inc header-index))]
+        (if (and (symbol? type) (not= ':- type))
+          (walk syntax type type-path nested :type)
+          (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+            (remember-scope! syntax type-path type nested)
+            (doseq [[child item] (map-indexed vector type)]
+              (walk syntax item (conj type-path child) nested :type))))))
     (doseq [index (range (+ header-index (if annotated? 2 0)) (count items))]
       (walk syntax (get items index) (conj path index) nested :expression)))))

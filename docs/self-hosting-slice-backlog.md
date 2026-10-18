@@ -2191,6 +2191,78 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Homogeneous List returns: development implementation
+
+This executable slice extends L5's explicit `(List T)` declaration to
+function returns. The body type must be established independently; matching
+homogeneous or finite member types, including the empty List, can satisfy the
+declared return while retaining the actual body type and return-specific
+compatibility evidence. An expected declaration does not supply missing
+member facts, widen incompatible branches or authorize bare-List erasure.
+
+Implementation is in the owning declaration, type, effect and
+typed-lowering passes and the existing C5/C6 declaration-reference bridge.
+The declaration/header batch passed 5 tests / 229 assertions, covering named
+and unnamed functions, qualified type references, return-only and combined
+annotations, source scopes/identities, malformed headers and forged mappings.
+Its first run had 221 passing and eight failing assertions: the new test
+matched form IDs against reference syntax IDs. Correcting that oracle retained
+all four cases and production validation; the failed run remains separate.
+The next C6/C7 batch passed 4 tests / 816 assertions, including 154 owning C6
+producer/source-map checks and 536 new return checks across the fifteen
+supported atomic member types. Empty, nonempty and 1,024-member bodies,
+return-specific evidence, source/binding mutations and cumulative exact/one-less
+work across functions and inference rounds are covered. A preceding batch
+stopped after the 154 C6 assertions at a delimiter error in the new C7 updater;
+that error and the later pass remain separate, overlapping results.
+The consumer-context batch passed 5 tests / 1,150 assertions, including 163
+checks in each independent C8 and lowering context. Twelve return functions
+exercise source-record ordering despite a different function-map order;
+missing, duplicated, reordered and foreign rows, changed premises and exact
+work boundaries are rejected. Counts overlap the earlier C7 batch and existing
+parameter/prepend regressions. The definition-join batch then passed 5 tests /
+942 assertions, including complete normalized C8 function joins and typed
+definition joins with altered source, declaration and proof metadata rejected.
+A separate 5-test / 128-assertion branch batch checks equal finite List body
+types, differing and unknown branch types, and existing Boolean, structural
+match and root-map guard behavior. Declared homogeneous returns do not drive
+branch inference; ordinary atomic return checks remain in force. These counts
+overlap earlier contexts and are not whole-module source evidence. Actual
+source composition was then exercised once. The stable combined focused batch passed
+84 tests / 6,619 assertions across five existing namespaces, including the
+declaration bridges, all new return kernels and affected atomic, branch,
+collection, effect and runtime regressions. This is one overlapping combined
+development result, not additional independent proof coverage.
+
+The affected source run completed 377 assertions: 375 passed, two failed and
+none errored, in 472.421 selected-test seconds with a 2 GiB heap. Both failures
+were the same test-oracle error, once per accepted extension: the C5 uniqueness
+assertion read C6's `:reference-syntax-id` field instead of C5's `:syntax-id`,
+reporting 65 rows / one nil identity / 65 C6 rows / 65 distinct C6 identities.
+The original aggregate remains failed. Its other checks reached both accepted
+Gravity/QST programs, 28 runtime cases, four fresh public C7 operations,
+independent C8 reconstruction and hostile rejection, the wrong-member C7 and
+missing-allocation C8 cases, and a C5-only unresolved-type rejection. Four full
+fresh source constructions and the C5-only case were performed; none is
+automatically repeated to repair this assertion. The source/production inputs
+were unchanged through the run. The test-only accessor correction and explicit
+retained C5 schema/uniqueness/forged-ID checks passed a separate focused batch
+of 3 tests / 128 assertions. The independent auditor accepted the reached
+semantic/integration evidence with this qualification; no corrected 377/377
+source pass or direct rerun of the repaired source uniqueness assertion is
+claimed.
+
+Empty and finite all-matching Lists, exact homogeneous Lists and existing
+non-returning bottom behavior now support explicit homogeneous returns. The
+six-function accepted program preserves actual body types, outward declared
+types and return-specific premises through C7, C8 and executable lowering;
+its composed main returns `"ba"`. Bare/unknown/wrong-member bodies, unresolved
+type names and missing allocation allowance remain rejected. Differing finite
+branch joins, nested generic declarations and general collection coercions
+remain unsupported boundaries, not new language prohibitions. Authoritative
+migration, profile/ownership/provider coverage, other targets, self-hosting
+and seedless release still require their separate evidence gates.
+
 ### Homogeneous List traversal: development implementation
 
 The L5 rule for `(List T)` parameters is implemented in the owning C6 signature

@@ -4268,6 +4268,208 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-homogeneous-list-return-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[family name count-fn] [["accepted" "homogeneous-list-return-refinement" 6]
+                                  ["rejected" "homogeneous-list-return-wrong-member" 1]
+                                  ["rejected" "homogeneous-list-return-allocation" 1]
+                                  ["rejected" "homogeneous-list-return-unresolved" 1]
+                                  ["rejected" "list-parameter-return-refinement" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" family "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= count-fn (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
+
+(deftest current-gravity-homogeneous-list-return-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        attempts (atom []) products-built (atom [])
+        fresh (fn [relative]
+                (swap! attempts conj relative)
+                (let [products (upstream relative)] (swap! products-built conj relative) products))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+        finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        payload (String. "original returned head")
+        specs [['empty-parts [] '()]
+               ['singleton [""] '("")] ['singleton ["one"] '("one")] ['singleton [payload] (list payload)]
+               ['matched-parts [true] '("b")] ['matched-parts [false] '("c")]
+               ['reverse-parts ['() '()] '()]
+               ['reverse-parts ['("a") '()] '("a")]
+               ['reverse-parts ['("a" "b") '()] '("b" "a")]
+               ['reverse-parts ['("a" "b") '("tail")] '("b" "a" "tail")]
+               ['reverse-parts [(list payload "tail") '()] (list "tail" payload)]
+               ['join-parts ['() ""] ""] ['join-parts ['("a" "b") ""] "ab"]
+               ['main [] "ba"]]
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/homogeneous-list-return-refinement" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                  _ (when-not (= :accepted (get-in input [:typed :status]))
+                      (throw (ex-info "Homogeneous List return source rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  authenticated (get-in input [:request :b47-context :authenticated-core-request])
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  records (into {} (map (juxt :definition-name identity) (:function-records core)))
+                  forms (into {} (map (juxt :form-id identity) (:forms authenticated)))
+                  bindings (into {} (map (juxt :binding-id identity) (:binding-table authenticated)))
+                  c5-rows (get-in products [:c5 :namespace-analysis :resolution-table])
+                  c6-rows (:resolution-table authenticated) c6-ids (mapv :reference-syntax-id c6-rows)
+                  return-functions (mapv functions ['empty-parts 'singleton 'matched-parts 'reverse-parts])
+                  return-rows (filterv #(= :sh08-homogeneous-list-return-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  calls (:call-type-facts facts)
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 6 (count (:function-records core)) (count (:functions assembled))))
+              (is (= 17 (count calls) (count (:calls core)) (count (:call-edges core))))
+              (is (= {:direct-list-construction 4 :direct-list-query 6 :direct-list-prepend 2 :direct-string-concat 1 nil 4}
+                     (frequencies (map :dispatch calls))))
+              (is (= (mapv (juxt :symbol :position) c5-rows) (mapv (juxt :symbol :position) c6-rows)))
+              (is (= (count c5-rows) (count (set (map :syntax-id c5-rows))) (count c6-rows) (count (set c6-ids))))
+              (is (= 4 (count return-rows)))
+              (doseq [function return-functions]
+                (let [name (:definition-name function) record (records name)
+                      declaration (get-in record [:signature :return]) premise (:return-compatibility function)
+                      actual (get-in facts [:type-table (:body-core-node-id function)])
+                      row (first (filter #(= (:function-id function) (get-in % [:lhs :function-id])) return-rows))]
+                  (is (= homogeneous (:return function) (:type-id declaration) (:declared-return-type premise)))
+                  (is (= actual (:return-actual-type function) (:actual-body-type premise)))
+                  (is (= (case name empty-parts (finite []) singleton (finite [:gravity.type/string])
+                                     matched-parts (finite [:gravity.type/string]) reverse-parts homogeneous) actual))
+                  (is (= :sh07-list-return-declaration-v1 (:rule-version declaration)))
+                  (is (= :sh08-homogeneous-list-return-v1 (:version premise)))
+                  (is (= (if (= name 'reverse-parts) :homogeneous-list-identity :all-positional-elements-match) (:relation premise)))
+                  (is (= declaration (:declaration premise)))
+                  (is (= record (:function-record premise)))
+                  (is (= premise (:dependencies row)))
+                  (is (= :return-compatibility (:kind row)))
+                  (is (= [2 4] [(:source-child-index declaration) (get-in record [:signature :body-source-child-index])]))
+                  (is (not-any? #(and (= :sh08-atomic-function-signature-v1 (:producer-rule %))
+                                     (= (:body-core-node-id function) (:lhs %))) (:constraint-ledger facts)))
+                  (doseq [[role spelling] [[:constructor (:constructor-reference-symbol declaration)] [:element (:element-reference-symbol declaration)]]]
+                    (let [syntax-id (get declaration (keyword (str (clojure.core/name role) "-syntax-id")))
+                          form-id (get declaration (keyword (str (clojure.core/name role) "-form-id")))
+                          binding-id (get declaration (if (= role :constructor) :type-binding-id :element-binding-id))
+                          index (.indexOf c6-ids syntax-id) projected (get c6-rows index) upstream-row (get c5-rows index)]
+                      (is (<= 0 index))
+                      (is (= [:type spelling] [(:position projected) (:symbol projected)] [(:position upstream-row) (:symbol upstream-row)]))
+                      (is (= binding-id (:binding-id projected)))
+                      (is (= syntax-id (get-in forms [form-id :syntax-id])))
+                      (is (= :core (get-in bindings [binding-id :binding-class])))
+                      (is (= :type (get-in bindings [binding-id :kind])))))
+                  (is (= #{} (get-in graph [:nodes (:function-core-node-id function) :direct])))
+                  (is (nil? (get-in graph [:nodes (:function-core-node-id function) :allocation])))
+                  (is (= actual (get-in graph [:nodes (:body-core-node-id function) :type])))))
+              (let [ids (set (map :function-id return-functions))
+                    callers (filterv #(contains? ids (:callee-function-syntax-id %)) calls)]
+                (is (= 3 (count callers)))
+                (doseq [call callers]
+                  (is (= homogeneous (:result-type call) (get-in facts [:type-table (:call-core-node-id call)])))))
+              (is (= :builtin-call (get-in assembled [:functions 'empty-parts :instructions 0 :op])))
+              (is (= 'list (get-in assembled [:functions 'empty-parts :instructions 0 :function])))
+              (doseq [[name args expected] specs]
+                (let [snapshots (mapv #(when (list? %) (vec %)) args)
+                      result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                  (is (= [expected "" :normal] result) (str extension " " name))
+                  (when (list? expected) (is (list? (first result))))
+                  (doseq [[value snapshot] (map vector args snapshots) :when (list? value)] (is (= snapshot (vec value))))
+                  (when (and (= name 'singleton) (identical? payload (first args))) (is (identical? payload (first (first result)))))
+                  (when (and (= name 'reverse-parts) (identical? payload (ffirst args))) (is (identical? payload (second (first result)))))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Homogeneous List return C8 rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [function (vals functions)] (is (= #{:memory/allocate} (get-in graph [:functions (:function-id function) :inferred]))))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) facts {} %) result (analyze 65536) work (:work-count result)]
+                  (is (= :accepted (:status result)) (pr-str result))
+                  (is (= graph (:graph result)))
+                  (is (= result (analyze work)))
+                  (is (= :rejected (:status (analyze (dec work)))))))
+              {:input input :module module :definitions definitions :functions functions :return-rows return-rows :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions functions effects binding]} (first cases)
+        originals (:typed input)
+        hostile-premise (walk/postwalk
+                          #(cond
+                             (and (map? %) (= :sh08-homogeneous-list-return-v1 (:version %))) (assoc % :version :sh08-homogeneous-list-parameter-v1)
+                             (and (map? %) (= :sh08-homogeneous-list-return-v1 (:producer-rule %))) (assoc % :kind :equality)
+                             :else %) originals)
+        hostile-types (walk/postwalk #(if (= :gravity.type/string %) :gravity.type/keyword %) originals)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [typed [hostile-premise hostile-types]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module
+                                                     (get definitions 'empty-parts) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified)))))
+      (let [verification (assoc (:verification input) :expected typed :candidate typed)
+            hostile-binding (seal (:request input) typed verification)
+            result (c8 'build-body-effect-result typed verification hostile-binding)]
+        ;; The hostile DATA passes the outer envelope so C8 must reconstruct.
+        (is (true? (c8 'body-input-valid? typed verification hostile-binding)))
+        (is (= :rejected (:status result)))
+        (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason])))))
+    (is (= 4 (count @verified)))
+    (let [graph (:effect-graph effects)
+          without-allocations (-> graph
+                                  (update :nodes #(into {} (for [[id record] %]
+                                                            [id (-> record (dissoc :allocation)
+                                                                    (update :direct disj :memory/allocate)
+                                                                    (update :transitive disj :memory/allocate))])))
+                                  (update :functions #(into {} (for [[id record] %]
+                                                                [id (-> record (update :inferred disj :memory/allocate)
+                                                                        (update :latent disj :memory/allocate))])))
+                                  (update-in [:namespace :inferred] disj :memory/allocate))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result originals (:verification input) binding (reseal effects without-allocations))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-return-wrong-member.gravity")
+          failure (first (get-in products [:typed :diagnostics]))]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch homogeneous (finite [:gravity.type/keyword])]
+             ((juxt :rule :reason :expected-type :actual-type) failure))))
+    (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-return-allocation.gravity")
+          result (c8 'build-body-effect-result typed verification (seal request typed verification))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (:status verification)))
+      (is (= :rejected (:status result)))
+      (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance] ((juxt :rule :reason) (first (:diagnostics result))))))
+    (let [downstream (atom []) original-c6 bootstrap/sh07-core-from-resolution-artifact
+          failure (with-redefs [bootstrap/sh07-core-from-resolution-artifact
+                                (fn [& args] (swap! downstream conj :c6) (apply original-c6 args))]
+                    (diagnostic #(fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-return-unresolved.gravity")))]
+      (is (= "C5-UNRESOLVED" (:id failure)))
+      (is (= :name-resolution (:stage failure)))
+      (is (= 'MissingReturnElement (:symbol failure)))
+      (is (= [] @downstream)))
+    (is (= 5 (count @attempts)))
+    (is (= 4 (count @products-built)))))
+
 (deftest current-gravity-list-prepend-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -4435,11 +4637,12 @@
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
     (doseq [[disposition name functions]
-            (concat [["accepted" "local-runtime-homogeneous-list-traversal" 7]]
+            (concat [["accepted" "local-runtime-homogeneous-list-traversal" 7]
+                     ["accepted" "homogeneous-list-return-refinement" 6]]
                     (map #(vector "rejected" (str "homogeneous-list-" %) 2)
                          ["wrong-member" "unknown-member" "bare-argument" "to-bare"])
                     (map #(vector "rejected" (str "homogeneous-list-" %) 1)
-                         ["unguarded-head" "wrong-binding" "empty-branch" "tail-head" "recur-type" "return-refinement" "allocation"]))]
+                         ["unguarded-head" "wrong-binding" "empty-branch" "tail-head" "recur-type" "allocation"]))]
       (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
             text (slurp (io/file root (str relative ".gravity")))]
         (is (= text (slurp (io/file root (str relative ".qst")))))
@@ -4653,11 +4856,6 @@
           (let [mismatch (first (filter #(= :string-concat-operand-type-required (:reason %)) diagnostics))]
             (is (= ["C7-TYPE-MISMATCH" :two-established-strings [:gravity.type/string :gravity.type/nil]]
                    ((juxt :rule :expected-type :actual-type) mismatch)))))))
-    (let [source (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-return-refinement.gravity"))
-          data (diagnostic #(bootstrap/sh07-core-file-artifact source))
-          failure (or (:diagnostic data) data)]
-      (is (= "C6-LOWERING-GAP" (:rule failure)))
-      (is (= :atomic-type-annotation-required (get-in failure [:facts :reason]))))
     (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-allocation.gravity")
           effects (c8 'build-body-effect-result typed verification (seal request typed verification))]
       (is (= :accepted (:status typed)))
@@ -6771,6 +6969,91 @@
     (doseq [args [[] [(literal nil)] [(literal nil) (literal false) (literal true)]]]
       (is (= :rejected (last (evaluate {:op :builtin-call :function '= :args args})))))))
 
+(deftest current-gravity-homogeneous-list-return-definition-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'homogeneous-list-return-definition-input)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        s :gravity.type/string homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}]
+    (doseq [actual [{:kind :gravity.type/list :shape :literal :element-types []}
+                   {:kind :gravity.type/list :shape :literal :element-types [s]} homogeneous :gravity.type/never]]
+      (let [{:keys [core facts context forms bindings record declaration definition-name def-node-id]} (input-fn actual)
+            returns (invoke 'p15-s23-lr-context core facts bindings forms 65536)
+            context (assoc context :return-context (:context returns))
+            joined (invoke 'p15-s23-typed-definition context definition-name)
+            check #(invoke 'p15-s23-typed-definition % definition-name)]
+        (is (= :accepted (:status returns)) (pr-str returns))
+        (is (= :complete (:status joined)) (pr-str joined))
+        (is (= homogeneous (get-in joined [:value :function :return])))
+        (is (= actual (get-in joined [:value :function :return-actual-type])))
+        (is (= :sh08-homogeneous-list-return-v1 (get-in joined [:value :function :return-compatibility :version])))
+        (doseq [mutate [#(dissoc % :return-context)
+                        #(assoc-in % [:functions definition-name :return-compatibility :relation] :parameter-compatibility)
+                        #(assoc-in % [:types (:function-core-node-id record) :return-actual-type] :gravity.type/list)
+                        #(assoc-in % [:types def-node-id :return-compatibility :type-work] 0)
+                        #(update-in % [:forms (:type-form-id declaration) :child-form-ids] (comp vec reverse))
+                        #(assoc-in % [:forms (:element-form-id declaration) :value] 'Keyword)
+                        #(assoc-in % [:forms (:constructor-form-id declaration) :scope-id] :sibling)
+                        #(assoc-in % [:forms (:marker-form-id declaration) :value] :forged)
+                        #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)]]
+          (is (= :rejected (:status (check (mutate context))))))))))
+
+(deftest current-gravity-homogeneous-list-return-consumer-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [products (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'homogeneous-list-return-products)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        leaf (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        atomics [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
+                 :gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]]
+    (doseq [element atomics members [[] [element] (vec (repeat 1024 element))]]
+      (let [type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+            result (leaf 'p15-s23-lr-type-work type (positional members) 65536)]
+        (is (= :accepted (:status result)))
+        (is (= result (leaf 'p15-s23-lr-type-work type (positional members) (:work-count result))))
+        (is (= :list-return-work-limit (:reason (leaf 'p15-s23-lr-type-work type (positional members) (dec (:work-count result))))))))
+    (let [s :gravity.type/string type {:kind :gravity.type/list :shape :homogeneous :element-type s}
+          actuals (vec (concat [(positional (vec (repeat 1024 s))) type :gravity.type/never] (repeat 9 (positional []))))
+          {:keys [inputs core forms bindings functions checked facts]} (products actuals s)
+          ids (mapv :function-syntax-id (:function-records core))
+          run (fn [facts budget] (leaf 'p15-s23-lr-context core facts bindings (vec (vals forms)) budget))
+          result (run facts 65536) rows (:constraint-ledger facts)
+          first-id (first ids) index (.indexOf (mapv :function-id (:function-type-table facts)) first-id)
+          body-id (get-in inputs [0 :record :body-core-node-id])]
+      (is (= :accepted (:status checked) (:status result)) (pr-str result))
+      (is (= 12 (count rows) (count (get-in result [:context :premises]))))
+      (is (not= ids (vec (keys functions))))
+      (is (= ids (mapv #(get-in % [:lhs :function-id]) rows)))
+      (is (= (set ids) (set (keys (get-in result [:context :premises])))))
+      (is (= result (run facts (:work-count result))))
+      (is (= :list-return-work-limit (:reason (run facts (dec (:work-count result))))))
+      (doseq [changed [(assoc facts :constraint-ledger [])
+                       (update facts :constraint-ledger conj (first rows))
+                       (assoc facts :constraint-ledger (vec (reverse rows)))
+                       (update facts :constraint-ledger conj (assoc-in (first rows) [:lhs :function-id] :orphan))
+                       (assoc-in facts [:constraint-ledger 0 :producer-rule] :sh08-list-parameter-compatibility-v2)
+                       (assoc-in facts [:constraint-ledger 0 :kind] :equality)
+                       (assoc-in facts [:constraint-ledger 0 :dependencies :actual-body-type] :gravity.type/list)
+                       (assoc-in facts [:function-type-table index :return-compatibility :version] :sh08-homogeneous-list-parameter-v1)
+                       (assoc-in facts [:function-type-table index :return-actual-type] :gravity.type/list)
+                       (assoc-in facts [:function-type-table index :return] :gravity.type/list)
+                       (assoc-in facts [:type-table body-id] (positional [:gravity.type/keyword]))]]
+        (is (= :rejected (:status (run changed 65536)))))
+      (doseq [changed-bindings [(assoc-in bindings [(get-in inputs [0 :declaration :element-binding-id]) :kind] :var)]]
+        (is (= :list-return-source-mismatch
+               (:reason (leaf 'p15-s23-lr-context core facts changed-bindings (vec (vals forms)) 65536)))))
+      (is (= :list-return-constraint-census
+             (:reason (leaf 'p15-s23-lr-context (assoc core :function-records []) facts bindings (vec (vals forms)) 65536)))))
+    (doseq [actual [:gravity.type/list :gravity.type/nil :gravity.type/unknown
+                    (positional [:gravity.type/never]) (positional [:gravity.type/nil]) (positional [:gravity.type/keyword])
+                    (positional [:gravity.type/unknown]) (positional [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}])]]
+      (is (= :rejected (:status (leaf 'p15-s23-lr-type-work {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} actual 65536)))))))
+
 (deftest current-gravity-list-prepend-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -8842,6 +9125,14 @@
               {:parameters '[parts :- (gravity.core/List gravity.core/String)] :return nil}]
              ['(defn f [parts :- (UnknownConstructor MissingElement)] parts) '[parts] '(parts)
               {:parameters '[parts :- (UnknownConstructor MissingElement)] :return nil}]
+             ['(defn f [] :- (List String) (list)) '[] '((list))
+              {:parameters '[] :return '[:- (List String)]}]
+             ['(defn f [parts :- (List String)] :- (gravity.core/List gravity.core/String) parts) '[parts] '(parts)
+              {:parameters '[parts :- (List String)] :return '[:- (gravity.core/List gravity.core/String)]}]
+             ['(defn f [parts] :- (UnknownConstructor MissingElement) parts) '[parts] '(parts)
+              {:parameters '[parts] :return '[:- (UnknownConstructor MissingElement)]}]
+             ['(def f (fn [x] (typed/return (quote (List String)) (do x)))) '[x] '(x)
+              {:parameters '[x] :return '[typed/return (quote (List String))]}]
              ['(def f (fn [x] (typed/return (quote String) (do x)))) '[x] '(x)
               {:parameters '[x] :return '[typed/return (quote String)]}]]]
       (let [definition (get (table form) 'f)]
@@ -8870,7 +9161,8 @@
                   '(defn f [x :- :Bool] x)
                   '(defn f [x :- 7] x) '(defn f [] :-) '(defn f [] :- String)
                   '(defn f [] :- [String] 1) '(defn f [] :- :String 1)
-                  '(defn f [] :- (List String) (list))
+                  '(defn f [] :- (List) (list)) '(defn f [] :- (List String Bool) (list))
+                  '(defn f [] :- (List (List String)) (list)) '(defn f [] :- (List &) (list))
                   '(defn f [] :- String :- Bool 1)
                   '(defn f [x x] x) '(defn f [x :- Bool x] x)
                   '(defn f [x :- Bool x :- String] x)
@@ -8881,7 +9173,7 @@
                   '(def f (fn [x] (typed/return (quote String) (identity x))))
                   '(def f (fn [x] (typed/return (quote String) (do x) extra)))
                   '(def f (fn [x] (typed/return (quote String) (do x)) x))
-                  '(def f (fn [x] (typed/return (quote (List String)) (do x))))
+                  '(def f (fn [x] (typed/return (quote (List (List String))) (do x))))
                   '(def f (fn [x] (typed/return (quote nil) (do x))))
                   '(def f (fn [x] (typed/return (quote false) (do x))))]]
       (is (= "L2-FUNCTION-PARAMS" (:id (diagnostic #(table form)))) (pr-str form)))

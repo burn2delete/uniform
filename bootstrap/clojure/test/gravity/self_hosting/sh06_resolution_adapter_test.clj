@@ -612,10 +612,22 @@
     (is (= '[[fn :operator] [UnknownConstructor :type] [MissingElement :type] [parts :expression]] @references))
     (reset! references [])
     (walk '(fn [parts] :- (List String) parts))
-    (is (= '[[fn :operator] [parts :expression]] @references))
+    (is (= '[[fn :operator] [List :type] [String :type] [parts :expression]] @references))
+    (doseq [form ['(fn named [parts :- (List String)] :- (gravity.core/List gravity.core/String) parts)
+                  '(fn [parts] :- (UnknownConstructor MissingElement) parts)]]
+      (let [result (walk form)]
+        (is (= (if (= 'named (second form))
+                 '[[fn :operator] [List :type] [String :type] [gravity.core/List :type] [gravity.core/String :type] [parts :expression]]
+                 '[[fn :operator] [UnknownConstructor :type] [MissingElement :type] [parts :expression]]) @references))
+        (is (every? #(= (:scope-id (first (:lexical-scopes result))) (first (:scope-chain %)))
+                    (filter #(= :type (:position %)) (:references result))))))
     (reset! references [])
     (walk '(fn [parts :- (List (List String))] parts))
-    (is (= '[[fn :operator] [parts :expression]] @references))))
+    (is (= '[[fn :operator] [parts :expression]] @references))
+    (doseq [form ['(fn [parts] :- (List) parts) '(fn [parts] :- (List String Bool) parts)
+                  '(fn [parts] :- (List (List String)) parts)]]
+      (walk form)
+      (is (= '[[fn :operator] [parts :expression]] @references)))))
 
 (deftest sh06-atomic-signature-source-type-rejections
   (doseq [[basename symbol] [["function-annotation-unknown" 'MissingType]

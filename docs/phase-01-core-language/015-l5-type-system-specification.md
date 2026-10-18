@@ -107,14 +107,21 @@ or profile/memory legality. Recur operands remain subject to L2 parameter
 compatibility. Other type obligations, including schema identity, ownership,
 linearity and regions, are not erased.
 
-### Homogeneous List Parameters
+### Homogeneous List Declarations
 
-`(List T)` in a parameter annotation denotes persistent Lists whose elements
+`(List T)` in a parameter or return annotation denotes persistent Lists whose elements
 have the declared atomic type `T`. The empty List is included; length is not
 fixed. `List` and `T` resolve in type positions. A positional List can satisfy
 this declaration when every positional element type is established and matches
-`T`; the actual argument type and the checked compatibility premise remain in
-the artifacts. Bare `List` alone does not establish an element type.
+`T`; the actual argument or body type and the checked boundary-specific
+compatibility premise remain in the artifacts. Bare `List` alone does not
+establish an element type.
+
+For returns, establish the body type independently before checking it against
+the declared type. This rule does not infer element types from the expected
+declaration, widen incompatible branch types, or erase the actual body type.
+A normally returning bare List does not satisfy `(List T)` without independent
+member evidence. Non-returning bodies retain the existing bottom-type rule.
 
 `rest` preserves `(List T)`. `first` of an empty List still returns nil under
 STD3. Typing the result solely as `T`, rather than accounting for the
@@ -263,6 +270,7 @@ L5 rejects:
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
+- Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

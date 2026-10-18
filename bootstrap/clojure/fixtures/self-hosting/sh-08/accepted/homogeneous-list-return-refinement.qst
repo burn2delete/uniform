@@ -1,0 +1,16 @@
+(ns example.homogeneous-list-return-refinement
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn empty-parts [] :- (List String) (list))
+(defn singleton [value :- String] :- (gravity.core/List gravity.core/String) (list value))
+(defn matched-parts [flag :- Bool] :- (List String)
+  (match flag true (list "b") false (list "c")))
+(defn reverse-parts [pending :- (List String) reversed :- (List String)] :- (List String)
+  (if (empty? pending) reversed
+      (recur (rest pending) (conj reversed (first pending)))))
+(defn join-parts [parts :- (List String) text :- String] :- String
+  (if (empty? parts) text
+      (recur (rest parts) (str text (first parts)))))
+(defn main [] :- String
+  (join-parts (reverse-parts (conj (matched-parts true) "a") (empty-parts)) ""))
