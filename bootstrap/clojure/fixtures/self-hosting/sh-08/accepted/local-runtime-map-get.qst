@@ -1,0 +1,33 @@
+(ns example.local-runtime-map-get
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn table [] '{"a" "A" "b" "B"})
+
+(defn lookup [key :- String fallback :- String]
+  (let [original (table) alias original]
+    [original (get alias key fallback) original]))
+
+(defn keyword-key [key :- Keyword] :- String
+  (get (do {:allocation :witness} '{:a/key "keyword" "unrelated" false}) (do [] key) "fallback"))
+
+(defn empty-map [key :- String fallback :- String] :- String
+  (get {} key fallback))
+
+(defn false-value [key :- String] :- Bool
+  (get '{"hit" false} key (do [] true)))
+
+(defn nil-value [key :- String]
+  (let [original '{"nil" nil}]
+    [(get original key nil) (contains? original key)]))
+
+(defn default-throws [payload :- String]
+  (get '{"hit" "stored" "other" false} "hit" (throw payload)))
+
+(defn map-throws [payload :- String]
+  (get (throw payload) "hit" "fallback"))
+
+(defn key-throws [payload :- String]
+  (get '{"hit" "stored"} (throw payload) "fallback"))
+
+(defn shadowed [get :- String] :- String get)

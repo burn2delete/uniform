@@ -2347,6 +2347,76 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- map-get-input [argument-types]
+  (let [input (integral-ordering-input 'get argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- map-get-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-mg-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-map-get-development-kernel
+  (let [m #(hash-map :kind :gravity.type/map :member-types % :shape :independently-established)
+        s :gravity.type/string k :gravity.type/keyword b :gravity.type/bool n :gravity.type/nil nv :gravity.type/never
+        vector-type {:kind :gravity.type/vector :element-types [b] :shape :literal}
+        mixed (m [s s k b])]
+    (doseq [[arguments expected] [[[(m []) s s] s] [[(m [s s]) s s] s] [[(m [k b]) k b] b]
+                                  [[(m [s n]) s n] n] [[mixed s s] s] [[mixed k b] b]
+                                  [[(m [:gravity.type/integer b s s]) s s] s]
+                                  [[(m [s vector-type]) s vector-type] vector-type]
+                                  [[:gravity.type/map s nv] nv] [[:gravity.type/map nv s] nv]
+                                  [[(m [s s s b]) s nv] nv] [[nv s s] nv]
+                                  [[mixed nv s] nv] [[nv nv nv] nv]]]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-get-input arguments)
+            result (map-get-derived input) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= (if (= nv expected) :not-invoked :normal) (:application descriptor)))
+        (is (= {:input :established-member-map :keys [:string :keyword] :key-equality :value
+                :presence :independent-of-value :default :eager :normalization :none :coercion :none
+                :operand-evaluation :map-then-key-then-default-once :result :one-established-type} (:lookup-policy descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-mg-constraint [descriptor])] (:constraints inferred)))))
+    (doseq [arguments [[:gravity.type/map s s] [[(m [s s])] s s]
+                       [(m [s s s b]) s s] [(m [s s]) s b]
+                       [nv b s] [nv s :gravity.type/unknown]
+                       [:gravity.type/unknown s nv] [(m []) :gravity.type/unknown nv]
+                       [:gravity.type/vector s nv] [(m []) :gravity.type/symbol nv]]]
+      (is (= :rejected (:status (map-get-derived (map-get-input arguments)))) (pr-str arguments)))
+    (doseq [bad [(m [s]) (m [s :gravity.type/unknown]) (m [s false]) (m [:gravity.type/unknown s])
+                 (m [:bogus s]) (m [{:kind :bogus} s])
+                 (assoc (m []) :member-types '()) {:kind :gravity.type/map}
+                 (m (vec (repeat 1026 s)))]
+            default [s nv]]
+      (is (= :rejected (:status (map-get-derived (map-get-input [bad s default]))))))
+    (doseq [arguments [[] [(m []) s] [(m []) s s s]]]
+      (is (= :map-get-arity-mismatch (:reason (map-get-derived (map-get-input arguments))))))
+    (let [input (map-get-input [(m [s s]) s s])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :lazy-default)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg2 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'contains?)]]
+        (is (= :rejected (:status (map-get-derived (mutate input))))))
+      (let [{:keys [core node call edge nodes bindings types forms]} input work (:work-count (map-get-derived input))
+            derive #(invoke-c7 'sh08-mg-derive [core node call edge nodes bindings types forms %])]
+        (is (= 69 work))
+        (is (= :accepted (:status (derive work))))
+        (is (= :map-get-work-limit (:reason (derive (dec work)))))))
+    (let [input (map-get-input [(m (vec (repeat 1024 s))) s s])]
+      (is (= :accepted (:status (map-get-derived input))))
+      (is (= 1091 (:work-count (map-get-derived input)))))))
+
 (defn- map-contains-input [argument-types]
   (let [input (integral-ordering-input 'contains? argument-types)]
     (assoc input :binding-types (:types input)

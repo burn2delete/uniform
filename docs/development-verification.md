@@ -1417,6 +1417,60 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Map lookup with an explicit default
+
+STD3 defines `(get map key default)` as an eager ordinary call. A present value
+is returned even when it is false or nil; only an absent key selects the
+default. Map, key and default evaluate once in that order, including the
+default on a hit. A transfer in any operand prevents invocation.
+
+Edit the existing C7 engine, effect owner, typed emitter and Gravity runtime:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-map-get-development-kernel \
+  --exact body-map-get-development-kernel \
+  --exact current-gravity-map-get-lowering-development-kernel \
+  --exact current-gravity-map-get-runtime-development-kernel --fail-fast
+```
+
+The finite normal-returning route requires an independently established Map
+member-type vector, a dynamic String or Keyword key and an established default
+type T. Every value potentially matching that key family must have exactly T;
+unrelated known scalar key families may have other value types. Empty Maps use
+T. This is a type join, not a literal-constructor or static-presence proof.
+Unknown or malformed member keys cannot be discarded as unrelated.
+
+With a Never operand, no lookup returns normally and no value/default join is
+invented. A known bare Map is then sufficient, while the other normally
+returning operands must still have legal, established domains. Supplied
+structured-type evidence retains its bounds and integrity checks. The query
+adds no allocation or effect; all operand allocation and errors remain visible,
+including the eagerly evaluated default.
+
+These normalized checks do not authenticate source products. Before accepting
+the changed composition, separately exercise actual source, local Map returns,
+eager defaults, meaningful rejections and fresh public reconstruction. The
+affected source selector is:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-get-authenticated-composition --fail-fast
+```
+
+It assembles all functions once per accepted extension, retaining fresh public
+verification, rather than also compiling the same positive function separately.
+Representative real source rejections complement the complete focused type
+matrix; this is not a request to replay the preceding membership composition.
+The result type does not confer selected deep-shape ancestry. Two-argument lookup,
+heterogeneous normal results, general stored-key families, first-class calls,
+full profile/provider support and authoritative migration remain separate
+frontiers rather than new language prohibitions.
+
 ### Map key membership
 
 STD3's direct Map `contains?` query distinguishes key presence from value

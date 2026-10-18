@@ -433,6 +433,10 @@
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (= function 'count)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
+                  (if (= function 'get)
+                    (if (= fields #{:op :function :args})
+                      (if (= 3 (count arguments))
+                        (if (map? (first arguments)) (if (map? (get arguments 1)) (map? (get arguments 2)) false) false) false) false)
                   (if (= function 'assoc)
                     (if (= fields #{:op :function :args})
                       (if (= 3 (count arguments))
@@ -440,7 +444,7 @@
                           (if (if (map? key) (= #{:op :value} (set (keys key))) false)
                             (if (= :literal (get key :op))
                               (if (keyword? (get key :value)) (if (map? (get arguments 0)) (map? (get arguments 2)) false) false) false) false)) false) false)
-                    (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))) false) false)
+                    (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -512,6 +516,11 @@
                    arguments environment output [] functions path [])]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
+              (if (= function 'get)
+                (if (if (map? left) (if (string? right) true (keyword? right)) false)
+                  [(get left right (get values 2)) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :map-get-map-and-key-domain-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (= function 'contains?)
                 (if (if (map? left) (if (string? right) true (keyword? right)) false)
                   [(contains? left right) (second arguments-result) :normal]
@@ -568,7 +577,7 @@
                          (>= left right))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))))
+                (second arguments-result) :rejected]))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

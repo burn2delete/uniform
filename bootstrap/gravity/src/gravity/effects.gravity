@@ -1616,6 +1616,177 @@
       (body-va-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
                           (get (get context :edges) id) (get context :nodes)) false)))
 
+(defn body-mg-member-count [type]
+  (if (if (map? type) (vector? (get type :member-types)) false) (count (get type :member-types)) 0))
+
+(defn body-mg-normal-known? [type]
+  (if (if (keyword? type) true (if (map? type) (keyword? (get type :kind)) false))
+    (if (contains? #{:gravity.type/unknown :gravity.type/never} type) false true) false))
+
+(defn body-mg-map-valid? [type]
+  (if (= :gravity.type/map type) true
+    (if (if (map? type) (= :gravity.type/map (get type :kind)) false)
+      (let [members (get type :member-types)]
+        (if (if (vector? members) (<= (count members) 1024) false)
+          (loop [i 0]
+            (if (= i (count members)) true
+              (if (< (+ i 1) (count members))
+                (if (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                                    :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
+                                    :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                    :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64}
+                                  (get members i))
+                        (body-mg-normal-known? (get members (+ i 1))) false)
+                  (recur (+ i 2)) false) false))) false)) false)))
+
+(defn body-mg-operands? [arguments invoked?]
+  (let [map-type (get arguments 0) key-type (get arguments 1) default-type (get arguments 2)]
+    (if (if (if (= :gravity.type/never map-type) true (body-mg-map-valid? map-type))
+          (if (contains? #{:gravity.type/string :gravity.type/keyword :gravity.type/never} key-type)
+            (if (= :gravity.type/never default-type) true (body-mg-normal-known? default-type)) false) false)
+      (if invoked?
+        (if (map? map-type)
+          (let [members (get map-type :member-types)]
+            (loop [i 0]
+              (if (= i (count members)) true
+                (if (if (= key-type (get members i)) (= default-type (get members (+ i 1))) true)
+                  (recur (+ i 2)) false)))) false)
+        true) false)))
+
+(defn body-mg-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (body-all?
+    [(= ['get :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn body-mg-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (body-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-all?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 3 (count args)) (= expected-call call) (= expected-edge edge) (body-mg-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{get gravity.core/get} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (body-mg-operands? arguments invoked?)
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-map-get :version :sh08-map-get-v1
+       :operation 'get :semantic-owner 'gravity.collections :intrinsic :gravity.collections/map-lookup-default
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :lookup-policy {:input :established-member-map :keys [:string :keyword] :key-equality :value
+                       :presence :independent-of-value :default :eager :normalization :none :coercion :none
+                       :operand-evaluation :map-then-key-then-default-once :result :one-established-type}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :member-types :key-domain :default-type :lookup-policy :profile :target :evaluation-order]} nil)) nil))
+
+(defn body-mg-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-map-get-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-map-get-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :map-get}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-mg-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-map-get-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-map-get :applied-map-get descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+
+(defn body-mg-finish [header]
+  (let [type (if (= :normal (get header :application)) (get (get header :argument-types) 2) :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn body-mg-context [request facts bindings budget]
+  (let [core (get request :canonical-core-artifact)
+        census (loop [remaining (get core :calls) count-calls 0 member-work 0]
+                 (if (= 0 (count remaining)) {:calls count-calls :members member-work}
+                   (let [call (first remaining)
+                         selected? (body-mg-binding? (get bindings (get call :operator-binding-id)) (get core :module))]
+                     (recur (rest remaining) (+ count-calls (if selected? 1 0))
+                       (+ member-work (if selected? (body-mg-member-count (get (get facts :type-table) (first (get call :argument-node-ids)))) 0))))))
+        count-calls (get census :calls)]
+    (if (= 0 count-calls) {:status :accepted :context nil :work-count 0}
+      (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
+        (if (= false (vector? forms)) (body-failure :body-map-get-source-forms-required)
+          (let [work (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges))
+                        (get census :members) (* count-calls (+ 67 (count (get core :function-records)))))]
+            (if (> work budget) (body-failure :body-deferred-work-limit)
+              {:status :accepted :work-count work
+               :context {:forms (body-index forms :form-id) :nodes (body-index (get core :nodes) :node-id)
+                         :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
+                         :bindings bindings}})))))))
+
+(defn body-mg-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        header (body-mg-source core node call edge nodes bindings types (get core :module))
+        forms (get (get facts :map-get-context) :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :map-get})]
+    (if (map? header)
+      (body-all?
+        [(= descriptor (body-mg-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
+         (= :list (get owner :kind)) (vector? ids) (= 4 (if (vector? ids) (count ids) 0) (count (get node :children)))
+         (= (get node :source) (get (body-ma-form-node {} owner) :source))
+         (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+         (loop [i 0]
+           (if (= i 4) true
+             (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+               (if (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                     (= (get child :source) (get (body-ma-form-node {} form) :source))
+                     (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                 (recur (+ i 1)) false))))
+         (= (body-mg-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+         (= [(body-mg-constraint descriptor)] rows)]) false)))
+
+(defn body-mg-node? [node facts core]
+  (let [context (get facts :map-get-context) id (get node :node-id)]
+    (if (map? context)
+      (body-mg-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
+                          (get (get context :edges) id) (get context :nodes)) false)))
+
 (defn body-mc-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (body-all?
@@ -2761,7 +2932,7 @@
         records (body-index (get core :function-records) :function-syntax-id)
         calls (body-index (get core :calls) :core-node-id)
         call-facts (body-index (get facts :call-type-facts) :call-core-node-id)]
-    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] count-rows [] nth-rows [] successor-rows [] append-rows [] equality-rows [] not-rows [] contains-rows []]
+    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] count-rows [] nth-rows [] successor-rows [] append-rows [] equality-rows [] not-rows [] contains-rows [] get-rows []]
       (if (= 0 (count remaining))
         (body-all? [(= (count used) (count foreign))
                     (= intrinsic-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-integral-ordering-v1))
@@ -2772,7 +2943,8 @@
                     (= append-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-append-v1))
                     (= equality-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-atomic-equality-v1))
                     (= not-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-not-v1))
-                    (= contains-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-contains-v1))])
+                    (= contains-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-contains-v1))
+                    (= get-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1))])
         (let [edge (first remaining) id (get edge :call-core-node-id)
               imported (get foreign (get edge :callee-binding-id))
               local? (= :local-function (get edge :classification))]
@@ -2796,13 +2968,15 @@
                         (body-ma-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                         (if (body-va-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                           (body-va-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                          (if (body-mg-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
+                            (body-mg-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                           (if (body-mc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (body-mc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                           (if (body-nt-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (body-nt-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                           (if (body-ae-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (body-ae-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
-                            (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))))))))))) false)
+                            (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))))))))))))) false)
             (recur (rest remaining) (+ ordinal 1)
               (if (map? imported) (conj used (get edge :callee-binding-id)) used)
               (if (= :direct-integral-ordering (get (get call-facts id) :dispatch))
@@ -2823,7 +2997,9 @@
               (if (= :direct-not (get (get call-facts id) :dispatch))
                 (conj not-rows (body-nt-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) not-rows)
               (if (= :direct-map-contains (get (get call-facts id) :dispatch))
-                (conj contains-rows (body-mc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) contains-rows)) false))))))
+                (conj contains-rows (body-mc-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) contains-rows)
+              (if (= :direct-map-get (get (get call-facts id) :dispatch))
+                (conj get-rows (body-mg-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) get-rows)) false))))))
 
 (defn body-ho-outer-fact-valid? [edge fact proof]
   (if (= (get edge :call-core-node-id) (get proof :outer-call-core-node-id))
@@ -3626,7 +3802,7 @@
                                              (if (body-ma-node? node typed core) true
                                                (if (body-cq-node? node typed core) true (if (body-vn-node? node typed core) true
                                                  (if (body-va-node? node typed core) true
-                                                   (if (if (if (body-mc-node? node typed core) true (body-nt-node? node typed core)) true (body-ae-node? node typed core)) true (body-si-node? node typed core)))))))))
+                                                   (if (if (if (if (body-mg-node? node typed core) true (body-mc-node? node typed core)) true (body-nt-node? node typed core)) true (body-ae-node? node typed core)) true (body-si-node? node typed core)))))))))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
@@ -3663,7 +3839,7 @@
                                               (if (body-ma-node? node facts core) true
                                                 (if (body-cq-node? node facts core) true (if (body-vn-node? node facts core) true
                                                   (if (body-va-node? node facts core) true
-                                                    (if (if (if (body-mc-node? node facts core) true (body-nt-node? node facts core)) true (body-ae-node? node facts core)) true (body-si-node? node facts core)))))))) true) true)
+                                                    (if (if (if (if (body-mg-node? node facts core) true (body-mc-node? node facts core)) true (body-nt-node? node facts core)) true (body-ae-node? node facts core)) true (body-si-node? node facts core)))))))) true) true)
                 (if (body-ready? deps graph)
                 (= (get graph id)
                    (if (= imported nil) (body-control-node-record node target graph (get (get facts :type-table) id) facts edge core
@@ -3870,7 +4046,7 @@
                                (if (body-cq-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                  (if (body-vn-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                    (if (body-va-node? (get nodes (get edge :call-core-node-id)) facts core) true
-                                     (if (if (if (body-mc-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-nt-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-ae-node? (get nodes (get edge :call-core-node-id)) facts core)) true
+                                     (if (if (if (if (body-mg-node? (get nodes (get edge :call-core-node-id)) facts core) true (body-mc-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-nt-node? (get nodes (get edge :call-core-node-id)) facts core)) true (body-ae-node? (get nodes (get edge :call-core-node-id)) facts core)) true
                                        (body-si-node? (get nodes (get edge :call-core-node-id)) facts core)))))))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false) (body-failure :unsupported-throwing-call-component)
@@ -3963,7 +4139,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality :gravity.type/applied-not :gravity.type/applied-map-contains}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality :gravity.type/applied-not :gravity.type/applied-map-contains :gravity.type/applied-map-get}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -4077,15 +4253,17 @@
                     (body-nt-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0))) equalities)
         memberships (if (= :accepted (get negations :status))
                       (body-mc-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0))) negations)
-        counts (if (= :accepted (get memberships :status))
-                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0))) memberships)
+        lookups (if (= :accepted (get memberships :status))
+                  (body-mg-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0))) memberships)
+        counts (if (= :accepted (get lookups :status))
+                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0))) lookups)
         selections (if (= :accepted (get counts :status))
-                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get counts :work-count 0))) counts)
+                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get counts :work-count 0))) counts)
         successors (if (= :accepted (get selections :status))
-                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
-        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
+                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
+        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get negations :work-count 0) (get memberships :work-count 0) (get lookups :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
         facts (assoc facts :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
-                           :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
+                           :map-get-context (get lookups :context) :map-contains-context (get memberships :context) :not-context (get negations :context) :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
     (if (= :accepted (get successors :status))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
             (if (body-function-joins-valid? core facts bindings)

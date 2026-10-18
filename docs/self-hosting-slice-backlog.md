@@ -2146,6 +2146,59 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Map lookup with an explicit default: development implementation
+
+STD3 now states the three-argument Map lookup rule explicitly: evaluate Map,
+key and default eagerly in that order, even on a hit; return the associated
+value when present, including false or nil, and otherwise the default. A
+transfer aborts invocation. The existing C7, C8, emitter and Gravity runtime
+implement a finite typed route with dynamic String or Keyword keys.
+
+For normal invocation, established bounded Map member types must give every
+potentially matching key-family value the same established type as the default.
+Empty Maps use the default type, and unrelated known scalar key families may
+have different values. No constructor or static-presence proof is required.
+A Never operand makes the call non-invoked/Never without a fictional normal
+result join; known bare Maps are then allowed. Other returning operands remain
+domain-checked, and supplied structured-type evidence retains its integrity
+checks. No selected deep-shape authority follows from the result type.
+
+The latest production and test bytes passed 26 focused/regression tests with
+2,058 assertions, including the tightened type guard and preceding membership,
+lookup, not, count, association, quote and throw paths. Before source execution,
+a fixture-only correction avoided the existing Keyword-only evaluated-Map
+literal frontier: the Map operand now allocates a supported Keyword Map before
+returning quoted mixed-key Map data. Its final reader/parity check passed ten
+assertions. Compiler and test bytes did not change; the earlier proposed pair
+was never executed in the source composition, not a failed actual attempt.
+
+The sole corrected paired composition passed all 214 assertions in 601.443
+seconds after 8.167 seconds of namespace loading at 2 GiB. Both complete
+ten-function assemblies retained ten calls: eight get applications (five
+normal, three Never), one membership query and one ordinary local call.
+Twenty-six guest executions and six original String payload identity checks
+cover local Map returns and aliases, original-value preservation, dynamic keys,
+empty Maps, mixed unrelated key families, false/nil presence and eagerly
+throwing defaults on present keys.
+
+Five public lowering operations each verified C7 freshly: two whole assemblies
+and three coherent binding/type/order mutations. Two accepted, nonempty C8
+results passed whole verification, and two resealed graph mutations rejected.
+Real allocations in Map, key and default operands remain transitive effects;
+get adds no allocation or effect. Four actual `.gravity` rejections cover arity,
+an incompatible normal value/default join, Symbol keys and result annotation.
+Negative `.qst` evidence is parity only; the broader malformed/unknown/Never
+matrix is focused evidence rather than a claim of authentic source coverage
+for every case. All seventeen source/test/fixture files, STD3 and the Git base
+remained unchanged through execution. No retry or unchanged old proof occurred.
+
+The smaller schedule is scoped integration coverage, not a compiler speedup
+measurement. Two-argument lookup, general stored-key families, heterogeneous
+normal results, first-class invocation, complete profile/provider or target
+support, authoritative migration, self-hosting and seedless release remain
+outstanding. See `docs/development-verification.md` for direct commands and the
+separate boundaries; no admission or release status changes follow here.
+
 ### Map key membership: development implementation
 
 The existing Gravity C7, C8, typed-emitter and runtime owners implement direct

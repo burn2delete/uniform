@@ -4268,6 +4268,235 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-map-get-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] (concat [["accepted" "local-runtime-map-get" 10]]
+                                                (map #(vector "rejected" (str "map-get-" %) 1)
+                                                     ["arity-two" "heterogeneous" "symbol-key" "result-annotation"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
+
+(deftest current-gravity-map-get-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        table {"a" "A" "b" "B"}
+        default-error (String. "eager default on hit") map-error (String. "map transfer") key-error (String. "key transfer")
+        specs [['lookup [(String. "a") "fallback"] [table "A" table] :normal]
+               ['lookup ["absent" "custom"] [table "custom" table] :normal]
+               ['keyword-key [:a/key] "keyword" :normal] ['keyword-key [:unrelated] "fallback" :normal]
+               ['empty-map ["" "fallback"] "fallback" :normal]
+               ['false-value ["hit"] false :normal] ['false-value ["absent"] true :normal]
+               ['nil-value ["nil"] [nil true] :normal] ['nil-value ["absent"] [nil false] :normal]
+               ['default-throws [default-error] default-error :thrown]
+               ['map-throws [map-error] map-error :thrown] ['key-throws [key-error] key-error :thrown]
+               ['shadowed ["ordinary parameter"] "ordinary parameter" :normal]]
+        cases (mapv
+                (fn [extension]
+                  (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-get" extension)
+                        path (.getPath (io/file root relative)) products (fresh relative)
+                        input (select-keys products [:request :typed :verification])
+                        ready (= :accepted (get-in input [:typed :status]))
+                        _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                        _ (when-not ready (throw (ex-info "Map get source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                        calls (:call-type-facts facts) descriptors (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) calls))
+                        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                        query #(first (filter (fn [descriptor] (= (get-in functions [% :function-id])
+                                                                                (get-in descriptor [:source-edge :caller-function-syntax-id]))) descriptors))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding) graph (:effect-graph effects)]
+                    (is (= :passed (get-in input [:verification :status])))
+                    (is (= 10 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                    (is (= 10 (count (:calls core)) (count (:call-edges core)) (count calls)))
+                    (is (= {:direct-map-get 8 :direct-map-contains 1 nil 1} (frequencies (map :dispatch calls))))
+                    (let [fact (first (filter #(nil? (:dispatch %)) calls))
+                          edge (first (filter #(= (:call-core-node-id fact) (:call-core-node-id %)) (:call-edges core)))]
+                      (is (= [:local-function (get-in functions ['lookup :function-id]) (get-in functions ['table :function-id])]
+                             [(:classification edge) (:caller-function-syntax-id edge) (:callee-function-syntax-id edge)]))
+                      (is (= (:callee-function-syntax-id edge) (:callee-function-syntax-id fact))))
+                    (is (= 8 (count descriptors) (count (filter #(= :sh08-map-get-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                    (is (= {:normal 5 :not-invoked 3} (frequencies (map :application descriptors))))
+                    (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                    (is (= :gravity.type/bool (get-in functions ['false-value :return])))
+                    (is (= :gravity.type/nil (:result-type (query 'nil-value))))
+                    (doseq [descriptor descriptors]
+                      (is (= 3 (count (:argument-types descriptor))))
+                      (is (= :eager (get-in descriptor [:lookup-policy :default])))
+                      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+                      (is (= (if (= :normal (:application descriptor)) (get-in descriptor [:argument-types 2]) :gravity.type/never) (:result-type descriptor))))
+                    (doseq [[name args expected tag] specs]
+                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                     [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                        (is (= [expected "" tag] result) (str extension " " name))
+                        (when (= tag :thrown) (is (identical? expected (first result))))))
+                    (let [ready (and (= :accepted (:status effects)) (map? graph) (seq (:nodes graph)))]
+                      (is (true? (boolean ready)) (pr-str (:diagnostics effects)))
+                      (when-not ready (throw (ex-info "Map get C8 graph missing before whole verification" {:effects effects})))
+                      (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+                      (doseq [descriptor descriptors]
+                        (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                          (is (= #{} (:direct record)))
+                          (is (nil? (:allocation record)))
+                          (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+                      (let [keyword-query (query 'keyword-key) false-query (query 'false-value)]
+                        (doseq [id [(get-in keyword-query [:source-call :argument-node-ids 0])
+                                    (get-in keyword-query [:source-call :argument-node-ids 1])
+                                    (get-in false-query [:source-call :argument-node-ids 2])]]
+                          (is (= #{:memory/allocate} (get-in graph [:nodes id :transitive])))))
+                      (doseq [name ['default-throws 'map-throws 'key-throws]]
+                        (is (= #{:error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred])))))
+                    {:input input :module module :definitions definitions :descriptors descriptors :effects effects :binding binding}))
+                [".gravity" ".qst"])
+        {:keys [input module definitions descriptors effects binding]} (first cases)
+        descriptor (first (filter #(= :normal (:application %)) descriptors))
+        bad-map (assoc (first (:argument-types descriptor)) :member-types [:gravity.type/unknown :gravity.type/string])]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? descriptor))
+    (when-not (map? descriptor) (throw (ex-info "Map get descriptor absent before hostile checks" {})))
+    (doseq [changed [(assoc-in descriptor [:source-binding :package :version] "forged")
+                     (-> descriptor (assoc-in [:argument-types 0] bad-map) (assoc-in [:parameter-types 0] bad-map))
+                     (-> descriptor (update-in [:source-call :ordered-evaluation-node-ids] #(vec (reverse %)))
+                         (update-in [:source-edge :ordered-evaluation-node-ids] #(vec (reverse %))))]]
+      (let [changed-call (c7 'sh08-mg-call-fact [changed (get-in input [:request :canonical-core-artifact :module])])
+            changed-row (c7 'sh08-mg-constraint [changed]) id (:call-core-node-id descriptor) operator (:operator-node-id descriptor)
+            map-id (get-in descriptor [:source-call :argument-node-ids 0])
+            typed (walk/postwalk
+                    (fn [value]
+                      (cond
+                        (= value descriptor) changed
+                        (and (map? value) (= :gravity/c7-call-type-fact (:artifact value)) (= id (:call-core-node-id value))) changed-call
+                        (and (map? value) (= :sh08-map-get-v1 (:producer-rule value)) (= id (get-in value [:lhs :core-node-id]))) changed-row
+                        (and (map? value) (= changed (get value operator)) (contains? value map-id)) (assoc value map-id (first (:argument-types changed)))
+                        :else value)) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'lookup) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 5 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)]
+      (doseq [changed [(update-in graph [:nodes id :dependencies] #(vec (reverse %)))
+                       (update graph :nodes #(into {} (map (fn [[node-id record]] [node-id (-> record (assoc :transitive #{} :escaping #{})
+                                                                                                  (dissoc :allocation :escaping-thrown-errors :escaping-thrown-error-types))]) %)))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (doseq [[suffix expected] [["arity-two" ["C7-TYPE-MISMATCH" :map-get-arity-mismatch]]
+                               ["heterogeneous" ["C7-TYPE-MISMATCH" :map-get-operand-type-required]]
+                               ["symbol-key" ["C7-TYPE-MISMATCH" :map-get-operand-type-required]]
+                               ["result-annotation" ["C7-TYPE-MISMATCH" :function-result-type-mismatch]]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-get-" suffix ".gravity"))
+            failure (get-in products [:typed :diagnostics 0])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (= expected ((juxt :rule :reason) failure)) (pr-str [suffix failure]))))))
+
+(deftest current-gravity-map-get-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-get-input)
+        derive (ns-resolve upstream 'map-get-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[{:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/string]} :gravity.type/string :gravity.type/string]
+                       [{:kind :gravity.type/map :member-types [:gravity.type/keyword :gravity.type/bool]} :gravity.type/keyword :gravity.type/bool]
+                       [{:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/nil]} :gravity.type/string :gravity.type/nil]
+                       [:gravity.type/map :gravity.type/string :gravity.type/never]
+                       [:gravity.type/map :gravity.type/never :gravity.type/string]]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn arguments)
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-mg-call-fact [descriptor module])} :ledger [(c7 'sh08-mg-constraint [descriptor])]
+                     :locals {:arg0 'input :arg1 'key :arg2 'fallback} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'get :args [{:op :local :name 'input} {:op :local :name 'key} {:op :local :name 'fallback}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc-in descriptor [:lookup-policy :key-equality] :identity)
+                         (assoc-in descriptor [:lookup-policy :default] :lazy)
+                         (assoc-in descriptor [:lookup-policy :operand-evaluation] :map-then-default-then-key)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:call (c7 'sh08-mg-call-fact [changed module])} :ledger [(c7 'sh08-mg-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg2 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/unknown)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-map-get-runtime-development-kernel
+  ;; Runtime value semantics include nil with a distinct fallback; this does
+  ;; not claim that the finite source typer accepts a heterogeneous join.
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        get-ir (fn [input key fallback] {:op :builtin-call :function 'get :args [input key fallback]})
+        original {(String. "hit") false "nil" nil "\u00e9" "accent" :a/key "keyword"}
+        wide (into {} (map #(vector (str "key" %) (str "value" %)) (range 12)))]
+    (doseq [[input key fallback expected] [[original (String. "hit") true false] [original "nil" "fallback" nil]
+                                          [original "absent" "fallback" "fallback"] [original (String. "\u00e9") "fallback" "accent"]
+                                          [original "e\u0301" "fallback" "fallback"]
+                                          [original :a/key "fallback" "keyword"] [original :b/key "fallback" "fallback"]
+                                          [{} "empty" false false] [wide (String. "key11") "fallback" "value11"]]]
+      (is (= [expected "" :normal] (evaluate (get-ir (literal input) (literal key) (literal fallback))))))
+    (is (= false (get original "hit")))
+    (is (contains? original "nil"))
+    (is (nil? (get original "nil")))
+    (is (= 12 (count wide)))
+    (doseq [[input key] [[nil :key] [[] :key] [#{} :key] ["map" :key] [{} 1] [{} 'key] [{} false]]]
+      (is (= :map-get-map-and-key-domain-required
+             (get-in (evaluate (get-ir (literal input) (literal key) (literal "fallback"))) [0 :reason]))))
+    (doseq [bad [{:op :builtin-call :function 'get :args [(literal {}) (literal :key)]}
+                 {:op :builtin-call :function 'get :args [(literal {}) (literal :key) (literal :default) (literal :extra)]}
+                 (assoc (get-ir (literal {}) (literal :key) (literal :default)) :extra true)
+                 {:op :builtin-call :function 'get :args [(literal {}) (literal :key) :not-an-instruction]}]]
+      (is (= :rejected (last (evaluate bad)))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          map-error (String. "map transfer") key-error (String. "key transfer") default-error (String. "default transfer")
+          normal (evaluate (get-ir (say "map" (literal original)) (say "key" (literal "hit")) (say "default" (literal true))))
+          map-throw (evaluate (get-ir (say "map" {:op :throw :value (literal map-error)})
+                                     (say "unreachable-key" (literal "hit")) (say "unreachable-default" (literal true))))
+          key-throw (evaluate (get-ir (say "map" (literal original)) (say "key" {:op :throw :value (literal key-error)})
+                                     (say "unreachable-default" (literal true))))
+          default-throw (evaluate (get-ir (say "map" (literal original)) (say "key" (literal "hit"))
+                                         (say "default" {:op :throw :value (literal default-error)})))]
+      (is (= [false "map\nkey\ndefault\n" :normal] normal))
+      (is (= [map-error "map\n" :thrown] map-throw))
+      (is (= [key-error "map\nkey\n" :thrown] key-throw))
+      (is (= [default-error "map\nkey\ndefault\n" :thrown] default-throw))
+      (is (identical? map-error (first map-throw)))
+      (is (identical? key-error (first key-throw)))
+      (is (identical? default-error (first default-throw))))))
+
 (deftest current-gravity-map-contains-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

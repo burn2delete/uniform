@@ -38,6 +38,18 @@ Implementations may vary by backend, but equality, iteration order where specifi
 - Protocols: `Seqable`, `Associative`, `Indexed`, `Counted`, `Reducible`, `Buildable`, `Hashable`, and `ComparableCollection`.
 - Bounded systems APIs: `fixed-vector`, `ring-buffer`, `static-map`, and `memory-view`.
 
+## Map Lookup With An Explicit Default
+
+For maps, `(get map key default)` returns the associated value when the key is
+present, including a stored false or nil, and otherwise returns the default,
+if all operands complete normally. Presence is not a truthiness test.
+
+All three operands are ordinary call arguments under L2: evaluate the map,
+key, then default eagerly, even when the key is present. A control transfer
+aborts invocation; the default is not an implicit thunk or lazy branch.
+Key matching follows STD2 value semantics, and lookup preserves the original
+map. This rule does not select a representation or grant profile support.
+
 ## Dependencies
 
 - `D1` and `D3` for literal data, metadata, namespaces, and syntax objects.
@@ -99,6 +111,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 ## Conformance Criteria
 
 - Persistent operations preserve old collection values in all supported profiles.
+- Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.
 - Equality and hash fixtures agree with STD2 across targets.
 - Bounded systems profiles reject unbounded collection construction.
