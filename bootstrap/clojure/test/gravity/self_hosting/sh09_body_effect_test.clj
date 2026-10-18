@@ -356,6 +356,94 @@
     (is (= #{:memory/allocate :error/throw} (get-in functions [(sha 50) :inferred])))
     (is (= [] (get-in functions [(sha 50) :throws])))))
 
+(deftest body-vector-append-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'vector-append-input) derive (ns-resolve upstream 'vector-append-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [never-operand [nil :input :value]]
+      (let [base (cond-> (input-fn [:gravity.type/keyword] :gravity.type/keyword)
+                   never-operand (assoc-in [:types never-operand] :gravity.type/never))
+            ids (zipmap (keys (:nodes base)) (map sha (range 1200 1210)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base)))
+                         :products (assoc (:products base) :calls [call] :call-edges [edge]))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :association) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-va-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-va-constraint [descriptor])]}
+            context (leaf 'body-va-context request facts (:bindings base) 65536)
+            facts (assoc facts :append-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :association)])
+            equations #(leaf 'body-graph-equations-valid? core facts {} %)]
+        (is (= :accepted (:status result)))
+        (is (= :accepted (:status context)))
+        (is (true? (valid facts)))
+        (is (= :accepted (:status graph)) (pr-str graph))
+        (is (= (if never-operand #{} #{:memory/allocate}) (:direct record) (:transitive record)))
+        (is (= :static-persistent-vector-append (get-in record [:allocation :behavior])))
+        (is (= (nil? never-operand) (get-in record [:allocation :normal-completion-possible?])))
+        (is (= {:unit :elements :count (when-not never-operand 2)} (get-in record [:allocation :extent])))
+        (is (= :pending-runtime-provider (get-in record [:allocation :provider])))
+        (is (= (mapv ids [:operator :input :value]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (equations (:nodes graph))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-va-context request facts (:bindings base) 1))))
+        (when-not never-operand
+          (let [core (merge core {:root-core-node-ids [(ids :association)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+                preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                                   :evaluation-order :lexical-bindings :match-branch-records
+                                                   :match-decision-skeletons :match-pattern-records])
+                                :nodes (leaf 'body-throw-semantic-nodes core))
+                core (assoc core :identity-preimage preimage)
+                request (-> request (assoc :canonical-core-artifact core)
+                            (assoc-in [:b47-context :authenticated-core-request :binding-table] (vec (vals (:bindings base)))))
+                facts (merge facts (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
+                                   {:local-binding-facts []})
+                analyze #(leaf 'body-analyze-module request facts {} %)
+                analyzed (analyze 65536) work (:work-count analyzed)]
+            (is (true? (leaf 'body-shape-valid? core facts)))
+            (is (= :accepted (:status analyzed)) (pr-str analyzed))
+            (when (= :accepted (:status analyzed))
+              (is (>= work (+ (:work-count context) (:work-count graph))))
+              (is (= analyzed (analyze work)))
+              (is (= :rejected (:status (analyze (dec work)))))
+              (let [count-modules (inc (quot 65536 work))
+                    entries (mapv #(hash-map :module-key % :request request :facts facts) (range count-modules))
+                    too-many (leaf 'body-analyze-producers entries)]
+                (is (= :rejected (:status too-many)))
+                (is (= :body-deferred-work-limit (:reason too-many)))
+                (is (< (:producer-module too-many) count-modules))))))
+        (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc descriptor :application (if never-operand :normal :not-invoked))
+                         (assoc descriptor :direct-effects [:io/write])
+                         (assoc descriptor :input-extent 9) (assoc descriptor :result-extent 9)
+                         (assoc descriptor :append-semantics {:operation :destructive-append})
+                         (assoc descriptor :result-type :gravity.type/string :return :gravity.type/string)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-va-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-va-constraint [changed])]))]
+            (is (false? (valid candidate)) (pr-str changed))))
+        (doseq [changed [(assoc-in (:nodes graph) [(ids :association) :direct] #{:io/write})
+                         (assoc-in (:nodes graph) [(ids :association) :allocation :extent :count] 9)
+                         (assoc-in (:nodes graph) [(ids :association) :allocation :normal-completion-possible?] (boolean never-operand))
+                         (assoc-in (:nodes graph) [(ids :association) :dependencies] [])]]
+          (is (false? (equations changed))))))))
+
 (deftest body-collection-count-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

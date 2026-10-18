@@ -392,7 +392,7 @@
                                                 (if (string? id)
                                                   (if (if (> (count id) 0) (<= (count id) 256) false)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
-                  (if (= function 'nth)
+                  (if (contains? '#{nth conj} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (= function 'count)
@@ -486,6 +486,11 @@
                          (second arguments-result) :rejected]))
                     [{:diagnostic "P15S23X002" :reason :bounded-successor-counter-and-range-required :operation operation}
                      (second arguments-result) :rejected]))
+              (if (= function 'conj)
+                (if (if (vector? left) (< (count left) 1024) false)
+                  [(conj left right) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :vector-append-vector-and-extent-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (= function 'nth)
                 (if (if (vector? left) (if (integer? right) (if (<= 0 right) (< right (count left)) false) false) false)
                   [(get left right) (second arguments-result) :normal]
@@ -517,7 +522,7 @@
                          (>= left right))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected]))))))
+                (second arguments-result) :rejected])))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

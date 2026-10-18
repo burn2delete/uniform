@@ -17,10 +17,19 @@ lane, routing record, receipt, or authority proposal. These are distinct tasks:
 | Integration validation | Test the affected upstream/downstream composition and proportionate regressions. | Behavior, input/output shape, identity, diagnostics or interfaces change. |
 | Authoritative migration | Fresh provenance, equivalence, bootstrap stage comparison, exact identities and independent acceptance. | Explicit admission of a stable module revision, not every edit. |
 
-This distinction follows D2's executable slices, TEST2's pass/composition tests,
-D9's separate test/proof evidence, and BOOT3's stage comparison after every
-**authoritative module migration**. Compile-time legality, profile, safety,
-provenance and release obligations are unchanged.
+D2 requires executable increments and honest milestone ordering; TEST2 requires
+pass-level accepted/rejected cases and composition regressions. D9 requires
+evidence appropriate to each claim, reproducible provenance and conservative
+invalidation. BOOT3 requires fresh equivalence and stage comparison at
+**authoritative module migration**, not before every local edit. Compile-time
+legality, profile, safety, provenance and release obligations are unchanged.
+
+Reservations, candidate tuples, admission reviews, receipt schemas and terminal
+publication come from supplemental admission contracts. Generated test catalogs
+and historical attempt-specific grants are tooling/coordination policies, not
+language semantics or prerequisites for explicit local test selection. The
+repository language boundary, source LOC limit and host resource limits remain
+implementation constraints, separate from proof authority.
 
 For SH-07, change `bootstrap/gravity/src/gravity/checked_core.gravity` (the
 owning Gravity pass), not only the hosted C6 compatibility facade. The thin
@@ -1267,6 +1276,63 @@ rejected `.gravity` cases check operation and type diagnostics; cheap parity
 checks cover their `.qst` counterparts. This is affected composition, not
 authoritative migration or complete collection/profile/target support.
 
+### Persistent vector append
+
+For the fixed-arity `(conj vector value)` slice, edit the existing C7 engine,
+`gravity/effects.gravity`, typed emitter and stage-owned `gravity/runtime.gravity`.
+STD3 owns persistent collection semantics; the core spelling is a compatibility
+resolution, not evidence of a complete standard-library module or provider.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-vector-append-development-kernel \
+  --exact sh08-vector-append-projection-development-kernel \
+  --exact body-vector-append-development-kernel \
+  --exact current-gravity-vector-append-lowering-development-kernel \
+  --exact current-gravity-vector-append-runtime-development-kernel
+```
+
+An established vector's complete ordered element types are followed by the
+appended value type, including heterogeneous values. Normal results retain the
+existing 1024-element bound. Operator and operands evaluate once, left-to-right;
+the original vector and prefix values are preserved. A Never operand prevents
+the append's own allocation without excusing invalid source or operand types.
+Operand effects and error transfer remain visible. C8 must retain append work
+in both the module's remaining budget and its returned cumulative work total.
+
+`count` consumes the established result type. Literal `nth` projection retains
+an explicit append application/source link: an appended coordinate selects the
+new value; a prefix coordinate delegates to the original vector. It does not
+relabel the append as a constructor or inspect unrelated nested prefix data.
+Whole-shape consumers currently require one established vector shape.
+Appended-vector S/T iteration and growing-vector recur types are not silently
+admitted by this extension; their origin/type frontiers remain separate work.
+
+Focused checks are development feedback. Changes to this slice also require
+affected real paired source through current C7/C8 verification, lowering and
+execution, including persistent input preservation, append-to-count/nth,
+throwing operands and rejected family/arity/extent/allocation cases. This is
+affected integration, not an authoritative module migration or a collection,
+profile, target or self-hosting completion claim.
+
+For changes to this composition, run the existing source selector separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-append-authenticated-composition --fail-fast
+```
+
+The cheap `current-gravity-vector-append-fixtures-development-kernel` checks
+paired source parity, parsing and test-only diagnostic handling; it does not
+establish semantic acceptance or rerun the oversized source.
+The backlog records the original partial-error composition and its separate
+remaining-negative result. The oversized literal reaches C6's fragment-form
+bound before C7's vector extent check; the latter has normalized kernel coverage.
+
 ### Proven vector indexing
 
 The same C7 engine, effect owner, typed emitter and runtime own the bounded
@@ -2297,23 +2363,6 @@ governs actual admission. Impact planners, caches, warm workers, profiling and
 bounded resource runners below are optional tools, not the default inner loop.
 Bound and serialize genuinely heavy work to protect the host, rather than
 requiring lightweight tests to maintain heavy-run admission state first.
-
-### Contract requirements versus supplemental process
-
-D2 requires executable increments and honest milestone ordering; D9 requires
-the evidence appropriate to a claim, reproducible provenance and invalidation
-of stale evidence. TEST2 requires pass-level accepted/rejected cases and
-composition regressions. BOOT3 requires fresh equivalence and stage comparison
-at authoritative migration. None makes a new admission receipt or refreshed
-migration fingerprint a prerequisite for testing an ordinary pass edit.
-
-Workstream reservations, exact candidate tuples, admission reviews, receipt
-schemas and terminal publication come from supplemental admission contracts.
-Generated test catalogs and historical attempt-specific grants are additional
-tooling/coordination policies, not language semantics. They must not govern
-explicit local test selection. The repository's language boundary and source
-LOC limit remain implementation constraints; host resource limits still apply
-to expensive tests. These are separate from proof authority.
 
 ## Repository and explicit admission checks
 

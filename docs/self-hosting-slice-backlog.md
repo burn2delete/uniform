@@ -2027,6 +2027,56 @@ composition is not exercised by this fixture. This is scoped executable
 development support, not authoritative migration, profile/provider or
 ownership admission, target support, self-hosting or seedless release.
 
+### Persistent vector append: development implementation
+
+The existing C7, C8, typed-emitter and stage-owned runtime owners implement
+fixed-arity `(conj vector value)` under STD3. Established ordered element types
+are extended by one value type, preserving the original vector and prefix.
+Operands evaluate once in order. Never prevents the append's own allocation,
+but does not excuse invalid source or operand types. Normal results retain the
+1024-element bound. Count and literal-index projection consume the resulting
+type; projection preserves append/source ancestry rather than inventing a
+constructor. The guide gives the direct development and composition commands.
+
+The focused affected batch passed 23 tests/1,180 assertions. Independent review
+found a real C8 cumulative-accounting defect: append work was deducted locally
+but omitted from the returned total. The fix retains that work through module
+and producer accumulation; exact-budget and one-unit-short controls pass.
+Projection controls cover prefix, appended, chained and nested coordinates.
+These normalized checks are not authoritative source admission.
+
+The single frozen source composition ended with 299 passing assertions and one
+error, not a passing aggregate. Test-var execution took 980.465 seconds after
+7.905 seconds of loading at 2 GiB. Both positive extensions passed seven
+function types, eighteen call facts, twenty guest outcomes in total, eight
+fresh C7 operations, two accepted/nonempty C8 whole-result checks and four
+resealed graph hostiles. Seven negative `.gravity` fixtures rejected before
+the error. Negative `.qst` coverage is paired parity only.
+
+The oversized source fixture reached C6's fragment bound first:
+`C6-VERIFY/:fragment-root-form-bound`, maximum 1024 forms, observed 1036.
+This is an authentic upstream rejection, not a C7 append-extent rejection.
+The 1024-to-1025 C7 boundary has normalized kernel coverage. The subsequent
+Never/wrong-family and missing-allocation-allowance cases were initially unrun.
+A separate two-source check passed all six assertions in 159.817 seconds after
+7.882 seconds of loading at 2 GiB: the former rejects at C7 despite the other
+operand's Never type; the latter accepts C7 and its verifier but rejects at C8
+with the function-first undeclared-allocation diagnostic.
+
+The test-only extent handler now recognizes exactly the original fail-closed
+C6 bound and rethrows unexpected diagnostics. Eight synthetic handler controls
+plus fixture and lowering checks passed two tests/84 assertions. These overlap
+earlier focused checks and do not convert the original failed aggregate into
+a pass. No positive composition or oversized source was replayed solely to
+refresh an aggregate label. Only the test file changed after that run; compiler
+and paired fixture bytes were unchanged for the separate remaining checks.
+
+Whole-shape consumers retain the one-established-vector-shape fence. Growing
+vector recur types and appended-vector iteration origins remain separate
+implementation frontiers, not language bans. Collection/provider/profile and
+ownership completion, target support, authoritative migration, self-hosting
+and seedless release remain outstanding.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
