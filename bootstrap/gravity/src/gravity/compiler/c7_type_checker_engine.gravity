@@ -2650,6 +2650,177 @@
   (loop [remaining values out out]
     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
+; L5 canonical-if fallback: branch evidence supplies T, never an expected return.
+(defn sh08-ij-atomic? [type]
+  (if (keyword? type)
+    (sh08-hl-type? {:kind :gravity.type/list :shape :homogeneous :element-type type}) false))
+
+(defn sh08-ij-element [type budget]
+  (let [members (if (map? type) (get type :element-types) nil)
+        finite? (if (map? type)
+                  (if (= 3 (count type))
+                    (if (= #{:kind :shape :element-types} (set (keys type)))
+                      (= [:gravity.type/list :literal] [(get type :kind) (get type :shape)]) false) false) false)
+        width (if (if finite? (vector? members) false) (count members) 0)
+        work (+ 1 width)]
+    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
+      (if (if (map? type) (keyword? (get type :element-type)) false)
+        (if (sh08-hl-type? type)
+          {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
+           :checked-member-count nil :work-count work}
+          {:status :not-applicable :reason :independent-list-element-required :work-count work})
+        (if (if finite? (if (vector? members) (<= width 1024) false) false)
+          (if (= width 0)
+            {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0 :work-count work}
+            (let [element (first members)]
+              (if (sh08-ij-atomic? element)
+                (if (loop [remaining members]
+                      (if (= 0 (count remaining)) true
+                        (if (= element (first remaining)) (recur (rest remaining)) false)))
+                  {:status :accepted :element-type element :relation :all-positional-elements-match
+                   :checked-member-count width :work-count work}
+                  {:status :not-applicable :reason :incompatible-list-elements :work-count work})
+                {:status :not-applicable :reason :independent-atomic-element-required :work-count work})))
+          {:status :not-applicable :reason :independent-list-element-required :work-count work})))))
+
+(defn sh08-ij-type-work [left right budget]
+  (let [a (sh08-ij-element left budget)
+        b (if (= :accepted (get a :status))
+            (sh08-ij-element right (- budget (get a :work-count))) nil)
+        work (+ (get a :work-count) (get b :work-count 0))]
+    (if (= :rejected (get a :status)) a
+      (if (= :accepted (get a :status))
+        (if (= :rejected (get b :status)) (assoc b :work-count work)
+          (if (= :accepted (get b :status))
+            (let [x (get a :element-type) y (get b :element-type)
+                  element (if (= x nil) y x)]
+              (if (if (= element nil) false (if (= x nil) true (if (= y nil) true (= x y))))
+                {:status :accepted :type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+                 :branch-types [left right]
+                 :branch-compatibility [(sh08-bm-project a [:element-type :relation :checked-member-count])
+                                        (sh08-bm-project b [:element-type :relation :checked-member-count])]
+                 :element-type element :work-count work}
+                {:status :not-applicable :reason :incompatible-independent-list-elements :work-count work}))
+            {:status :not-applicable :reason (get b :reason) :work-count work}))
+        {:status :not-applicable :reason (get a :reason) :work-count work}))))
+
+(defn sh08-ij-normal-type [left right]
+  (if (= left right) left
+    (if (= left :gravity.type/never) right
+      (if (= right :gravity.type/never) left
+        (get (sh08-ij-type-work left right 65536) :type :gravity.type/unknown)))))
+
+(defn sh08-ij-derive [core node nodes types bindings forms budget]
+  (let [children (get node :children)]
+    (if (if (= :if (get node :core-form)) (if (vector? children) (= 3 (count children)) false) false)
+      (let [condition (get types (first children) :gravity.type/unknown)
+            left (get types (get children 1) :gravity.type/unknown)
+            right (get types (get children 2) :gravity.type/unknown)]
+        (if (if (= condition :gravity.type/never) true
+              (if (sh08-ft-unknown? condition) true
+                (if (= left right) true
+                  (if (= left :gravity.type/never) true (= right :gravity.type/never)))))
+          {:status :not-applicable :work-count 1}
+          (let [base (+ 64 (count (get core :function-records)) (count (get core :control-flow)))]
+            (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
+              (let [validation (sh08-ij-type-work left right (- budget base))
+                    work (+ base (get validation :work-count))]
+                (if (= :accepted (get validation :status))
+                  (let [owner (get (get node :evaluation) :owner-function-syntax-id)
+                        function (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (if (= owner (get (first remaining) :function-syntax-id))
+                                       (first remaining) (recur (rest remaining)))))
+                        binding (get bindings (get function :definition-binding-id))
+                        form (get forms (get (get node :source) :form-id))
+                        ids (get form :child-form-ids)
+                        operator (get forms (get ids 0))
+                        control {:core-node-id (get node :node-id) :kind :if :condition-node-id (first children)
+                                 :branches [{:role :then :predicate :truthy :core-node-id (get children 1)}
+                                            {:role :else :predicate :falsey :core-node-id (get children 2)}]
+                                 :branch-exclusivity :exactly-one
+                                 :truthiness {:false-values [:nil :false] :other-values :true}
+                                 :result-policy :selected-branch}
+                        controls (loop [remaining (get core :control-flow) out []]
+                                   (if (= 0 (count remaining)) out
+                                     (recur (rest remaining)
+                                       (if (= (get node :node-id) (get (first remaining) :core-node-id))
+                                         (conj out (first remaining)) out))))
+                        branch-nodes (loop [remaining children out []]
+                                       (if (= 0 (count remaining)) out
+                                         (recur (rest remaining) (conj out (get nodes (first remaining))))))
+                        reference-work (loop [remaining branch-nodes used 0]
+                                         (if (= 0 (count remaining)) used
+                                           (recur (rest remaining)
+                                             (+ used (if (vector? (get (first remaining) :resolved-binding-ids))
+                                                       (* 2 (count (get (first remaining) :resolved-binding-ids))) 0)))))
+                        work (+ work reference-work)
+                        branch-bindings (if (> work budget) [] (loop [remaining branch-nodes out []]
+                                          (if (= 0 (count remaining)) out
+                                            (recur (rest remaining)
+                                              (conj out (loop [ids (if (vector? (get (first remaining) :resolved-binding-ids))
+                                                                    (get (first remaining) :resolved-binding-ids) []) records []]
+                                                          (if (= 0 (count ids)) records
+                                                            (recur (rest ids) (conj records (get bindings (first ids)))))))))))]
+                    (if (sh08-ft-all-true?
+                          [(<= work budget) (map? function) (= owner (get function :function-syntax-id))
+                           (= (get function :definition-binding-id) (get binding :binding-id))
+                           (= (get function :definition-name) (get binding :name))
+                           (= [:namespace :function (get (get core :module) :namespace)]
+                              [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
+                           (= :list (get form :kind)) (vector? ids) (= 4 (count ids))
+                           (= :symbol (get operator :kind)) (= 'if (get operator :value))
+                           (= (get form :form-id) (get operator :parent-form-id))
+                           (= (sh08-lr-source form) (get node :source))
+                           (= [] (get node :resolved-binding-ids))
+                           (= {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                               :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}} (get node :attributes))
+                           (= :condition-then-exclusive-branch (get (get node :evaluation) :kind))
+                           (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
+                           (= [control] controls)
+                           (loop [i 0]
+                             (if (= i 3) true
+                               (let [child (get branch-nodes i) source (get forms (get ids (+ i 1)))
+                                     references (get child :resolved-binding-ids) records (get branch-bindings i)]
+                                 (if (sh08-ft-all-true?
+                                       [(= (get child :node-id) (get children i))
+                                        (= (sh08-lr-source source) (get child :source))
+                                        (= (get form :form-id) (get source :parent-form-id))
+                                        (= owner (get (get child :evaluation) :owner-function-syntax-id))
+                                        (vector? references) (= references (loop [rows records out []]
+                                                                            (if (= 0 (count rows)) out
+                                                                              (recur (rest rows) (conj out (get (first rows) :binding-id))))))])
+                                   (recur (+ i 1)) false))))])
+                      {:status :accepted :work-count work :type (get validation :type)
+                       :premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
+                                 :if-core-node-id (get node :node-id) :source-node node
+                                 :function-record function :definition-binding binding
+                                 :condition-type condition :branch-types [left right]
+                                 :branch-node-ids [(get children 1) (get children 2)]
+                                 :child-sources (loop [remaining branch-nodes out []]
+                                                  (if (= 0 (count remaining)) out
+                                                    (recur (rest remaining) (conj out (get (first remaining) :source)))))
+                                 :child-bindings branch-bindings :source-form (sh08-lr-source form)
+                                 :operator-source (sh08-lr-source operator) :control-flow control
+                                 :branch-compatibility (get validation :branch-compatibility)
+                                 :element-type (get validation :element-type) :result-type (get validation :type)
+                                 :expected-return-premise :none :runtime-conversion :none
+                                 :preserves [:actual-branch-types :source :bindings :value :ownership :linearity :regions :effects]
+                                 :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+                      {:status :rejected :reason (if (> work budget) :list-if-join-work-limit :list-if-join-source-mismatch) :work-count work}))
+                  (assoc validation :work-count work :type-work-count (get validation :work-count))))))))
+      {:status :not-applicable :work-count 1})))
+
+(defn sh08-ij-row [premise]
+  {:constraint-id-request {:domain :gravity/sh08-list-if-join-constraint-v1 :join-compatibility premise}
+   :kind :join-compatibility :producer-rule :sh08-list-if-join-v1
+   :lhs {:core-node-id (get premise :if-core-node-id) :role :canonical-if-result}
+   :rhs {:actual-branch-types (get premise :branch-types) :result-type (get premise :result-type)}
+   :dependencies premise :solution {:result-type (get premise :result-type)}
+   :invalidation [:source-forms :if-node :control-flow :branch-nodes :branch-types :source-bindings
+                  :function-records :definition-binding :profile :target]
+   :profile (get premise :profile) :target (get premise :target) :status :solved :diagnostics []})
+
 (defn sh08-ft-loop-kernel-normal-join [types]
   (loop [remaining types chosen :gravity.type/never]
     (if (= 0 (count remaining)) chosen
@@ -2666,7 +2837,7 @@
       (if (= form :if)
         (if (= 3 (count child-types))
           (if (= :gravity.type/never (first child-types)) :gravity.type/never
-            (sh08-ft-loop-kernel-normal-join (subvec child-types 1 3))) :gravity.type/unknown)
+            (sh08-ij-normal-type (get child-types 1) (get child-types 2))) :gravity.type/unknown)
         (if (contains? #{:alternatives :try} form) (if (= 0 (count child-types)) nominal (sh08-ft-loop-kernel-normal-join child-types))
           (loop [remaining child-types]
             (if (= 0 (count remaining)) nominal
@@ -4302,7 +4473,7 @@
               then-type
               (get context :recursive-base-type :gravity.type/unknown))
             :gravity.type/unknown))
-        :gravity.type/unknown))))
+        (sh08-ij-normal-type then-type else-type)))))
 
 ; L1/L2 quoted payloads are authenticated DATA, never executable core nodes.
 (defn sh08-qd-failure [rule reason form expected actual]
@@ -9701,6 +9872,29 @@
   (sh08-ft-call-constraints-with-context
    calls edges nodes type-table binding-types function-types {}))
 
+(defn sh08-ij-step [node types context budget]
+  (let [children (get node :children)]
+    (if (sh08-ft-unknown? (get types (first children)))
+      (if (< budget 1) {:status :rejected :reason :list-if-join-work-limit :work-count 1}
+        ; Preserve existing exact/Never branch seeds while a cold loop guard
+        ; is unresolved. Unequal List compatibility still needs its premise.
+        (let [legacy (if (if (vector? children) (= 3 (count children)) false)
+                       (sh08-ft-loop-kernel-normal-join
+                         [(get types (get children 1) :gravity.type/unknown)
+                          (get types (get children 2) :gravity.type/unknown)]) :gravity.type/unknown)]
+          (if (= legacy :gravity.type/unknown) {:status :deferred :work-count 1}
+            {:status :deferred :type legacy :work-count 1})))
+      (let [result (sh08-ij-derive (get context :ordering-core) node
+                     (get context :lookup-nodes) types (get context :ordering-bindings)
+                     (get context :association-forms) budget)
+            ; A non-applicable fallback still visits the nominal and normal
+            ; return helpers. Precharge those two bounded member traversals.
+            work (+ (get result :work-count)
+                    (if (= :not-applicable (get result :status)) (* 2 (get result :type-work-count 0)) 0))]
+        (if (> work budget)
+          {:status :rejected :reason :list-if-join-work-limit :work-count work}
+          (assoc result :work-count work))))))
+
 (defn sh08-ft-infer-pass-with-context
   [nodes lexical-bindings definitions calls edges function-types
    initial-binding-types context]
@@ -9766,6 +9960,9 @@
          :diagnostics (sh08-ft-add-values-to-set (sh08-ft-loop-diagnostics (get loop-result :issues) node-index)
                                                 (sh08-ft-add-values-to-set lookup-issues (get call-result :diagnostics)))})
       (let [node (first remaining)
+            conditional? (= :if (get node :core-form))
+            if-result (if conditional? (sh08-ij-step node type-table context
+                                         (- (get context :loop-work-left 65536) lookup-work)) {})
             lookup? (= :keyword-map-lookup (get node :core-form))
             association? (if (if (sh08-lq-node? node context) true (sh08-lc-node? node context)) true (if (sh08-sc-node? node context) true (if (sh08-mg-node? node context) true (if (sh08-mc-node? node context) true (if (sh08-nt-node? node context) true (if (sh08-ae-node? node context) true (if (sh08-va-node? node context) true (if (sh08-si-node? node context) true (if (sh08-ma-node? node context) true (if (sh08-cq-node? node context) true (sh08-vn-node? node context)))))))))))
             lookup (if association?
@@ -9796,9 +9993,15 @@
                      (sh08-kl-step node type-table binding-types function-result context
                                    (- (get context :loop-work-left 65536) lookup-work)) {}))
             node-type
+            (if conditional?
+              (if (= :accepted (get if-result :status)) (get if-result :type)
+                (if (= :deferred (get if-result :status)) (get if-result :type :gravity.type/unknown)
+                (if (= :rejected (get if-result :status)) :gravity.type/unknown
+                  (if (= :gravity.type/never (get type-table (first (get node :children)))) :gravity.type/never
+                    (sh08-ft-infer-node-with-context node type-table binding-types function-result edges context)))))
             (if (if lookup? true association?) (get lookup :type :gravity.type/unknown)
               (sh08-ft-infer-node-with-context
-               node type-table binding-types function-result edges context))]
+               node type-table binding-types function-result edges context)))]
         (recur
          (rest remaining)
          (let [table (assoc type-table (get node :node-id) node-type)]
@@ -9808,10 +10011,15 @@
                     (if (= (get (get node :core-form) :none) :none)
            function-result
            function-result)
-         (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows)
+         (if (= :accepted (get if-result :status)) (conj lookup-rows (sh08-ij-row (get if-result :premise)))
+           (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows))
          (if (if (if lookup? true association?) (= :rejected (get lookup :status)) false)
-           (conj lookup-issues (assoc lookup :node node)) lookup-issues)
-         (+ lookup-work (get lookup :work-count 0))))))))
+           (conj lookup-issues (assoc lookup :node node))
+           (if (= :rejected (get if-result :status))
+             (conj lookup-issues (assoc if-result :node node
+               :rule (if (= :list-if-join-work-limit (get if-result :reason)) "C7-GENERIC" "C7-VERIFY")
+               :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues))
+         (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0))))))))
 
 (defn sh08-ft-infer-pass
   [nodes lexical-bindings definitions calls edges function-types

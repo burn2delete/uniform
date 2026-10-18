@@ -2191,6 +2191,88 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Homogeneous List canonical-if joins: development implementation
+
+This slice supports an independently inferred common List element
+type for unequal normal `if` branches, such as `(list part)` and `(list)` when
+`part` has established String type. L5 now states the bounded rule: homogeneous
+or uniformly typed positional branches can supply the same atomic element
+type; an empty positional branch supplies none. Expected return declarations
+cannot supply missing evidence. Equal-type and Never rules remain unchanged.
+
+Implementation belongs to the existing C7 type owner, C8 effect checker and
+typed emitter. It retains actual branch types and a source-bound
+join-specific compatibility premise, not false equality. The shared normal
+join used by match, try, loop and recur must not be widened. No runtime
+conversion or new instruction is introduced.
+
+The independent type-helper kernel passed 1 test / 817 assertions over the
+15 currently supported atomic element types, both branch orders, empty and
+homogeneous branches, incompatible or missing member evidence, malformed
+shapes, and exact/one-below work budgets. The initial helper attempt stopped
+before semantic assertions on unsupported bootstrap `dissoc`; it was replaced
+with the existing projection helper, not a seed extension. The normalized
+source-premise kernel also passed 40 assertions, including coherent branch
+reordering, source/binding mutations and exact-budget checks. Its earlier
+delimiter failure and 38-pass/two-failure test-oracle result are retained;
+the corrected reorder negative keeps the condition first instead of making
+the join ineligible before its source check. The inference kernel and existing
+return-branch-independence regression passed 2 tests / 115 assertions (108 new
+inference checks). Nominal and normal-return results, the final function return
+and compatibility row agree; non-Bool conditions preserve L2 truthiness and a
+Never condition prevents a normal result. An earlier 84-pass/four-failure
+oracle compared retained caller budget metadata as well as semantic results;
+the corrected comparison excludes only that scheduling context while keeping
+types, rows, diagnostics and work counts. Independent review then found the
+unknown-condition deferral failed to check its one-unit budget. The corrected
+inference kernel passed 128 assertions, including zero/negative remaining
+budget and cumulative exhaustion. That C7 finding is closed.
+
+The updated source-owner kernel passed 46 assertions after adding namespace,
+binding-kind and binding-class negatives. Independent C8 context reconstruction
+passed 33 assertions covering ordered row census, missing/duplicate/orphaned
+rows, changed types and source/binding premises, and exact/one-below budgets
+for both the new join and legacy equal/Never cases. New downstream contexts
+also check the cumulative one-unit cost of non-applicable joins.
+
+The lowering kernel passed 142 assertions with branch values matching each
+declared finite or homogeneous type, and condition types matching all twenty
+Bool/nil/Keyword/String runtime cases. It emits the existing `if` instruction
+and preserves the selected List value's identity. Its earlier 122-assertion
+result is retained but did not use matching runtime values for every declared
+branch family. The failure-work correction passed the updated 186-assertion
+kernel: own rejection paths retain known prepaid work, and failures at each
+of the three child positions retain earlier completed work. Preflight
+reservation counts are not claims of actual source visits or CPU cost.
+
+The affected 14-test regression batch remains FAILED: 824 assertions passed
+and 12 failed in the existing guarded-vector cold-inference kernel. The new
+deferral path had suppressed the old exact/Never branch seed while a condition
+was still unknown, preventing loop inference from converging. The correction
+retains only that legacy seed during deferral, not a new homogeneous join or
+compatibility row. Targeted inference and vector/Keyword cold-loop checks then
+passed 3 tests / 178 assertions (144 new-inference, 20 vector-cold and 14
+Keyword-cold); the other thirteen passing selectors were not replayed merely
+to replace the failed aggregate with a green one.
+
+Independent component review accepted the three owners and closed the cold
+regression. The actual source composition passed 1 test / 290 assertions,
+constructing three fresh products: the accepted Gravity/QST pair and one real
+bare-List/empty-List rejection lacking independent element evidence. The ten
+accepted functions contain six new joins and two legacy equal/Never cases,
+local caller flow and a separately checked return annotation. Accepted products
+were reused for 42 guest executions, four public C7 verification gates,
+independent whole-C8 graph checks, coherent hostile mutations and exact-budget
+checks. The selected test took 370.244774041 seconds with a 2 GiB heap; this is
+development timing, not a speedup or containment claim.
+
+Independent actual-result review accepted the scoped executable behavior and
+confirmed all eleven frozen inputs unchanged. The 290 assertions comprise
+284 selector checks and six whole-loader checks. This does not relabel the
+earlier failed aggregate. Match/try/loop/recur widening, other element types,
+ownership and profile legality beyond this subset, other targets,
+authoritative migration, self-hosting and release gates remain outstanding.
+
 ### Qualified core vars and availability: development implementation
 
 This slice closes the C5 qualified-core frontier found before the List

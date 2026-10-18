@@ -4143,6 +4143,237 @@
              ((juxt :rule :reason :expected-type :actual-type) failure))))
     (is (= 3 (count @built)))))
 
+(deftest current-gravity-list-if-join-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-if-join-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
+        expected {:op :if :test {:op :local :name 'include} :then {:op :local :name 'left} :else {:op :local :name 'right}}]
+    (doseq [[left right] [[(finite [s]) (finite [])] [(finite []) (finite [s])]
+                         [homogeneous (finite [])] [(finite [s s]) homogeneous]]]
+      (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            row (c7 'sh08-ij-row [(:premise derived)])
+            types (assoc types (:node-id node) homogeneous)
+            facts {:type-table types :constraint-ledger [row]}
+            check #(invoke 'p15-s23-ij-context core % bindings forms %2)
+            checked (check facts 65536)
+            context {:core core :types types :nodes nodes :forms forms :bindings bindings :ledger [row]
+                     :if-join-context (:context checked)
+                     :locals {(refs :condition) 'include (refs :then) 'left (refs :else) 'right}
+                     :parameter-types (into {} (for [[role id] refs] [id (get types (nids role))]))}
+            compile #(invoke 'p15-s23-typed-compile-node %1 (:node-id node) %2)
+            result (compile context 65536)]
+        (is (= :accepted (:status checked)))
+        (is (= checked (check facts (:work-count checked))))
+        (is (= :list-if-join-work-limit (:reason (check facts (dec (:work-count checked))))))
+        (is (= :complete (:status result)) (pr-str result))
+        (is (= expected (:value result)))
+        (is (= result (compile context (:work-count result))))
+        (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count result))) [:facts :reason])))
+        (let [prepaid (+ 1 (count (:ledger context))
+                         (:work-count (invoke 'p15-s23-ij-derive core node nodes types bindings forms 65536)))
+              rejected (compile (assoc context :if-join-context {:premises {}}) 65536)
+              source-failed (compile (assoc-in context [:forms (get-in nodes [(nids :then) :source :form-id]) :parent-form-id] :sibling) 65536)
+              reserved (invoke 'p15-s23-typed-compile-if context node 0)
+              malformed (invoke 'p15-s23-typed-compile-if context (assoc node :children []) 65536)]
+          (is (= prepaid (:work-count rejected) (:work-count source-failed)))
+          (is (= :typed-if-join-evidence-mismatch (get-in rejected [:facts :reason])))
+          (is (= :list-if-join-source-mismatch (get-in source-failed [:facts :reason])))
+          ;; This is a preflight reservation, before source/member/child visits.
+          (is (= (inc (count (:ledger context))) (:work-count reserved) (:work-count malformed)))
+          (is (= :typed-lowering-work-limit (get-in reserved [:facts :reason])))
+          (doseq [[index role] (map-indexed vector [:condition :then :else])]
+            (let [failed (compile (update context :locals dissoc (refs role)) 65536)]
+              (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
+              (is (= (+ prepaid index) (:work-count failed))))))
+        (doseq [changed [(assoc context :ledger [])
+                         (update context :ledger conj row)
+                         (assoc context :if-join-context {:premises {}})
+                         (assoc-in context [:ledger 0 :kind] :equality)
+                         (assoc-in context [:ledger 0 :dependencies :branch-types] [homogeneous homogeneous])
+                         (assoc-in context [:types (:node-id node) :element-type] :gravity.type/keyword)
+                         (assoc-in context [:forms (get-in nodes [(nids :then) :source :form-id]) :parent-form-id] :sibling)
+                         (assoc-in context [:core :module :target] :llvm)]]
+          (is (= :rejected (:status (compile changed 65536)))))
+        (doseq [[condition selected] [[true 'left] [false 'right] [nil 'right] [:present 'left] ["truthy" 'left]]]
+          (let [condition-type (cond (nil? condition) :gravity.type/nil (keyword? condition) :gravity.type/keyword
+                                     (string? condition) :gravity.type/string :else :gravity.type/bool)
+                actual-types (assoc types (nids :condition) condition-type)
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-row (c7 'sh08-ij-row [(:premise actual-join)])
+                actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
+                actual-checked (check actual-facts 65536)
+                actual-context (-> context (assoc :types actual-types :ledger [actual-row] :if-join-context (:context actual-checked))
+                                   (assoc-in [:parameter-types (refs :condition)] condition-type))
+                lowered (compile actual-context 65536)
+                a (if (= :homogeneous (:shape left)) '() (apply list (repeatedly (count (:element-types left)) #(String. "piece"))))
+                b (if (= :homogeneous (:shape right)) (list (String. "homogeneous"))
+                      (apply list (repeatedly (count (:element-types right)) #(String. "piece"))))
+                value (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                        'p15-s23-runtime-evaluate-closed-instruction [(:value lowered) {'include condition 'left a 'right b} ""])]
+            (is (= expected (:value lowered)))
+            (is (= [(if (= selected 'left) a b) "" :normal] value))
+            (is (identical? (if (= selected 'left) a b) (first value)))))))
+    (doseq [[left right condition expected-type] [[(finite [s]) (finite [s]) :gravity.type/bool (finite [s])]
+                                                 [:gravity.type/never (finite []) :gravity.type/bool (finite [])]
+                                                 [(finite [s]) (finite []) :gravity.type/never :gravity.type/never]
+                                                 [:gravity.type/never :gravity.type/never :gravity.type/bool :gravity.type/never]]]
+      (let [{:keys [core node types bindings forms nids]} (input-fn left right)
+            facts {:type-table (assoc types (:node-id node) expected-type (nids :condition) condition) :constraint-ledger []}
+            run #(invoke 'p15-s23-ij-context core facts bindings forms %)
+            result (run 65536)]
+        (is (= :accepted (:status result)))
+        (is (= {} (get-in result [:context :premises])))
+        (is (= result (run (:work-count result))))
+        (is (= :list-if-join-work-limit (:reason (run (dec (:work-count result))))))))))
+
+(deftest current-gravity-list-if-join-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[family name functions] [["accepted" "list-if-join" 10] ["rejected" "list-if-join-no-independent-element" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" family "/" name)
+            text (slurp (io/file root (str relative ".gravity"))) forms (bootstrap/read-forms relative text)]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+        (is (str/ends-with? text ")\n"))
+        (is (not (str/ends-with? text "\n\n")))))))
+
+(deftest current-gravity-list-if-join-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
+        names '[optional-part optional-reverse different-widths homogeneous-left homogeneous-right annotated]
+        part (String. "piece") payload (String. "original List join transfer") parts (list (String. "retained"))
+        specs [['optional-part [true part] (list part) :normal nil] ['optional-part [false part] '() :normal nil]
+               ['optional-reverse [true part] '() :normal nil] ['optional-reverse [false part] (list part) :normal nil]
+               ['different-widths [true part] (list part) :normal nil] ['different-widths [false part] (list part part) :normal nil]
+               ['homogeneous-left [true '()] '() :normal 1] ['homogeneous-left [true parts] parts :normal 1]
+               ['homogeneous-left [false parts] '() :normal nil]
+               ['homogeneous-right [true parts part] (list part) :normal nil] ['homogeneous-right [false '() part] '() :normal 1]
+               ['homogeneous-right [false parts part] parts :normal 1]
+               ['annotated [true part] (list part) :normal nil] ['annotated [false part] '() :normal nil]
+               ['exact [true part] (list part) :normal nil] ['exact [false part] (list part) :normal nil]
+               ['aborted [true payload part] payload :thrown nil] ['aborted [false payload part] (list part) :normal nil]
+               ['joined-count [true part] 1 :normal nil] ['joined-count [false part] 0 :normal nil] ['main [] 1 :normal nil]]
+        cases
+        (mapv
+         (fn [extension]
+           (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/list-if-join" extension)
+                 path (.getPath (io/file root relative)) products (fresh relative)
+                 input (select-keys products [:request :typed :verification])
+                 _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                 _ (when-not (= :accepted (get-in input [:typed :status]))
+                     (throw (ex-info "List if-join source rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                 artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                 parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                 raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                 definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                 assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                 core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                 rows (filterv #(= :sh08-list-if-join-v1 (:producer-rule %)) (:constraint-ledger facts))
+                 functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                 binding (seal (:request input) (:typed input) (:verification input))
+                 effects (c8 'build-body-effect-result (:typed input) (:verification input) binding) graph (:effect-graph effects)]
+             (is (= :passed (get-in input [:verification :status])))
+             (is (= 10 (count (:function-records core)) (count (:functions assembled))))
+             (is (= 16 (count (:calls core)) (count (:call-type-facts facts)) (count (:call-edges core))))
+             (is (= {:direct-list-construction 13 :direct-collection-count 1 nil 2} (frequencies (map :dispatch (:call-type-facts facts)))))
+             (is (= 8 (count (filter #(= :if (:core-form %)) (:nodes core)))))
+             (is (= 6 (count rows)))
+             (is (= names (mapv #(get-in % [:dependencies :function-record :definition-name]) rows)))
+             (is (= [[(finite [s]) (finite [])] [(finite []) (finite [s])] [(finite [s]) (finite [s s])]
+                     [homogeneous (finite [])] [(finite [s]) homogeneous] [(finite [s]) (finite [])]]
+                    (mapv #(get-in % [:dependencies :branch-types]) rows)))
+             (doseq [row rows]
+               (let [premise (:dependencies row) id (:if-core-node-id premise)]
+                 (is (= :join-compatibility (:kind row)))
+                 (is (= :sh08-list-if-join-v1 (:version premise)))
+                 (is (= :independent-homogeneous-list-join (:relation premise)))
+                 (is (= :none (:expected-return-premise premise) (:runtime-conversion premise)))
+                 (is (= homogeneous (:result-type premise) (get-in facts [:type-table id]) (get-in row [:solution :result-type])))
+                 (is (= (:branch-types premise) (get-in row [:rhs :actual-branch-types])))
+                 (is (= premise (get-in row [:constraint-id-request :join-compatibility])))
+                 (is (= :meta (:profile premise) (:profile row)))
+                 (is (= :jvm (:target premise) (:target row)))
+                 (is (= #{} (get-in graph [:nodes id :direct])))
+                 (is (nil? (get-in graph [:nodes id :allocation])))))
+             (doseq [name names] (is (= homogeneous (get-in functions [name :return]))))
+             (is (= homogeneous (get-in functions ['annotated :return-actual-type])))
+             (is (= :homogeneous-list-identity (get-in functions ['annotated :return-compatibility :relation])))
+             (is (= :sh08-homogeneous-list-return-v1 (get-in functions ['annotated :return-compatibility :version])))
+             (doseq [name ['exact 'aborted]] (is (= (finite [s]) (get-in functions [name :return]))))
+             (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+             (when-not (= :accepted (:status effects)) (throw (ex-info "List join C8 rejected" {:diagnostics (:diagnostics effects)})))
+             (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+             (doseq [name (conj (vec names) 'exact 'joined-count 'main)]
+               (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+             (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions ['aborted :function-id]) :inferred])))
+             (doseq [[name args expected tag identity-index] specs]
+               (let [snapshots (mapv #(when (list? %) (vec %)) args)
+                     result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                      [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                 (is (= [expected "" tag] result) (str extension " " name))
+                 (when identity-index (is (identical? (get args identity-index) (first result))))
+                 (when (= :thrown tag) (is (identical? payload (first result))))
+                 (doseq [[value snapshot] (map vector args snapshots) :when (list? value)] (is (= snapshot (vec value))))))
+             (when (= extension ".gravity")
+               (let [analyze #(c8 'body-analyze-module (:request input) facts {} %) result (analyze 65536) work (:work-count result)]
+                 (is (= :accepted (:status result))) (is (= graph (:graph result)))
+                 (is (= result (analyze work))) (is (= :rejected (:status (analyze (dec work)))))))
+             {:input input :module module :definitions definitions :rows rows :effects effects :binding binding}))
+         [".gravity" ".qst"])
+        {:keys [input module definitions rows effects binding]} (first cases)
+        row (first rows) id (get-in row [:lhs :core-node-id])
+        bads [(assoc row :kind :equality)
+              (c7 'sh08-ij-row [(assoc (:dependencies row) :expected-return-premise :declared-return)])]]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed-row bads]
+      (let [typed (walk/postwalk #(if (= row %) changed-row %) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'optional-part) (assoc input :typed typed)))))
+            verification (assoc (:verification input) :expected typed :candidate typed)
+            hostile-binding (seal (:request input) typed verification)
+            result (c8 'build-body-effect-result typed verification hostile-binding)]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))
+        (is (true? (c8 'body-input-valid? typed verification hostile-binding)))
+        (is (= :rejected (:status result)))
+        (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason])))))
+    (is (= 4 (count @verified)))
+    (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
+                              (reseal effects (assoc-in (:effect-graph effects) [:nodes id :allocation] {:construction :none}))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/list-if-join-no-independent-element.gravity")
+          failure (first (get-in products [:typed :diagnostics]))]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (= ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type] ((juxt :rule :reason) failure))))
+    (is (= 3 (count @built)))))
+
 (deftest current-gravity-qualified-core-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))

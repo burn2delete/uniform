@@ -135,6 +135,23 @@ This does not introduce implicit `Dynamic`, arbitrary sequence compatibility
 or a general generic-function framework. Schema identity, ownership,
 linearity, regions, effects and profile legality remain obligations.
 
+### Independently Established List Branch Joins
+
+For canonical `if`, otherwise unequal normally returning branch types may join
+to `(List T)` when each independently established branch type is either
+homogeneous `(List T)` or a positional List whose established member types all
+equal the same atomic `T`. At least one branch must independently supply `T`:
+an empty positional List supplies no element type, while a homogeneous List
+supplies its declared element type even when its runtime value is empty.
+
+Retain both actual branch types and a join-specific compatibility premise;
+do not record false type equality or infer `T` from an expected return
+declaration. Existing exact-type and non-returning branch rules are unchanged;
+two empty positional Lists retain their exact empty type. This rule introduces
+no runtime conversion, general subtyping, union inference, or extension to
+match, try, loop or recur joins. Effects, ownership, regions, profile legality
+and bounded type-validation work remain obligations.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -271,6 +288,7 @@ L5 rejects:
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
+- Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

@@ -1001,6 +1001,57 @@
      :descriptor descriptor :result result :facts facts
      :request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}}))
 
+(deftest body-list-if-join-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input (sh08-helper 'list-if-join-input) c7 (sh08-helper 'invoke-c7)
+        s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
+        data [(input (finite [s]) (finite []) 0) (input homogeneous (finite [s s]) 1)]
+        checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+        core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
+                                             :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
+                                             :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))
+        forms (apply merge (map :forms data)) bindings (apply merge (map :bindings data))
+        types (apply merge (map (fn [data checked] (assoc (:types data) (get-in data [:node :node-id]) (:type checked))) data checked))
+        rows (mapv #(c7 'sh08-ij-row [(:premise %)]) checked)
+        facts {:type-table types :constraint-ledger rows}
+        run #(leaf 'body-ij-context core % bindings (vec (vals forms)) %2)
+        result (run facts 65536) ids (mapv #(get-in % [:node :node-id]) data)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= (set ids) (set (keys (get-in result [:context :premises])))))
+    (is (= (mapv :premise checked) (mapv #(get-in result [:context :premises %]) ids)))
+    (is (= result (run facts (:work-count result))))
+    (is (= :list-if-join-work-limit (:reason (run facts (dec (:work-count result))))))
+    (doseq [changed [(assoc facts :constraint-ledger [])
+                     (assoc facts :constraint-ledger (vec (reverse rows)))
+                     (update facts :constraint-ledger conj (first rows))
+                     (update facts :constraint-ledger conj (assoc-in (first rows) [:lhs :core-node-id] :orphan))
+                     (assoc-in facts [:constraint-ledger 0 :kind] :equality)
+                     (assoc-in facts [:constraint-ledger 0 :producer-rule] :wrong)
+                     (assoc-in facts [:constraint-ledger 0 :dependencies :expected-return-premise] :declared-return)
+                     (assoc-in facts [:constraint-ledger 0 :dependencies :profile] :hosted)
+                     (assoc-in facts [:constraint-ledger 0 :dependencies :target] :llvm)
+                     (assoc-in facts [:type-table (first ids) :element-type] :gravity.type/keyword)
+                     (assoc-in facts [:type-table (get-in data [0 :nids :then]) :element-types] [:gravity.type/keyword])]]
+      (is (= :rejected (:status (run changed 65536)))))
+    (let [first-data (first data) owner (:definition first-data)
+          altered (assoc-in bindings [owner :binding-class] :core)]
+      (is (= :list-if-join-source-mismatch
+             (:reason (leaf 'body-ij-context core facts altered forms 65536)))))
+    (doseq [[left right condition expected] [[(finite [s]) (finite [s]) :gravity.type/bool (finite [s])]
+                                            [:gravity.type/never (finite []) :gravity.type/bool (finite [])]
+                                            [(finite [s]) (finite []) :gravity.type/never :gravity.type/never]
+                                            [:gravity.type/never :gravity.type/never :gravity.type/bool :gravity.type/never]]]
+      (let [{:keys [core node nodes types bindings forms nids]} (input left right)
+            facts {:type-table (assoc types (:node-id node) expected (nids :condition) condition) :constraint-ledger []}
+            run #(leaf 'body-ij-context core facts bindings forms %)
+            result (run 65536)]
+        (is (= :accepted (:status result)))
+        (is (= {} (get-in result [:context :premises])))
+        (is (= result (run (:work-count result))))
+        (is (= :list-if-join-work-limit (:reason (run (dec (:work-count result))))))))))
+
 (deftest body-homogeneous-list-return-function-joins-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [input-fn (sh08-helper 'homogeneous-list-return-definition-input)

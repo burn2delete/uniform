@@ -1596,8 +1596,9 @@ whole-module or fresh source acceptance. For changes to independent body
 inference, also select
 `sh08-homogeneous-list-return-branch-independence-development-kernel` and
 `sh08-homogeneous-list-return-structural-independence-development-kernel` in
-the SH08 namespace. Differing finite branch types remain an inference frontier;
-the return annotation must not supply a common type. The affected source
+the SH08 namespace. Canonical `if` now supports the independently established
+List join described below; other control-flow joins are not widened. The
+return annotation must not supply a common type. The affected source
 composition must also be reviewed before accepting the new return slice.
 
 Run the affected source composition only for a stable changed candidate:
@@ -1615,6 +1616,62 @@ not authoritative migration. Preserve a failed run and diagnose its actual
 scope: a test-accessor correction alone does not justify repeating unchanged
 expensive source construction. Validate such a correction with the affected
 cheap projection check and review the retained actual results.
+
+### Homogeneous List canonical-if joins: focused feedback
+
+For L5's independently established List branch join, edit the C7 type owner.
+Do not widen the shared normal join used by other control-flow forms or use a
+return annotation to invent a missing element type.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-list-if-join-type-development-kernel \
+  --exact sh08-list-if-join-source-development-kernel \
+  --exact sh08-list-if-join-inference-development-kernel
+```
+
+These normalized checks exercise independent element evidence, actual branch
+types, source/binding correspondence, compatibility rows and inference work
+limits. They cover both branch orders and preserve ordinary `if` truthiness,
+distinct from Bool-only match guards. Passing them does not establish public
+C7 artifact integration, independent C8 reconstruction, typed lowering or
+source execution. Those checks are separate integration coverage; an existing
+return declaration check is not a substitute for them.
+
+For changes to the independent C8 context or typed lowering, select their
+existing consumer kernels separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact body-list-if-join-development-kernel \
+  --exact current-gravity-list-if-join-lowering-development-kernel
+```
+
+These check ordered compatibility-row census, source-bound reconstruction,
+exact/one-below budgets, failure-work carry and the existing `if` instruction
+with type-consistent guest values. They do not replace affected original-source
+composition or establish module migration. Only rerun the relevant kernels
+when their owning behavior changes.
+
+For the stable changed candidate, run the affected original-source composition
+separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-if-join-authenticated-composition
+```
+
+It constructs the accepted Gravity/QST pair and one representative C7 rejection,
+then reuses accepted products for public lowering, independent C8 checks,
+runtime cases and hostile mutations. A failed mixed regression batch remains
+failed even when a targeted correction passes; review the retained passing
+checks and rerun only affected regressions instead of rebuilding unchanged
+source proofs to obtain a green aggregate. This is development integration,
+not authoritative migration or target/self-hosting completion.
 
 ### Homogeneous List traversal: focused feedback
 

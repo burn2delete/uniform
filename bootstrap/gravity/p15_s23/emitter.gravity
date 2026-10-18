@@ -1570,9 +1570,12 @@
                 call-ids (loop [remaining nodes out #{}]
                            (if (= 0 (count remaining)) out
                              (recur (rest remaining) (if (= :call (get (first remaining) :core-form)) (conj out (get (first remaining) :node-id)) out))))
-                returns (p15-s23-lr-context core typed binding-index form-index (- 65536 work))]
-            (if (= :rejected (get returns :status))
-              (assoc (p15-s23-typed-error (get returns :reason)) :work-count (+ work (get returns :work-count)))
+                returns (p15-s23-lr-context core typed binding-index form-index (- 65536 work))
+                joins (if (= :accepted (get returns :status))
+                        (p15-s23-ij-context core typed binding-index form-index (- 65536 work (get returns :work-count))) returns)]
+            (if (= :rejected (get joins :status))
+              (assoc (p15-s23-typed-error (get joins :reason)) :work-count
+                (+ work (get returns :work-count) (if (= :accepted (get returns :status)) (get joins :work-count) 0)))
             (if (p15-s23-typed-all [(map? node-index) (map? form-index) (map? binding-index)
                                    (map? record-index) (map? function-index) (= (count record-index) (count function-index))
                                    (map? raw-roots)
@@ -1599,7 +1602,8 @@
                 :targets target-index :target-owners owner-index :transfers transfer-index
                 :call-order (loop [remaining calls i 0 out {}]
                               (if (= 0 (count remaining)) out (recur (rest remaining) (+ i 1) (assoc out (get (first remaining) :core-node-id) i))))
-                :return-context (get returns :context) :budget (- 65536 work (get returns :work-count))})
+                :if-join-context (get joins :context) :return-context (get returns :context)
+                :budget (- 65536 work (get returns :work-count) (get joins :work-count))})
               (p15-s23-typed-error :typed-source-index-census))))
           (p15-s23-typed-error :typed-source-bytes-mismatch))
       (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
@@ -1778,6 +1782,220 @@
                           (if (if (contains? function :return-compatibility) true (contains? function :return-actual-type))
                             {:status :rejected :reason :list-return-function-evidence :work-count used}
                             (recur (rest remaining) used expected premises)))))))))))))))
+
+(defn p15-s23-ij-unknown? [type]
+  (if (= type nil) true (= type :gravity.type/unknown)))
+
+; L5 canonical-if fallback: branch evidence supplies T, never an expected return.
+(defn p15-s23-ij-atomic? [type]
+  (if (keyword? type)
+    (p15-s23-hl-type? {:kind :gravity.type/list :shape :homogeneous :element-type type}) false))
+
+(defn p15-s23-ij-element [type budget]
+  (let [members (if (map? type) (get type :element-types) nil)
+        finite? (if (map? type)
+                  (if (= 3 (count type))
+                    (if (= #{:kind :shape :element-types} (set (keys type)))
+                      (= [:gravity.type/list :literal] [(get type :kind) (get type :shape)]) false) false) false)
+        width (if (if finite? (vector? members) false) (count members) 0)
+        work (+ 1 width)]
+    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
+      (if (if (map? type) (keyword? (get type :element-type)) false)
+        (if (p15-s23-hl-type? type)
+          {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
+           :checked-member-count nil :work-count work}
+          {:status :not-applicable :reason :independent-list-element-required :work-count work})
+        (if (if finite? (if (vector? members) (<= width 1024) false) false)
+          (if (= width 0)
+            {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0 :work-count work}
+            (let [element (first members)]
+              (if (p15-s23-ij-atomic? element)
+                (if (loop [remaining members]
+                      (if (= 0 (count remaining)) true
+                        (if (= element (first remaining)) (recur (rest remaining)) false)))
+                  {:status :accepted :element-type element :relation :all-positional-elements-match
+                   :checked-member-count width :work-count work}
+                  {:status :not-applicable :reason :incompatible-list-elements :work-count work})
+                {:status :not-applicable :reason :independent-atomic-element-required :work-count work})))
+          {:status :not-applicable :reason :independent-list-element-required :work-count work})))))
+
+(defn p15-s23-ij-type-work [left right budget]
+  (let [a (p15-s23-ij-element left budget)
+        b (if (= :accepted (get a :status))
+            (p15-s23-ij-element right (- budget (get a :work-count))) nil)
+        work (+ (get a :work-count) (get b :work-count 0))]
+    (if (= :rejected (get a :status)) a
+      (if (= :accepted (get a :status))
+        (if (= :rejected (get b :status)) (assoc b :work-count work)
+          (if (= :accepted (get b :status))
+            (let [x (get a :element-type) y (get b :element-type)
+                  element (if (= x nil) y x)]
+              (if (if (= element nil) false (if (= x nil) true (if (= y nil) true (= x y))))
+                {:status :accepted :type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+                 :branch-types [left right]
+                 :branch-compatibility [(p15-s23-typed-project a [:element-type :relation :checked-member-count])
+                                        (p15-s23-typed-project b [:element-type :relation :checked-member-count])]
+                 :element-type element :work-count work}
+                {:status :not-applicable :reason :incompatible-independent-list-elements :work-count work}))
+            {:status :not-applicable :reason (get b :reason) :work-count work}))
+        {:status :not-applicable :reason (get a :reason) :work-count work}))))
+
+(defn p15-s23-ij-normal-type [left right]
+  (if (= left right) left
+    (if (= left :gravity.type/never) right
+      (if (= right :gravity.type/never) left
+        (get (p15-s23-ij-type-work left right 65536) :type :gravity.type/unknown)))))
+
+(defn p15-s23-ij-derive [core node nodes types bindings forms budget]
+  (let [children (get node :children)]
+    (if (if (= :if (get node :core-form)) (if (vector? children) (= 3 (count children)) false) false)
+      (let [condition (get types (first children) :gravity.type/unknown)
+            left (get types (get children 1) :gravity.type/unknown)
+            right (get types (get children 2) :gravity.type/unknown)]
+        (if (if (= condition :gravity.type/never) true
+              (if (p15-s23-ij-unknown? condition) true
+                (if (= left right) true
+                  (if (= left :gravity.type/never) true (= right :gravity.type/never)))))
+          {:status :not-applicable :work-count 1}
+          (let [base (+ 64 (count (get core :function-records)) (count (get core :control-flow)))]
+            (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
+              (let [validation (p15-s23-ij-type-work left right (- budget base))
+                    work (+ base (get validation :work-count))]
+                (if (= :accepted (get validation :status))
+                  (let [owner (get (get node :evaluation) :owner-function-syntax-id)
+                        function (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (if (= owner (get (first remaining) :function-syntax-id))
+                                       (first remaining) (recur (rest remaining)))))
+                        binding (get bindings (get function :definition-binding-id))
+                        form (get forms (get (get node :source) :form-id))
+                        ids (get form :child-form-ids)
+                        operator (get forms (get ids 0))
+                        control {:core-node-id (get node :node-id) :kind :if :condition-node-id (first children)
+                                 :branches [{:role :then :predicate :truthy :core-node-id (get children 1)}
+                                            {:role :else :predicate :falsey :core-node-id (get children 2)}]
+                                 :branch-exclusivity :exactly-one
+                                 :truthiness {:false-values [:nil :false] :other-values :true}
+                                 :result-policy :selected-branch}
+                        controls (loop [remaining (get core :control-flow) out []]
+                                   (if (= 0 (count remaining)) out
+                                     (recur (rest remaining)
+                                       (if (= (get node :node-id) (get (first remaining) :core-node-id))
+                                         (conj out (first remaining)) out))))
+                        branch-nodes (loop [remaining children out []]
+                                       (if (= 0 (count remaining)) out
+                                         (recur (rest remaining) (conj out (get nodes (first remaining))))))
+                        reference-work (loop [remaining branch-nodes used 0]
+                                         (if (= 0 (count remaining)) used
+                                           (recur (rest remaining)
+                                             (+ used (if (vector? (get (first remaining) :resolved-binding-ids))
+                                                       (* 2 (count (get (first remaining) :resolved-binding-ids))) 0)))))
+                        work (+ work reference-work)
+                        branch-bindings (if (> work budget) [] (loop [remaining branch-nodes out []]
+                                          (if (= 0 (count remaining)) out
+                                            (recur (rest remaining)
+                                              (conj out (loop [ids (if (vector? (get (first remaining) :resolved-binding-ids))
+                                                                    (get (first remaining) :resolved-binding-ids) []) records []]
+                                                          (if (= 0 (count ids)) records
+                                                            (recur (rest ids) (conj records (get bindings (first ids)))))))))))]
+                    (if (p15-s23-typed-all
+                          [(<= work budget) (map? function) (= owner (get function :function-syntax-id))
+                           (= (get function :definition-binding-id) (get binding :binding-id))
+                           (= (get function :definition-name) (get binding :name))
+                           (= [:namespace :function (get (get core :module) :namespace)]
+                              [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
+                           (= :list (get form :kind)) (vector? ids) (= 4 (count ids))
+                           (= :symbol (get operator :kind)) (= 'if (get operator :value))
+                           (= (get form :form-id) (get operator :parent-form-id))
+                           (= (p15-s23-lr-source form) (get node :source))
+                           (= [] (get node :resolved-binding-ids))
+                           (= {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                               :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}} (get node :attributes))
+                           (= :condition-then-exclusive-branch (get (get node :evaluation) :kind))
+                           (= [{:index 0 :core-node-id (first children)}] (get (get node :evaluation) :order))
+                           (= [control] controls)
+                           (loop [i 0]
+                             (if (= i 3) true
+                               (let [child (get branch-nodes i) source (get forms (get ids (+ i 1)))
+                                     references (get child :resolved-binding-ids) records (get branch-bindings i)]
+                                 (if (p15-s23-typed-all
+                                       [(= (get child :node-id) (get children i))
+                                        (= (p15-s23-lr-source source) (get child :source))
+                                        (= (get form :form-id) (get source :parent-form-id))
+                                        (= owner (get (get child :evaluation) :owner-function-syntax-id))
+                                        (vector? references) (= references (loop [rows records out []]
+                                                                            (if (= 0 (count rows)) out
+                                                                              (recur (rest rows) (conj out (get (first rows) :binding-id))))))])
+                                   (recur (+ i 1)) false))))])
+                      {:status :accepted :work-count work :type (get validation :type)
+                       :premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
+                                 :if-core-node-id (get node :node-id) :source-node node
+                                 :function-record function :definition-binding binding
+                                 :condition-type condition :branch-types [left right]
+                                 :branch-node-ids [(get children 1) (get children 2)]
+                                 :child-sources (loop [remaining branch-nodes out []]
+                                                  (if (= 0 (count remaining)) out
+                                                    (recur (rest remaining) (conj out (get (first remaining) :source)))))
+                                 :child-bindings branch-bindings :source-form (p15-s23-lr-source form)
+                                 :operator-source (p15-s23-lr-source operator) :control-flow control
+                                 :branch-compatibility (get validation :branch-compatibility)
+                                 :element-type (get validation :element-type) :result-type (get validation :type)
+                                 :expected-return-premise :none :runtime-conversion :none
+                                 :preserves [:actual-branch-types :source :bindings :value :ownership :linearity :regions :effects]
+                                 :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+                      {:status :rejected :reason (if (> work budget) :list-if-join-work-limit :list-if-join-source-mismatch) :work-count work}))
+                  (assoc validation :work-count work :type-work-count (get validation :work-count))))))))
+      {:status :not-applicable :work-count 1})))
+
+(defn p15-s23-ij-row [premise]
+  {:constraint-id-request {:domain :gravity/sh08-list-if-join-constraint-v1 :join-compatibility premise}
+   :kind :join-compatibility :producer-rule :sh08-list-if-join-v1
+   :lhs {:core-node-id (get premise :if-core-node-id) :role :canonical-if-result}
+   :rhs {:actual-branch-types (get premise :branch-types) :result-type (get premise :result-type)}
+   :dependencies premise :solution {:result-type (get premise :result-type)}
+   :invalidation [:source-forms :if-node :control-flow :branch-nodes :branch-types :source-bindings
+                  :function-records :definition-binding :profile :target]
+   :profile (get premise :profile) :target (get premise :target) :status :solved :diagnostics []})
+
+(defn p15-s23-ij-context [core facts bindings source-forms budget]
+  (let [sequence (get core :nodes) ledger (get facts :constraint-ledger []) types (get facts :type-table)
+        base (+ (count sequence) (count ledger) (if (map? source-forms) 0 (count source-forms)))]
+    (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
+      (let [nodes (p15-s23-typed-index sequence :node-id)
+            forms (if (map? source-forms) source-forms (p15-s23-typed-index source-forms :form-id))
+            rows (loop [remaining ledger out []]
+                   (if (= 0 (count remaining)) out
+                     (recur (rest remaining)
+                       (if (if (= :sh08-list-if-join-v1 (get (first remaining) :producer-rule)) true
+                             (= :join-compatibility (get (first remaining) :kind)))
+                         (conj out (first remaining)) out))))]
+        (loop [remaining sequence used base expected [] premises {}]
+          (if (= 0 (count remaining))
+            (if (= expected rows)
+              {:status :accepted :work-count used :context {:premises premises}}
+              {:status :rejected :reason :list-if-join-constraint-census :work-count used})
+            (let [node (first remaining) id (get node :node-id)]
+              (if (= :if (get node :core-form))
+                (let [checked (p15-s23-ij-derive core node nodes types bindings forms (- budget used))
+                      work (+ used (get checked :work-count)) children (get node :children)
+                      condition (get types (first children) :gravity.type/unknown)
+                      left (get types (get children 1) :gravity.type/unknown)
+                      right (get types (get children 2) :gravity.type/unknown)
+                      result (if (= condition :gravity.type/never) :gravity.type/never
+                               (if (p15-s23-ij-unknown? condition) :gravity.type/unknown
+                                 (if (= :accepted (get checked :status)) (get checked :type)
+                                   (if (= left right) left
+                                     (if (= left :gravity.type/never) right
+                                       (if (= right :gravity.type/never) left :gravity.type/unknown))))))]
+                  (if (if (> work budget) true (= :rejected (get checked :status)))
+                    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
+                      (assoc checked :work-count work))
+                    (if (if (= result :gravity.type/unknown) false (= result (get types id)))
+                      (recur (rest remaining) work
+                        (if (= :accepted (get checked :status)) (conj expected (p15-s23-ij-row (get checked :premise))) expected)
+                        (if (= :accepted (get checked :status)) (assoc premises id (get checked :premise)) premises))
+                      {:status :rejected :reason :list-if-join-result-type-mismatch :work-count work})))
+                (recur (rest remaining) used expected premises)))))))))
 
 (defn p15-s23-typed-return-declaration? [declaration type context]
   (let [forms (get context :forms) bindings (get context :bindings)
@@ -5617,6 +5835,48 @@
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-structural-match node)))
       (p15-s23-typed-node-error :malformed-typed-structural-match node)))))
 
+(defn p15-s23-typed-compile-if [context node budget]
+  (let [children (get node :children) ledger (get context :ledger []) base (+ 1 (count ledger))
+        core (get context :core) types (get context :types) id (get node :node-id)]
+    (if (> base budget) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
+      (if (if (vector? children) (= 3 (count children)) false)
+        (let [checked (p15-s23-ij-derive core node (get context :nodes) types (get context :bindings)
+                        (get context :forms) (- budget base))
+              work (+ base (get checked :work-count)) premise (get checked :premise)
+              retained (loop [remaining ledger out []]
+                         (if (= 0 (count remaining)) out
+                           (let [row (first remaining)]
+                             (recur (rest remaining)
+                               (if (if (= :sh08-list-if-join-v1 (get row :producer-rule)) true
+                                     (= :join-compatibility (get row :kind)))
+                                 (if (= id (get (get row :lhs) :core-node-id)) (conj out row) out) out)))))
+              condition (get types (first children) :gravity.type/unknown)
+              left (get types (get children 1) :gravity.type/unknown) right (get types (get children 2) :gravity.type/unknown)
+              expected (if (= condition :gravity.type/never) :gravity.type/never
+                         (if (p15-s23-ij-unknown? condition) :gravity.type/unknown
+                           (if (= :accepted (get checked :status)) (get checked :type)
+                             (if (= left right) left
+                               (if (= left :gravity.type/never) right
+                                 (if (= right :gravity.type/never) left :gravity.type/unknown))))))]
+          (if (if (> work budget) true (= :rejected (get checked :status)))
+            (assoc (p15-s23-typed-node-error (if (> work budget) :typed-lowering-work-limit (get checked :reason)) node)
+              :work-count work)
+            (if (p15-s23-typed-all
+                  [(= expected (get types id)) (= false (= expected :gravity.type/unknown))
+                   (= premise (get (get (get context :if-join-context) :premises) id))
+                   (= retained (if (= :accepted (get checked :status)) [(p15-s23-ij-row premise)] []))])
+              (loop [index 0 used work values []]
+                (if (= index 3)
+                  (assoc (p15-s23-compiler-result {:op :if :test (first values) :then (get values 1) :else (get values 2)})
+                    :work-count used)
+                  (let [tail? (if (= true (get context :tail?)) (> index 0) false)
+                        child (p15-s23-typed-compile-node (assoc context :tail? tail?) (get children index) (- budget used))]
+                    (if (p15-s23-compiler-complete? child)
+                      (recur (+ index 1) (+ used (get child :work-count)) (conj values (get child :value)))
+                      (assoc child :work-count (+ used (get child :work-count 0)))))))
+              (assoc (p15-s23-typed-node-error :typed-if-join-evidence-mismatch node) :work-count work))))
+        (assoc (p15-s23-typed-node-error :typed-control-shape-mismatch node) :work-count base)))))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
@@ -5626,6 +5886,7 @@
           (if (= :gravity.type/bool (get (get context :types) (first children)))
             (p15-s23-typed-compile-boolean-match context node budget)
             (p15-s23-typed-compile-structural-match context node budget))
+        (if (= form :if) (p15-s23-typed-compile-if context node budget)
         (if (= form :keyword-map-lookup) (p15-s23-typed-compile-keyword-lookup context node budget)
         (if (= form :loop) (p15-s23-typed-compile-loop context node budget)
         (if (= form :recur) (p15-s23-typed-compile-recur context node budget)
@@ -5666,7 +5927,7 @@
                         (if (= form :if) {:op :if :test (first values) :then (get values 1) :else (get values 2)}
                           {:op :do :body values}))) :work-count (+ 1 (get compiled :work-count))) compiled))
                 (p15-s23-typed-node-error :typed-control-shape-mismatch node))
-              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node)))))))))))))
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))))))))))))))
         (p15-s23-typed-node-error :missing-typed-core-node node)))))
 
 (defn p15-s23-typed-provenance [context]
