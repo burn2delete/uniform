@@ -2191,6 +2191,75 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Persistent List cardinality: development implementation
+
+This slice extends existing unary `count` to established bare, positional
+and homogeneous persistent Lists. STD3 specifies a non-negative integer result
+equal to the number of stored elements, including zero, with ordinary operand
+evaluation and inert stored payloads. This does not require a member-type,
+nonempty or static-length proof. Never still aborts invocation; the query adds
+no direct collection-construction effect while operand effects remain.
+
+The same C7 count owner, independent C8 reconstruction, typed emitter and
+runtime own the change. Existing Map/Vector behavior must survive. Malformed
+argument containers and arity are checked before type collection; source,
+binding, row and cumulative-work checks remain. Nil, Strings, Sets, arbitrary
+sequences, first-class count and unknown operands are not admitted by this
+slice. The first focused batch reached 251 passing assertions before a
+sentinel exposed an inherited unknown-type set-membership check hashing the
+entire positional type map. The three count validators now use shallow
+nil/unknown comparisons instead; member metadata is not visited just to count.
+A subsequent batch stopped at an extra closing delimiter introduced in that
+edit. Both failed batches remain recorded. The corrected focused batch passed
+5 tests / 448 assertions, including 137 new C7 List checks and existing
+Map/Vector, C8, lowering and runtime checks. These overlap and are component
+feedback, not source-composition coverage. The following consumer batch passed
+8 tests / 748 assertions, including the new C7 checks, 105 independent C8
+checks, 155 typed-lowering checks, 40 List-runtime assertions and existing
+Map/Vector regressions. Exact/one-less work, malformed inputs, changed source,
+forged descriptors/rows, operand effects/transfers, inert stored payloads and
+unsupported receiver families are covered. Private opaque and large-metadata
+controls do not expand upstream source/type bounds or host-object support.
+Independent component review accepted this scope; migration support is not
+claimed.
+
+Pre-source review caught an existing resolution frontier in the proposed
+fixture: C5's `gravity.core` qualification exception applies to type references,
+not ordinary operators. The paired cardinality fixture uses unqualified
+`count`; normalized qualified-header controls are conditional consumer checks,
+not evidence that `gravity.core/count` resolves from source. Qualified core
+operator resolution remains separately tracked language work. No C5 expansion
+or expensive source run is hidden in this correction.
+
+The stable combined focused batch passed 93 tests / 7,395 assertions across
+the five existing namespaces. The same batch had already been launched again
+after the paired spelling correction when the narrower fixture-only guidance
+arrived; that second result also passed 93 / 7,395. They overlap completely
+and are not additive coverage. No further regression rerun was needed for
+that fixture-only edit.
+
+The one affected source composition passed 1 test / 280 assertions in
+318.138 selected-test seconds with a 2 GiB heap. Both accepted extensions have
+seven functions, ten calls and five count facts: four normally invoked List
+queries and one Never operand that aborts invocation. The 24 guest cases
+exercise empty/nonempty bare Lists, homogeneous tails, AG's explicitly typed
+List-returning producer, persistent inputs and original thrown-value identity.
+The query adds no allocation effect; producer allocation and operand throws
+survive independently reconstructed C8 graphs. Four fresh public C7 operations,
+typed/effect forgeries, a resealed allocation-graph forgery, exact/one-less C8
+work and the real String rejection were checked. Exactly three full fresh
+source products were constructed; no actual source failure or retry occurred.
+All eleven frozen code/test/fixture inputs and STD3 were unchanged through
+the run. Negative QST coverage is pairing only; large runtime inputs and
+private sentinel controls do not enlarge source bounds or admit host objects.
+
+This is executable development support for persistent List cardinality. Other
+collection families, general first-class builtins, qualified core-operator
+source resolution, profile/provider/ownership coverage, other targets,
+authoritative migration, self-hosting and seedless release retain their
+separate gates. These timings are scheduling observations, not benchmarks or
+speedup evidence.
+
 ### Homogeneous List returns: development implementation
 
 This executable slice extends L5's explicit `(List T)` declaration to

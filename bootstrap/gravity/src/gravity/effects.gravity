@@ -3385,11 +3385,23 @@
      (contains? (set (get binding :profile-set)) (get module :profile))
      (contains? (set (get binding :target-set)) :all)]) false))
 
+(defn body-cq-list? [type]
+  (if (= :gravity.type/list type) true
+    (if (if (map? type) (= 3 (count type)) false)
+      (if (= [:gravity.type/list :homogeneous] [(get type :kind) (get type :shape)])
+        (if (keyword? (get type :element-type)) (body-hl-type? type) false)
+        (if (= #{:kind :shape :element-types} (set (keys type)))
+          (if (= [:gravity.type/list :literal] [(get type :kind) (get type :shape)])
+            (vector? (get type :element-types)) false) false)) false)))
+
 (defn body-cq-source [core node call edge nodes bindings types module]
-  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (if (if (vector? (get call :argument-node-ids))
+        (if (= 1 (count (get call :argument-node-ids)))
+          (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
-        arguments (body-io-child-types args types)
+        arguments [(get types (get args 0) :gravity.type/unknown)]
+        list-input? (body-cq-list? (first arguments))
         invoked? (loop [remaining arguments]
                    (if (= 0 (count remaining)) true
                      (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
@@ -3416,17 +3428,21 @@
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (if (= :gravity.type/never (first arguments)) true
-             (contains? #{:gravity.type/map :gravity.type/vector} (get (first arguments) :kind)))
-           (loop [remaining arguments]
-             (if (= 0 (count remaining)) true
-               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+             (if list-input? true
+               (if (keyword? (get (first arguments) :kind))
+                 (contains? #{:gravity.type/map :gravity.type/vector} (get (first arguments) :kind)) false)))
+           (if (= nil (first arguments)) false (= false (= :gravity.type/unknown (first arguments))))] )
       {:kind :gravity.type/applied-collection-count :version :sh08-collection-count-v1
        :operation 'count :semantic-owner 'gravity.collections :intrinsic :gravity.collections/finite-collection-count
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :query-semantics {:operation :top-level-cardinality :construction :none :operand-evaluation :once
-                         :normal-input :established-map-or-vector}
+       :query-semantics (if list-input?
+                          {:operation :top-level-cardinality :construction :none :operand-evaluation :once
+                           :normal-input :established-persistent-list :payload-evaluation :none :input-preserved? true
+                           :result-domain :nonnegative-integer}
+                          {:operation :top-level-cardinality :construction :none :operand-evaluation :once
+                           :normal-input :established-map-or-vector})
        :application (if invoked? :normal :not-invoked)
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)

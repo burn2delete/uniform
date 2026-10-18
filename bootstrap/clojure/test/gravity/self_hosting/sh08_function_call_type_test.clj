@@ -3465,6 +3465,73 @@
 (defn- collection-count-derived [{:keys [core node nodes types binding-types bindings forms products]}]
   (invoke-c7 'sh08-cq-derive [core node (first (:calls products)) (first (:call-edges products)) nodes bindings types forms 65536]))
 
+(defn- list-count-input [type]
+  (let [input (integral-ordering-input 'count [type])]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- list-count-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-list-count-development-kernel
+  (let [positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+        callbacks (atom 0) opaque (proxy [Object] []
+                                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
+                                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equals"))))
+        types [:gravity.type/list homogeneous (positional []) (positional [:gravity.type/nil :gravity.type/bool])
+               (positional (vec (repeat 1024 :gravity.type/string)))
+               (positional (vec (repeat 8192 :gravity.type/unknown))) (positional [opaque])]]
+    (doseq [type types]
+      (let [{:keys [core node call edge nodes bindings forms] :as input} (list-count-input type)
+            types (:types input) result (list-count-derived input) descriptor (:descriptor result)
+            derive #(invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms %])]
+        (is (= :accepted (:status result)) (pr-str (dissoc result :descriptor :constraint)))
+        (is (= :gravity.type/integer (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= 65 (:work-count result)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:thrown-error-effects descriptor)))
+        (is (= {:operation :top-level-cardinality :construction :none :operand-evaluation :once
+                :normal-input :established-persistent-list :payload-evaluation :none :input-preserved? true :result-domain :nonnegative-integer}
+               (:query-semantics descriptor)))
+        (is (not (contains? descriptor :cardinality)))
+        (is (not (contains? descriptor :input-shape)))
+        (is (= result (derive (:work-count result))))
+        (is (= :collection-count-work-limit (:reason (derive (dec (:work-count result))))))
+        (is (true? (invoke-c7 'sh08-cq-inferred-call-valid?
+                             [core node call edge nodes bindings (assoc types :operator descriptor :call (:type result))])))
+        (doseq [mutate [#(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                        #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                        #(assoc-in % [:node :evaluation :order] [])]]
+          (is (= :rejected (:status (list-count-derived (mutate input))))))))
+    (is (= 0 @callbacks))
+    (doseq [bad [(positional 42) (positional nil) (positional '(:type)) (assoc homogeneous :schema :forged)
+                 (assoc homogeneous :element-type opaque) (assoc homogeneous :element-type :gravity.type/unknown)
+                 {:kind :gravity.type/list} {:kind :gravity.type/list :shape :other :element-types []}
+                 :gravity.type/string :gravity.type/nil :gravity.type/unknown :gravity.type/set]]
+      (is (= :rejected (:status (list-count-derived (list-count-input bad))))))
+    (is (= 0 @callbacks))
+    (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-count-input :gravity.type/list)
+          run (fn [call node budget] (invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms budget]))]
+      (doseq [args [nil 42 :arguments '(:arg0)]]
+        (is (= :collection-count-call-shape-required (:reason (run (assoc call :argument-node-ids args) node 65536)))))
+      (doseq [args [[] [:arg0 :arg0] (vec (repeat 8192 :arg0))]]
+        (is (= :collection-count-arity-mismatch (:reason (run (assoc call :argument-node-ids args) node 65536)))))
+      (is (= :collection-count-work-limit (:reason (run (assoc call :argument-node-ids (vec (repeat 8192 :arg0))) node 0))))
+      (doseq [children [nil 42 :children '(:operator :arg0) [] (vec (repeat 8192 :arg0))]]
+        (is (= :collection-count-call-shape-required (:reason (run call (assoc node :children children) 65536))))
+        (is (false? (invoke-c7 'sh08-cq-inferred-call-valid? [core (assoc node :children children) call edge nodes bindings types]))))
+      ;; Conditional C7 consumer DATA, not C5 qualified-operator admission.
+      ;; Empty-import qualified core operators remain a frontend frontier.
+      (let [qualified (-> input (assoc-in [:nodes :operator :attributes :symbol] 'gravity.core/count)
+                               (assoc-in [:forms :operator :value] 'gravity.core/count))]
+        (is (= :accepted (:status (list-count-derived qualified))))))
+    (let [result (list-count-derived (list-count-input :gravity.type/never))]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (get-in result [:descriptor :application])))
+      (is (= :established-map-or-vector (get-in result [:descriptor :query-semantics :normal-input]))))))
+
 (deftest sh08-collection-count-development-kernel
   (doseq [kind [:map :vector] empty? [false true]]
     (let [{:keys [core nodes forms bindings products binding-types] :as input} (collection-count-input kind empty?)

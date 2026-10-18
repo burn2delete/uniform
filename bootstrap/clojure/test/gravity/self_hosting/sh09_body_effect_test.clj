@@ -1230,6 +1230,63 @@
                          (assoc-in (:nodes graph) [(ids :association) :dependencies] [])]]
           (is (false? (equations changed))))))))
 
+(defn- list-count-effect-input [type]
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [base ((sh08-helper 'list-count-input) type) c7 (sh08-helper 'invoke-c7)
+        ids (zipmap (keys (:nodes base)) (map sha (range 2100 2110)))
+        source #(-> % (update :form-id ids) (update :syntax-id ids))
+        node-list (mapv #(-> % (update :node-id ids) (update :children (fn [children] (mapv ids children))) (update :source source)
+                              (update-in [:evaluation :order] (fn [order] (mapv (fn [entry] (update entry :core-node-id ids)) order))))
+                        (get-in base [:core :nodes]))
+        forms (into {} (for [[id form] (:forms base)]
+                         [(ids id) (-> form (update :form-id ids) (update :syntax-id ids) (update :parent-form-id ids)
+                                       (update :child-form-ids #(mapv ids %)))]))
+        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+        nodes (into {} (map (juxt :node-id identity) node-list)) node (nodes (:core-node-id call))
+        types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+        result (c7 'sh08-cq-derive [core node call edge nodes (:bindings base) types forms 65536]) descriptor (:descriptor result)
+        facts {:module (:module core) :function-type-table [] :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
+               :call-type-facts [(c7 'sh08-cq-call-fact [descriptor (:module core)])] :constraint-ledger [(c7 'sh08-cq-constraint [descriptor])]}]
+    {:core core :nodes nodes :node node :forms forms :bindings (:bindings base) :call call :edge edge
+     :descriptor descriptor :facts facts :ids ids :request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}}))
+
+(deftest body-list-count-development-kernel
+  (let [s :gravity.type/string homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
+        positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)]
+    (doseq [type [:gravity.type/list homogeneous (positional []) (positional [s :gravity.type/nil :gravity.type/bool]) :gravity.type/never]]
+      (let [{:keys [core nodes node forms bindings call edge descriptor facts request ids]} (list-count-effect-input type)
+            context (leaf 'body-cq-context request facts bindings 65536) facts (assoc facts :count-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536) record (get-in graph [:nodes (:node-id node)])]
+        (is (= :accepted (:status context) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= context (leaf 'body-cq-context request facts bindings (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-cq-context request facts bindings (dec (:work-count context))))))
+        (is (= (if (= type :gravity.type/never) :established-map-or-vector :established-persistent-list)
+               (get-in descriptor [:query-semantics :normal-input])))
+        (doseq [changed [(assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :cardinality 0)
+                         (assoc-in descriptor [:query-semantics :normal-input] :arbitrary-sequence)
+                         (assoc-in descriptor [:query-semantics :operand-evaluation] :twice)]]
+          (is (false? (valid (assoc-in facts [:type-table (ids :operator)] changed)))))
+        (doseq [args [nil 42 :arguments [] [:one :two] (vec (repeat 8192 :operand))]]
+          (is (nil? (leaf 'body-cq-source core node (assoc call :argument-node-ids args) edge nodes bindings (:type-table facts) (:module core)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {} (assoc-in (:nodes graph) [(:node-id node) :allocation] {:construction :none}))))
+        (let [operand (ids :arg0) operator (ids :operator)
+              graph {operator {:type descriptor :direct #{} :transitive #{}}
+                     operand {:type :gravity.type/never :direct #{:io/write :error/throw} :transitive #{:io/write :error/throw}
+                              :escaping-thrown-error-types [s] :escaping-thrown-errors #{s}}}
+              stopped (leaf 'body-node-record node nil graph :gravity.type/never)]
+          (is (= #{} (:direct stopped)))
+          (is (= #{:io/write :error/throw} (:transitive stopped)))
+          (is (= [s] (:escaping-thrown-error-types stopped))))))))
+
 (deftest body-collection-count-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

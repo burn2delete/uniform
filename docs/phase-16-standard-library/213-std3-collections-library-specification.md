@@ -56,6 +56,8 @@ For persistent Lists, `(first items)` returns the first stored value, or nil
 for an empty List. `(rest items)` returns the ordered List suffix after the
 first element, or an empty List when items is empty. `(empty? items)` returns
 Bool true exactly when the List contains no elements, and false otherwise.
+`(count items)` returns the non-negative integer number of stored elements,
+including zero for an empty List.
 The operand is evaluated under L2 before querying its value. These queries
 do not mutate the original List or evaluate stored payloads.
 
@@ -138,7 +140,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
-- Persistent List queries cover empty and nonempty ordered values without executing stored payloads, and declare their suffix storage policy.
+- Persistent List queries cover empty and nonempty ordered values and cardinality without executing stored payloads, and declare their suffix storage policy.
 - Binary persistent List prepend preserves the old ordered values after the new head, ordinary operand evaluation and the original List, with explicit allocation/storage policy.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.
 - Equality and hash fixtures agree with STD2 across targets.

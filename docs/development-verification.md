@@ -1261,7 +1261,7 @@ source coverage.
 ### Collection count
 
 The same C7 engine, effect owner, typed emitter and runtime own direct
-`(count collection)` for currently established map and vector types. Use:
+`(count collection)` for currently established Map, Vector and persistent List types. Use:
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
@@ -1304,6 +1304,45 @@ aliases, local returns, association, guards and control transfer. The separate
 rejected `.gravity` cases check operation and type diagnostics; cheap parity
 checks cover their `.qst` counterparts. This is affected composition, not
 authoritative migration or complete collection/profile/target support.
+
+Persistent List cardinality follows STD3. Use the
+same four owners and focused selectors, not a new lane or C5/C6 bridge. Bare,
+positional and homogeneous List types establish the collection family; `count`
+does not need member typing, nonemptiness or a static-length proof. Validate
+closed argument containers and unary arity before collecting operand type
+work. Keep existing Map/Vector evidence unchanged where possible and give
+List evidence an accurate input-family description.
+
+For the new List behavior, add these existing-namespace selectors to the same
+direct command above:
+
+```text
+--exact sh08-list-count-development-kernel
+--exact body-list-count-development-kernel
+--exact current-gravity-list-count-lowering-development-kernel
+--exact current-gravity-list-count-runtime-development-kernel
+```
+
+Private opaque-member and large-metadata controls check that this query does
+not visit member data. They do not admit host objects or enlarge upstream
+source/type bounds.
+
+The affected List composition is separate from the earlier Map/Vector source
+aggregate; do not rerun that unchanged aggregate for the List extension:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-count-authenticated-composition
+```
+
+The accepted Gravity/QST pair covers bare List parameters, homogeneous tails,
+an explicitly typed List-returning producer and an aborting operand. Products
+are constructed once per source and reused for runtime and hostile checks;
+one String source supplies the representative semantic rejection. Qualified
+core-operator source resolution remains a separate C5 frontier, so this pair
+uses ordinary `count`. The normalized qualified-header control is not source
+resolution evidence.
 
 ### Persistent vector append
 

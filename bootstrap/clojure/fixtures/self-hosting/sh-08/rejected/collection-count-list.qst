@@ -1,3 +1,0 @@
-(ns self-hosting.sh08.collection-count-list
-  (:profile :meta) (:target :jvm) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
-(defn invalid [] (count '(1 2)))

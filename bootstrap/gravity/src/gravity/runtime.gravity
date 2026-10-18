@@ -566,7 +566,7 @@
                   [{:diagnostic "P15S23X002" :reason :vector-nth-vector-integer-and-bounds-required :operation operation}
                    (second arguments-result) :rejected])
               (if (= function 'count)
-                (if (if (map? left) true (vector? left))
+                (if (if (list? left) true (if (map? left) true (vector? left)))
                   [(count left) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :collection-count-map-or-vector-required :operation operation}
                    (second arguments-result) :rejected])
