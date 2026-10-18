@@ -4268,6 +4268,267 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-map-contains-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] (concat [["accepted" "local-runtime-map-contains" 10]]
+                                                (map #(vector "rejected" (str "map-contains-" %) 1)
+                                                     ["arity-one" "arity-three" "non-map" "unknown-map" "unknown-key"
+                                                      "numeric-key" "symbol-key" "character-key" "result-annotation" "never-map" "never-key"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (re-seq #"(?m)^\(defn " text))))))))
+
+(deftest current-gravity-map-contains-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        map-error (String. "map operand transfer") key-error (String. "key operand transfer")
+        smile (String. (Character/toChars 0x1f600))
+        registry {"true" true "false" false "nil" nil "\u00e9" true "a\u0000b" false smile nil}
+        specs [['registry [] registry :normal]
+               ['lookup ["true"] true :normal] ['lookup [(String. "false")] true :normal] ['lookup ["nil"] true :normal]
+               ['lookup ["absent"] false :normal] ['lookup [(String. "a\u0000b")] true :normal]
+               ['lookup [(String. smile)] true :normal] ['lookup [(String. "\u00e9")] true :normal]
+               ['lookup ["e\u0301"] false :normal] ['lookup ["TRUE"] false :normal]
+               ['retained ["nil"] [registry true registry] :normal] ['retained ["absent"] [registry false registry] :normal]
+               ['keyword-key [:a/key] true :normal] ['keyword-key [:b/key] false :normal] ['keyword-key [:nil] true :normal]
+               ['edges [(String. "key0")] [false true] :normal] ['edges [(String. "key11")] [false true] :normal]
+               ['edges ["outside"] [false false] :normal]
+               ['missing ["nil"] false :normal] ['missing ["outside"] true :normal]
+               ['map-throws [map-error "present"] map-error :thrown] ['key-throws [key-error] key-error :thrown]
+               ['shadowed ["ordinary parameter"] "ordinary parameter" :normal] ['main [] true :normal]]
+        cases (mapv
+                (fn [extension]
+                  (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-contains" extension)
+                        path (.getPath (io/file root relative)) products (fresh relative)
+                        input (select-keys products [:request :typed :verification])
+                        ready (= :accepted (get-in input [:typed :status]))
+                        _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                        _ (when-not ready (throw (ex-info "Map contains source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                        standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'lookup) input))
+                        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                        calls (:call-type-facts facts) descriptors (mapv :applied-map-contains (filter #(= :direct-map-contains (:dispatch %)) calls))
+                        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding) graph (:effect-graph effects)]
+                    (is (= :passed (get-in input [:verification :status])))
+                    (is (= 10 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                    (is (= 13 (count (:calls core)) (count (:call-edges core)) (count calls)))
+                    (is (= {:direct-map-contains 8 :direct-not 1 nil 4} (frequencies (map :dispatch calls))))
+                    (let [function-ids (into {} (map (juxt :function-id :definition-name) (:function-type-table facts)))
+                          local-calls (filter #(nil? (:dispatch %)) calls)
+                          pairs (mapv (fn [fact]
+                                        (let [id (:call-core-node-id fact)
+                                              edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))
+                                              call (first (filter #(= id (:core-node-id %)) (:calls core)))]
+                                          (is (= :local-function (:classification edge)))
+                                          (is (= (:caller-function-syntax-id edge) (:caller-function-syntax-id fact)))
+                                          (is (= (:callee-function-syntax-id edge) (:callee-function-syntax-id fact)))
+                                          (is (= (:ordered-evaluation-node-ids edge) (:ordered-evaluation-node-ids call)))
+                                          [(get function-ids (:caller-function-syntax-id edge)) (get function-ids (:callee-function-syntax-id edge))]))
+                                      local-calls)]
+                      (is (= #{['lookup 'registry] ['retained 'registry] ['missing 'registry] ['main 'lookup]} (set pairs))))
+                    (is (= 8 (count descriptors) (count (filter #(= :sh08-map-contains-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                    (is (= {:normal 6 :not-invoked 2} (frequencies (map :application descriptors))))
+                    (is (= standalone (get-in assembled [:functions 'lookup])))
+                    (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                    (is (= :gravity.type/map (get-in functions ['registry :return :kind])))
+                    (is (= :gravity.type/bool (get-in functions ['lookup :return]) (get-in functions ['missing :return])))
+                    (doseq [descriptor descriptors]
+                      (is (= 7 (count (:source-call descriptor))))
+                      (is (= 12 (count (:source-edge descriptor))))
+                      (is (= 'gravity.collections (:semantic-owner descriptor)))
+                      (is (= {:input :established-map :keys [:string :keyword] :key-equality :value :presence :independent-of-value
+                              :normalization :none :coercion :none :operand-evaluation :map-then-key-once :values :unobserved} (:membership-policy descriptor)))
+                      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+                      (is (not (contains? descriptor :input-shape)))
+                      (is (not (contains? descriptor :known-presence)))
+                      (is (= (if (= :normal (:application descriptor)) :gravity.type/bool :gravity.type/never) (:result-type descriptor))))
+                    (doseq [[name args expected tag] specs]
+                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                     [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                        (is (= [expected "" tag] result) (str extension " " name))
+                        (when (or (identical? expected map-error) (identical? expected key-error)) (is (identical? expected (first result))))))
+                    (let [ready (and (= :accepted (:status effects)) (map? graph) (seq (:nodes graph)))]
+                      (is (true? (boolean ready)) (pr-str (:diagnostics effects)))
+                      (when-not ready (throw (ex-info "Map contains C8 graph missing before whole verification" {:effects effects})))
+                      (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+                      (doseq [descriptor descriptors]
+                        (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                          (is (= #{} (:direct record)))
+                          (is (nil? (:allocation record)))
+                          (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))
+                          (is (nil? (:call-body-dependency record)))))
+                      (is (= #{:error/throw} (get-in graph [:functions (get-in functions ['map-throws :function-id]) :inferred])))
+                      (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions ['key-throws :function-id]) :inferred])))
+                      (let [constructed (first (filter #(= (get-in functions ['keyword-key :function-id])
+                                                                          (get-in % [:source-edge :caller-function-syntax-id])) descriptors))]
+                        (is (map? constructed))
+                        (is (= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id constructed) :transitive])))))
+                    {:input input :module module :definitions definitions :descriptors descriptors :effects effects :binding binding}))
+                [".gravity" ".qst"])
+        {:keys [input module definitions descriptors effects binding]} (first cases)
+        descriptor (first (filter #(= :normal (:application %)) descriptors))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? descriptor))
+    (when-not (map? descriptor) (throw (ex-info "Map contains descriptor absent before hostile checks" {})))
+    (doseq [changed [(assoc-in descriptor [:source-binding :package :version] "forged")
+                     (assoc-in descriptor [:membership-policy :key-equality] :identity)
+                     (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                     (assoc descriptor :argument-types [:gravity.type/integer :gravity.type/string] :parameter-types [:gravity.type/integer :gravity.type/string])
+                     (-> descriptor (update-in [:source-call :ordered-evaluation-node-ids] #(vec (reverse %)))
+                         (update-in [:source-edge :ordered-evaluation-node-ids] #(vec (reverse %))))]]
+      (let [changed-call (c7 'sh08-mc-call-fact [changed (get-in input [:request :canonical-core-artifact :module])])
+            changed-row (c7 'sh08-mc-constraint [changed])
+            id (:call-core-node-id descriptor) operator (:operator-node-id descriptor)
+            typed (walk/postwalk
+                    (fn [value]
+                      (cond
+                        (= value descriptor) changed
+                        (and (map? value) (= :gravity/c7-call-type-fact (:artifact value)) (= id (:call-core-node-id value))) changed-call
+                        (and (map? value) (= :sh08-map-contains-v1 (:producer-rule value)) (= id (get-in value [:lhs :core-node-id]))) changed-row
+                        (and (map? value) (= changed (get value operator)) (contains? value id)) (assoc value id (:result-type changed))
+                        :else value)) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'lookup) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 9 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)]
+      (doseq [changed [(assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:nodes id :dependencies] [])
+                       (assoc-in graph [:nodes id :result-type] :gravity.type/string)
+                       (update graph :nodes #(into {} (map (fn [[node-id record]] [node-id (-> record (assoc :transitive #{} :escaping #{})
+                                                                                                  (dissoc :allocation :escaping-thrown-errors :escaping-thrown-error-types))]) %)))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (doseq [suffix ["arity-one" "arity-three" "non-map" "unknown-map" "unknown-key" "numeric-key"
+                    "symbol-key" "character-key" "result-annotation" "never-map" "never-key"]]
+      (let [expected (case suffix
+                       ("arity-one" "arity-three") #{["C7-TYPE-MISMATCH" :map-contains-arity-mismatch]}
+                       "result-annotation" #{["C7-TYPE-MISMATCH" :function-result-type-mismatch]}
+                       ("unknown-map" "unknown-key") #{["C7-TYPE-MISMATCH" :map-contains-operand-type-required]
+                                                       ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]}
+                       #{["C7-TYPE-MISMATCH" :map-contains-operand-type-required]})
+            products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-contains-" suffix ".gravity"))
+            diagnostic (get-in products [:typed :diagnostics 0])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (contains? expected ((juxt :rule :reason) diagnostic)) (pr-str [suffix diagnostic]))))))
+
+(deftest current-gravity-map-contains-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-contains-input)
+        derive (ns-resolve upstream 'map-contains-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[:gravity.type/map :gravity.type/string] [:gravity.type/map :gravity.type/keyword]
+                       [{:kind :gravity.type/map :member-types [] :shape :independent} :gravity.type/string]
+                       [:gravity.type/never :gravity.type/string] [:gravity.type/map :gravity.type/never]]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn arguments)
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-mc-call-fact [descriptor module])} :ledger [(c7 'sh08-mc-constraint [descriptor])]
+                     :locals {:arg0 'input :arg1 'key} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'input} {:op :local :name 'key}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc-in descriptor [:membership-policy :key-equality] :identity)
+                         (assoc-in descriptor [:membership-policy :presence] :truthy-value)
+                         (assoc-in descriptor [:membership-policy :normalization] :nfc)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :result-type :gravity.type/string :return :gravity.type/string)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:call (c7 'sh08-mc-call-fact [changed module])} :ledger [(c7 'sh08-mc-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-map-contains-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        contains-ir (fn [input key] {:op :builtin-call :function 'contains? :args [input key]})
+        observed (atom 0)
+        opaque (proxy [Object] []
+                 (equals [other] (swap! observed inc) (throw (AssertionError. "stored value equals called")))
+                 (hashCode [] (swap! observed inc) (throw (AssertionError. "stored value hash called")))
+                 (toString [] (swap! observed inc) (throw (AssertionError. "stored value display called"))))
+        smile (String. (Character/toChars 0x1f600))
+        original {(String. "present") false "nil" nil "opaque" opaque "a\u0000b" opaque smile opaque
+                  "\u00e9" true :a/key false 1 opaque}
+        wide (into {} (map #(vector (str "key" %) opaque) (range 12)))]
+    (doseq [[input key expected] [[original (String. "present") true] [original "nil" true] [original "absent" false]
+                                  [original "opaque" true] [original (String. "a\u0000b") true] [original (String. smile) true]
+                                  [original "e\u0301" false] [original "PRESENT" false] [original :a/key true]
+                                  [original :b/key false] [original "1" false] [{} "present" false]
+                                  [wide (String. "key11") true] [wide "key12" false]]]
+      (is (= [expected "" :normal] (evaluate (contains-ir (literal input) (literal key))))))
+    (is (= false (get original "present")))
+    (is (contains? original "nil"))
+    (is (nil? (get original "nil")))
+    (is (identical? opaque (get original "opaque")))
+    (is (= 12 (count wide)))
+    (is (= 0 @observed))
+    (doseq [input [nil [] #{} "map" 7]]
+      (is (= :map-contains-map-and-key-domain-required
+             (get-in (evaluate (contains-ir (literal input) (literal :key))) [0 :reason]))))
+    (doseq [key [nil false 1 'key (char 65) [] {} (bootstrap/sh03-reader-host-character-value! "<membership-kernel>" {:codepoint 0x1f600})]]
+      (is (= :map-contains-map-and-key-domain-required
+             (get-in (evaluate (contains-ir (literal {}) (literal key))) [0 :reason]))))
+    (doseq [bad [(assoc (contains-ir (literal {}) (literal :key)) :extra true)
+                 {:op :builtin-call :function 'contains? :args []}
+                 {:op :builtin-call :function 'contains? :args [(literal {})]}
+                 {:op :builtin-call :function 'contains? :args [(literal {}) (literal :key) (literal :extra)]}
+                 {:op :builtin-call :function 'contains? :args [(literal {}) :not-an-instruction]}
+                 {:op :builtin-call :function 'contains? :args '()}]]
+      (is (= :rejected (last (evaluate bad)))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          first-error (String. "map operand") second-error (String. "key operand")
+          map-throw (evaluate (contains-ir (say "map" {:op :throw :value (literal first-error)})
+                                          (say "unreachable" {:op :throw :value (literal second-error)})))
+          key-throw (evaluate (contains-ir (say "map" (literal original))
+                                          (say "key" {:op :throw :value (literal second-error)})))]
+      (is (= [true "map\nkey\n" :normal]
+             (evaluate (contains-ir (say "map" (literal original)) (say "key" (literal "nil"))))))
+      (is (= [first-error "map\n" :thrown] map-throw))
+      (is (= [second-error "map\nkey\n" :thrown] key-throw))
+      (is (identical? first-error (first map-throw)))
+      (is (identical? second-error (first key-throw))))
+    (is (= 0 @observed))))
+
 (deftest current-gravity-not-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

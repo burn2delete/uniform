@@ -1417,6 +1417,51 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Map key membership
+
+STD3's direct Map `contains?` query distinguishes key presence from value
+truthiness. A present entry is present even when its value is false or nil.
+This development slice accepts independently established Map types and dynamic
+String or Keyword keys; it does not require a literal constructor, a known key
+set or a deep value-shape proof.
+
+Edit the existing C7 engine, effect owner, typed emitter and Gravity runtime.
+Use the existing focused checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-map-contains-development-kernel \
+  --exact body-map-contains-development-kernel \
+  --exact current-gravity-map-contains-lowering-development-kernel \
+  --exact current-gravity-map-contains-runtime-development-kernel --fail-fast
+```
+
+Map and key evaluate once, left-to-right, in non-tail positions. Never transfers
+before the lookup. The query adds no allocation, effect or capability; operand
+effects and errors remain visible. String and Keyword keys compare by value,
+without coercion or Unicode normalization. Stored values remain uninspected.
+Runtime instructions retain the existing closed binary builtin-call shape;
+Map and key-domain checks precede lookup.
+
+These normalized kernels provide development feedback, not authenticated source
+evidence. Before accepting a changed composition, separately exercise real
+paired source through current typing, effects, lowering and execution, with
+fresh public reconstruction and meaningful altered-fact rejections:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-contains-authenticated-composition --fail-fast
+```
+
+Do not replay unchanged earlier source proofs for this query. Other key domains,
+vector/set membership, presence-based type narrowing, first-class invocation,
+full collection/profile support and authoritative migration remain separate
+work, not language-level prohibitions inferred from this finite slice.
+
 ### Unary truthiness complement
 
 STD2's unary `not` complements L2 truthiness: false and nil produce true; other
@@ -1846,6 +1891,27 @@ clojure -J-Xmx2g -M:dev-test \
 The helper checks use mocked control-flow DATA, not accepted compiler evidence.
 The schedule check reads the actual test source. Neither is a substitute for
 affected composition when production behavior or fixtures change.
+
+One remaining cost candidate is compiler-code plan construction, distinct from
+semantic product construction and verification. The existing `00581` typed
+lowering operation constructs both current C7 and emitter plans before each
+fresh public C7 verification. Thus the Map membership selector's nine public
+operations imply eighteen code-plan constructions if that path completes.
+`00580` parses and compiles those definitions and canonicalizes the plan for
+its identity. This is a static call count, not an observed phase-time share.
+
+At the next already-required changed composition or migration run, bounded
+observations around code-plan construction and fresh verification can determine
+whether that repetition is material. Do not launch a separate profiling run or
+add another test lane to establish this. If measurements justify a change,
+consider reuse of immutable executable code plans for identical captured
+compiler inputs, with exact source/emitter/toolchain binding and invalidation.
+Never reuse semantic products, accepted results or proof authority. Preserve
+canonical plan bytes, public results, source-change reconstruction and drift
+rejection, and one fresh verifier invocation for every public operation,
+including hostile inputs. Product representation redesign remains separate
+unless actual measurements identify it as the bottleneck; no speedup is
+established by this follow-up proposal.
 
 The focused checks exercise normalized producer-shaped data, including rows
 constructed by the current C7 constraint producer. They are not authenticated

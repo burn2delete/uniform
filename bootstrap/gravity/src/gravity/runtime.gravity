@@ -428,7 +428,7 @@
                                                 (if (string? id)
                                                   (if (if (> (count id) 0) (<= (count id) 256) false)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
-                  (if (contains? '#{nth conj} function)
+                  (if (contains? '#{nth conj contains?} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (= function 'count)
@@ -512,6 +512,11 @@
                    arguments environment output [] functions path [])]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
+              (if (= function 'contains?)
+                (if (if (map? left) (if (string? right) true (keyword? right)) false)
+                  [(contains? left right) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :map-contains-map-and-key-domain-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (= function '=)
                 (let [equal (p15-s23-runtime-atomic-equality left right)]
                   (if (boolean? equal) [equal (second arguments-result) :normal]
@@ -563,7 +568,7 @@
                          (>= left right))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected]))))))))
+                (second arguments-result) :rejected])))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

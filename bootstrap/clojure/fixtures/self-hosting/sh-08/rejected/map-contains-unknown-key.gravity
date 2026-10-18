@@ -1,0 +1,4 @@
+(ns example.map-contains-unknown-key
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn check [value] (contains? {} value))

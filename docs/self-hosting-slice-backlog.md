@@ -2146,6 +2146,58 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Map key membership: development implementation
+
+The existing Gravity C7, C8, typed-emitter and runtime owners implement direct
+Map `contains?` with dynamic String or Keyword keys under STD3/STD2. An
+independently established Map type suffices; no literal constructor, static
+presence fact or deep value-shape proof is required. Presence is independent
+of the stored value: false and nil entries remain present. Key comparison is
+by value, without coercion or Unicode normalization, and stored values remain
+uninspected.
+
+Map and key evaluate once, left-to-right, in non-tail positions. Never transfers
+before lookup. The query adds no allocation, effect, error or capability;
+operand effects remain visible. Runtime uses the existing closed binary
+builtin-call representation and checks the Map and key domain before lookup.
+No seed primitive, helper, public export, instruction family or test lane was
+added. The runtime still has twenty-seven private functions and four exports.
+
+Four focused kernels passed 344 assertions. The final affected regression
+batch passed 22 tests/2,129 assertions, covering membership alongside existing
+not, association, count, equality, quote, guard and throw behavior. Fixture
+parity/header checks passed 24 assertions. These counts overlap and are not
+an additive total or authenticated source evidence by themselves.
+
+The sole paired source composition passed all 366 assertions in 1,198.132
+seconds after 7.961 seconds of namespace loading at 2 GiB. Each extension
+retained ten functions, thirteen calls and eight membership applications
+(six normal, two Never), plus one not and four ordinary local calls with
+canonical caller/callee/order joins. Forty-eight guest executions cover a
+quoted registry returned by a local function, aliases preserving the original
+Map, present false/nil and absent keys, dynamic equal String objects, Unicode,
+NUL, case and normalization distinctions, Keyword namespaces, empty and
+twelve-key Maps, explicit not composition and original String throw payloads.
+
+Nine fresh public C7 lowering operations include five coherent altered
+type/fact/constraint cases. Two accepted, nonempty C8 graphs pass whole-result
+verification, and four resealed graph mutations reject. Actual evaluated Map
+operands retain allocation, and both throwing-operand positions retain their
+error effects without adding query allocation. Eleven negative `.gravity`
+families reject arity, operand/key domain, unresolved types and result
+annotations, including an invalid other operand when one operand is Never.
+Negative `.qst` coverage is parity only; unresolved-type oracles permit two
+existing diagnostic paths rather than claiming a uniquely observed reason.
+All 31 compiler/test/fixture inputs and the Git base remained unchanged through
+the run. No unchanged earlier expensive source proof was replayed.
+
+Use `docs/development-verification.md` for the direct focused and affected
+composition commands. Other key domains, vector/set membership, presence-based
+type narrowing, first-class invocation, complete collections/profile support,
+targets, authoritative migration, self-hosting and seedless release remain
+outstanding. This is scoped executable development support, not admission of
+a stable module revision or a performance claim.
+
 ### Unary truthiness complement: development implementation
 
 The existing C7, C8 and typed-emitter owners implement direct unary `not`

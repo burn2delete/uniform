@@ -2347,6 +2347,70 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- map-contains-input [argument-types]
+  (let [input (integral-ordering-input 'contains? argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- map-contains-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-mc-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-map-contains-development-kernel
+  ;; Normalized type DATA; Map membership needs no constructor/presence proof.
+  (let [maps [:gravity.type/map {:kind :gravity.type/map :member-types [] :shape :literal}
+              {:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/nil] :shape :independent}]
+        keys [:gravity.type/string :gravity.type/keyword]]
+    (doseq [map-type maps key-type keys]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input [map-type key-type])
+            result (map-contains-derived input) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :gravity.type/bool (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= :normal (:application descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= {:input :established-map :keys [:string :keyword] :key-equality :value :presence :independent-of-value
+                :normalization :none :coercion :none :operand-evaluation :map-then-key-once :values :unobserved} (:membership-policy descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-mc-constraint [descriptor])] (:constraints inferred)))))
+    (doseq [arguments [[:gravity.type/never :gravity.type/string] [:gravity.type/never :gravity.type/keyword]
+                       [:gravity.type/map :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
+      (let [result (map-contains-derived (map-contains-input arguments))]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (get-in result [:descriptor :application])))))
+    (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool :gravity.type/integer
+                  :gravity.type/string :gravity.type/set {:kind :gravity.type/vector :element-types []}]
+            key (conj keys :gravity.type/never)]
+      (is (= :rejected (:status (map-contains-derived (map-contains-input [type key]))))))
+    (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool :gravity.type/integer
+                  :gravity.type/symbol :gravity.type/character :gravity.type/decimal {:kind :gravity.type/vector :element-types []}]
+            map-type [:gravity.type/map :gravity.type/never]]
+      (is (= :rejected (:status (map-contains-derived (map-contains-input [map-type type]))))))
+    (doseq [arguments [[] [:gravity.type/map] [:gravity.type/map :gravity.type/string :gravity.type/string]]]
+      (is (= :map-contains-arity-mismatch (:reason (map-contains-derived (map-contains-input arguments))))))
+    (let [input (map-contains-input [:gravity.type/map :gravity.type/string])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :key-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'get)]]
+        (is (= :rejected (:status (map-contains-derived (mutate input))))))
+      (let [{:keys [core node call edge nodes bindings types forms]} input work (:work-count (map-contains-derived input))
+            derive #(invoke-c7 'sh08-mc-derive [core node call edge nodes bindings types forms %])]
+        (is (= 66 work))
+        (is (= :accepted (:status (derive work))))
+        (is (= :map-contains-work-limit (:reason (derive (dec work)))))))))
+
 (defn- not-input [argument-types]
   (let [input (integral-ordering-input 'not argument-types)]
     (assoc input :binding-types (:types input)
