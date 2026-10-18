@@ -248,7 +248,13 @@
   (if (vector? path)
   (if (< (count path) 256)
   (if (symbol? (get instruction :function))
-  (if (= false (contains? (set path) (get instruction :function)))
+  (if (loop [index (- (count path) 1) current? true]
+        (if (< index 0) true
+          (let [active (get path index)]
+            (if (symbol? active)
+              (if (= (get instruction :function) active)
+                (if current? (recur (- index 1) true) false)
+                (recur (- index 1) false)) false))))
   (let [target (get functions (get instruction :function)) args (get instruction :args)]
     (if (if (map? target) (if (contains? target :params) (contains? target :arity) false) false)
       (if (vector? args) (p15-s23-runtime-function-valid? target (count args)) false) false)) false) false) false) false) false))

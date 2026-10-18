@@ -509,8 +509,125 @@
 (defn body-imported? [typed]
   (= :direct-imported-functions-types-only (get typed :scope)))
 
+; C7 declared VALUE assumptions never stand in for C8 body facts.
+(defn body-ds? [facts]
+  (= :gravity/sh08-declared-self-value-proof-v1 (get (get facts :recursive-proof) :domain)))
+
+(defn body-ds-type? [type]
+  (if (body-hl-type? type) true
+    (contains? #{:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio} type)))
+
+(defn body-ds-call-facts [facts]
+  (let [proof (get facts :recursive-proof) incoming (set (get proof :incoming-call-node-ids))]
+    (loop [remaining (get facts :call-type-facts) out []]
+      (if (= 0 (count remaining)) out
+        (let [fact (first remaining) id (get fact :call-core-node-id)]
+          (recur (rest remaining)
+            (if (contains? incoming id)
+              (conj out (assoc fact :role (if (= id (get proof :self-call-core-node-id)) :self-recursive-call :incoming-declared-call)))
+              out)))))))
+
+(defn body-ds-proof-valid? [core facts]
+  (let [proof (get facts :recursive-proof) components (get core :recursion-components)]
+    (if (if (vector? components) (= 1 (count components)) false)
+      (let [component (first components) id (first (get component :function-syntax-ids))
+            record (body-by (get core :function-records) :function-syntax-id id)
+            function (body-by (get facts :function-type-table) :function-id id)
+            definition (body-by (get core :definitions) :binding-id (get record :definition-binding-id))
+            signature (get record :signature) declarations (get signature :parameters)
+            parameters (loop [remaining declarations out []]
+                         (if (= 0 (count remaining)) out
+                           (recur (rest remaining) (conj out (get (first remaining) :type-id)))))
+            nodes (body-index (get core :nodes) :node-id)
+            ordinal (first (get component :internal-call-edge-ordinals))
+            edge (if (integer? ordinal) (get (get core :call-edges) ordinal) nil)
+            call (body-by (get core :calls) :core-node-id (get edge :call-core-node-id))
+            node (get nodes (get call :core-node-id))
+            owned (loop [remaining (get core :nodes) out []]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining)
+                        (if (= id (get (get (first remaining) :evaluation) :owner-function-syntax-id))
+                          (conj out (get (first remaining) :node-id)) out))))
+            incoming (loop [remaining (get core :call-edges) out []]
+                       (if (= 0 (count remaining)) out
+                         (recur (rest remaining)
+                           (if (= id (get (first remaining) :callee-function-syntax-id))
+                             (conj out (get (first remaining) :call-core-node-id)) out))))
+            expected {:domain :gravity/sh08-declared-self-value-proof-v1
+                      :function-syntax-id id :function-core-node-id (get record :function-core-node-id)
+                      :definition-binding-id (get record :definition-binding-id)
+                      :definition-syntax-id (get definition :syntax-id)
+                      :body-core-node-id (get record :body-core-node-id)
+                      :parameter-binding-ids (get record :parameter-binding-ids)
+                      :parameter-types parameters :declared-return-type (get (get signature :return) :type-id)
+                      :signature signature :component component :self-call-core-node-id (get call :core-node-id)
+                      :self-call call :self-edge edge :self-call-source (get node :source)
+                      :owned-node-ids owned :incoming-call-node-ids incoming
+                      :value-check :complete-body-and-all-incoming-arguments
+                      :effect-error-status :pending-sh09-recursive-body
+                      :captures :own-parameters-and-lexical-locals-only :work-count (get proof :work-count)}]
+        (body-all?
+          [(= expected proof)
+           (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
+               :function-core-node-ids [(get record :function-core-node-id)]
+               :internal-call-edge-ordinals [ordinal]} component)
+           (= :named-top-level (get record :definition-kind))
+           (if (integer? (get record :fixed-arity)) (if (> (get record :fixed-arity) 0) (<= (get record :fixed-arity) 1024) false) false)
+           (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
+           (body-ds-type? (get (get signature :return) :type-id))
+           (loop [remaining parameters]
+             (if (= 0 (count remaining)) true
+               (if (body-ds-type? (first remaining)) (recur (rest remaining)) false)))
+           (= parameters (loop [remaining (get function :parameters) out []]
+                           (if (= 0 (count remaining)) out
+                             (recur (rest remaining) (conj out (get (first remaining) :type))))))
+           (= (get function :return) (get (get signature :return) :type-id))
+           (= [:pending-sh09] (get function :thrown-error-effects))
+           (= id (get edge :caller-function-syntax-id) (get edge :callee-function-syntax-id)
+              (get (get node :evaluation) :owner-function-syntax-id))
+           (= :local-function (get edge :classification))
+           (= 1 (loop [remaining (get core :call-edges) count 0]
+                  (if (= 0 (count remaining)) count
+                    (recur (rest remaining)
+                      (if (= id (get (first remaining) :caller-function-syntax-id) (get (first remaining) :callee-function-syntax-id))
+                        (+ count 1) count))))) ])) false)))
+
+(defn body-ds-captures-valid? [core facts bindings]
+  (let [proof (get facts :recursive-proof) id (get proof :function-syntax-id)
+        nodes (body-index (get core :nodes) :node-id)
+        locals (loop [remaining (get core :lexical-bindings) out (set (get proof :parameter-binding-ids))]
+                 (if (= 0 (count remaining)) out
+                   (let [local (first remaining)]
+                     (recur (rest remaining)
+                       (if (= id (get (get (get nodes (get local :let-core-node-id)) :evaluation) :owner-function-syntax-id))
+                         (conj out (get local :binding-id)) out)))))
+        argument-work (loop [remaining (get core :calls) work 0]
+                        (if (= 0 (count remaining)) work
+                          (recur (rest remaining) (+ work (* 2 (count (get (first remaining) :argument-node-ids)))))))
+        expected-work (+ 32 (* 8 (count (get core :nodes))) (* 8 (count (get core :calls)))
+                         (* 4 (count (get core :call-edges))) (* 4 (count bindings))
+                         (* 4 (count (get core :function-records))) (* 4 (count (get core :lexical-bindings)))
+                         argument-work (* (count (get core :calls)) (count bindings)))
+        self (get nodes (get proof :self-call-core-node-id))]
+    (if (= expected-work (get proof :work-count))
+      (loop [remaining (get core :nodes)]
+        (if (= 0 (count remaining)) true
+          (let [node (first remaining) bid (get (get node :attributes) :binding-id) binding (get bindings bid)]
+            (if (if (= id (get (get node :evaluation) :owner-function-syntax-id))
+                  (if (contains? #{:try :loop :recur} (get node :core-form)) false
+                    (if (= :reference (get node :core-form))
+                      (if (contains? locals bid) true
+                        (if (= bid (get proof :definition-binding-id))
+                          (= (get node :node-id) (first (get self :children)))
+                          (= [:core :var 'gravity.core]
+                             [(get binding :binding-class) (get binding :kind) (get binding :namespace)]))) true)) true)
+              (recur (rest remaining)) false)))) false)))
+
 (defn body-recursive? [typed]
-  (if (= :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base (get typed :scope))
+  (if (contains? #{:declared-monomorphic-named-self-value :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base} (get typed :scope))
     true (if (body-imported? typed) (contains? typed :recursive-proof) false)))
 
 (defn body-higher-order? [typed]
@@ -528,7 +645,8 @@
         base (if (body-higher-order? typed)
                (assoc base :domain :gravity/sh08-authoritative-higher-order-type-v1 :higher-order-proof (get typed :higher-order-proof)) base)
         base (if (body-recursive? typed)
-               (assoc base :domain :gravity/sh08-recursive-function-typed-core-v1 :recursive-proof (get typed :recursive-proof)) base)]
+               (assoc base :domain (if (body-ds? typed) :gravity/sh08-declared-self-value-typed-core-v1
+                                     :gravity/sh08-recursive-function-typed-core-v1) :recursive-proof (get typed :recursive-proof)) base)]
     (if (body-imported? typed)
       (assoc base :domain :gravity/sh08-direct-imported-function-types-v1
                   :module-type-producers (get typed :module-type-producers)
@@ -559,6 +677,13 @@
       (body-request-envelope-valid? request (get typed :sh07-shaped-artifact-id) (get typed :provenance)) false) false))
 
 (defn body-caller-checks [typed]
+  (if (if (= false (body-imported? typed)) (body-ds? typed) false)
+    [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
+     :coherent-b47-lexical-bindings :complete-monomorphic-declared-self-value-signature
+     :complete-body-and-incoming-call-value-checks :single-ordinary-self-edge
+     :recursive-effects-and-errors-pending-sh09 :recursive-call-facts :recursive-constraint-ledger
+     :canonical-complete-function-signatures :source-syntax-origin-generated-origin-links-preserved
+     :path-neutral-identity-input]
   (if (body-imported? typed)
     [:fresh-authenticated-module-type-producers :exact-original-upstream-projected-definition-function-join
      :complete-immutable-imported-signatures :imported-operator-and-call-types :local-inference-remains-separate
@@ -577,7 +702,7 @@
     [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
      :coherent-b47-lexical-bindings :fixed-arity-first-order-inference :local-binding-facts
      :call-type-facts :constraint-ledger :source-syntax-origin-generated-origin-links-preserved
-     :path-neutral-identity-input :recursive-inference-rejected-without-annotation]))))
+     :path-neutral-identity-input :recursive-inference-rejected-without-annotation])))))
 
 (defn body-import-tables-valid? [typed]
   (loop [tables [(get typed :module-type-producers) (get typed :imported-function-types)]]
@@ -597,6 +722,7 @@
            (= 3 (get typed :schema-version)) (= :accepted (get typed :status))
            (contains? #{:first-order-fixed-arity-functions-locals-calls :direct-imported-functions-types-only
                         :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
+                        :declared-monomorphic-named-self-value
                         :capture-free-higher-order-fixed-arity-one-hop} (get typed :scope))
            (= :host-resolved-b47-verification-boundary (get typed :authentication-status))
            (= [] (get typed :diagnostics))
@@ -695,9 +821,11 @@
                          (if (contains? producer-facts :higher-order-proof) (conj keys :higher-order-proof) keys))))
                    (sh09-exact-keys? producer #{:canonical-core-artifact :b47-context :coordinator-verification})
                    (contains? #{:gravity/sh08-function-typed-core-v3 :gravity/sh08-atomic-function-signature-typed-core-v1
+                                :gravity/sh08-declared-self-value-typed-core-v1
                                 :gravity/sh08-recursive-function-typed-core-v1 :gravity/sh08-authoritative-higher-order-type-v1}
                               (get producer-facts :domain))
-                   (= (contains? producer-facts :recursive-proof) (= :gravity/sh08-recursive-function-typed-core-v1 (get producer-facts :domain)))
+                   (= (contains? producer-facts :recursive-proof)
+                      (contains? #{:gravity/sh08-recursive-function-typed-core-v1 :gravity/sh08-declared-self-value-typed-core-v1} (get producer-facts :domain)))
                    (= (contains? producer-facts :higher-order-proof) (= :gravity/sh08-authoritative-higher-order-type-v1 (get producer-facts :domain)))
                    (= (get identity :producer-sh07-artifact-id) (get core :artifact-id)
                       (get producer-facts :sh07-shaped-artifact-id))
@@ -920,6 +1048,7 @@
                        :argument-core-node-ids :ordered-evaluation-node-ids :evaluation-order :classification]) nil))
 
 (defn body-recursive-call-facts [facts]
+  (if (body-ds? facts) (body-ds-call-facts facts)
   (let [proof (get facts :recursive-proof) calls (get facts :call-type-facts)
         recursive-id (get proof :recursive-call-core-node-id)
         external-id (get proof :parameter-evidence-call-core-node-id)]
@@ -935,7 +1064,7 @@
        (assoc external
          :role :external-parameter-evidence :parameter-evidence? true
          :external-edge (get (get proof :parameter-evidence-call) :edge)
-         :argument-types (get proof :parameter-types) :result-type (first (get proof :parameter-types)))] nil)) nil)))
+         :argument-types (get proof :parameter-types) :result-type (first (get proof :parameter-types)))] nil)) nil))))
 
 (defn body-primitive-literal-type [node]
   (if (= :literal (get node :core-form))
@@ -971,6 +1100,7 @@
               (recur (rest ids) (rest parameters)) false)))) false) false))
 
 (defn body-recursive-proof-valid? [core facts]
+  (if (body-ds? facts) (body-ds-proof-valid? core facts)
   (let [proof (get facts :recursive-proof) components (get core :recursion-components)]
     (if (body-recursive-input-shapes? core facts)
       (let [component (first components) id (first (get component :function-syntax-ids))
@@ -1046,7 +1176,7 @@
                    (if (if (= id (get (get node :evaluation) :owner-function-syntax-id))
                          (if (= :reference (get node :core-form))
                            (contains? (conj (set (get record :parameter-binding-ids)) (get record :definition-binding-id)) binding) true) true)
-                     (recur (rest remaining)) false))))]) false)) false)))
+                     (recur (rest remaining)) false))))]) false)) false))))
 
 ; C6 semantic identity replaces the authenticated SH06 occurrence id with its
 ; existing semantic projection id. All other throw fields remain exact.
@@ -5387,6 +5517,7 @@
     (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] removal-rows [] count-rows [] nth-rows [] successor-rows [] append-rows [] equality-rows [] not-rows [] contains-rows [] get-rows [] concat-rows [] list-rows [] query-rows []]
       (if (= 0 (count remaining))
         (body-all? [(= (count used) (count foreign))
+                    (if (body-ds? facts) (body-ds-captures-valid? core facts bindings) true)
                     (= intrinsic-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-integral-ordering-v1))
                     (= association-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-association-v1))
                     (= removal-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-removal-v1))
@@ -6077,8 +6208,14 @@
                                   (= :pending-profile-handler-capability-authority (get (get graph id) :effect-label-discharge))])
                     (recur (rest remaining) (conj values row))
                     (body-failure :incoherent-atomic-typed-catch-body-equation)))))]
-        (if (body-all? [(map? indexed) (= :accepted (get expected :status)) (= rows (get expected :rows))])
-          {:status :accepted :work-count work}
+        (if (body-all? [(map? indexed) (= :accepted (get expected :status))
+                        (if (body-ds? facts) (= [] rows) (= rows (get expected :rows)))])
+          (if (body-ds? facts)
+            {:status :accepted :work-count work
+             :checked-handler-equations (loop [remaining (get expected :rows) out []]
+                                          (if (= 0 (count remaining)) out
+                                            (recur (rest remaining) (conj out (get (first remaining) :dependencies)))))}
+            {:status :accepted :work-count work})
           (body-failure :incoherent-atomic-typed-catch-ledger))))))))
 
 (defn body-call-invokes? [node types]
@@ -6302,10 +6439,21 @@
     (if (= 0 (count remaining)) graph
       (recur (rest remaining) (assoc graph (first remaining) {:transitive (get summaries (first remaining))})))))
 
+(defn body-ds-summary-valid? [summary]
+  (if (if (map? summary) (= #{:transitive :escaping-thrown-errors :escaping-thrown-error-types} (set (keys summary))) false)
+    (if (body-all? [(set? (get summary :transitive)) (set? (get summary :escaping-thrown-errors))
+                    (vector? (get summary :escaping-thrown-error-types))])
+      (if (<= (count (get summary :escaping-thrown-error-types)) 65536)
+        (= (get summary :escaping-thrown-errors) (set (get summary :escaping-thrown-error-types))) false) false) false))
+
 (defn body-derive-nodes-pass [core typed foreign budget recursive summary]
+  (if (if (= :gravity/sh08-declared-self-value-proof-v1 (get recursive :domain))
+        (body-ds-summary-valid? summary) true)
   (let [edges (body-index (get core :call-edges) :call-core-node-id)
         functions (body-index (get typed :function-type-table) :function-id)]
-    (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0 work 0]
+    (loop [pending (get core :nodes) deferred [] graph {} progress 0 rounds 0
+           work (if (= :gravity/sh08-declared-self-value-proof-v1 (get recursive :domain))
+                  (+ 3 (count (get summary :transitive)) (* 2 (count (get summary :escaping-thrown-error-types)))) 0)]
       (if (= 0 (count pending))
         (if (= 0 (count deferred))
           (if (> work budget) (body-failure :body-deferred-work-limit) {:status :accepted :nodes graph :work-count work})
@@ -6318,11 +6466,15 @@
               imported (get foreign (get edge :callee-binding-id))
               target (if (if (= kind :call) (body-call-invokes? node (get typed :type-table)) false)
                        (if (= imported nil) (get function :body-core-node-id) nil) nil)
-              backedge? (= id (get recursive :recursive-call-core-node-id))
+              declared? (= :gravity/sh08-declared-self-value-proof-v1 (get recursive :domain))
+              backedge? (= id (if declared? (get recursive :self-call-core-node-id) (get recursive :recursive-call-core-node-id)))
               bodies (if (= kind :recur) (body-loop-body-ids node core) [])
               loop-cut? (if (= kind :recur) (contains? recursive :loop-summaries) false)
               deps (if (if (= target nil) true backedge?) (get node :children) (conj (get node :children) target))
-              deps (if loop-cut? deps (body-add bodies deps))]
+              deps (if loop-cut? deps (body-add bodies deps))
+              effective-graph (body-loop-summary-graph
+                                (if backedge? (assoc graph target (if declared? summary {:transitive summary})) graph)
+                                (if loop-cut? bodies []) (get recursive :loop-summaries))]
           (if (if (body-node-supported? node) (body-order-valid? node) false)
             (if (if (= kind :call) (if (map? imported) true (if (map? function) true
                                            (if (body-io-node? node typed core) true
@@ -6335,16 +6487,15 @@
                 (recur (rest pending) deferred
                        (assoc graph id (if (= imported nil)
                                          (body-control-node-record node target
-                                           (body-loop-summary-graph
-                                             (if backedge? (assoc graph target {:transitive summary}) graph)
-                                             (if loop-cut? bodies []) (get recursive :loop-summaries))
+                                           effective-graph
                                            (get (get typed :type-table) id) typed edge core
                                            (get (get functions (get edge :callee-function-syntax-id)) :body-core-node-id))
                                          (body-foreign-node-record node imported graph (get (get typed :type-table) id))))
-                       (+ progress 1) rounds (+ work 1 (body-error-work node graph target)))
+                       (+ progress 1) rounds (+ work 1 (body-error-work node effective-graph target)))
                 (recur (rest pending) (conj deferred node) graph progress rounds (+ work 1)))
               {:status :rejected :reason :unsupported-nonlocal-or-higher-order-call :node node})
-            {:status :rejected :reason :unsupported-body-operation :node node})))))))
+            {:status :rejected :reason :unsupported-body-operation :node node}))))))
+    (body-failure :malformed-declared-self-summary)))
 
 (defn body-derive-nodes-with-foreign [core facts foreign budget]
   (body-derive-nodes-pass core facts foreign budget {} #{}))
@@ -6396,7 +6547,65 @@
           (recur (rest remaining))
           {:status :rejected :reason :unsupported-body-operation :node node})))))
 
+; The least fixed point below is over actual effects AND escaping error
+; types. Empty summaries are analysis bottoms, never C7 callable signatures.
+(defn body-ds-summaries [facts graph]
+  (loop [remaining (get facts :function-type-table) out {} work 0]
+    (if (= 0 (count remaining)) {:status :accepted :functions out :work-count work}
+      (let [function (first remaining) record (get graph (get function :body-core-node-id))
+            effects (if (= graph nil) #{} (get record :transitive))
+            errors (if (= graph nil) [] (body-error-types graph (get function :body-core-node-id)))]
+        (if (if (= graph nil) true (map? record))
+          (recur (rest remaining)
+            (assoc out (get function :function-id)
+              {:transitive effects :escaping-thrown-errors (set errors) :escaping-thrown-error-types errors})
+            (+ work 1 (count effects) (* 2 (count errors))))
+          (body-failure :missing-recursive-body-summary))))))
+
+(defn body-ds-equation-work [core graph]
+  (loop [remaining (get core :nodes) work 0]
+    (if (= 0 (count remaining)) work
+      (let [node (first remaining) record (get graph (get node :node-id))]
+        (recur (rest remaining)
+          (+ work 1 (count (get record :dependencies)) (count (get record :transitive))
+             (count (body-error-types graph (get node :node-id)))
+             (body-error-work node graph (get record :call-body-dependency))))))))
+
+(defn body-ds-derive-recursive-nodes [core facts foreign budget]
+  (let [proof (get facts :recursive-proof) size (count (get core :nodes))
+        bottom (body-ds-summaries facts nil)
+        initial (+ size (get bottom :work-count))]
+    (if (> initial budget) (body-failure :body-deferred-work-limit)
+      (if (body-recursive-proof-valid? core facts)
+        (let [classified (body-classify-nodes core facts)]
+          (if (= :accepted (get classified :status))
+            (loop [summaries (get bottom :functions) work initial rounds 0]
+              (if (if (< rounds 65536) (< work budget) false)
+                (let [derived (body-derive-nodes-pass core facts foreign (- budget work) proof
+                                (get summaries (get proof :function-syntax-id)))
+                      next (if (= :accepted (get derived :status)) (body-ds-summaries facts (get derived :nodes)) derived)
+                      used (+ work (get derived :work-count 0) (* 2 (get next :work-count 0)))]
+                  (if (= :accepted (get next :status))
+                    (if (> used budget) (body-failure :body-deferred-work-limit)
+                      (if (= summaries (get next :functions))
+                        (let [final (body-derive-nodes-pass core facts foreign (- budget used) proof
+                                      (get (get next :functions) (get proof :function-syntax-id)))
+                              checked (if (= :accepted (get final :status)) (body-ds-summaries facts (get final :nodes)) final)
+                              equation-work (if (= :accepted (get checked :status)) (body-ds-equation-work core (get final :nodes)) 0)
+                              total (+ used (get final :work-count 0) (* 2 (get checked :work-count 0)) equation-work)]
+                          (if (= :accepted (get checked :status))
+                            (if (> total budget) (body-failure :body-deferred-work-limit)
+                              (if (if (= (get next :functions) (get checked :functions))
+                                    (body-graph-equations-valid? core facts foreign (get final :nodes)) false)
+                                (assoc final :work-count total :fixed-point-rounds (+ rounds 1)
+                                  :summary-domain :effects-and-escaping-error-types)
+                                (body-failure :recursive-effect-error-equations-mismatch))) checked))
+                        (recur (get next :functions) used (+ rounds 1)))) next))
+                (body-failure :body-deferred-work-limit))) classified))
+        (body-failure :untrusted-recursive-body-proof)))))
+
 (defn body-derive-recursive-nodes [core facts foreign budget]
+  (if (body-ds? facts) (body-ds-derive-recursive-nodes core facts foreign budget)
   (let [proof (get facts :recursive-proof) size (count (get core :nodes))
         classified (if (<= size budget) (body-classify-nodes core facts) (body-failure :body-deferred-work-limit))]
     (if (body-recursive-proof-valid? core facts)
@@ -6421,7 +6630,7 @@
                         (body-failure :body-deferred-work-limit)) final))
                   (recur next used (+ rounds 1))) derived))
             (body-failure :body-deferred-work-limit))) classified)
-      (body-failure :untrusted-recursive-body-proof))))
+      (body-failure :untrusted-recursive-body-proof)))))
 
 (defn body-loop-summary [core graph]
   (loop [remaining (get core :recur-transfers) out {}]
@@ -6432,7 +6641,72 @@
                     (recur (rest ids) (assoc out (first ids) (get (get graph (first ids)) :transitive #{})))))]
         (recur (rest remaining) out)))))
 
+; Caller loops keep the existing lexical-child error rule. Their effect
+; summaries compose with declared function effect/error records as a product.
+(defn body-ds-loop-state [core facts graph]
+  (let [functions (body-ds-summaries facts graph)
+        nodes (body-index (get core :nodes) :node-id)
+        targets (body-index (get core :recur-targets) :target-id)]
+    (if (= :accepted (get functions :status))
+      (loop [remaining (get core :recur-transfers) out {}
+             work (+ (get functions :work-count) (count nodes) (count targets))]
+        (if (= 0 (count remaining))
+          {:status :accepted :functions (get functions :functions) :loops out :work-count work}
+          (let [node (get nodes (get (first remaining) :recur-core-node-id))
+                target (get targets (get (get node :attributes) :target-id))
+                owner (get nodes (get target :owner-core-node-id))
+                indexes (if (= :function (get target :target-kind)) [0] (get (get owner :attributes) :body-child-indexes))
+                next (loop [remaining indexes out out used 0]
+                       (if (= 0 (count remaining)) {:loops out :work-count used}
+                         (let [id (get (get owner :children) (first remaining))
+                               effects (if (= graph nil) #{} (get (get graph id) :transitive #{}))]
+                           (recur (rest remaining) (assoc out id effects) (+ used 1 (count effects))))))]
+            (recur (rest remaining) (get next :loops) (+ work 3 (get next :work-count))))))
+      functions)))
+
+(defn body-ds-loop-state-equal? [left right]
+  (if (= (get left :functions) (get right :functions)) (= (get left :loops) (get right :loops)) false))
+
+(defn body-ds-derive-loop-nodes [core facts foreign budget]
+  (let [size (count (get core :nodes)) proof (get facts :recursive-proof)
+        classified (if (<= size budget) (body-classify-nodes core facts) (body-failure :body-deferred-work-limit))
+        joined (if (= :accepted (get classified :status)) (body-loop-joins core facts (- budget size)) classified)]
+    (if (body-recursive-proof-valid? core facts)
+      (if (= :accepted (get joined :status))
+        (if (body-loop-values-valid? core facts)
+          (let [bottom (body-ds-loop-state core facts nil)
+                initial (+ size (get joined :work-count) (get bottom :work-count))]
+            (loop [state bottom work initial rounds 0]
+              (if (if (< rounds 65536) (< work budget) false)
+                (let [derived (body-derive-nodes-pass core facts foreign (- budget work)
+                                (assoc proof :loop-summaries (get state :loops))
+                                (get (get state :functions) (get proof :function-syntax-id)))
+                      next (if (= :accepted (get derived :status)) (body-ds-loop-state core facts (get derived :nodes)) derived)
+                      used (+ work (get derived :work-count 0) (* 2 (get next :work-count 0)))]
+                  (if (= :accepted (get next :status))
+                    (if (> used budget) (body-failure :body-deferred-work-limit)
+                      (if (body-ds-loop-state-equal? state next)
+                        (let [final (body-derive-nodes-pass core facts foreign (- budget used)
+                                      (assoc proof :loop-summaries (get next :loops))
+                                      (get (get next :functions) (get proof :function-syntax-id)))
+                              checked (if (= :accepted (get final :status)) (body-ds-loop-state core facts (get final :nodes)) final)
+                              equation-work (if (= :accepted (get checked :status)) (body-ds-equation-work core (get final :nodes)) 0)
+                              total (+ used (get final :work-count 0) (* 2 (get checked :work-count 0)) equation-work)]
+                          (if (= :accepted (get checked :status))
+                            (if (> total budget) (body-failure :body-deferred-work-limit)
+                              (if (if (body-ds-loop-state-equal? next checked)
+                                    (body-graph-equations-valid? core facts foreign (get final :nodes)) false)
+                                (assoc final :work-count total :fixed-point-rounds (+ rounds 1)
+                                  :summary-domain :effects-and-escaping-error-types
+                                  :loop-summary-domain :effects-with-lexical-child-source-errors)
+                                (body-failure :declared-self-loop-effect-error-equations-mismatch))) checked))
+                        (recur next used (+ rounds 1)))) next))
+                (body-failure :body-deferred-work-limit))))
+          (body-failure :incoherent-loop-result-type)) joined)
+      (body-failure :untrusted-recursive-body-proof))))
+
 (defn body-derive-loop-nodes [core facts foreign budget]
+  (if (body-ds? facts) (body-ds-derive-loop-nodes core facts foreign budget)
   (let [size (count (get core :nodes)) proof (get facts :recursive-proof {})
         classified (if (<= size budget) (body-classify-nodes core facts) (body-failure :body-deferred-work-limit))
         joined (if (= :accepted (get classified :status))
@@ -6464,7 +6738,7 @@
                     (recur next-functions next used (+ rounds 1))) derived))
               (body-failure :body-deferred-work-limit)))
           (body-failure :incoherent-loop-result-type)) joined)
-      (body-failure :untrusted-recursive-body-proof))))
+      (body-failure :untrusted-recursive-body-proof)))))
 
 (defn body-derive-nodes [core facts]
   (body-derive-nodes-with-foreign core facts {} 65536))
@@ -6681,7 +6955,57 @@
      :invalidation [:call-edges :calls :binding-table :function-records :callee-body :type-table :error-transfers :evaluation-order]
      :profile (get (get core :module) :profile) :target (get (get core :module) :target) :status :solved :diagnostics []}))
 
+; C8 owns these recursive error equations. C7 supplies only checked VALUE
+; types and authentic direct-throw transfers; it has no recursive error rows.
+(defn body-ds-error-equations [core facts bindings graph budget]
+  (let [proof (get facts :recursive-proof) types (get facts :type-table)
+        nodes (body-index (get core :nodes) :node-id)
+        calls (body-index (get core :calls) :core-node-id)
+        records (body-index (get core :function-records) :function-syntax-id)
+        initial (+ (* 3 (count (get core :nodes))) (* 3 (count (get core :call-edges)))
+                   (count bindings) (count (get core :calls)) (* 2 (count (get core :function-records))))]
+    (if (if (body-recursive-proof-valid? core facts)
+          (= [] (body-select (get facts :constraint-ledger) :producer-rule :sh08-acyclic-local-thrown-errors-v1)) false)
+      (loop [remaining (get core :call-edges) rows [] work initial]
+        (if (> work budget) (body-failure :body-deferred-work-limit)
+          (if (= 0 (count remaining))
+            (loop [functions (get facts :function-type-table) out {} work work]
+              (if (> work budget) (body-failure :body-deferred-work-limit)
+                (if (= 0 (count functions))
+                  {:status :accepted :functions out :rows rows :work-count work}
+                  (let [function (first functions) id (get function :function-id)
+                        errors (body-error-types graph (get function :body-core-node-id))]
+                    (if (= [:pending-sh09] (get function :thrown-error-effects))
+                      (recur (rest functions) (assoc out id errors) (+ work 1 (count errors)))
+                      (body-failure :recursive-errors-not-pending-at-c7-boundary))))))
+            (let [edge (first remaining) id (get edge :call-core-node-id) node (get nodes id)
+                  target (get (get records (get edge :callee-function-syntax-id)) :body-core-node-id)
+                  invoked? (body-call-invokes? node types)
+                  operands (loop [ids (get node :children) out []]
+                             (if (= 0 (count ids)) out
+                               (recur (rest ids) (body-error-type-union out (body-error-types graph (first ids))))))
+                  callee (if (if invoked? (= false (= target nil)) false) (body-error-types graph target) [])
+                  errors (body-error-type-union operands callee)
+                  premise {:version :sh09-declared-self-error-equation-v1
+                           :analysis :conservative-source-error-potential
+                           :recursive-proof-domain (get proof :domain)
+                           :source-node node :source-call (get calls id) :source-edge edge
+                           :callee-source-body-id target :normal-invocation? invoked?
+                           :invocation-guard :all-operand-types-normal
+                           :operand-error-types operands :callee-error-types callee
+                           :escaping-error-types errors :normal-result-type (get types id)}
+                  used (+ work 70 (* 4 (+ 1 (body-error-work node graph target))))]
+              (if (> used budget) (body-failure :body-deferred-work-limit)
+                (if (= errors (body-error-types graph id))
+                  (recur (rest remaining)
+                    (conj rows {:producer-rule :sh09-declared-self-error-equation-v1
+                                :dependencies premise :solution {:escaping-error-types errors}
+                                :status :solved :diagnostics []}) used)
+                  (body-failure :incoherent-recursive-call-error-equation)))))))
+      (body-failure :untrusted-recursive-error-premises))))
+
 (defn body-tc-verify [core facts bindings graph joined budget]
+  (if (body-ds? facts) (body-ds-error-equations core facts bindings graph budget)
   (let [actual (body-select (get facts :constraint-ledger) :producer-rule :sh08-acyclic-local-thrown-errors-v1)
         scope (get joined :scope #{})
         nodes (body-index (get core :nodes) :node-id) records (body-index (get core :function-records) :function-syntax-id)
@@ -6737,7 +7061,7 @@
             (body-failure :incoherent-call-error-propagation-ledger)))
         (body-failure :unsupported-throwing-call-component))
       (if (= [] actual) {:status :accepted :functions {} :work-count 0}
-        (body-failure :unexpected-call-error-propagation-ledger)))))
+        (body-failure :unexpected-call-error-propagation-ledger))))))
 
 (defn body-allowance-check [core facts graph budget]
   (let [nodes (get graph :nodes) indexed (body-index (get core :nodes) :node-id)
@@ -6767,8 +7091,32 @@
              :node (get indexed (get function :function-core-node-id)) :function (get function :function-id)
              :effect missing})))))))
 
+; The new proof is reconstructed three times. Each pass visits declared
+; slots twice and function parameters once; the capture census visits ids once.
+(defn body-ds-prefix-work [core facts]
+  (if (body-ds? facts)
+    (let [slots (loop [remaining (get core :function-records) work 0]
+                  (if (= 0 (count remaining)) work
+                    (let [record (first remaining)]
+                      (recur (rest remaining)
+                        (+ work (* 6 (count (get (get record :signature) :parameters)))
+                           (count (get record :parameter-binding-ids)))))))
+          parameters (loop [remaining (get facts :function-type-table) work 0]
+                       (if (= 0 (count remaining)) work
+                         (recur (rest remaining) (+ work (* 3 (count (get (first remaining) :parameters)))))))]
+      (+ (* 12 (count (get core :nodes))) (* 12 (count (get core :call-edges)))
+         (* 8 (count (get core :calls))) (* 4 (count (get core :function-records)))
+         (* 4 (count (get facts :function-type-table))) (* 4 (count (get core :definitions)))
+         (* 4 (count (get core :lexical-bindings))) slots parameters)) 0))
+
 (defn body-analyze-module [request facts foreign budget]
-  (let [core (get request :canonical-core-artifact)]
+  (let [core (get request :canonical-core-artifact)
+        ; Three independent proof reconstructions plus the capture census use
+        ; indexed linear node/call/edge walks. Charge their bounded visits once
+        ; into this module's existing cumulative allowance.
+        declared-work (body-ds-prefix-work core facts)
+        budget (- budget declared-work)]
+    (if (< budget 0) (body-failure :body-deferred-work-limit)
     (if (body-shape-valid? core facts)
     (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)
         associations (body-ma-context request facts bindings budget)
@@ -6836,9 +7184,16 @@
                                    :round-count (get derived :fixed-point-rounds) :equations :checked
                                    :recur-transfers (get core :recur-transfers)}) graph)]
                       (if (contains? facts :recursive-proof)
-                        (assoc graph :recursive-fixed-point {:algorithm :bottom-initialized-bounded-effect-union
+                        (assoc graph :recursive-fixed-point {:algorithm (if (body-ds? facts)
+                                                                 :bottom-initialized-bounded-effect-and-error-union
+                                                                 :bottom-initialized-bounded-effect-union)
                           :round-count (get derived :fixed-point-rounds) :equations :checked
-                          :recursive-call-core-node-id (get (get facts :recursive-proof) :recursive-call-core-node-id)}) graph))
+                          :recursive-call-core-node-id (if (body-ds? facts)
+                                                         (get (get facts :recursive-proof) :self-call-core-node-id)
+                                                         (get (get facts :recursive-proof) :recursive-call-core-node-id))}) graph))
+                  graph (if (body-ds? facts)
+                          (assoc graph :recursive-source-error-equations (get propagated :rows)
+                            :recursive-source-handler-equations (get handler-check :checked-handler-equations [])) graph)
                   graph (loop [ids (keys (get propagated :functions)) out graph]
                           (if (= 0 (count ids)) out
                             (recur (rest ids)
@@ -6849,14 +7204,14 @@
                               (- budget (get handlers :work-count) (get throws :work-count) (get derived :work-count)
                                         (get handler-check :work-count) (get propagated :work-count))) propagated)]
               (if (= :accepted (get allowed :status))
-                {:status :accepted :graph graph :work-count (+ source-work (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
+                {:status :accepted :graph graph :work-count (+ declared-work source-work (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
                                                              (get propagated :work-count) (get allowed :work-count))} allowed)) derived))
         (body-failure :incoherent-function-or-call-body-type-origin-join))
       (if (= :accepted (get returns :status))
         (assoc joins :work-count source-work)
         (if (= :accepted (get successors :status))
           (assoc returns :work-count (+ prior-source-work (get returns :work-count 0))) returns))))
-      (body-failure :incomplete-canonical-core-coverage))))
+      (body-failure :incomplete-canonical-core-coverage)))))
 
 (defn body-analyze-producers [entries]
   (loop [remaining entries bank {} work 0]

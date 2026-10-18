@@ -2814,8 +2814,9 @@ retain the existing C6 transfer restrictions; a nested loop establishes its
 own target. Function-target recur uses the current function's declared parameter
 slots, not types guessed from a caller. Its matching activation replaces all
 parameters together in a fresh local environment and retains the same call
-path. Ordinary recursive calls still have the existing cycle restriction;
-function recur is a backedge, not another ordinary call.
+path. Function recur is a backedge, not another ordinary call. The separate
+declared direct-self path below uses real ordinary activations; it does not
+turn those calls into recur or provide tail-call optimization.
 
 The function-target increment passed its six-input affected composition: one
 test/276 assertions. Use its existing selector when validating that changed
@@ -3271,7 +3272,71 @@ boundary. Transitive imports, callable values, general recursive propagation,
 throw/try, provider/grant legality, target execution and authoritative migration
 remain separate work.
 
-### Bounded self-recursive body analysis
+### Declared ordinary direct-self calls
+
+The current development increment accepts a fully declared, monomorphic,
+fixed-arity named function with one direct self-call in a singleton component,
+using the supported atomic or homogeneous-List parameter and return types.
+Change the existing C7 engine, effects, emitter and runtime owners together
+when this boundary changes. C7 uses the complete parameter and return types
+as value assumptions, then checks the actual body and every incoming and
+self-call argument. A declaration is not an inferred effect or error summary.
+C8 reconstructs the source-bound proof and derives effects and escaping error
+types from bottom; fresh verification rejects nonleast candidate graphs even
+when their equations hold.
+
+Use the existing focused checks, selecting only the changed component:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-recursive-function-type-test \
+  --exact current-gravity-declared-self-value-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-declared-self-effects-development-kernel \
+  --exact current-gravity-declared-self-prefix-work-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --exact current-gravity-declared-self-caller-loop-effects-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-declared-self-lowering-development-kernel \
+  --exact current-gravity-declared-self-runtime-development-kernel --fail-fast
+# Only when changing the paired-source comparison:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-typed-function-path-parity-development-kernel --fail-fast
+# Affected source composition, not the ordinary edit/test inner loop:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-declared-self-authenticated-composition --fail-fast
+```
+
+The runtime retains target, arity and activation-path checks before argument
+evaluation, once-only left-to-right operands and fresh activation locals. It
+allows the current function's contiguous self-activation suffix, not an
+indirect cycle through another function. The existing path limit remains;
+cheap supplied-path controls do not prove host-stack safety at that depth.
+An acyclic caller may use its existing explicit function recur while calling
+the self-recursive function. That combination uses one effect/error and loop
+summary fixed point under the unchanged cumulative work budget.
+
+The paired source selector exercises String List traversal with transformed
+`rest` and `str` arguments, empty/one/two-element results, a deeper String throw,
+argument transfer and a Bool caller recur. Rejected sources cover a wrong
+self-argument, a wrong body return and missing source effect allowance. Its
+actual validation result is recorded in the backlog, not implied by listing
+the command here. Do not replay an unchanged expensive composition to edit
+this guidance.
+
+This increment excludes inferred recursive signatures, mutual or indirect
+recursion, arbitrary captures and non-core named helpers inside the self body,
+and try/loop/recur inside that body. These are current implementation frontiers,
+not language-wide prohibitions. It proves neither termination nor TCO, fatal
+host-error normalization, full profile/provider legality, target completeness,
+authoritative migration or self-hosting.
+
+### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,
 positive-fixed-arity positional-call/literal-base proof. Positive arity means a

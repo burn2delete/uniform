@@ -4128,6 +4128,9 @@
           result)))))
 
 (defn sh08-ft-recursive-diagnostic [proof module]
+  (if (= :declared-self-work-limit (get proof :reason))
+    (sh08-ft-diagnostic "C7-GENERIC" (get proof :node {}) module
+      :bounded-declared-self-work (get proof :work-count) :declared-self-work-limit {})
   (let [node (get proof :node)
         diagnostic
         (sh08-ft-diagnostic
@@ -4140,7 +4143,7 @@
          {})]
     (if (map? (get proof :component))
       (assoc diagnostic :recursive-component (get proof :component))
-      diagnostic)))
+      diagnostic))))
 
 (defn sh08-ft-recursive-proof
   [nodes definitions bindings function-records calls edges recursion-components
@@ -4310,8 +4313,156 @@
          :reason :multiple-recursive-components
          :component recursion-components}))))
 
+; L5/C7: declared VALUE signatures break one ordinary named self SCC.
+; This structural premise grants no effect, error, termination or stack fact.
+; All body nodes and all incoming arguments still pass ordinary inference.
+(defn sh08-ds-type? [type]
+  (if (sh08-hl-type? type) true
+    (contains? #{:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
+                :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
+                :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio} type)))
+
+(defn sh08-ds? [proof]
+  (= :sh08-declared-self-value-v1 (get proof :rule-version)))
+
+(defn sh08-ds-proof [shape products bindings module]
+  (let [nodes (get shape :nodes) records (get products :function-records)
+        calls (get products :calls) edges (get products :call-edges)
+        components (get products :recursion-components)
+        locals (get products :lexical-bindings)
+        ; The legacy attempt zips calls/edges, walks each argument twice and
+        ; looks up the definition binding once per call. It does not scan the
+        ; whole node/edge census for each call.
+        argument-work (loop [remaining calls work 0]
+                        (if (= 0 (count remaining)) work
+                          (recur (rest remaining) (+ work (* 2 (count (get (first remaining) :argument-node-ids)))))))
+        base (+ 32 (* 8 (count nodes)) (* 8 (count calls)) (* 4 (count edges))
+                (* 4 (count bindings)) (* 4 (count records)) (* 4 (count locals))
+                argument-work (* (count calls) (count bindings)))]
+    (if (> base 65536)
+      {:status :rejected :reason :declared-self-work-limit :work-count base}
+      (if (= 1 (count components))
+        (let [component (first components) id (first (get component :function-syntax-ids))
+              record (sh08-ft-function-by-syntax-id records id)
+              definition (sh08-ft-definition-by-binding-id (get products :definitions) (get record :definition-binding-id))
+              signature (get record :signature) declarations (get signature :parameters)
+              arity (get record :fixed-arity) node-table (sh08-ft-node-index nodes)
+              binding-table (sh08-ft-binding-index bindings)
+              ordinal (first (get component :internal-call-edge-ordinals))
+              edge (if (integer? ordinal) (get edges ordinal) nil)
+              call (sh08-ft-higher-order-call-by-node-id calls (get edge :call-core-node-id))
+              call-node (get node-table (get call :core-node-id))
+              parameter-types (loop [remaining declarations out []]
+                                (if (= 0 (count remaining)) out
+                                  (recur (rest remaining) (conj out (get (first remaining) :type-id)))))
+              local-ids (loop [remaining locals out (set (get record :parameter-binding-ids))]
+                          (if (= 0 (count remaining)) out
+                            (let [local (first remaining) owner (get (get (get node-table (get local :let-core-node-id)) :evaluation) :owner-function-syntax-id)]
+                              (recur (rest remaining) (if (= owner id) (conj out (get local :binding-id)) out)))))
+              owned (loop [remaining nodes out []]
+                      (if (= 0 (count remaining)) out
+                        (let [node (first remaining)]
+                          (recur (rest remaining)
+                            (if (= id (get (get node :evaluation) :owner-function-syntax-id))
+                              (conj out (get node :node-id)) out)))))
+              incoming (loop [remaining edges out []]
+                         (if (= 0 (count remaining)) out
+                           (recur (rest remaining)
+                             (if (= id (get (first remaining) :callee-function-syntax-id))
+                               (conj out (get (first remaining) :call-core-node-id)) out))))
+              references? (loop [remaining nodes]
+                            (if (= 0 (count remaining)) true
+                              (let [node (first remaining) bid (get (get node :attributes) :binding-id)
+                                    binding (get binding-table bid)]
+                                (if (if (= id (get (get node :evaluation) :owner-function-syntax-id))
+                                      (if (contains? #{:try :loop :recur} (get node :core-form)) false
+                                        (if (= :reference (get node :core-form))
+                                          (if (contains? local-ids bid) true
+                                            (if (= bid (get record :definition-binding-id))
+                                              (= (get node :node-id) (first (get call-node :children)))
+                                              (= [:core :var 'gravity.core]
+                                                 [(get binding :binding-class) (get binding :kind) (get binding :namespace)]))) true)) true)
+                                  (recur (rest remaining)) false))))
+              census? (loop [remaining edges index 0 self-count 0]
+                        (if (= 0 (count remaining)) (= 1 self-count)
+                          (let [current (first remaining) current-call (get calls index)
+                                current-node (get node-table (get current :call-core-node-id))
+                                self? (= id (get current :caller-function-syntax-id) (get current :callee-function-syntax-id))]
+                            (if (sh08-ft-all-true?
+                                  [(= index (get current :ordinal))
+                                   (= (get current :call-core-node-id) (get current-call :core-node-id))
+                                   (= (get current :argument-core-node-ids) (get current-call :argument-node-ids))
+                                   (= (get current :ordered-evaluation-node-ids) (get current-call :ordered-evaluation-node-ids) (get current-node :children))
+                                   (= :operator-then-arguments (get current :evaluation-order) (get current-call :evaluation-order))
+                                   (if (= id (get current :callee-function-syntax-id))
+                                     (sh08-ft-all-true?
+                                       [(= :local-function (get current :classification))
+                                        (= (get record :function-core-node-id) (get current :callee-function-core-node-id))
+                                        (= (get record :definition-binding-id) (get current :callee-binding-id) (get current-call :operator-binding-id))
+                                        (= arity (count (get current-call :argument-node-ids)))
+                                        (= (get current :caller-function-syntax-id) (get (get current-node :evaluation) :owner-function-syntax-id))]) true)])
+                              (recur (rest remaining) (+ index 1) (if self? (+ self-count 1) self-count)) false))))]
+          (if (sh08-ft-all-true?
+                [(= (count calls) (count edges))
+                 (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
+                     :function-core-node-ids [(get record :function-core-node-id)]
+                     :internal-call-edge-ordinals [ordinal]} component)
+                 (= :named-top-level (get record :definition-kind))
+                 (if (integer? arity) (if (> arity 0) (<= arity 1024) false) false)
+                 (vector? declarations) (= arity (count declarations) (count (get record :parameter-binding-ids)))
+                 (map? (get signature :return))
+                 (sh08-ds-type? (get (get signature :return) :type-id))
+                 (loop [remaining parameter-types]
+                   (if (= 0 (count remaining)) true
+                     (if (sh08-ds-type? (first remaining)) (recur (rest remaining)) false)))
+                 (sh08-ft-recursive-call-edge-valid? edge call call-node record definition bindings true)
+                 references? census?])
+            {:status :accepted :rule-version :sh08-declared-self-value-v1
+             :component component :function-record record :function-syntax-id id
+             :function-node (get node-table (get record :function-core-node-id))
+             :definition definition :recursive-call call :recursive-edge edge :recursive-node call-node
+             :self-call-core-node-id (get call :core-node-id)
+             :parameter-types parameter-types :declared-return-type (get (get signature :return) :type-id)
+             :owned-node-ids owned :incoming-call-node-ids incoming :work-count base :module module}
+            {:status :rejected :reason :declared-self-signature-census-or-capture :work-count base :node call-node}))
+        {:status :rejected :reason :declared-self-single-component-required :work-count base}))))
+
+(defn sh08-ds-proof-input [proof]
+  (let [record (get proof :function-record)]
+    {:domain :gravity/sh08-declared-self-value-proof-v1
+     :function-syntax-id (get record :function-syntax-id)
+     :function-core-node-id (get record :function-core-node-id)
+     :definition-binding-id (get record :definition-binding-id)
+     :definition-syntax-id (get (get proof :definition) :syntax-id)
+     :body-core-node-id (get record :body-core-node-id)
+     :parameter-binding-ids (get record :parameter-binding-ids)
+     :parameter-types (get proof :parameter-types)
+     :declared-return-type (get proof :declared-return-type)
+     :signature (get record :signature) :component (get proof :component)
+     :self-call-core-node-id (get proof :self-call-core-node-id)
+     :self-call (get proof :recursive-call) :self-edge (get proof :recursive-edge)
+     :self-call-source (get (get proof :recursive-node) :source)
+     :owned-node-ids (get proof :owned-node-ids)
+     :incoming-call-node-ids (get proof :incoming-call-node-ids)
+     :value-check :complete-body-and-all-incoming-arguments
+     :effect-error-status :pending-sh09-recursive-body
+     :captures :own-parameters-and-lexical-locals-only
+     :work-count (get proof :work-count)}))
+
+(defn sh08-ds-call-facts [proof canonical]
+  (let [incoming (set (get proof :incoming-call-node-ids))]
+  (loop [remaining canonical out []]
+    (if (= 0 (count remaining)) out
+      (let [fact (first remaining) id (get fact :call-core-node-id)]
+        (recur (rest remaining)
+          (if (contains? incoming id)
+            (conj out (assoc fact :role (if (= id (get proof :self-call-core-node-id)) :self-recursive-call :incoming-declared-call)))
+            out)))))))
+
 (defn sh08-ft-recursive-complete-function
   [skeleton proof]
+  (if (sh08-ds? proof) skeleton
   (let [parameter-ids (get (get proof :function-record) :parameter-binding-ids)
         parameter-types (get proof :parameter-types)
         parameters
@@ -4329,9 +4480,10 @@
        :parameters parameters)
       :return (get proof :base-type))
      :source-span
-     (get (get (get proof :function-node) :source) :semantic-span))))
+     (get (get (get proof :function-node) :source) :semantic-span)))))
 
 (defn sh08-ft-recursive-proof-input [proof]
+  (if (sh08-ds? proof) (sh08-ds-proof-input proof)
   (let [record (get proof :function-record)
         definition (get proof :definition)
         call (get proof :recursive-call)
@@ -4390,7 +4542,7 @@
      :one-named-self-recursive-positive-fixed-arity-positional-literal-base
      :captures? false
      :higher-order? false
-     :monotone-fixed-point? true}))
+     :monotone-fixed-point? true})))
 
 (defn sh08-ft-call-fact-by-id [facts call-id]
   (if (= (count facts) 0)
@@ -4400,6 +4552,7 @@
       (sh08-ft-call-fact-by-id (rest facts) call-id))))
 
 (defn sh08-ft-recursive-call-proof-facts [proof canonical-call-facts]
+  (if (sh08-ds? proof) (sh08-ds-call-facts proof canonical-call-facts)
   (let [record (get proof :function-record)
         call (get proof :recursive-call)
         edge (get proof :recursive-edge)
@@ -4426,9 +4579,17 @@
       :parameter-evidence? true
       :external-edge (sh08-ft-higher-order-edge-projection evidence-edge)
       :argument-types (get parameter-evidence :types)
-      :result-type (first (get parameter-evidence :types)))]))
+      :result-type (first (get parameter-evidence :types)))])))
 
 (defn sh08-ft-recursive-constraint-ledger [proof]
+  (if (sh08-ds? proof)
+    [{:constraint-id-request {:domain :gravity/sh08-declared-self-value-constraint-v1
+                             :premise (sh08-ds-proof-input proof)}
+      :kind :recursive-declared-value :producer-rule :sh08-declared-self-value-v1
+      :lhs (get proof :function-syntax-id) :rhs (get proof :declared-return-type)
+      :dependencies (sh08-ds-proof-input proof)
+      :profile (get (get proof :module) :profile) :target (get (get proof :module) :target)
+      :status :solved :diagnostics []}]
   [{:constraint-id-request
     {:domain :gravity/sh08-recursive-call-constraint-v1
      :function-syntax-id (get proof :function-syntax-id)
@@ -4441,7 +4602,7 @@
     :profile (get (get proof :module) :profile)
     :target (get (get proof :module) :target)
     :status :solved
-    :diagnostics []}])
+    :diagnostics []}]))
 
 (defn sh08-ft-update-param-types [function-types binding-types]
   (loop [remaining (keys function-types)
@@ -4502,14 +4663,14 @@
     (if (= then-type else-type)
       (if (sh08-ft-known? then-type)
         then-type
-        (if (= :accepted (get context :status))
+        (if (if (= :accepted (get context :status)) (contains? context :recursive-call-core-node-id) false)
           (if (if (= then-id (get context :recursive-call-core-node-id))
                 true
                 (= else-id (get context :recursive-call-core-node-id)))
             (get context :recursive-base-type :gravity.type/unknown)
             :gravity.type/unknown)
           :gravity.type/unknown))
-      (if (= :accepted (get context :status))
+      (if (if (= :accepted (get context :status)) (contains? context :recursive-call-core-node-id) false)
         (if (= then-id (get context :recursive-call-core-node-id))
           (if (sh08-ft-known? else-type)
             else-type
@@ -11875,7 +12036,7 @@
       {})))
 
 (defn sh08-ft-proof-results [shape products bindings module]
-  (let [recursive-proof
+  (let [legacy-recursive-proof
         (if (> (count (get products :recursion-components)) 0)
           (sh08-ft-recursive-proof
            (get shape :nodes)
@@ -11887,6 +12048,12 @@
            (get products :recursion-components)
            module)
           {:status :not-applicable :reason :no-recursive-component})
+        recursive-proof
+        (if (= :rejected (get legacy-recursive-proof :status))
+          (let [declared (sh08-ds-proof shape products bindings module)]
+            (if (= :accepted (get declared :status)) declared
+              (if (= :declared-self-work-limit (get declared :reason)) declared legacy-recursive-proof)))
+          legacy-recursive-proof)
         higher-order-proof
         (sh08-ft-higher-order-proof
          (get shape :nodes)
@@ -12041,17 +12208,20 @@
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
                    :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
                    :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings :ordering-core core-artifact
+                   :loop-work-left (- 65536 (if (sh08-ds? recursive-proof) (get recursive-proof :work-count) 0))
                    :shape-call-products (assoc products :module module)))
                 handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
                 direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
                                 (- 65536 (get handler-products :work-count 0)))
-                throw-products (if (if (= :accepted (get direct-throws :status))
+                throw-products (if (sh08-ds? recursive-proof)
+                                 (assoc direct-throws :recursive-error-status :pending-sh09-recursive-body)
+                                 (if (if (= :accepted (get direct-throws :status))
                                      (if (= [] (get unprojected-inference :diagnostics))
                                        (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
                                  (sh08-tc-products core-artifact (get unprojected-inference :type-table)
                                    (get unprojected-inference :function-types) bindings direct-throws
-                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws)
-                raw-inference (if (= 0 (count (get throw-products :throws))) unprojected-inference
+                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws))
+                raw-inference (if (if (sh08-ds? recursive-proof) true (= 0 (count (get throw-products :throws)))) unprojected-inference
                   (assoc unprojected-inference
                     :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
                     :function-types (sh08-th-type-map (get unprojected-inference :function-types) (get throw-products :throws))))
@@ -12100,7 +12270,8 @@
                  (get inference :function-types)
                  nodes module)
                 final-functions
-                (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws))]
+                (if (sh08-ds? recursive-proof) (sh08-ft-final-functions functions)
+                  (sh08-th-functions (sh08-ft-final-functions functions) (get throw-products :throws)))]
             (if (> (count (get inference :diagnostics)) 0)
               {:artifact :gravity/sh08-function-typed-core-template
                :schema-version 3
@@ -12155,7 +12326,8 @@
                        :monotone-finite-type-fact-propagation}
                       identity-input-base
                       {:domain (if recursive?
-                                :gravity/sh08-recursive-function-typed-core-v1
+                                (if (sh08-ds? recursive-proof) :gravity/sh08-declared-self-value-typed-core-v1
+                                  :gravity/sh08-recursive-function-typed-core-v1)
                                 (if (sh08-ft-any-signature? (get products :function-records))
                                   :gravity/sh08-atomic-function-signature-typed-core-v1 :gravity/sh08-function-typed-core-v3))
                        :sh07-shaped-artifact-id
@@ -12236,7 +12408,8 @@
                    :schema-version 3
                    :status :accepted
                    :scope (if recursive?
-                            :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
+                            (if (sh08-ds? recursive-proof) :declared-monomorphic-named-self-value
+                              :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base)
                             (if higher-order?
                               :capture-free-higher-order-fixed-arity-one-hop
                               :first-order-fixed-arity-functions-locals-calls))
@@ -12657,6 +12830,13 @@
         (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-limit nil))) result)))
 
 (defn sh08-ft-local-verification-checks [expected]
+  (if (= :declared-monomorphic-named-self-value (get expected :scope))
+    [:coherent-b47-function-records :coherent-b47-call-edges :coherent-b47-recursion-components
+     :coherent-b47-lexical-bindings :complete-monomorphic-declared-self-value-signature
+     :complete-body-and-incoming-call-value-checks :single-ordinary-self-edge
+     :recursive-effects-and-errors-pending-sh09 :recursive-call-facts :recursive-constraint-ledger
+     :canonical-complete-function-signatures :source-syntax-origin-generated-origin-links-preserved
+     :path-neutral-identity-input]
   (if (= :bounded-named-self-recursive-positive-fixed-arity-positional-literal-base
          (get expected :scope))
     [:coherent-b47-function-records
@@ -12698,7 +12878,7 @@
      :constraint-ledger
      :source-syntax-origin-generated-origin-links-preserved
      :path-neutral-identity-input
-     :recursive-inference-rejected-without-annotation])))
+     :recursive-inference-rejected-without-annotation]))))
 
 (defn sh08-ft-verification-checks [expected]
   (if (= :direct-imported-functions-types-only (get expected :scope))

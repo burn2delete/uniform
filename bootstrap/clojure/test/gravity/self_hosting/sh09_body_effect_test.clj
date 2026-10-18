@@ -2556,6 +2556,125 @@
                :type-table {(sha 1) :gravity.type/bool} :call-type-facts []}]
     [core facts]))
 
+(defn- declared-self-kernel-data []
+  (let [[old-core old-facts] (recursive-kernel-data)
+        owner #(assoc-in % [:evaluation :owner-function-syntax-id] (sha 20))
+        signature {:parameters [{:type-id :gravity.type/string}]
+                   :return {:type-id :gravity.type/string}}
+        function {:function-id (sha 20) :body-core-node-id (sha 6)
+                  :parameters [{:binding-id (sha 51) :type :gravity.type/string}]
+                  :return :gravity.type/string :latent-effects [:error/throw]
+                  :thrown-error-effects [:pending-sh09]}
+        payload (owner (assoc (node 12 :literal []) :attributes {:literal-kind :string :value "deep"}))
+        nodes (-> (:nodes old-core)
+                  (assoc 2 (owner (assoc (node 3 :literal []) :attributes {:literal-kind :string :value "next"})))
+                  (assoc 4 (owner (node 5 :throw [12])))
+                  (assoc-in [9 :attributes] {:literal-kind :string :value "entry"})
+                  (conj payload))
+        calls [(assoc (get-in old-core [:calls 0])
+                      :operator-binding-id (sha 50)
+                      :ordered-evaluation-node-ids (mapv sha [2 3])
+                      :evaluation-order :operator-then-arguments)
+               (assoc (get-in old-core [:calls 1]) :operator-binding-id (sha 50))]
+        core (-> old-core (assoc :nodes nodes :calls calls :lexical-bindings [])
+                 (assoc-in [:module :effects] [:error/throw])
+                 (assoc-in [:function-records 0 :signature] signature))
+        bindings {(sha 50) {:binding-id (sha 50)} (sha 51) {:binding-id (sha 51)}}
+        work (+ 32 (* 8 (count nodes)) (* 8 (count calls)) (* 4 (count (:call-edges core)))
+                (* 4 (count bindings)) (* 4 (count (:function-records core)))
+                (* 2 (reduce + (map (comp count :argument-node-ids) calls)))
+                (* (count calls) (count bindings)))
+        proof {:domain :gravity/sh08-declared-self-value-proof-v1
+               :function-syntax-id (sha 20) :function-core-node-id (sha 7)
+               :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
+               :body-core-node-id (sha 6) :parameter-binding-ids [(sha 51)]
+               :parameter-types [:gravity.type/string] :declared-return-type :gravity.type/string
+               :signature signature :component (first (:recursion-components core))
+               :self-call-core-node-id (sha 4) :self-call (first calls) :self-edge (first (:call-edges core))
+               :self-call-source (:source (get nodes 3))
+               :owned-node-ids (mapv :node-id (filter #(= (sha 20) (get-in % [:evaluation :owner-function-syntax-id])) nodes))
+               :incoming-call-node-ids (mapv sha [4 11])
+               :value-check :complete-body-and-all-incoming-arguments
+               :effect-error-status :pending-sh09-recursive-body
+               :captures :own-parameters-and-lexical-locals-only :work-count work}
+        types (merge (zipmap (map :node-id nodes) (repeat :gravity.type/string))
+                     {(sha 1) :gravity.type/bool (sha 5) :gravity.type/never (sha 7) function (sha 8) function})
+        facts {:recursive-proof proof :function-type-table [function] :type-table types :constraint-ledger []
+               :call-type-facts [{:call-core-node-id (sha 4) :result-type :gravity.type/string}
+                                {:call-core-node-id (sha 11) :result-type :gravity.type/string}]}]
+    [core facts bindings]))
+
+(deftest current-gravity-declared-self-prefix-work-development-kernel
+  (let [[core facts] (declared-self-kernel-data)
+        original (leaf 'body-ds-prefix-work core facts)
+        width 1024
+        wide-core (-> core
+                      (assoc-in [:function-records 0 :parameter-binding-ids] (vec (range width)))
+                      (assoc-in [:function-records 0 :signature :parameters]
+                                (vec (repeat width {:type-id :gravity.type/string}))))
+        wide-facts (assoc-in facts [:function-type-table 0 :parameters]
+                             (vec (repeat width {:type :gravity.type/string})))
+        wide (leaf 'body-ds-prefix-work wide-core wide-facts)]
+    (is (= (* 10 (dec width)) (- wide original)))
+    (is (< original wide 65536))
+    (is (= 0 (leaf 'body-ds-prefix-work wide-core (dissoc wide-facts :recursive-proof))))
+    (is (= :body-deferred-work-limit
+           (:reason (leaf 'body-analyze-module {:canonical-core-artifact wide-core}
+                          wide-facts {} (dec wide)))))
+    ;; Exact prefix budget passes the prefix guard, then this deliberately
+    ;; incomplete normalized carrier fails ordinary canonical coverage.
+    (is (= :incomplete-canonical-core-coverage
+           (:reason (leaf 'body-analyze-module {:canonical-core-artifact wide-core}
+                          wide-facts {} wide))))))
+
+(deftest current-gravity-declared-self-effects-development-kernel
+  (let [[core facts bindings] (declared-self-kernel-data)
+        derived (leaf 'body-derive-recursive-nodes core facts {} 65536)
+        graph (:nodes derived)
+        checked (leaf 'body-tc-verify core facts bindings graph {:active? true} 65536)]
+    (is (true? (leaf 'body-recursive-proof-valid? core facts)))
+    (is (true? (leaf 'body-ds-captures-valid? core facts bindings)))
+    (is (= :accepted (:status derived)))
+    (is (= :effects-and-escaping-error-types (:summary-domain derived)))
+    (is (> (:fixed-point-rounds derived) 1))
+    (is (= #{:error/throw} (get-in graph [(sha 4) :transitive])))
+    (is (= [:gravity.type/string] (get-in graph [(sha 4) :escaping-thrown-error-types])))
+    (is (= [:gravity.type/string] (get-in graph [(sha 6) :escaping-thrown-error-types])))
+    (is (= [:gravity.type/string] (get-in graph [(sha 11) :escaping-thrown-error-types])))
+    (is (= [:gravity.type/string] (get-in graph [(sha 4) :throw-call-dependency :callee-error-types])))
+    (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
+    (is (= :accepted (:status checked)))
+    (is (= {(sha 20) [:gravity.type/string]} (:functions checked)))
+    (is (= 2 (count (:rows checked))))
+    (is (every? #(= :sh09-declared-self-error-equation-v1 (:producer-rule %)) (:rows checked)))
+    (is (= [:self-recursive-call :incoming-declared-call]
+           (mapv :role (leaf 'body-recursive-call-facts facts))))
+    (is (= :accepted (:status (leaf 'body-derive-recursive-nodes core facts {} (:work-count derived)))))
+    (is (= :body-deferred-work-limit
+           (:reason (leaf 'body-derive-recursive-nodes core facts {} (dec (:work-count derived))))))
+    (doseq [budget [0 1 (dec (count (:nodes core)))]]
+      (is (= :body-deferred-work-limit (:reason (leaf 'body-derive-recursive-nodes core facts {} budget)))))
+    (doseq [bad [(assoc-in facts [:recursive-proof :self-call-core-node-id] (sha 99))
+                 (assoc-in facts [:recursive-proof :owned-node-ids] [])
+                 (assoc-in facts [:recursive-proof :incoming-call-node-ids] [(sha 4)])
+                 (assoc-in facts [:recursive-proof :self-edge :ordinal] 9)
+                 (assoc-in facts [:recursive-proof :declared-return-type] :gravity.type/bool)
+                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [])]]
+      (is (false? (leaf 'body-recursive-proof-valid? core bad))))
+    (let [bad (assoc-in core [:nodes 2 :attributes :binding-id] (sha 99))
+          reference (assoc-in bad [:nodes 2 :core-form] :reference)]
+      (is (false? (leaf 'body-ds-captures-valid? reference facts bindings))))
+    (is (= :rejected
+           (:status (leaf 'body-tc-verify core facts bindings
+                          (assoc-in graph [(sha 4) :escaping-thrown-error-types] [])
+                          {:active? true} 65536))))
+    (let [inflated (leaf 'body-derive-nodes-pass core facts {} 65536 (:recursive-proof facts)
+                         {:transitive #{:error/throw} :escaping-thrown-errors #{:gravity.type/string :gravity.type/bool}
+                          :escaping-thrown-error-types [:gravity.type/string :gravity.type/bool]})]
+      (is (= :accepted (:status inflated)))
+      (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes inflated))))
+      (is (not= graph (:nodes inflated))))))
+
 (deftest body-effect-recursive-proof-development-kernel
   (let [[core facts] (recursive-kernel-data)]
     (is (true? (leaf 'body-recursive-proof-valid? core facts)))

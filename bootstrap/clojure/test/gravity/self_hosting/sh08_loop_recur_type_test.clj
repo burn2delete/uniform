@@ -200,6 +200,82 @@
                    (:constraints checked))]
     [core {:module module :type-table table :constraint-ledger rows :function-type-table []} ids]))
 
+(deftest current-gravity-declared-self-caller-loop-effects-development-kernel
+  (let [[self-core self-facts self-bindings] ((body-helper 'declared-self-kernel-data))
+        [old-loop old-facts old-ids] (effect-loop-data)
+        replacements (zipmap (vals old-ids)
+                             (map #(str "sha256:" (format "%064x" %)) (range 1000 1100)))
+        [loop-core loop-facts ids] (walk/postwalk-replace replacements [old-loop old-facts old-ids])
+        caller (ids :function-target)
+        call-id (get-in self-core [:calls 1 :core-node-id])
+        caller-nodes (mapv (fn [node]
+                            (cond
+                              (= (ids :result) (:node-id node))
+                              (-> node (assoc :core-form :do :children [call-id] :attributes {} :resolved-binding-ids [])
+                                  (assoc :evaluation {:kind :left-to-right :owner-function-syntax-id caller
+                                    :order [{:index 0 :core-node-id call-id}]}))
+                              (contains? #{:fn :def} (:core-form node)) node
+                              :else (assoc-in node [:evaluation :owner-function-syntax-id] caller)))
+                          (:nodes loop-core))
+        external-ids (set (map #(get-in self-core [:nodes % :node-id]) [8 9 10]))
+        self-nodes (mapv #(if (contains? external-ids (:node-id %))
+                           (assoc-in % [:evaluation :owner-function-syntax-id] caller) %) (:nodes self-core))
+        core (-> self-core
+                 (assoc :nodes (into self-nodes caller-nodes))
+                 (merge (select-keys loop-core [:loop-bindings :recur-targets :recur-transfers :identity-preimage]))
+                 (update :binding-table into (:binding-table loop-core))
+                 (update :function-records conj {:function-syntax-id caller :function-core-node-id caller
+                   :body-core-node-id (ids :loop-target) :definition-kind :named-top-level :fixed-arity 0 :parameter-binding-ids []})
+                 (assoc-in [:call-edges 1 :caller-function-syntax-id] caller)
+                 (assoc-in [:call-edges 1 :caller-function-core-node-id] caller))
+        caller-function {:function-id caller :body-core-node-id (ids :loop-target) :parameters []
+                         :return :gravity.type/string :latent-effects [:error/throw] :thrown-error-effects [:pending-sh09]}
+        bindings (into self-bindings (map (juxt :binding-id identity) (:binding-table loop-core)))
+        c7-work (+ 32 (* 8 (count (:nodes core))) (* 8 (count (:calls core))) (* 4 (count (:call-edges core)))
+                   (* 4 (count bindings)) (* 4 (count (:function-records core)))
+                   (* 2 (reduce + (map (comp count :argument-node-ids) (:calls core))))
+                   (* (count (:calls core)) (count bindings)))
+        facts (-> self-facts
+                  (assoc :module (:module self-core) :constraint-ledger (:constraint-ledger loop-facts))
+                  (update :type-table merge (:type-table loop-facts)
+                          {(ids :result) :gravity.type/string (ids :branch) :gravity.type/string
+                           (ids :loop-target) :gravity.type/string caller caller-function})
+                  (update :function-type-table conj caller-function)
+                  (assoc-in [:recursive-proof :work-count] c7-work))
+        derived (effects 'body-derive-module-nodes core facts {} 65536)
+        graph (:nodes derived)
+        checked (effects 'body-tc-verify core facts bindings graph {:active? true} 65536)
+        self-call (get-in facts [:recursive-proof :self-call-core-node-id])]
+    (is (true? (effects 'body-recursive-proof-valid? core facts)))
+    (is (true? (effects 'body-ds-captures-valid? core facts bindings)))
+    (is (= :accepted (:status derived)) (pr-str derived))
+    (is (true? (:recur-control? derived)))
+    (is (= :effects-and-escaping-error-types (:summary-domain derived)))
+    (is (= :effects-with-lexical-child-source-errors (:loop-summary-domain derived)))
+    (is (= [:gravity.type/string] (get-in graph [self-call :escaping-thrown-error-types])))
+    (is (= [:gravity.type/string] (get-in graph [(ids :loop-target) :escaping-thrown-error-types])))
+    (is (= #{:error/throw} (get-in graph [(ids :transfer) :transitive])))
+    ;; Recur's source errors remain its lexical argument errors. Function
+    ;; error propagation is a separate fixed point, not a loop error backedge.
+    (is (= [] (effects 'body-error-types graph (ids :transfer))))
+    (is (true? (effects 'body-graph-equations-valid? core facts {} graph)))
+    (is (= :accepted (:status checked)))
+    (is (= [:gravity.type/string] (get-in checked [:functions caller])))
+    (is (= :accepted (:status (effects 'body-derive-module-nodes core facts {} (:work-count derived)))))
+    (is (= :body-deferred-work-limit
+           (:reason (effects 'body-derive-module-nodes core facts {} (dec (:work-count derived))))))
+    (doseq [budget [0 1 10]]
+      (is (= :body-deferred-work-limit (:reason (effects 'body-derive-module-nodes core facts {} budget)))))
+    (doseq [bad [#{:error/throw} nil {:transitive #{:error/throw}}
+                 {:transitive #{} :escaping-thrown-errors #{} :escaping-thrown-error-types [:gravity.type/string]}]]
+      (is (= :malformed-declared-self-summary
+             (:reason (effects 'body-derive-nodes-pass core facts {} 65536
+                                (assoc (:recursive-proof facts) :loop-summaries {}) bad)))))
+    (is (= :rejected
+           (:status (effects 'body-tc-verify core facts bindings
+                              (assoc-in graph [call-id :escaping-thrown-error-types] [])
+                              {:active? true} 65536))))))
+
 (deftest loop-effect-backedge-development-kernel
   (let [[core facts ids] (effect-loop-data)
         result (effects 'body-derive-loop-nodes core facts {} 65536)

@@ -3554,7 +3554,7 @@
       (is (= ["" :rejected] (subvec result 1))))
     (let [f (function "cycle" '[flag value] (branch (local 'flag) (again "cycle" [(lit false) (local 'value)])
                                                   (call 'cycle [(say "unreachable" (lit false)) (local 'value)])))
-          result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle [(lit true) (lit left)]) {} "" {'cycle f} ['main])]
+          result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle [(lit true) (lit left)]) {} "" {'cycle f} ['cycle 'intervening])]
       (is (= ["" :rejected] (subvec result 1))))
     (doseq [bad [(assoc swap :recur-target nil) (assoc swap :recur-target 42) (assoc swap :recur-target "")
                  (assoc swap :recur-target (apply str (repeat 257 "x"))) (assoc swap :params nil) (assoc swap :arity nil)
@@ -4955,6 +4955,76 @@
         (is (str/ends-with? text ")\n"))
         (is (not (str/ends-with? text "\n\n")))))))
 
+(deftest current-gravity-declared-self-runtime-development-kernel
+  (let [runtime-plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+        literal (fn [value] {:op :literal :value value}) local (fn [name] {:op :local :name name})
+        builtin (fn [name args] {:op :builtin-call :function name :args args})
+        call (fn [name args] {:op :function-call :function name :args args})
+        branch (fn [test yes no] {:op :if :test test :then yes :else no})
+        say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+        function (fn [params body] {:arity (count params) :params params :instructions [body]})
+        empty-test (builtin 'empty? [(local 'pending)])
+        tail-value (builtin 'rest [(local 'pending)])
+        head-value (builtin 'first [(local 'pending)])
+        next-text (builtin 'str [(local 'text) head-value])
+        join (function '[pending text]
+               (branch empty-test (local 'text)
+                 (branch (builtin '= [head-value (literal "throw")])
+                   {:op :throw :value (literal "deep")}
+                   (call 'join-parts [tail-value next-text]))))
+        table {'join-parts join}
+        evaluate (fn [instruction path functions]
+                   (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" functions path))
+        run #(evaluate (call 'join-parts [(literal %1) (literal %2)]) ['main] table)]
+    (doseq [[parts expected] [[() ""] ['("a") "a"] ['("a" "b") "ab"]]]
+      (is (= [expected "" :normal] (run parts ""))))
+    (is (= ["deep" "" :thrown] (run '("a" "throw") "")))
+    (is (= ["caller" "" :thrown]
+           (evaluate (call 'join-parts [{:op :throw :value (literal "caller")} (say "unreached" (literal ""))]) ['main] table)))
+    (is (= ["caller" "left\n" :thrown]
+           (evaluate (call 'join-parts [(say "left" (literal ())) {:op :throw :value (literal "caller")}]) ['main] table)))
+    (let [traced (function '[pending text]
+                   (branch empty-test (local 'text)
+                     (call 'join-parts [(say "rest" tail-value) (say "text" next-text)])))
+          result (evaluate (call 'join-parts [(say "outer-list" (literal '("a" "b"))) (say "outer-text" (literal ""))])
+                           ['main] {'join-parts traced})]
+      (is (= ["ab" "outer-list\nouter-text\nrest\ntext\nrest\ntext\n" :normal] result)))
+    (let [fresh (function '[pending text]
+                  (branch empty-test (local 'temporary)
+                    {:op :let :bindings [{:name 'temporary :value (literal :caller-only)}]
+                     :body [(call 'join-parts [tail-value next-text])]}))
+          result (evaluate (call 'join-parts [(literal '("a")) (literal "")]) ['main] {'join-parts fresh})]
+      (is (= :rejected (last result)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    (doseq [path [['join-parts 'intervening] ['join-parts 'intervening 'join-parts] ['main :malformed]]
+            :let [result (evaluate (call 'join-parts [(say "unreached" (literal ())) (literal "")]) path table)]]
+      (is (= ["" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    (is (= ["" "" :normal] (evaluate (call 'join-parts [(literal ()) (literal "")]) ['main 'join-parts 'join-parts] table)))
+    (doseq [[instruction functions] [[(call 'missing [(say "unreached" (literal ())) (literal "")]) table]
+                                    [(call 'join-parts [(say "unreached" (literal ()))]) table]
+                                    [(call 'join-parts [(say "unreached" (literal ())) (literal "")])
+                                     (assoc-in table ['join-parts :arity] 1)]]]
+      (let [result (evaluate instruction ['main] functions)]
+        (is (= ["" :rejected] (subvec result 1)))
+        (is (= "P15S23X002" (get-in result [0 :diagnostic])))))
+    (let [a (function '[value] (call 'b []))
+          b (function [] (call 'a [(say "unreached" (literal :value))]))
+          result (evaluate (call 'a [(literal :value)]) ['main] {'a a 'b b})]
+      (is (= ["" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic]))))
+    ;; These are supplied-path guards with one constant-body activation, not
+    ;; 255/256 real recursive host calls or a host-stack-safety stress test.
+    (let [finite (function '[value] (say "activation" (local 'value))) functions {'finite finite}
+          instruction (call 'finite [(say "argument" (literal :ok))])]
+      (is (= true (invoke 'p15-s23-runtime-call-target-valid? instruction functions (vec (repeat 255 'finite)))))
+      (is (= false (invoke 'p15-s23-runtime-call-target-valid? instruction functions (vec (repeat 256 'finite)))))
+      (is (= [:ok "argument\nactivation\n" :normal] (evaluate instruction (vec (repeat 255 'finite)) functions)))
+      (let [result (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "prefix\n" functions (vec (repeat 256 'finite)))]
+        (is (= ["prefix\n" :rejected] (subvec result 1)))
+        (is (= "P15S23X002" (get-in result [0 :diagnostic])))))))
+
 (deftest current-gravity-integral-equality-runtime-development-kernel
   ;; This checks the existing represented-Integer primitive. It grants no
   ;; fixed-width raw-host range or source-admission authority.
@@ -5396,6 +5466,287 @@
         (is (= ['span] (nth (first definitions) 2)))
         (is (= #{:memory/allocate} (:effects directives)))
         (is (= ['span-one 'span-two 'main] (:exports directives)))))))
+
+(defn- typed-functions-without-source-path [functions]
+  ;; Physical source-file provenance differs for a paired Gravity/Qst input.
+  ;; Retain every other field, including source hashes and origin paths.
+  (reduce-kv
+    (fn [out name function]
+      (let [source (get-in function [:typed-lowering-provenance :source])]
+        (assoc out name
+               (if (and (map? source) (contains? source :path))
+                 (update-in function [:typed-lowering-provenance :source] dissoc :path)
+                 function))))
+    functions functions))
+
+(deftest current-gravity-typed-function-path-parity-development-kernel
+  ;; This is a normalized compiler-result control. The original AS source
+  ;; tables were not retained and this does not recover or replay them.
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        {:keys [module input observation definition]} (typed-lowering-kernel-data)
+        context (bootstrap/p15-s23-stage2-runtime-execute-function
+                  runtime plan 'p15-s23-typed-context [module input observation])
+        _ (is (= :complete (:status context)) (pr-str context))
+        _ (when-not (= :complete (:status context))
+            (throw (ex-info "Normalized parity context rejected" {:result context})))
+        ;; Exercise the existing lowering owner, independent of the synthetic
+        ;; fixture's incomplete namespace-initialization admission records.
+        result (bootstrap/p15-s23-stage2-runtime-execute-function
+                 runtime plan 'p15-s23-typed-lower-function [module definition (:value context)])
+        _ (is (= :complete (:status result)) (pr-str result))
+        _ (when-not (= :complete (:status result))
+            (throw (ex-info "Normalized parity lowering rejected" {:result result})))
+        gravity {'identity (:value result)}
+        gravity-path (get-in gravity ['identity :typed-lowering-provenance :source :path])
+        qst-path "in-memory-typed.qst"
+        qst (assoc-in gravity ['identity :typed-lowering-provenance :source :path] qst-path)
+        project typed-functions-without-source-path]
+    (is (= "in-memory-typed.gravity" gravity-path))
+    (is (= qst-path (get-in qst ['identity :typed-lowering-provenance :source :path])))
+    (is (not= gravity qst))
+    (is (= (project gravity) (project qst)))
+    (is (= gravity (assoc-in (project gravity) ['identity :typed-lowering-provenance :source :path] gravity-path)))
+    (is (= qst (assoc-in (project qst) ['identity :typed-lowering-provenance :source :path] qst-path)))
+    (doseq [[location changed]
+            [[['identity :instructions] [{:op :literal :value "changed"}]]
+             [['identity :type-input :return] :gravity.type/bool]
+             [['identity :type-input :function-id] :changed-function]
+             [['identity :typed-lowering-provenance :source :sha256] :changed-source-hash]
+             [['identity :typed-lowering-provenance :compiler-sources :c7] :changed-c7]
+             [['identity :typed-lowering-provenance :compiler-sources :lowering] :changed-lowering]
+             [['identity :typed-lowering-provenance :typed-core-input] :changed-core]
+             [['identity :typed-lowering-provenance :effect-legality] :changed-legality]
+             [['identity :binding :effects] #{:error/throw}]]]
+      (is (not= (project gravity) (project (assoc-in qst location changed))) (pr-str location)))
+    (let [with-origin (assoc-in gravity ['identity :typed-lowering-provenance :source :origin-chain]
+                                [{:path "origin.gravity" :syntax-id :origin}])
+          changed-origin (assoc-in with-origin ['identity :typed-lowering-provenance :source :origin-chain 0 :path] "origin.qst")]
+      (is (= [{:path "origin.gravity" :syntax-id :origin}]
+             (get-in (project with-origin) ['identity :typed-lowering-provenance :source :origin-chain])))
+      (is (not= (project with-origin) (project changed-origin))))
+    (is (= {'plain {:instructions []}} (project {'plain {:instructions []}})))))
+
+(deftest current-gravity-declared-self-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom []) executions (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        checks [['empty-join :complete ""]
+                ['one-join :complete "a"]
+                ['main :complete "ab"]
+                ['deep-join :thrown "deep"]
+                ['argument-throw :thrown "argument"]
+                ['first-argument-throw :thrown "first"]]
+        _ (doseq [[directory name] [["accepted" "declared-self-values"]
+                                    ["rejected" "declared-self-argument"]
+                                    ["rejected" "declared-self-return"]
+                                    ["rejected" "declared-self-no-effects"]]]
+            (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)]
+              (is (= (slurp (io/file root (str stem ".gravity")))
+                     (slurp (io/file root (str stem ".qst")))))))
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/declared-self-values" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                  _ (is (= :passed (get-in input [:verification :status])))
+                  _ (when-not (= :accepted (get-in input [:typed :status]))
+                      (throw (ex-info "Declared self C7 rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  proof (:recursive-proof facts)
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  records (into {} (map (juxt :definition-name identity) (:function-records core)))
+                  join-id (get-in functions ['join-parts :function-id])
+                  caller-id (get-in functions ['run :function-id])
+                  self-id (:self-call-core-node-id proof)
+                  self-fact (first (filter #(= self-id (:call-core-node-id %)) (:call-type-facts facts)))
+                  concatenations (filterv #(= :direct-string-concat (:dispatch %)) (:call-type-facts facts))
+                  concat-id (:call-core-node-id (first concatenations))
+                  bindings (get-in input [:request :b47-context :authenticated-core-request :binding-table])
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                  _ (when-not (= :accepted (:status effects)) (throw (ex-info "Declared self C8 rejected" {:effects effects})))
+                  effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                  _ (is (= :passed (:status effect-verification)))
+                  _ (when-not (= :passed (:status effect-verification))
+                      (throw (ex-info "Declared self C8 verification rejected" {:verification effect-verification})))
+                  graph (:effect-graph effects)
+                  results (mapv (fn [[name status expected]]
+                                  (let [result (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint name)])]
+                                    (swap! executions conj name)
+                                    (is (= status (:status result)) (pr-str result))
+                                    (is (= expected (get result (if (= status :complete) :entrypoint-result :thrown-value)))
+                                        (str extension " " name))
+                                    (is (= "" (:stdout result)))
+                                    result)) checks)
+                  incoming (filterv #(= join-id (:callee-function-syntax-id %)) (:call-edges core))
+                  owned (filterv #(= join-id (get-in % [:evaluation :owner-function-syntax-id])) (:nodes core))
+                  argument-call (first (filter #(= (get-in functions ['argument-throw :function-id]) (:caller-function-syntax-id %)) incoming))
+                  first-call (first (filter #(= (get-in functions ['first-argument-throw :function-id]) (:caller-function-syntax-id %)) incoming))]
+              (is (= 8 (count (:function-records core)) (count functions) (count (:functions assembled))))
+              (is (= :declared-monomorphic-named-self-value (get-in input [:typed :scope])))
+              (is (= :gravity/sh08-declared-self-value-typed-core-v1 (:domain facts)))
+              (is (= :gravity/sh08-declared-self-value-proof-v1 (:domain proof)))
+              (is (= 1 (count (:recursion-components core))))
+              (is (= [join-id] (get-in core [:recursion-components 0 :function-syntax-ids])))
+              (is (= [(:ordinal (:self-edge proof))] (get-in core [:recursion-components 0 :internal-call-edge-ordinals])))
+              (is (= 1 (count (filter #(= join-id (:caller-function-syntax-id %) (:callee-function-syntax-id %)) (:call-edges core)))))
+              (is (= (mapv :call-core-node-id incoming) (:incoming-call-node-ids proof)))
+              (is (= (mapv :node-id owned) (:owned-node-ids proof)))
+              (is (= 7 (count incoming) (count (get-in input [:typed :recursive-call-facts]))))
+              (is (= [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string} :gravity.type/string]
+                     (:parameter-types proof) (:argument-types self-fact)))
+              (is (= :gravity.type/string (:declared-return-type proof) (:result-type self-fact)
+                     (get-in facts [:type-table (get-in records ['join-parts :body-core-node-id])])))
+              (is (= :pending-sh09-recursive-body (:effect-error-status proof)))
+              (is (= 4 (count (:error-transfers core))))
+              (is (= [] (:error-handlers core)))
+              (is (= 1 (count (:recur-transfers core))))
+              (is (= :function (get-in core [:recur-transfers 0 :target-kind])))
+              (doseq [function (vals functions)]
+                (is (= [:pending-sh09] (:thrown-error-effects function)))
+                (is (= [:gravity.type/string] (get-in graph [:functions (:function-id function) :throws]))))
+              (is (empty? (filter #(= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule %)) (:constraint-ledger facts))))
+              (is (= :bottom-initialized-bounded-effect-and-error-union (get-in graph [:recursive-fixed-point :algorithm])))
+              (is (= :checked (get-in graph [:recursive-fixed-point :equations]) (get-in graph [:loop-fixed-point :equations])))
+              (is (= self-id (get-in graph [:recursive-fixed-point :recursive-call-core-node-id])))
+              (is (= [:gravity.type/string] (get-in graph [:nodes self-id :escaping-thrown-error-types])))
+              (is (= [:gravity.type/string] (get-in graph [:nodes self-id :throw-call-dependency :callee-error-types])))
+              (is (= 1 (count concatenations)))
+              (is (= #{:memory/allocate} (get-in graph [:nodes concat-id :direct])))
+              (is (= :static-binary-string-concatenation (get-in graph [:nodes concat-id :allocation :behavior])))
+              (is (true? (get-in graph [:nodes concat-id :allocation :normal-completion-possible?])))
+              (doseq [name ['join-parts 'run 'empty-join 'one-join 'deep-join 'argument-throw 'main]]
+                (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (is (= #{:error/throw} (get-in graph [:functions (get-in functions ['first-argument-throw :function-id]) :inferred])))
+              (is (= #{} (get-in graph [:namespace :inferred])))
+              (doseq [edge [argument-call first-call]]
+                (is (false? (get-in graph [:nodes (:call-core-node-id edge) :throw-call-dependency :normal-invocation?])))
+                (is (= [] (get-in graph [:nodes (:call-core-node-id edge) :throw-call-dependency :callee-error-types]))))
+              (is (= (count (:call-edges core)) (count (:recursive-source-error-equations graph))))
+              (is (every? #(= :sh09-declared-self-error-equation-v1 (:producer-rule %)) (:recursive-source-error-equations graph)))
+              (let [instructions (get-in assembled [:functions 'join-parts :instructions])
+                    calls (filter #(and (map? %) (= :function-call (:op %)) (= 'join-parts (:function %)))
+                                  (tree-seq coll? seq instructions))]
+                (is (= 1 (count calls)))
+                (is (not-any? #(and (map? %) (= :recur (:op %))) (tree-seq coll? seq instructions))))
+              (is (some #(and (map? %) (= :recur (:op %)))
+                        (tree-seq coll? seq (get-in assembled [:functions 'run :instructions]))))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) facts {} %)
+                      analyzed (analyze 65536) work (:work-count analyzed)]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze work)))
+                  (is (= :rejected (:status (analyze (dec work)))))))
+              {:input input :module module :definitions definitions :assembled assembled :proof proof :binding binding
+               :effects effects :graph graph :core core :facts facts :bindings bindings
+               :self-id self-id :caller-id caller-id :results results}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions assembled proof binding effects graph core facts bindings self-id]} (first cases)
+        changed (assoc proof :owned-node-ids [])
+        hostile (walk/postwalk #(if (= proof %) changed %) (:typed input))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [[extension one] (map vector [".gravity" ".qst"] cases)
+            [name function] (get-in one [:assembled :functions])]
+      (is (= (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/declared-self-values" extension)))
+             (get-in function [:typed-lowering-provenance :source :path])) (str extension " " name)))
+    (is (= (typed-functions-without-source-path (:functions assembled))
+           (typed-functions-without-source-path (get-in cases [1 :assembled :functions]))))
+    (is (= (:graph (first cases)) (:graph (second cases))))
+    (is (= (:results (first cases)) (:results (second cases))))
+    (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [binding-index (into {} (map (juxt :binding-id identity) bindings))
+          prepared
+          (loop [remaining [[:list-query-context 'body-lq-context]
+                            [:list-construction-context 'body-lc-context]
+                            [:string-concat-context 'body-sc-context]
+                            [:equality-context 'body-ae-context]]
+                 replay-facts facts left 65536]
+            (if (empty? remaining) {:facts replay-facts :budget left}
+              (let [[key function] (first remaining)
+                    result (c8 function (:request input) replay-facts binding-index left)]
+                (is (= :accepted (:status result)) (pr-str result))
+                (when-not (= :accepted (:status result))
+                  (throw (ex-info "Declared self equation contexts rejected" {:function function :result result})))
+                (recur (rest remaining) (assoc replay-facts key (:context result)) (- left (:work-count result))))))
+          replay-facts (:facts prepared)
+          state (c8 'body-ds-loop-state core replay-facts (:nodes graph))
+          summary (get-in state [:functions (:function-syntax-id proof)])
+          inflated-summary (-> summary
+                               (update :escaping-thrown-error-types conj :gravity.type/bool)
+                               (update :escaping-thrown-errors conj :gravity.type/bool))
+          replay (c8 'body-derive-nodes-pass core replay-facts {}
+                     (- (:budget prepared) (:work-count state))
+                     (assoc proof :loop-summaries (:loops state)) inflated-summary)
+          checked (c8 'body-tc-verify core replay-facts binding-index (:nodes replay) {:active? true}
+                      (- (:budget prepared) (:work-count state) (:work-count replay)))
+          inflated (-> graph
+                       (assoc :nodes (:nodes replay) :recursive-source-error-equations (:rows checked))
+                       (update :functions
+                               (fn [functions]
+                                 (into {} (map (fn [[id function]]
+                                                 [id (assoc function :throws (get-in checked [:functions id]))]) functions)))))]
+      (is (= :accepted (:status state) (:status replay) (:status checked)))
+      (is (true? (c8 'body-graph-equations-valid? core replay-facts {} (:nodes replay))))
+      (is (= #{:gravity.type/string :gravity.type/bool}
+             (set (get-in inflated [:nodes self-id :escaping-thrown-error-types]))))
+      (is (= #{:gravity.type/string :gravity.type/bool}
+             (set (get-in inflated [:functions (:function-syntax-id proof) :throws]))))
+      (is (not= graph inflated))
+      ;; The inflated source graph satisfies the equations, but is not the
+      ;; fresh bottom-initialized solution recomputed by public verification.
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects inflated))))))
+    (doseq [[name reason] [["declared-self-argument" :call-argument-type-mismatch]
+                           ["declared-self-return" :function-result-type-mismatch]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" name ".gravity"))
+            diagnostics (get-in products [:typed :diagnostics])]
+        (is (= :rejected (get-in products [:typed :status])) (pr-str diagnostics))
+        (is (some #(= ["C7-TYPE-MISMATCH" reason] ((juxt :rule :reason) %)) diagnostics) (pr-str diagnostics))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/declared-self-no-effects.gravity")
+          input (select-keys products [:request :typed :verification])
+          _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+          _ (is (= :passed (get-in input [:verification :status])))
+          binding (seal (:request input) (:typed input) (:verification input))
+          result (c8 'build-body-effect-result (:typed input) (:verification input) binding)]
+      (is (= :rejected (:status result)))
+      (is (some #(= "C8-UNDECLARED" (:rule %)) (:diagnostics result)) (pr-str (:diagnostics result))))
+    (is (= 3 (count @verified)))
+    (is (= (vec (mapcat (fn [_] (mapv first checks)) [".gravity" ".qst"])) @executions))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/declared-self-values.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/declared-self-values.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/declared-self-argument.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/declared-self-return.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/declared-self-no-effects.gravity"] @built))))
 
 (deftest current-gravity-integral-value-equality-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
@@ -11373,6 +11724,69 @@
     (is (= ["second" "" :thrown]
            (evaluate {:op :builtin-call :function '< :args [(literal 1) {:op :throw :value (literal "second")}]})))))
 
+(deftest current-gravity-declared-self-lowering-development-kernel
+  (require 'gravity.self-hosting.sh09-body-effect-test)
+  (let [data (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'declared-self-kernel-data)
+        [core facts bindings] (data)
+        typed (-> facts
+                  (assoc :scope :declared-monomorphic-named-self-value
+                         :function-products {:recursion-components (:recursion-components core)})
+                  (assoc-in [:function-type-table 0 :signature] (get-in core [:function-records 0 :signature])))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        check #(invoke 'p15-s23-ds-context core % nodes bindings %2)
+        checked (check typed 65536)
+        guard-context {:core core :recursion-components (:recursion-components core)
+                       :declared-self-context checked}]
+    (is (= :accepted (:status checked)))
+    (is (= (:recursive-proof typed) (:proof checked)))
+    (is (= :accepted (:status (check typed (:work-count checked)))))
+    (is (= :typed-lowering-work-limit (:reason (check typed (dec (:work-count checked))))))
+    (doseq [[call edge] (map vector (:calls core) (:call-edges core))]
+      (is (true? (invoke 'p15-s23-ds-call-allowed? guard-context call edge))))
+    (doseq [bad [(assoc-in typed [:recursive-proof :owned-node-ids] [])
+                 (assoc-in typed [:recursive-proof :incoming-call-node-ids] [])
+                 (assoc-in typed [:recursive-proof :self-call-core-node-id] :wrong)
+                 (assoc-in typed [:recursive-proof :self-edge :ordinal] 9)
+                 (assoc-in typed [:function-type-table 0 :return] :gravity.type/bool)
+                 (assoc-in typed [:function-type-table 0 :thrown-error-effects] [])
+                 (assoc typed :scope :first-order-fixed-arity-functions-locals-calls)]]
+      (is (= :rejected (:status (check bad 65536)))))
+    (is (false? (invoke 'p15-s23-ds-call-allowed?
+                        (assoc guard-context :recursion-components [{:kind :mutually-recursive}])
+                        (first (:calls core)) (first (:call-edges core)))))
+    (is (false? (invoke 'p15-s23-ds-call-allowed? guard-context
+                        (first (:calls core)) (assoc (first (:call-edges core)) :caller-function-syntax-id :wrong))))
+    (let [{:keys [module input observation]} (typed-lowering-kernel-data)
+          base (:value (invoke 'p15-s23-typed-context module input observation))
+          ordinary (typed-direct-call-kernel-context base)
+          edge (-> (get-in ordinary [:edges :call])
+                   (assoc :caller-function-syntax-id :fn :caller-function-core-node-id :function))
+          call (get-in ordinary [:calls :call])
+          component {:ordinal 0 :kind :self-recursive :function-syntax-ids [:fn]
+                     :function-core-node-ids [:function] :internal-call-edge-ordinals [0]}
+          self (-> ordinary
+                   (assoc :current-function {:function-syntax-id :fn :function-core-node-id :function}
+                          :recursion-components [component]
+                          :declared-self-context {:status :accepted :component component
+                            :proof {:function-syntax-id :fn :self-call-core-node-id :call :self-edge edge}})
+                   (assoc-in [:edges :call] edge)
+                   (assoc-in [:core :call-edges] [edge])
+                   (assoc-in [:core :calls] [call])
+                   (assoc-in [:nodes :call :evaluation :owner-function-syntax-id] :fn)
+                   (assoc-in [:call-facts :call :caller-function-syntax-id] :fn))
+          lowered (invoke 'p15-s23-typed-compile-node self :call 65536)]
+      (is (= :complete (:status lowered)))
+      (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]}
+             (:value lowered)))
+      (is (not-any? #(and (map? %) (= :recur (:op %))) (tree-seq coll? seq (:value lowered))))
+      (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node
+                                       (assoc-in self [:declared-self-context :proof :self-edge :ordinal] 9) :call 65536)))))))
+
 (deftest current-gravity-direct-call-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -11469,7 +11883,7 @@
              ['identity ['main] (assoc-in functions ['identity :params] [42]) [(say "unreachable" (literal payload))]]
              ['identity ['main] (assoc-in functions ['identity :arity] 2) [(say "unreachable" (literal payload))]]
              ['identity ['main] (assoc-in functions ['identity :instructions] [42]) [(say "unreachable" (literal payload))]]
-             ['identity ['identity] functions [(say "unreachable" (literal payload))]]
+             ['identity ['identity 'intervening] functions [(say "unreachable" (literal payload))]]
              ['identity (vec (repeat 256 'frame)) functions [(say "unreachable" (literal payload))]]
              ['identity ['main] functions []]
              ['identity ['main] functions 42]]]
@@ -11477,7 +11891,7 @@
         (is (= ["" :rejected] (subvec result 1))) (is (= "P15S23X002" (:diagnostic (first result))))))
     (is (= :rejected (get (invoke 'p15-s23-runtime-evaluate-closed-instruction (call 'identity [(say "unreachable" (literal payload))]) {} "") 2)))
     (let [table (assoc functions 'cycle {:arity 0 :params [] :instructions [(call 'cycle [])]})
-          result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle []) {} "" table ['main])]
+          result (invoke 'p15-s23-runtime-evaluate-in-context (call 'cycle []) {} "" table ['cycle 'intervening])]
       (is (= ["" :rejected] (subvec result 1))))
     (let [table (assoc functions 'main {:arity 0 :params [] :instructions [(call 'relay [(literal payload)])]})
           result (invoke 'p15-s23-runtime-execute-closed-plan {:entrypoint 'main :functions table})]

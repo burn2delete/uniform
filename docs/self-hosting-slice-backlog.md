@@ -2286,6 +2286,86 @@ targets, authoritative migration, self-hosting and release remain separate
 gates. These results are executable development evidence, not a benchmark or
 completion of those broader contracts.
 
+### Declared ordinary direct-self calls: development implementation
+
+The existing C7, C8, typed emitter and runtime now have a separate declared
+direct-self path, preserving the earlier positional/literal-base proof. One
+named fixed-arity function in one singleton self component may use a complete
+monomorphic value signature in the supported atomic or homogeneous-List domain.
+Every body node, incoming argument, self-argument and actual body return is
+still checked. Declared value types provide no effect or thrown-error evidence.
+
+C8 reconstructs the source/component/call/capture joins and derives effect and
+escaping-error summaries from bottom. Function summary records compose with
+the existing effect-set loop summaries, so an acyclic caller can retain its
+ordinary explicit function recur. Classification, parameter slots, rounds,
+final reconstruction and equations consume the unchanged cumulative budget.
+Ordinary self-calls lower to ordinary call IR and real activations, not recur
+or TCO. The runtime preserves pre-argument target/arity/path guards, once-only
+left-to-right operands and fresh activation locals. Only the contiguous
+current-function suffix may repeat; separated indirect cycles still reject.
+
+Focused runtime checks passed 4 tests / 223 assertions. C7's final component
+batch passed 6 / 188, followed by a changed diagnostic-only 1 / 5 control.
+C8 passed 3 / 71, then the changed caller-loop combination passed 3 / 96;
+the explicit wide-parameter prefix debit passed a separate 1 / 5. Lowering
+passed 2 / 75. These batches include overlapping loader and regression
+assertions, not disjoint new feature counts. The 1,024-slot prefix control is
+normalized accounting evidence, not a full wide-arity source compilation.
+
+Earlier C7 attempts remain failures: 33 passes / two failures, then 115 /
+three, then 184 / four. They exposed test ordering, a pre-existing normalized
+fixture ordering mismatch, and a stale structural owner assertion. The
+read-only HEAD comparison printed the same three old-fixture failures despite
+its shell exit zero; it is not a passing baseline. The initial lowering attempt
+failed loading the new test before assertions. Changed successors above do not
+relabel or erase those results. No unchanged expensive source proof was replayed.
+
+The sole source composition completed with 211 passing assertions, one failure
+and no errors: 205 source checks passed in addition to six loader checks.
+Selected execution took 615.798 seconds after 9.560 seconds of namespace
+loading at 2 GiB. Five fresh products cover the accepted Gravity/QST pair,
+wrong recursive argument, normally returning Bool body against declared String,
+and absent source effect allowance. Negative QST files have byte-parity checks,
+not additional source constructions. The allowance negative removes both
+allocation and throw declarations; it does not isolate allocation causality.
+
+Both positive sources completed twelve closed executions after accepted C7/C8
+construction and passed verification: empty, one- and two-element traversal,
+a deeper String throw and two argument-transfer cases. The two-element entry
+first uses actual Bool function recur in an acyclic caller. Lowering retains
+one ordinary transformed self-call, not a recur conversion. String concatenation
+has derived allocation; non-invoking calls retain operand effects without
+borrowing callee errors. Three tracked public C7 assembly/forgery gates are
+separate from upstream verification. The real source graph also passed exact
+and one-less C8 work checks, equation-valid phantom-error inflation and fresh
+public verification rejection of that nonleast candidate. Executions compare
+String values, not thrown-object identity.
+
+The failed assertion compared complete lowered Gravity/QST function records,
+including their legitimately different physical provenance paths. The failed
+output was truncated, and the complete original tables were not persisted;
+there is no claim that every original table difference was independently
+enumerated. Type/effect identities and actual execution-result parity passed.
+The run remains failed, not a green composition or authoritative equivalence
+proof. A normalized control of the corrected comparator passed 1 test / 20
+assertions using the existing typed-context and lowering owners. It removes
+only each function's physical source path; IR, types, source/compiler hashes,
+other provenance and nested origin-path differences still fail comparison.
+Its first setup attempt remains 15 passes / four failures from a rejected
+synthetic whole-compile entry, not valid function-table evidence. The corrected
+source selector's sixteen per-function path assertions and projected table
+comparison were not rerun on the original products. This correction does not
+recover the original tables or turn the failed source run into a green one;
+the five unchanged expensive products were not replayed.
+
+Inferred recursive signatures, mutual/indirect recursion, arbitrary captures,
+non-core named helpers and try/loop/recur inside the self body remain separate
+frontiers. Supplied-path depth checks do not prove host-stack safety or
+termination. No full W5, provider/profile legality, other-target, authoritative
+migration, self-hosting, seed-retirement or release claim follows from this
+development increment.
+
 ### Same-type integral value equality: development implementation
 
 Binary `=` now compares original values of two independently established
