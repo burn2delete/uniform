@@ -428,6 +428,83 @@
           (is (= #{:memory/allocate :error/throw} (:transitive stopped)))
           (is (= [:gravity.type/string] (:escaping-thrown-error-types stopped))))))))
 
+(deftest body-vector-nth-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'vector-nth-input) derive (ns-resolve upstream 'vector-nth-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [never-ids [[] [:input] [:index] [:input :index]]]
+      (let [base (reduce #(assoc-in %1 [:types %2] :gravity.type/never) (input-fn [:gravity.type/string] 0) never-ids)
+            ids (zipmap (keys (:nodes base)) (map sha (range 1000 1010)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base)))
+                         :products (assoc (:products base) :calls [call] :call-edges [edge]))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :association) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-vn-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-vn-constraint [descriptor])]}
+            context (leaf 'body-vn-context request facts (:bindings base) 65536)
+            facts (assoc facts :vector-nth-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :association)])]
+        (is (= :accepted (:status result)))
+        (is (= :accepted (:status context)))
+        (is (true? (valid facts)))
+        (is (= :accepted (:status graph)) (pr-str graph))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :input :index]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-vn-context request facts (:bindings base) 1))))
+        (doseq [forms [nil 7 {}]]
+          (is (= :body-vector-nth-source-forms-required
+                 (:reason (leaf 'body-vn-context (assoc-in request [:b47-context :authenticated-core-request :forms] forms)
+                                facts (:bindings base) 65536)))))
+        (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core) (assoc descriptor :application (if (seq never-ids) :normal :not-invoked))
+                         (assoc descriptor :direct-effects [:memory/allocate]) (assoc descriptor :thrown-error-effects [:error/throw])
+                         (assoc descriptor :return :gravity.type/i64 :result-type :gravity.type/i64)
+                         (assoc descriptor :index-value 1) (assoc descriptor :vector-length 7)
+                         (assoc descriptor :selected-type :gravity.type/bool)
+                         (assoc-in descriptor [:bounds-proof :outcome] :unsafe-island)
+                         (assoc-in descriptor [:bounds-proof :check-elision] :authorized)
+                         (assoc-in descriptor [:bounds-proof :index-value] 1)
+                         (assoc descriptor :input-shape {})
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-vn-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-vn-constraint [changed])]))]
+            (is (false? (valid candidate)) (pr-str changed))))
+        (doseq [[label candidate] [[:missing-row (assoc facts :constraint-ledger [])]
+                                  [:duplicate-row (update facts :constraint-ledger into (:constraint-ledger facts))]
+                                  [:missing-fact (assoc facts :call-type-facts [])]
+                                  [:malformed-source-children (assoc-in facts [:vector-nth-context :forms :association :child-form-ids] 7)]
+                                  [:index-source-value (assoc-in facts [:vector-nth-context :forms :index :value] 1)]
+                                  [:own-effects (assoc-in facts [:call-type-facts 0 :effects] [:io/write])]]]
+          (when-not (= candidate facts)
+            ;; A Never index has no literal-index proof. C7 owns complete
+            ;; source/type consistency; this synthetic value is not an effect premise.
+            (is (= (if (= label :index-source-value) (contains? (set never-ids) :index) false) (valid candidate))
+                (pr-str {:never-ids never-ids :case label}))))
+        (let [operand-graph (assoc (:nodes graph) (ids :input) {:type (get-in facts [:type-table (ids :input)]) :transitive #{:memory/allocate}}
+                                               (ids :index) {:type :gravity.type/never :transitive #{:error/throw}
+                                                             :escaping-thrown-errors #{:gravity.type/string}
+                                                             :escaping-thrown-error-types [:gravity.type/string]})
+              stopped (leaf 'body-node-record (:node input) nil operand-graph :gravity.type/never)]
+          (is (= #{} (:direct stopped)))
+          (is (= #{:memory/allocate :error/throw} (:transitive stopped)))
+          (is (= [:gravity.type/string] (:escaping-thrown-error-types stopped))))))))
+
 (deftest body-constructor-allocation-development-kernel
   ;; Current Gravity algorithms on normalized DATA, not source admission.
   (doseq [kind [:vector :map :set] empty? [true false]]

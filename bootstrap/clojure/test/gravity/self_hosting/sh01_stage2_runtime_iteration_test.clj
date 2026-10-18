@@ -4086,6 +4086,227 @@
       (is (= [2 "once\n" :normal] (evaluate (query {:op :do :body [say (literal [1 2])]}))))
       (is (= ["stop" "once\n" :thrown] (evaluate (query {:op :do :body [say {:op :throw :value (literal "stop")}]})))))))
 
+(deftest current-gravity-vector-nth-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] (concat [["accepted" "local-runtime-vector-nth" 18]]
+                                                (map #(vector "rejected" (str "vector-nth-" %) (if (= % "dynamic") 2 1))
+                                                     ["arity" "negative" "out-of-range" "empty" "noninteger" "dynamic" "nonvector"
+                                                      "unknown" "result-annotation" "late-invalid" "escape"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(deftest current-gravity-vector-nth-authenticated-composition
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal-graph (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          value (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                             (fn [runtime plan function args]
+                                               (let [result (original runtime plan function args)]
+                                                 (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                  (thunk))]
+                      (is (= 1 (- (count @verified) before))) value))
+        payload (String. "selected member") first-error (String. "first nth operand") second-error (String. "later nth operand")
+        specs [['first-item [payload] payload] ['last-item [payload] payload] ['nil-item [] nil] ['scalar-quoted [] "selected"]
+               ['aliases [payload] payload] ['nested [payload] payload]
+               ['direct-demand [payload] payload] ['quoted-demand [] "selected"]
+               ['nested-chain [payload] payload] ['nested-quoted [] "selected"] ['match-payload [true payload] payload]
+               ['match-payload [false payload] "other"] ['quoted-map [] "quoted"]
+               ['caught-left [first-error second-error] first-error] ['caught-index [second-error] second-error]
+               ['caught-vector [first-error] first-error] ['shadowed ["ordinary parameter"] "ordinary parameter"] ['main [] "main"]]
+        cases (mapv
+               (fn [extension]
+                 (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-vector-nth" extension)
+                       path (.getPath (io/file root relative)) products (fresh relative)
+                       input (select-keys products [:request :typed :verification])
+                       ready (is (= :accepted (get-in input [:typed :status])) (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                       _ (when-not ready (throw (ex-info "Nth source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                       artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                       parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                       raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                       definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                       standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'nested) input))
+                       assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                       core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                       queries (filterv #(= :direct-vector-nth (:dispatch %)) (:call-type-facts facts))
+                       descriptors (mapv :applied-vector-nth queries)
+                       binding (seal (:request input) (:typed input) (:verification input))
+                       effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                       graph (:effect-graph effects)
+                       functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                       by-name (fn [name] (first (filter #(= (get-in functions [name :function-id])
+                                                           (get-in % [:source-edge :caller-function-syntax-id])) descriptors)))]
+                   (is (= :passed (get-in input [:verification :status])))
+                   (is (= 18 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                   (is (= 19 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+                   (is (= 17 (count queries) (count (filter #(= :sh08-vector-nth-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                   (is (= {:normal 14 :not-invoked 3} (frequencies (map :application descriptors))))
+                   (is (= standalone (get-in assembled [:functions 'nested])))
+                   (is (= 17 (get-in assembled [:instruction-summary :builtin-call])))
+                   (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                   (doseq [descriptor descriptors]
+                     (is (= 7 (count (:source-call descriptor))))
+                     (is (= 12 (count (:source-edge descriptor))))
+                     (is (= :nonlocal-or-nonfunction (get-in descriptor [:source-edge :classification])))
+                     (is (nil? (get-in descriptor [:source-edge :callee-function-syntax-id])))
+                     (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:thrown-error-effects descriptor)))
+                     (is (not (contains? descriptor :input-shape)))
+                     (if (= :normal (:application descriptor))
+                       (do (is (= :proven-safe (get-in descriptor [:bounds-proof :outcome])))
+                           (is (= :not-authorized (get-in descriptor [:bounds-proof :check-elision])))
+                           (is (= :retained (get-in descriptor [:bounds-proof :runtime-guards])))
+                           (is (= (get-in descriptor [:argument-types 0 :element-types (:index-value descriptor)]) (:result-type descriptor))))
+                       (do (is (= :gravity.type/never (:result-type descriptor)))
+                           (is (nil? (:bounds-proof descriptor))) (is (nil? (:selected-type descriptor))))))
+                   (is (= :gravity.type/nil (:result-type (by-name 'nil-item))))
+                   (is (= :gravity.type/string (:result-type (by-name 'scalar-quoted))))
+                   (is (= 0 (:vector-length (by-name 'caught-index))))
+                   (is (nil? (:vector-length (by-name 'caught-left))))
+                   (is (nil? (:vector-length (by-name 'caught-vector))))
+                   (doseq [[name args expected] specs]
+                     (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                            [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                       (is (= [expected "" :normal] result) (str extension " " name))
+                       (when (or (identical? expected payload) (identical? expected first-error) (identical? expected second-error))
+                         (is (identical? expected (first result))))))
+                   (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                   (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+                   (doseq [descriptor descriptors]
+                     (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                       (is (= #{} (:direct record))) (is (nil? (:allocation record)))
+                       (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record)))
+                       (is (nil? (:call-body-dependency record)))))
+                   (doseq [[name inferred] [['caught-left #{:error/throw}] ['caught-index #{:memory/allocate :error/throw}]
+                                           ['caught-vector #{:memory/allocate :error/throw}]]]
+                     (is (= inferred (get-in graph [:functions (get-in functions [name :function-id]) :inferred])))
+                     (is (= [] (get-in graph [:functions (get-in functions [name :function-id]) :throws]))))
+                   {:input input :module module :definitions definitions :descriptors descriptors :effects effects :binding binding}))
+               [".gravity" ".qst"])
+        {:keys [input module definitions descriptors effects binding]} (first cases)
+        first-function (first (filter #(= 'first-item (:definition-name %)) (get-in input [:typed :identity-input :function-type-table])))
+        descriptor (first (filter #(= (:function-id first-function) (get-in % [:source-edge :caller-function-syntax-id])) descriptors))
+        selected-shapes (keep #(get-in % [:dependencies :operand-shape]) (get-in input [:typed :identity-input :constraint-ledger]))
+        selection (first (filter #(and (map? (:vector-nth-selection %)) (seq (:call-links %))) selected-shapes))
+        link (get-in selection [:call-links 0])
+        _ (when-not (map? link) (throw (ex-info "Selected nth consumer lacks callee ancestry" {:selection selection})))
+        stale-link (assoc-in link [:body-source :syntax-id] (get-in descriptor [:bounds-proof :index-source :syntax-id]))
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? selection))
+    (is (map? link))
+    (let [core (get-in input [:request :canonical-core-artifact]) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+          bindings (into {} (map (juxt :binding-id identity) (get-in input [:request :b47-context :authenticated-core-request :binding-table])))
+          typed (walk/postwalk #(if (= % link) stale-link %) (:typed input))]
+      (is (true? (c7 'sh08-vn-inferred-call-valid? [core (get nodes (:call-core-node-id descriptor)) (:source-call descriptor)
+                                                  (:source-edge descriptor) nodes bindings (get-in typed [:identity-input :type-table])]))))
+    (doseq [typed [(walk/postwalk #(if (= % descriptor) (-> descriptor (assoc :index-value 1 :selected-type :gravity.type/bool
+                                                                                           :return :gravity.type/bool :result-type :gravity.type/bool)
+                                                                          (assoc-in [:bounds-proof :index-value] 1)
+                                                                          (assoc-in [:bounds-proof :selected-type] :gravity.type/bool)) %) (:typed input))
+                   (walk/postwalk #(if (= % descriptor) (-> descriptor (assoc :vector-length 1) (assoc-in [:bounds-proof :vector-length] 1)) %) (:typed input))
+                   (walk/postwalk #(if (= % link) stale-link %) (:typed input))]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'nested) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure))) (is (= :rejected (:status (last @verified))))))
+    (is (= 7 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)
+          erased (-> graph (update :nodes #(into {} (map (fn [[id record]] [id (-> record (dissoc :allocation)
+                                                                                                (assoc :direct #{} :transitive #{} :escaping #{}))]) %)))
+                           (update :functions #(into {} (map (fn [[id record]] [id (assoc record :inferred #{} :latent #{})]) %))))]
+      (doseq [changed [(assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:nodes id :dependencies] []) erased]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal-graph effects changed)))))))
+    (doseq [[suffix rule reason] [["arity" "C7-TYPE-MISMATCH" :vector-nth-arity-mismatch]
+                                  ["negative" "SAFE2-BOUNDS" :vector-nth-negative-index] ["out-of-range" "SAFE2-BOUNDS" :vector-nth-index-out-of-range]
+                                  ["empty" "SAFE2-BOUNDS" :vector-nth-index-out-of-range] ["noninteger" "C7-TYPE-MISMATCH" :vector-nth-index-type-required]
+                                  ["dynamic" "C7-ANNOTATION" :vector-nth-literal-index-required] ["nonvector" "C7-TYPE-MISMATCH" :vector-nth-vector-type-required]
+                                  ["unknown" "C7-TYPE-MISMATCH" :vector-nth-vector-type-required] ["result-annotation" "C7-TYPE-MISMATCH" :function-result-type-mismatch]
+                                  ["late-invalid" "C7-TYPE-MISMATCH" :vector-nth-index-type-required] ["escape" "C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/vector-nth-" suffix ".gravity")) diagnostic (get-in products [:typed :diagnostics 0])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (= rule (:rule diagnostic)) (pr-str diagnostic)) (is (= reason (:reason diagnostic)) (pr-str diagnostic))))))
+
+(deftest current-gravity-vector-nth-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'vector-nth-input)
+        derive (ns-resolve upstream 'vector-nth-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [[types index] [[[:gravity.type/string] 0] [[:gravity.type/bool :gravity.type/string] 1]
+                           [[{:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/integer] :shape :literal}
+                             :gravity.type/string] 1]]]
+      (let [{:keys [core nodes forms bindings module call edge binding-types] :as input} (input-fn types index)
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc (:types input) :operator descriptor :association (:type result))
+                     :calls {:association call} :edges {:association edge} :call-order {:association 0}
+                     :call-facts {:association (c7 'sh08-vn-call-fact [descriptor module])} :ledger [(c7 'sh08-vn-constraint [descriptor])]
+                     :locals {:vector-binding 'vector-value} :parameter-types binding-types}
+            compile #(invoke 'p15-s23-typed-compile-node % :association %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'nth :args [{:op :local :name 'vector-value} {:op :literal :value index}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc descriptor :index-value 7) (assoc descriptor :vector-length 9)
+                         (assoc descriptor :selected-type :gravity.type/integer) (assoc descriptor :bounds-proof nil)
+                         (assoc descriptor :application :not-invoked :bounds-proof nil :selected-type nil :return :gravity.type/never :result-type :gravity.type/never)
+                         (assoc-in descriptor [:bounds-proof :outcome] :runtime-checked)
+                         (assoc-in descriptor [:bounds-proof :check-elision] :authorized)
+                         (assoc descriptor :direct-effects [:memory/allocate]) (assoc descriptor :thrown-error-effects [:error/throw])
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:association (c7 'sh08-vn-call-fact [changed module])}
+                                     :ledger [(c7 'sh08-vn-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))) (pr-str changed))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :association :evaluation :order] [])
+                        #(assoc-in % [:forms :index :value] 7) #(assoc-in % [:forms :association :child-form-ids] 7)
+                        #(assoc-in % [:forms :input :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :association-binding :binding-class] :import)
+                        #(assoc-in % [:edges :association :callee-function-syntax-id] :fake)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-vector-nth-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value}) query (fn [left right] {:op :builtin-call :function 'nth :args [left right]})
+        payload (String. "identity") nested {:value payload}]
+    (doseq [[values index expected] [[[payload] 0 payload] [[false 7 payload] 2 payload] [[nil] 0 nil] [[nested false] 0 nested]
+                                     [[{"unrelated" #{1 2}} payload] 1 payload] [[false true] 0 false]]]
+      (let [result (evaluate (query (literal values) (literal index)))]
+        (is (= [expected "" :normal] result))
+        (when (or (identical? expected payload) (identical? expected nested)) (is (identical? expected (first result))))))
+    (doseq [[values index] [[[] 0] [[1] -1] [[1] 1] [[1] 999999999999999999999N] [[1] nil]
+                            [[1] "0"] [[1] false] [[1] 0.5] [nil 0] [{:key 1} 0] ["abc" 0] ['(1) 0]]]
+      (let [result (evaluate (query (literal values) (literal index)))]
+        (is (= :rejected (last result)))
+        (is (= :vector-nth-vector-integer-and-bounds-required (get-in result [0 :reason])))))
+    (doseq [instruction [{:op :builtin-call :function 'nth :args []}
+                         {:op :builtin-call :function 'nth :args [(literal [1])]}
+                         {:op :builtin-call :function 'nth :args [(literal [1]) (literal 0) (literal :default)]}
+                         (assoc (query (literal [1]) (literal 0)) :bounds-proof {:outcome :proven-safe})]]
+      (is (= :rejected (last (evaluate instruction)))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})]
+      (is (= [payload "vector\nindex\n" :normal]
+             (evaluate (query (say "vector" (literal [payload])) (say "index" (literal 0))))))
+      (is (= [payload "vector\n" :thrown]
+             (evaluate (query (say "vector" {:op :throw :value (literal payload)})
+                              (say "unreachable" {:op :throw :value (literal "later")})))))
+      (is (= [payload "vector\nindex\n" :thrown]
+             (evaluate (query (say "vector" (literal [1])) (say "index" {:op :throw :value (literal payload)}))))))))
+
 (deftest current-gravity-integral-ordering-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'integral-ordering-input)

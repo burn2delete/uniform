@@ -1703,6 +1703,74 @@ authoritative migration, target support, self-hosting and seedless release
 remain outstanding. Focused implementation feedback does not admit a new
 compiler revision or refresh historical authority evidence.
 
+### Proven vector indexing: development increment
+
+The current-source implementation adds two-argument `(nth vector index)` through the
+existing C7 engine, effect owner, typed emitter and stage-owned runtime.
+Normal selection requires an established positional vector type and an Integer
+source literal within its extent. The selected type is the actual member type,
+including heterogeneous vectors and Nil members. A Nil value is not missing
+type evidence or an out-of-bounds fallback. Never operands retain control
+transfer without an executed access, selected value or bounds proof; other
+non-Never operands still require their supported type and index facts.
+
+Ordinary scalar selection does not require every member to be a structural
+pattern. A later lookup or pattern consumer projects only the selected deeper
+ancestry, including nested evaluated and quoted vector selections. Evaluated
+vectors still check all immediate child source, order, extent and type joins.
+Quoted selection consumes the existing validated quoted DATA before requesting
+the terminal selected shape. Immutable aliases and local returns preserve the
+existing binding and call lineage. Lookup-produced vectors retain the earlier
+lookup owner's shape boundary; this is not general projection for every
+collection producer.
+
+Operands execute once, left to right, until transfer. Selection preserves the
+actual member identity and adds no collection allocation; operand allocation
+and errors remain visible. The finite bounds record does not authorize check
+elision: the runtime retains vector, integer and range guards before access.
+Malformed development IR rejection is not a source dynamic-bounds failure API.
+
+The final focused projection/type/fixture batch passed seven tests/234
+assertions in 1.091 seconds of execution, plus 8.677 seconds of namespace
+loading, at 2 GiB. It includes selected and unselected source/order/type
+mutations, nested evaluated and quoted selections past unrelated String-key
+maps, and paired-fixture parsing. Two affected return-shape and lookup
+regressions passed 84 assertions in 1.980 seconds plus 7.747 seconds of loading.
+Earlier overlapping focused batches are not summed into unique coverage.
+
+Earlier producer/projection delimiter errors and unsupported internal
+`dissoc` failed before semantic assertions. The latter was replaced with the
+already supported private-context update, not a seed extension. A combined
+focused batch also retained two failed test expectations: when a mocked index
+has Never type, its unused literal value is not C8 evidence. Named controls
+identified those cases; the test-only correction preserves normal-index and
+source-join rejection. Those failed aggregates remain failed history.
+
+The single affected source composition passed one test/630 assertions with no
+failures or errors. Selected execution took 1,262.029 seconds plus 8.129 seconds
+of namespace loading at 2 GiB. Both positive source extensions completed
+typing, lowering, execution and effect checks: 18 functions and 19 calls retain
+17 nth descriptors (14 normal, three not invoked) and two local calls.
+All 36 guest invocations passed, including first/last and heterogeneous members,
+Nil, immutable aliases, local returns, nested evaluated/quoted selection,
+pattern consumption, caught operand errors, shadowing and the entrypoint.
+
+Seven public operations freshly invoke C7: four positive standalone/assembled
+lowering checks and three coherently altered descriptor/ancestry rejections.
+The stale actual callee-body-source mutation still satisfies the shallow nth
+validator before genuine public C7 rejects it. This is a specific ancestry
+control, not a comprehensive verifier-correctness proof. Two accepted whole-C8
+verifications and three coherently resealed effect-graph rejections passed.
+All eleven negative `.gravity` fixtures passed their exact rule/reason checks;
+the `.qst` negatives have byte-identical parity checks, not separately executed
+negative-source coverage. No compiler, test or fixture edits occurred during
+the run; all 31 source-path hashes remained unchanged.
+
+The direct kernels and separate composition command are documented in
+`docs/development-verification.md`. Dynamic index failure semantics, general
+collection types, profile/provider/ownership legality, authoritative migration,
+target support, self-hosting and seedless release remain outstanding.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

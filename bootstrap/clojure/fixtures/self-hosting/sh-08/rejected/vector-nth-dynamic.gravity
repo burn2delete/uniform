@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.vector-nth-dynamic
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn invalid [index] (nth ["value"] index))
+(defn main [] (invalid 0))

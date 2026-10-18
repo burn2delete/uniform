@@ -2347,6 +2347,260 @@
                                            (:bindings input) (:types input) (:forms input) 1])]
       (is (= :collection-count-work-limit (:reason result))))))
 
+(defn- vector-nth-input [types index]
+  (let [base (collection-count-input :vector true) children [:operator :input :index]
+        operator (assoc-in (get-in base [:nodes :operator]) [:attributes :symbol] 'nth)
+        index-node {:node-id :index :core-form :literal :children [] :attributes {:literal-kind :integer :value index}
+                    :resolved-binding-ids [] :source {:form-id :index :syntax-id :index :semantic-span nil :origin-chain [] :generated-origin nil}
+                    :evaluation {:kind :left-to-right :order []}}
+        node (-> (:node base) (assoc :children children :attributes {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                                                                   :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [:input :index] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [:input :index] :ordered-evaluation-node-ids children)
+        vector-type {:kind :gravity.type/vector :element-types types :shape :literal}
+        operand (assoc (get-in base [:nodes :input]) :core-form :reference :attributes {:binding-id :vector-binding})
+        nodes [operator operand index-node node]
+        index-form {:form-id :index :syntax-id :index :source-span nil :origin-chain [] :generated-origin nil
+                    :kind :integer :value index :parent-form-id :association :child-form-ids []}]
+    (-> base (assoc :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) nodes)))
+        (assoc-in [:core :nodes] nodes) (assoc-in [:core :calls] [call]) (assoc-in [:core :call-edges] [edge])
+        (assoc-in [:bindings :association-binding :name] 'nth)
+        (assoc :types {:input vector-type :index :gravity.type/integer} :binding-types {:vector-binding vector-type})
+        (assoc-in [:bindings :vector-binding] {:binding-id :vector-binding :binding-class :lexical :name 'vector-value})
+        (assoc-in [:forms :input :kind] :symbol) (assoc-in [:forms :input :value] 'vector-value)
+        (assoc-in [:forms :association :child-form-ids] children) (assoc-in [:forms :association :value] (list 'nth [] index))
+        (assoc-in [:forms :operator :value] 'nth) (assoc-in [:forms :index] index-form)
+        (update :products assoc :calls [call] :call-edges [edge]))))
+
+(defn- vector-nth-derived [{:keys [core node nodes types bindings forms products]}]
+  (invoke-c7 'sh08-vn-derive [core node (first (:calls products)) (first (:call-edges products)) nodes bindings types forms 65536]))
+
+(deftest sh08-vector-nth-development-kernel
+  ;; Finite typed DATA tests. The authenticated fixture supplies real members.
+  (doseq [[types index expected] [[[:gravity.type/string] 0 :gravity.type/string]
+                                 [[:gravity.type/nil] 0 :gravity.type/nil]
+                                 [[:gravity.type/integer :gravity.type/bool :gravity.type/string] 0 :gravity.type/integer]
+                                 [[:gravity.type/integer :gravity.type/bool :gravity.type/string] 2 :gravity.type/string]
+                                 [[{:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/string] :shape :literal}
+                                   :gravity.type/string] 1 :gravity.type/string]]]
+    (let [{:keys [core nodes forms bindings products binding-types] :as input} (vector-nth-input types index)
+          result (vector-nth-derived input) descriptor (:descriptor result)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= expected (:type result) (:selected-type descriptor) (:return descriptor)))
+      (is (= index (:index-value descriptor) (get-in descriptor [:bounds-proof :index-value])))
+      (is (= (count types) (:vector-length descriptor) (get-in descriptor [:bounds-proof :vector-length])))
+      (is (= :proven-safe (get-in descriptor [:bounds-proof :outcome])))
+      (is (= :not-authorized (get-in descriptor [:bounds-proof :check-elision])))
+      (is (= :retained (get-in descriptor [:bounds-proof :runtime-guards])))
+      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:thrown-error-effects descriptor)))
+      (is (not (contains? descriptor :input-shape)))
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= descriptor (get-in inferred [:type-table :operator])))))
+  (doseq [[types index reason] [[[:gravity.type/string] -1 :vector-nth-negative-index]
+                               [[:gravity.type/string] 1 :vector-nth-index-out-of-range]
+                               [[] 0 :vector-nth-index-out-of-range]]]
+    (let [result (vector-nth-derived (vector-nth-input types index))]
+      (is (= :rejected (:status result)))
+      (is (= "SAFE2-BOUNDS" (:rule result)))
+      (is (= reason (:reason result)))))
+  (doseq [operands [[:input] [:index] [:input :index]]]
+    (let [input (reduce #(assoc-in %1 [:types %2] :gravity.type/never) (vector-nth-input [] 0) operands)
+          result (vector-nth-derived input) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (:application descriptor)))
+      (is (nil? (:bounds-proof descriptor)))
+      (is (nil? (:selected-type descriptor)))))
+  (doseq [type [nil :gravity.type/unknown]]
+    (let [result (vector-nth-derived (vector-nth-input [type] 0))]
+      (is (= :rejected (:status result)))
+      (is (= "C7-ANNOTATION" (:rule result)))
+      (is (= :vector-nth-selected-element-type-required (:reason result)))))
+  (let [input (vector-nth-input [:gravity.type/string] 0)]
+    (doseq [mutate [#(assoc-in % [:types :input] :gravity.type/string) #(assoc-in % [:types :input] :gravity.type/unknown)
+                    #(assoc-in % [:types :index] :gravity.type/string) #(assoc-in % [:types :index] :gravity.type/unknown)
+                    #(assoc-in % [:nodes :index :core-form] :reference)
+                    #(assoc-in % [:forms :index :value] 1) #(assoc-in % [:forms :association :child-form-ids] 7)
+                    #(assoc-in % [:bindings :association-binding :binding-class] :import)
+                    #(assoc-in % [:node :evaluation :order] [])]]
+      (is (= :rejected (:status (vector-nth-derived (mutate input))))))
+    (is (= ["C7-ANNOTATION" :vector-nth-literal-index-required]
+           ((juxt :rule :reason) (vector-nth-derived (assoc-in input [:nodes :index :core-form] :reference)))))
+    (is (= ["C7-VERIFY" :vector-nth-index-source-mismatch]
+           ((juxt :rule :reason) (vector-nth-derived (assoc-in input [:nodes :index :attributes :value] "0")))))
+    (is (= :vector-nth-arity-mismatch
+           (:reason (vector-nth-derived (assoc-in input [:products :calls 0 :argument-node-ids] [:input])))))
+    (doseq [changed [(assoc-in input [:types :input] :gravity.type/never)
+                     (assoc-in input [:types :index] :gravity.type/never)]]
+      (let [bad (if (= :gravity.type/never (get-in changed [:types :input]))
+                  (assoc-in changed [:types :index] :gravity.type/string)
+                  (assoc-in changed [:types :input] :gravity.type/string))]
+        (is (= :rejected (:status (vector-nth-derived bad))))))))
+
+(defn- vector-nth-shape-input []
+  (let [map-type {:kind :gravity.type/map :member-types [:gravity.type/keyword :gravity.type/string] :shape :literal}
+        base (vector-nth-input [map-type :gravity.type/bool] 0)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        node (fn [id kind children attrs]
+               {:node-id id :core-form kind :children children :attributes attrs :source (source id) :resolved-binding-ids []
+                :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+        payload-key (node :payload-key :literal [] {:literal-kind :keyword :value :value})
+        payload-value (node :payload-value :reference [] {:binding-id :text-binding})
+        payload (node :payload :collection-literal [:payload-key :payload-value] {:literal-kind :map :element-count 2})
+        extra (node :extra :literal [] {:literal-kind :boolean :value false})
+        operand (node :input :collection-literal [:payload :extra] {:literal-kind :vector :element-count 2})
+        nodes [(get-in base [:nodes :operator]) payload-key payload-value payload extra operand (get-in base [:nodes :index]) (:node base)]
+        form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                  :kind kind :value value :parent-form-id parent :child-form-ids children})]
+    (-> base (assoc :nodes (into {} (map (juxt :node-id identity) nodes))) (assoc-in [:core :nodes] nodes)
+        (assoc-in [:bindings :text-binding] {:binding-id :text-binding :binding-class :lexical :name 'text})
+        (assoc-in [:binding-types :text-binding] :gravity.type/string)
+        (update :types merge {:payload-key :gravity.type/keyword :payload-value :gravity.type/string :payload map-type :extra :gravity.type/bool})
+        (update :forms merge {:input (form :input :vector '[{:value text} false] :association [:payload :extra])
+                              :payload (form :payload :map '{:value text} :input [:payload-key :payload-value])
+                              :payload-key (form :payload-key :keyword :value :payload [])
+                              :payload-value (form :payload-value :symbol 'text :payload [])
+                              :extra (form :extra :boolean false :input [])}))))
+
+(deftest sh08-vector-nth-selected-shape-development-kernel
+  (let [{:keys [core node nodes types bindings binding-types forms products]} (vector-nth-shape-input)
+        context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core)
+        derive #(invoke-c7 'sh08-vn-shape [node nodes types binding-types {} [] bindings forms #{} 0 {} %])
+        shape (derive context)]
+    (is (= :accepted (:status shape)) (pr-str shape))
+    (is (= :map (:shape-kind shape)))
+    (is (= :payload (:constructor-node-id shape)))
+    (is (= :payload (get-in shape [:source :form-id])))
+    (is (= :gravity.type/string (get-in shape [:parts 0 :shape :type])))
+    (is (= 0 (get-in shape [:vector-nth-selection :projection-links 0 :coordinate])))
+    (is (= :input (get-in shape [:vector-nth-selection :projection-links 0 :vector-node :node-id])))
+    (is (= :proven-safe (get-in shape [:vector-nth-selection :application :bounds-proof :outcome])))
+    (when (= :accepted (:status shape))
+      (is (= shape (derive (assoc context :budget-left (:call-join-work shape)))))
+      (is (= :vector-nth-shape-work-limit (:reason (derive (assoc context :budget-left (dec (:call-join-work shape))))))))))
+
+(defn- vector-nth-unrelated-shape-input []
+  (let [base (vector-nth-shape-input) quoted (quoted-data-input {"unrelated" 1} 12000)
+        quote-node (:node quoted) quote-id (:node-id quote-node) quote-form (:owner quoted)
+        other-type {:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/integer] :shape :literal}
+        selected-type (get-in base [:types :payload]) vector-type {:kind :gravity.type/vector :element-types [other-type selected-type] :shape :literal}
+        operand (-> (get-in base [:nodes :input]) (assoc :children [quote-id :payload])
+                    (assoc-in [:evaluation :order] [{:index 0 :core-node-id quote-id} {:index 1 :core-node-id :payload}]))
+        nodes (mapv #(case (:node-id %) :extra quote-node :input operand :index (assoc-in % [:attributes :value] 1) %) (get-in base [:core :nodes]))]
+    (-> base (assoc :nodes (into {} (map (juxt :node-id identity) nodes))) (assoc-in [:core :nodes] nodes)
+        (update :types #(-> % (dissoc :extra) (assoc quote-id other-type :input vector-type)))
+        (assoc-in [:binding-types :vector-binding] vector-type)
+        (update :forms #(merge (dissoc % :extra) (:forms quoted)))
+        (assoc-in [:forms quote-form :parent-form-id] :input)
+        (assoc-in [:forms :input :child-form-ids] [quote-form :payload])
+        (assoc-in [:forms :input :value] [(list 'quote {"unrelated" 1}) {:value 'text}])
+        (assoc-in [:forms :index :value] 1))))
+
+(defn- vector-nth-quoted-shape-input [nested?]
+  (let [value [{"unrelated" 1} {:value "selected"}] input-type {:kind :gravity.type/vector :shape :literal
+          :element-types [{:kind :gravity.type/map :member-types [:gravity.type/string :gravity.type/integer] :shape :literal}
+                          {:kind :gravity.type/map :member-types [:gravity.type/keyword :gravity.type/string] :shape :literal}]}
+        base (vector-nth-input (:element-types input-type) 1)
+        quoted (quoted-data-input (if nested? [value] value) (if nested? 13000 14000))
+        quote-node (:node quoted) quote-id (:node-id quote-node) quote-form (:owner quoted)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                  :kind kind :value value :parent-form-id parent :child-form-ids children})
+        inner-children [:inner-operator quote-id :inner-index]
+        inner-operator (assoc (get-in base [:nodes :operator]) :node-id :inner-operator :source (source :inner-operator))
+        inner-index (-> (get-in base [:nodes :index]) (assoc :node-id :inner-index :source (source :inner-index)) (assoc-in [:attributes :value] 0))
+        inner-node (-> (:node base) (assoc :node-id :inner-query :source (source :inner-query) :children inner-children)
+                       (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) inner-children)))
+        inner-call (assoc (:call base) :core-node-id :inner-query :operator-node-id :inner-operator
+                          :argument-node-ids [quote-id :inner-index] :ordered-evaluation-node-ids inner-children)
+        inner-edge (assoc (:edge base) :call-core-node-id :inner-query :argument-core-node-ids [quote-id :inner-index]
+                          :ordered-evaluation-node-ids inner-children)
+        operand-id (if nested? :inner-query quote-id) children [:operator operand-id :index]
+        node (-> (:node base) (assoc :children children)
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [operand-id :index] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :ordinal (if nested? 1 0) :argument-core-node-ids [operand-id :index] :ordered-evaluation-node-ids children)
+        nodes (vec (concat [(get-in base [:nodes :operator])] (when nested? [inner-operator]) [quote-node]
+                           (when nested? [inner-index inner-node]) [(get-in base [:nodes :index]) node]))
+        calls (if nested? [inner-call call] [call]) edges (if nested? [inner-edge edge] [edge])
+        core (assoc (:core base) :nodes nodes :calls calls :call-edges edges)]
+    (-> base (assoc :node node :call call :edge edge :core core :nodes (into {} (map (juxt :node-id identity) nodes)))
+        (assoc :types (cond-> {quote-id (if nested? {:kind :gravity.type/vector :element-types [input-type] :shape :literal} input-type)
+                              :index :gravity.type/integer}
+                       nested? (assoc :inner-index :gravity.type/integer :inner-query input-type)))
+        (update :forms merge (:forms quoted))
+        (assoc-in [:forms quote-form :parent-form-id] (if nested? :inner-query :association))
+        (assoc-in [:forms :association :child-form-ids] [:operator (if nested? :inner-query quote-form) :index])
+        (update :forms merge (when nested? {:inner-query (form :inner-query :list '(nth quoted 0) :association [:inner-operator quote-form :inner-index])
+                                           :inner-operator (form :inner-operator :symbol 'nth :inner-query [])
+                                           :inner-index (form :inner-index :integer 0 :inner-query [])}))
+        (update :products assoc :calls calls :call-edges edges))))
+
+(defn- vector-nth-evaluated-chain-input []
+  (let [base (vector-nth-quoted-shape-input true) member (vector-nth-unrelated-shape-input)
+        quote-id (first (get-in base [:products :calls 0 :argument-node-ids]))
+        source {:form-id :outer-vector :syntax-id :outer-vector :semantic-span nil :origin-chain [] :generated-origin nil}
+        outer {:node-id :outer-vector :core-form :collection-literal :children [:input] :source source :resolved-binding-ids []
+               :attributes {:literal-kind :vector :element-count 1}
+               :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :input}]}}
+        member-ids (remove #{:operator :index :association} (keys (:nodes member)))
+        inner (-> (get-in base [:nodes :inner-query]) (assoc-in [:children 1] :outer-vector)
+                  (assoc-in [:evaluation :order 1 :core-node-id] :outer-vector))
+        calls (assoc-in (get-in base [:products :calls]) [0 :argument-node-ids 0] :outer-vector)
+        calls (assoc-in calls [0 :ordered-evaluation-node-ids 1] :outer-vector)
+        edges (-> (get-in base [:products :call-edges]) (assoc-in [0 :argument-core-node-ids 0] :outer-vector)
+                  (assoc-in [0 :ordered-evaluation-node-ids 1] :outer-vector))
+        nodes (-> (:nodes base) (dissoc quote-id) (merge (select-keys (:nodes member) member-ids))
+                  (assoc :outer-vector outer :inner-query inner))]
+    (-> base (assoc :nodes nodes :bindings (:bindings member) :binding-types (:binding-types member))
+        (update :types merge (select-keys (:types member) member-ids) {:outer-vector (get-in base [:types quote-id])})
+        (update :forms merge (:forms member))
+        (assoc-in [:forms :association] (get-in base [:forms :association]))
+        (assoc-in [:forms :input :parent-form-id] :outer-vector)
+        (assoc-in [:forms :inner-query :child-form-ids 1] :outer-vector)
+        (assoc-in [:forms :outer-vector] {:form-id :outer-vector :syntax-id :outer-vector :source-span nil :origin-chain [] :generated-origin nil
+                                         :kind :vector :value [] :parent-form-id :inner-query :child-form-ids [:input]})
+        (assoc-in [:core :nodes] (vec (vals nodes))) (assoc-in [:core :calls] calls) (assoc-in [:core :call-edges] edges)
+        (update :products assoc :calls calls :call-edges edges))))
+
+(deftest sh08-vector-nth-selected-coordinate-development-kernel
+  (doseq [[input path] [[(vector-nth-unrelated-shape-input) nil] [(vector-nth-quoted-shape-input false) [1]]
+                       [(vector-nth-quoted-shape-input true) [0 1]] [(vector-nth-evaluated-chain-input) nil]]]
+    (let [{:keys [core node nodes types bindings binding-types forms products]} input
+          context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core)
+          derive #(invoke-c7 'sh08-vn-shape [node nodes types binding-types {} [] bindings forms #{} 0 {} %])
+          shape (derive context)]
+      (is (= :accepted (:status shape)) (pr-str shape))
+      (is (= :map (:shape-kind shape)))
+      (is (= :gravity.type/string (get-in shape [:parts 0 :shape :type])))
+      (is (seq (:vector-projection-links shape)))
+      (when path (is (= path (get-in shape [:data-origin :data-path]))))
+      (doseq [link (:vector-projection-links shape)]
+        (is (= :proven-safe (get-in link [:application :bounds-proof :outcome])))
+        (is (= :not-authorized (get-in link [:application :bounds-proof :check-elision]))))
+      (when (= :accepted (:status shape))
+        (is (= shape (derive (assoc context :budget-left (:call-join-work shape)))))
+        (is (= :vector-nth-shape-work-limit (:reason (derive (assoc context :budget-left (dec (:call-join-work shape)))))))))))
+
+(deftest sh08-vector-nth-selected-coordinate-premises-development-kernel
+  (let [input (vector-nth-unrelated-shape-input)
+        derive (fn [{:keys [core node nodes types bindings binding-types forms products]}]
+                 (invoke-c7 'sh08-vn-shape [node nodes types binding-types {} [] bindings forms #{} 0 {}
+                                          (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core)]))]
+    (is (= :accepted (:status (derive input))))
+    (doseq [[label changed] [[:vector-source (assoc-in input [:forms :input :syntax-id] :stale)]
+                             [:selected-source (assoc-in input [:forms :payload :parent-form-id] :stale)]
+                             [:unselected-source (assoc-in input [:forms (get-in input [:forms :input :child-form-ids 0]) :parent-form-id] :stale)]
+                             [:child-order (assoc-in input [:nodes :input :evaluation :order] [])]
+                             [:extent (assoc-in input [:nodes :input :attributes :element-count] 1)]
+                             [:selected-type (assoc-in input [:types :payload] :gravity.type/bool)]
+                             [:selected-key (assoc-in input [:forms :payload-key :value] :stale)]]]
+      (is (= :rejected (:status (derive changed))) (name label)))))
+
 (deftest sh08-integral-ordering-development-kernel
   (doseq [operation '[< <= > >=]
           type [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64

@@ -71,6 +71,12 @@ Explicit `:dev-test` selections use test resources on the classpath without a
 manifest authority entry; unknown namespaces and unmatched selectors fail.
 Use a fresh JVM after compiler source changes to avoid stale process-local plans.
 
+When debugging a shared parser or plan-loading error, the existing
+`--fail-fast` option stops after the first failed test var, avoiding the same
+load-error stack from every selected var. It does not stop within a test var,
+and skipped tests are not passes. After fixing the error, run the affected
+semantic kernels and proportionate regressions normally.
+
 Selectors apply across all selected namespaces. A global regex can therefore
 select more than the exact vars added to a mixed batch; use exact selections
 when combining different-cost checks. In the SH08 function-test namespace,
@@ -1137,6 +1143,64 @@ aliases, local returns, association, guards and control transfer. The separate
 rejected `.gravity` cases check operation and type diagnostics; cheap parity
 checks cover their `.qst` counterparts. This is affected composition, not
 authoritative migration or complete collection/profile/target support.
+
+### Proven vector indexing
+
+The same C7 engine, effect owner, typed emitter and runtime own the bounded
+two-argument `(nth vector index)` implementation. Start with:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-vector-nth-development-kernel \
+  --exact sh08-vector-nth-selected-shape-development-kernel \
+  --exact sh08-vector-nth-selected-coordinate-development-kernel \
+  --exact body-vector-nth-development-kernel \
+  --exact current-gravity-vector-nth-lowering-development-kernel \
+  --exact current-gravity-vector-nth-runtime-development-kernel
+```
+
+Normal selection requires an established positional vector type and an Integer
+literal satisfying `0 <= index < length`. C7 selects the corresponding actual
+element type, including from heterogeneous vectors. A Nil element is a valid
+value, not missing type evidence or an out-of-bounds fallback. Scalar selection
+does not require structural-pattern analysis of unrelated members. A later
+lookup or pattern consumer requests the selected value's deeper ancestry only
+when it needs that evidence. Structural limits on the selected value do not
+justify requiring unrelated vector members to be valid patterns. Preserve the
+vector/index/source and binding/call joins while projecting the selected path.
+
+Transferring operands produce Never without an executed bounds proof or a
+selected value. Other non-Never operands still require their supported type
+and index facts. Operands execute once, left to right, until control transfers;
+the query preserves selected value identity and adds no collection allocation.
+Operand allocation and error effects remain visible.
+
+The bounds fact is not authorization to erase checks. The development runtime
+retains vector, integer and range guards before access. Static invalid bounds
+use the owning safety diagnostic; malformed development instructions use the
+existing contained rejection. That transport rejection does not define a
+valid-source dynamic-index failure API. Dynamic homogeneous indexing still
+needs an implemented bounds-failure contract; heterogeneous dynamic indexing
+also needs a result-typing rule. Neither host exceptions, nil fallback nor an
+unimplemented Result path may silently fill those gaps.
+
+Validate the affected real source-to-type/effect/lowering/runtime composition
+when the bounds/type interface or emitted instruction changes. Keep that
+costlier integration separate from the normalized edit-loop checks above and
+from authoritative migration:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-nth-authenticated-composition \
+  --timing-receipt /tmp/sh01-vector-nth-composition.edn
+```
+
+This finite operation does not establish full
+collection, profile, provider, target or self-hosting support.
 
 ### Direct integral ordering
 
