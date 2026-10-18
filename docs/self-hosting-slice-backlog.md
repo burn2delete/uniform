@@ -1642,6 +1642,67 @@ unestablished map parameters, transients, complete collection-library support,
 full allocator/profile/provider/ownership legality, target completion,
 authoritative migration, self-hosting and seedless release remain outstanding.
 
+### Collection count: development increment
+
+The current-source implementation adds `(count collection)` for established
+map and vector types through the same C7 engine, effect owner, typed emitter
+and stage-owned runtime. Normal completion returns Integer; a Never operand
+does not invoke the query. The operand is evaluated once and the runtime
+counts its actual top-level members. The query adds no collection-allocation
+effect, while operand allocation, errors and control transfer remain visible.
+
+This operation consumes the established collection type, not the narrower
+structural-pattern shape domain. Legal quoted maps with String keys or nested
+values outside that domain remain countable. There is no recursive shape
+proof, static-cardinality field, implicit I64 conversion or new generic Map
+annotation. Existing source/binding/call/edge/type joins remain required.
+C8 checks its finite effect premises rather than duplicating C7 inference;
+the public lowerer retains fresh C7 verification at its existing boundary.
+
+The pre-composition focused batch passed eleven tests/798 assertions in 2.522
+seconds of execution plus 8.029 seconds of namespace loading at 2 GiB. A later
+three-site correction guards source child-vector shape before counting it in
+C7, C8 and lowering; its affected checks passed three tests/289 assertions in
+1.398 seconds plus 8.169 seconds of loading. These overlapping batches are
+not combined into a new coverage total. A separate paired-fixture/header
+check passed one test/20 assertions; it does not parse or execute the source.
+Two earlier test-reader delimiter failures occurred before assertions and
+remain failed attempts, not semantic results. An earlier producer-only batch
+exercised the superseded deep-shape draft and is not final-candidate evidence.
+
+The single affected source composition passed one test/400 assertions with no
+failures or errors. Selected execution took 961.418 seconds plus 7.919 seconds
+of namespace loading at 2 GiB. Both fresh positive source products completed
+public lowering, 38 guest invocations and C8 checking. Fourteen functions and
+seventeen calls retain eleven count descriptors: ten normal and one not
+invoked. Seven public operations freshly invoke C7: four positive lowering
+checks and three descriptor-evidence mutation rejections. Two positive
+whole-C8 verifications and three coherently resealed graph rejections passed.
+
+One mutation rebuilds the existing association descriptor's finite projection
+after changing its input-body source reference. The private finite validator
+accepts that projection, then the genuine public C7 verifier rejects the stale
+ancestry before lowering. This isolates more than P's earlier finite-consistency
+mutants; it is not a comprehensive verifier-correctness proof.
+
+All nine rejected `.gravity` sources passed their exact-reason checks: arity,
+nil, String, scalar, unknown, set, list, wrong result annotation and escaping
+the core binding. Their `.qst` counterparts have byte-identical fixture checks,
+not separately executed negative source coverage. Quoted duplicate-key DATA
+counts its materialized map, and quoted String/compound-key maps remain
+countable without being structural patterns. Caught operand errors retain
+performed allocation/throw effects while their escaping typed errors clear.
+No production, test or fixture repair occurred during the composition; all
+27 source-path hashes remained unchanged. Independent review accepted the
+scoped implementation and affected integration. Direct edit-loop and
+composition commands are in `docs/development-verification.md`.
+
+Strings, nil conventions, sets/lists, unknown operands, additional collection
+families, general annotations, full profile/provider/ownership legality,
+authoritative migration, target support, self-hosting and seedless release
+remain outstanding. Focused implementation feedback does not admit a new
+compiler revision or refresh historical authority evidence.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

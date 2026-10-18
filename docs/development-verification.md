@@ -1091,6 +1091,53 @@ sources exercise type/key/arity/allocation boundaries; the cheap fixture check
 establishes byte-identical `.qst` counterparts, not separately executed negative
 source coverage.
 
+### Collection count
+
+The same C7 engine, effect owner, typed emitter and runtime own direct
+`(count collection)` for currently established map and vector types. Use:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-collection-count-development-kernel \
+  --exact body-collection-count-development-kernel \
+  --exact current-gravity-collection-count-lowering-development-kernel \
+  --exact current-gravity-collection-count-runtime-development-kernel
+```
+
+The query returns `Integer`, not an implicit I64, or Never when its operand
+does not return normally. It evaluates the operand once and counts the actual
+top-level elements or associations at runtime. It does not substitute a
+compile-time member count and erase operand work. Its own query has no
+collection-construction effect; operand allocation and error effects remain.
+
+Do not route this query through structural-pattern analysis. A legal typed
+quoted map with String keys, or nested values outside the pattern domain, can
+still be counted. Count needs the established collection type, not a deep
+shape proof or a static-cardinality artifact. Keep authentic call/source/type
+joins and fresh verification at their existing boundaries. Unknown operands
+still reject; this is not a new generic Map annotation or type-union feature.
+String Unicode counting, nil conventions and other collection families remain
+separate language/library work.
+
+For changes to this query or its typed instruction, run the affected source
+composition separately from the edit loop:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-collection-count-authenticated-composition
+```
+
+It reuses the paired current source products for type/effect checks, public
+lowering and execution. The source cases include quoted materialized maps,
+aliases, local returns, association, guards and control transfer. The separate
+rejected `.gravity` cases check operation and type diagnostics; cheap parity
+checks cover their `.qst` counterparts. This is affected composition, not
+authoritative migration or complete collection/profile/target support.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary

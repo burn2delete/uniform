@@ -2273,6 +2273,80 @@
           result (invoke-c7 'sh08-ma-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context])]
       (is (= :map-association-work-limit (:reason result))))))
 
+(defn- collection-count-input [kind empty?]
+  (let [base (map-association-input :unused :gravity.type/bool empty?)
+        operand-ids (if empty? [] (if (= kind :map) [:input-key :input-value] [:input-value]))
+        children [:operator :input]
+        operator (-> (get-in base [:nodes :operator]) (assoc-in [:attributes :symbol] 'count))
+        operand (-> (get-in base [:nodes :input]) (assoc :children operand-ids :attributes {:literal-kind kind :element-count (count operand-ids)})
+                    (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) operand-ids)))
+        node (-> (:node base) (assoc :children children :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                                                  :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [:input] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [:input] :ordered-evaluation-node-ids children)
+        nodes (vec (concat [operator] (map #(get-in base [:nodes %]) operand-ids) [operand node]))
+        type (if (= kind :map) (get-in base [:types :input])
+               {:kind :gravity.type/vector :element-types (if empty? [] [:gravity.type/integer]) :shape :literal})]
+    (-> base (assoc :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) nodes)))
+        (assoc-in [:core :nodes] nodes) (assoc-in [:core :calls] [call]) (assoc-in [:core :call-edges] [edge])
+        (assoc-in [:bindings :association-binding :name] 'count)
+        (assoc :types (assoc (select-keys (:types base) operand-ids) :input type) :binding-types {})
+        (assoc-in [:forms :association :child-form-ids] children)
+        (assoc-in [:forms :association :value] (list 'count (if (= kind :map) {} [])))
+        (assoc-in [:forms :operator :value] 'count)
+        (assoc-in [:forms :input :kind] kind) (assoc-in [:forms :input :child-form-ids] operand-ids)
+        (update :products assoc :calls [call] :call-edges [edge]))))
+
+(defn- collection-count-derived [{:keys [core node nodes types binding-types bindings forms products]}]
+  (invoke-c7 'sh08-cq-derive [core node (first (:calls products)) (first (:call-edges products)) nodes bindings types forms 65536]))
+
+(deftest sh08-collection-count-development-kernel
+  (doseq [kind [:map :vector] empty? [false true]]
+    (let [{:keys [core nodes forms bindings products binding-types] :as input} (collection-count-input kind empty?)
+          result (collection-count-derived input) descriptor (:descriptor result)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :gravity.type/integer (:type result) (:return descriptor) (:result-type descriptor)))
+      (is (not (contains? descriptor :cardinality)))
+      (is (not (contains? descriptor :input-shape)))
+      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+      (is (= {:operation :top-level-cardinality :construction :none :operand-evaluation :once :normal-input :established-map-or-vector}
+             (:query-semantics descriptor)))
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= descriptor (get-in inferred [:type-table :operator])))
+      (is (= :gravity.type/integer (get-in inferred [:type-table :association])))
+      (is (= [(invoke-c7 'sh08-cq-constraint [descriptor])] (:constraints inferred)))))
+  (let [input (collection-count-input :map false)]
+    (doseq [mutate [#(assoc-in % [:bindings :association-binding :binding-class] :import)
+                    #(assoc-in % [:bindings :association-binding :effects] [:io/write])
+                    #(assoc-in % [:products :calls 0 :extra] true)
+                    #(assoc-in % [:products :call-edges 0 :callee-function-syntax-id] :fake)
+                    #(assoc-in % [:forms :input :parent-form-id] :sibling)
+                    #(assoc-in % [:forms :operator :value] 'assoc)
+                    #(assoc-in % [:forms :association :child-form-ids] 7)
+                    #(assoc-in % [:node :evaluation :order] [])
+                    #(assoc-in % [:types :input] :gravity.type/unknown)
+                    #(assoc-in % [:types :input] :gravity.type/nil)
+                    #(assoc-in % [:types :input] :gravity.type/string)]]
+      (is (= :rejected (:status (collection-count-derived (mutate input))))))
+    (is (= :collection-count-arity-mismatch
+           (:reason (collection-count-derived (assoc-in input [:products :calls 0 :argument-node-ids] [])))))
+    (let [result (collection-count-derived (assoc-in input [:types :input] :gravity.type/never))]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (get-in result [:descriptor :application]))))
+    ;; A legal collection type is enough. Member selection shapes are irrelevant.
+    (let [parameter (-> input (assoc-in [:nodes :input :core-form] :reference) (assoc-in [:nodes :input :children] [])
+                        (assoc-in [:nodes :input :attributes] {:binding-id :packet})
+                        (assoc-in [:bindings :packet] {:binding-id :packet :binding-class :lexical :name 'packet}))]
+      (is (= :accepted (:status (collection-count-derived parameter)))))
+    (let [result (invoke-c7 'sh08-cq-derive [(:core input) (:node input) (:call input) (:edge input) (:nodes input)
+                                           (:bindings input) (:types input) (:forms input) 1])]
+      (is (= :collection-count-work-limit (:reason result))))))
+
 (deftest sh08-integral-ordering-development-kernel
   (doseq [operation '[< <= > >=]
           type [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
