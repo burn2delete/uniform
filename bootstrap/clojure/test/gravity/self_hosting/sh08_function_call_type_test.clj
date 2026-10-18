@@ -3412,6 +3412,91 @@
         (is (= :accepted (:status (derive work))))
         (is (= :atomic-equality-work-limit (:reason (derive (dec work)))))))))
 
+(deftest sh08-vector-equality-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        derive (fn [input budget]
+                 (let [{:keys [core node call edge nodes bindings types forms]} input]
+                   (invoke-c7 'sh08-ve-derive [core node call edge nodes bindings types forms budget])))
+        k :gravity.type/keyword s :gravity.type/string
+        pairs [[(finite []) (finite [])]
+               [(finite [k s]) (finite [s k])]
+               [(finite [(finite [k (nullable s)]) :gravity.type/nil])
+                (finite [(finite [s :gravity.type/nil]) :gravity.type/bool])]]]
+    (doseq [pair pairs]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (atomic-equality-input pair)
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :gravity.type/applied-vector-equality (:kind descriptor)))
+        (is (= :sh08-vector-equality-v1 (:version descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= :gravity.type/bool (:type result) (:result-type descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= :original-values (get-in descriptor [:equality-policy :leaves])))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= :false (get-in descriptor [:equality-policy :nested-vector-versus-atomic])))
+        (is (= :unsupported (get-in descriptor [:equality-policy :numeric])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-ve-constraint [descriptor])] (:constraints inferred)))
+        (is (= :direct-vector-equality (:dispatch (invoke-c7 'sh08-ve-call-fact [descriptor (:module input)]))))
+        (let [established (assoc (:types input) :operator descriptor)
+              check #(invoke-c7 'sh08-ve-inferred-call [core (:node input) (:call input) (:edge input) nodes bindings %1 %2])
+              checked (check established 65536) charge (:work-count checked)]
+          (is (= :accepted (:status checked)))
+          (is (= true (invoke-c7 'sh08-ae-inferred-call-valid? [core (:node input) (:call input) (:edge input) nodes bindings established])))
+          (is (= checked (check established charge)))
+          (is (= :vector-equality-work-limit (:reason (check established (dec charge)))))
+          (is (= :rejected (:status (check (assoc-in established [:operator :equality-policy :identity] :observed) 65536))))
+          (is (= :rejected (:status (check (assoc established :arg0 (finite [:gravity.type/integer])) 65536)))))
+        (let [work (:work-count result)]
+          (is (= result (derive input work)))
+          (is (= :vector-equality-work-limit (:reason (derive input (dec work))))))))
+    (doseq [pair [[(finite [k]) :gravity.type/never] [:gravity.type/never (finite [s])]]]
+      (let [result (derive (atomic-equality-input pair) 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (get-in result [:descriptor :application])))))
+    (doseq [bad [:gravity.type/unknown :gravity.type/vector :gravity.type/nil s
+                 {:kind :gravity.type/vector :shape :literal}
+                 (assoc (finite []) :extra true)
+                 {:kind :gravity.type/vector :shape :homogeneous :element-type k}]
+            pair [[bad (finite [])] [(finite []) bad]]]
+      (is (= :rejected (:status (derive (atomic-equality-input pair) 65536)))))
+    (doseq [bad [:gravity.type/integer :gravity.type/i64 :gravity.type/decimal :gravity.type/unknown :gravity.type/never
+                 :gravity.type/function {:kind :gravity.type/map :shape :literal :member-types []}
+                 {:kind :gravity.type/list :shape :literal :element-types []}
+                 {:kind :gravity.type/set :shape :literal :element-types []}
+                 (nullable :gravity.type/integer)]]
+      (is (= :rejected (:status (derive (atomic-equality-input [(finite [k bad]) (finite [])]) 65536)))))
+    (let [input (atomic-equality-input [(finite [k]) (finite [s])])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :ordered-evaluation-node-ids] [:operator :arg1 :arg0])
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg1 :parent-form-id] :unrelated)
+                      #(assoc-in % [:forms :operator :value] 'identical?)]]
+        (is (= :vector-equality-source-mismatch (:reason (derive (mutate input) 65536))))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equals"))))]
+      (doseq [bad [opaque (nullable opaque) (nullable (finite [k]))]]
+        (is (= :rejected (:status (invoke-c7 'sh08-ve-domain [[(finite [bad]) (finite [])] 65536])))))
+      (is (= 0 @callbacks)))
+    (let [nested #(nth (iterate (fn [t] (finite [t])) k) %)
+          domain #(invoke-c7 'sh08-ve-domain [%1 %2])]
+      (is (= :accepted (:status (domain [(nested 128) (finite [])] 65536))))
+      (is (= :vector-equality-type-depth (:reason (domain [(nested 129) (finite [])] 65536))))
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) (finite [])] 65536))))
+      (is (= :vector-equality-type-width (:reason (domain [(finite (repeat 1025 k)) (finite [])] 65536))))
+      (is (= :vector-equality-work-limit (:reason (domain [(finite (repeat 1024 k)) (finite [])] 100)))))))
+
 (defn- integral-ordering-descriptor [{:keys [core node call edge nodes bindings types module]}]
   (invoke-c7 'sh08-io-descriptor [core node call edge nodes bindings types module]))
 

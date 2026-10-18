@@ -38,6 +38,18 @@ Implementations may vary by backend, but equality, iteration order where specifi
 - Protocols: `Seqable`, `Associative`, `Indexed`, `Counted`, `Reducible`, `Buildable`, `Hashable`, and `ComparableCollection`.
 - Bounded systems APIs: `fixed-vector`, `ring-buffer`, `static-map`, and `memory-view`.
 
+## Persistent Vector Value Equality
+
+For two persistent Vectors whose stored values support Gravity equality,
+`(= left right)` returns true exactly when their counts agree and corresponding
+stored values are equal under their applicable Gravity value rules. Position
+and order matter. Stored payloads are not evaluated, and the original Vectors
+are unchanged; equality is not an object-identity or physical-sharing test.
+
+Ordinary L2 operand evaluation and control-transfer rules apply. This rule
+does not select numeric conversions, cross-collection equality, a storage
+representation or profile support; their governing contracts still apply.
+
 ## Map Lookup With An Explicit Default
 
 For maps, `(get map key default)` returns the associated value when the key is
@@ -168,6 +180,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 ## Conformance Criteria
 
 - Persistent operations preserve old collection values in all supported profiles.
+- Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.

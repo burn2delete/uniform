@@ -2228,11 +2228,62 @@ mutations. Negative
 QST fixtures have byte-parity coverage, not additional source constructions.
 
 Initializer calls, references/aliases, mutation, imported initialization and
-other arbitrary initializer code remain unsupported. Full W5's current empty
-effect declaration, Vector value equality, profile/provider/ownership and
+other arbitrary initializer code remain unsupported. This initializer-only
+evidence does not establish Vector value equality (covered separately below).
+Full W5's current empty effect declaration, profile/provider/ownership and
 other target gates, authoritative migration, self-hosting and release remain
 outstanding. This is executable development progress, not completion credit
 for those broader boundaries or a performance benchmark.
+
+### Finite persistent Vector value equality: development implementation
+
+Binary `=` now compares actual persistent Vector values when both operands
+have independently established finite Vector types with complete ordered
+element types. Members may recursively be Vectors or supported scalar and
+nil-bearing scalar alternatives. Counts, positions and corresponding stored
+values determine the result, not constructor ancestry, type sameness, identity
+or physical sharing. Nested Vector-versus-scalar values compare false after
+both complete supported domains validate. Numeric members, unknown/bare
+Vector types and other collection domains remain implementation frontiers,
+not new language prohibitions.
+
+C7 records a distinct collection-owned equality variant through the existing
+core compatibility binding. C8 independently reconstructs its premises using
+fresh, measured owner-local type analysis under the shared work budget. The
+typed emitter preserves once-only left-to-right non-tail operands and known
+work on rejected paths. Runtime validates both complete operand domains before
+a length or earlier value mismatch can return false. The query adds no guest
+allocation; original constructors retain their C8 allocation effects. Internal
+host traversal allocation is not characterized by that claim.
+
+Focused type/runtime checks passed 5 tests / 841 assertions, including existing
+atomic, nil-bearing and initialization regressions. C8 passed 3 / 233. Lowering
+first passed 2 / 153; independent review then corrected rejected-work carry,
+and its changed Vector-only selector passed 1 / 96. These batches overlap in
+loader and compatibility assertions. The original type/runtime attempt remains
+zero passes / one loader error from unsupported `concat`; the bounded-stack
+successor preserves left-to-right and low-coordinate traversal order.
+
+The sole source composition passed 1 test / 316 assertions (310 composition
+checks plus six loader checks), with 452.945 seconds of selected execution
+after 9.214 seconds of namespace loading at 2 GiB. Four fresh source products
+cover accepted Gravity/QST and actual numeric-member and Map-domain Gravity
+rejections. Three tracked public C7 assembly/forgery gates are separate from
+upstream verification. Sixteen closed executions follow accepted C8 analysis
+and passed verification, preserving W5's exact modes definition/getter and
+checking equal, reordered, changed, shorter, empty and nested Vector values.
+Accepted products are reused for coherent type/effect and graph mutations;
+the source effect analysis also checks exact and one-less work budgets.
+
+Negative QST files have byte-parity coverage only. Never, hidden unsupported
+payloads and lowering failure-work cases have focused kernel coverage, not
+additional source constructions. Constructor-occurrence metadata is not
+allocation-event instrumentation; cross-instance nonidentity is not a
+no-sharing theorem. Scalar integral equality, general collection equality,
+full W5's empty effect declaration, provider/profile/ownership and other
+targets, authoritative migration, self-hosting and release remain separate
+gates. These results are executable development evidence, not a benchmark or
+completion of those broader contracts.
 
 ### Private call-entry Map presence: development implementation
 

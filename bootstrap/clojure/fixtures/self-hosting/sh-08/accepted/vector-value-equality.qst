@@ -1,0 +1,40 @@
+(ns self-hosting.sh08.vector-value-equality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [w5-stage-equivalence-modes equal-modes reordered-modes changed-modes short-modes empty-modes nested-values main]))
+
+(def w5-se-required-modes
+  [:artifact :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :reviewed-delta])
+
+(defn w5-stage-equivalence-modes []
+  w5-se-required-modes)
+
+(defn equal-modes [] :- Bool
+  (= w5-se-required-modes
+     (w5-stage-equivalence-modes)))
+
+(defn reordered-modes [] :- Bool
+  (= [:manifest :artifact :diagnostic :conformance :runtime-output
+      :ir-modulo-id :reviewed-delta]
+     (w5-stage-equivalence-modes)))
+
+(defn changed-modes [] :- Bool
+  (= [:artifact :manifest :diagnostic :conformance :runtime-output
+      :ir-modulo-id :changed]
+     (w5-stage-equivalence-modes)))
+
+(defn short-modes [] :- Bool
+  (= [:artifact]
+     (w5-stage-equivalence-modes)))
+
+(defn empty-modes [] :- Bool
+  (= [] []))
+
+(defn nested-values [] :- Bool
+  (= [[:artifact nil] [false "inert"]]
+     [[:artifact nil] [false "inert"]]))
+
+(defn main [] :- Bool
+  (= (w5-stage-equivalence-modes)
+     (w5-stage-equivalence-modes)))

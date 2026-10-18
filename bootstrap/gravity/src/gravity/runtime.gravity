@@ -460,6 +460,64 @@
               (if (char? right) false (= (get left :codepoint) (get right :codepoint))))
             (= left right)))))))
 
+(defn p15-s23-runtime-vector-domain [values budget]
+  (let [limit (if (< budget 65536) budget 65536)]
+  (if (if (vector? values) (= 2 (count values)) false)
+    (if (if (vector? (get values 0)) (vector? (get values 1)) false)
+      (if (< limit 2) {:status :rejected :reason :vector-equality-work-limit :work-count 2}
+        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2]
+          (if (= 0 (count pending)) {:status :accepted :work-count work}
+            (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
+                  value (get frame 0) depth (get frame 1)]
+              (if (> depth 128) {:status :rejected :reason :vector-equality-value-depth :work-count work}
+                (if (vector? value)
+                  (let [width (count value) total (+ work width)]
+                    (if (> width 1024) {:status :rejected :reason :vector-equality-value-width :work-count work}
+                    (if (> total limit) {:status :rejected :reason :vector-equality-work-limit :work-count total}
+                      (if (if (= depth 128) (> width 0) false)
+                        {:status :rejected :reason :vector-equality-value-depth :work-count total}
+                        (let [children (loop [i (- width 1) out tail]
+                                         (if (< i 0) out
+                                           (recur (- i 1) (conj out [(get value i) (+ depth 1)]))))]
+                          (recur children total))))))
+                  (if (if (integer? value) false (= true (p15-s23-runtime-atomic-equality value value)))
+                    (recur tail work)
+                    {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))
+      {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})
+    {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})))
+
+(defn p15-s23-runtime-vector-equality-work [left right budget]
+  (let [limit (if (< budget 65536) budget 65536)]
+  ; Validate BOTH complete value domains before any early mismatch can return.
+  (let [domain (p15-s23-runtime-vector-domain [left right] limit)]
+    (if (= :accepted (get domain :status))
+      (let [initial (+ 1 (get domain :work-count))]
+        (if (> initial limit) {:status :rejected :reason :vector-equality-work-limit :work-count initial}
+          (loop [pending [[left right]] work initial]
+            (if (= 0 (count pending)) {:status :accepted :value true :work-count work}
+              (let [pair (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
+                    a (get pair 0) b (get pair 1)]
+                (if (vector? a)
+                  (if (vector? b)
+                    (if (= (count a) (count b))
+                      (let [total (+ work (count a))]
+                        (if (> total limit) {:status :rejected :reason :vector-equality-work-limit :work-count total}
+                          (let [children (loop [i (- (count a) 1) out tail]
+                                           (if (< i 0) out
+                                             (recur (- i 1) (conj out [(get a i) (get b i)]))))]
+                            (recur children total))))
+                      {:status :accepted :value false :work-count work})
+                    {:status :accepted :value false :work-count work})
+                  (if (vector? b) {:status :accepted :value false :work-count work}
+                    (let [equal (p15-s23-runtime-atomic-equality a b)]
+                      (if (= true equal) (recur tail work)
+                        (if (= false equal) {:status :accepted :value false :work-count work}
+                          {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))))) domain))))
+
+(defn p15-s23-runtime-vector-equality [left right]
+  (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
+    (if (= :accepted (get result :status)) (get result :value) :unsupported)))
+
 (defn p15-s23-runtime-evaluate-in-instance
   [instruction environment output functions path targets pool]
   (let [operation (get instruction :op)
@@ -653,9 +711,11 @@
                   [{:diagnostic "P15S23X002" :reason :map-contains-map-and-key-domain-required :operation operation}
                    (second arguments-result) :rejected])
               (if (= function '=)
-                (let [equal (p15-s23-runtime-atomic-equality left right)]
+                (let [vectors? (if (vector? left) (vector? right) false)
+                      equal (if vectors? (p15-s23-runtime-vector-equality left right)
+                                (p15-s23-runtime-atomic-equality left right))]
                   (if (boolean? equal) [equal (second arguments-result) :normal]
-                    [{:diagnostic "P15S23X002" :reason :atomic-value-equality-domain-required :operation operation}
+                    [{:diagnostic "P15S23X002" :reason (if vectors? :vector-value-equality-domain-required :atomic-value-equality-domain-required) :operation operation}
                      (second arguments-result) :rejected]))
               (if (= function 'inc)
                 (let [proof (get instruction :proof) extent (get proof :vector-extent)]

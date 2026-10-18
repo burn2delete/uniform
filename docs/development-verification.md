@@ -1611,14 +1611,23 @@ The backlog records the original partial-error composition and its separate
 remaining-negative result. The oversized literal reaches C6's fragment-form
 bound before C7's vector extent check; the latter has normalized kernel coverage.
 
-### Atomic value equality development
+### Atomic and Vector value equality development
 
 STD2 owns value equality; STD4 requires exact text semantics. The current
 binary `=` development slice covers Nil, Bool, Character, String, Symbol and
 Keyword. Same-family operands compare values; different supported families
 compare false. Strings compare the exact scalar sequence without normalization
-or locale folding. This does not introduce numeric, collection or function
+or locale folding. The scalar path does not introduce numeric or function
 equality typing, nor does it change ordinary integer runtime compatibility.
+
+STD3 also defines ordered persistent Vector value equality. Its current
+development path accepts independently established finite Vector types with
+complete ordered element types, recursively containing Vectors and the
+supported scalar or nil-bearing scalar alternatives. This is a value query,
+not a requirement for literal-constructor ancestry. Counts, positions and
+stored values matter; physical sharing and type identity do not decide the
+answer. Numeric members, bare/unknown Vector types and other collection
+domains remain unsupported by this implementation, not forbidden by STD3.
 
 Use the owning type, effect, lowering and runtime kernels without rebuilding
 upstream products:
@@ -1634,6 +1643,28 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-atomic-equality-lowering-development-kernel \
   --exact current-gravity-atomic-equality-runtime-development-kernel --fail-fast
 ```
+
+For a Vector equality change, select its four owning checks instead:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-vector-equality-development-kernel \
+  --exact body-vector-equality-development-kernel \
+  --exact current-gravity-vector-equality-lowering-development-kernel \
+  --exact current-gravity-vector-equality-development-kernel --fail-fast
+```
+
+These checks cover bounded type/value traversal and rejected-work accounting.
+Both complete runtime operand domains are validated before a length or earlier
+element mismatch can return false. The query adds no guest allocation; operand
+constructors still retain their C8 allocation effects. This is not a claim
+that the interpreter's internal traversal uses no host allocation.
+Add the existing scalar, nil-bearing or module-initialization checks when a
+change also affects their shared dispatch or runtime owner; do not rerun every
+historical equality composition for an isolated Vector change.
 
 Operands require independently established supported types and exact source,
 binding and evaluation-order joins. Normal results are Bool; Never prevents
@@ -1665,6 +1696,15 @@ identities rather than rewriting every equal host-map payload. The cheap
 `current-gravity-atomic-equality-fixtures-development-kernel` checks the fixture
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
+
+For a stable changed Vector integration, use
+`current-gravity-vector-value-equality-authenticated-composition` in that same
+SH01 namespace instead. It preserves W5's original modes definition/getter,
+compares actual stored values, verifies C8 before execution, and reuses accepted
+products for hostile mutations. Run this affected composition once after the
+owning checks and review; documentation edits do not require reconstructing
+unchanged products. The fixture's explicit allocation allowance does not settle
+the full W5 module's current empty effect declaration.
 
 ### Persistent List prepend: focused feedback
 
