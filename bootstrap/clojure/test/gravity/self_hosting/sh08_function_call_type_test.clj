@@ -2347,6 +2347,83 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- list-query-input [operation argument-types]
+  (let [input (integral-ordering-input operation argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- list-query-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-lq-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-list-query-development-kernel
+  (let [s :gravity.type/string b :gravity.type/bool n :gravity.type/nil nv :gravity.type/never
+        positional (fn [types] {:kind :gravity.type/list :element-types types :shape :literal})
+        nested (positional [s]) empty-list (positional [])
+        cases [['first empty-list n] ['rest empty-list empty-list]
+               ['first (positional [n]) n] ['rest (positional [n]) empty-list]
+               ['first (positional [b s n]) b] ['rest (positional [b s n]) (positional [s n])]
+               ['first (positional [nested s]) nested] ['rest (positional [nested s]) (positional [s])]
+               ['rest :gravity.type/list :gravity.type/list]
+               ['first nv nv] ['rest nv nv]]]
+    (doseq [[operation input-type expected] cases]
+      (let [{:keys [core node call edge nodes forms bindings types products binding-types] :as input} (list-query-input operation [input-type])
+            result (list-query-derived input) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= operation (:operation descriptor)))
+        (is (= (if (= nv input-type) :not-invoked :normal) (:application descriptor)))
+        (is (= [] (:latent-effects descriptor) (:direct-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= {:kind :list-value-query :operation operation :operand-node-id :arg0} (:value-origin descriptor)))
+        (is (= {:representation :development-persistent-list :first :stored-head-value :rest :existing-immutable-tail
+                :retention :may-retain-input-storage :copy :none} (:storage-policy descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-lq-constraint [descriptor])] (:constraints inferred)))
+        (is (true? (invoke-c7 'sh08-lq-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator descriptor)])))
+        (doseq [changed [(assoc descriptor :latent-effects [:memory/allocate])
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc-in descriptor [:value-origin :kind] :quoted-data)
+                         (assoc-in descriptor [:query-policy :payload-evaluation] :execute)
+                         (assoc-in descriptor [:storage-policy :copy] :rebuild)
+                         (assoc descriptor :return :gravity.type/unknown :result-type :gravity.type/unknown)]]
+          (is (false? (invoke-c7 'sh08-lq-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator changed)]))))
+        (let [work (:work-count result) derive #(invoke-c7 'sh08-lq-derive [core node call edge nodes bindings types forms %])]
+          (is (= result (derive work)))
+          (is (= :list-query-work-limit (:reason (derive (dec work))))))))
+    (is (= :list-query-head-type-required (:reason (list-query-derived (list-query-input 'first [:gravity.type/list])))))
+    (doseq [operation ['first 'rest]
+            type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/string :gravity.type/vector :gravity.type/map :gravity.type/set
+                  {:kind :gravity.type/vector :element-types [s] :shape :literal}
+                  {:kind :gravity.type/list :element-types [:gravity.type/unknown] :shape :literal}
+                  {:kind :gravity.type/list :element-types [nv] :shape :literal}
+                  {:kind :gravity.type/list :element-types [s] :shape :literal :quote-id :forged}
+                  {:kind :gravity.type/list :element-types '() :shape :literal}]]
+      (is (= :rejected (:status (list-query-derived (list-query-input operation [type])))) (pr-str [operation type])))
+    (doseq [operation ['first 'rest] arguments [[] [empty-list empty-list]]]
+      (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input operation arguments))))))
+    (doseq [operation ['first 'rest]]
+      (let [input (list-query-input operation [(positional [s b])])]
+        (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                        #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                        #(assoc-in % [:bindings :ordering-binding :name] (if (= operation 'first) 'rest 'first))
+                        #(assoc-in % [:call :extra] true)
+                        #(assoc-in % [:edge :evaluation-order] :operand-before-operator)
+                        #(assoc-in % [:node :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:forms :operator :value] 'seq)]]
+          (is (= :rejected (:status (list-query-derived (mutate input))))))))
+    (doseq [operation ['first 'rest]]
+      (let [input (list-query-input operation [(positional (vec (repeat 1024 s)))])]
+        (is (= :accepted (:status (list-query-derived input))))
+        (is (= 1090 (:work-count (list-query-derived input))))))
+    (is (= :rejected (:status (list-query-derived (list-query-input 'rest [(positional (vec (repeat 1025 s)))])))))))
+
 (defn- list-construction-input [argument-types]
   (let [input (integral-ordering-input 'list argument-types)]
     (assoc input :binding-types (:types input)

@@ -431,7 +431,7 @@
                   (if (contains? '#{nth conj contains?} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (= function 'count)
+                  (if (contains? '#{count first rest} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -522,6 +522,11 @@
                    arguments environment output [] functions path [])]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
+              (if (contains? '#{first rest} function)
+                (if (list? left)
+                  [(if (= function 'first) (first left) (rest left)) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :list-query-persistent-list-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (= function 'get)
                 (if (if (map? left) (if (string? right) true (keyword? right)) false)
                   [(get left right (get values 2)) (second arguments-result) :normal]
@@ -587,7 +592,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected]))))))))))
+                (second arguments-result) :rejected])))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

@@ -50,6 +50,18 @@ aborts invocation; the default is not an implicit thunk or lazy branch.
 Key matching follows STD2 value semantics, and lookup preserves the original
 map. This rule does not select a representation or grant profile support.
 
+## Persistent List Queries
+
+For persistent Lists, `(first items)` returns the first stored value, or nil
+for an empty List. `(rest items)` returns the ordered List suffix after the
+first element, or an empty List when items is empty. The operand is evaluated
+under L2 before querying its value. Neither query mutates the original List
+or evaluates stored payloads.
+
+The implementation must declare whether its suffix retains input storage,
+borrows, or copies under the memory and profile rules. A no-allocation claim
+requires the selected representation.
+
 ## Dependencies
 
 - `D1` and `D3` for literal data, metadata, namespaces, and syntax objects.
@@ -112,6 +124,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
+- Persistent List queries cover empty and nonempty ordered values without executing stored payloads, and declare their suffix storage policy.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.
 - Equality and hash fixtures agree with STD2 across targets.
 - Bounded systems profiles reject unbounded collection construction.

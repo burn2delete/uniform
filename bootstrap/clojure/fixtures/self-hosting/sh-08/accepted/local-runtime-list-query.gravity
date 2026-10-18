@@ -1,0 +1,21 @@
+(ns example.local-runtime-list-query
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn form [value :- String] (list 'quote value))
+(defn payload [value :- String] :- String
+  (first (rest (form value))))
+(defn empties []
+  (list (first '()) (rest '()) (rest (list "only"))))
+(defn stored []
+  (list (first '(false nil)) (first '(nil false))
+        (first '((inert (str "x" "y")) "next"))))
+(defn head-throws [problem :- String]
+  (first (throw problem)))
+(defn tail-throws [problem :- String]
+  (rest (throw problem)))
+(defn shadowed [first :- String rest :- String] :- String rest)
+(defn main [] :- String (payload "value"))

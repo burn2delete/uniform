@@ -2146,6 +2146,64 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Persistent List head and suffix queries: development implementation
+
+STD3 now defines empty and nonempty persistent List queries explicitly.
+Owning Gravity C7, C8, typed-emitter and runtime changes implement unary
+`first` and `rest`. Finite positional types establish the head (or Nil when
+empty) and ordered suffix. Bare List knowledge is sufficient for `rest` to
+return bare List; `first` still requires head-type evidence. No constructor or
+quoted-value ancestry substitutes for typing, and no Dynamic type is invented.
+
+The operand evaluates once; a transfer skips invocation without losing its
+effects, output or original payload. Queries neither mutate the original List
+nor execute stored payloads. The selected development PersistentList runtime
+returns the stored head or existing immutable tail, possibly retaining input
+storage. It adds no direct query allocation in this representation; operand
+allocation and error effects remain. Generic sequence, ownership, profile and
+backend guarantees do not follow.
+
+The stable focused/regression batch passed 44 tests / 3,739 assertions. It
+includes real empty/singleton/heterogeneous List results, tail identity, inert
+payloads, false/nil, single evaluation, transfers, malformed runtime rejection,
+bounded type work, source joins, effect retention and existing recur paths.
+Earlier C7 test compilation and unsupported two-argument `subvec` calls failed;
+the corrected Gravity owners use the seed's existing three-argument form.
+The consumer test's earlier compile failure and ineffective Bool-to-Bool
+mutation failure are retained as failures, not aggregate passes. Earlier
+281- and 384-assertion checks overlap the final batch and are not additive.
+
+The single new paired current-source composition passed 1 test / 331 assertions
+with zero failures or errors. Each complete assembly contains eight functions
+and sixteen calls: ten List queries (eight invoked, two skipped by transfers),
+four List constructions and two ordinary local calls. Concrete caller/callee
+joins cover payload/form and main/payload without a fabricated dispatch tag.
+Twenty guest executions cover computed form payload extraction, empty and
+singleton suffixes, inert nested data, false/nil, NUL/Unicode Strings and four
+original transfer-payload identity checks.
+
+Six fresh public C7 gates cover two whole assemblies and four coherent binding,
+type, order and storage-policy hostiles. Two guarded, nonempty whole C8 results
+pass verification; two resealed graph hostiles reject. Four actual `.gravity`
+negatives cover arity, wrong collection family, unknown type and wrong return
+annotation. A fifth passes C7 and its verifier before C8 rejects missing operand
+allocation allowance with `C8-UNDECLARED` /
+`function-effect-outside-source-allowance`. Negative `.qst` siblings are parity
+checks only; the unknown-type oracle allows two diagnostic pairs, and whole-
+result hostile substitutions do not isolate deep source causality.
+
+All nineteen source/test/fixture hashes and STD3 stayed unchanged through the
+sole run. Selected execution measured 663.008426708 seconds and namespace
+loading 8.460406500 seconds with a 2 GiB heap. These are development scheduling
+observations, not phase-cost or speedup evidence. No unchanged constructor,
+String or Map source composition was replayed.
+
+Bare-List `rest` is normalized type-boundary coverage, not a new annotated
+source case. Bare-List head inspection, annotated List boundaries, shrinking-
+List traversal, generic sequences, full profile/provider legality,
+authoritative migration, self-hosting and seed retirement remain outstanding.
+Direct commands are in `docs/development-verification.md`.
+
 ### Evaluated persistent List construction: development implementation
 
 STD3's evaluated `list` constructor now has owning Gravity C7, C8, typed-emitter
@@ -2209,8 +2267,8 @@ comparison. Independent pre-source review accepted the stable candidate; no
 unchanged String/Map/equality source proof was replayed. Direct commands and
 supported boundaries are in `docs/development-verification.md`.
 
-List queries, arbitrary recursive traversal,
-generic sequences, List annotation grammar, imported List signatures, syntax-
+List queries have a separate development implementation above. Arbitrary
+recursive traversal, generic sequences, List annotation grammar, imported List signatures, syntax-
 object authority, full profile/provider/backend legality, self-hosting and seed
 retirement remain separate frontiers. This development result does not admit a
 stable module revision or confer authoritative migration credit.

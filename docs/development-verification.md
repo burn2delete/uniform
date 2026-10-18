@@ -1417,6 +1417,53 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Persistent List head and suffix queries
+
+STD3 owns unary `first` and `rest` on persistent Lists. Change C7, C8, the
+typed emitter and the existing Gravity runtime; do not add a seed operation
+or infer executable syntax authority from the stored values.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-list-query-development-kernel \
+  --exact body-list-query-development-kernel \
+  --exact current-gravity-list-query-fixtures-development-kernel \
+  --exact current-gravity-list-query-lowering-development-kernel \
+  --exact current-gravity-list-query-runtime-development-kernel
+```
+
+Finite positional List types establish the first element's type, or Nil for
+an empty List, and the exact ordered suffix. A known bare List is enough for
+`rest` to return a bare List; it need not invent element facts. `first` on a
+bare List remains a missing-head-type diagnostic, not an implicit Dynamic
+operation or a language-wide ban. Queries use established type evidence,
+not constructor, quote or local-return ancestry.
+
+The operand evaluates once before querying. A transfer skips the query,
+preserving its original payload and output. Stored payloads are not executed
+and the original List is unchanged. The selected development runtime guards
+actual Lists and returns the existing immutable tail, which may retain input
+storage. Empty input gives nil for `first` and an empty List for `rest`.
+The query adds no direct allocation in this representation; allocations and
+errors from the operand remain visible. This is not a generic sequence,
+profile, ownership, provider or backend claim.
+
+After these kernels, exercise the changed current-source composition once
+before accepting its integration:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-query-authenticated-composition --fail-fast
+```
+
+Do not replay unchanged constructor or
+String compositions. Record actual source results separately from these
+normalized kernel checks and from authoritative migration.
+
 ### Evaluated persistent List construction
 
 STD3's `list` constructor builds immutable DATA, not executable forms or syntax
@@ -1462,7 +1509,8 @@ The cold composition must infer List returns from real bodies and local calls,
 not supplied result types or new annotation syntax. It checks inert form DATA
 containing a computed String, genuine control transfers and representative
 source rejections. Do not replay the unchanged String composition. List
-queries, generic sequences, syntax-object generation, arbitrary recursive
+queries have a separate focused workflow above; generic sequences,
+syntax-object generation, arbitrary recursive
 traversal, imported List signatures and full profile/provider/backend legality
 remain separate frontiers.
 
