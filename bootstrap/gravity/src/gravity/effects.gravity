@@ -1957,15 +1957,166 @@
     (if (= 0 nth-calls) {:status :accepted :context nil :work-count 0}
       (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
         (if (= false (vector? forms)) (body-failure :body-vector-nth-source-forms-required)
-          (let [work (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges))
+          (let [base (+ (count forms) (count bindings) (count (get core :nodes)) (* 2 (count (get core :calls))) (count (get core :call-edges))
                         (* nth-calls (+ 64 (count (get core :function-records)))))]
-            (if (> work budget) (body-failure :body-deferred-work-limit)
-              {:status :accepted :work-count work
-               :context {:forms (body-index forms :form-id) :nodes (body-index (get core :nodes) :node-id)
-                         :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
-                         :bindings bindings}})))))))
+            (if (> base budget) (body-failure :body-deferred-work-limit)
+              (let [usage (loop [remaining (get core :calls) out [0 0]]
+                            (if (= 0 (count remaining)) out
+                              (let [call (first remaining) types (get facts :type-table)]
+                                (if (= :sh08-vector-nth-loop-v1 (get (get types (get call :operator-node-id)) :version))
+                                  (let [elements (get (get types (first (get call :argument-node-ids))) :element-types)]
+                                    (recur (rest remaining) [(+ 1 (first out)) (+ (second out) (if (vector? elements) (count elements) 0))]))
+                                  (recur (rest remaining) out)))))
+                    work (+ base (* 4 (second usage))
+                            (* (first usage) (+ 128 (* 4 (count (get core :calls))) (* 4 (count (get core :call-edges)))
+                               (count (get core :recur-targets)) (count (get core :loop-bindings))
+                               (* 132 (count (get core :recur-transfers))) (* 258 (count (get core :lexical-bindings)))
+                               (* (+ 6 (count (get core :recur-transfers))) (count (get core :function-records))))))]
+                (if (> work budget) (body-failure :body-deferred-work-limit)
+                  {:status :accepted :work-count work
+                   :context {:forms (body-index forms :form-id) :nodes (body-index (get core :nodes) :node-id)
+                             :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
+                             :bindings bindings}})))))))))
+
+(defn body-vl-homogeneous? [elements]
+  (if (vector? elements)
+    (if (> (count elements) 0)
+      (let [type (first elements)]
+        (if (contains? #{nil :gravity.type/unknown :gravity.type/never} type) false
+          (loop [remaining elements]
+            (if (= 0 (count remaining)) true
+              (if (= type (first remaining)) (recur (rest remaining)) false))))) false) false))
+
+(defn body-vl-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (body-io-child-types args types)
+        vector-type (first arguments) index-type (second arguments)
+        elements (get vector-type :element-types) index-node (get nodes (get args 1))
+        length (if (vector? elements) (count elements) nil)
+        selected (if (vector? elements) (first elements) nil)
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-all?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-vn-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{nth gravity.core/nth} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :gravity.type/vector (get vector-type :kind))
+           (body-vl-homogeneous? elements)
+           (= :gravity.type/integer index-type) (= :reference (get index-node :core-form))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-vector-nth :version :sh08-vector-nth-loop-v1
+       :operation 'nth :semantic-owner 'gravity.collections :intrinsic :gravity.collections/proven-vector-nth
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :query-semantics {:operation :vector-element-access :construction :none
+                         :operand-evaluation :operator-then-vector-then-index :normal-input :homogeneous-vector-and-invariant-slot}
+       :index-value nil :vector-length length :selected-type selected
+       :bounds-proof nil :application :normal
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :loop-bindings :recur-targets :recur-transfers :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
+
+(defn body-vl-path-valid? [path leaf root nodes]
+  (if (vector? path)
+    (if (if (> (count path) 0) (<= (count path) 129) false)
+      (body-all? [(= leaf (get (get (first path) :node) :node-id))
+        (= root (get (get (get path (- (count path) 1)) :node) :node-id))
+        (loop [i 0]
+          (if (= i (count path)) true
+            (let [entry (get path i)]
+              (if (map? entry)
+                (let [actual (get entry :node)]
+                  (if (body-all? [(= #{:node :child-index} (set (keys entry)))
+                         (= actual (get nodes (get actual :node-id)))
+                         (= false (contains? #{:loop :fn} (get actual :core-form)))
+                         (if (= i 0) (= nil (get entry :child-index))
+                           (= (get (get (get path (- i 1)) :node) :node-id) (get (get actual :children) (get entry :child-index))))])
+                    (recur (+ i 1)) false)) false))))]) false) false))
+
+(defn body-vl-bounds [header invariant origin path nodes]
+  (let [args (get (get header :source-call) :argument-node-ids)]
+    {:kind :gravity.safety/vector-index-bounds :rule "SAFE2-BOUNDS" :outcome :proven-safe
+     :scope :index-within-loop-guard-and-vector-origin :predicate :zero-le-index-lt-length
+     :access-core-node-id (get header :call-core-node-id)
+     :vector-node-id (first args) :index-node-id (get args 1) :vector-type (first (get header :argument-types))
+     :index-value nil :vector-length (get header :vector-length) :selected-type (get header :selected-type)
+     :index-source (get (get nodes (get args 1)) :source) :slot-binding-id (get (get invariant :range-proof) :slot-binding-id)
+     :loop-invariant invariant :vector-origin origin :guard-path path
+     :check-elision :not-authorized :runtime-guards :retained}))
+
+(defn body-vl-proof-valid? [descriptor core node nodes bindings types]
+  (let [calls (body-index (get core :calls) :core-node-id) edges (body-index (get core :call-edges) :call-core-node-id)
+        call (get calls (get node :node-id)) header (body-vl-source core node call (get edges (get node :node-id)) nodes bindings types (get core :module))
+        proof (get descriptor :bounds-proof) invariant (get proof :loop-invariant) range (get invariant :range-proof)
+        anchor (get nodes (get invariant :call-core-node-id)) anchor-call (get calls (get anchor :node-id))
+        anchor-header (body-si-source core anchor anchor-call (get edges (get anchor :node-id)) nodes bindings types (get core :module))
+        args (get call :argument-node-ids) index (get nodes (get args 1)) origin (get proof :vector-origin)
+        path (get proof :guard-path) bound-origin (get range :vector-origin) bid (get range :slot-binding-id)]
+    (if (if (map? header) (if (map? invariant) (map? anchor-header) false) false)
+      (body-all? [
+        (= invariant (get types (get anchor-call :operator-node-id)))
+        (= invariant (body-si-finish (assoc anchor-header :range-proof range)))
+        (body-si-proof-closed? range core anchor nodes bindings types)
+        (= bid (get (get index :attributes) :binding-id)) (= [bid] (get index :resolved-binding-ids))
+        (= (get header :vector-length) (get range :vector-extent))
+        (= (get (get origin :node) :node-id) (get (get bound-origin :node) :node-id))
+        (= (get origin :type) (get bound-origin :type) (first (get header :argument-types)))
+        (body-si-origin-closed? origin (first args) (first (get header :argument-types)) core nodes types)
+        (body-vl-path-valid? path (get node :node-id) (get (get (get range :guard-node) :children) 1) nodes)
+        (= proof (body-vl-bounds header invariant origin path nodes))
+        (= descriptor (body-vn-finish (assoc header :bounds-proof proof)))]) false)))
+
+(defn body-vl-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        forms (get (get facts :vector-nth-context) :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-nth-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :vector-element})
+        index-binding (get bindings (get (get descriptor :bounds-proof) :slot-binding-id))]
+    (if (body-vl-proof-valid? descriptor core node nodes bindings types)
+      (body-all? [(= (get descriptor :result-type) (get types (get node :node-id)))
+        (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
+        (= (get node :source) (body-throw-source owner))
+        (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+            :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+        (loop [i 0]
+          (if (= i 3) true
+            (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+              (if (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                    (= (get child :source) (body-throw-source form))
+                    (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)
+                    (if (= i 2) (if (= :symbol (get form :kind)) (= (get form :value) (get index-binding :name)) false) true)])
+                (recur (+ i 1)) false))))
+        (= (body-vn-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+        (= [(body-vn-constraint descriptor)] rows)]) false)))
+
 
 (defn body-vn-call-valid? [core facts bindings node call edge nodes]
+  (if (= :sh08-vector-nth-loop-v1 (get (get (get facts :type-table) (get call :operator-node-id)) :version))
+    (body-vl-call-valid? core facts bindings node call edge nodes)
+
   ; Bounds and selected type follow the typed vector and source literal. This
   ; does not reimplement the C7 shape solver or authorize check elimination.
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
@@ -1991,7 +2142,7 @@
                        (if (= :integer (get form :kind)) (= (get form :value) (get header :index-value)) false)) true)])
                  (recur (+ i 1)) false))))
          (= (body-vn-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-vn-constraint descriptor)] rows)]) false)))
+         (= [(body-vn-constraint descriptor)] rows)]) false))) )
 
 (defn body-vn-node? [node facts core]
   (let [context (get facts :vector-nth-context) id (get node :node-id)]
@@ -3267,7 +3418,9 @@
                (if (= 0 (count remaining)) true
                  (let [node (first remaining)]
                    (if (if (contains? scope (get (get joined :owners) (get node :node-id)))
-                         (contains? #{:literal :quote :reference :fn :def :do :if :let :match :collection-literal :keyword-map-lookup :throw :call :try} (get node :core-form)) true)
+                         ; Loop joins and effect equations precede this check.
+                         ; Typed errors retain the C7 lexical-child source union.
+                         (contains? #{:literal :quote :reference :fn :def :do :if :let :match :loop :recur :collection-literal :keyword-map-lookup :throw :call :try} (get node :core-form)) true)
                      (recur (rest remaining)) false))))
              (loop [remaining (get core :recursion-components)]
                (if (= 0 (count remaining)) true

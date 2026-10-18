@@ -1091,6 +1091,76 @@
     (is (true? (effects 'body-shape-valid? core facts)))
     (is (false? (effects 'body-shape-valid? core (update facts :function-type-table conj (first (:function-type-table facts))))))))
 
+(defn- local-throw-loop-effect-data []
+  ;; Current C7/C8 algorithms on normalized DATA, not source authentication.
+  (let [[base base-facts ids] (effect-loop-data)
+        extra (into {} (map-indexed (fn [i name] [name ((body-helper 'sha) (+ 1000 i))])
+                           [:problem :operator :call :handler :try :caller :caller-definition :callee-binding :caller-binding]))
+        ids (merge ids extra) callee (ids :function-target) caller (ids :caller)
+        make (fn [name kind children attrs]
+               {:node-id (ids name) :core-form kind :children (mapv ids children) :attributes attrs :resolved-binding-ids []
+                :binding-context (if (= name :problem) :loop-body caller)
+                :source {:form-id (ids name) :syntax-id (ids name) :semantic-span nil :origin-chain [] :generated-origin nil}
+                :evaluation {:kind (if (= kind :fn) :function-creation :left-to-right)
+                             :order (mapv (fn [i child] {:index i :core-node-id (ids child)})
+                                          (range) (cond (= kind :fn) [] (= kind :try) [(first children)] :else children))}})
+        problem (make :problem :literal [] {:literal-kind :string :value "loop source error"})
+        stop (-> (first (filter #(= (ids :result) (:node-id %)) (:nodes base)))
+                 (assoc :core-form :throw :children [(ids :problem)] :attributes {} :resolved-binding-ids [])
+                 (assoc :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id (ids :problem)}]}))
+        added [(make :operator :reference [] {:binding-id (ids :callee-binding)})
+               (make :call :call [:operator] {}) (make :handler :literal [] {:literal-kind :string :value "handled"})
+               (make :try :try [:call :handler] {})
+               (make :caller :fn [:try] {:recur-target-id caller})
+               (make :caller-definition :def [:caller] {})]
+        core (-> base
+                 (update :nodes #(into (vec (mapcat (fn [node] (if (= (ids :result) (:node-id node)) [problem stop] [node])) %)) added))
+                 (assoc :root-core-node-ids [(ids :definition) (ids :caller-definition)]
+                        :module {:profile :meta :target :jvm :effects [:error/throw] :capabilities []}
+                        :function-records [{:function-syntax-id callee :function-core-node-id callee :body-core-node-id (ids :loop-target)
+                                            :definition-binding-id (ids :callee-binding) :fixed-arity 0 :parameter-binding-ids []}
+                                           {:function-syntax-id caller :function-core-node-id caller :body-core-node-id (ids :try)
+                                            :definition-binding-id (ids :caller-binding) :fixed-arity 0 :parameter-binding-ids []}]
+                        :definitions [] :recursion-components []
+                        :calls [{:core-node-id (ids :call) :operator-node-id (ids :operator) :operator-binding-id (ids :callee-binding)
+                                 :argument-node-ids [] :ordered-evaluation-node-ids [(ids :operator)]
+                                 :evaluation-order :operator-then-arguments :result-policy :call-result}]
+                        :call-edges [{:ordinal 0 :call-core-node-id (ids :call) :caller-function-syntax-id caller :caller-function-core-node-id caller
+                                      :callee-binding-id (ids :callee-binding) :callee-definition-syntax-id callee
+                                      :callee-function-syntax-id callee :callee-function-core-node-id callee :argument-core-node-ids []
+                                      :ordered-evaluation-node-ids [(ids :operator)] :evaluation-order :operator-then-arguments :classification :local-function}]
+                        :error-transfers [{:core-node-id (ids :result) :value-core-node-id (ids :problem)}])
+                 (update :recur-targets conj {:target-id caller :target-kind :function :owner-core-node-id caller
+                                             :owner-form-id caller :owner-syntax-id caller :arity 0 :binding-ids []
+                                             :body-scope-id caller :parent-target-id nil :type-compatibility :pending-sh08}))
+        core (assoc core :identity-preimage (select-keys core [:loop-bindings :recur-targets :recur-transfers]))
+        types (merge (:type-table base-facts)
+                     {(ids :problem) :gravity.type/string (ids :result) :gravity.type/never
+                      (ids :branch) :gravity.type/never (ids :loop-target) :gravity.type/never
+                      (ids :operator) :function (ids :call) :gravity.type/never (ids :handler) :gravity.type/string
+                      (ids :try) :gravity.type/string caller :function (ids :caller-definition) :function})
+        table [{:function-id callee :function-core-node-id callee :body-core-node-id (ids :loop-target)
+                :parameters [] :return :gravity.type/never :fixed-arity 0 :latent-effects [:error/throw] :capabilities [] :thrown-error-effects [:gravity.type/string]}
+               {:function-id caller :function-core-node-id caller :body-core-node-id (ids :try)
+                :parameters [] :return :gravity.type/string :fixed-arity 0 :latent-effects [:error/throw] :capabilities [] :thrown-error-effects []}]
+        bindings {(ids :callee-binding) {:binding-id (ids :callee-binding)}}
+        groups {(ids :try) [{:record :string-catch :error-type :gravity.type/string :handler-core-node-id (ids :handler)}]}
+        owners (effects 'body-throw-owners core 65536)
+        scoped (effects 'body-tc-scope core {callee [:gravity.type/string]} 65536)
+        joined (assoc scoped :direct-throws {callee [:gravity.type/string]} :owners (:owners owners))
+        source (c7-invoke 'sh08-tc-graph [core types (:owners owners) (:scope scoped) 65536 groups])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        checked (c7-invoke 'sh08-ft-loop-type-step [core types {} 65536])
+        loop-rows (mapv (fn [premise] (effects 'body-loop-row premise (get nodes (or (:initializer-node-id premise)
+                                                                                 (get-in premise [:source-transfer :recur-core-node-id]))) (:module core)))
+                        (:constraints checked))
+        call-row (c7-invoke 'sh08-tc-constraint [core (first (:call-edges core)) (into {} (map (juxt :core-node-id identity) (:calls core)))
+                                               nodes (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+                                               bindings types (into {} (map (juxt :function-id identity) table)) (:nodes source)])
+        facts {:module (:module core) :type-table types :function-type-table table
+               :constraint-ledger (conj loop-rows call-row) :atomic-typed-handlers groups}]
+    {:core core :facts facts :bindings bindings :joined joined :ids ids :checked checked :source source}))
+
 (deftest local-throw-call-effect-equations-development-kernel
   (let [{:keys [core types functions direct bindings id fid]} (local-throw-kernel-data)
         result (c7-invoke 'sh08-tc-products [core types functions bindings direct 65536])
@@ -1123,7 +1193,43 @@
       (is (= [:gravity.type/string :gravity.type/bool :gravity.type/integer]
              (c7-invoke 'sh08-tc-node-errors [node graph :target {:argument :gravity.type/string} {}])))
       (is (= [:gravity.type/string :gravity.type/bool]
-             (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never} {}]))))))
+             (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never} {}])))))
+  (let [{:keys [core facts bindings joined ids checked source]} (local-throw-loop-effect-data)
+        derive #(effects 'body-derive-module-nodes %1 %2 {} 65536)
+        derived (derive core facts) graph (:nodes derived)
+        verify #(effects 'body-tc-verify %1 %2 bindings %3 joined 65536)
+        replace-node (fn [c id f] (update c :nodes #(mapv (fn [node] (if (= id (:node-id node)) (f node) node)) %)))
+        reseal (fn [c] (assoc c :identity-preimage (select-keys c [:loop-bindings :recur-targets :recur-transfers])))]
+    (is (= :accepted (:status checked) (:status source) (:status derived)) (pr-str {:checked checked :source source :derived derived}))
+    (is (true? (:recur-control? derived)))
+    (is (true? (effects 'body-graph-equations-valid? core facts {} graph)))
+    (is (= :accepted (:status (effects 'body-loop-joins core facts 65536))))
+    (is (= :accepted (:status (verify core facts graph))))
+    (is (= {(:function-target ids) [:gravity.type/string] (:caller ids) []} (:functions (verify core facts graph))))
+    (doseq [name [:result :branch :loop-target :call]]
+      (is (= [:gravity.type/string] (get-in graph [(ids name) :escaping-thrown-error-types]))))
+    (is (= [] (effects 'body-error-types graph (ids :transfer))))
+    (is (= [] (get-in graph [(ids :try) :escaping-thrown-error-types])))
+    (is (= #{:error/throw} (get-in graph [(ids :try) :transitive]) (get-in graph [(ids :transfer) :transitive])))
+    (is (= (first (:recur-transfers core)) (get-in graph [(ids :transfer) :loop-backedge :source-transfer])))
+    (when (= :accepted (:status derived))
+      (is (= derived (effects 'body-derive-module-nodes core facts {} (:work-count derived))))
+      (is (= :body-deferred-work-limit (:reason (effects 'body-derive-module-nodes core facts {} (dec (:work-count derived)))))))
+    (doseq [bad [(assoc-in facts [:constraint-ledger (dec (count (:constraint-ledger facts))) :dependencies :callee-error-types] [])
+                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [])
+                 (assoc-in facts [:function-type-table 1 :thrown-error-effects] [:gravity.type/string])]]
+      (is (= :rejected (:status (verify core bad graph)))))
+    (doseq [name [:loop-target :call]]
+      (is (= :rejected (:status (verify core facts (assoc-in graph [(ids name) :escaping-thrown-error-types] []))))))
+    (is (false? (effects 'body-graph-equations-valid? core facts {}
+                        (assoc-in graph [(ids :result) :escaping-thrown-error-types] []))))
+    (doseq [bad [(assoc-in core [:recur-transfers 0 :argument-node-ids] [(ids :next-value) (ids :next-again)])
+                 (assoc-in core [:recur-transfers 0 :target-id] (ids :function-target))
+                 (assoc-in core [:recur-targets 0 :binding-ids] [(ids :value) (ids :again)])]]
+      (is (= :rejected (:status (derive (reseal bad) facts)))))
+    (let [bad (replace-node core (ids :problem) #(assoc % :core-form :set!))]
+      (is (= :rejected (:status (derive bad facts))))
+      (is (= :unsupported-throwing-call-component (:reason (verify bad facts graph)))))))
 
 (defn- local-throw-change-summary [typed function-id errors]
   (-> typed

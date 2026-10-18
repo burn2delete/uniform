@@ -1859,6 +1859,109 @@ legality, authoritative migration, target support, self-hosting and seedless
 release remain outstanding. This finite domain is not a language-level ban on
 other documented numeric behavior.
 
+### Guarded loop vector indexing: development increment
+
+The current C7 engine, effect owner and typed emitter extend established
+vector `nth` from literal indices to the original Integer slot of the accepted
+bounded counter loop. The vector is nonempty with one established homogeneous
+element type. Access must occur beneath the strict count guard's true edge,
+using the same immutable vector origin and loop slot. Immutable aliases are
+allowed; another vector of the same type and extent is not the same origin.
+
+This rule consumes the existing counter invariant rather than running a
+second range solver. Access requires `0 <= i < N`; the successor's weaker
+upper bound `i + 1 <= N` does not justify indexing with `(inc i)`. The call
+retains its original operator/vector/index evaluation order, returns the
+established homogeneous element type, and adds no allocation or error effect.
+Operand effects and non-returning control transfer remain visible. The
+existing runtime and its vector, integer and bounds guards are unchanged;
+no check elision or general termination claim follows.
+
+The cold inference kernel begins without completed successor or nth
+descriptors, covers both recur/throw branch orders and preserves current facts
+over prior-round facts. Separate origin/scope tests retain a valid counter
+invariant while rejecting a different same-extent vector and a nested target.
+Deep selected-shape reconstruction is explicitly unsupported for this variable
+index; ordinary element typing does not grant constructor-coordinate ancestry.
+The existing literal-index and Never-operand rules remain separate.
+
+Focused feedback includes a two-test/77-assertion producer/cold-inference pass,
+a separate one-test/21-assertion origin/scope pass, and the corrected effect
+kernel's one-test/75-assertion pass. An eight-test/330-assertion regression
+batch covers the producer, cold inference, origin/scope, deep-shape fence,
+effects, literal nth and bounded-successor lowering, and paired fixture
+parsing. A final two-test/98-assertion batch covers changed lowering and
+fixture parsing. These overlapping batches are not summed as unique coverage.
+
+Earlier failures remain history: source/test delimiter errors stopped loading;
+an effect fixture omitted the existing escaping-error set required by the
+record contract; one command used the wrong working directory and stopped
+before tests. Lowering's initial 78-assertion run had three real failures:
+forged contextual callee edges were accepted even though its core-derived
+proof was valid. Lowering now compares contextual call and edge records with
+the descriptor's authenticated source records. The changed kernel passed all
+78 assertions; the earlier 75-pass/3-fail aggregate remains failed.
+
+The paired source fixtures contain a Bool-vector scan through an immutable
+alias, two unit-step backedges, a String throw, catch and normal entrypoint.
+Nine rejected fixture pairs cover different origin, wrong slot, derived index,
+heterogeneous or empty element typing, nested target, outside-guard access,
+false-edge access and an unknown index. Parsing establishes only syntax and
+pair parity.
+
+The single frozen source composition completed one test/166 assertions:
+150 passes, 16 failures and no errors. Selected execution took 1,001.585 seconds
+plus 8.006 seconds of namespace loading at 2 GiB. All 28 compiler, runtime,
+test and fixture hashes remained unchanged. The aggregate remains failed.
+Both positive extensions completed typing, lowering and guest execution:
+three functions, seven calls, one loop, four recur targets, two transfers and
+five builtin instructions. Ten guest invocations passed, including two actual
+String throw identities per extension, catch recovery to 99 and normal scans
+to three. Seven fresh public C7 operations covered four positive operations
+and three altered candidates. The unused source-value echo hostile passes the
+finite helper but fails full public reconstruction; it is not a comprehensive
+verifier-correctness or isolated selected-ancestry proof. The nine negative
+`.gravity` fixtures rejected within their explicit allowed diagnostic pairs;
+the run does not identify which overlapping pair matched each case. The `.qst`
+negative fixtures have byte parity, not separately executed rejection coverage.
+
+Each positive extension had one C8 rejection followed by seven missing-graph
+assertion failures. C8's throwing-call verifier excludes loop/recur from its
+scoped operation whitelist, although the preceding derivation already checks
+their original transfers, effect fixed point and final graph equations. This
+is a sufficient static rejection condition; the shared diagnostic reason
+alone does not uniquely identify the observed internal callsite. C8's verifier
+accepting a well-formed rejected result, and hostiles rejected from an absent
+graph, do not establish accepted effect graphs or successful graph-forgery
+coverage. The narrow C8 compatibility correction adds only checked loop/recur
+to that whitelist, preserving the existing joins and equations. The extended
+local throwing-call kernel exercises module-node derivation and the actual
+throwing-call verifier, including a called loop's String throw, catch residual,
+performed throw label, exact/one-less work bounds and forged targets,
+transfers, rows and summaries. Its corrected revision passed one test/44
+assertions; the six-test/388-assertion affected regression batch also passed.
+The batches overlap. Earlier mock identifier formatting, missing body scope,
+and dependent missing-graph/work-bound failures remain recorded; they did not
+justify further production changes.
+
+A single-source C8 follow-up against the unchanged `.gravity` positive passed
+one test/24 assertions in 114.787 seconds plus 6.935 seconds of namespace
+loading at 2 GiB. All 29 compiler, runtime, test and fixture hashes remained
+unchanged. It requires an accepted nonempty graph before whole-result
+verification and the three coherent graph hostiles. The accepted graph retains
+the two-transfer loop fixed point, pure nth dependencies without an allocation,
+the scan's escaping String error and the catch's empty residual while keeping
+the performed allocation/throw labels. The unchanged paired
+source/type/lowering/runtime/public-C7 and negative-source matrix was not
+replayed to make the failed aggregate green. This successful affected consumer
+result complements, but does not relabel, the original failed run.
+
+Use the focused commands in `docs/development-verification.md`. Empty vectors
+without an element type, heterogeneous joins, arbitrary dynamic indices,
+deep selected-shape propagation and dynamic bounds-failure APIs remain separate
+work, not language bans. Profile/provider/ownership legality, authoritative
+migration, target support, self-hosting and seedless release remain outstanding.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

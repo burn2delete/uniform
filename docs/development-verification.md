@@ -1256,6 +1256,90 @@ unproved extents, fixed-width checked errors, BigInt support, target admission
 and authoritative migration remain separate work. This rule is a supported
 finite analysis domain, not a prohibition on other documented numeric forms.
 
+### Guarded loop vector indexing
+
+The C7 extension to proven vector indexing consumes the existing bounded
+counter invariant. It does not run a second loop solver. Start with the
+current producer checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-vector-loop-nth-development-kernel \
+  --exact sh08-vector-loop-nth-cold-inference-development-kernel \
+  --exact sh08-vector-loop-nth-origin-scope-development-kernel \
+  --exact sh08-vector-loop-nth-selected-shape-development-kernel
+```
+
+These normalized checks cover a nonempty homogeneous established vector,
+its exact immutable origin, the original Integer loop slot, and access beneath
+the strict count guard's true edge. The element result is its established
+homogeneous type. The successor's result may equal the extent; that does not
+make `(nth values (inc i))` safe. Access needs the separate `0 <= i < N` fact.
+
+The cold-inference check starts without a completed successor descriptor and
+tests both recur/throw branch orders and current facts overriding prior-round
+facts. This is owning type-inference feedback, not a real-source composition
+or authoritative proof. For effect reconstruction, lowering and paired fixture
+syntax, use the affected consumer kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-loop-recur-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact local-throw-call-effect-equations-development-kernel \
+  --exact body-vector-loop-nth-development-kernel \
+  --exact current-gravity-vector-loop-nth-lowering-development-kernel \
+  --exact current-gravity-vector-loop-nth-fixtures-development-kernel
+```
+
+These checks include exact source/call/edge joins, malformed bounds evidence,
+operand effects and work-limit boundaries. The local throwing-call kernel also
+exercises the actual loop-effect derivation and throwing-call verifier together;
+checked loop/recur nodes must not be excluded by a stale operation whitelist.
+Fixture parsing alone does not establish rejection or execution.
+The existing runtime evaluates index expressions and retains vector, integer
+and bounds guards; no runtime change or check elision is implied here.
+
+Changes to the producer/consumer relation need its affected composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-loop-nth-authenticated-composition \
+  --timing-receipt /tmp/sh01-vector-loop-nth-composition.edn
+```
+
+This is a separate, expensive source-to-runtime integration check, not the
+default edit-to-test command above. Reuse its observed result for unchanged
+source/test/fixture bytes; do not repeat it just to repair a reporting label or
+obtain another green aggregate. Failed and partial results stay accurately
+recorded. No authoritative migration or self-hosting claim follows from it.
+
+The retained full composition completed its type/lowering/runtime checks but
+failed C8's throwing-call compatibility boundary. After changing that consumer
+alone, select its affected single-source test instead of repeating those
+unchanged stages:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-vector-loop-nth-throw-control-authenticated-composition \
+  --timing-receipt /tmp/sh09-vector-loop-nth-throw-control-composition.edn
+```
+
+It constructs one fresh unchanged `.gravity` input through the existing type
+helper, then checks the current C8 graph, original loop/effect equations,
+String propagation and catch residual, and coherently altered graph rejection.
+This affected test passed 24 assertions after the whitelist correction; the
+earlier failed aggregate remains failed. Its one-source C8 result complements
+the unchanged source/type/lowering/runtime evidence rather than relabeling it.
+
+Empty vectors without an element type, heterogeneous result joins, arbitrary
+dynamic indices, deep selected-shape propagation and dynamic-bounds failure
+APIs remain separate work. These implementation limits are not language bans.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary

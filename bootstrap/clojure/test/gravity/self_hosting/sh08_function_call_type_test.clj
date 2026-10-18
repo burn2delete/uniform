@@ -2883,6 +2883,199 @@
                ((juxt :rule :reason) (bounded-successor-derived input 65536))))))))
 
 
+(defn- vector-loop-nth-input [extent reverse?]
+  ;; Current C7 algorithms on normalized core DATA; no source admission.
+  (let [base (bounded-successor-input extent) template (vector-nth-input [:gravity.type/bool] 0)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                 :kind kind :value value :parent-form-id parent :child-form-ids children})
+        operator (-> (get-in template [:nodes :operator]) (assoc :node-id :nth-op :source (source :nth-op) :binding-context :body))
+        operand (-> (get-in base [:nodes :values-ref]) (assoc :node-id :nth-vector :source (source :nth-vector)))
+        index (-> (get-in base [:nodes :inc-slot]) (assoc :node-id :nth-index :source (source :nth-index)))
+        children [:nth-op :nth-vector :nth-index]
+        query (-> (:node template) (assoc :node-id :read :source (source :read) :children children :binding-context :body)
+                  (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        problem {:node-id :problem :core-form :literal :children [] :attributes {:literal-kind :string :value "false flag"} :resolved-binding-ids []
+                 :source (source :problem) :binding-context :body :evaluation {:kind :left-to-right :order []}}
+        stop {:node-id :stop :core-form :throw :children [:problem] :attributes {} :resolved-binding-ids [] :source (source :stop)
+              :binding-context :body :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :problem}]}}
+        check-children (if reverse? [:read :stop :again] [:read :again :stop])
+        check {:node-id :check :core-form :if :children check-children :attributes {} :resolved-binding-ids [] :source (source :check)
+               :binding-context :body :evaluation {:kind :left-to-right :order [{:index 0 :core-node-id :read}]}}
+        branch (assoc-in (get-in base [:nodes :branch]) [:children 1] :check)
+        position (.indexOf (mapv :node-id (get-in base [:core :nodes])) :inc-op)
+        before (subvec (get-in base [:core :nodes]) 0 position) after (subvec (get-in base [:core :nodes]) position)
+        ordered (vec (concat before [operator operand index query] (take 4 after) [problem stop check] (drop 4 after)))
+        ordered (mapv #(if (= :branch (:node-id %)) branch %) ordered)
+        call (assoc (:call template) :core-node-id :read :operator-node-id :nth-op :argument-node-ids [:nth-vector :nth-index] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge template) :ordinal 2 :call-core-node-id :read :argument-core-node-ids [:nth-vector :nth-index] :ordered-evaluation-node-ids children)
+        calls (vec (concat (take 2 (get-in base [:core :calls])) [call] (drop 2 (get-in base [:core :calls]))))
+        edges (vec (concat (take 2 (get-in base [:core :call-edges])) [edge] [(assoc (last (get-in base [:core :call-edges])) :ordinal 3)]))
+        input (-> base (assoc :nodes (into {} (map (juxt :node-id identity) ordered)))
+                  (assoc-in [:core :nodes] ordered) (assoc-in [:core :calls] calls) (assoc-in [:core :call-edges] edges)
+                  (assoc-in [:bindings :association-binding] (get-in template [:bindings :association-binding]))
+                  (update :types merge {:nth-vector (get-in base [:types :values]) :nth-index :gravity.type/integer :read :gravity.type/bool
+                                        :problem :gravity.type/string :stop :gravity.type/never :check :gravity.type/never})
+                  (assoc-in [:forms :branch :child-form-ids 2] :check)
+                  (assoc-in [:forms :again :parent-form-id] :check)
+                  (update :forms merge {:nth-op (form :nth-op :symbol 'nth :read [])
+                                        :nth-vector (form :nth-vector :symbol 'payloads :read [])
+                                        :nth-index (form :nth-index :symbol 'cursor :read [])
+                                        :read (form :read :list nil :check children)
+                                        :problem (form :problem :string "false flag" :stop [])
+                                        :stop (form :stop :list nil :check [:throw-op :problem])
+                                        :check (form :check :list nil :branch (into [:check-op] check-children))}))]
+    input))
+
+(defn- vector-loop-nth-completed [input]
+  (let [{:keys [core nodes bindings types forms]} input
+        result (invoke-c7 'sh08-si-derive [core (nodes :increment) (last (:calls core)) (last (:call-edges core)) nodes bindings types forms 65536])]
+    (assoc input :invariant-result result :types (assoc types :inc-op (:descriptor result)))))
+
+(defn- vector-loop-nth-derived [{:keys [core nodes bindings types forms]} budget]
+  (invoke-c7 'sh08-vl-derive [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2) nodes bindings types forms budget]))
+
+(deftest sh08-vector-loop-nth-development-kernel
+  (doseq [reverse? [false true] extent [1 3]]
+    (let [input (vector-loop-nth-completed (vector-loop-nth-input extent reverse?))
+          result (vector-loop-nth-derived input 65536) descriptor (:descriptor result) proof (:bounds-proof descriptor)]
+      (is (= :accepted (get-in input [:invariant-result :status])) (pr-str (:invariant-result input)))
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :gravity.type/bool (:type result) (:selected-type descriptor)))
+      (is (= :sh08-vector-nth-loop-v1 (:version descriptor)))
+      (is (nil? (:index-value descriptor)))
+      (is (= extent (:vector-length descriptor)))
+      (is (= :proven-safe (:outcome proof)))
+      (is (= :index-within-loop-guard-and-vector-origin (:scope proof)))
+      (is (= :retained (:runtime-guards proof))) (is (= :not-authorized (:check-elision proof)))
+      (when (= :accepted (:status result))
+        (is (= result (vector-loop-nth-derived input (:work-count result)))))
+        (is (= :vector-nth-loop-work-limit (:reason (vector-loop-nth-derived input (dec (:work-count result))))))))
+  (let [input (vector-loop-nth-completed (vector-loop-nth-input 3 false))]
+    (is (= :vector-nth-loop-work-limit (:reason (vector-loop-nth-derived input 0))))
+    (doseq [changed [(assoc-in input [:types :nth-index] :gravity.type/string)
+                     (assoc-in input [:types :nth-index] :gravity.type/unknown)
+                     (assoc-in input [:nodes :nth-index :core-form] :call)
+                     (assoc-in input [:forms :nth-index :value] 'shadowed)
+                     (assoc-in input [:core :call-edges 2 :callee-function-syntax-id] :fake)
+                     (assoc-in input [:types :nth-vector :element-types] [:gravity.type/bool :gravity.type/string :gravity.type/bool])
+                     (assoc-in input [:types :inc-op] :gravity.type/core-var)]]
+      (is (= :rejected (:status (vector-loop-nth-derived changed 65536))))))
+  (let [input (vector-loop-nth-completed (vector-loop-nth-input 0 false))]
+    (is (= :vector-nth-loop-homogeneous-element-type-required (:reason (vector-loop-nth-derived input 65536))))))
+
+(deftest sh08-vector-loop-nth-selected-shape-development-kernel
+  (let [{:keys [nodes types bindings forms] :as input} (vector-loop-nth-completed (vector-loop-nth-input 3 false))
+        result (vector-loop-nth-derived input 65536)
+        shape (invoke-c7 'sh08-vn-shape [(nodes :read) nodes (assoc types :nth-op (:descriptor result))
+                                       {} {} [] bindings forms #{} 0 {} {}])]
+    (is (= :accepted (:status result)))
+    (is (= ["C7-ANNOTATION" :vector-nth-loop-selected-shape-unsupported] ((juxt :rule :reason) shape)))))
+
+(deftest sh08-vector-loop-nth-cold-inference-development-kernel
+  (doseq [reverse? [false true]]
+    (let [{:keys [core nodes bindings forms]} (vector-loop-nth-input 3 reverse?)
+          context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
+                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+          result (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                           [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} 16 context])
+          types (:type-table result) descriptor (get types :nth-op)]
+      (is (= :converged (:convergence-status result)) (pr-str (:diagnostics result)))
+      (is (= [] (:diagnostics result)))
+      (is (= :gravity.type/bool (get types :read) (:result-type descriptor)))
+      (is (= :gravity.type/integer (get types :increment)))
+      (is (= :sh08-vector-nth-loop-v1 (:version descriptor)))
+      (is (= 1 (count (filter #(= :sh08-vector-nth-v1 (:producer-rule %)) (:constraints result)))))
+      (is (true? (invoke-c7 'sh08-vn-inferred-call-valid? [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2) nodes bindings types])))
+      (let [prepared (assoc context :ordering-operators (into {} (map (juxt :operator-node-id identity) (:calls core)))
+                                    :ordering-edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                                    :ordering-bindings bindings :association-forms forms :prior-type-table types)]
+        (doseq [current [{:nth-index :gravity.type/string} {:inc-op :gravity.type/core-var}
+                         {:nth-vector {:kind :gravity.type/vector :element-types [:gravity.type/bool :gravity.type/string :gravity.type/bool] :shape :literal}}]]
+          (is (= :rejected (:status (invoke-c7 'sh08-vn-step [(nodes :read) current {} {} prepared 65536])))))))))
+
+
+(defn- vector-loop-nth-nested-target [input]
+  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        zero (-> (get-in input [:nodes :zero]) (assoc :node-id :inner-zero :source (source :inner-zero) :binding-context :body))
+        read (assoc (get-in input [:nodes :read]) :binding-context :inner-body)
+        owner (-> (get-in input [:nodes :loop]) (assoc :node-id :inner-loop :source (source :inner-loop) :children [:inner-zero :read]
+                                                      :resolved-binding-ids [:inner-slot] :binding-context :body)
+                  (assoc-in [:attributes :target-id] :inner-target)
+                  (assoc-in [:evaluation :order] [{:index 0 :core-node-id :inner-zero} {:index 1 :core-node-id :read}]))
+        check (-> (get-in input [:nodes :check]) (assoc-in [:children 0] :inner-loop)
+                  (assoc-in [:evaluation :order] [{:index 0 :core-node-id :inner-loop}]))
+        nodes (assoc (:nodes input) :inner-zero zero :inner-loop owner :read read :check check)
+        ordered (vec (mapcat (fn [node] (case (:node-id node) :nth-op [zero node] :read [read owner] :check [check] [node]))
+                             (get-in input [:core :nodes])))
+        target {:target-id :inner-target :target-kind :loop :owner-core-node-id :inner-loop :owner-form-id :inner-loop :owner-syntax-id :inner-loop
+                :arity 1 :binding-ids [:inner-slot] :body-scope-id :inner-body :parent-target-id :target :type-compatibility :pending-sh08}
+        slot (assoc (first (get-in input [:core :loop-bindings])) :loop-core-node-id :inner-loop :name 'inner :binding-id :inner-slot
+                    :definition-form-id :inner-name :definition-syntax-id :inner-name :binding-scope-id :inner-body
+                    :initializer-form-id :inner-zero :initializer-syntax-id :inner-zero :initializer-scope-id :body :initializer-node-id :inner-zero)]
+    (-> input (assoc :nodes nodes) (assoc-in [:core :nodes] ordered)
+        (update-in [:core :recur-targets] conj target) (update-in [:core :loop-bindings] conj slot)
+        (assoc-in [:bindings :inner-slot] {:binding-id :inner-slot :name 'inner :binding-class :lexical :scope-id :inner-body :definition-syntax-id :inner-name})
+        (update :types merge {:inner-zero :gravity.type/integer :inner-loop :gravity.type/bool})
+        (assoc-in [:forms :read :parent-form-id] :inner-loop)
+        (assoc-in [:forms :check :child-form-ids 1] :inner-loop)
+        (assoc-in [:forms :inner-zero] {:form-id :inner-zero :syntax-id :inner-zero :source-span nil :origin-chain [] :generated-origin nil
+                                       :kind :integer :value 0 :scope-id :body :parent-form-id :inner-bindings :child-form-ids []})
+        (assoc-in [:forms :inner-loop] {:form-id :inner-loop :syntax-id :inner-loop :source-span nil :origin-chain [] :generated-origin nil
+                                       :kind :list :parent-form-id :check :child-form-ids [:inner-loop-op :inner-bindings :read]}))))
+
+(defn- vector-loop-nth-other-vector [input]
+  (let [input (bounded-successor-alias input) original (get-in input [:nodes :values])
+        ids (:children original) rename (zipmap ids (map #(keyword (str "other-" (name %))) ids))
+        members (mapv (fn [id] (-> (get-in input [:nodes id]) (assoc :node-id (rename id))
+                                   (assoc-in [:source :form-id] (rename id)) (assoc-in [:source :syntax-id] (rename id)))) ids)
+        operand (-> (get-in input [:nodes :alias-init])
+                    (assoc :core-form :collection-literal :children (mapv rename ids) :resolved-binding-ids []
+                           :attributes {:literal-kind :vector :element-count (count ids)})
+                    (assoc :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) (mapv rename ids))}))
+        nodes (into (assoc (:nodes input) :alias-init operand) (map (juxt :node-id identity) members))
+        forms (reduce (fn [out id] (assoc out (rename id) (-> (get-in input [:forms id]) (assoc :form-id (rename id) :syntax-id (rename id) :parent-form-id :alias-init))))
+                      (:forms input) ids)]
+    (-> input (assoc :nodes nodes :forms forms)
+        (assoc-in [:core :nodes] (vec (mapcat #(if (= :alias-init (:node-id %)) (conj members operand) [%]) (get-in input [:core :nodes]))))
+        (update :types merge (zipmap (mapv rename ids) (repeat :gravity.type/bool)))
+        (assoc-in [:forms :alias-init :kind] :vector) (assoc-in [:forms :alias-init :value] (vec (repeat (count ids) true)))
+        (assoc-in [:forms :alias-init :child-form-ids] (mapv rename ids)))))
+
+(deftest sh08-vector-loop-nth-origin-scope-development-kernel
+  (let [base (vector-loop-nth-input 3 false)
+        alias (vector-loop-nth-completed (bounded-successor-alias base))
+        other (vector-loop-nth-completed (vector-loop-nth-other-vector base))
+        nested (vector-loop-nth-completed (vector-loop-nth-nested-target base))]
+    (is (= :accepted (get-in alias [:invariant-result :status]) (get-in other [:invariant-result :status]) (get-in nested [:invariant-result :status])))
+    (is (= :accepted (:status (vector-loop-nth-derived alias 65536))))
+    (doseq [input [other nested]]
+      (is (= ["SAFE2-BOUNDS" :vector-nth-loop-proof-or-origin-required]
+             ((juxt :rule :reason) (vector-loop-nth-derived input 65536))))))
+  (let [{:keys [core nodes bindings types] :as input} (vector-loop-nth-completed (vector-loop-nth-input 3 false))
+        descriptor (:descriptor (vector-loop-nth-derived input 65536))
+        verify #(invoke-c7 'sh08-vn-inferred-call-valid?
+                           [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2) nodes bindings (assoc types :nth-op %)])]
+    (is (true? (verify descriptor)))
+    (doseq [changed [(assoc-in descriptor [:bounds-proof :slot-binding-id] :shadowed)
+                     (assoc-in descriptor [:bounds-proof :index-node-id] :increment)
+                     (assoc-in descriptor [:bounds-proof :vector-length] 4)
+                     (assoc-in descriptor [:bounds-proof :selected-type] :gravity.type/string)
+                     (assoc-in descriptor [:bounds-proof :loop-invariant :call-core-node-id] :guard)
+                     (assoc-in descriptor [:bounds-proof :guard-path] [])
+                     (assoc-in descriptor [:bounds-proof :guard-path] 7)
+                     (assoc-in descriptor [:bounds-proof :guard-path] [7])
+                     (assoc-in descriptor [:bounds-proof :guard-path] [nil])
+                     (assoc-in descriptor [:bounds-proof :guard-path] [{}])
+                     (assoc-in descriptor [:bounds-proof :guard-path] ["path"])
+                     (assoc-in descriptor [:bounds-proof :guard-path] (get-in descriptor [:bounds-proof :loop-invariant :range-proof :backedge-paths 0]))
+                     (assoc-in descriptor [:bounds-proof :guard-path 1 :child-index] 2)
+                     (assoc-in descriptor [:bounds-proof :vector-origin :node] (nodes :loop))
+                     (assoc-in descriptor [:bounds-proof :check-elision] :authorized)
+                     (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string :selected-type :gravity.type/string)]]
+      (is (false? (verify changed))))))
+
+
 (deftest sh08-integral-ordering-development-kernel
   (doseq [operation '[< <= > >=]
           type [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64

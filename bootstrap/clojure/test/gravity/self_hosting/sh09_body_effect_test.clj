@@ -552,6 +552,124 @@
                            (assoc-in facts [:type-table :count-query] :gravity.type/i64)]]
           (is (false? (valid candidate))))))))
 
+(defn- body-vector-loop-nth-products [input descriptor]
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core nodes bindings types forms]} input
+        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (get (:calls core) 0) (get (:call-edges core) 0) nodes bindings types forms 65536])
+        count-descriptor (:descriptor count-result)
+        ordering (c7 'sh08-io-descriptor [core (nodes :guard) (get (:calls core) 1) (get (:call-edges core) 1) nodes bindings types (:module core)])
+        invariant (get types :inc-op)
+        facts {:module (:module core) :type-table (assoc types :nth-op descriptor :count-op count-descriptor :less-op ordering)
+               :function-type-table []
+               :call-type-facts [(c7 'sh08-cq-call-fact [count-descriptor (:module core)]) (c7 'sh08-io-call-fact [ordering (:module core)])
+                                 (c7 'sh08-vn-call-fact [descriptor (:module core)]) (c7 'sh08-si-call-fact [invariant (:module core)])]
+               :constraint-ledger [(c7 'sh08-cq-constraint [count-descriptor]) (c7 'sh08-io-constraint [ordering])
+                                   (c7 'sh08-vn-constraint [descriptor]) (c7 'sh08-si-constraint [invariant])]}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        counts (leaf 'body-cq-context request facts bindings 65536) context (leaf 'body-vn-context request facts bindings 65536)
+        successors (leaf 'body-si-context request facts bindings 65536)
+        facts (assoc facts :count-context (:context counts) :vector-nth-context (:context context) :successor-context (:context successors))]
+    {:facts facts :request request :context context :count-result count-result}))
+
+(deftest body-vector-loop-nth-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        source (ns-resolve upstream 'vector-loop-nth-input) complete (ns-resolve upstream 'vector-loop-nth-completed)
+        derive (ns-resolve upstream 'vector-loop-nth-derived) c7 (ns-resolve upstream 'invoke-c7)
+        alias (ns-resolve upstream 'bounded-successor-alias)]
+    (doseq [input [(complete (source 3 false)) (complete (source 3 true)) (complete (alias (source 3 false)))]]
+      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input 65536))
+            {:keys [facts request context count-result]} (body-vector-loop-nth-products input descriptor)
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            replace-access (fn [changed] (-> facts (assoc-in [:type-table :nth-op] changed)
+                                            (assoc-in [:call-type-facts 2] (c7 'sh08-vn-call-fact [changed (:module core)]))
+                                            (assoc-in [:constraint-ledger 2] (c7 'sh08-vn-constraint [changed]))))]
+        (is (= :accepted (:status context) (:status count-result)))
+        (is (true? (valid facts)))
+        (is (= context (leaf 'body-vn-context request facts bindings (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-vn-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :version :sh08-vector-nth-v1)
+                         (assoc descriptor :selected-type :gravity.type/string :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc-in descriptor [:bounds-proof :index-node-id] :increment)
+                         (assoc-in descriptor [:bounds-proof :slot-binding-id] :shadowed)
+                         (assoc-in descriptor [:bounds-proof :guard-path] 7)
+                         (assoc-in descriptor [:bounds-proof :guard-path] [7])
+                         (assoc-in descriptor [:bounds-proof :guard-path] [nil])
+                         (assoc-in descriptor [:bounds-proof :guard-path] [{}])
+                         (assoc-in descriptor [:bounds-proof :guard-path] ["path"])
+                         (assoc-in descriptor [:bounds-proof :guard-path 1 :child-index] 2)
+                         (assoc-in descriptor [:bounds-proof :vector-origin :node] (nodes :loop))
+                         (assoc-in descriptor [:bounds-proof :check-elision] :authorized)]]
+          (is (false? (valid (replace-access changed)))))
+        (let [invariant (get types :inc-op) changed (assoc-in invariant [:range-proof :target :target-id] :wrong-target)
+              descriptor (assoc-in descriptor [:bounds-proof :loop-invariant] changed)
+              candidate (-> (replace-access descriptor) (assoc-in [:type-table :inc-op] changed)
+                            (assoc-in [:call-type-facts 3] (c7 'sh08-si-call-fact [changed (:module core)]))
+                            (assoc-in [:constraint-ledger 3] (c7 'sh08-si-constraint [changed])))]
+          (is (false? (valid candidate))))
+        (doseq [candidate [(update facts :constraint-ledger #(vec (concat (take 2 %) (drop 3 %))))
+                           (update facts :constraint-ledger conj (get-in facts [:constraint-ledger 2]))
+                           (assoc-in facts [:vector-nth-context :forms :nth-index :value] 'shadowed)]]
+          (is (false? (valid candidate))))
+        (let [children {:nth-op {:transitive #{}}
+                        :nth-vector {:transitive #{:memory/allocate}}
+                        :nth-index {:transitive #{:error/throw} :escaping-thrown-errors #{:gravity.type/string}
+                                    :escaping-thrown-error-types [:gravity.type/string]}}
+              record (leaf 'body-node-record (nodes :read) nil children :gravity.type/bool)]
+          (is (= #{} (:direct record)))
+          (is (= #{:memory/allocate :error/throw} (:transitive record)))
+          (is (= [:gravity.type/string] (:escaping-thrown-error-types record)))
+          (is (= [:nth-op :nth-vector :nth-index] (:dependencies record))))))))
+
+
+(deftest body-vector-loop-nth-throw-control-authenticated-composition
+  ;; One affected source consumer after the retained failed full composition.
+  ;; No lowering/runtime/negative/public-boundary replay belongs in this test.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [products (fresh-type-products "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-vector-loop-nth.gravity")
+        {:keys [request typed verification]} products
+        binding (seal-binding request typed verification)
+        result (leaf 'build-body-effect-result typed verification binding)
+        graph (:effect-graph result) facts (:identity-input typed)
+        descriptor (:applied-vector-nth (first (filter #(= :direct-vector-nth (:dispatch %)) (:call-type-facts facts))))
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        core (:canonical-core-artifact request)]
+    (is (= :accepted (:status typed)))
+    (is (= :passed (:status verification)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (when-not (and (= :accepted (:status typed) (:status result)) (map? graph) (seq (:nodes graph)))
+      (throw (ex-info "Current-source loop nth C8 consumer rejected" {:diagnostics (:diagnostics result)})))
+    (is (= :passed (:status (leaf 'verify-body-effect-result typed verification binding result))))
+    (is (= :checked (get-in graph [:loop-fixed-point :equations])))
+    (is (= 2 (count (get-in graph [:loop-fixed-point :recur-transfers]))))
+    (is (= :sh08-vector-nth-loop-v1 (:version descriptor)))
+    (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+      (is (map? record))
+      (is (= #{} (:direct record)))
+      (is (= #{} (:transitive record)))
+      (is (nil? (:allocation record)))
+      (is (nil? (:call-body-dependency record)))
+      (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record))))
+    (doseq [name ['scan 'caught 'main]]
+      (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (is (= [:gravity.type/string] (get-in graph [:functions (get-in functions ['scan :function-id]) :throws])))
+    (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
+    (let [caught (get-in functions ['caught :function-id])
+          attempt (first (filter #(and (= :try (:core-form %))
+                                        (= caught (get-in % [:evaluation :owner-function-syntax-id]))) (:nodes core)))]
+      (is (map? attempt))
+      (is (= [] (get-in graph [:nodes (:node-id attempt) :escaping-thrown-error-types])))
+      (is (= #{:memory/allocate :error/throw} (get-in graph [:nodes (:node-id attempt) :transitive]))))
+    (let [id (:call-core-node-id descriptor)
+          erased (-> graph
+                     (update :nodes #(into {} (map (fn [[id record]] [id (-> record (dissoc :allocation)
+                                                                            (assoc :direct #{} :transitive #{} :escaping #{}))]) %)))
+                     (update :functions #(into {} (map (fn [[id record]] [id (assoc record :inferred #{} :latent #{})]) %))))]
+      (doseq [changed [(assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:nodes id :dependencies] []) erased]]
+        (is (= :rejected (:status (leaf 'verify-body-effect-result typed verification binding (reseal-effect-graph result changed)))))))))
+
 (deftest body-constructor-allocation-development-kernel
   ;; Current Gravity algorithms on normalized DATA, not source admission.
   (doseq [kind [:vector :map :set] empty? [true false]]

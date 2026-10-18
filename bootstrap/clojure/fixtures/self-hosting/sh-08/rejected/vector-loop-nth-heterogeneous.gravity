@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.vector-loop-nth-heterogeneous
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn invalid [middle :- Bool failure :- String]
+  (let [flags [true "different" true]]
+    (loop [cursor 0]
+      (if (< cursor (count flags))
+        (if (nth flags cursor) (recur (inc cursor)) (throw failure))
+        cursor))))
