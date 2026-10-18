@@ -1257,6 +1257,74 @@ its effects, but deep type/shape authenticity remains the upstream boundary.
 Do not add a fresh-proof wrapper to the local effect-edit loop or describe
 effect-result reconstruction as independent certification of C7 correctness.
 
+### Bare Map parameters: focused feedback
+
+Change the existing `gravity.checked-core` signature owner, C7 engine, effect
+checker and typed emitter. The new compatibility boundary retains each actual
+argument type and its own declared-parameter premise, including mixed Map,
+bare List, homogeneous List and scalar calls. It must not invent a structural
+Map shape or erase other type obligations. Start with the existing runner:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-bare-map-parameter-development-kernel \
+  --exact sh08-mixed-map-list-parameter-development-kernel
+```
+
+These are normalized source/compatibility checks, not accepted whole-module
+products. Keep existing List row versions unchanged when no Map adaptation
+occurs. Independent downstream reconstruction and real paired-source execution
+remain separate integration work; no fresh authoritative admission is required
+for these focused tests.
+
+For the independent compatibility consumers, select the existing namespaces:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact body-mixed-map-list-parameter-development-kernel \
+  --exact current-gravity-mixed-map-list-parameter-development-kernel
+```
+
+These checks reconstruct mixed parameter premises and whole compatibility rows,
+not a fresh whole-source product. Full typed-call and source integration must
+still exercise the real callee declarations, return types and execution.
+
+For family-only removal, use these focused selectors:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-map-family-removal-development-kernel \
+  --exact body-map-family-removal-development-kernel \
+  --exact current-gravity-map-family-removal-lowering-development-kernel
+```
+
+These require bare-family operation evidence, reject invented member shapes and
+check normal allocation versus operand transfer. They do not authenticate a
+whole source module. Retain failed controls separately and rerun only selectors
+affected by the diagnosed correction, not an unchanged passing aggregate.
+
+Once the changed candidate is stable, run the affected source composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-parameters-authenticated-composition
+```
+
+It selects four fresh inputs: the accepted Gravity/QST pair, a non-Map call
+rejection and an undeclared-allocation rejection. Accepted products are reused
+for compatibility, effect, lowering and runtime checks; other negative fixture
+pairs do not acquire fresh source-rejection credit from header checks.
+Public C7 reconstructs upstream type facts. C8 independently checks the
+compatibility evidence it owns, not a duplicate general quote/type solver.
+This composition is development integration, not authoritative migration.
+
 ### Persistent Map removal: focused feedback
 
 The current `dissoc` increment starts in the existing C7 type owner. For its

@@ -418,6 +418,86 @@
           (is (= #{:memory/allocate :error/throw} (:transitive stopped)))
           (is (= [:gravity.type/string] (:escaping-thrown-error-types stopped))))))))
 
+(deftest body-map-family-removal-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'map-family-removal-input) derive (sh08-helper 'map-removal-derived) c7 (sh08-helper 'invoke-c7)]
+    (doseq [never-key? [false true] never-input? [false true]]
+      (let [base (input-fn :removed never-key? never-input?)
+            ids (zipmap (keys (:nodes base)) (map sha (range 1100 1120)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base)))
+                         :products (assoc (:products base) :calls [call] :call-edges [edge]))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :removal) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-mr-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-mr-constraint [descriptor])]}
+            context (leaf 'body-mr-context request facts (:bindings base) 65536)
+            facts (assoc facts :removal-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :removal)]) normal? (not (or never-input? never-key?))]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str [result context graph]))
+        (is (true? (valid facts)))
+        (is (= (if normal? #{:memory/allocate} #{}) (:direct record) (:transitive record)))
+        (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+        (is (= (:allocation-policy descriptor) (get-in record [:allocation :allocation-policy])))
+        (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+        (is (= context (leaf 'body-mr-context request facts (:bindings base) (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-mr-context request facts (:bindings base) (dec (:work-count context))))))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (when-not never-input?
+          (doseq [changed [(dissoc descriptor :input-type-evidence)
+                           (assoc-in descriptor [:input-type-evidence :node-id] (sha 9999))
+                           (assoc-in descriptor [:input-type-evidence :source :syntax-id] :sibling)
+                           (assoc-in descriptor [:input-type-evidence :kind] :constructor)
+                           (assoc descriptor :input-shape {:status :accepted :shape-kind :map :parts []})
+                           (assoc descriptor :transition {:kind :absent :parts []})
+                           (assoc descriptor :result-shape {:status :accepted :shape-kind :map :parts []})
+                           (assoc descriptor :direct-effects (if normal? [] [:memory/allocate]))
+                           (update descriptor :call-join-work inc)]]
+            (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                                (assoc :call-type-facts [(c7 'sh08-mr-call-fact [changed (:module base)])]
+                                       :constraint-ledger [(c7 'sh08-mr-constraint [changed])]))]
+              (is (false? (valid candidate))))))))))
+
+(deftest body-map-family-count-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'list-query-input) c7 (sh08-helper 'invoke-c7)]
+    (doseq [type [:gravity.type/map :gravity.type/never]]
+      (let [{:keys [core node call edge nodes bindings types forms]} (input-fn 'count [type])
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
+                   :call-type-facts [(c7 'sh08-cq-call-fact [descriptor (:module core)])]
+                   :constraint-ledger [(c7 'sh08-cq-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-cq-context request facts bindings 65536)
+            facts (assoc facts :count-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            record (leaf 'body-node-record node nil {:operator {:type descriptor :transitive #{}}
+                                                     :arg0 {:type type :transitive #{}}} (:type result))]
+        (is (= :accepted (:status result) (:status context)))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= context (leaf 'body-cq-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-cq-context request facts bindings (dec (:work-count context))))))
+        (doseq [candidate [(assoc facts :constraint-ledger []) (update facts :constraint-ledger into (:constraint-ledger facts))
+                           (assoc-in facts [:type-table :operator :direct-effects] [:memory/allocate])
+                           (assoc-in facts [:count-context :forms :arg0 :parent-form-id] :sibling)]]
+          (is (false? (valid candidate))))
+        (doseq [wrong [:gravity.type/vector :gravity.type/set :gravity.type/string :gravity.type/nil :gravity.type/unknown]]
+          (is (nil? (leaf 'body-cq-source core node call edge nodes bindings (assoc types :arg0 wrong) (:module core)))))))))
+
 (deftest body-map-association-catch-effects-development-kernel
   ;; Current C8 on normalized DATA: catching a source error does not discharge
   ;; the conservative effect label or an earlier constructor's allocation.
@@ -475,6 +555,50 @@
     (is (= :rejected (:status (leaf 'body-lp-context request facts (assoc-in bindings [:parameter :binding-class] :namespace) 65536))))
     (is (= :rejected (:status (leaf 'body-lp-context request (assoc-in facts [:type-table :argument] :gravity.type/unknown) bindings 65536))))
     (is (false? (leaf 'body-arguments-valid? [:argument] [actual] [{:binding-id :parameter :type :gravity.type/list}] types)))))
+
+(deftest body-mixed-map-list-parameter-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'mixed-map-parameter-input) constrain (sh08-helper 'bare-list-parameter-constraints)]
+    (doseq [order [[:record :forms :parts :suffix] [:parts :suffix :forms :record] [:forms :parts :record :suffix]]
+            never-map? [false true]]
+      (let [base (input-fn order) map-index (.indexOf order :record) map-id (get-in base [:call :argument-node-ids map-index])
+            input (if never-map? (assoc-in base [:types map-id] :gravity.type/never) base)
+            {:keys [core call edge callee nodes bindings types]} input
+            row (first (:constraints (constrain input)))
+            facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
+            request {:canonical-core-artifact core}
+            arguments (mapv types (:argument-node-ids call))
+            context (leaf 'body-lp-context request facts bindings 65536)
+            valid (fn [candidate]
+                    (let [derived (leaf 'body-lp-context request candidate bindings 65536)]
+                      (and (= :accepted (:status derived))
+                           (true? (leaf 'body-local-arguments-valid? core (assoc candidate :list-parameter-context (:context derived))
+                                        bindings edge call {:argument-types arguments} callee)))))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= row (get-in context [:context :rows :call])))
+        (is (true? (valid facts)))
+        (is (= (if never-map? :sh08-list-parameter-compatibility-v2 :sh08-map-list-parameter-compatibility-v1)
+               (:compatibility-rule-version row)))
+        (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(assoc row :kind :equality)
+                         (assoc row :compatibility-rule-version :sh08-bare-list-parameter-v1)
+                         (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
+                         (update row :rhs #(vec (reverse %)))
+                         (assoc-in row [:rhs (.indexOf order :forms) :compatibility :argument-index] 99)
+                         (assoc-in row [:rhs (.indexOf order :parts) :compatibility :element-binding :kind] :var)]]
+          (is (false? (valid (assoc facts :constraint-ledger [changed])))))
+        (doseq [candidate [(assoc facts :constraint-ledger []) (update facts :constraint-ledger conj row)
+                           (update facts :constraint-ledger conj (assoc-in row [:constraint-id-request :call-core-node-id] :orphan))
+                           (assoc-in facts [:type-table (get-in call [:argument-node-ids (.indexOf order :suffix)])] :gravity.type/bool)]]
+          (is (false? (valid candidate))))
+        (when-not never-map?
+          (doseq [changed [(assoc-in row [:rhs map-index :compatibility :version] :sh08-bare-list-parameter-v1)
+                           (assoc-in row [:rhs map-index :compatibility :declared-type] :gravity.type/list)
+                           (assoc-in row [:rhs map-index :compatibility :parameter-binding-id] :suffix)
+                           (assoc-in row [:rhs map-index :compatibility :declaration :extra] true)
+                           (assoc-in row [:rhs map-index :compatibility :forgets] [:schema :ownership])]]
+            (is (false? (valid (assoc facts :constraint-ledger [changed]))))))))))
 
 (deftest body-homogeneous-list-parameter-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)

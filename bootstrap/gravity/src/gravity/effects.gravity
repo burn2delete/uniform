@@ -1650,7 +1650,74 @@
            (get declaration :element-form-id) (get declaration :element-syntax-id) (get declaration :element-binding-id)]]
            (if (= 0 (count ids)) true (if (sh09-sha256-id? (first ids)) (recur (rest ids)) false)))])) false))
 
+(defn body-mp-declaration? [declaration bindings]
+  (if (map? declaration)
+    (let [binding (get bindings (get declaration :type-binding-id))]
+      (body-all?
+        [(= #{:source-child-index :marker-form-id :marker-syntax-id :type-form-id
+               :type-syntax-id :type-symbol :type-binding-id :type-id} (set (keys declaration)))
+         (= ['Map :gravity.type/map] [(get declaration :type-symbol) (get declaration :type-id)])
+         (= [:core :type 'gravity.core 'Map] [(get binding :binding-class) (get binding :kind)
+                                               (get binding :namespace) (get binding :name)])
+         (if (integer? (get declaration :source-child-index)) (<= 0 (get declaration :source-child-index)) false)
+         (loop [ids [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+                     (get declaration :type-form-id) (get declaration :type-syntax-id) (get declaration :type-binding-id)]]
+           (if (= 0 (count ids)) true
+             (if (sh09-sha256-id? (first ids)) (recur (rest ids)) false)))])) false))
+
+; L5: a Map parameter forgets only independently checked member refinements.
+(defn body-mp-compatibility [core call edge callee index actual nodes bindings budget]
+  (let [parameter (get (get callee :parameters) index)]
+    (if (if (= :gravity.type/map (get parameter :type))
+          (if (map? actual) (= :gravity.type/map (get actual :kind)) false) false)
+      (let [records (get core :function-records) base (+ 32 (count records))
+            validation (body-lc-type-work [actual] (if (> base budget) 0 (- budget base)))
+            work (+ base (get validation :work-count))
+            record (if (> base budget) nil
+                     (loop [remaining records]
+                       (if (= 0 (count remaining)) nil
+                         (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
+                           (first remaining) (recur (rest remaining))))))
+            declaration (get (get (get record :signature) :parameters) index)
+            bid (get parameter :binding-id) binding (get bindings bid)
+            type-binding (get bindings (get declaration :type-binding-id))
+            argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
+            node (get nodes (get call :core-node-id))]
+        (if (if (> base budget) true (= :work-limit (get validation :reason)))
+          {:status :rejected :reason :map-parameter-work-limit :work-count work}
+          (if (body-all?
+                [(= :accepted (get validation :status))
+                 (body-mp-declaration? declaration bindings)
+                 (= ['Map :gravity.type/map] [(get declaration :type-symbol) (get declaration :type-id)])
+                 (= :local-function (get edge :classification))
+                 (= (get callee :function-id) (get edge :callee-function-syntax-id) (get record :function-syntax-id))
+                 (= (get record :signature) (get callee :signature))
+                 (= (get record :function-core-node-id) (get edge :callee-function-core-node-id))
+                 (= bid (get (get record :parameter-binding-ids) index) (get binding :binding-id))
+                 (= [:lexical :local] [(get binding :binding-class) (get binding :kind)])
+                 (= [:core :type 'gravity.core 'Map] [(get type-binding :binding-class) (get type-binding :kind)
+                                                      (get type-binding :namespace) (get type-binding :name)])
+                 (= (get declaration :source-child-index) (+ 1 (get (get (get record :signature) :parameter-source-child-indexes) index -100)))
+                 (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
+                 (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
+                 (= argument-id (get argument :node-id))])
+            {:status :accepted :work-count work
+             :premise {:version :sh08-bare-map-parameter-v1 :relation :forget-map-member-refinement
+                       :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
+                       :actual-type actual :declared-type :gravity.type/map
+                       :callee-function-syntax-id (get record :function-syntax-id)
+                       :parameter-binding-id bid :parameter-binding binding :declaration declaration :type-binding type-binding
+                       :argument-source (get argument :source) :call-source (get node :source)
+                       :source-call call :source-edge edge :operand-type-work (get validation :work-count)
+                       :forgets [:key-value-member-types :static-entry-count]
+                       :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
+                       :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+            {:status :rejected :reason :map-parameter-declaration-or-type-required :work-count work})))
+      {:status :not-applicable :work-count 0})))
+
 (defn body-lp-compatibility [core call edge callee index actual nodes bindings budget]
+  (if (= :gravity.type/map (get (get (get callee :parameters) index) :type))
+    (body-mp-compatibility core call edge callee index actual nodes bindings budget)
   (let [parameter (get (get callee :parameters) index) expected (get parameter :type)
         homogeneous? (body-hl-type? expected)]
     (if (if (if homogeneous? true (= :gravity.type/list expected))
@@ -1709,7 +1776,7 @@
                             :forgets [:static-length] :element-binding (get bindings (get declaration :element-binding-id))
                             :checked-element-type (get expected :element-type) :checked-element-count (count (get actual :element-types))) premise))}
             {:status :rejected :reason (if homogeneous? :homogeneous-list-parameter-incompatible :list-parameter-declaration-required) :work-count work})))
-      {:status :not-applicable :work-count 0})))
+      {:status :not-applicable :work-count 0}))))
 
 (defn body-lp-pairs-adapted? [pairs]
   (loop [remaining pairs]
@@ -1719,10 +1786,13 @@
 (defn body-lp-call-row [row]
   (if (body-lp-pairs-adapted? (get row :rhs))
     (assoc row :kind :argument-compatibility :compatibility-rule-version
-      (loop [pairs (get row :rhs)]
-        (if (= 0 (count pairs)) :sh08-bare-list-parameter-v1
-          (if (= :sh08-homogeneous-list-parameter-v1 (get (get (first pairs) :compatibility) :version))
-            :sh08-list-parameter-compatibility-v2 (recur (rest pairs)))))) row))
+      (loop [pairs (get row :rhs) map? false homogeneous? false]
+        (if (= 0 (count pairs))
+          (if map? :sh08-map-list-parameter-compatibility-v1
+            (if homogeneous? :sh08-list-parameter-compatibility-v2 :sh08-bare-list-parameter-v1))
+          (let [version (get (get (first pairs) :compatibility) :version)]
+            (recur (rest pairs) (if map? true (= version :sh08-bare-map-parameter-v1))
+                               (if homogeneous? true (= version :sh08-homogeneous-list-parameter-v1))))))) row))
 
 (defn body-lp-context [request facts bindings budget]
   (let [rows (body-select (get facts :constraint-ledger) :kind :argument-compatibility)
@@ -2159,6 +2229,15 @@
     {:descriptor (assoc header :input-shape input :transition change :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
      :shape shape :type type :shape-size size}))
+
+(defn body-mr-family-finish [header nodes used]
+  (let [argument-id (get (get (get header :source-call) :argument-node-ids) 0)
+        argument (get nodes argument-id)
+        type (if (= :normal (get header :application)) :gravity.type/map :gravity.type/never)
+        evidence {:kind :map-family-type-only :type :gravity.type/map :node-id argument-id :source (get argument :source)}]
+    {:descriptor (assoc header :input-type-evidence evidence :input-shape nil :transition nil :result-shape nil
+                   :parameter-types (get header :argument-types) :return type :result-type type :call-join-work used)
+     :shape nil :type type :shape-size 0}))
 
 (defn body-mr-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-removal-constraint-v1 :application descriptor}
@@ -3817,8 +3896,9 @@
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (if (= :gravity.type/never (first arguments)) true
              (if list-input? true
-               (if (keyword? (get (first arguments) :kind))
-                 (contains? #{:gravity.type/map :gravity.type/vector} (get (first arguments) :kind)) false)))
+               (if (= :gravity.type/map (first arguments)) true
+                 (if (keyword? (get (first arguments) :kind))
+                   (contains? #{:gravity.type/map :gravity.type/vector} (get (first arguments) :kind)) false))))
            (if (= nil (first arguments)) false (= false (= :gravity.type/unknown (first arguments))))] )
       {:kind :gravity.type/applied-collection-count :version :sh08-collection-count-v1
        :operation 'count :semantic-owner 'gravity.collections :intrinsic :gravity.collections/finite-collection-count
@@ -4533,8 +4613,10 @@
             transition-work (loop [remaining selected out 0]
                               (if (= 0 (count remaining)) out
                                 (let [descriptor (get (get facts :type-table) (get (first remaining) :operator-node-id))
+                                      input-type (get (get facts :type-table) (get (get (first remaining) :argument-node-ids) 0))
                                       parts (get (get descriptor :input-shape) :parts)]
-                                  (recur (rest remaining) (+ out 2 (* 4 (if (vector? parts) (count parts) 0)))))))
+                                  (recur (rest remaining) (+ out (if (= :gravity.type/map input-type) 1
+                                                                  (+ 2 (* 4 (if (vector? parts) (count parts) 0)))))))))
             work (+ (if (vector? forms) (count forms) 0) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges))
                     (* (count selected) (+ 64 (count (get core :function-records)))) transition-work)]
         (if (= false (vector? forms)) (body-failure :body-map-removal-source-forms-required)
@@ -4549,9 +4631,11 @@
   ; original survivor sources, derived coordinates, allocation and ledger joins.
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
         header (body-mr-source core node call edge nodes bindings types (get core :module))
-        input (get descriptor :input-shape) input-work (get input :call-join-work 0)
-        transition (if (= :normal (get header :application))
-                     (body-mr-transition input (get header :key) 65536) {:status :accepted :work-count 0})
+        family? (= :gravity.type/map (get (get header :argument-types) 0))
+        input (get descriptor :input-shape) input-work (if family? 0 (get input :call-join-work 0))
+        transition (if family? {:status :accepted :work-count 1}
+                     (if (= :normal (get header :application))
+                       (body-mr-transition input (get header :key) 65536) {:status :accepted :work-count 0}))
         used (+ 64 (if (vector? (get call :argument-node-ids)) (count (get call :argument-node-ids)) 0)
                 (count (get core :function-records)) (if (integer? input-work) input-work 0) (get transition :work-count))
         rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-removal-v1)
@@ -4560,12 +4644,13 @@
       (if (= :accepted (get transition :status))
         (body-all?
           [(if (integer? input-work) (<= 0 input-work) false)
-           (= descriptor (get (body-mr-finish header input transition used) :descriptor))
+           (= descriptor (if family? (get (body-mr-family-finish header nodes used) :descriptor)
+                           (get (body-mr-finish header input transition used) :descriptor)))
            (body-mr-forms? node nodes (get (get facts :removal-context) :forms) header)
            (= (get descriptor :result-type) (get types (get node :node-id)))
-           (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
+           (if family? true (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
              (if (= :accepted (get input :status))
-               (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false))
+               (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false)))
            (= (body-mr-call-fact descriptor (get core :module))
               (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
            (= [(body-mr-constraint descriptor)] rows)]) false) false)))

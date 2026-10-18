@@ -107,6 +107,23 @@ or profile/memory legality. Recur operands remain subject to L2 parameter
 compatibility. Other type obligations, including schema identity, ownership,
 linearity and regions, are not erased.
 
+### Bare Map Parameters
+
+Bare `Map` in a parameter annotation denotes persistent Map values without
+static key-presence, member-type or size information. An explicitly annotated
+parameter may receive a Map whose independently established actual type carries
+those refinements. This boundary forgets the refinements for the parameter,
+not the value or its provenance; type artifacts must retain the actual argument
+type and the boundary-specific justification for compatibility with the
+declared type.
+
+This rule applies per parameter, including calls that also have List or scalar
+parameters. It does not infer a structural Map shape from a bare Map, imply
+`Dynamic`, accept unrelated collection families, or change return inference or
+recur compatibility. Key presence, member access and other operations must
+establish their own required facts. Schema identity, ownership, linearity,
+regions, effects and profile/memory legality remain obligations.
+
 ### Homogeneous List Declarations
 
 `(List T)` in a parameter or return annotation denotes persistent Lists whose elements
@@ -286,6 +303,7 @@ L5 rejects:
 
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
+- Explicit bare-Map parameter fixtures retain actual argument types and per-parameter compatibility evidence, including mixed collection/scalar calls, while rejecting unrelated values and uses that require unestablished member or key facts.
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.

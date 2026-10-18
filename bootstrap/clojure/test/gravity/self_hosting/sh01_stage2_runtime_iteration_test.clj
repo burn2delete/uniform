@@ -4080,6 +4080,117 @@
     (is (= ["first" "" :thrown]
            (evaluate (remove-ir {:op :throw :value (literal "first")} {:op :throw :value (literal "second")}))))))
 
+(deftest current-gravity-map-family-removal-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-family-removal-input) derive (ns-resolve upstream 'map-removal-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [never-key? [false true] never-input? [false true]]
+      (let [{:keys [core node nodes forms bindings types module call edge binding-types] :as input}
+            (input-fn :removed never-key? never-input?)
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :removal (:type result))
+                     :calls {:removal call} :edges {:removal edge} :call-order {:removal 0}
+                     :call-facts {:removal (c7 'sh08-mr-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-mr-constraint [descriptor])]
+                     :locals {:map-parameter 'packet :key-parameter 'aborts} :parameter-types binding-types}
+            compile #(invoke 'p15-s23-typed-compile-node % :removal %2)
+            lowered (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'dissoc :args [{:op :local :name 'packet}
+                                                         (if never-key? {:op :local :name 'aborts} {:op :literal :value :removed})]}
+               (:value lowered)))
+        (is (= lowered (compile context (:work-count lowered))))
+        (let [rejected (compile context (dec (:work-count lowered)))]
+          (is (= :typed-lowering-work-limit (get-in rejected [:facts :reason])))
+          (is (= (dec (:work-count lowered)) (:work-count rejected))))
+        (when-not never-input?
+          (doseq [changed [(dissoc descriptor :input-type-evidence)
+                           (assoc-in descriptor [:input-type-evidence :source :syntax-id] :sibling)
+                           (assoc descriptor :input-shape {:status :accepted :shape-kind :map :parts []})
+                           (assoc descriptor :transition {:kind :absent :parts []})
+                           (assoc descriptor :result-shape {:status :accepted :shape-kind :map :parts []})
+                           (update descriptor :call-join-work inc)]]
+            (let [candidate (-> context (assoc-in [:types :operator] changed)
+                                (assoc :call-facts {:removal (c7 'sh08-mr-call-fact [changed module])}
+                                       :ledger [(c7 'sh08-mr-constraint [changed])]))]
+              (is (= :rejected (:status (compile candidate 65536))))))
+          (is (nil? (invoke 'p15-s23-mr-descriptor context node 0))))
+        (doseq [candidate [(assoc context :ledger []) (update context :ledger into (:ledger context))
+                           (assoc-in context [:forms :input :parent-form-id] :sibling)
+                           (assoc-in context [:call-facts :removal :effects] [:io/write])]]
+          (is (= :rejected (:status (compile candidate 65536)))))
+        (let [failed (compile (assoc context :locals {}) 65536)]
+          (is (= :rejected (:status failed)))
+          (is (pos? (:work-count failed))))))))
+
+(deftest current-gravity-map-family-count-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-query-input)
+        c7 (ns-resolve upstream 'invoke-c7) path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [type [:gravity.type/map :gravity.type/never]]
+      (let [{:keys [core node call edge nodes bindings types forms]} (input-fn 'count [type])
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0} :locals {:arg0 'packet} :parameter-types {:arg0 type}
+                     :call-facts {:call (c7 'sh08-cq-call-fact [descriptor (:module core)])} :ledger [(c7 'sh08-cq-constraint [descriptor])]}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'count :args [{:op :local :name 'packet}]} (:value lowered)))
+        (is (= lowered (compile context (:work-count lowered))))
+        (let [rejected (compile context (dec (:work-count lowered)))]
+          (is (= :typed-lowering-work-limit (get-in rejected [:facts :reason])))
+          (is (= (dec (:work-count lowered)) (:work-count rejected))))
+        (doseq [candidate [(assoc context :ledger []) (update context :ledger into (:ledger context))
+                           (assoc-in context [:types :operator :direct-effects] [:memory/allocate])]]
+          (is (= :rejected (:status (compile candidate 65536)))))
+        (doseq [wrong [:gravity.type/vector :gravity.type/set :gravity.type/string :gravity.type/nil :gravity.type/unknown]]
+          (is (nil? (invoke 'p15-s23-cq-source core node call edge nodes bindings (assoc types :arg0 wrong) (:module core)))))))))
+
+(deftest current-gravity-map-parameter-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[family name functions] [["accepted" "local-runtime-map-parameters" 15]
+                                    ["rejected" "map-parameter-nonmap-call" 2]
+                                    ["rejected" "map-parameter-nonliteral-key" 1]
+                                    ["rejected" "map-parameter-member-lookup" 1]
+                                    ["rejected" "map-parameter-get-unknown-members" 1]
+                                    ["rejected" "map-parameter-association-unknown-members" 1]
+                                    ["rejected" "map-parameter-structural-unknown-members" 1]
+                                    ["rejected" "map-parameter-undeclared-allocation" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" family "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (re-seq #"(?m)^\(defn " text))))
+        (is (every? #(<= 0 (int %) 127) (.getBytes text java.nio.charset.StandardCharsets/UTF_8)))))))
+
+(deftest current-gravity-map-parameter-literal-key-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-family-removal-input)
+        derive (ns-resolve upstream 'map-removal-derived) c7 (ns-resolve upstream 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        input (-> (input-fn :removed true false) (assoc-in [:types :key] :gravity.type/keyword)
+                  (assoc-in [:binding-types :key-parameter] :gravity.type/keyword))
+        {:keys [core node call edge nodes bindings types module]} input]
+    (is (= :rejected (:status (derive input))))
+    (is (= :map-removal-key-or-operand-type-required (:reason (derive input))))
+    (is (nil? (c7 'sh08-mr-source [core node call edge nodes bindings types module])))
+    (is (nil? (c8 'body-mr-source core node call edge nodes bindings types module)))
+    (is (nil? (invoke 'p15-s23-mr-source core node call edge nodes bindings types module)))))
+
 (deftest current-gravity-map-removal-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -4092,6 +4203,240 @@
             path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)]
         (is (= text (slurp (io/file root (str relative ".qst")))))
         (is (= functions (count (re-seq #"(?m)^\(defn " text))))))))
+
+(deftest current-gravity-map-parameters-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        first-error (String. "first Map operand") key-error (String. "Map key operand")
+        inert {:op :println :value "inert Map parameter payload" :actual-path false :semantic nil}
+        specs [['identity [{}] {}] ['identity [inert] inert]
+               ['remove-one [{:actual-path false :keep nil}] {:keep nil}]
+               ['remove-one [{:actual-path nil :keep false}] {:keep false}]
+               ['remove-one [{:keep false :other nil}] {:keep false :other nil}]
+               ['remove-one [{}] {}]
+               ['strip-paths [{:actual-path false :actual-source-path nil :semantic "kept"}] {:semantic "kept"}]
+               ['strip-paths [{:semantic nil}] {:semantic nil}]
+               ['strip-literal [] {:semantic "kept"}]
+               ['relay [inert] (dissoc inert :actual-path)]
+               ['original [inert] inert]
+               ['size [{}] 0] ['size [{:false false :nil nil}] 2]
+               ['has-drop [{:drop false}] true] ['has-drop [{:drop nil}] true] ['has-drop [{}] false]
+               ['has-removed [{:actual-path false}] false]
+               ['mixed [{:drop nil} '(label "form") '("left" "right") "suffix"] "suffix"]
+               ['mixed [{} '() '() "empty"] "empty"]
+               ['mixed-call [] "done"]
+               ['caught-input [first-error key-error] first-error]
+               ['caught-key [inert key-error] key-error]
+               ['caught-literal-key [key-error] key-error]
+               ['main [] "done"]]
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-parameters" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  ready (= :accepted (get-in input [:typed :status]))
+                  _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                  _ (when-not ready (throw (ex-info "Map parameter source rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+                  calls (:call-type-facts facts)
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  rows (filterv #(= :argument-compatibility (:kind %)) (:constraint-ledger facts))
+                  mixed-row (first (filter #(= (get-in functions ['mixed :function-id]) (:lhs %)) rows))
+                  descriptors (mapv :applied-map-removal (filter #(= :direct-map-removal (:dispatch %)) calls))
+                  family (filterv :input-type-evidence descriptors)
+                  removal-rows (filterv #(= :sh08-map-removal-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  queries (filterv #(contains? #{:direct-collection-count :direct-map-contains} (:dispatch %)) calls)
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 15 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+              (is (= 19 (count (:calls core)) (count (:call-edges core)) (count calls)))
+              (is (= 6 (count descriptors) (count removal-rows)))
+              (is (= {:normal 4 :not-invoked 2} (frequencies (map :application descriptors))))
+              (is (= 5 (count family)))
+              (is (= {:normal 4 :not-invoked 1} (frequencies (map :application family))))
+              (is (= 3 (count rows)))
+              (is (= 5 (count (keep :compatibility (mapcat :rhs rows)))))
+              (is (= 4 (count (:rhs mixed-row))))
+              (is (= [:sh08-bare-map-parameter-v1 :sh08-bare-list-parameter-v1 :sh08-homogeneous-list-parameter-v1 nil]
+                     (mapv #(get-in % [:compatibility :version]) (:rhs mixed-row))))
+              (doseq [row rows]
+                (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
+                (doseq [[index pair] (map-indexed vector (:rhs row)) :let [premise (:compatibility pair)] :when premise]
+                  (let [fact (first (filter #(= (:call-core-node-id premise) (:call-core-node-id %)) calls))]
+                    (is (= index (:argument-index premise)))
+                    (is (= (:argument pair) (:actual-type premise) (get-in facts [:type-table (:argument-node-id premise)])
+                           (get-in fact [:argument-types index])))
+                    (is (= (:chosen pair) (:declared-type premise)))
+                    (when (= :sh08-bare-map-parameter-v1 (:version premise))
+                      (is (= :gravity.type/map (:chosen pair) (get-in pair [:argument :kind])))
+                      (is (map? (:argument pair)))
+                      (is (= :forget-map-member-refinement (:relation premise)))
+                      (is (= [:key-value-member-types :static-entry-count] (:forgets premise)))))))
+              (is (= {:argument :gravity.type/string :chosen :gravity.type/string} (select-keys (last (:rhs mixed-row)) [:argument :chosen])))
+              (doseq [name ['identity 'remove-one 'strip-paths 'relay 'original]]
+                (let [function (functions name)]
+                  (is (= :gravity.type/map (:return function) (get-in function [:signature :return :type-id])
+                         (get-in facts [:type-table (:body-core-node-id function)])))
+                  (is (nil? (:return-compatibility function)))))
+              (let [exact-calls (filterv #(and (nil? (:dispatch %)) (= :gravity.type/map (first (:argument-types %)))) calls)]
+                (is (= 3 (count exact-calls)))
+                (doseq [call exact-calls]
+                  (let [row (first (filter #(= (:call-core-node-id call) (get-in % [:constraint-id-request :call-core-node-id]))
+                                           (:constraint-ledger facts)))]
+                    (is (= :equality (:kind row)))
+                    (is (not-any? :compatibility (:rhs row))))))
+              (is (= :gravity.type/map (get-in functions ['strip-literal :return])))
+              (is (= :gravity.type/integer (get-in functions ['size :return])))
+              (doseq [descriptor family]
+                (let [normal? (= :normal (:application descriptor))
+                      evidence (:input-type-evidence descriptor)
+                      receiver (get-in descriptor [:source-call :argument-node-ids 0])]
+                  (is (= {:kind :map-family-type-only :type :gravity.type/map :node-id receiver :source (get-in nodes [receiver :source])} evidence))
+                  (is (nil? (:input-shape descriptor)))
+                  (is (nil? (:transition descriptor)))
+                  (is (nil? (:result-shape descriptor)))
+                  (is (= (if normal? :gravity.type/map :gravity.type/never) (:return descriptor) (:result-type descriptor)))))
+              (doseq [descriptor descriptors]
+                (let [normal? (= :normal (:application descriptor))]
+                  (is (= 'gravity.collections (:semantic-owner descriptor)))
+                  (is (= [:memory/allocate] (:latent-effects descriptor)))
+                  (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
+                  (is (= :possible (get-in descriptor [:allocation-policy :present-key])
+                         (get-in descriptor [:allocation-policy :absent-key]) (get-in descriptor [:allocation-policy :empty-map])))))
+              (doseq [[name args expected] specs]
+                (let [snapshots (mapv #(when (map? %) (into {} %)) args)
+                      result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                  (is (= [expected "" :normal] result) (str extension " " name))
+                  (doseq [[value snapshot] (map vector args snapshots) :when (map? value)] (is (= snapshot value)))
+                  (when (or (identical? expected first-error) (identical? expected key-error))
+                    (is (identical? expected (first result))))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Map parameter C8 rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [descriptor descriptors]
+                (let [record (get-in graph [:nodes (:call-core-node-id descriptor)]) normal? (= :normal (:application descriptor))]
+                  (is (= (if normal? #{:memory/allocate} #{}) (:direct record)))
+                  (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+                  (is (= (:allocation-policy descriptor) (get-in record [:allocation :allocation-policy])))
+                  (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+              (is (= 6 (count queries)))
+              (doseq [call queries]
+                (let [record (get-in graph [:nodes (:call-core-node-id call)])]
+                  (is (= #{} (:direct record)))
+                  (is (nil? (:allocation record)))))
+              (doseq [name ['identity 'size 'has-drop]]
+                (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (doseq [name ['caught-input 'caught-key]]
+                (is (= #{:error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) % {} %2)
+                      analyzed (analyze facts 65536) work (:work-count analyzed)
+                      ledger (:constraint-ledger facts)
+                      replace-row (fn [changed] (mapv #(if (= mixed-row %) changed %) ledger))]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze facts work)))
+                  (is (= :rejected (:status (analyze facts (dec work)))))
+                  (doseq [changed [(vec (remove #(= mixed-row %) ledger))
+                                   (conj ledger mixed-row)
+                                   (replace-row (assoc-in mixed-row [:rhs 0 :compatibility :call-core-node-id] (sha 9998)))
+                                   (replace-row (update mixed-row :rhs #(vec (reverse %))))
+                                   (replace-row (assoc mixed-row :compatibility-rule-version :sh08-list-parameter-compatibility-v2))
+                                   (replace-row (assoc-in mixed-row [:rhs 0 :compatibility :actual-type] :gravity.type/map))
+                                   (replace-row (assoc-in mixed-row [:rhs 0 :compatibility :argument-index] 1))
+                                   (replace-row (assoc-in mixed-row [:rhs 3 :argument] :gravity.type/keyword))
+                                   (vec (remove #(= (first removal-rows) %) ledger))
+                                   (conj ledger (first removal-rows))]]
+                    (is (= :rejected (:status (analyze (assoc facts :constraint-ledger changed) 65536)))))))
+              {:input input :module module :definitions definitions :functions functions :rows rows :mixed-row mixed-row
+               :descriptors descriptors :family family :queries queries :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions mixed-row family queries effects binding]} (first cases)
+        descriptor (first (filter #(= :normal (:application %)) family))
+        original-type (get-in mixed-row [:rhs 0 :argument])
+        erased-row (-> mixed-row
+                       (assoc :compatibility-rule-version :sh08-list-parameter-compatibility-v2)
+                       (update-in [:rhs 0] #(-> % (assoc :argument :gravity.type/map) (dissoc :compatibility))))
+        erased (walk/postwalk #(if (= original-type %) :gravity.type/map %)
+                              (walk/postwalk #(if (= mixed-row %) erased-row %) (:typed input)))
+        premise-erased-row (-> mixed-row
+                               (assoc :compatibility-rule-version :sh08-list-parameter-compatibility-v2)
+                               (update-in [:rhs 0] dissoc :compatibility))
+        premise-erased (walk/postwalk #(if (= mixed-row %) premise-erased-row %) (:typed input))
+        fabricated (assoc descriptor :input-shape {:kind :map :parts []} :transition {:kind :absent :parts []}
+                          :result-shape {:kind :map :parts []})
+        fabricated-typed (walk/postwalk #(if (= descriptor %) fabricated %) (:typed input))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? descriptor))
+    (doseq [[typed body-typed function] [[erased premise-erased 'mixed-call]
+                                        [fabricated-typed fabricated-typed 'remove-one]]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                     emitter module (get definitions function) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified)))))
+      ;; C8 reconstructs compatibility from validated types; C7 owns source type inference.
+      (let [verification (assoc (:verification input) :expected body-typed :candidate body-typed)
+            hostile-binding (seal (:request input) body-typed verification)
+            result (c8 'build-body-effect-result body-typed verification hostile-binding)]
+        (is (true? (c8 'body-input-valid? body-typed verification hostile-binding)))
+        (is (= :rejected (:status result)))
+        (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason])))))
+    (is (= 4 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)
+          never-id (:call-core-node-id (first (filter #(= :not-invoked (:application %)) family)))
+          query-id (:call-core-node-id (first queries))]
+      (doseq [changed [(update-in graph [:nodes id] dissoc :allocation)
+                       (assoc-in graph [:nodes id :type] {:kind :gravity.type/map :member-types []})
+                       (assoc-in graph [:nodes query-id :direct] #{:memory/allocate})
+                       (-> graph (assoc-in [:nodes never-id :direct] #{:memory/allocate})
+                           (assoc-in [:nodes never-id :allocation :normal-completion-possible?] true))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-parameter-nonmap-call.gravity")]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (some #(= ["C7-TYPE-MISMATCH" :call-argument-type-mismatch] ((juxt :rule :reason) %))
+                (get-in products [:typed :diagnostics]))))
+    (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-parameter-undeclared-allocation.gravity")
+          result (c8 'build-body-effect-result typed verification (seal request typed verification))
+          removal (:applied-map-removal (first (filter #(= :direct-map-removal (:dispatch %)) (get-in typed [:identity-input :call-type-facts]))))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (:status verification)))
+      (is (= :gravity.type/map (:result-type removal) (get-in removal [:input-type-evidence :type])))
+      (is (= [:memory/allocate] (:direct-effects removal)))
+      (is (= :rejected (:status result)))
+      (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance] ((juxt :rule :reason) (first (:diagnostics result))))))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-parameters.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-parameters.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-parameter-nonmap-call.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-parameter-undeclared-allocation.gravity"] @built))))
 
 (deftest current-gravity-map-removal-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
@@ -6356,6 +6701,47 @@
       (is (= :rejected (:status (compile (mutate context) 65536)))))
     (is (nil? (invoke 'p15-s23-typed-atomic-id 'List)))))
 
+(deftest current-gravity-mixed-map-list-parameter-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'mixed-map-parameter-input)
+        constrain (ns-resolve upstream 'bare-list-parameter-constraints) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [order [[:record :forms :parts :suffix] [:parts :suffix :forms :record] [:forms :parts :record :suffix]]
+            never-map? [false true]]
+      (let [base (input-fn order) map-index (.indexOf order :record) map-id (get-in base [:call :argument-node-ids map-index])
+            input (if never-map? (assoc-in base [:types map-id] :gravity.type/never) base)
+            {:keys [core call edge callee nodes bindings types]} input
+            row (first (:constraints (constrain input)))
+            pairs (mapv (fn [index]
+                          (let [actual (get types (get (:argument-node-ids call) index))
+                                expected (c7 'sh08-lp-compatibility [core call edge callee index actual nodes bindings 65536])
+                                checked (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings 65536)
+                                pair {:parameter (get order index) :argument actual :chosen (get-in callee [:parameters index :type])}]
+                            (is (= expected checked))
+                            (when (= :accepted (:status checked))
+                              (is (= checked (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings (:work-count checked))))
+                              (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings (dec (:work-count checked)))))))
+                            (if (= :accepted (:status checked)) (assoc pair :compatibility (:premise checked)) pair)))
+                        (range 4))
+            base-row (-> row (dissoc :compatibility-rule-version) (assoc :kind :equality :rhs pairs))]
+        (is (= row (invoke 'p15-s23-lp-call-row base-row)))
+        (is (= (if never-map? :sh08-list-parameter-compatibility-v2 :sh08-map-list-parameter-compatibility-v1)
+               (:compatibility-rule-version (invoke 'p15-s23-lp-call-row base-row))))
+        (when-not never-map?
+          (let [declaration (get-in callee [:signature :parameters map-index]) id (:type-form-id declaration)
+                context {:bindings bindings :forms {id {:form-id id :syntax-id (:type-syntax-id declaration) :value 'Map}}}]
+            (is (true? (invoke 'p15-s23-typed-declaration? declaration :gravity.type/map context)))
+            (is (true? (invoke 'p15-s23-typed-declaration? declaration :gravity.type/map (assoc-in context [:forms id :value] 'gravity.core/Map))))
+            (doseq [value ['other/Map "Map" "gravity.core/Map" 'List]]
+              (is (false? (invoke 'p15-s23-typed-declaration? declaration :gravity.type/map (assoc-in context [:forms id :value] value)))))
+            (doseq [changed [(assoc-in bindings [(:type-binding-id declaration) :kind] :var)
+                             (assoc-in bindings [(:type-binding-id declaration) :namespace] 'other)]]
+              (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee map-index
+                                                (get types map-id) nodes changed 65536)))))))))))
+
 (deftest current-gravity-homogeneous-list-parameter-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -6451,6 +6837,137 @@
                         #(assoc-in % [:forms member-id :value] 'Keyword)
                         #(assoc-in % [:forms app-id :child-form-ids] [member-id ctor-id])]]
           (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-map-parameter-call-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'bare-map-parameter-input)
+        c7 (ns-resolve upstream 'invoke-c7) path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (typed-direct-call-kernel-context (:value (invoke 'p15-s23-typed-context module input observation)))]
+    (doseq [actual [:gravity.type/map {:kind :gravity.type/map :shape :literal :member-types []}
+                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool :gravity.type/string :gravity.type/nil]}]]
+      (let [parameter (input-fn actual) declaration (:declaration parameter) type :gravity.type/map
+            signature (assoc (get-in base [:records 'identity :signature]) :parameters [declaration])
+            record (assoc (get-in base [:records 'identity]) :signature signature)
+            function (assoc (get-in base [:functions 'identity]) :signature signature :parameters [{:binding-id :parameter :type type}])
+            raw-fn '(fn [problem :- Map] :- String "done") raw-def (list 'def 'identity raw-fn)
+            type-id (:type-form-id declaration) marker-id (:marker-form-id declaration)
+            context (-> base
+                        (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+                        (assoc-in [:functions 'identity] function) (assoc-in [:types :operator] function)
+                        (assoc-in [:types :function] function) (assoc-in [:types :definition] function)
+                        (assoc-in [:types :argument] actual) (assoc-in [:parameter-types :caller-parameter] actual)
+                        (assoc-in [:nodes :function :attributes :signature] signature)
+                        (assoc-in [:nodes :reference :core-form] :literal)
+                        (assoc-in [:nodes :reference :attributes] {:literal-kind :string :value "done"})
+                        (assoc-in [:raw-roots :definition-form] raw-def) (assoc-in [:forms :definition-form :value] raw-def)
+                        (assoc-in [:forms :function-form :value] raw-fn) (assoc-in [:forms :body-form :value] "done")
+                        (assoc-in [:forms :parameter-form :value] '[problem :- Map])
+                        (assoc-in [:forms :parameter-form :child-form-ids] [:parameter-name marker-id type-id])
+                        (assoc-in [:forms marker-id] {:form-id marker-id :syntax-id (:marker-syntax-id declaration) :value :- :parent-form-id :parameter-form})
+                        (assoc-in [:forms type-id] {:form-id type-id :syntax-id (:type-syntax-id declaration) :kind :symbol :value 'Map
+                                                  :parent-form-id :parameter-form :child-form-ids []})
+                        (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration)])))
+            call (get-in context [:calls :call]) edge (get-in context [:edges :call])
+            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            pair (cond-> {:parameter :parameter :argument actual :chosen type}
+                   (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
+            row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
+            fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
+            context (assoc context :ledger [row] :call-facts {:call fact})
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)
+            charge (+ 17 (:work-count checked))]
+        (is (= (if (= actual type) :not-applicable :accepted) (:status checked)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value lowered)))
+        (is (= lowered (compile context (:work-count lowered))))
+        (let [rejected (compile context (dec (:work-count lowered)))]
+          (is (= :typed-lowering-work-limit (get-in rejected [:facts :reason])))
+          (is (= charge (:work-count rejected))))
+        (doseq [candidate [(assoc-in context [:ledger 0 :kind] :equality)
+                           (update-in context [:ledger 0 :rhs 0] dissoc :compatibility)
+                           (assoc-in context [:ledger 0 :compatibility-rule-version] :sh08-list-parameter-compatibility-v2)
+                           (assoc-in context [:forms type-id :value] 'List)
+                           (assoc-in context [:bindings (:type-binding-id declaration) :kind] :var)]]
+          (when-not (= context candidate)
+            (let [rejected (compile candidate 65536)]
+              (is (= :rejected (:status rejected)))
+              (is (pos? (:work-count rejected))))))
+        (let [failed (compile (assoc context :locals {}) 65536)]
+          (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
+          (is (= charge (:work-count failed))))
+        (when (= [] (:member-types actual))
+          (let [second-declaration (assoc (get-in base [:records 'identity :signature :return])
+                                         :source-child-index 4 :marker-form-id :second-marker :marker-syntax-id :second-marker-syntax
+                                         :type-form-id :second-type :type-syntax-id :second-type-syntax)
+                signature2 (assoc signature :parameters [declaration second-declaration] :parameter-source-child-indexes [0 3])
+                record2 (assoc record :signature signature2 :fixed-arity 2 :parameter-binding-ids [:parameter :second-parameter])
+                function2 (assoc function :signature signature2 :fixed-arity 2 :parameter-binding-ids [:parameter :second-parameter]
+                                          :parameters [{:binding-id :parameter :type type}
+                                                       {:binding-id :second-parameter :type :gravity.type/string}])
+                children [:operator :argument :second-argument]
+                call2 (assoc call :argument-node-ids [:argument :second-argument] :ordered-evaluation-node-ids children)
+                edge2 (assoc edge :argument-core-node-ids [:argument :second-argument] :ordered-evaluation-node-ids children)
+                call-node (-> (get-in context [:nodes :call]) (assoc :children children)
+                              (assoc-in [:attributes :argument-count] 2) (assoc-in [:attributes :argument-child-indexes] [1 2])
+                              (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+                second-node (-> (get-in context [:nodes :argument]) (assoc :node-id :second-argument)
+                                (assoc-in [:attributes :binding-id] :caller-suffix)
+                                (assoc-in [:source :form-id] :second-argument-form) (assoc-in [:source :syntax-id] :second-argument-syntax))
+                owner-id (get-in call-node [:source :form-id])
+                second-form (-> (get-in context [:forms (get-in context [:nodes :argument :source :form-id])])
+                                (assoc :form-id :second-argument-form :syntax-id :second-argument-syntax :value 'suffix :parent-form-id owner-id))
+                raw-fn2 '(fn [problem :- Map suffix :- String] :- String "done") raw-def2 (list 'def 'identity raw-fn2)
+                candidate (-> context
+                              (assoc-in [:core :function-records] [record2]) (assoc-in [:records 'identity] record2)
+                              (assoc-in [:functions 'identity] function2) (assoc-in [:types :operator] function2)
+                              (assoc-in [:types :function] function2) (assoc-in [:types :definition] function2)
+                              (assoc-in [:types :second-argument] :gravity.type/string)
+                              (assoc-in [:parameter-types :caller-suffix] :gravity.type/string)
+                              (assoc-in [:nodes :call] call-node) (assoc-in [:nodes :second-argument] second-node)
+                              (assoc-in [:nodes :function :attributes :signature] signature2)
+                              (assoc-in [:nodes :function :attributes :parameters] '[problem suffix])
+                              (assoc-in [:nodes :function :attributes :fixed-arity] 2)
+                              (assoc-in [:nodes :function :resolved-binding-ids] [:parameter :second-parameter])
+                              (assoc-in [:raw-roots :definition-form] raw-def2) (assoc-in [:forms :definition-form :value] raw-def2)
+                              (assoc-in [:forms :function-form :value] raw-fn2)
+                              (assoc-in [:forms :parameter-form :value] '[problem :- Map suffix :- String])
+                              (assoc-in [:forms :parameter-form :child-form-ids] [:parameter-name marker-id type-id :second-name :second-marker :second-type])
+                              (assoc-in [:forms :second-name] {:form-id :second-name :syntax-id :second-name-syntax :kind :symbol :value 'suffix
+                                                              :parent-form-id :parameter-form :scope-id (get-in context [:forms :parameter-name :scope-id])})
+                              (assoc-in [:forms :second-marker] {:form-id :second-marker :syntax-id :second-marker-syntax :value :- :parent-form-id :parameter-form})
+                              (assoc-in [:forms :second-type] {:form-id :second-type :syntax-id :second-type-syntax :kind :symbol :value 'String :parent-form-id :parameter-form})
+                              (assoc-in [:forms owner-id :child-form-ids]
+                                        (conj (get-in context [:forms owner-id :child-form-ids]) :second-argument-form))
+                              (assoc-in [:forms :second-argument-form] second-form)
+                              (assoc-in [:bindings :second-parameter]
+                                        (assoc (get-in context [:bindings :parameter]) :binding-id :second-parameter :name 'suffix :definition-syntax-id :second-name-syntax))
+                              (assoc-in [:calls :call] call2) (assoc-in [:edges :call] edge2))
+                checked2 (c7 'sh08-lp-compatibility [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate) 65536])
+                pair2 (assoc pair :compatibility (:premise checked2))
+                row2 (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair2 {:parameter :second-parameter
+                                                                                   :argument :gravity.type/string :chosen :gravity.type/string}])])
+                fact2 (-> fact (assoc :argument-types [actual :gravity.type/string])
+                               (assoc-in [:fact-id-request :argument-types] [actual :gravity.type/string]))
+                candidate (assoc candidate :ledger [row2] :call-facts {:call fact2})
+                complete-context (assoc-in candidate [:locals :caller-suffix] 'suffix)
+                joined (invoke 'p15-s23-typed-definition candidate 'identity)
+                complete (compile complete-context 65536)
+                prefix (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) :argument 65536)
+                child-failure (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) :second-argument 65536)
+                failed (compile candidate 65536)
+                charge2 (+ 18 (:work-count checked2))]
+            (is (= :accepted (:status checked2)))
+            (is (= :complete (:status joined)) (pr-str joined))
+            (is (= :complete (:status complete)) (pr-str complete))
+            (is (= [{:op :local :name 'problem} {:op :local :name 'suffix}] (get-in complete [:value :args])))
+            (is (= :complete (:status prefix)))
+            (is (= :typed-reference-outside-parameters (get-in child-failure [:facts :reason])))
+            (is (= (:facts child-failure) (:facts failed)))
+            (is (= (+ charge2 (:work-count prefix) (:work-count child-failure 0)) (:work-count failed)))))))))
 
 (deftest current-gravity-list-empty-traversal-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))

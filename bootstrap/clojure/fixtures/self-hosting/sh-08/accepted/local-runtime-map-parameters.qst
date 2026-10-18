@@ -1,0 +1,24 @@
+(ns self-hosting.sh08.local-runtime-map-parameters
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn identity [packet :- gravity.core/Map] :- gravity.core/Map packet)
+(defn remove-one [packet :- Map] :- Map (dissoc packet :actual-path))
+(defn strip-paths [packet :- Map] :- Map
+  (dissoc (remove-one packet) :actual-source-path))
+(defn strip-literal []
+  (strip-paths '{:actual-path "a" :semantic "kept" :actual-source-path "b"}))
+(defn relay [packet :- Map] :- Map (remove-one packet))
+(defn original [packet :- Map] :- Map (do (dissoc packet :drop) packet))
+(defn size [packet :- Map] (count packet))
+(defn has-drop [packet :- Map] :- Bool (contains? packet :drop))
+(defn has-removed [packet :- Map] :- Bool (contains? (remove-one packet) :actual-path))
+(defn mixed [record :- Map forms :- List parts :- (List String) suffix :- String] :- String
+  (do (contains? (dissoc record :drop) :drop) (count forms) (count parts) suffix))
+(defn mixed-call [] :- String
+  (mixed '{:drop false :keep nil} '(label "form") '("left" "right") "done"))
+(defn caught-input [first :- String later :- String] :- String
+  (try (dissoc (throw first) (throw later)) (catch String error error)))
+(defn caught-key [packet :- Map problem :- String] :- String
+  (try (dissoc packet (throw problem)) (catch String error error)))
+(defn caught-literal-key [problem :- String] :- String (caught-key {:before "retained"} problem))
+(defn main [] :- String (mixed-call))

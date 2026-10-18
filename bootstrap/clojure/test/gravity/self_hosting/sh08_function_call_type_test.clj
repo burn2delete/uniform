@@ -2477,6 +2477,55 @@
                 :types types :functions {:callee callee} :seeds {:parameter type} :homogeneous-type type
                 :context (assoc (:context base) :ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))))))
 
+(defn- bare-map-parameter-input [actual]
+  (let [base (walk/postwalk-replace {'List 'Map :gravity.type/list :gravity.type/map}
+                                  (bare-list-parameter-input :gravity.type/map))]
+    (assoc-in base [:types :argument] actual)))
+
+(defn- mixed-map-parameter-input [order]
+  (let [sha #(str "sha256:" (format "%064x" %))
+        actuals {:record {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
+                 :forms {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string :gravity.type/bool]}
+                 :parts {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string :gravity.type/string]}
+                 :suffix :gravity.type/string}
+        sources {:record (bare-map-parameter-input (:record actuals))
+                 :forms (bare-list-parameter-input (:forms actuals))
+                 :parts (homogeneous-list-parameter-input (:parts actuals))
+                 :suffix (walk/postwalk-replace {'List 'String :gravity.type/list :gravity.type/string}
+                                               (bare-list-parameter-input :gravity.type/string))}
+        declarations (mapv (fn [index role]
+                             (let [base (sources role) offset (* 100 (inc index))
+                                   ids (into {} (map #(vector (sha %) (sha (+ offset %))) (range 1 11)))]
+                               (-> (walk/postwalk-replace ids (:declaration base))
+                                   (assoc :source-child-index (inc (* 3 index))))))
+                           (range) order)
+        signature {:rule-version :sh07-atomic-function-signature-v1 :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+                   :parameters declarations :return nil :parameter-source-child-indexes (mapv #(* 3 %) (range 4)) :body-source-child-index 2}
+        parameters (mapv (fn [role declaration] {:binding-id role :type (:type-id declaration)}) order declarations)
+        base (bare-map-parameter-input (:record actuals))
+        record (assoc (first (get-in base [:core :function-records])) :parameter-binding-ids order :fixed-arity 4 :signature signature)
+        callee (assoc (:callee base) :parameters parameters :signature signature)
+        args (mapv #(keyword (str (name %) "-argument")) order) children (into [:operator] args)
+        call (assoc (:call base) :argument-node-ids args :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids args :ordered-evaluation-node-ids children)
+        node (assoc (:node base) :children children)
+        nodes (into {:call node :operator (get-in base [:nodes :operator])}
+                    (map (fn [id] [id {:node-id id :source {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil}}]) args))
+        bindings (reduce
+                   (fn [out [index role declaration]]
+                     (let [offset (* 100 (inc index)) ids (into {} (map #(vector (sha %) (sha (+ offset %))) (range 1 11)))
+                           moved (walk/postwalk-replace ids (:bindings (sources role)))]
+                       (merge out (dissoc moved :parameter :definition)
+                              {role {:binding-id role :name (symbol (name role)) :kind :local :binding-class :lexical}})))
+                   {:definition (get-in base [:bindings :definition])}
+                   (map vector (range) order declarations))
+        core (assoc (:core base) :function-records [record] :nodes (vec (vals nodes)) :calls [call] :call-edges [edge])
+        types (merge {:operator callee :call :gravity.type/string} (zipmap args (mapv actuals order)))
+        seeds (into {} (map (juxt :binding-id :type) parameters))
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings)) :loop-work-left 65536}]
+    (assoc base :core core :node node :nodes nodes :call call :edge edge :callee callee :types types :bindings bindings
+                :functions {:callee callee} :seeds seeds :context context :signature signature :actuals actuals :order order)))
+
 (defn- homogeneous-list-return-input [actual element ordinal]
   ;; Normalized independent body/type DATA; no authenticated source claim.
   (let [sha #(str "sha256:" (format "%064x" (+ (* ordinal 100) %)))
@@ -2812,6 +2861,93 @@
                         (update-in [:core :control-flow] conj inner-control))
             changed (assoc-in changed [:core :nodes] (vec (vals (:nodes changed))))]
         (is (= :list-head-branch-proof-required (:reason (list-query-derived changed))))))))
+
+(deftest sh08-bare-map-parameter-development-kernel
+  (let [map-type #(hash-map :kind :gravity.type/map :shape :literal :member-types %)
+        actuals [(map-type []) (map-type [:gravity.type/keyword :gravity.type/bool])
+                 (map-type [:gravity.type/string :gravity.type/nil :gravity.type/keyword
+                            {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string :gravity.type/bool]}])]]
+    (doseq [actual actuals]
+      (let [{:keys [core call edge callee nodes bindings signature] :as input} (bare-map-parameter-input actual)
+            result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row)) premise (:compatibility pair)
+            scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings %])
+            work (:work-count (scan 65536))]
+        (is (= [] (:diagnostics result)) (pr-str result))
+        (is (= :argument-compatibility (:kind row)))
+        (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
+        (is (= :sh08-bare-map-parameter-v1 (:version premise)))
+        (is (= actual (:argument pair) (:actual-type premise)))
+        (is (= :gravity.type/map (:chosen pair) (:declared-type premise) (get-in result [:binding-types :parameter])))
+        (is (= [:key-value-member-types :static-entry-count] (:forgets premise)))
+        (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations] (:preserves premise)))
+        (is (= :accepted (:status (scan work))))
+        (is (= :map-parameter-work-limit (:reason (scan (dec work)))))
+        (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
+        (is (nil? (invoke-c7 'sh08-ft-atomic-type-id ['Map])))
+        (let [total (:compatibility-work-count result)]
+          (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] total))))
+          (is (= ["C7-GENERIC" :map-parameter-work-limit]
+                 ((juxt :rule :reason) (first (:diagnostics (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec total)))))))))
+        (doseq [budget [0 -1]]
+          (is (= :map-parameter-work-limit (:reason (scan budget)))))))
+    (doseq [actual [:gravity.type/map :gravity.type/never]]
+      (let [result (bare-list-parameter-constraints (bare-map-parameter-input actual))]
+        (is (= [] (:diagnostics result)))
+        (is (= :equality (get-in result [:constraints 0 :kind])))
+        (is (nil? (get-in result [:constraints 0 :rhs 0 :compatibility])))))
+    (doseq [actual [:gravity.type/list :gravity.type/vector :gravity.type/string :gravity.type/nil
+                     {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
+                     {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/unknown]}
+                     {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/never]}
+                     (assoc (map-type []) :schema :secret) (assoc (map-type []) :ownership :owned)]]
+      (is (seq (:diagnostics (bare-list-parameter-constraints (bare-map-parameter-input actual))))) )
+    (let [input (bare-map-parameter-input (map-type [:gravity.type/keyword :gravity.type/bool]))]
+      (doseq [mutate [#(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :type-symbol] 'List)
+                      #(assoc-in % [:context :ordering-bindings :parameter :kind] :var)
+                      #(assoc-in % [:context :ordering-bindings (get-in input [:declaration :type-binding-id]) :namespace] 'other)
+                      #(assoc-in % [:edge :callee-function-core-node-id] :forged)
+                      #(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :extra] true)]]
+        (is (seq (:diagnostics (bare-list-parameter-constraints (mutate input)))))))))
+
+(deftest sh08-map-parameter-recur-development-kernel
+  (let [transfer {:argument-node-ids [:next]} target {:target-kind :function :binding-ids [:packet]}
+        check #(invoke-c7 'sh08-ft-loop-kernel-transfer-types [transfer target {} {:next %} [:gravity.type/map] 65536])]
+    (is (= :accepted (:status (check :gravity.type/map))))
+    (is (= :accepted (:status (check :gravity.type/never))))
+    (doseq [wrong [{:kind :gravity.type/map :shape :literal :member-types []} :gravity.type/list :gravity.type/string]]
+      (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason]))))))
+
+(deftest sh08-mixed-map-list-parameter-development-kernel
+  (doseq [order [[:record :forms :parts :suffix] [:parts :suffix :forms :record] [:forms :parts :record :suffix]]]
+    (let [{:keys [signature bindings types call core] :as input} (mixed-map-parameter-input order)
+          result (bare-list-parameter-constraints input) row (first (:constraints result)) pairs (:rhs row)]
+      (is (= [] (:diagnostics result)) (pr-str result))
+      (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 4 bindings])))
+      (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
+      (is (= 4 (count pairs)))
+      (doseq [[index role pair] (map vector (range) order pairs)]
+        (is (= role (:parameter pair)))
+        (is (= (get types (get (:argument-node-ids call) index)) (:argument pair)))
+        (is (= (get-in input [:seeds role]) (:chosen pair)))
+        (if (= role :suffix)
+          (is (nil? (:compatibility pair)))
+          (let [premise (:compatibility pair)]
+            (is (= index (:argument-index premise)))
+            (is (= role (:parameter-binding-id premise)))
+            (is (= (get (:argument-node-ids call) index) (:argument-node-id premise)))
+            (is (= ({:record :sh08-bare-map-parameter-v1 :forms :sh08-bare-list-parameter-v1 :parts :sh08-homogeneous-list-parameter-v1} role)
+                   (:version premise))))))
+      (let [work (:compatibility-work-count result)]
+        (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] work))))
+        (is (= "C7-GENERIC" (get-in (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec work))) [:diagnostics 0 :rule]))))
+      (let [index (.indexOf order :suffix) id (get (:argument-node-ids call) index)
+            bad (assoc-in input [:types id] :gravity.type/bool)]
+        (is (= :call-argument-type-mismatch (get-in (bare-list-parameter-constraints bad) [:diagnostics 0 :reason]))))
+      (let [index (.indexOf order :record) id (get (:argument-node-ids call) index)
+            stopped (bare-list-parameter-constraints (assoc-in input [:types id] :gravity.type/never))]
+        (is (= [] (:diagnostics stopped)))
+        (is (nil? (get-in stopped [:constraints 0 :rhs index :compatibility])))
+        (is (= :sh08-list-parameter-compatibility-v2 (get-in stopped [:constraints 0 :compatibility-rule-version])))))))
 
 (deftest sh08-bare-list-parameter-development-kernel
   (let [actual {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/string] :shape :literal}
@@ -3382,6 +3518,82 @@
   ([{:keys [core node nodes types binding-types bindings forms products]} budget]
    (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
      (invoke-c7 'sh08-mr-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context]))))
+
+(defn- map-family-removal-input [key never-key? never-input?]
+  (let [base (map-removal-input key false)
+        input (-> (get-in base [:nodes :input])
+                  (assoc :core-form :reference :children [] :resolved-binding-ids [:map-parameter]
+                         :attributes {:binding-id :map-parameter})
+                  (assoc-in [:evaluation :order] []))
+        key-node (if never-key?
+                   (-> (get-in base [:nodes :key])
+                       (assoc :core-form :reference :resolved-binding-ids [:key-parameter]
+                              :attributes {:binding-id :key-parameter})) (get-in base [:nodes :key]))
+        nodes (-> (:nodes base) (dissoc :input-key :input-value) (assoc :input input :key key-node))
+        node-list (mapv nodes (remove #{:input-key :input-value} (map :node-id (get-in base [:core :nodes]))))
+        forms (-> (:forms base) (dissoc :input-key :input-value)
+                  (assoc-in [:input :kind] :symbol) (assoc-in [:input :value] 'packet) (assoc-in [:input :child-form-ids] []))
+        forms (if never-key? (-> forms (assoc-in [:key :kind] :symbol) (assoc-in [:key :value] 'aborts)) forms)
+        receiver-type (if never-input? :gravity.type/never :gravity.type/map)
+        key-type (if never-key? :gravity.type/never :gravity.type/keyword)]
+    (assoc base :nodes nodes :forms forms :core (assoc (:core base) :nodes node-list)
+                :types {:input receiver-type :key key-type}
+                :binding-types (cond-> {:map-parameter receiver-type} never-key? (assoc :key-parameter key-type))
+                :bindings (cond-> (assoc (:bindings base) :map-parameter {:binding-id :map-parameter :binding-class :lexical :kind :local :name 'packet})
+                            never-key? (assoc :key-parameter {:binding-id :key-parameter :binding-class :lexical :kind :local :name 'aborts})))))
+
+(deftest sh08-map-family-removal-development-kernel
+  (doseq [never-key? [false true] never-input? [false true]]
+    (let [{:keys [core node nodes bindings types forms products binding-types call edge] :as input}
+          (map-family-removal-input :removed never-key? never-input?)
+          result (map-removal-derived input) descriptor (:descriptor result)
+          expected (if (or never-key? never-input?) :gravity.type/never :gravity.type/map)
+          work (:call-join-work result) table (assoc types :operator descriptor :removal expected)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= expected (:type result) (:result-type descriptor)))
+      (is (= (if (= expected :gravity.type/never) :not-invoked :normal) (:application descriptor)))
+      (is (= (if (= expected :gravity.type/never) [] [:memory/allocate]) (:direct-effects descriptor)))
+      (is (= [:memory/allocate] (:latent-effects descriptor)))
+      (is (nil? (:input-shape descriptor)))
+      (is (nil? (:transition descriptor)))
+      (is (nil? (:result-shape descriptor)))
+      (is (= result (map-removal-derived input work)))
+      (is (= :map-removal-work-limit (:reason (map-removal-derived input (dec work)))))
+      (is (true? (invoke-c7 'sh08-mr-inferred-call-valid? [core node call edge nodes bindings table])))
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)) (pr-str (:diagnostics inferred)))
+      (is (= descriptor (get-in inferred [:type-table :operator])))
+      (is (= expected (get-in inferred [:type-table :removal])))
+      (if never-input?
+        (is (nil? (:input-type-evidence descriptor)))
+        (do
+          (is (= {:kind :map-family-type-only :type :gravity.type/map :node-id :input :source (get-in nodes [:input :source])}
+                 (:input-type-evidence descriptor)))
+          (is (nil? (:shape result)))
+          (let [valid #(invoke-c7 'sh08-mr-inferred-call-valid? [core node call edge nodes bindings (assoc table :operator %)])]
+            (doseq [changed [(assoc-in descriptor [:input-type-evidence :kind] :constructor)
+                             (assoc-in descriptor [:input-type-evidence :type] :gravity.type/list)
+                             (assoc-in descriptor [:input-type-evidence :source :syntax-id] :sibling)
+                             (assoc descriptor :input-shape {:status :accepted :shape-kind :map :parts []})
+                             (assoc descriptor :result-shape {:status :accepted :shape-kind :map :parts []})
+                             (assoc descriptor :transition {:kind :absent :parts []})]]
+              (is (false? (valid changed)))))))
+      (when (= expected :gravity.type/map)
+        (let [prepared (assoc (invoke-c7 'sh08-sm-call-context [products table 65536]) :source-core core :module (:module core))
+              shape (invoke-c7 'sh08-sm-shape-with-bindings [:removal nodes table binding-types {} [] bindings forms #{} 0 {} prepared])]
+          (is (= :rejected (:status shape)))
+          (is (= :map-removal-map-shape-required (:reason shape)))))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (list-query-input 'count [:gravity.type/map])
+        count-result (invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536])
+        contains-result (map-contains-derived (map-contains-input [:gravity.type/map :gravity.type/keyword]))]
+    (is (= :accepted (:status count-result) (:status contains-result)))
+    (is (= :gravity.type/integer (:type count-result)))
+    (is (= :gravity.type/bool (:type contains-result)))
+    (is (= [] (get-in count-result [:descriptor :direct-effects]) (get-in contains-result [:descriptor :direct-effects])))))
 
 (deftest sh08-map-removal-source-development-kernel
   (doseq [[key empty? kind expected] [[:old false :remove []] [:missing false :absent [:old]] [:missing true :absent []]]]

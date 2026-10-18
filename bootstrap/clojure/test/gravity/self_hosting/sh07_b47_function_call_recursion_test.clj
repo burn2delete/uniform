@@ -260,7 +260,9 @@
                            {:binding-id (sha 5201) :binding-class :core :kind :type :name 'List
                             :namespace 'gravity.core :definition-syntax-id (sha 6200)}
                            {:binding-id (sha 5301) :binding-class :core :kind :type :name 'Vector
-                            :namespace 'gravity.core :definition-syntax-id (sha 6300)}]
+                            :namespace 'gravity.core :definition-syntax-id (sha 6300)}
+                           {:binding-id (sha 5401) :binding-class :core :kind :type :name 'Map
+                            :namespace 'gravity.core :definition-syntax-id (sha 6400)}]
                     by-name (into {} (map (juxt :name identity) (into locals cores)))
                     resolutions (into {} (for [value (vals @forms)
                                                :let [symbol (:value value)
@@ -332,6 +334,23 @@
         (is (= :gravity.type/list (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
         (is (true? (invoke 'sh07-signature-valid? [signature 1])))
         (is (nil? (invoke 'sh07-atomic-type-id ['List]))))
+      (doseq [value ['(fn [packet :- Map] :- Map packet)
+                     '(fn [packet :- gravity.core/Map] :- gravity.core/Map packet)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :gravity.type/map (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+          (is (= 'Map (get-in signature [:parameters 0 :type-symbol]) (get-in signature [:return :type-symbol])))
+          (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request type-form form node indexes :function-type-declaration])))
+          (is (nil? (invoke 'sh07-atomic-type-id ['Map])))
+          (is (= :rejected (:status (invoke 'sh07-function-header
+                                           [(assoc-in request [:internal-indexes :bindings :by-id (sha 5401) :kind] :var) form]))))))
       (doseq [value ['(fn [parts :- (List I64)] parts)
                      '(fn [parts :- (gravity.core/List gravity.core/Bool)] parts)]]
         (let [form (make! value) request (input form)

@@ -4281,7 +4281,8 @@
   {:status :rejected :rule "C6-LOWERING-GAP" :form form :facts {:reason reason}})
 
 (defn sh07-signature-type-id [name]
-  (if (= name 'List) :gravity.type/list (sh07-atomic-type-id name)))
+  (if (= name 'Map) :gravity.type/map
+    (if (= name 'List) :gravity.type/list (sh07-atomic-type-id name))))
 
 (defn sh07-type-declaration [request marker type-form coordinate]
   (let [indexes (get request :internal-indexes)

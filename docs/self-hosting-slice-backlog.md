@@ -2191,6 +2191,59 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Bare Map parameters: development implementation
+
+This slice adds explicitly annotated bare `Map` parameters and family-only
+Map removal. L5 now specifies per-parameter forgetting of independently
+established member refinements, retaining actual argument types, provenance and
+compatibility evidence. This does not establish keys, members or a constructor
+shape inside the callee. Exact bare-Map returns use the existing equality rule;
+the parameter rule does not introduce a return restriction or change recur.
+
+The existing checked-core, C7, effect and typed-emitter owners implement the
+increment; the runtime is unchanged. Family-only removal retains receiver
+node/source/type evidence but no input shape, member transition or result
+shape. Normal invocation returns bare Map with possible allocation; operand
+transfer remains Never and suppresses invocation. Count and membership require
+no member facts. Current member-lookup, association and structural paths still
+require their own established facts.
+
+Independently reviewed development results are:
+
+| Selected checks | Passing result | Scope |
+| --- | --- | --- |
+| Signature and argument compatibility | 5 tests / 467 assertions | Map declarations, source joins, mixed argument orders, type/work rejection and existing List regressions. |
+| Compatibility consumers | 5 / 347 | Independent C8/emitter row reconstruction, actual types, malformed rows and cumulative budgets. |
+| Family removal | C7/C8 2 / 138; lowering 1 / 62 | Normal/Never cases, no invented shape, allocation and source/row/work guards; separate targeted results. |
+| Count and recur | C8 30; emitter 28; recur 5; old List call 36 assertions | Bare-Map count, unchanged exact recur compatibility and affected call regression. |
+| Complete Map-call lowering | 1 / 58 | Real normalized definition/call checks, exact/one-below limits and successful-prefix/failing-child work carry. |
+| Fixture and literal-key checks | 2 / 29 | Parity/ASCII/header census plus normalized computed-key rejection, not negative-source compilation. |
+
+These are distinct component results, not a replayed passing aggregate. Failed
+history remains: family 173 passes / 27 failures (three real bare-Map count
+failures and 24 stale reference-order fixture failures); count/call/recur
+148 / 1 (an early call guard omitted rejected work); targeted call 53 / 4
+(inconsistent new two-parameter fixture metadata/scope). Corrections preserve
+definition guards and successful IR, admit only bare Map to the count family,
+and retain the actual argument-based call charge plus completed/failing work.
+
+The affected source composition passed 1 test / 452 assertions, including six
+unchanged runtime-loader assertions, in 518.096 seconds with a 2 GiB heap.
+It constructed exactly four fresh inputs: the accepted Gravity/QST pair, a
+non-Map argument rejection at C7 and an undeclared-allocation rejection at C8.
+The accepted products cover 15 functions, 19 calls and 48 guest executions,
+including mixed parameter compatibility, exact bare-Map returns, chained
+removal, count, membership and caught operand transfer. Public C7 rejects
+erased upstream types; C8 rejects missing compatibility evidence with genuine
+types retained. Forged family shapes, ledgers and effect graphs also reject.
+
+The five other rejected fixture pairs retain only their fixture or normalized
+coverage, and the two selected rejected QST variants were not separately
+compiled. All 28 selected implementation, test, fixture and contract inputs
+remained unchanged. This establishes the stated development behavior, not
+general member access on bare Map, W5 execution, authoritative migration,
+release, target completeness or self-hosting.
+
 ### Persistent Map removal: development implementation
 
 This slice implements binary `dissoc` with one literal Keyword key over an
