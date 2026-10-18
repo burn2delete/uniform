@@ -50,10 +50,14 @@
   (loop [index 0]
     (when (< index (count parameters))
       (if (= ':- (get parameters index))
-        (do (when (and (< (inc index) (count parameters))
-                       (symbol? (get parameters (inc index))) (not= ':- (get parameters (inc index))))
-              (walk syntax (get parameters (inc index))
-                    (conj path parameter-index (inc index)) nested :type))
+        (do (let [type (get parameters (inc index))
+                  type-path (conj path parameter-index (inc index))]
+              (if (symbol? type)
+                (walk syntax type type-path nested :type)
+                (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+                  (remember-scope! syntax type-path type nested)
+                  (doseq [[child item] (map-indexed vector type)]
+                    (walk syntax item (conj type-path child) nested :type)))))
             (recur (+ index 2)))
         (recur (inc index)))))
   (let [header-index (inc parameter-index)

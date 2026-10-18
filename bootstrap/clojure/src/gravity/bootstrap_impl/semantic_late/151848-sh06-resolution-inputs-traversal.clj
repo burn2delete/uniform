@@ -9,8 +9,11 @@
      (loop [remaining (seq parameters)]
        (when (seq remaining)
          (if (= ':- (first remaining))
-           (do (when (and (symbol? (second remaining)) (not= ':- (second remaining)))
-                 (walk-form (second remaining) scope-chain syntax :type))
+           (do (let [type (second remaining)]
+                 (if (symbol? type)
+                   (walk-form type scope-chain syntax :type)
+                   (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+                     (doseq [item type] (walk-form item scope-chain syntax :type)))))
                (recur (nnext remaining)))
            (recur (next remaining))))))
    (walk-function-body [body scope-chain syntax]

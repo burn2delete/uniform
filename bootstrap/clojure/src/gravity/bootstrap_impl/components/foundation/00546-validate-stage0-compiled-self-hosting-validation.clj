@@ -102,14 +102,18 @@
     (letfn [(reject! [reason]
               (fail! "L2-FUNCTION-PARAMS" "stage0 function declaration header is malformed"
                      {:source-span {:source source-path} :function name :params params
-                      :reason reason :remediation "Use fixed arity names with optional atomic type declarations."}))
-            (type-token? [value] (and (symbol? value) (not= '& value)))]
+                      :reason reason :remediation "Use fixed arity names with supported type declarations."}))
+            (type-token? [value] (and (symbol? value) (not= '& value)))
+            (parameter-type? [value]
+              (or (type-token? value)
+                  (and (seq? value) (= 2 (count value)) (every? type-token? value))))]
       (loop [remaining (seq params) names []]
         (if (seq remaining)
           (let [parameter (first remaining) annotated? (= :- (second remaining))]
             (when-not (symbol? parameter) (reject! :parameter-name-required))
             (if annotated?
-              (do (when-not (type-token? (nth remaining 2 nil)) (reject! :atomic-parameter-type-required))
+              (do (when-not (parameter-type? (nth remaining 2 nil))
+                    (reject! (if (seq? (nth remaining 2 nil)) :parameter-type-shape-required :atomic-parameter-type-required)))
                   (recur (nthnext remaining 3) (conj names parameter)))
               (recur (next remaining) (conj names parameter))))
           (let [return? (= :- (first body)) wrapper (first body)

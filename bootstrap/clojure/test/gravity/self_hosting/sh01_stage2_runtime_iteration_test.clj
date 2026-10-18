@@ -4268,6 +4268,20 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-homogeneous-list-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions]
+            (concat [["accepted" "local-runtime-homogeneous-list-traversal" 7]]
+                    (map #(vector "rejected" (str "homogeneous-list-" %) 2)
+                         ["wrong-member" "unknown-member" "bare-argument" "to-bare"])
+                    (map #(vector "rejected" (str "homogeneous-list-" %) 1)
+                         ["unguarded-head" "wrong-binding" "empty-branch" "tail-head" "recur-type" "return-refinement" "allocation"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
+
 (deftest current-gravity-list-traversal-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -4315,6 +4329,178 @@
             text (slurp (io/file root (str relative ".gravity")))]
         (is (= text (slurp (io/file root (str relative ".qst")))))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
+
+(deftest current-gravity-homogeneous-list-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        payload (String. "original homogeneous List head and transfer")
+        homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+        specs [['join-parts ['() ""] "" :normal]
+               ['join-parts ['("alpha") ""] "alpha" :normal]
+               ['join-parts ['("alpha" "beta") ""] "alphabeta" :normal]
+               ['join-parts ['("alpha" "beta") "prefix:"] "prefix:alphabeta" :normal]
+               ['join-parts ['("" "beta") ""] "beta" :normal]
+               ['join-parts ['("same" "same") ""] "samesame" :normal]
+               ['relay ['("alpha" "beta")] "alphabeta" :normal]
+               ['empty [] "" :normal] ['singleton ["only"] "only" :normal]
+               ['head-or-empty ['()] "" :normal]
+               ['head-or-empty [(list payload)] payload :normal]
+               ['head-or-empty [(list payload "tail")] payload :normal]
+               ['aborting [payload] payload :thrown] ['main [] "alphabeta" :normal]]
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-homogeneous-list-traversal" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  ready (= :accepted (get-in input [:typed :status]))
+                  _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                  _ (when-not ready (throw (ex-info "Homogeneous List source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  calls (:call-type-facts facts) rows (filterv #(= :argument-compatibility (:kind %)) (:constraint-ledger facts))
+                  queries (mapv :applied-list-query (filter #(= :direct-list-query (:dispatch %)) calls))
+                  heads (filterv #(= 'first (:operation %)) queries)
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  target (first (filter #(and (= :function (:target-kind %))
+                                              (= (get-in functions ['join-parts :function-core-node-id]) (:owner-core-node-id %))) (:recur-targets core)))
+                  transfer (first (filter #(= (:target-id target) (:target-id %)) (:recur-transfers core)))
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 7 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+              (is (= 14 (count (:calls core)) (count (:call-edges core)) (count calls)))
+              (is (= {:direct-list-query 5 :direct-string-concat 1 :direct-list-construction 3 nil 5} (frequencies (map :dispatch calls))))
+              (is (= 3 (count rows)))
+              (doseq [row rows]
+                (let [pair (first (:rhs row)) premise (:compatibility pair)
+                      fact (first (filter #(= (:call-core-node-id premise) (:call-core-node-id %)) calls))]
+                  (is (= :sh08-list-parameter-compatibility-v2 (:compatibility-rule-version row)))
+                  (is (= :sh08-homogeneous-list-parameter-v1 (:version premise)))
+                  (is (= homogeneous (:chosen pair) (:declared-type premise)))
+                  (is (= (:argument pair) (:actual-type premise) (get-in facts [:type-table (:argument-node-id premise)])
+                         (get-in fact [:argument-types (:argument-index premise)])))
+                  (is (= (vec (repeat (:checked-element-count premise) :gravity.type/string)) (get-in pair [:argument :element-types])))
+                  (is (= [:static-length] (:forgets premise)))))
+              (doseq [name ['join-parts 'head-or-empty 'relay]]
+                (is (= homogeneous (get-in functions [name :parameters 0 :type])))
+                (is (= :sh07-list-parameter-declaration-v1 (get-in functions [name :signature :parameters 0 :rule-version]))))
+              (is (= [homogeneous :gravity.type/string] (mapv #(get-in facts [:type-table %]) (:argument-node-ids transfer))))
+              (is (= 2 (count heads)))
+              (doseq [descriptor queries]
+                (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+                (is (= :normal (:application descriptor)))
+                (is (= (case (:operation descriptor) empty? :gravity.type/bool first :gravity.type/string rest homogeneous)
+                       (:result-type descriptor))))
+              (doseq [descriptor heads]
+                (is (= :nonempty (get-in descriptor [:head-proof :knowledge])))
+                (is (= 2 (get-in descriptor [:head-proof :branch-child-index])))
+                (is (= homogeneous (get-in descriptor [:head-proof :receiver-type])))
+                (is (= 'empty? (get-in descriptor [:head-proof :condition :operation]))))
+              (doseq [[name args expected tag] specs]
+                (let [items (first args) snapshot (when (list? items) (vec items))
+                      result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                  (is (= [expected "" tag] result) (str extension " " name))
+                  (when (list? items) (is (= snapshot (vec items))))
+                  (when (or (= tag :thrown) (and (= name 'head-or-empty) (seq items)))
+                    (is (identical? payload (first result))))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Homogeneous List C8 graph rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [descriptor queries]
+                (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                  (is (= #{} (:direct record) (:transitive record)))
+                  (is (nil? (:allocation record)))))
+              (doseq [name ['join-parts 'relay 'empty 'singleton 'main]]
+                (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (is (= #{} (get-in graph [:functions (get-in functions ['head-or-empty :function-id]) :inferred])))
+              (is (= #{:error/throw} (get-in graph [:functions (get-in functions ['aborting :function-id]) :inferred])))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) facts {} %)
+                      analyzed (analyze 65536) work (:work-count analyzed)]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (when-not (= :accepted (:status analyzed)) (throw (ex-info "Homogeneous List owning C8 analysis rejected" {:analysis analyzed})))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze work)))
+                  (is (= :rejected (:status (analyze (dec work)))))))
+              {:input input :module module :definitions definitions :rows rows :queries queries :heads heads
+               :functions functions :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions rows heads functions effects binding]} (first cases)
+        row (first (filter #(= (get-in functions ['main :function-id])
+                               (get-in % [:rhs 0 :compatibility :source-edge :caller-function-syntax-id])) rows))
+        head (first heads)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? row))
+    (is (map? head))
+    (doseq [[original-record changed function]
+            [[row (-> row (assoc :kind :equality) (dissoc :compatibility-rule-version)
+                      (update :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))) 'main]
+             [row (assoc-in row [:rhs 0 :compatibility :checked-element-type] :gravity.type/keyword) 'main]
+             [head (assoc-in head [:head-proof :knowledge] :empty) 'join-parts]
+             [head (assoc-in head [:head-proof :binding-id] :sibling) 'join-parts]]]
+      (let [typed (walk/postwalk #(if (= original-record %) changed %) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions function) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 6 (count @verified)))
+    (let [graph (:effect-graph effects) descriptor (first heads)]
+      (doseq [changed [(assoc-in graph [:nodes (:call-core-node-id descriptor) :type] :gravity.type/keyword)
+                       (assoc-in graph [:nodes (:call-core-node-id descriptor) :direct] #{:memory/allocate})]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (doseq [[suffix expected]
+            [["wrong-member" #{["C7-TYPE-MISMATCH" :call-argument-type-mismatch]}]
+             ["unknown-member" #{["C7-TYPE-MISMATCH" :list-construction-operand-type-required]
+                                   ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]}]
+             ["bare-argument" #{["C7-TYPE-MISMATCH" :call-argument-type-mismatch]}]
+             ["to-bare" #{["C7-TYPE-MISMATCH" :call-argument-type-mismatch]}]
+             ["unguarded-head" #{["C7-TYPE-MISMATCH" :list-head-branch-proof-required]}]
+             ["wrong-binding" #{["C7-TYPE-MISMATCH" :list-head-branch-proof-required]}]
+             ["empty-branch" #{["C7-TYPE-MISMATCH" :string-concat-operand-type-required]}]
+             ["tail-head" #{["C7-TYPE-MISMATCH" :list-head-branch-proof-required]}]
+             ["recur-type" #{["C7-TYPE-MISMATCH" :function-recur-slot-type-mismatch]}]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-" suffix ".gravity"))
+            diagnostics (get-in products [:typed :diagnostics])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (some #(contains? expected ((juxt :rule :reason) %)) diagnostics) (pr-str [suffix diagnostics]))
+        (when (= suffix "empty-branch")
+          (let [mismatch (first (filter #(= :string-concat-operand-type-required (:reason %)) diagnostics))]
+            (is (= ["C7-TYPE-MISMATCH" :two-established-strings [:gravity.type/string :gravity.type/nil]]
+                   ((juxt :rule :expected-type :actual-type) mismatch)))))))
+    (let [source (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-return-refinement.gravity"))
+          data (diagnostic #(bootstrap/sh07-core-file-artifact source))
+          failure (or (:diagnostic data) data)]
+      (is (= "C6-LOWERING-GAP" (:rule failure)))
+      (is (= :atomic-type-annotation-required (get-in failure [:facts :reason]))))
+    (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/homogeneous-list-allocation.gravity")
+          effects (c8 'build-body-effect-result typed verification (seal request typed verification))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (:status verification)))
+      (is (= :rejected (:status effects)))
+      (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance] ((juxt :rule :reason) (first (:diagnostics effects))))))))
 
 (deftest current-gravity-list-traversal-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
@@ -5006,6 +5192,102 @@
       (is (= :rejected (:status (compile (mutate context) 65536)))))
     (is (nil? (invoke 'p15-s23-typed-atomic-id 'List)))))
 
+(deftest current-gravity-homogeneous-list-parameter-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'homogeneous-list-parameter-input)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
+    (doseq [members [[] [s] [s s]]]
+      (let [actual (positional members) {:keys [core call edge callee nodes bindings declaration]} (input-fn actual)
+            expected (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+            checked (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            app-id (:type-form-id declaration) ctor-id (:constructor-form-id declaration) member-id (:element-form-id declaration)
+            forms {app-id {:form-id app-id :syntax-id (:type-syntax-id declaration) :kind :list :child-form-ids [ctor-id member-id]}
+                   ctor-id {:form-id ctor-id :syntax-id (:constructor-syntax-id declaration) :value 'gravity.core/List :parent-form-id app-id}
+                   member-id {:form-id member-id :syntax-id (:element-syntax-id declaration) :value 'gravity.core/String :parent-form-id app-id}}
+            context {:forms forms :bindings bindings}]
+        (is (= :accepted (:status checked)))
+        (is (= expected checked))
+        (is (= checked (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings (:work-count checked))))
+        (is (= :list-parameter-work-limit (:reason (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings (dec (:work-count checked))))))
+        (is (true? (invoke 'p15-s23-typed-parameter-declaration? declaration type context)))
+        (is (false? (invoke 'p15-s23-typed-declaration? declaration type context)))
+        (doseq [mutate [#(assoc-in % [:forms app-id :child-form-ids] [member-id ctor-id])
+                        #(assoc-in % [:forms member-id :value] 'Keyword)
+                        #(assoc-in % [:forms ctor-id :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)]]
+          (is (false? (invoke 'p15-s23-typed-parameter-declaration? declaration type (mutate context)))))
+        (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
+          (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))))
+    (is (= {:status :accepted :work-count 2} (invoke 'p15-s23-lc-type-work [type] 2)))
+    (is (= :work-limit (:reason (invoke 'p15-s23-lc-type-work [type] 1))))
+    (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :schema :secret)]]
+      (is (= :rejected (:status (invoke 'p15-s23-lc-type-work [bad] 65536)))))))
+
+(deftest current-gravity-homogeneous-list-call-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'homogeneous-list-parameter-input)
+        c7 (ns-resolve upstream 'invoke-c7) path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        {:keys [module input observation]} (typed-lowering-kernel-data)
+        base (typed-direct-call-kernel-context (:value (invoke 'p15-s23-typed-context module input observation)))]
+    (doseq [members [[] [:gravity.type/string] [:gravity.type/string :gravity.type/string]]]
+      (let [actual {:kind :gravity.type/list :shape :literal :element-types members}
+            parameter (input-fn actual) declaration (:declaration parameter) type (:homogeneous-type parameter)
+            signature (assoc (get-in base [:records 'identity :signature]) :parameters [declaration])
+            record (assoc (get-in base [:records 'identity]) :signature signature)
+            function (assoc (get-in base [:functions 'identity]) :signature signature :parameters [{:binding-id :parameter :type type}])
+            raw-fn '(fn [problem :- (List String)] :- String "done") raw-def (list 'def 'identity raw-fn)
+            app-id (:type-form-id declaration) ctor-id (:constructor-form-id declaration) member-id (:element-form-id declaration)
+            marker-id (:marker-form-id declaration)
+            context (-> base
+                        (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+                        (assoc-in [:functions 'identity] function) (assoc-in [:types :operator] function)
+                        (assoc-in [:types :function] function) (assoc-in [:types :definition] function)
+                        (assoc-in [:types :argument] actual) (assoc-in [:parameter-types :caller-parameter] actual)
+                        (assoc-in [:nodes :function :attributes :signature] signature)
+                        (assoc-in [:nodes :reference :core-form] :literal)
+                        (assoc-in [:nodes :reference :attributes] {:literal-kind :string :value "done"})
+                        (assoc-in [:raw-roots :definition-form] raw-def) (assoc-in [:forms :definition-form :value] raw-def)
+                        (assoc-in [:forms :function-form :value] raw-fn) (assoc-in [:forms :body-form :value] "done")
+                        (assoc-in [:forms :parameter-form :value] '[problem :- (List String)])
+                        (assoc-in [:forms :parameter-form :child-form-ids] [:parameter-name marker-id app-id])
+                        (assoc-in [:forms marker-id] {:form-id marker-id :syntax-id (:marker-syntax-id declaration) :value :- :parent-form-id :parameter-form})
+                        (assoc-in [:forms app-id] {:form-id app-id :syntax-id (:type-syntax-id declaration) :kind :list :value '(List String)
+                                                 :parent-form-id :parameter-form :child-form-ids [ctor-id member-id]})
+                        (assoc-in [:forms ctor-id] {:form-id ctor-id :syntax-id (:constructor-syntax-id declaration) :value 'List :parent-form-id app-id})
+                        (assoc-in [:forms member-id] {:form-id member-id :syntax-id (:element-syntax-id declaration) :value 'String :parent-form-id app-id})
+                        (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration) (:element-binding-id declaration)])))
+            call (get-in context [:calls :call]) edge (get-in context [:edges :call])
+            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            pair {:parameter :parameter :argument actual :chosen type :compatibility (:premise checked)}
+            row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
+            fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
+            context (assoc context :ledger [row] :call-facts {:call fact})
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :accepted (:status checked)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [mutate [#(assoc-in % [:ledger 0 :kind] :equality)
+                        #(update-in % [:ledger 0 :rhs 0] dissoc :compatibility)
+                        #(assoc-in % [:ledger 0 :rhs 0 :compatibility :version] :sh08-bare-list-parameter-v1)
+                        #(assoc-in % [:ledger 0 :rhs 0 :compatibility :checked-element-type] :gravity.type/keyword)
+                        #(assoc-in % [:ledger 0 :rhs 0 :compatibility :forgets] [:positional-element-types :static-length])
+                        #(assoc-in % [:forms member-id :value] 'Keyword)
+                        #(assoc-in % [:forms app-id :child-form-ids] [member-id ctor-id])]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
 (deftest current-gravity-list-empty-traversal-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
@@ -5038,6 +5320,60 @@
       (is (= :list-query-persistent-list-required (get-in (evaluate (query (literal bad))) [0 :reason]))))
     (doseq [args [[] [(literal '()) (literal '())] [nil]]]
       (is (= :rejected (get (evaluate (builtin 'empty? args)) 2))))))
+
+(deftest current-gravity-homogeneous-list-head-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'homogeneous-list-head-input) derive (ns-resolve upstream 'list-query-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [branch-index [1 2]]
+      (let [{:keys [core nodes forms bindings types call edge] :as input} (input-fn branch-index)
+            result (derive input) descriptor (:descriptor result) condition (get-in input [:predicate-derived :descriptor])
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                     :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:condition 0 :call 1}
+                     :current-function (first (:function-records core))
+                     :call-facts (into {} (map (fn [d] [(:call-core-node-id d) (c7 'sh08-lq-call-fact [d (:module core)])]) [condition descriptor]))
+                     :ledger (mapv #(c7 'sh08-lq-constraint [%]) [condition descriptor])
+                     :locals {:parameter 'items} :parameter-types {:parameter (:receiver-type (:head-proof descriptor))}}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)
+            rederive (invoke 'p15-s23-lq-head-proof core (:call nodes) call nodes bindings (:types context) 65536)]
+        (is (= :accepted (:status rederive)))
+        (is (= (:head-proof descriptor) (:proof rederive)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'first :args [{:op :local :name 'items}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason])))
+          (let [charge (dec (:work-count lowered))
+                source-failure (compile (assoc-in context [:forms :arg0 :parent-form-id] :sibling) 65536)
+                child-failure (compile (assoc context :locals {}) 65536)
+                changed (assoc-in context [:types :condition] :gravity.type/never)
+                head-failure (compile changed 65536)
+                head-work (:work-count (invoke 'p15-s23-lq-head-proof core (:call nodes) call nodes bindings (:types changed) 65536))]
+            (is (= :rejected (:status source-failure) (:status child-failure) (:status head-failure)))
+            (is (= charge (:work-count source-failure) (:work-count child-failure)))
+            (is (= (+ 64 1 (count (:function-records core)) 2 head-work) (:work-count head-failure)))))
+        (doseq [changed [(dissoc descriptor :head-proof)
+                         (assoc-in descriptor [:head-proof :knowledge] :forged)
+                         (assoc-in descriptor [:head-proof :binding-id] :sibling)
+                         (assoc-in descriptor [:head-proof :branch-child-index] (- 3 branch-index))
+                         (assoc-in descriptor [:head-proof :result-type] :gravity.type/keyword)
+                         (assoc-in descriptor [:head-proof :ancestry] [])]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc-in [:call-facts :call] (c7 'sh08-lq-call-fact [changed (:module core)]))
+                              (assoc :ledger (mapv #(c7 'sh08-lq-constraint [%]) [condition changed])))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc-in % [:types :condition] :gravity.type/never)
+                        #(assoc-in % [:nodes :predicate-receiver :attributes :binding-id] :sibling)
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :parameter :mutability] :mutable)
+                        #(assoc-in % [:core :function-records 0 :signature :parameters 0 :type-id] :gravity.type/list)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
 
 (deftest current-gravity-list-query-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -8237,6 +8573,12 @@
              ['(defn f [x] :- String x) '[x] '(x) {:parameters '[x] :return '[:- String]}]
              ['(def f (fn [x :- Bool y :- String] :- String y)) '[x y] '(y)
               {:parameters '[x :- Bool y :- String] :return '[:- String]}]
+             ['(defn f [parts :- (List String) text :- String] :- String text) '[parts text] '(text)
+              {:parameters '[parts :- (List String) text :- String] :return '[:- String]}]
+             ['(defn f [parts :- (gravity.core/List gravity.core/String)] parts) '[parts] '(parts)
+              {:parameters '[parts :- (gravity.core/List gravity.core/String)] :return nil}]
+             ['(defn f [parts :- (UnknownConstructor MissingElement)] parts) '[parts] '(parts)
+              {:parameters '[parts :- (UnknownConstructor MissingElement)] :return nil}]
              ['(def f (fn [x] (typed/return (quote String) (do x)))) '[x] '(x)
               {:parameters '[x] :return '[typed/return (quote String)]}]]]
       (let [definition (get (table form) 'f)]
@@ -8260,9 +8602,12 @@
   (let [table #(bootstrap/stage0-function-table {:source-path "seed-header.gravity" :forms [%]})]
     (doseq [form ['(defn f [x :-] x) '(defn f [:- Bool] 1)
                   '(defn f [x :- :- Bool] x) '(defn f [x :- Bool :- String] x)
-                  '(defn f [x :- (Vector String)] x) '(defn f [x :- :Bool] x)
+                  '(defn f [x :- (List)] x) '(defn f [x :- (List String Bool)] x)
+                  '(defn f [x :- (List (List String))] x) '(defn f [x :- (List &)] x)
+                  '(defn f [x :- :Bool] x)
                   '(defn f [x :- 7] x) '(defn f [] :-) '(defn f [] :- String)
                   '(defn f [] :- [String] 1) '(defn f [] :- :String 1)
+                  '(defn f [] :- (List String) (list))
                   '(defn f [] :- String :- Bool 1)
                   '(defn f [x x] x) '(defn f [x :- Bool x] x)
                   '(defn f [x :- Bool x :- String] x)
@@ -8273,9 +8618,12 @@
                   '(def f (fn [x] (typed/return (quote String) (identity x))))
                   '(def f (fn [x] (typed/return (quote String) (do x) extra)))
                   '(def f (fn [x] (typed/return (quote String) (do x)) x))
+                  '(def f (fn [x] (typed/return (quote (List String)) (do x))))
                   '(def f (fn [x] (typed/return (quote nil) (do x))))
                   '(def f (fn [x] (typed/return (quote false) (do x))))]]
       (is (= "L2-FUNCTION-PARAMS" (:id (diagnostic #(table form)))) (pr-str form)))
+    (is (= :atomic-parameter-type-required (:reason (diagnostic #(table '(defn f [x :- 7] x))))))
+    (is (= :parameter-type-shape-required (:reason (diagnostic #(table '(defn f [x :- (List)] x))))))
     (is (= :duplicate-parameter-names
            (:reason (diagnostic #(table '(defn f [x :- Bool x] x))))))
     (is (= :variadic-parameters-unsupported

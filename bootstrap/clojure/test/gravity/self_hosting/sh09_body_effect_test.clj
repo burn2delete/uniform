@@ -393,6 +393,81 @@
     (is (= :rejected (:status (leaf 'body-lp-context request (assoc-in facts [:type-table :argument] :gravity.type/unknown) bindings 65536))))
     (is (false? (leaf 'body-arguments-valid? [:argument] [actual] [{:binding-id :parameter :type :gravity.type/list}] types)))))
 
+(deftest body-homogeneous-list-parameter-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'homogeneous-list-parameter-input)
+        constrain (sh08-helper 'bare-list-parameter-constraints)
+        s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
+        type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
+    (doseq [members [[] [s] [s s]]]
+      (let [actual (positional members) {:keys [core call edge callee nodes bindings types] :as input} (input-fn actual)
+            row (first (:constraints (constrain input)))
+            facts {:constraint-ledger [row] :type-table types :function-type-table [callee]}
+            request {:canonical-core-artifact core}
+            context (leaf 'body-lp-context request facts bindings 65536)
+            checked-facts (assoc facts :list-parameter-context (:context context))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= row (get-in context [:context :rows :call])))
+        (is (true? (leaf 'body-local-arguments-valid? core checked-facts bindings edge call {:argument-types [actual]} callee)))
+        (is (= context (leaf 'body-lp-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-lp-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(assoc row :kind :equality)
+                         (update row :rhs #(mapv (fn [pair] (dissoc pair :compatibility)) %))
+                         (assoc-in row [:rhs 0 :compatibility :version] :sh08-bare-list-parameter-v1)
+                         (assoc-in row [:rhs 0 :compatibility :checked-element-type] :gravity.type/keyword)
+                         (assoc-in row [:rhs 0 :compatibility :checked-element-count] (inc (count members)))
+                         (assoc-in row [:rhs 0 :compatibility :element-binding :kind] :var)
+                         (assoc-in row [:rhs 0 :compatibility :forgets] [:positional-element-types :static-length])]]
+          (let [modified (assoc facts :constraint-ledger [changed])
+                derived (leaf 'body-lp-context request modified bindings 65536)]
+            (is (or (= :rejected (:status derived))
+                    (false? (leaf 'body-local-arguments-valid? core (assoc modified :list-parameter-context (:context derived))
+                                  bindings edge call {:argument-types [actual]} callee))))))
+        (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
+          (is (= :rejected (:status (leaf 'body-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))
+        (is (= :not-applicable (:status (leaf 'body-lp-compatibility core call edge callee 0 :gravity.type/list nodes bindings 65536))))))
+    (is (= {:status :accepted :work-count 2} (leaf 'body-lc-type-work [type] 2)))
+    (is (= :work-limit (:reason (leaf 'body-lc-type-work [type] 1))))
+    (is (= :accepted (:status (leaf 'body-lc-type-work [{:kind :gravity.type/vector :shape :literal :element-types [type]}] 3))))
+    (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :ownership :owned)]]
+      (is (= :rejected (:status (leaf 'body-lc-type-work [bad] 65536)))))))
+
+(deftest body-homogeneous-list-head-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'homogeneous-list-head-input) derive (sh08-helper 'list-query-derived) c7 (sh08-helper 'invoke-c7)]
+    (doseq [branch-index [1 2]]
+      (let [{:keys [core node call edge nodes bindings types forms] :as input} (input-fn branch-index)
+            result (derive input) descriptor (:descriptor result) condition (get-in input [:predicate-derived :descriptor])
+            facts {:type-table (assoc types :operator descriptor :call (:type result))
+                   :constraint-ledger (mapv #(c7 'sh08-lq-constraint [%]) [condition descriptor])
+                   :call-type-facts (mapv #(c7 'sh08-lq-call-fact [% (:module core)]) [condition descriptor])}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-lq-context request facts bindings 65536)
+            facts (assoc facts :list-query-context (:context context))
+            valid #(every? (fn [source-call]
+                             (leaf 'body-lq-call-valid? core % bindings (get nodes (:core-node-id source-call)) source-call
+                                   (first (filter (fn [entry] (= (:core-node-id source-call) (:call-core-node-id entry))) (:call-edges core))) nodes))
+                           (:calls core))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= (:head-proof descriptor) (get-in context [:context :type-checks :call :head-proof])))
+        (is (true? (valid facts)))
+        (is (= context (leaf 'body-lq-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-lq-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(dissoc descriptor :head-proof)
+                         (assoc-in descriptor [:head-proof :knowledge] :forged)
+                         (assoc-in descriptor [:head-proof :binding-id] :sibling)
+                         (assoc-in descriptor [:head-proof :branch-child-index] (- 3 branch-index))
+                         (assoc-in descriptor [:head-proof :result-type] :gravity.type/keyword)
+                         (assoc-in descriptor [:head-proof :ancestry] [])]]
+          (let [candidate (-> facts (assoc-in [:type-table :operator] changed)
+                              (assoc :constraint-ledger (mapv #(c7 'sh08-lq-constraint [%]) [condition changed])
+                                     :call-type-facts (mapv #(c7 'sh08-lq-call-fact [% (:module core)]) [condition changed])))]
+            (is (false? (valid candidate)))))
+        (doseq [form-id [:arg0 :predicate-receiver :operator :predicate-operator]]
+          (is (false? (valid (assoc-in facts [:list-query-context :forms form-id :parent-form-id] :sibling)))))
+        (let [changed (assoc-in facts [:type-table :condition] :gravity.type/never)]
+          (is (= :rejected (:status (leaf 'body-lq-context request changed bindings 65536)))))))))
+
 (deftest body-list-query-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

@@ -2146,6 +2146,75 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Homogeneous List traversal: development implementation
+
+The L5 rule for `(List T)` parameters is implemented in the owning C6 signature
+path, C7 types, C8 reconstruction and typed emitter. Initial parameter projection/header and C6 source
+mapping checks passed 4 tests / 185 assertions, including qualified type
+references, retained compound declarations, forged source identities and
+unchanged return-annotation fences. An earlier run had 178 passing assertions
+and one test error: it looked up a transient helper deliberately unmapped after
+installation. The corrected test uses the retained projection function; no
+production helper export or reload was introduced. The two batches overlap.
+
+Homogeneous parameter/type checks passed 4 tests / 434 assertions, and initial
+C8/emitter consumer checks passed 6 / 554. The new member scans reject malformed
+scalar and nonvector type records before scanning; accepted validation, vector
+shape and the reserved work budget dominate those scans. These batches include
+existing bare-List and query regressions and are not additive totals.
+
+C7's guarded-head batch passed 3 tests / 418 assertions, including 52 new head
+checks. It reconstructs empty/nonempty knowledge from an authentic unary
+`empty?` condition on the same immutable binding, under the nearest `if`.
+Unrelated nearer conditions, other bindings, tails, Never conditions and erased
+or forged proof fields cannot supply that knowledge. A dominant predicate-shape
+check prevents scanning arbitrary condition arguments before rejection. Two
+earlier batches failed because normalized test remapping also changed call and
+operator discriminators; their failures are retained, not semantic passes.
+
+The stable development batch passed 66 tests / 4,706 assertions, including
+independent C8 guarded-head reconstruction, typed ordinary-call lowering,
+emitter failure-work accounting and existing collection/runtime regressions.
+Earlier component batches overlap this total. The initial 67-test batch had
+one error in an added legacy macro-route selector: it reached the historical
+emitter admission facade and rejected the changed semantic hash. That failure
+is retained; the pins were not refreshed. The final development selection
+excludes that migration-boundary route, not a failing semantic assertion.
+
+The first actual source composition stopped before the first positive program
+reached C7: six assertions passed and one test error reported C6's
+`sh06-reference-projection-mismatch` for the `String` type reference. The
+temporary C6 reference traversal had not mirrored the C5 compound parameter
+projection. This is a transport defect to correct with a cheap parity
+regression, not permission to relax the bijection check. The failed run is not
+typed traversal or runtime evidence.
+
+The corrected bridge passed three focused tests / 145 assertions, including
+retained C5/C6 projection parity and unchanged atomic/return transport. The
+subsequent changed-candidate composition passed one test / 257 assertions.
+It built the paired seven-function source modules, retained three explicit
+finite-to-homogeneous parameter premises and two independently reconstructed
+nonempty head proofs, then executed 28 guest calls. Empty, singleton and
+two-element Lists produced `""`, `"alpha"` and `"alphabeta"`; original Lists,
+stored head objects and thrown objects were preserved. Six operation-local C7
+verification calls include four coherent hostile inputs. C8 checked both full
+graphs, rejected two graph mutations and exercised the owning analysis at
+ample, exact and one-less work budgets. Nine C7 semantic negative families,
+the C6 compound-return fence and the C8 missing-allocation rejection passed.
+Negative `.qst` files have parity coverage, not additional source executions.
+
+The selected composition took 1,211.036 seconds plus 8.853 seconds of loading
+at 2 GiB; this is not a phase-cost or speedup measurement. Earlier focused
+counts overlap and must not be added to this integration total. The first
+failed composition remains recorded separately.
+
+Actual source member coverage is String; type kernels cover the bounded
+non-Nil atomic declaration set. The nearest-if subset is not a general path
+solver. Nested type applications, homogeneous-to-bare adaptation, compound
+return annotations, arbitrary collection operations and complete profile or
+ownership legality remain outside this increment. Authoritative migration,
+self-hosting and release status are unchanged.
+
 ### Typed shrinking-List traversal: development implementation
 
 L5 now states the explicit bare `List` parameter boundary. The owning Gravity

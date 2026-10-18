@@ -594,6 +594,29 @@
            (is (thrown? clojure.lang.ExceptionInfo
                         (bootstrap/sh06-resolution-current-binding! "<operation-drift>"))))))))
 
+(deftest sh06-list-parameter-type-projection-development-kernel
+  (let [references (atom [])
+        project (var-get (private-bootstrap-var 'sh06-resolution-analysis-inputs))
+        walk (fn [form]
+               (let [result (project {} {:expanded-syntax-stream
+                                         [{:form form :syntax/id :function
+                                           :span {:source "list-parameter-projection.gravity"}}]} {})]
+                 (reset! references (mapv (juxt :symbol :position) (:references result)))
+                 result))]
+    (let [result (walk '(fn [parts :- (gravity.core/List String) text :- String] :- String parts))]
+      (is (= '[parts text] (mapv :name (:bindings (first (:lexical-scopes result)))))))
+    (is (= '[[fn :operator] [gravity.core/List :type] [String :type] [String :type]
+             [String :type] [parts :expression]] @references))
+    (reset! references [])
+    (walk '(fn [parts :- (UnknownConstructor MissingElement)] parts))
+    (is (= '[[fn :operator] [UnknownConstructor :type] [MissingElement :type] [parts :expression]] @references))
+    (reset! references [])
+    (walk '(fn [parts] :- (List String) parts))
+    (is (= '[[fn :operator] [parts :expression]] @references))
+    (reset! references [])
+    (walk '(fn [parts :- (List (List String))] parts))
+    (is (= '[[fn :operator] [parts :expression]] @references))))
+
 (deftest sh06-atomic-signature-source-type-rejections
   (doseq [[basename symbol] [["function-annotation-unknown" 'MissingType]
                              ["function-annotation-var-only" 'OnlyVar]]]

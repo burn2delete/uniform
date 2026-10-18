@@ -258,15 +258,21 @@
                            {:binding-id (sha 5101) :binding-class :core :kind :type :name 'Bool
                             :namespace 'gravity.core :definition-syntax-id (sha 6100)}
                            {:binding-id (sha 5201) :binding-class :core :kind :type :name 'List
-                            :namespace 'gravity.core :definition-syntax-id (sha 6200)}]
+                            :namespace 'gravity.core :definition-syntax-id (sha 6200)}
+                           {:binding-id (sha 5301) :binding-class :core :kind :type :name 'Vector
+                            :namespace 'gravity.core :definition-syntax-id (sha 6300)}]
                     by-name (into {} (map (juxt :name identity) (into locals cores)))
                     resolutions (into {} (for [value (vals @forms)
-                                               :when (contains? by-name (:value value))
-                                               :let [binding (get by-name (:value value)) core? (= :core (:binding-class binding))]]
+                                               :let [symbol (:value value)
+                                                     name (if (and (symbol? symbol) (= "gravity.core" (namespace symbol)))
+                                                            (clojure.core/symbol (clojure.core/name symbol)) symbol)]
+                                               :when (contains? by-name name)
+                                               :let [binding (get by-name name) core? (= :core (:binding-class binding))]]
                                            [(:syntax-id value)
                                             {:symbol (:value value) :binding-id (:binding-id binding)
                                              :position (if core? :type :expression)
-                                             :resolution-order (if core? :profile-allowed-core-binding :local-lexical-binding)}]))]
+                                             :resolution-order (if (and (symbol? symbol) (namespace symbol)) :fully-qualified-namespace-binding
+                                                                 (if core? :profile-allowed-core-binding :local-lexical-binding))}]))]
                 {:module {:namespace 'demo.signature :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe}
                  :lineage {:authenticated-sh06-artifact-id (sha 6001) :sh06-semantic-projection-id (sha 6002)}
                  :internal-indexes {:forms {:by-id @forms :by-syntax (into {} (map (juxt :syntax-id identity) (vals @forms)))}
@@ -326,6 +332,42 @@
         (is (= :gravity.type/list (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
         (is (true? (invoke 'sh07-signature-valid? [signature 1])))
         (is (nil? (invoke 'sh07-atomic-type-id ['List]))))
+      (doseq [value ['(fn [parts :- (List I64)] parts)
+                     '(fn [parts :- (gravity.core/List gravity.core/Bool)] parts)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              declaration (get-in signature [:parameters 0])
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :sh07-list-parameter-declaration-v1 (:rule-version declaration)))
+          (is (= {:kind :gravity.type/list :shape :homogeneous
+                  :element-type (if (= 'I64 (:element-symbol declaration)) :gravity.type/i64 :gravity.type/bool)}
+                 (:type-id declaration)))
+          (is (= (:form-id type-form) (:type-form-id declaration)))
+          (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+          (is (false? (invoke 'sh07-type-declaration-valid? [declaration])))
+          (doseq [id (into [(:form-id type-form)] (:child-form-ids type-form))]
+            (is (true? (invoke 'sh07-source-core-map-declaration-join?
+                              [request (get @forms id) form node indexes :function-type-declaration]))))
+          (doseq [field [:constructor-form-id :constructor-syntax-id :element-form-id :element-syntax-id :element-binding-id]]
+            (let [bad (assoc declaration field (sha 8888))
+                  changed (assoc-in node [:attributes :signature :parameters 0] bad)
+                  changed-indexes (assoc-in indexes [:functions [(:node-id node) nil] :signature :parameters 0] bad)]
+              (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                 [request type-form form changed changed-indexes :function-type-declaration])))))
+          (is (true? (get (last (invoke 'sh07-source-core-parameter-events [request (:form-id parameter-vector)])) 2)))
+          (is (= (mapv #(vector % :function-type-declaration (:form-id form)) (:child-form-ids type-form))
+                 (invoke 'sh07-source-core-intent-children [request type-form :function-type-declaration (:form-id form)])))))
+      (doseq [value ['(fn [parts :- (List)] parts) '(fn [parts :- (List I64 Bool)] parts)
+                     '(fn [parts :- (List (List I64))] parts) '(fn [parts :- (I64 Bool)] parts)
+                     '(fn [parts :- (List List)] parts) '(fn [] :- (List I64) 0)]]
+        (let [form (make! value) result (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (:rule result)))))
       (doseq [[value reason actual supported]
               [['(fn 0) :fn-multiple-body-or-shape 2 3]
                ['(fn 0 1) :fn-parameter-vector-required nil nil]
@@ -341,6 +383,79 @@
           (is (= :rejected (:status result)))
           (is (= "C6-LOWERING-GAP" (:rule result))))))))
 
+(deftest sh07-b47-list-parameter-reference-projection-development-kernel
+  ;; Normalized inputs exercise both retained adapters and their bijection.
+  ;; These bindings are DATA, not authenticated C5 source authority.
+  (let [source "<homogeneous-list-projection-kernel>" revision :normalized-list-projection
+        hash bootstrap/reader-canonical-hash]
+    (letfn [(input [form]
+              (let [root (bootstrap/sh07-core-root-syntax-id revision 0 form)
+                    syntax {:syntax/id root :sh07/root-syntax-id root :form form :span {:source source}}
+                    request (bootstrap/sh06-resolution-analysis-inputs {} {:expanded-syntax-stream [syntax]} {})
+                    locals (vec (for [scope (:lexical-scopes request) binding (:bindings scope)]
+                                  (assoc binding :binding-id (:binding-syntax-id binding) :binding-class :lexical
+                                                 :definition-syntax-id (:binding-syntax-id binding) :scope-id (:scope-id scope))))
+                    local-by-name (into {} (map (juxt :name identity) locals))
+                    cores (vec (distinct (for [reference (:references request)
+                                               :when (or (= :type (:position reference))
+                                                         (not (contains? local-by-name (:symbol reference))))]
+                                           {:binding-id (hash {:kind (:position reference) :name (:name reference)})
+                                            :name (:name reference) :namespace 'gravity.core :binding-class :core
+                                            :kind (if (= :type (:position reference)) :type :var)})))
+                    by-name (into {} (map (juxt (juxt :name :kind) identity) cores))
+                    resolutions (mapv (fn [reference]
+                                        (let [binding (if (= :type (:position reference))
+                                                        (get by-name [(:name reference) :type])
+                                                        (or (get local-by-name (:symbol reference)) (get by-name [(:name reference) :var])))]
+                                          (assoc reference :binding-id (:binding-id binding)
+                                                           :resolution-order (if (= :lexical (:binding-class binding)) :local-lexical-binding
+                                                                               (if (:qualifier reference) :fully-qualified-namespace-binding :profile-allowed-core-binding)))))
+                                      (:references request))
+                    tree (bootstrap/sh07-core-build-form-tree source revision {:records {} :next (atom {})} syntax nil)]
+                {:syntax syntax :tree tree :request request
+                 :resolved {:module-contract {:namespace 'normalized.projection} :binding-table (into locals cores)
+                            :resolution-table resolutions :alias-table []}}))
+            (project [{:keys [syntax tree request resolved]}]
+              (bootstrap/sh07-core-resolution-projection! source revision [syntax] [tree] [] request resolved))]
+      (doseq [form ['(fn [parts :- (List String) text :- String] :- String parts)
+                     '(fn [parts :- (gravity.core/List gravity.core/String) text :- String] :- String parts)
+                     '(fn named [parts :- (List String) text :- String] :- String parts)]]
+        (let [data (input form) projected (project data)
+              references (get-in data [:request :references]) resolutions (:resolution-table projected)
+              forms (into {} (map (juxt :syntax-id identity) (:forms projected)))
+              applications (filter #(= :list (:kind %)) (:forms projected))
+              application (first (filter #(= 2 (count (:child-form-ids %))) applications))
+              by-form (into {} (map (juxt :form-id identity) (:forms projected)))]
+          (is (= (mapv (juxt :symbol :position) references) (mapv (juxt :symbol :position) resolutions)))
+          (is (= [:operator :type :type :type :type :expression] (mapv :position resolutions)))
+          (is (= (count references) (count (set (map :reference-syntax-id resolutions)))))
+          (is (every? #(contains? forms (:reference-syntax-id %)) resolutions))
+          (is (some? (:scope-id application)))
+          (is (= [(:scope-id application) (:scope-id application)]
+                 (mapv #(get-in by-form [% :scope-id]) (:child-form-ids application))))
+          (doseq [changed [(assoc-in data [:request :references 1 :position] :operator)
+                           (update-in data [:request :references] #(assoc % 1 (get % 2) 2 (get % 1)))
+                           (update-in data [:resolved :resolution-table] pop)]]
+            (let [failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+              (is (= "C6-VERIFY" (:id failure)))
+              (is (contains? #{:sh06-reference-projection-mismatch :sh06-resolution-projection-incomplete} (:reason failure)))))))
+      (let [data (input '(fn [parts :- List text :- String] :- String parts))
+            projected (project data)]
+        (is (= '[[fn :operator] [List :type] [String :type] [String :type] [parts :expression]]
+               (mapv (juxt :symbol :position) (:resolution-table projected))))
+        (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+               (mapv (juxt :symbol :position) (:resolution-table projected)))))
+      (doseq [form ['(fn [parts :- (List)] :- String parts)
+                     '(fn [parts :- (List String Bool)] :- String parts)
+                     '(fn [parts :- (List (List String))] :- String parts)
+                     '(fn [parts] :- (List String) parts)]]
+        (let [data (input form) projected (project data)]
+          (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+                 (mapv (juxt :symbol :position) (:resolution-table projected))))
+          (is (= (if (seq? (get (vec form) 3)) '[[fn :operator] [parts :expression]]
+                       '[[fn :operator] [String :type] [parts :expression]])
+                 (mapv (juxt :symbol :position) (:resolution-table projected)))))))))
+
 (deftest sh07-b47-atomic-signature-source-shape-rejections
   (doseq [basename ["function-annotation-dangling" "function-annotation-duplicate" "function-annotation-composite"]]
     (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename)
@@ -352,7 +467,8 @@
       (is (nil? (:host-error result)) (pr-str result))
       (is (= "C6-LOWERING-GAP" (:rule diagnostic)))
       (is (= :core-lowering (:stage diagnostic)))
-      (is (= :atomic-type-annotation-required (get-in diagnostic [:facts :reason])))
+      (is (= (if (= basename "function-annotation-composite") :unsupported-atomic-type-annotation
+                 :atomic-type-annotation-required) (get-in diagnostic [:facts :reason])))
       (is (= source-path (get-in diagnostic [:source-span :source])))
       (is (true? (get-in diagnostic [:facts :fail-closed])))
       (is (= (slurp source-path) (slurp (path (str relative ".qst"))))))))

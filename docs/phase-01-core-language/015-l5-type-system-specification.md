@@ -107,6 +107,27 @@ or profile/memory legality. Recur operands remain subject to L2 parameter
 compatibility. Other type obligations, including schema identity, ownership,
 linearity and regions, are not erased.
 
+### Homogeneous List Parameters
+
+`(List T)` in a parameter annotation denotes persistent Lists whose elements
+have the declared atomic type `T`. The empty List is included; length is not
+fixed. `List` and `T` resolve in type positions. A positional List can satisfy
+this declaration when every positional element type is established and matches
+`T`; the actual argument type and the checked compatibility premise remain in
+the artifacts. Bare `List` alone does not establish an element type.
+
+`rest` preserves `(List T)`. `first` of an empty List still returns nil under
+STD3. Typing the result solely as `T`, rather than accounting for the
+empty-List nil result, requires established nonemptiness when `T` excludes nil.
+Empty/nonempty facts derived from control flow must be scoped to that value
+and path; a fact for another binding or for a List before taking its tail
+cannot authorize the head access without an independent justification.
+Rebinding or mutation must not silently preserve an invalid fact.
+
+This does not introduce implicit `Dynamic`, arbitrary sequence compatibility
+or a general generic-function framework. Schema identity, ownership,
+linearity, regions, effects and profile legality remain obligations.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -241,6 +262,7 @@ L5 rejects:
 
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
+- Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

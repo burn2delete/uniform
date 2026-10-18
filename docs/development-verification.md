@@ -1417,6 +1417,70 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Homogeneous List traversal: focused feedback
+
+The `(List T)` parameter and guarded-head slice supports content-consuming
+traversal such as joining a persistent List of Strings. Exercise
+type-position transport, parameter headers, C6 declaration/source joins, C7
+typing, independent C8 reconstruction and typed lowering directly:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --namespace gravity.self-hosting.sh07-b47-function-call-recursion-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact sh06-list-parameter-type-projection-development-kernel \
+  --exact sh07-b47-atomic-signature-lowering-development-kernel \
+  --exact sh07-b47-list-parameter-reference-projection-development-kernel \
+  --exact seed-function-declaration-headers-development-kernel \
+  --exact seed-function-declaration-rejections-development-kernel \
+  --exact sh08-homogeneous-list-parameter-development-kernel \
+  --exact sh08-homogeneous-list-head-development-kernel \
+  --exact body-homogeneous-list-parameter-development-kernel \
+  --exact body-homogeneous-list-head-development-kernel \
+  --exact current-gravity-homogeneous-list-call-lowering-development-kernel \
+  --exact current-gravity-homogeneous-list-head-lowering-development-kernel
+```
+
+The temporary adapters preserve compound annotation source and type-position
+references; they do not confer constructor or member-type authority. C6 owns
+those checks. Parameter-reference transport has two sides:
+`semantic_late/151848-sh06-resolution-inputs-traversal.clj` records C5 references
+and `semantic_late/154235-sh07-core-resolution-fn.clj` projects them into the C6
+request (both under `bootstrap/clojure/src/gravity/bootstrap_impl/`). Preserve
+their reference order, type positions and source coordinates; do not relax the
+request's bijection checks when adding an annotation shape.
+Compound return annotations remain outside this implementation
+increment. Empty Lists satisfy the parameter declaration, but `first` can have
+the non-Nil member type only under an established nonempty fact. This increment
+reconstructs that fact in the else branch of the nearest canonical
+`if (empty? same-immutable-binding)`. A different binding, a tail, mutation or
+an unrelated nearer condition cannot borrow it. `rest` preserves `(List T)`,
+not nonemptiness; function recur retains exact slot types. Supported `T` is an
+existing non-Nil atomic declaration, not nested applications or general
+generics. Homogeneous-to-bare List adaptation remains unsupported.
+
+Run the affected source-to-runtime composition once for a stable changed
+candidate, rather than replaying old source proofs after every component edit:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-homogeneous-list-authenticated-composition --fail-fast
+```
+
+The paired accepted source joins empty, singleton and two-element String Lists
+to `""`, `"alpha"` and `"alphabeta"`. The changed-candidate composition passed
+257 assertions, including actual execution, retained head/throw identity,
+specific C6/C7/C8 rejection cases and fresh affected verification. Selected
+execution took 1,211.036 seconds plus 8.853 seconds of namespace loading at
+2 GiB. This is a workload observation, not a phase profile or speedup claim.
+The historical public emitter facade
+may reject changed source against stale admission pins; do not refresh those
+pins merely to make development feedback green.
+
 ### Typed shrinking-List traversal
 
 L5's explicit bare `List` parameter boundary lets a function consume Lists

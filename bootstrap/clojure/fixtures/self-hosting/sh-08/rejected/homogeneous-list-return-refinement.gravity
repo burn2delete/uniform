@@ -1,0 +1,5 @@
+(ns example.homogeneous-list-return-refinement
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn main [] :- (List String) (list))
