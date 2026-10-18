@@ -50,6 +50,21 @@ aborts invocation; the default is not an implicit thunk or lazy branch.
 Key matching follows STD2 value semantics, and lookup preserves the original
 map. This rule does not select a representation or grant profile support.
 
+## Persistent Map Removal
+
+For maps, `(dissoc map key)` returns a Map without the association matching
+`key` under STD2 value equality. A missing key returns a value-equivalent
+unchanged Map. Stored false and nil are values, not evidence of absence.
+The original Map and all other stored associations are preserved; stored
+payloads are not evaluated.
+
+Both operands are ordinary L2 arguments evaluated left to right. A control
+transfer aborts invocation. The selected representation must declare possible
+allocation and storage/lifetime policy for both present and absent keys under
+effects, ownership and profile rules. This rule promises neither physical
+sharing nor object identity nor allocation-free execution, and does not grant
+variadic or arbitrary-key implementation support.
+
 ## Persistent List Queries
 
 For persistent Lists, `(first items)` returns the first stored value, or nil
@@ -140,6 +155,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
+- Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
 - Persistent List queries cover empty and nonempty ordered values and cardinality without executing stored payloads, and declare their suffix storage policy.
 - Binary persistent List prepend preserves the old ordered values after the new head, ordinary operand evaluation and the original List, with explicit allocation/storage policy.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.

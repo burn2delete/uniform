@@ -1686,57 +1686,80 @@
                    (:root store) (make-array LinkOption 0))))))))))
 
 (deftest ordinary-bootstrap-c2-path-reuses-without-reader-execution
-  ;; Resolve bootstrap only for these hosted smokes.  The focused leaf tests
-  ;; above remain bootstrap-free and are run as their own bounded lane.
+  ;; Keep this existing selector while distinguishing the fresh front door
+  ;; from reuse explicitly requested through the local cache API.
+  (let [ordinary-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact)
+        cached-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact-cached)
+        uncached-var (ns-resolve 'gravity.bootstrap 'compiler-c2-reader-file-artifact-uncached)
+        fresh (with-meta {:routing-probe :not-a-C2-acceptance-fixture} {:retained :exact})
+        calls (atom [])
+        cache-tripwire (fn [& _] (throw (ex-info "ordinary reader entered the local cache" {:id "CACHE-DEFAULT-TRIPWIRE"})))]
+    (testing "ordinary dispatch invokes the existing producer once per call and returns it unchanged"
+      (with-redefs-fn
+        {uncached-var (fn [path] (swap! calls conj path) fresh) cached-var cache-tripwire}
+        #(do (is (identical? fresh (ordinary-var "routing.gravity")))
+             (is (identical? fresh (ordinary-var "routing.gravity")))))
+      (is (= ["routing.gravity" "routing.gravity"] @calls))
+      (is (= {:retained :exact} (meta fresh))))
+    (testing "ordinary dispatch propagates reader and interruption failures without a cache fallback"
+      (doseq [error [(ex-info "reader rejection" {:id "C2-DELIMITER"})
+                     (ex-info "unrelated policy rejection" {:id "C16-POLICY"})
+                     (InterruptedException. "reader interrupted")]]
+        (try
+          (let [received (with-redefs-fn
+                           {uncached-var (fn [_]
+                                           (when (instance? InterruptedException error)
+                                             (.interrupt (Thread/currentThread)))
+                                           (throw error))
+                            cached-var cache-tripwire}
+                           #(try (ordinary-var "routing.gravity") nil
+                                 (catch Throwable failure [failure (.isInterrupted (Thread/currentThread))])))]
+            (is (identical? error (first received)))
+            (when (instance? InterruptedException error)
+              (is (second received))))
+          (finally (Thread/interrupted))))))
   (with-temporary-directory [directory]
     (let [source (.resolve directory "ordinary.gravity")
           _ (Files/write source
-                         (.getBytes
-                          "(ns ordinary.cache (:profile :hosted))\n"
-                          StandardCharsets/UTF_8)
-                         (into-array OpenOption
-                                     [StandardOpenOption/CREATE_NEW
-                                      StandardOpenOption/WRITE]))
+                         (.getBytes "(ns ordinary.cache (:profile :hosted))\n" StandardCharsets/UTF_8)
+                         (into-array OpenOption [StandardOpenOption/CREATE_NEW StandardOpenOption/WRITE]))
           source-path (str source)
-          cached-var
-          (requiring-resolve
-           'gravity.bootstrap/compiler-c2-reader-file-artifact-cached)
-          ordinary-var
-          (requiring-resolve
-           'gravity.bootstrap/compiler-c2-reader-file-artifact)
-          uncached-var
-          (ns-resolve 'gravity.bootstrap
-                      'compiler-c2-reader-file-artifact-uncached)
+          cached-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact-cached)
+          ordinary-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact)
+          uncached-var (ns-resolve 'gravity.bootstrap 'compiler-c2-reader-file-artifact-uncached)
+          uncached (var-get uncached-var)
+          validate-var (ns-resolve 'gravity.bootstrap 'c2-pass-cache-revalidate-artifact!)
+          validate (var-get validate-var)
           first-artifact (ordinary-var source-path)
           first-evidence (cached-var source-path (str directory))
-          _ (Files/setLastModifiedTime
-             source (FileTime/fromMillis 1234567890000))
-          second-artifact
-          (with-redefs-fn
-            {uncached-var
-             (fn [& _]
-               (throw
-                (ex-info "C2 reader executed on a validated cache hit"
-                         {:id "CACHE-READER-TRIPWIRE"})))}
-            #(ordinary-var source-path))
-          second-evidence (cached-var source-path (str directory))]
-      (is (= :hit (get-in first-evidence [:cache-evidence :status])))
+          _ (Files/setLastModifiedTime source (FileTime/fromMillis 1234567890000))
+          executions (atom 0) validations (atom 0)
+          second-artifact (with-redefs-fn
+                            {uncached-var (fn [path] (swap! executions inc) (uncached path))
+                             cached-var (fn [& _] (throw (ex-info "implicit cache access" {:id "CACHE-DEFAULT-TRIPWIRE"})))}
+                            #(ordinary-var source-path))
+          second-evidence (with-redefs-fn
+                            {uncached-var (fn [& _] (throw (ex-info "reader executed on explicit cache hit" {:id "CACHE-READER-TRIPWIRE"})))
+                             validate-var (fn [& arguments] (swap! validations inc) (apply validate arguments))}
+                            #(cached-var source-path (str directory)))]
+      (is (= 1 @executions))
+      (is (= 1 @validations))
+      (is (= :stored (get-in first-evidence [:cache-evidence :status])))
+      (is (true? (get-in first-evidence [:cache-evidence :reader-executed?])))
       (is (= :hit (get-in second-evidence [:cache-evidence :status])))
-      (is (false? (get-in second-evidence
-                          [:cache-evidence :reader-executed?])))
+      (is (false? (get-in second-evidence [:cache-evidence :reader-executed?])))
       (is (= (get-in first-evidence [:cache-evidence :semantic-key-id])
              (get-in second-evidence [:cache-evidence :semantic-key-id])))
-      (is (= (:artifact-id first-artifact)
-             (:artifact-id second-artifact)
+      (is (= first-artifact second-artifact (:c2-reader-artifact first-evidence) (:c2-reader-artifact second-evidence)))
+      (is (= (:artifact-id first-artifact) (:artifact-id second-artifact)
              (get-in second-evidence [:c2-reader-artifact :artifact-id])))
-      (is (= (:reader-diagnostics first-artifact)
-             (:reader-diagnostics second-artifact)))
-      (is (= (:gravity-reader-boundary first-artifact)
-             (:gravity-reader-boundary second-artifact)))
-      (is (= source-path
-             (get-in second-artifact [:source-unit-record :path])))
-      (is (= :SH-03
-             (get-in second-artifact [:gravity-reader-boundary :slice])))
+      (is (= (:reader-diagnostics first-artifact) (:reader-diagnostics second-artifact)))
+      (is (= (:gravity-reader-boundary first-artifact) (:gravity-reader-boundary second-artifact)))
+      (is (= source-path (get-in second-artifact [:source-unit-record :path])
+             (get-in second-artifact [:gravity-reader-boundary :resolved-reader-result :actual-path-provenance :path])))
+      (is (= :SH-03 (get-in second-artifact [:gravity-reader-boundary :slice])))
+      (is (= :gravity/sh03-to-c2-reader-products-v2 (get-in second-artifact [:gravity-reader-boundary :adapter-contract])))
+      (is (false? (get-in second-artifact [:gravity-reader-boundary :target-source-reread?])))
       (is (true? (:clojure-adapter-residual? second-evidence)))
       (is (false? (:self-hosted? second-evidence)))
       (is (false? (:release-authority? second-evidence)))
@@ -1746,52 +1769,39 @@
 (deftest ordinary-bootstrap-c2-path-invalidates-changed-source
   (with-temporary-directory [directory]
     (let [source (.resolve directory "changed.gravity")
-          write-source!
-          (fn [text options]
-            (Files/write source (.getBytes text StandardCharsets/UTF_8)
-                         (into-array OpenOption options)))
-          _ (write-source! "(ns changed.one (:profile :hosted))\n"
-                           [StandardOpenOption/CREATE_NEW
-                            StandardOpenOption/WRITE])
+          write-source! (fn [text options]
+                          (Files/write source (.getBytes text StandardCharsets/UTF_8) (into-array OpenOption options)))
+          _ (write-source! "(ns changed.one (:profile :hosted))\n" [StandardOpenOption/CREATE_NEW StandardOpenOption/WRITE])
           source-path (str source)
-          cached-var
-          (requiring-resolve
-           'gravity.bootstrap/compiler-c2-reader-file-artifact-cached)
-          ordinary-var
-          (requiring-resolve
-           'gravity.bootstrap/compiler-c2-reader-file-artifact)
-          uncached-var
-          (ns-resolve 'gravity.bootstrap
-                      'compiler-c2-reader-file-artifact-uncached)
+          cached-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact-cached)
+          ordinary-var (requiring-resolve 'gravity.bootstrap/compiler-c2-reader-file-artifact)
+          uncached-var (ns-resolve 'gravity.bootstrap 'compiler-c2-reader-file-artifact-uncached)
           uncached (var-get uncached-var)
           first-artifact (ordinary-var source-path)
           first-evidence (cached-var source-path (str directory))
-          _ (write-source! "(ns changed.two (:profile :hosted))\n"
-                           [StandardOpenOption/TRUNCATE_EXISTING
-                            StandardOpenOption/WRITE])
+          _ (write-source! "(ns changed.two (:profile :hosted))\n" [StandardOpenOption/TRUNCATE_EXISTING StandardOpenOption/WRITE])
           executions (atom 0)
-          second-artifact
-          (with-redefs-fn
-            {uncached-var
-             (fn [path]
-               (swap! executions inc)
-               (uncached path))}
-            #(ordinary-var source-path))
-          second-evidence (cached-var source-path (str directory))]
+          second-artifact (with-redefs-fn
+                            {uncached-var (fn [path] (swap! executions inc) (uncached path))}
+                            #(ordinary-var source-path))
+          second-evidence (cached-var source-path (str directory))
+          hit (with-redefs-fn
+                {uncached-var (fn [& _] (throw (ex-info "changed source cache hit executed reader" {:id "CACHE-READER-TRIPWIRE"})))}
+                #(cached-var source-path (str directory)))]
       (is (= 1 @executions))
-      (is (not= (:artifact-id first-artifact)
-                (:artifact-id second-artifact)))
+      (is (not= (:artifact-id first-artifact) (:artifact-id second-artifact)))
       (is (not= (get-in first-evidence [:cache-evidence :semantic-key-id])
                 (get-in second-evidence [:cache-evidence :semantic-key-id])))
-      (is (= :hit (get-in second-evidence [:cache-evidence :status])))
-      (is (= (:reader-diagnostics second-artifact)
-             (get-in second-evidence
-                     [:c2-reader-artifact :reader-diagnostics])))
-      (is (= (:gravity-reader-boundary second-artifact)
-             (get-in second-evidence
-                     [:c2-reader-artifact :gravity-reader-boundary])))
-      (is (= source-path
-             (get-in second-evidence
-                     [:c2-reader-artifact :source-unit-record :path])))
+      (is (= :stored (get-in first-evidence [:cache-evidence :status]) (get-in second-evidence [:cache-evidence :status])))
+      (is (true? (get-in second-evidence [:cache-evidence :reader-executed?])))
+      (is (= :hit (get-in hit [:cache-evidence :status])))
+      (is (false? (get-in hit [:cache-evidence :reader-executed?])))
+      (is (= second-artifact (:c2-reader-artifact second-evidence) (:c2-reader-artifact hit)))
+      (is (= (:reader-diagnostics second-artifact) (get-in second-evidence [:c2-reader-artifact :reader-diagnostics])))
+      (is (= (:gravity-reader-boundary second-artifact) (get-in second-evidence [:c2-reader-artifact :gravity-reader-boundary])))
+      (is (= source-path (get-in second-evidence [:c2-reader-artifact :source-unit-record :path])))
       (is (false? (:release-authority? second-evidence)))
-      (is (false? (:proof-authority? second-evidence))))))
+      (is (false? (:proof-authority? second-evidence)))
+      (write-source! "(" [StandardOpenOption/TRUNCATE_EXISTING StandardOpenOption/WRITE])
+      (let [rejection (try (ordinary-var source-path) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "C2-DELIMITER" (:id rejection)))))))

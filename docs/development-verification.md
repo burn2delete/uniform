@@ -82,6 +82,14 @@ Explicit `:dev-test` selections use test resources on the classpath without a
 manifest authority entry; unknown namespaces and unmatched selectors fail.
 Use a fresh JVM after compiler source changes to avoid stale process-local plans.
 
+Ordinary `compiler-c2-reader-file-artifact` construction executes the existing
+bounded, authenticated reader directly. It does not require persistent cache
+publication or a free cache-store budget. Call the existing explicit
+`compiler-c2-reader-file-artifact-cached` API when testing incremental reuse;
+its current-input revalidation, secure admission and capacity limits still
+apply. A cache policy rejection is not permission to clear shared state,
+increase limits or suppress unrelated compiler failures.
+
 When debugging a shared parser or plan-loading error, the existing
 `--fail-fast` option stops after the first failed test var, avoiding the same
 load-error stack from every selected var. It does not stop within a test var,
@@ -1248,6 +1256,97 @@ the source, ordered operands, completion facts and dependencies that determine
 its effects, but deep type/shape authenticity remains the upstream boundary.
 Do not add a fresh-proof wrapper to the local effect-edit loop or describe
 effect-result reconstruction as independent certification of C7 correctness.
+
+### Persistent Map removal: focused feedback
+
+The current `dissoc` increment starts in the existing C7 type owner. For its
+pure known-shape transition, use the direct selector:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-map-removal-transition-development-kernel \
+  --exact sh08-map-removal-source-development-kernel \
+  --exact sh08-map-removal-inference-development-kernel
+```
+
+This checks present/absent/empty removal, dense result coordinates, retained
+survivor source parts, false/nil payload types and logical work limits. Its
+input is an already established Map shape; acceptance by this private copying
+helper does not establish member-type validity or authenticate source input.
+The source kernel separately joins the real owning shape reconstruction to
+the actual argument type and checks original forms, resolved call/binding
+records, allocation policy and source/work-limit rejection. These kernels alone
+do not establish a compiler-supported source call. The inference kernel checks cold normal and
+Never cases, ordered constraints, descriptor mutations and Unknown deferral
+with exact/one-below budgets. Fresh public C7 reconstruction, independent C8
+reconstruction, lowering/runtime behavior and affected real
+source composition are checked separately below. The
+generic STD3 Map rule is broader than the first literal-Keyword/known-shape
+implementation frontier. No admission proof is needed to run this kernel.
+
+For the independent effect-consumer increment, use:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-map-removal-development-kernel
+```
+
+It reconstructs removal, source/call/fact/constraint joins, allocation/storage
+records and work limits for normal present/absent/empty cases. The node-record
+Never control checks operand effects and suppression of direct allocation;
+it does not establish source-bound or whole-C8 noninvoked-call acceptance.
+Fresh genuine upstream inputs, full graph checks and lowering/runtime/source
+integration remain distinct obligations. A copied C7 input shape is not
+independently authenticated merely because its removal transition matches.
+
+For the existing typed emitter and stage-owned runtime, select:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-removal-lowering-development-kernel \
+  --exact current-gravity-map-removal-runtime-development-kernel
+```
+
+These check source-bound descriptor reconstruction, per-call rows, rejected
+work carry, binary IR, eager operands, first control transfer, Map/Keyword
+value guards and inert stored payloads. Raw IR computed-key cases exercise
+the evaluator, not wider source-key support. Normalized caller fields are not
+authentic function-tuple integration. Keep the failed mixed batch distinct
+from its corrected targeted tests; do not rerun unaffected selectors merely
+to obtain a green aggregate. Real paired source and whole-artifact checks are
+still required before accepting the complete slice.
+
+For the stable changed candidate, the separate source composition is:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-removal-authenticated-composition
+```
+
+It builds the accepted Gravity/QST pair and one quoted-Map missing-allocation
+rejection, reusing accepted products for all consumers and mutations. Genuine
+non-returning calls, surviving-source provenance, whole-C8 budgets and ordered
+row census belong here, not to the normalized kernels' claims. Other rejected
+fixture pairs are not fresh source-proof results merely because their headers
+pass. No W5 execution, general Map parameters, arbitrary source keys, target
+support or authoritative migration follows from this selection.
+
+The first actual Map-removal composition stopped after six loader assertions
+and one error, before any fresh source product completed: automatic C2 cache
+publication exceeded the existing 512 MiB aggregate store limit. This is a
+development-path dependency, not a Map-removal result. The narrowly changed
+default reader uses its existing fresh producer; the explicit cache API and
+strict admission failures remain unchanged. Validate that dispatch and parity
+with the existing two hosted C2 cache selectors before a distinct composition
+run. Preserve the failed result rather than relabeling it or clearing the store.
+The corrected reader tests passed 42 assertions; strict admission passed four
+separate assertions. The changed-dependency composition passed 448 assertions
+in 421.346 seconds. Its support remains the literal-Keyword/known-Map-shape
+frontier, not general Map parameters or authoritative module admission.
 
 ### Persistent map association
 

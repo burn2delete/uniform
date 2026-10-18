@@ -33,6 +33,13 @@
                  (conj collected (first head-result)))
           head-result)))))
 
+(defn p15-s23-runtime-remove-map-key [input removed-key]
+  (loop [remaining (keys input) result {}]
+    (if (= 0 (count remaining)) result
+      (let [key (first remaining)]
+        (recur (rest remaining)
+          (if (= key removed-key) result (assoc result key (get input key))))))))
+
 (defn p15-s23-runtime-println-output
   [values output]
   (if (= (count values) 0)
@@ -428,7 +435,7 @@
                                                 (if (string? id)
                                                   (if (if (> (count id) 0) (<= (count id) 256) false)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
-                  (if (contains? '#{nth conj contains?} function)
+                  (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
                   (if (contains? '#{count first rest empty?} function)
@@ -570,10 +577,11 @@
                   [(count left) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :collection-count-map-or-vector-required :operation operation}
                    (second arguments-result) :rejected])
-              (if (= function 'assoc)
+              (if (contains? '#{assoc dissoc} function)
                 (if (if (map? left) (keyword? right) false)
-                  [(assoc left right (get values 2)) (second arguments-result) :normal]
-                  [{:diagnostic "P15S23X002" :reason :map-association-map-and-keyword-required :operation operation}
+                  [(if (= function 'dissoc) (p15-s23-runtime-remove-map-key left right) (assoc left right (get values 2)))
+                   (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason (if (= function 'dissoc) :map-removal-map-and-keyword-required :map-association-map-and-keyword-required) :operation operation}
                    (second arguments-result) :rejected])
               (if (if comparison? (if (integer? left) (integer? right) false) true)
               [(if (= function 'list)

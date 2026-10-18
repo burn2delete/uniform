@@ -3357,6 +3357,196 @@
         (assoc-in [:bindings :outer-value-binding] {:binding-id :outer-value-binding :binding-class :lexical :name 'next-value})
         (update :products assoc :calls (:calls core) :call-edges (:call-edges core)))))
 
+(defn- map-removal-input [key empty?]
+  (let [base (walk/postwalk-replace {:association :removal :association-binding :removal-binding
+                                   :association-definition :removal-definition 'assoc 'dissoc}
+                                  (map-association-input key :gravity.type/bool empty?))
+        children [:operator :input :key]
+        node (-> (:node base) (assoc :children children)
+                 (assoc-in [:attributes :argument-count] 2) (assoc-in [:attributes :argument-child-indexes] [1 2])
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [:input :key] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [:input :key] :ordered-evaluation-node-ids children)
+        core (-> (:core base) (assoc :calls [call] :call-edges [edge])
+                 (update :nodes #(mapv (fn [n] (if (= :removal (:node-id n)) node n)) (remove (fn [n] (= :value (:node-id n))) %))))
+        forms (-> (:forms base) (dissoc :value)
+                  (assoc-in [:removal :child-form-ids] children)
+                  (assoc-in [:removal :value] (list 'dissoc (get-in base [:forms :input :value]) key)))]
+    (assoc base :node node :call call :edge edge :core core :forms forms :types (dissoc (:types base) :value)
+                :nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+                :bindings (dissoc (:bindings base) :value-binding) :binding-types {}
+                :products (assoc (:products base) :calls [call] :call-edges [edge]))))
+
+(defn- map-removal-derived
+  ([input] (map-removal-derived input 65536))
+  ([{:keys [core node nodes types binding-types bindings forms products]} budget]
+   (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
+     (invoke-c7 'sh08-mr-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context]))))
+
+(deftest sh08-map-removal-source-development-kernel
+  (doseq [[key empty? kind expected] [[:old false :remove []] [:missing false :absent [:old]] [:missing true :absent []]]]
+    (let [{:keys [module core node nodes types bindings forms] :as input} (map-removal-input key empty?)
+          result (map-removal-derived input) descriptor (:descriptor result) change (:transition descriptor)
+          work (:call-join-work result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :sh08-map-removal-v1 (:version descriptor)))
+      (is (= 'dissoc (:operation descriptor)))
+      (is (= :normal (:application descriptor)))
+      (is (= kind (:kind change)))
+      (is (= expected (mapv :key (:parts change))))
+      (is (= (:type result) (:result-type descriptor) (get-in descriptor [:result-shape :type])))
+      (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+      (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+      (is (= :possible (get-in descriptor [:allocation-policy :present-key]) (get-in descriptor [:allocation-policy :absent-key])
+             (get-in descriptor [:allocation-policy :empty-map])))
+      (is (= :preserved (get-in descriptor [:storage-policy :input])))
+      (is (= :persistent-map-removal (get-in descriptor [:result-shape :constructor-origin])))
+      (is (= result (map-removal-derived input work)))
+      (is (= :map-removal-work-limit (:reason (map-removal-derived input (dec work)))))
+      (is (= :direct-map-removal (:dispatch (invoke-c7 'sh08-mr-call-fact [descriptor module]))))
+      (is (= descriptor (:dependencies (invoke-c7 'sh08-mr-constraint [descriptor]))))
+      (doseq [changed [(assoc-in input [:forms :key :parent-form-id] :sibling)
+                       (assoc-in input [:forms :key :value] :wrong)
+                       (assoc-in input [:forms :operator :value] 'other/dissoc)
+                       (assoc-in input [:nodes :key :source :syntax-id] :forged)
+                       (assoc-in input [:node :evaluation :order] [])
+                       (assoc-in input [:bindings :removal-binding :binding-class] :import)
+                       (assoc-in input [:bindings :removal-binding :package :version] "forged")
+                       (assoc-in input [:types :key] :gravity.type/string)
+                       (assoc-in input [:types :input] :gravity.type/map)]]
+        (is (= :rejected (:status (map-removal-derived changed)))))
+      (doseq [type [nil :gravity.type/unknown]]
+        (when-not empty?
+          (let [changed (-> input (assoc-in [:types :input-value] type) (assoc-in [:types :input :member-types 1] type))]
+            (is (= :rejected (:status (map-removal-derived changed)))))))
+      (doseq [budget [0 -1]]
+        (is (= :map-removal-work-limit (:reason (map-removal-derived input budget)))))))
+  (let [input (map-removal-input :old false)]
+    (doseq [args [nil {} 7 [:input] [:input :key :extra]]]
+      (is (= :rejected (:status (map-removal-derived (assoc-in input [:products :calls 0 :argument-node-ids] args))))))))
+
+(deftest sh08-map-removal-inference-development-kernel
+  ;; Normalized source/type DATA exercises C7 ownership without public admission.
+  (doseq [[key empty?] [[:old false] [:missing false] [:missing true]]]
+    (let [{:keys [core node nodes forms bindings products binding-types types call edge] :as input} (map-removal-input key empty?)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+          expected (map-removal-derived input) descriptor (:descriptor expected)
+          table (:type-table inferred)
+          valid #(invoke-c7 'sh08-mr-inferred-call-valid? [core node call edge nodes bindings %])]
+      (is (= :converged (:convergence-status inferred)))
+      (is (= [] (:diagnostics inferred)) (pr-str (:diagnostics inferred)))
+      (is (= descriptor (:operator table)))
+      (is (= (:type expected) (:removal table)))
+      (is (= [(invoke-c7 'sh08-mr-constraint [descriptor])] (:constraints inferred)))
+      (is (true? (valid table)))
+      (doseq [changed [(assoc-in table [:operator :result-type] :gravity.type/map)
+                       (assoc-in table [:operator :allocation-policy :absent-key] :none)
+                       (assoc-in table [:operator :storage-policy :input] :consumed)
+                       (assoc-in table [:operator :input-shape :call-join-work] "forged")
+                       (assoc-in table [:operator :input-shape :call-join-work] -1)
+                       (assoc-in table [:operator :input-shape :call-join-work] nil)
+                       (assoc-in table [:operator :transition :kind] :forged)
+                       (assoc-in table [:operator :source-binding :package :version] "forged")
+                       (assoc table :removal :gravity.type/map)]]
+        (is (false? (valid changed))))
+      (let [prepared (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core)
+            step-context (assoc context :ordering-operators {(:operator-node-id call) call}
+                               :ordering-edges {(:call-core-node-id edge) edge}
+                               :ordering-bindings bindings :association-forms forms :shape-call-context prepared)
+            step #(invoke-c7 'sh08-mr-step [node % binding-types {} step-context %2])
+            result (step types 65536) work (:work-count result)]
+        (is (= :accepted (:status result)))
+        (is (= descriptor (:descriptor result)))
+        (is (= result (step types work)))
+        (is (= :rejected (:status (step types (dec work)))))
+        (doseq [id [:input :key]]
+          (let [unknown (assoc types id :gravity.type/unknown)]
+            (is (= {:status :deferred :type :gravity.type/unknown :work-count 2} (step unknown 2)))
+            (doseq [budget [1 0 -1]]
+              (let [rejected (step unknown budget)]
+                (is (= :rejected (:status rejected)))
+                (is (= :map-removal-work-limit (:reason rejected)))
+                (is (= 2 (:work-count rejected))))))))))
+  (doseq [ids [[:input] [:key] [:input :key]]]
+    (let [base (map-removal-input :old false)
+          input (reduce
+                  (fn [data id]
+                    (-> data
+                        (assoc-in [:types id] :gravity.type/never)
+                        (assoc-in [:nodes id :core-form] :reference)
+                        (assoc-in [:nodes id :children] [])
+                        (assoc-in [:nodes id :attributes] {:binding-id id})
+                        (assoc-in [:forms id :kind] :symbol)
+                        (assoc-in [:forms id :value] 'aborts)
+                        (assoc-in [:forms id :child-form-ids] [])))
+                  base ids)
+          result (map-removal-derived input) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (:application descriptor)))
+      (is (= [] (:direct-effects descriptor)))
+      (is (= [:memory/allocate] (:latent-effects descriptor)))
+      (is (nil? (:transition descriptor)))
+      (is (nil? (:result-shape descriptor)))
+      (is (= (when-not (some #{:input} ids) :map) (get-in descriptor [:input-shape :shape-kind]))))))
+
+(defn- map-removal-shape [keys]
+  (let [parts (mapv (fn [index key]
+                      {:coordinate (inc (* 2 index)) :key key :key-node-id [:key index] :value-node-id [:value index]
+                       :shape {:status :accepted :shape-kind :scalar :type (if (even? index) :gravity.type/bool :gravity.type/nil)
+                               :node-id [:value index] :source {:form-id [:original index]}
+                               :domain {:values [(when (even? index) false)]}}}) (range) keys)]
+    {:status :accepted :shape-kind :map :node-id :original-map :source {:form-id :original-map}
+     :parts parts :type {:kind :gravity.type/map :shape :literal
+                        :member-types (vec (mapcat #(vector :gravity.type/keyword (get-in % [:shape :type])) parts))}
+     :shape-size (inc (* 2 (count parts)))}))
+
+(deftest sh08-map-removal-transition-development-kernel
+  (let [transition #(invoke-c7 'sh08-mr-transition [%1 %2 %3])]
+    (doseq [[keys key expected kind] [[[] :missing [] :absent]
+                                    [[:left] :left [] :remove] [[:left] :missing [:left] :absent]
+                                    [[:left :middle :right] :left [:middle :right] :remove]
+                                    [[:left :middle :right] :middle [:left :right] :remove]
+                                    [[:left :middle :right] :right [:left :middle] :remove]
+                                    [[:actual-path :semantic :actual-source-path] :actual-path [:semantic :actual-source-path] :remove]]]
+      (let [input (map-removal-shape keys) original input result (transition input key 65536)
+            change (:transition result) parts (:parts change)]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= kind (:kind change)))
+        (is (= expected (mapv :key parts)))
+        (is (= (mapv #(inc (* 2 %)) (range (count parts))) (mapv :coordinate parts)))
+        (is (= input original))
+        (is (= result (transition input key (:work-count result))))
+        (is (= :map-removal-work-limit (:reason (transition input key (dec (:work-count result))))))
+        (is (= (count keys) (:input-entry-count change)))
+        (is (= (count expected) (:output-entry-count change)))
+        (doseq [[part link] (map vector parts (:survivors change))]
+          (is (= (nth (:parts input) (:input-entry-index link)) (:source-part link)))
+          (is (= part (assoc (:source-part link) :coordinate (:output-coordinate link))))
+          (is (= (:coordinate (:source-part link)) (:input-coordinate link)))
+          (is (identical? (:shape part) (get-in link [:source-part :shape]))))
+        (when (= kind :remove)
+          (is (= key (get-in change [:removed-part :key])))
+          (is (= (:removed-part change) (nth (:parts input) (:removed-entry-index change)))))))
+    (let [input (map-removal-shape [:actual-path :semantic :actual-source-path])
+          first-result (transition input :actual-path 65536)
+          intermediate (assoc input :parts (get-in first-result [:transition :parts]) :type (:type first-result))
+          second-result (transition intermediate :actual-source-path 65536)]
+      (is (= [:semantic] (mapv :key (get-in second-result [:transition :parts]))))
+      (is (= :semantic (get-in second-result [:transition :survivors 0 :source-part :key]))))
+    (let [input (map-removal-shape [:left :right])]
+      (doseq [changed [(assoc input :shape-kind :vector) (assoc input :parts nil)
+                       (assoc-in input [:parts 1 :key] :left) (assoc-in input [:parts 0 :key] "left")
+                       (assoc-in input [:parts 1 :coordinate] 7) (assoc-in input [:parts 0 :shape] nil)
+                       (assoc-in input [:type :member-types] []) (assoc-in input [:type :shape] :unknown)
+                       (assoc-in input [:type :member-types 1] :gravity.type/string)]]
+        (is (= :map-removal-input-shape-required (:reason (transition changed :left 65536)))))
+      (doseq [key [nil "left" 1 'left]]
+        (is (= :map-removal-input-shape-required (:reason (transition input key 65536))))))))
+
 (deftest sh08-map-association-development-kernel
   (doseq [[key empty? transition keys] [[:new true :add [:new]] [:new false :add [:old :new]] [:old false :replace [:old]]]
           value-type [:gravity.type/string :gravity.type/bool]]

@@ -2805,7 +2805,7 @@
         path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity")) text (slurp path)
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         forms (bootstrap/read-forms path text)
-        arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2
+        arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2 'p15-s23-runtime-remove-map-key 2
                  'p15-s23-runtime-evaluate-arguments-in-context 7 'p15-s23-runtime-evaluate-bindings-in-context 6 'p15-s23-runtime-evaluate-sequence-in-context 6
                  'p15-s23-runtime-select-handler-in-context 6 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 6
                  'p15-s23-runtime-function-valid? 2 'p15-s23-runtime-activate-function 5 'p15-s23-runtime-atomic-equality 2
@@ -2820,7 +2820,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 27 (count selected) (count (set (map second selected)))))
+    (is (= 28 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -3981,6 +3981,264 @@
       (is (= ["stop" "input\n" :thrown]
              (evaluate (assoc-ir (say "input" {:op :throw :value (literal "stop")})
                                  (literal :new) (say "unreachable" (literal true)))))))))
+
+(deftest current-gravity-map-removal-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-removal-input) derive (ns-resolve upstream 'map-removal-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [[key empty?] [[:old false] [:missing false] [:missing true]] never-key? [false true]]
+      (let [base (input-fn key empty?)
+            input (if never-key?
+                    (-> base (assoc-in [:types :key] :gravity.type/never)
+                        (assoc-in [:nodes :key :core-form] :reference)
+                        (assoc-in [:nodes :key :attributes] {:binding-id :key})
+                        (assoc-in [:forms :key :kind] :symbol)
+                        (assoc-in [:forms :key :value] 'aborts)) base)
+            {:keys [core nodes forms bindings types module call edge]} input
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :removal (:type result))
+                     :calls {:removal call} :edges {:removal edge} :call-order {:removal 0}
+                     :call-facts {:removal (c7 'sh08-mr-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-mr-constraint [descriptor])] :locals {:key 'aborts} :parameter-types {:key :gravity.type/never}}
+            compile #(invoke 'p15-s23-typed-compile-node % :removal %2)
+            lowered (compile context 65536)
+            input-ir {:op :map-literal :entries (if empty? [] [{:key {:op :literal :value :old} :value {:op :literal :value 7}}])}]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'dissoc :args [input-ir (if never-key? {:op :local :name 'aborts} {:op :literal :value key})]}
+               (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (let [rejected (compile context (dec (:work-count lowered)))]
+            (is (= :typed-lowering-work-limit (get-in rejected [:facts :reason])))
+            (is (= (dec (:work-count lowered)) (:work-count rejected)))))
+        (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core) (assoc descriptor :direct-effects [:io/write])
+                         (assoc descriptor :extra true) (assoc-in descriptor [:allocation-policy :empty-map] :none)
+                         (assoc-in descriptor [:storage-policy :input] :consumed)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")
+                         (assoc-in descriptor [:transition :kind] :forged)
+                         (assoc-in descriptor [:input-shape :call-join-work] "forged")
+                         (assoc-in descriptor [:input-shape :call-join-work] -1)
+                         (assoc-in descriptor [:input-shape :call-join-work] nil)]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:removal (c7 'sh08-mr-call-fact [changed module])}
+                                     :ledger [(c7 'sh08-mr-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))) (pr-str changed))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :removal :evaluation :order] [])
+                        #(assoc-in % [:forms :key :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :removal-binding :binding-class] :import)
+                        #(assoc-in % [:call-facts :removal :effects] [:io/write])
+                        #(assoc-in % [:edges :removal :callee-function-syntax-id] :fake)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))
+        (when never-key?
+          (let [first-child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :input 65536)
+                charge (+ 64 (count (:function-records core)) (count (:ledger context))
+                          2 (* 4 (count (get-in descriptor [:input-shape :parts]))))
+                failed (compile (assoc context :locals {}) 65536)]
+            (is (= :rejected (:status failed)))
+            (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
+            (is (= (+ charge (:work-count first-child)) (:work-count failed)))))))))
+
+(deftest current-gravity-map-removal-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        remove-ir (fn [input key] {:op :builtin-call :function 'dissoc :args [input key]})
+        payload {:op :println :args ["inert"]}
+        original {:left false :middle nil :right payload}]
+    (doseq [[input key expected] [[{} :missing {}] [original :left {:middle nil :right payload}]
+                                  [original :middle {:left false :right payload}]
+                                  [original :right {:left false :middle nil}] [original :missing original]]]
+      (is (= [expected "" :normal] (evaluate (remove-ir (literal input) (literal key)))))
+      (is (= {:left false :middle nil :right payload} original)))
+    (is (= [{:right payload} "" :normal]
+           (evaluate (remove-ir (remove-ir (literal original) (literal :left)) (literal :middle)))))
+    (doseq [args [nil {} 7 [] [(literal {})] [(literal {}) (literal :left) (literal :extra)]
+                  [(literal {}) 7] [7 (literal :left)]]]
+      (is (= :rejected (last (evaluate {:op :builtin-call :function 'dissoc :args args})))))
+    (is (= :rejected (last (evaluate (assoc (remove-ir (literal {}) (literal :left)) :extra true)))))
+    (doseq [value [nil [] 7 "map"]]
+      (is (= :map-removal-map-and-keyword-required
+             (get-in (evaluate (remove-ir (literal value) (literal :left))) [0 :reason]))))
+    (doseq [key [nil false 7 "left" 'left]]
+      (is (= :map-removal-map-and-keyword-required
+             (get-in (evaluate (remove-ir (literal original) (literal key))) [0 :reason]))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})]
+      ;; Raw IR computed keys exercise the evaluator; C7's normal source key remains literal.
+      (is (= [{:middle nil :right payload} "map\nkey\n" :normal]
+             (evaluate (remove-ir (say "map" (literal original)) (say "key" (literal :left))))))
+      (is (= ["stop-map" "map\n" :thrown]
+             (evaluate (remove-ir (say "map" {:op :throw :value (literal "stop-map")}) (say "unreachable" (literal :left))))))
+      (is (= ["stop-key" "map\nkey\n" :thrown]
+             (evaluate (remove-ir (say "map" (literal original)) (say "key" {:op :throw :value (literal "stop-key")}))))))
+    (is (= ["first" "" :thrown]
+           (evaluate (remove-ir {:op :throw :value (literal "first")} {:op :throw :value (literal "second")}))))))
+
+(deftest current-gravity-map-removal-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions]
+            (concat [["accepted" "local-runtime-map-removal" 17]]
+                    (map #(vector "rejected" (str "map-removal-" %) 1)
+                         ["arity" "nonmap" "unestablished" "nonliteral-key" "nonkeyword-key" "result-annotation"
+                          "undeclared-allocation" "empty-undeclared-allocation"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (re-seq #"(?m)^\(defn " text))))))))
+
+(deftest current-gravity-map-removal-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        first-error (String. "first removal operand") key-error (String. "key removal operand")
+        specs [['prune [] {:middle nil :right "kept"}] ['survivors [] "kept"] ['absent [] {:old false}]
+               ['empty-map [] {}] ['contains-removed [] false] ['get-removed [] "fallback"]
+               ['false-survivor [] false] ['nil-survivor [] nil] ['remaining-count [] 1] ['associated [] "value"]
+               ['structural [] "kept"] ['strip-identity-paths [] {:semantic "kept"}] ['original [] false]
+               ['caught-input [first-error key-error] first-error] ['caught-key [key-error] key-error]
+               ['shadowed ["ordinary parameter"] "ordinary parameter"] ['main [] "kept"]]
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-removal" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  ready (= :accepted (get-in input [:typed :status]))
+                  _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                  _ (when-not ready (throw (ex-info "Removal source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  descriptors (mapv :applied-map-removal (filter #(= :direct-map-removal (:dispatch %)) (:call-type-facts facts)))
+                  rows (filterv #(= :sh08-map-removal-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 17 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+              (is (= 21 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+              (is (= 15 (count descriptors) (count rows)))
+              (is (= :gravity.type/integer (get-in functions ['remaining-count :return])))
+              (is (= {:normal 13 :not-invoked 2} (frequencies (map :application descriptors))))
+              (is (= 19 (get-in assembled [:instruction-summary :builtin-call])))
+              (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+              (doseq [descriptor descriptors]
+                (let [normal? (= :normal (:application descriptor)) change (:transition descriptor)]
+                  (is (= 'gravity.collections (:semantic-owner descriptor)))
+                  (is (= [:memory/allocate] (:latent-effects descriptor)))
+                  (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
+                  (is (= :possible (get-in descriptor [:allocation-policy :present-key])
+                         (get-in descriptor [:allocation-policy :absent-key]) (get-in descriptor [:allocation-policy :empty-map])))
+                  (when normal?
+                    (doseq [survivor (:survivors change)]
+                      (let [original-part (:source-part survivor)
+                            input-part (get-in descriptor [:input-shape :parts (:input-entry-index survivor)])
+                            output-part (get-in change [:parts (:output-entry-index survivor)])]
+                        (is (= original-part input-part))
+                        (is (= output-part (assoc original-part :coordinate (:output-coordinate survivor))))
+                        (is (= (:input-coordinate survivor) (:coordinate original-part))))))))
+              (doseq [[name args expected] specs]
+                (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                  (is (= [expected "" :normal] result) (str extension " " name))
+                  (when (or (identical? expected first-error) (identical? expected key-error))
+                    (is (identical? expected (first result))))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Removal C8 graph rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [descriptor descriptors]
+                (let [record (get-in graph [:nodes (:call-core-node-id descriptor)]) normal? (= :normal (:application descriptor))]
+                  (is (= (if normal? #{:memory/allocate} #{}) (:direct record)))
+                  (is (= normal? (get-in record [:allocation :normal-completion-possible?])))
+                  (is (= (:allocation-policy descriptor) (get-in record [:allocation :allocation-policy])))
+                  (is (= (:storage-policy descriptor) (get-in record [:allocation :storage-policy])))
+                  (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
+              (is (= #{:error/throw} (get-in graph [:functions (get-in functions ['caught-input :function-id]) :inferred])))
+              (is (= #{:memory/allocate :error/throw} (get-in graph [:functions (get-in functions ['caught-key :function-id]) :inferred])))
+              (when (= extension ".gravity")
+                (let [analyzed (c8 'body-analyze-module (:request input) facts {} 65536) work (:work-count analyzed)]
+                  (is (= :accepted (:status analyzed)))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (c8 'body-analyze-module (:request input) facts {} work)))
+                  (is (= :rejected (:status (c8 'body-analyze-module (:request input) facts {} (dec work)))))
+                  (doseq [ledger [(vec (remove #(= (first rows) %) (:constraint-ledger facts)))
+                                  (conj (:constraint-ledger facts) (first rows))
+                                  (vec (concat (remove #(= :sh08-map-removal-v1 (:producer-rule %)) (:constraint-ledger facts)) (reverse rows)))
+                                  (conj (:constraint-ledger facts) (assoc-in (first rows) [:lhs :core-node-id] (sha 9998)))]]
+                    (is (= :rejected (:status (c8 'body-analyze-module (:request input) (assoc facts :constraint-ledger ledger) {} 65536)))))))
+              {:input input :module module :definitions definitions :descriptors descriptors :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions descriptors effects binding]} (first cases)
+        descriptor (first (filter #(and (= :normal (:application %)) (= :left (:key %))) descriptors))
+        _ (is (map? descriptor))
+        _ (when-not descriptor (throw (ex-info "Removal provenance subject missing" {})))
+        changed-input (-> (:input-shape descriptor)
+                          (assoc-in [:parts 1 :value-node-id] (sha 9997))
+                          (assoc-in [:parts 1 :shape :node-id] (sha 9997)))
+        changed-transition (c7 'sh08-mr-transition [changed-input (:key descriptor) 65536])
+        header (apply dissoc descriptor [:input-shape :transition :result-shape :parameter-types :return :result-type])
+        changed-descriptor (:descriptor (c7 'sh08-mr-finish [header changed-input changed-transition
+                                             (get-in descriptor [:result-shape :call-join-work])]))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [changed-descriptor (assoc-in descriptor [:allocation-policy :absent-key] :none)]]
+      (let [typed (walk/postwalk #(if (= descriptor %) changed %) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                     emitter module (get definitions 'prune) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 4 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)
+          never-id (:call-core-node-id (first (filter #(= :not-invoked (:application %)) descriptors)))]
+      (doseq [changed [(update-in graph [:nodes id] dissoc :allocation)
+                       (assoc-in graph [:nodes id :allocation :allocation-policy :absent-key] :none)
+                       (assoc-in graph [:nodes id :dependencies] [])
+                       (-> graph (assoc-in [:nodes never-id :direct] #{:memory/allocate})
+                           (assoc-in [:nodes never-id :allocation :normal-completion-possible?] true))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (let [{:keys [request typed verification]} (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-removal-undeclared-allocation.gravity")
+          effects (c8 'build-body-effect-result typed verification (seal request typed verification))
+          facts (:identity-input typed)
+          removal (:applied-map-removal (first (filter #(= :direct-map-removal (:dispatch %)) (:call-type-facts facts))))]
+      (is (= :accepted (:status typed)))
+      (is (= :passed (:status verification)))
+      (is (= :absent (get-in removal [:transition :kind])))
+      (is (= [:memory/allocate] (:direct-effects removal)))
+      (is (= :rejected (:status effects)))
+      (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance]
+             ((juxt :rule :reason) (first (:diagnostics effects))))))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-removal.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-map-removal.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-removal-undeclared-allocation.gravity"] @built))))
 
 (deftest current-gravity-collection-count-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]

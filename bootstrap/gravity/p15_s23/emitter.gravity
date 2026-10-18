@@ -2872,6 +2872,229 @@
                 :work-count (+ charge (get compiled :work-count))) compiled))
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-association node))))))
 
+(defn p15-s23-mr-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (p15-s23-typed-all
+    [(= ['dissoc :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn p15-s23-mr-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids))
+        (if (= 2 (count (get call :argument-node-ids)))
+          (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (p15-s23-io-child-types args types)
+        key-node (get nodes (get args 1))
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (p15-s23-typed-all
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-mr-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{dissoc gravity.core/dissoc} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (if (= :gravity.type/never (get arguments 1)) true
+             (if (= :literal (get key-node :core-form))
+               (if (= [] (get key-node :children))
+                 (if (= :keyword (get (get key-node :attributes) :literal-kind))
+                   (if (keyword? (get (get key-node :attributes) :value))
+                     (= :gravity.type/keyword (get arguments 1)) false) false) false) false))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (= (first remaining) nil) false
+                 (if (= (first remaining) :gravity.type/unknown) false (recur (rest remaining))))))] )
+      {:kind :gravity.type/applied-map-removal :version :sh08-map-removal-v1
+       :operation 'dissoc :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-dissoc
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :key (if (= :gravity.type/never (get arguments 1)) nil (get (get key-node :attributes) :value))
+       :key-policy :literal-keyword-on-normal-completion :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :allocation-policy {:condition :normal-operand-completion :present-key :possible :absent-key :possible :empty-map :possible}
+       :storage-policy {:representation :persistent-map-rebuild :input :preserved :payloads :retained-without-evaluation
+                        :lifetime :result-retains-surviving-payloads :physical-sharing :not-promised}
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
+
+; STD3: a removal has new logical coordinates and unchanged survivor sources.
+(defn p15-s23-mr-result-type [parts]
+  {:kind :gravity.type/map :shape :literal
+   :member-types (loop [remaining parts out []]
+                   (if (= 0 (count remaining)) out
+                     (recur (rest remaining)
+                       (conj (conj out :gravity.type/keyword) (get (get (first remaining) :shape) :type)))))})
+
+(defn p15-s23-mr-transition [input key budget]
+  (let [parts (get input :parts) type (get input :type) members (get type :member-types)
+        width (if (vector? parts) (count parts) 0) work (+ 2 (* 4 width))]
+    (if (> work budget) {:status :rejected :reason :map-removal-work-limit :work-count work}
+      (if (if (keyword? key)
+            (if (= :map (get input :shape-kind))
+              (if (vector? parts)
+                (if (map? type)
+                  (if (= 3 (count type))
+                    (if (= #{:kind :shape :member-types} (set (keys type)))
+                      (if (= [:gravity.type/map :literal] [(get type :kind) (get type :shape)])
+                        (if (vector? members) (if (<= (count members) 1024) (= (count members) (* 2 width)) false) false)
+                        false) false) false) false) false) false) false)
+        (loop [remaining parts ordinal 0 output [] survivors [] seen #{} removed nil removed-index nil]
+          (if (= 0 (count remaining))
+            {:status :accepted :work-count work :type (p15-s23-mr-result-type output)
+             :transition {:kind (if (= removed-index nil) :absent :remove) :key key
+                          :input-entry-count width :output-entry-count (count output)
+                          :removed-entry-index removed-index :removed-part removed
+                          :survivors survivors :parts output}}
+            (let [part (first remaining) part-key (get part :key) value (get part :shape)
+                  coordinate (+ 1 (* 2 ordinal))]
+              (if (if (keyword? part-key)
+                    (if (= false (contains? seen part-key))
+                      (if (= coordinate (get part :coordinate))
+                        (if (map? value)
+                          (if (= :gravity.type/keyword (get members (* 2 ordinal)))
+                            (= (get value :type) (get members (+ 1 (* 2 ordinal)))) false) false) false) false) false)
+                (if (= key part-key)
+                  (recur (rest remaining) (+ ordinal 1) output survivors (conj seen part-key) part ordinal)
+                  (let [next-index (count output) derived-coordinate (+ 1 (* 2 next-index))
+                        derived (assoc part :coordinate derived-coordinate)]
+                    (recur (rest remaining) (+ ordinal 1) (conj output derived)
+                      (conj survivors {:input-entry-index ordinal :input-coordinate coordinate
+                                       :output-entry-index next-index :output-coordinate derived-coordinate
+                                       :source-part part}) (conj seen part-key) removed removed-index)))
+                {:status :rejected :reason :map-removal-input-shape-required :work-count work}))))
+        {:status :rejected :reason :map-removal-input-shape-required :work-count work}))))
+
+(defn p15-s23-mr-finish [header input transition used]
+  (let [call (get header :source-call) args (get call :argument-node-ids)
+        normal? (= :normal (get header :application)) id (get header :call-core-node-id)
+        change (if normal? (get transition :transition) nil)
+        type (if normal? (get transition :type) :gravity.type/never)
+        ancestry {:source-call call :source-edge (get header :source-edge) :source-binding (get header :source-binding)
+                  :input-node-id (get args 0) :key-node-id (get args 1) :input-shape input :transition change}
+        size (+ 1 (get input :shape-size 0))
+        shape (if normal?
+                {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
+                 :constructor-origin :persistent-map-removal :coordinate-system :ordered-map-entry-value-slots
+                 :binding-links [] :parts (get change :parts) :removal ancestry :shape-size size
+                 :call-join-work used :call-links (get input :call-links [])}
+                {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
+                 :binding-links [] :removal ancestry :shape-size size :call-join-work used})]
+    {:descriptor (assoc header :input-shape input :transition change :result-shape (if normal? shape nil)
+                   :parameter-types (get header :argument-types) :return type :result-type type)
+     :shape shape :type type :shape-size size}))
+
+(defn p15-s23-mr-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-map-removal-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-map-removal-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :persistent-map-removal}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :transition (get descriptor :transition)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-mr-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-map-removal-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-map-removal :applied-map-removal descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+(defn p15-s23-mr-forms? [node nodes forms header]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        children (get node :children) args (get (get header :source-call) :argument-node-ids)]
+    (p15-s23-typed-all
+      [(= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
+       (= (get node :source) (p15-s23-typed-source owner))
+       (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+       (loop [i 0]
+         (if (= i 3) true
+           (let [form (get forms (get ids i)) child (get nodes (get children i))]
+             (if (p15-s23-typed-all
+                   [(= (get owner :form-id) (get form :parent-form-id))
+                    (= (get child :source) (p15-s23-typed-source form))
+                    (if (= i 0) (if (= :symbol (get form :kind)) (= (get form :value) (get (get child :attributes) :symbol)) false) true)
+                    (if (= i 2) (if (= :gravity.type/never (get (get header :argument-types) 1)) true
+                      (if (= :keyword (get form :kind)) (= (get form :value) (get header :key)) false)) true)])
+               (recur (+ i 1)) false))))])))
+
+(defn p15-s23-mr-descriptor [context node budget]
+  (let [core (get context :core) types (get context :types) id (get node :node-id)
+        call (get (get context :calls) id) edge (get (get context :edges) id)
+        candidate (get types (get call :operator-node-id))
+        header (p15-s23-mr-source core node call edge (get context :nodes) (get context :bindings) types (get core :module))
+        input (get candidate :input-shape) input-work (get input :call-join-work 0)
+        transition (if (= :normal (get header :application))
+                     (p15-s23-mr-transition input (get header :key) budget) {:status :accepted :work-count 0})]
+    (if (if (map? header)
+          (if (= :accepted (get transition :status))
+            (if (integer? input-work) (if (<= 0 input-work)
+              (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
+                (if (= :accepted (get input :status))
+                  (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false)) false) false) false) false)
+      (get (p15-s23-mr-finish header input transition
+             (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records)) input-work (get transition :work-count))) :descriptor) nil)))
+
+(defn p15-s23-typed-compile-removal [context node budget]
+  (let [id (get node :node-id) call (get (get context :calls) id) edge (get (get context :edges) id)
+        core (get context :core) nodes (get context :nodes) forms (get context :forms)
+        candidate (get (get context :types) (get call :operator-node-id))
+        parts (get (get candidate :input-shape) :parts)
+        transition-work (+ 2 (* 4 (if (vector? parts) (count parts) 0)))
+        charge (+ 64 (count (get core :function-records)) (count (get context :ledger)) transition-work)]
+    (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+      (let [descriptor (p15-s23-mr-descriptor context node transition-work)
+            rows (loop [remaining (get context :ledger) out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining) (if (if (= :sh08-map-removal-v1 (get row :producer-rule))
+                         (= {:core-node-id id :projection :persistent-map-removal} (get row :lhs)) false) (conj out row) out)))))]
+        (if (if (map? descriptor)
+              (p15-s23-typed-all
+                [(= candidate descriptor) (= (get descriptor :result-type) (get (get context :types) id))
+                 (= (get edge :ordinal) (get (get context :call-order) id))
+                 (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+                 (= (p15-s23-mr-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+                 (= [(p15-s23-mr-constraint descriptor)] rows)
+                 (p15-s23-mr-forms? node nodes forms descriptor)]) false)
+          (loop [index 0 used charge values []]
+            (if (= index 2)
+              (assoc (p15-s23-compiler-result {:op :builtin-call :function 'dissoc :args values}) :work-count used)
+              (let [child (p15-s23-typed-compile-node (assoc context :tail? false)
+                            (get (get call :argument-node-ids) index) (- budget used))]
+                (if (p15-s23-compiler-complete? child)
+                  (recur (+ index 1) (+ used (get child :work-count)) (conj values (get child :value)))
+                  (assoc child :work-count (+ used (get child :work-count 0)))))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-removal node) :work-count charge))))))
+
 (defn p15-s23-va-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (p15-s23-typed-all
@@ -5133,8 +5356,10 @@
         (= :gravity.type/applied-collection-count (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-count context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (= :gravity.type/applied-map-association (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (p15-s23-typed-compile-association context node budget)
+        (contains? #{:gravity.type/applied-map-association :gravity.type/applied-map-removal}
+          (get (get (get context :types) (first (get node :children))) :kind)) false)
+    (if (= :gravity.type/applied-map-removal (get (get (get context :types) (first (get node :children))) :kind))
+      (p15-s23-typed-compile-removal context node budget) (p15-s23-typed-compile-association context node budget))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (= :gravity.type/applied-integral-ordering (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-ordering context node budget)

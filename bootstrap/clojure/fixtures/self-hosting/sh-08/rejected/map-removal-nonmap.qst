@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.map-removal-nonmap
+  (:profile :meta) (:target :jvm) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn invalid [] (dissoc "map" :key))

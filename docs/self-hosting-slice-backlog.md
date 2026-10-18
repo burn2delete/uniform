@@ -2191,6 +2191,117 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Persistent Map removal: development implementation
+
+This slice implements binary `dissoc` with one literal Keyword key over an
+independently established Map shape. STD3 specifies persistent removal and
+ordinary operand evaluation without restricting the language to this initial
+implementation frontier. The four existing owners are C7, C8, typed lowering
+and the Gravity development runtime; no new seed operation or test lane is
+needed. Normal present, absent and empty removal must all expose possible
+allocation, while operand control transfer prevents invocation.
+
+The pure C7 transition kernel passed 1 test / 124 assertions. It checks
+present/absent/empty cases, removed-entry and survivor provenance, dense
+derived coordinates, false/nil payload types, chained path-key removal DATA,
+malformed shape inputs and exact/one-below logical work budgets. The first
+run stopped on an unclosed delimiter before semantic assertions; that error
+is retained separately from the corrected result. Static independent review
+accepted the transformation under its established-shape precondition, not as
+a type validator or public compiler result.
+
+The source/derive kernel passed 1 test / 90 assertions. It joins the accepted
+owning Map-shape result to the actual argument type before applying removal;
+coherent nil/Unknown member echoes still reject. It checks original forms,
+resolved operator/call/edge identity, present/absent/empty allocation and
+storage policy, malformed arguments and exact-budget boundaries. Independent
+static review accepted these source and work-accounting joins. Earlier test
+preparation failures remain separate: a namespace scoping error before checks,
+then 83 passing assertions and an empty-Map negative's setup index error. The
+corrected setup does not weaken the nonempty malformed-member rejection.
+
+The inference increment passed 1 test / 132 assertions. The descriptor is
+wired into intrinsic recognition, ordered constraints, call facts and existing
+shape consumers; independent static review accepted these C7 paths. The
+normalized kernel checks cold present/absent/empty inference, descriptor,
+allocation, storage and result-type mutations, exact/one-below work limits,
+two-unit Unknown deferral and non-returning input/key cases. Shape consumers
+re-enter the owning derivation rather than trusting a stored transition.
+At this kernel checkpoint, fresh public C7 reconstruction, independent
+downstream joins and actual runtime/source integration were still outstanding;
+the distinct composition result below closes those development checks.
+
+The independent C8 kernel passed 1 test / 121 assertions for normal
+present/absent/empty removal, coherent descriptor/row/fact mutations,
+allocation/storage graph mutations and exact/one-below context budgets. Its
+first run remains 118 passing assertions and three errors: the production
+context counted malformed source forms before checking their vector shape.
+The corrected guard preserves the same rejection oracles; independent review
+closed that finding. The Never node-record control proves only retained
+operand effects/errors and suppression of direct allocation, not source-bound
+removal validation or accepted whole-C8 noninvoked behavior. Genuine noninvoked
+joins and whole-module budgets were deferred to the distinct composition.
+
+Malformed input-work guards subsequently added nine checks each to C7 and C8;
+their updated kernels passed 141 and 130 assertions. The combined four-test
+batch nevertheless remains FAILED: 446 passed and eleven failed. Six lowering
+oracles demanded an unperformed final child unit; three Never-case mutations
+were unchanged empty effect vectors; two runtime checks omitted the new helper
+from the exact source-function inventory. These were test corrections, not
+production semantic fixes. Only the affected two selectors were rerun and
+passed 186 assertions (147 lowering, 39 runtime). Failure-work checks now
+retain prepaid work, completed children and the failing child's actual report,
+not invented work. Runtime tests cover persistent removal, false/nil values,
+inert payloads, operand order/transfer and invalid values/instructions. Raw IR
+computed keys do not widen C7's literal-key source frontier. Retained focused
+coverage is 671 assertions across six selectors, not an additive count over
+their earlier revisions or a replayed green aggregate.
+
+Twelve affected regression selectors passed 775 assertions, covering existing
+association, quoted/structural shape, Keyword matching, get/contains/count and
+lowering/runtime behavior, plus eighteen paired-fixture header checks. Root
+source review removed an unsupported `Int` return annotation from the new
+count example before any source run; the composition checks independently
+inferred Integer instead. The final source selector covers
+seventeen functions, twenty-one calls, fifteen removals (thirteen normal, two
+not invoked), all affected Map consumers, original-value preservation and
+genuine operand transfer through C7, C8 and runtime. It selects three fresh
+products and reuses accepted products for guest and hostile cases. The
+quoted-Map missing-allocation case isolates removal's own allocation policy;
+other negative pairs have no fresh source-acceptance result yet.
+
+Its first actual invocation passed six loader assertions, then errored before
+any source product completed. The existing C2 default path attempted persistent
+cache publication and hit its unchanged 512 MiB aggregate admission limit
+(538,990,473 observed bytes). This establishes no Map-removal semantic result.
+The bounded process correction routes the ordinary reader to its existing
+fresh authenticated producer, leaving the explicit cache API, validation,
+capacity policy and shared store untouched. Its two affected reader tests
+passed 42 assertions; four unchanged strict-admission assertions passed
+separately. The first focused batch remains 43 passes and three failed test
+expectations (cold publication status and interrupt observation timing), not
+a production failure or an additional passing aggregate. Independent review
+accepted the corrected dispatch, parity and validation results.
+
+The changed-dependency source composition then passed 1 test / 448 assertions
+in 421.346 seconds of selected-test execution at a 2 GiB heap. It constructs
+exactly three fresh products, makes four tracked public C7 verification calls
+(two accepted assemblies and two coherent forgery rejections), and performs
+34 guest executions. Genuine input/key control transfer, surviving source
+coordinates, whole-C8 allocation and budgets, ordered removal-row census,
+typed lowering and original-value preservation pass on the real source pair.
+The quoted-Map absent-key case rejects undeclared allocation. All 28 reviewed
+inputs stayed unchanged. These are development integration results, not
+authoritative module migration or a generalized performance measurement.
+
+Supported behavior is bounded to binary removal with a normal literal Keyword
+key and an independently established Map shape, including present, absent and
+empty Maps. Normal invocation retains possible allocation; operand transfer
+prevents invocation. General Map parameters, arbitrary source keys, full W5
+execution, documented-target completion, authoritative migration and
+self-hosting remain outstanding. Other negative fixture pairs retain focused
+kernel coverage and fixture parity, not fresh source-rejection credit.
+
 ### Homogeneous List canonical-if joins: development implementation
 
 This slice supports an independently inferred common List element
