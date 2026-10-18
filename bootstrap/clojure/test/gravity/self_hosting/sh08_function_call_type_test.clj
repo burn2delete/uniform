@@ -2347,6 +2347,91 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn- list-construction-input [argument-types]
+  (let [input (integral-ordering-input 'list argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- list-construction-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-lc-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-list-construction-development-kernel
+  (let [s :gravity.type/string nv :gravity.type/never
+        nested {:kind :gravity.type/list :element-types [s {:kind :gravity.type/vector :element-types [:gravity.type/nil] :shape :literal}] :shape :literal}
+        cases [[] [s] [:gravity.type/nil :gravity.type/bool s s :gravity.type/symbol :gravity.type/character :gravity.type/integer]
+               [:gravity.type/map :gravity.type/vector :gravity.type/list :gravity.type/set]
+               [nested {:kind :gravity.type/map :member-types [:gravity.type/keyword :gravity.type/bool] :shape :literal}
+                {:kind :gravity.type/set :element-types [] :shape :literal}]
+               [nv] [nv s] [s nv] [nv nv]]]
+    (doseq [arguments cases]
+      (let [{:keys [core node call edge nodes forms bindings types products binding-types] :as input} (list-construction-input arguments)
+            result (list-construction-derived input) descriptor (:descriptor result)
+            normal? (not-any? #{nv} arguments)
+            expected (if normal? {:kind :gravity.type/list :element-types arguments :shape :literal} nv)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= (if normal? :normal :not-invoked) (:application descriptor)))
+        (is (= [:memory/allocate] (:latent-effects descriptor)))
+        (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
+        (is (= {:kind :evaluated-list-construction :operand-node-ids (:argument-node-ids call)} (:value-origin descriptor)))
+        (is (not (contains? (:value-origin descriptor) :quote-core-node-id)))
+        (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-lc-constraint [descriptor])] (:constraints inferred)))
+        (is (true? (invoke-c7 'sh08-lc-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator descriptor)])))
+        (doseq [changed [(assoc descriptor :latent-effects [])
+                         (assoc-in descriptor [:value-origin :kind] :quoted-data)
+                         (assoc-in descriptor [:construction-policy :allocation] :none)
+                         (assoc descriptor :return :gravity.type/bool :result-type :gravity.type/bool)]]
+          (is (false? (invoke-c7 'sh08-lc-inferred-call-valid? [core node call edge nodes bindings (assoc types :operator changed)]))))
+        (let [work (:work-count result)
+              derive #(invoke-c7 'sh08-lc-derive [core node call edge nodes bindings types forms %])]
+          (is (= result (derive work)))
+          (is (= :list-construction-work-limit (:reason (derive (dec work))))))))
+    (doseq [bad [nil :gravity.type/unknown :gravity.type/function :host/object
+                  {:kind :gravity.type/vector :element-types [:gravity.type/never] :shape :literal}
+                  {:kind :gravity.type/map :member-types [s] :shape :literal}
+                  {:kind :gravity.type/list :element-types [s]}
+                  {:kind :gravity.type/list :element-types [s] :shape :literal :quote-id :forged}
+                  {:kind :gravity.type/set :element-types (list s) :shape :literal}]
+            arguments [[bad] [nv bad] [bad nv]]]
+      (let [result (list-construction-derived (list-construction-input arguments))]
+        (is (= :rejected (:status result)) (pr-str arguments))
+        (is (pos? (:work-count result)))))
+    (let [input (list-construction-input [s s])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :right-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg1 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'vector)]]
+        (is (= :rejected (:status (list-construction-derived (mutate input)))))))
+    (doseq [type [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64 :gravity.type/u8 :gravity.type/u16
+                  :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64 :gravity.type/decimal :gravity.type/ratio]]
+      (is (= :accepted (:status (list-construction-derived (list-construction-input [type]))))))
+    (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1023 s)))))))
+    (is (= :list-construction-arity-mismatch (:reason (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
+    (let [check #(invoke-c7 'sh08-lc-type-work [%1 %2])
+          width {:kind :gravity.type/list :element-types (vec (repeat 1024 s)) :shape :literal}
+          chain #(nth (iterate (fn [t] {:kind :gravity.type/list :element-types [t] :shape :literal}) s) %)]
+      (is (= {:status :accepted :work-count 1025} (check [width] 1025)))
+      (is (= {:status :rejected :reason :work-limit :work-count 1024} (check [width] 1024)))
+      (is (= :rejected (:status (check [(assoc width :element-types (vec (repeat 1025 s)))] 65536))))
+      (is (= :accepted (:status (check [(chain 128)] 65536))))
+      (is (= :type-depth (:reason (check [(chain 129)] 65536))))
+      (let [wide {:kind :gravity.type/list :element-types (vec (repeat 1024 width)) :shape :literal}
+            rejected (check [wide] 4000)]
+        (is (= :rejected (:status rejected)))
+        (is (= 4000 (:work-count rejected)))))))
+
 (defn- string-concat-input [argument-types]
   (let [input (integral-ordering-input 'str argument-types)]
     (assoc input :binding-types (:types input)

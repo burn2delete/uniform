@@ -1,0 +1,8 @@
+(ns example.list-construction-unknown-after-transfer
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main [payload :- String value] (list (throw payload) value))

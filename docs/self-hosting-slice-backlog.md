@@ -2146,6 +2146,75 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Evaluated persistent List construction: development implementation
+
+STD3's evaluated `list` constructor now has owning Gravity C7, C8, typed-emitter
+and runtime paths. It accepts zero through 1,023 established, lowerable
+first-order operands; the existing 1,024-child call limit includes the operator.
+Known bare collection types do not require invented member facts. Supplied
+positional type records receive bounded validation, with visited work retained
+on rejection. The result uses the existing ordered List element-type carrier,
+but records evaluated-construction ancestry rather than quoted-data authority.
+
+Operands evaluate once, left-to-right. A transfer prevents construction and
+later operand execution without excusing unestablished source types. The
+current conservative constructor policy retains latent allocation and records
+direct allocation only for normal invocation, including empty Lists. Placement,
+provider, ownership and actual heap behavior are not established by that policy.
+Returned Lists preserve nesting, duplicates, false, nil and inert payloads.
+
+The first consumer run exposed a genuine StackOverflowError at the supported
+1,023-operand runtime boundary: the existing argument collector recursively
+called itself. Lowering passed 105 assertions; runtime reached 25 passes before
+the error, and fail-fast skipped C8. That run is not an aggregate pass. An
+initial List-only collector workaround passed a separate 268 assertions, but
+was superseded by the smaller shared-helper loop correction. The final helper
+keeps its signature, environment, function/path/target context, ordered output,
+accumulated values and first non-normal control tuple; no helper, export,
+arity reduction or host-stack increase was introduced.
+
+Current shared-helper code passed 37 focused/regression tests / 2,935 assertions.
+Two separate function-recur and loop runtime checks passed 127 assertions.
+These executions are distinct; earlier focused counts overlap and are not
+additive. C8's malformed scalar-forms guard was corrected and checked. Before
+the source run, review also corrected an ordinary local-call dispatch oracle
+and added concrete caller/callee joins. Only the cold selector changed after
+the focused batch; a separate fixture/namespace smoke check passed ten
+assertions without replaying the production kernels.
+
+The single new paired source composition passed 1 test / 265 assertions with
+no failures or errors. Each complete assembly contains eight functions and nine
+calls: seven List constructions (five normally invoked, two not invoked), one
+String concatenation and one ordinary local call. The concrete main/form
+caller/callee joins and inferred List returns pass without new annotation
+syntax or supplied result types. Twenty-four guest executions include actual
+List-family checks, computed inert form DATA, nested collections, NUL/Unicode
+Strings and four original transfer-payload identity checks.
+
+Six fresh public C7 checks cover the two whole assemblies and four coherent
+binding, type, order and allocation mutations. Two guarded, nonempty whole C8
+results pass verification; two resealed graph hostiles reject. Three actual
+rejected `.gravity` sources cover unknown operands, unknown operands after a
+transfer and a mismatched return annotation. A fourth source passes C7 and
+its verifier before rejecting in C8 with `C8-UNDECLARED` /
+`function-effect-outside-source-allowance`. Negative `.qst` siblings receive
+parity checks only, and the unknown-type tests permit two stated diagnostic
+pairs rather than establishing one unique first diagnostic.
+
+All seventeen source/test/fixture hashes and the owning STD3 document stayed
+unchanged through the sole run. It measured 551.366308334 seconds in the
+selected test and 8.216410500 seconds in namespace loading with a 2 GiB heap.
+This is whole-composition development timing, not a phase-cost or speedup
+comparison. Independent pre-source review accepted the stable candidate; no
+unchanged String/Map/equality source proof was replayed. Direct commands and
+supported boundaries are in `docs/development-verification.md`.
+
+List queries, arbitrary recursive traversal,
+generic sequences, List annotation grammar, imported List signatures, syntax-
+object authority, full profile/provider/backend legality, self-hosting and seed
+retirement remain separate frontiers. This development result does not admit a
+stable module revision or confer authoritative migration credit.
+
 ### Binary String concatenation: development implementation
 
 STD4's binary String overload of the compatibility spelling `str` now has

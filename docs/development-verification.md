@@ -1417,6 +1417,55 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Evaluated persistent List construction
+
+STD3's `list` constructor builds immutable DATA, not executable forms or syntax
+authority. Change C7, C8, the typed emitter and the existing Gravity runtime.
+Use the direct development kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-list-construction-development-kernel \
+  --exact body-list-construction-development-kernel \
+  --exact current-gravity-list-construction-fixtures-development-kernel \
+  --exact current-gravity-list-construction-lowering-development-kernel \
+  --exact current-gravity-list-construction-runtime-development-kernel
+```
+
+The finite call boundary accepts zero through 1,023 established, lowerable
+first-order operands; the existing 1,024-child limit includes the operator.
+Known bare collection types need no invented member information. Supplied
+positional type records are validated within the existing depth/width/work
+limits, including visited work on rejection. The result records operand types
+in order, with evaluated-construction ancestry rather than quoted-data IDs.
+
+Operands evaluate once, left-to-right. A transfer prevents construction and
+later execution, without excusing unknown or illegal source operands. The
+current conservative constructor policy records latent allocation and normal-
+invocation direct allocation, even for an empty List; placement, provider and
+ownership remain unresolved by that policy. Source allowances still apply.
+The guest returns a real List, preserving nesting, duplicates, false and nil.
+Its shared argument collector uses a loop rather than host-stack recursion.
+
+Run the affected source composition separately after the kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-list-construction-authenticated-composition --fail-fast
+```
+
+The cold composition must infer List returns from real bodies and local calls,
+not supplied result types or new annotation syntax. It checks inert form DATA
+containing a computed String, genuine control transfers and representative
+source rejections. Do not replay the unchanged String composition. List
+queries, generic sequences, syntax-object generation, arbitrary recursive
+traversal, imported List signatures and full profile/provider/backend legality
+remain separate frontiers.
+
 ### Binary String concatenation
 
 STD4 owns the binary String overload of the compatibility spelling `str`.
@@ -1599,9 +1648,8 @@ clojure -J-Xmx2g -M:dev-test \
 ```
 
 The paired source uses `(not (= tag :rejected))` in a Bool guard and retains
-raw non-Bool guard rejection. Ordinary local-call facts omit `:dispatch`;
-check their canonical caller/callee edges rather than assigning the separate
-higher-order-call tag. First-class `not`, other predicates, profile/provider
+raw non-Bool guard rejection. For local-call oracles, use the canonical direct
+same-module call guidance below. First-class `not`, other predicates, profile/provider
 completion and authoritative migration are not established by these checks.
 
 ### Proven vector indexing
@@ -1864,6 +1912,12 @@ arguments and C7 call facts/constraints. A qualified current-module spelling
 can select the same resolved binding; spelling alone never selects executable
 code. A `Never` argument makes the call non-returning without changing the
 callee's declared normal return type.
+
+When writing composition oracles, current ordinary C7 local-call facts omit
+`:dispatch`. Check the actual canonical caller/callee edge and call-fact joins.
+The separate `:direct-local-function` higher-order-call tag is not an ordinary
+direct-call classification. This is an artifact-shape distinction, not a
+missing executable behavior or a reason to reconstruct upstream proofs.
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \

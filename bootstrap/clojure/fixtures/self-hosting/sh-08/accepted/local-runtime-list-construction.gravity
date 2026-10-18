@@ -1,0 +1,20 @@
+(ns example.local-runtime-list-construction
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn empty [] (list))
+(defn singleton [message :- String] (list message))
+(defn form [message :- String]
+  (list 'quote (str "label:" message)))
+(defn nested []
+  (list (list false nil false) ["vector" nil] {:stored false}
+        '(inert (str "x" "y"))))
+(defn left-throws [payload :- String]
+  (list (throw payload) "unreachable"))
+(defn later-throws [payload :- String]
+  (list "first" (throw payload) "unreachable"))
+(defn shadowed [list :- String] :- String list)
+(defn main [] (form "value"))

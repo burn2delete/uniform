@@ -22,16 +22,16 @@
 
 (defn p15-s23-runtime-evaluate-arguments-in-context
   [arguments environment output values functions path targets]
-  (if (= (count arguments) 0)
-    [values output :normal]
-    (let [head-result
-          (p15-s23-runtime-evaluate-with-targets
-           (first arguments) environment output functions path targets)]
-      (if (= :normal (get head-result 2))
-        (p15-s23-runtime-evaluate-arguments-in-context
-         (rest arguments) environment (second head-result)
-         (conj values (first head-result)) functions path targets)
-        head-result))))
+  (loop [remaining arguments stdout output collected values]
+    (if (= (count remaining) 0)
+      [collected stdout :normal]
+      (let [head-result
+            (p15-s23-runtime-evaluate-with-targets
+             (first remaining) environment stdout functions path targets)]
+        (if (= :normal (get head-result 2))
+          (recur (rest remaining) (second head-result)
+                 (conj collected (first head-result)))
+          head-result)))))
 
 (defn p15-s23-runtime-println-output
   [values output]
@@ -444,7 +444,13 @@
                           (if (if (map? key) (= #{:op :value} (set (keys key))) false)
                             (if (= :literal (get key :op))
                               (if (keyword? (get key :value)) (if (map? (get arguments 0)) (map? (get arguments 2)) false) false) false) false)) false) false)
-                    (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))) false) false)
+                    (if (= function 'list)
+                      (if (= fields #{:op :function :args})
+                        (if (<= (count arguments) 1023)
+                          (loop [remaining arguments]
+                            (if (= 0 (count remaining)) true
+                              (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -562,7 +568,11 @@
                   [{:diagnostic "P15S23X002" :reason :map-association-map-and-keyword-required :operation operation}
                    (second arguments-result) :rejected])
               (if (if comparison? (if (integer? left) (integer? right) false) true)
-              [(if (= function 'str)
+              [(if (= function 'list)
+                 (loop [index (- (count values) 1) result '()]
+                   (if (< index 0) result
+                     (recur (- index 1) (conj result (get values index)))))
+                 (if (= function 'str)
                  (if (= (count values) 1)
                    (str left)
                    (str left right))
@@ -574,7 +584,7 @@
                        (<= left right)
                        (if (= function '>)
                          (> left right)
-                         (>= left right))))))
+                         (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
                 (second arguments-result) :rejected]))))))))))
