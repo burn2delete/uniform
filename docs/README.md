@@ -38,6 +38,11 @@ evidence tracked below.
 
 - [Implementation roadmap overview](implementation-roadmap.md) maps the D2
   milestone sequence to phase-level work.
+- [Finite SH-00 through SH-29 completion plan](self-hosting-milestone-completion-plan.md)
+  defines each self-hosting milestone's acceptance requirements, owners,
+  validation starting points and explicit finish line. The
+  [self-hosting backlog](self-hosting-slice-backlog.md) tracks live status and
+  accepted evidence separately from implementation progress.
 - [Full language implementation gap map](full-language-implementation-gap-map.md)
   tracks the open work from the current public release surface to complete
   designed-language implementation and self-hosting.
