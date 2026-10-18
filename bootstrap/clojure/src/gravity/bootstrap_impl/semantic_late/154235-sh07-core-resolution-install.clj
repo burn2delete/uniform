@@ -69,7 +69,9 @@
       source-revision-id
       (:sh07/root-syntax-id syntax)
       path
-      (sh07-core-value-kind value)
+      (if (= :character (get-in syntax [:sh07/source-occurrences :sources path :kind]))
+        :character
+        (sh07-core-value-kind value))
       (get trace-by-root (:sh07/root-syntax-id syntax))))
     remember-scope!
     (fn

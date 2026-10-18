@@ -44,6 +44,7 @@ Follow the owning boundary when the next change is downstream of SH-07:
 | Behavior being changed | Implementation owner | Focused workflow below |
 | --- | --- | --- |
 | Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` | Default SH-07 commands here. |
+| Reader literal kind in syntax transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and the `00853-sh04-syntax-reader-binding.clj` consumer | Character occurrence transport checks below. |
 | Retained source occurrences to the temporary C6 request | `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00887-sh07-core-build-form-tree.clj` and its `00890` caller | `gravity.self-hosting.sh07-mutation-test`, exact `sh07-map-source-order-development-kernel`; affected real source composition before accepting a projection change. |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` | Loop/recur and the matching type-development section. |
 | Body/latent effects and source allowances | `bootstrap/gravity/src/gravity/effects.gravity` | Constructor allocation effects and the matching body-effect kernels. |
@@ -126,6 +127,34 @@ clojure -J-Xmx2g -M:dev-test \
 The paired fixture checks opposite nine-key source orders, quoted duplicate-key
 DATA compatibility and a coherently rehashed request-order rejection. Its
 accepted result establishes Core IR order, not evaluated-map runtime support.
+
+### Character occurrence transport checks
+
+L1/C2 own Character decoding, including supplementary Unicode scalars. The
+temporary C3/SH04 transport must retain the original authenticated occurrence's
+kind and decoded value. A supplementary Character's existing four-field
+representation is not a license to classify an ordinary source map as Character.
+Keep the global host-value classifier unchanged.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh07-mutation-test \
+  --exact sh07-character-c3-occurrence-development-kernel \
+  --exact sh07-character-source-occurrence-development-kernel \
+  --exact sh07-map-source-order-development-kernel \
+  --exact sh07-map-quoted-duplicate-source-development-kernel
+```
+
+These normalized kernels check occurrence/value joins, scalar representation,
+ordinary-map distinction and malformed or retargeted records. C6 derives kind
+before recursion from the original source occurrence, including quoted and
+nested values; the map regressions preserve source order and quoted duplicate
+materialization. The supplied integrity report is conditional test input, not
+proof that C2 authenticated a
+source. Actual source composition must separately preserve the same distinction
+through C6 and the affected consumers, including quoted and nested occurrences.
+Do not clone the Unicode parser, add a caller authority flag, or refresh
+migration fingerprints to run this transport check.
 
 ### Ordinary module dependencies
 
@@ -1332,6 +1361,61 @@ establish semantic acceptance or rerun the oversized source.
 The backlog records the original partial-error composition and its separate
 remaining-negative result. The oversized literal reaches C6's fragment-form
 bound before C7's vector extent check; the latter has normalized kernel coverage.
+
+### Atomic value equality development
+
+STD2 owns value equality; STD4 requires exact text semantics. The current
+binary `=` development slice covers Nil, Bool, Character, String, Symbol and
+Keyword. Same-family operands compare values; different supported families
+compare false. Strings compare the exact scalar sequence without normalization
+or locale folding. This does not introduce numeric, collection or function
+equality typing, nor does it change ordinary integer runtime compatibility.
+
+Use the owning type, effect, lowering and runtime kernels without rebuilding
+upstream products:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-atomic-equality-development-kernel \
+  --exact sh08-character-literal-and-quote-development-kernel \
+  --exact body-atomic-equality-development-kernel \
+  --exact current-gravity-atomic-equality-lowering-development-kernel \
+  --exact current-gravity-atomic-equality-runtime-development-kernel --fail-fast
+```
+
+Operands require independently established supported types and exact source,
+binding and evaluation-order joins. Normal results are Bool; Never prevents
+invocation without excusing the other operand's legality. Equality introduces
+no direct allocation, capability or error effect; operand effects remain.
+Character transport uses the occurrence checks above, not a map-tag shortcut
+or a new Character annotation spelling.
+
+These kernels are development feedback, including distinct equal-content
+Strings, NUL and supplementary text, complete Symbol/Keyword values, once-only
+operand order and error transfer. Unsupported private-IR payloads reject without
+invoking opaque equality or hashing callbacks; this is not source host-object
+support. The Character guard recognizes representation, while C2 owns the
+codepoint/text decoding theorem.
+
+Affected real source composition is a separate required check before accepting
+the complete executable slice:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-atomic-equality-authenticated-composition --fail-fast
+```
+
+It exercises paired current source through type/effect verification, lowering
+and execution, including supplementary Character occurrences and distinct
+ordinary Map DATA. Keep negative mutations tied to actual Character source
+identities rather than rewriting every equal host-map payload. The cheap
+`current-gravity-atomic-equality-fixtures-development-kernel` checks the fixture
+inputs before that run, not the complete semantic composition. No authoritative
+migration or standard-library completion follows from these development checks.
 
 ### Proven vector indexing
 

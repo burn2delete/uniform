@@ -1,11 +1,8 @@
 (ns gravity.c3-literal-projection
-  "Hosted Stage0 C3 projection of authenticated C2 literal records.
-
-  This leaf preserves lossless ratio/tagged-literal descriptors and the reader
-  facts attached to hosted C3 syntax objects. It consumes an integrity result;
-  it does not authenticate C2 products, own numeric semantics, or grant C3,
-  proof, self-hosting, or release authority."
+  "Projects authenticated C2 Character kinds and lossless ratio/tagged data.
+  Consumes integrity results; owns no authentication, numeric or release authority."
   (:require [gravity.c3-literal-projection.policy :as policy]
+            [gravity.c3-literal-projection.characters :as characters]
             [gravity.reader-primitives :as reader-primitives]))
 
 (def ^:private ^:dynamic *operations* {})
@@ -216,15 +213,17 @@
          :raw (:raw form-record)
          :payload (:value payload-record)
          :semantic-validation :accepted}))))
-
 (definterposable c3-source-form-kind
   [seed form-record c2-artifact integrity-report]
+  (if (= :character (:kind form-record))
+    (characters/source-kind! seed form-record c2-artifact
+                             (or integrity-report (invoke :c3-c2-reader-integrity-report c2-artifact)))
   (if (or (c3-lossless-literal-descriptor
            seed form-record c2-artifact integrity-report)
           (c3-tagged-literal-descriptor
            seed form-record c2-artifact integrity-report))
     (:kind form-record)
-    (invoke :form-kind (:form seed))))
+    (invoke :form-kind (:form seed)))))
 
 (definterposable c3-source-facts
   [seed form-record c2-artifact integrity-report]

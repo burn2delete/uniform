@@ -1,0 +1,4 @@
+(ns example.atomic-equality-numeric
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn check [] (= 1 1))

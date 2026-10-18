@@ -1616,6 +1616,141 @@
       (body-va-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
                           (get (get context :edges) id) (get context :nodes)) false)))
 
+(defn body-ae-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (body-all?
+    [(= ['= :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn body-ae-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (body-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-all?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-ae-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
+                                :gravity.type/symbol :gravity.type/keyword :gravity.type/never} (first remaining))
+                 (recur (rest remaining)) false)))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-atomic-equality :version :sh08-atomic-equality-v1
+       :operation '= :semantic-owner 'gravity.core :intrinsic :gravity.core/atomic-value-equality
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :equality-policy {:domain [:nil :boolean :character :string :symbol :keyword]
+                         :same-family :value :cross-family :false :identity :unobserved
+                         :strings :exact-valid-scalar-sequence :normalization :none :locale :none :numeric :unsupported}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]} nil)) nil))
+
+(defn body-ae-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-atomic-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-atomic-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-ae-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-atomic-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-atomic-equality :applied-atomic-equality descriptor :effect-facts-source :audited-atomic-value-intrinsic}))
+
+
+(defn body-ae-finish [header]
+  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn body-ae-context [request facts bindings budget]
+  (let [core (get request :canonical-core-artifact)
+        count-calls (loop [remaining (get core :calls) out 0]
+                      (if (= 0 (count remaining)) out
+                        (recur (rest remaining)
+                          (+ out (if (body-ae-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module)) 1 0)))))]
+    (if (= 0 count-calls) {:status :accepted :context nil :work-count 0}
+      (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
+        (if (= false (vector? forms)) (body-failure :body-atomic-equality-source-forms-required)
+          (let [work (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges))
+                        (* count-calls (+ 66 (count (get core :function-records)))))]
+            (if (> work budget) (body-failure :body-deferred-work-limit)
+              {:status :accepted :work-count work
+               :context {:forms (body-index forms :form-id) :nodes (body-index (get core :nodes) :node-id)
+                         :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
+                         :bindings bindings}})))))))
+
+(defn body-ae-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        header (body-ae-source core node call edge nodes bindings types (get core :module))
+        forms (get (get facts :equality-context) :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-atomic-equality-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :atomic-equality})]
+    (if (map? header)
+      (body-all?
+        [(= descriptor (body-ae-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
+         (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
+         (= (get node :source) (get (body-ma-form-node {} owner) :source))
+         (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+         (loop [i 0]
+           (if (= i 3) true
+             (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+               (if (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                     (= (get child :source) (get (body-ma-form-node {} form) :source))
+                     (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                 (recur (+ i 1)) false))))
+         (= (body-ae-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+         (= [(body-ae-constraint descriptor)] rows)]) false)))
+
+(defn body-ae-node? [node facts core]
+  (let [context (get facts :equality-context) id (get node :node-id)]
+    (if (map? context)
+      (body-ae-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
+                          (get (get context :edges) id) (get context :nodes)) false)))
+
 (defn body-cq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (body-all?
@@ -2364,7 +2499,7 @@
         records (body-index (get core :function-records) :function-syntax-id)
         calls (body-index (get core :calls) :core-node-id)
         call-facts (body-index (get facts :call-type-facts) :call-core-node-id)]
-    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] count-rows [] nth-rows [] successor-rows [] append-rows []]
+    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows [] count-rows [] nth-rows [] successor-rows [] append-rows [] equality-rows []]
       (if (= 0 (count remaining))
         (body-all? [(= (count used) (count foreign))
                     (= intrinsic-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-integral-ordering-v1))
@@ -2372,7 +2507,8 @@
                     (= count-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-collection-count-v1))
                     (= nth-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-nth-v1))
                     (= successor-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-bounded-successor-v1))
-                    (= append-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-append-v1))])
+                    (= append-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-append-v1))
+                    (= equality-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-atomic-equality-v1))])
         (let [edge (first remaining) id (get edge :call-core-node-id)
               imported (get foreign (get edge :callee-binding-id))
               local? (= :local-function (get edge :classification))]
@@ -2396,7 +2532,9 @@
                         (body-ma-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                         (if (body-va-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                           (body-va-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
-                          (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))))))))) false)
+                          (if (body-ae-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
+                            (body-ae-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                            (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))))))))) false)
             (recur (rest remaining) (+ ordinal 1)
               (if (map? imported) (conj used (get edge :callee-binding-id)) used)
               (if (= :direct-integral-ordering (get (get call-facts id) :dispatch))
@@ -2411,7 +2549,9 @@
               (if (= :direct-bounded-successor (get (get call-facts id) :dispatch))
                 (conj successor-rows (body-si-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) successor-rows)
               (if (= :direct-vector-append (get (get call-facts id) :dispatch))
-                (conj append-rows (body-va-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) append-rows)) false))))))
+                (conj append-rows (body-va-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) append-rows)
+              (if (= :direct-atomic-equality (get (get call-facts id) :dispatch))
+                (conj equality-rows (body-ae-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) equality-rows)) false))))))
 
 (defn body-ho-outer-fact-valid? [edge fact proof]
   (if (= (get edge :call-core-node-id) (get proof :outer-call-core-node-id))
@@ -3213,7 +3353,8 @@
                                            (if (body-io-node? node typed core) true
                                              (if (body-ma-node? node typed core) true
                                                (if (body-cq-node? node typed core) true (if (body-vn-node? node typed core) true
-                                                 (if (body-va-node? node typed core) true (body-si-node? node typed core))))))))
+                                                 (if (body-va-node? node typed core) true
+                                                   (if (body-ae-node? node typed core) true (body-si-node? node typed core)))))))))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
@@ -3249,7 +3390,8 @@
                                             (if (body-io-node? node facts core) true
                                               (if (body-ma-node? node facts core) true
                                                 (if (body-cq-node? node facts core) true (if (body-vn-node? node facts core) true
-                                                  (if (body-va-node? node facts core) true (body-si-node? node facts core))))))) true) true)
+                                                  (if (body-va-node? node facts core) true
+                                                    (if (body-ae-node? node facts core) true (body-si-node? node facts core)))))))) true) true)
                 (if (body-ready? deps graph)
                 (= (get graph id)
                    (if (= imported nil) (body-control-node-record node target graph (get (get facts :type-table) id) facts edge core
@@ -3456,7 +3598,8 @@
                                (if (body-cq-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                  (if (body-vn-node? (get nodes (get edge :call-core-node-id)) facts core) true
                                    (if (body-va-node? (get nodes (get edge :call-core-node-id)) facts core) true
-                                     (body-si-node? (get nodes (get edge :call-core-node-id)) facts core))))))
+                                     (if (body-ae-node? (get nodes (get edge :call-core-node-id)) facts core) true
+                                       (body-si-node? (get nodes (get edge :call-core-node-id)) facts core)))))))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false) (body-failure :unsupported-throwing-call-component)
             (recur scope (if touches? (if local? (conj (conj next caller) callee) (conj next caller)) next) (rest edges)
@@ -3548,7 +3691,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -3656,14 +3799,16 @@
         associations (body-ma-context request facts bindings budget)
         appends (if (= :accepted (get associations :status))
                   (body-va-context request facts bindings (- budget (get associations :work-count 0))) associations)
-        counts (if (= :accepted (get appends :status))
-                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0))) appends)
+        equalities (if (= :accepted (get appends :status))
+                     (body-ae-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0))) appends)
+        counts (if (= :accepted (get equalities :status))
+                 (body-cq-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0))) equalities)
         selections (if (= :accepted (get counts :status))
-                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get counts :work-count 0))) counts)
+                     (body-vn-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get counts :work-count 0))) counts)
         successors (if (= :accepted (get selections :status))
-                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
-        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
-        facts (assoc facts :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context)
+                     (body-si-context request facts bindings (- budget (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get counts :work-count 0) (get selections :work-count 0))) selections)
+        source-work (+ (get successors :work-count 0) (get associations :work-count 0) (get appends :work-count 0) (get equalities :work-count 0) (get counts :work-count 0) (get selections :work-count 0))
+        facts (assoc facts :association-context (get associations :context) :count-context (get counts :context) :append-context (get appends :context) :equality-context (get equalities :context)
                            :vector-nth-context (get selections :context) :successor-context (get successors :context)) budget (- budget source-work)]
     (if (= :accepted (get successors :status))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)

@@ -770,6 +770,42 @@
                             :quoted-kind (get-in forms [payload :kind]) :quoted-value value}}]
      {:node node :forms forms :source-forms (vec (vals forms)) :payload payload :owner owner :sha sha})))
 
+(defn- character-quote-input [value]
+  (let [input (quoted-data-input (char 65))
+        owner (:owner input) payload (:payload input)]
+    (-> input (assoc-in [:node :attributes :quoted-value] value)
+        (assoc-in [:forms owner :value] (list 'quote value))
+        (assoc-in [:forms payload :value] value))))
+
+(deftest sh08-character-literal-and-quote-development-kernel
+  (let [scalar #(bootstrap/sh03-reader-host-character-value! "<character-kernel>" {:codepoint %})
+        quoted (fn [value] (let [{:keys [node forms]} (character-quote-input value)] (invoke-c7 'sh08-qd-node [node forms])))
+        literal (fn [value] {:node-id :character :core-form :literal :children [] :attributes {:literal-kind :character :value value}})]
+    (doseq [value [(char 0) (char 65) (char 0xffff) (scalar 0x10000) (scalar 0x1f600) (scalar 0x10ffff)]]
+      (let [result (quoted value)]
+        (is (true? (invoke-c7 'sh08-character-carrier? [value])))
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :gravity.type/character (get-in result [:data :type])))
+        (is (= [] (get-in result [:data :children])))
+        (is (= value (get-in result [:data :value])))))
+    (doseq [value [(assoc (scalar 0x1f600) :artifact :forged)
+                   (assoc (scalar 0x1f600) :extra true)
+                   (assoc (scalar 0x1f600) :codepoint 65)
+                   (assoc (scalar 0x1f600) :codepoint 0x110000)
+                   (assoc (scalar 0x1f600) :text nil)
+                   (assoc (scalar 0x1f600) :text "")
+                   (assoc (scalar 0x1f600) :text "three")]]
+      (is (false? (invoke-c7 'sh08-character-carrier? [value])))
+      (is (= :rejected (:status (quoted value))))
+      (is (= :rejected (:status (invoke-c7 'sh08-type-node [(literal value) {} {:profile :meta :target :jvm}])))))
+    ;; This finite representation guard does not re-prove C2 decoding.
+    (is (true? (invoke-c7 'sh08-character-carrier? [(assoc (scalar 0x1f600) :text "xx")])))
+    (let [{:keys [node forms]} (quoted-data-input (scalar 0x1f600))
+          result (invoke-c7 'sh08-qd-node [node forms])]
+      (is (= :accepted (:status result)))
+      (is (= :map (get-in result [:data :kind])))
+      (is (= :gravity.type/map (get-in result [:data :type :kind]))))))
+
 (deftest sh08-quoted-data-recursive-development-kernel
   (doseq [[value type] [[nil :gravity.type/nil] [true :gravity.type/bool] [false :gravity.type/bool]
                         [42 :gravity.type/integer] [\a :gravity.type/character] ["hello" :gravity.type/string]
@@ -2310,6 +2346,60 @@
      :forms (into {} (map (fn [id] [id {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
+
+(defn- atomic-equality-input [argument-types]
+  (let [input (integral-ordering-input '= argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- atomic-equality-derived [{:keys [core node call edge nodes bindings types forms]}]
+  (invoke-c7 'sh08-ae-derive [core node call edge nodes bindings types forms 65536]))
+
+(deftest sh08-atomic-equality-development-kernel
+  (let [families [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]]
+    (doseq [left families right families]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (atomic-equality-input [left right])
+            result (atomic-equality-derived input) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :gravity.type/bool (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= {:domain [:nil :boolean :character :string :symbol :keyword] :same-family :value :cross-family :false
+                :identity :unobserved :strings :exact-valid-scalar-sequence :normalization :none :locale :none :numeric :unsupported}
+               (:equality-policy descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= :gravity.type/bool (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-ae-constraint [descriptor])] (:constraints inferred)))))
+    (doseq [type families order [[type :gravity.type/never] [:gravity.type/never type] [:gravity.type/never :gravity.type/never]]]
+      (let [result (atomic-equality-derived (atomic-equality-input order))]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/never (:type result)))
+        (is (= :not-invoked (get-in result [:descriptor :application])))))
+    (doseq [unsupported [:gravity.type/unknown :gravity.type/integer :gravity.type/i64 :gravity.type/decimal
+                         {:kind :gravity.type/vector :element-types [] :shape :literal}
+                         {:kind :gravity.type/map :member-types [] :shape :literal}
+                         :gravity.type/function :host/object]
+            pair [[unsupported :gravity.type/string] [:gravity.type/string unsupported] [unsupported :gravity.type/never]]]
+      (is (= :rejected (:status (atomic-equality-derived (atomic-equality-input pair))))))
+    (let [input (atomic-equality-input [:gravity.type/string :gravity.type/string])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :right-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'identical?)]]
+        (is (= :rejected (:status (atomic-equality-derived (mutate input))))))
+      (is (= :atomic-equality-arity-mismatch (:reason (atomic-equality-derived (assoc-in input [:call :argument-node-ids] [:arg0])))))
+      (let [{:keys [core node call edge nodes bindings types forms]} input work (:work-count (atomic-equality-derived input))
+            derive #(invoke-c7 'sh08-ae-derive [core node call edge nodes bindings types forms %])]
+        (is (= :accepted (:status (derive work))))
+        (is (= :atomic-equality-work-limit (:reason (derive (dec work)))))))))
 
 (defn- integral-ordering-descriptor [{:keys [core node call edge nodes bindings types module]}]
   (invoke-c7 'sh08-io-descriptor [core node call edge nodes bindings types module]))

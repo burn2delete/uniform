@@ -2077,6 +2077,75 @@ implementation frontiers, not language bans. Collection/provider/profile and
 ownership completion, target support, authoritative migration, self-hosting
 and seedless release remain outstanding.
 
+### Atomic value equality: development implementation
+
+The existing C7, C8, typed-emitter and stage-owned runtime owners implement
+direct binary `=` for independently established Nil, Bool, Character, String,
+Symbol and Keyword operands under STD2/STD4. Same-family values compare by
+value; different supported families compare false. String comparison preserves
+the exact scalar sequence without normalization, case folding or locale rules.
+Symbol and Keyword comparisons retain their complete namespace and name.
+Normal results are Bool. Operands evaluate once in order; Never transfers
+without invoking equality or excusing the other operand's legality. Equality
+adds no allocation, capability or error effect; operand effects remain visible.
+
+Supplementary Characters retain their original C2 occurrence kind through
+C3/SH04 and C6 projection, quoted DATA, typing and lowering. The existing
+four-field representation does not turn an identical ordinary source Map into
+a Character. Occurrence-derived kind precedes recursion and identity creation;
+the global host-value classifier is unchanged. C2 owns scalar decoding and
+codepoint/text consistency. Downstream representation guards do not duplicate
+that parser or establish a new authority channel.
+
+The combined focused batch passed 23 tests/1,936 assertions, covering the new
+type/effect/lowering/runtime behavior and prior quote, map, vector-append,
+integer-comparison and throw regressions. A separate reader/fixture batch
+passed two tests/46 assertions: both accepted extensions contain six childless
+Character forms, five supplementary and one BMP. The final affected batch
+passed four tests/188 assertions. These overlap earlier checks, rather than
+forming an additive coverage total. A subsequent comment correction and
+deletion of one tautological source-definition assertion required no replay.
+
+The single unchanged-candidate source composition passed all 405 assertions.
+Test-var execution took 923.743 seconds after 8.121 seconds of namespace loading
+at 2 GiB. Both extensions passed nine function types, fifteen call facts and
+thirteen equality applications (eleven normal, two Never). Twenty-eight guest
+executions cover distinct equal-content Strings, NUL and supplementary text,
+composed/decomposed inequality, atomic and cross-family values, Character
+literal/quote/vector projection, ordinary Map preservation, parameter shadowing
+and both operand-error orders with retained payload identity.
+
+Nine fresh public C7 lowering operations include five altered-evidence cases.
+The Character case changes source-identified quote evidence, not every equal
+host-map payload; it establishes rejection of inconsistent Character evidence,
+not an isolated codepoint/text theorem. Two accepted, nonempty C8 graphs pass
+whole-result verification; four resealed graph mutations reject. All nine
+negative `.gravity` fixtures reject arity, numeric/vector/map/function/unknown
+operands, result annotation or invalid operands despite Never. Negative `.qst`
+coverage is paired-source parity only. All 35 compiler/test/fixture inputs and
+the Git base remained unchanged throughout the source run.
+
+After that run, the routine LOC gate found the C6 assembly adapter at 253 lines.
+Removing two leading blank lines and one blank separator brought it to 250;
+all nonblank lines and their order are unchanged. The source result remains
+attributed to the original pre-format bytes, not a relabelled proof of new
+bytes. Four post-format Character/map checks passed all 314 assertions, and
+independent review carries acceptance across this whitespace-only delta. No
+expensive source composition was replayed for it.
+
+Review also found two private-IR rejection-path defects: comparing an unknown
+value before classifying it could invoke opaque equality, and building a key
+set before checking key families could invoke opaque hashing. Existing
+primitives now reject those payloads without callbacks; focused sentinel
+controls pass. No source host-object support or seed primitive was added.
+
+Use the owning commands in `docs/development-verification.md`. Numeric,
+collection and function equality typing, variadic or first-class `=`, complete
+standard-library/provider/profile support and other targets remain separate
+work, not language prohibitions. Ordinary integer runtime compatibility is
+preserved without claiming new numeric typing. Authoritative migration,
+self-hosting and seedless release remain outstanding.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

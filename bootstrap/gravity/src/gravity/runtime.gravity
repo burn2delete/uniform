@@ -313,6 +313,42 @@
                 (p15-s23-runtime-evaluate-with-targets (get clause :body) (get selected :environment) current-output functions path targets))
               (recur (rest remaining) current-output))))) result)))
 
+; Private IR value semantics, not source authentication. C2 owns Unicode
+; decoding; this guard recognizes the existing supplementary representation.
+(defn p15-s23-runtime-atomic-equality [left right]
+  (if (if (integer? left) (integer? right) false)
+    (= left right)
+    (let [families
+          (loop [remaining [left right] out []]
+            (if (= 0 (count remaining)) out
+              (let [value (first remaining)
+                    family (if (= nil value) :nil
+                             (if (boolean? value) :boolean
+                             (if (char? value) :character
+                             (if (string? value) :string
+                             (if (symbol? value) :symbol
+                             (if (keyword? value) :keyword
+                             (if (map? value)
+                               (if (if (= 4 (count value))
+                                     (loop [fields (keys value)]
+                                       (if (= 0 (count fields)) true
+                                         (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                               (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                 (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                   (if (= 1 (get value :schema-version))
+                                     (if (integer? (get value :codepoint))
+                                       (if (<= 65536 (get value :codepoint) 1114111)
+                                         (if (string? (get value :text))
+                                           (if (= 2 (count (get value :text))) :character :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported)
+                               :unsupported)))))))]
+                (recur (rest remaining) (conj out family)))))]
+      (if (contains? (set families) :unsupported) :unsupported
+        (if (= false (= (first families) (second families))) false
+          (if (= :character (first families))
+            (if (char? left) (if (char? right) (= left right) false)
+              (if (char? right) false (= (get left :codepoint) (get right :codepoint))))
+            (= left right)))))))
+
 (defn p15-s23-runtime-evaluate-with-targets
   [instruction environment output functions path targets]
   (let [operation (get instruction :op)
@@ -476,6 +512,11 @@
                    arguments environment output [] functions path [])]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
+              (if (= function '=)
+                (let [equal (p15-s23-runtime-atomic-equality left right)]
+                  (if (boolean? equal) [equal (second arguments-result) :normal]
+                    [{:diagnostic "P15S23X002" :reason :atomic-value-equality-domain-required :operation operation}
+                     (second arguments-result) :rejected]))
               (if (= function 'inc)
                 (let [proof (get instruction :proof) extent (get proof :vector-extent)]
                   (if (if (integer? left)
@@ -522,7 +563,7 @@
                          (>= left right))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))
+                (second arguments-result) :rejected]))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

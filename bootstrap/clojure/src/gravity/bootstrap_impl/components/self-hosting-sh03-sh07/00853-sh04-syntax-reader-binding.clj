@@ -175,9 +175,7 @@
                                             integrity-report)
             (c3-tagged-literal-descriptor seed form-record c2-artifact
                                           integrity-report))
-        kind (if literal-descriptor
-               (:kind form-record)
-               (form-kind (:form seed)))
+        kind (c3-source-form-kind seed form-record c2-artifact integrity-report)
         host-facts (c3-source-facts seed form-record c2-artifact
                                     integrity-report)
         host-facts

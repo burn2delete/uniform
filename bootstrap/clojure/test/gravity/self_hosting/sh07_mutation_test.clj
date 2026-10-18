@@ -152,29 +152,69 @@
           'sh07-core-from-authenticated-request
           '[resolution-artifact authenticated-request]}}))))
 
-(defn- map-order-kernel [value]
+(deftest sh07-character-c3-occurrence-development-kernel
+  (let [input (fn [value]
+                (let [form {:form-id :character :open-token :token :close-token :token :kind :character :value value
+                            :children [] :raw "\\character" :span {:source "<character-kernel>"}}
+                      literal {:form-id :character :literal-id :literal :kind :character :decoded value
+                               :raw (:raw form) :span (:span form)}]
+                  [{:form-id :character :form value} form {:form-tree [form] :literal-decoding-records [literal]} {:authentic? true}]))
+        invoke #(apply bootstrap/c3-source-form-kind %)
+        scalar #(bootstrap/sh03-reader-host-character-value! "<character-kernel>" {:codepoint %})]
+    (doseq [codepoint [0 0xd7ff 0xe000 0xffff 0x10000 0x1f600 0x10ffff]]
+      (let [args (input (scalar codepoint))]
+        (is (= :character (invoke args)))
+        (let [map-value (if (map? (scalar codepoint)) (scalar codepoint)
+                           {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint codepoint :text (str (scalar codepoint))})
+              args (-> (input map-value) (assoc-in [1 :kind] :map)
+                       (assoc-in [2 :form-tree 0 :kind] :map) (assoc-in [2 :literal-decoding-records] []))]
+          (is (= :map (invoke args))))))
+    (let [args (input (scalar 0x1f600))]
+      (doseq [changed [(assoc-in args [3 :authentic?] false)
+                       (assoc-in args [0 :form-id] :other)
+                       (assoc-in args [2 :form-tree] [])
+                       (update-in args [2 :form-tree] conj (get-in args [2 :form-tree 0]))
+                       (assoc-in args [2 :literal-decoding-records] [])
+                       (update-in args [2 :literal-decoding-records] conj (get-in args [2 :literal-decoding-records 0]))
+                       (assoc-in args [2 :literal-decoding-records 0 :form-id] :other)
+                       (assoc-in args [2 :literal-decoding-records 0 :decoded :codepoint] 0x1f601)]]
+        (let [failure (try (invoke changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= ["C3-ORIGIN" :character-c2-occurrence-mismatch] ((juxt :id :reason) failure))))))
+    (doseq [value [(char 0xd800)
+                   {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 0xd800 :text "bad"}
+                   {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 65 :text "A"}
+                   (assoc (scalar 0x1f600) :extra true)
+                   (assoc (scalar 0x1f600) :text "wrong") (assoc (scalar 0x1f600) :text "xx")]]
+      (is (= "C3-ORIGIN" (:id (try (invoke (input value)) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))))))))
+
+(defn- map-order-kernel
+  ([value] (map-order-kernel value #{}))
+  ([value character-paths]
   ;; Normalized retained C2 occurrences. Each map's source order deliberately
   ;; reverses host entry order, without changing values or projected paths.
   (let [sources (atom []) next-id (atom 0)
-        build (fn build [value parent]
+        build (fn build [value parent path]
                 (let [id (keyword (str "c2-map-order-" (swap! next-id inc)))
                       metadata (meta value) wrapper? (seq metadata)
                       abbreviation? (and (seq? value) (= 2 (count value)) (= 'quote (first value)))
-                      kind (cond wrapper? :metadata-wrapper abbreviation? :abbreviation :else (bootstrap/sh07-core-value-kind value))
+                      kind (cond wrapper? :metadata-wrapper (contains? character-paths path) :character
+                                 abbreviation? :abbreviation :else (bootstrap/sh07-core-value-kind value))
                       children (cond wrapper? [metadata (with-meta value nil)]
+                                     (= :character kind) []
                                      abbreviation? [(second value)]
                                      (map? value) (vec (mapcat identity (reverse (vec value))))
                                      (set? value) (vec (reverse (bootstrap/sh07-core-children value)))
                                      :else (bootstrap/sh07-core-children value))
-                      records (mapv #(build % id) children)
+                      records (mapv #(build %1 id (conj path %2)) children (range))
                       record (cond-> {:form-id id :parent-form-id parent :kind kind :value value
                                       :children (mapv :form-id records) :span {:source "<map-order-kernel>"}}
+                               (= :character kind) (assoc :raw "\\character")
                                abbreviation? (assoc :abbrev :quote))]
                   (swap! sources conj record) record))
-        root (build value nil)
-        decimals (mapv (fn [form] {:kind :decimal :decoded (:value form) :form-id (:form-id form)
-                                   :literal-id (:form-id form) :token-id (:form-id form)})
-                       (filter #(instance? java.math.BigDecimal (:value %)) @sources))
+        root (build value nil [])
+        decimals (mapv (fn [form] {:kind (:kind form) :decoded (:value form) :form-id (:form-id form)
+                                   :raw (:raw form) :span (:span form) :literal-id (:form-id form) :token-id (:form-id form)})
+                       (filter #(contains? #{:decimal :character} (:kind %)) @sources))
         defn? (and (seq? value) (= 'defn (first value)))
         syntax {:syntax/id :upstream-map-root :sh07/root-syntax-id :projected-map-root
                 :source {:form-id (:form-id root)} :span {} :form (bootstrap/sh05-expanded-form value)}
@@ -183,13 +223,75 @@
                     {:gravity-macro-boundary {:authenticated-sh04-artifact
                                              {:c2-reader-artifact {:form-tree @sources :literal-decoding-records decimals}}}
                      :macro-expansion-trace (if defn? [{:macro 'defn :output-syntax-id :upstream-map-root}] [])}}
+        context ((ns-resolve 'gravity.bootstrap 'sh07-core-source-occurrence-context) resolution [syntax])
+        syntax (assoc syntax :sh07/source-occurrences (get context :projected-map-root))
         evidence (bootstrap/sh07-core-decimal-evidence resolution)
         trace (when defn? (bootstrap/sh07-core-macro-trace {:source-revision-id :revision}
                               {:input-syntax-id :input-map-root :output-syntax-id :projected-map-root}))
         tree (bootstrap/sh07-core-build-form-tree "<map-order-kernel>" :revision evidence syntax trace)
         records (mapv #(assoc % :scope-id :preserved-scope :metadata (assoc (:metadata %) :binding-marker :preserved)) (:records tree))
         indexed (into {} (map (juxt :form-id identity)) records)]
-    {:resolution resolution :syntaxes [syntax] :trees [{:root (get indexed (get-in tree [:root :form-id])) :records records}]}))
+    {:resolution resolution :syntaxes [syntax] :trees [{:root (get indexed (get-in tree [:root :form-id])) :records records}]})))
+
+(deftest sh07-character-source-occurrence-development-kernel
+  (let [scalar (bootstrap/sh03-reader-host-character-value! "<character-kernel>" {:codepoint 0x1f600})
+        ordinary (into {} scalar)
+        cases [[scalar #{[]} 1 0]
+               [[scalar ordinary (char 65)] #{[0]} 2 1]
+               [[scalar scalar ordinary] #{[0] [1]} 2 1]
+               [(list 'quote [scalar ordinary]) #{[0 0]} 1 1]
+               [(list 'defn 'characters '[] [scalar ordinary]) #{[3 0]} 1 1]
+               [(with-meta [scalar ordinary] {:doc "metadata path"}) #{[1 0]} 1 1]
+               [(array-map :character scalar :data ordinary) #{[3]} 1 2]]]
+    (doseq [[value paths characters maps] cases]
+      (let [{:keys [resolution syntaxes trees]} (map-order-kernel value paths)
+            result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)
+            records (get-in result [0 :records])
+            character-records (filterv #(= :character (:kind %)) records)
+            map-records (filterv #(= :map (:kind %)) records)
+            context (get-in syntaxes [0 :sh07/source-occurrences])]
+        (is (= characters (count character-records)))
+        (is (= maps (count map-records)))
+        (is (= (count records) (count (set (map :form-id records)))))
+        (doseq [record character-records]
+          (is (= [] (:child-form-ids record)))
+          (is (or (char? (:value record)) (= scalar (:value record))))
+          (is (= :preserved-scope (:scope-id record))))
+        (doseq [record (filter #(= ordinary (:value %)) map-records)]
+          (is (= 8 (count (:child-form-ids record)))))
+        (doseq [[path source] (:sources context) :when (= :character (:kind source))]
+          (is (some #(= (bootstrap/sh07-core-projected-form-id :revision :projected-map-root path :character) (:form-id %))
+                    character-records)))
+        (is (= result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel [scalar ordinary scalar] #{[0] [2]})
+          prefix [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact]
+          forms (get-in resolution (conj prefix :form-tree))
+          literals (get-in resolution (conj prefix :literal-decoding-records))
+          character (first (filter #(= :character (:kind %)) forms))
+          character-index (first (keep-indexed #(when (= (:form-id character) (:form-id %2)) %1) forms))
+          literal-index (first (keep-indexed #(when (= (:form-id character) (:form-id %2)) %1) literals))
+          context (ns-resolve 'gravity.bootstrap 'sh07-core-source-occurrence-context)
+          derive (fn [r] (try (context r syntaxes) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+      (doseq [changed [(update-in resolution (conj prefix :form-tree) conj character)
+                       (assoc-in resolution (into prefix [:form-tree character-index :children]) [:missing])
+                       (update-in resolution (conj prefix :literal-decoding-records)
+                                  #(vec (remove (fn [record] (= (:form-id character) (:form-id record))) %)))
+                       (update-in resolution (conj prefix :literal-decoding-records) conj (get literals literal-index))
+                       (assoc-in resolution (into prefix [:literal-decoding-records literal-index :form-id]) :retargeted)
+                       (assoc-in resolution (into prefix [:literal-decoding-records literal-index :decoded :text]) "wrong")]]
+        (is (= "C6-ORIGIN" (:id (derive changed)))))
+      (doseq [[kind field value reason] [[:map :kind :character :map-source-value-or-kind]
+                                         [:string :value "altered" :map-source-projected-literal]]]
+        (let [index (first (keep-indexed #(when (= kind (:kind %2)) %1) (get-in trees [0 :records])))
+              altered (assoc-in trees [0 :records index field] value)
+              failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes altered) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= ["C6-ORIGIN" reason] ((juxt :id :reason) failure)))))
+      (let [character-index (first (keep-indexed #(when (= :character (:kind %2)) %1) (get-in trees [0 :records])))
+            altered (assoc-in trees [0 :records character-index :kind] :map)
+            failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes altered) nil
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= ["C6-ORIGIN" :character-c2-occurrence-mismatch] ((juxt :id :reason) failure)))))))
 
 (deftest sh07-map-source-order-development-kernel
   (let [mixed (array-map :a 'value '[key] '(quote {ready "quoted"}) '(identity key) {:nested [true false]})
