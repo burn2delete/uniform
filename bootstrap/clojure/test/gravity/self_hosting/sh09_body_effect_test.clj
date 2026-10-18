@@ -262,6 +262,100 @@
       (is (nil? (get-in row [:dependencies :callee-source-body-id])))
       (is (= descriptor (get-in row [:dependencies :callee-normal-type]))))))
 
+(deftest body-map-association-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-association-input) derive (ns-resolve upstream 'map-association-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [never? [false true]]
+      (let [base (input-fn :new (if never? :gravity.type/never :gravity.type/bool) false)
+            ids (zipmap (keys (:nodes base)) (map sha (range 950 970)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base)))
+                         :products (assoc (:products base) :calls [call] :call-edges [edge]))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :association) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-ma-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-ma-constraint [descriptor])]}
+            source-context (leaf 'body-ma-context request facts (:bindings base) 65536)
+            facts (assoc facts :association-context (:context source-context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :association)])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :accepted (:status source-context)))
+        (is (true? (valid facts)))
+        (is (= :accepted (:status graph)) (pr-str graph))
+        (is (= (if never? #{} #{:memory/allocate}) (:direct record)))
+        (is (= #{:memory/allocate} (:transitive record)))
+        (is (= (not never?) (get-in record [:allocation :normal-completion-possible?])))
+        (is (= (mapv ids [:operator :input :key :value]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-ma-context request facts (:bindings base) 1))))
+        (doseq [forms [nil 7 {}]]
+          (is (= :body-map-association-source-forms-required
+                 (:reason (leaf 'body-ma-context (assoc-in request [:b47-context :authenticated-core-request :forms] forms)
+                                facts (:bindings base) 65536)))))
+        (is (= :incomplete-canonical-core-coverage
+               (:reason (leaf 'body-analyze-module (assoc-in request [:canonical-core-artifact :calls] 7) facts {} 65536))))
+        (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core) (assoc descriptor :application (if never? :normal :not-invoked))
+                         (assoc descriptor :application (if never? :normal :not-invoked) :direct-effects (if never? [:memory/allocate] []))
+                         (assoc descriptor :direct-effects [:io/write]) (assoc descriptor :latent-effects [])
+                         (assoc descriptor :capabilities [:memory/write]) (assoc descriptor :thrown-error-effects [:error/throw])
+                         (assoc descriptor :extra true) (dissoc descriptor :invalidation)
+                         (assoc-in descriptor [:source :syntax-id] :sibling)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")
+                         (assoc-in descriptor [:argument-types 2] :gravity.type/string)]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-ma-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-ma-constraint [changed])]))]
+            (is (false? (valid candidate)) (pr-str changed))))
+        (doseq [candidate [(assoc facts :constraint-ledger []) (update facts :constraint-ledger into (:constraint-ledger facts))
+                           (assoc facts :call-type-facts []) (assoc-in facts [:association-context :forms :key :value] :sibling)]]
+          (is (false? (valid candidate))))
+        (doseq [changed [(dissoc record :allocation) (assoc record :direct #{} :transitive #{} :dependencies [])
+                         (assoc-in record [:allocation :normal-completion-possible?] never?)
+                         (assoc-in record [:allocation :provider] :observed-host-allocation)]]
+          (is (false? (leaf 'body-graph-equations-valid? core facts {} (assoc (:nodes graph) (ids :association) changed)))))
+        (let [operand-graph (assoc (:nodes graph) (ids :value) {:type :gravity.type/never :transitive #{:error/throw}
+                                                                 :escaping-thrown-errors #{:gravity.type/string}
+                                                                 :escaping-thrown-error-types [:gravity.type/string]})
+              stopped (leaf 'body-node-record (:node input) nil operand-graph :gravity.type/never)]
+          (is (= #{} (:direct stopped)))
+          (is (= #{:memory/allocate :error/throw} (:transitive stopped)))
+          (is (= [:gravity.type/string] (:escaping-thrown-error-types stopped))))))))
+
+(deftest body-map-association-catch-effects-development-kernel
+  ;; Current C8 on normalized DATA: catching a source error does not discharge
+  ;; the conservative effect label or an earlier constructor's allocation.
+  (let [try-node (node 3 :try [1 2])
+        graph {(sha 1) {:type :gravity.type/never :transitive #{:memory/allocate :error/throw}
+                        :escaping-thrown-errors #{:gravity.type/string} :escaping-thrown-error-types [:gravity.type/string]}
+               (sha 2) {:type :gravity.type/string :transitive #{} :escaping-thrown-errors #{} :escaping-thrown-error-types []}}
+        facts {:atomic-typed-handlers {(sha 3) [{:error-type :gravity.type/string :handler-core-node-id (sha 2) :record {}}]}
+               :type-table {(sha 1) :gravity.type/never (sha 2) :gravity.type/string (sha 3) :gravity.type/string}}
+        caught (leaf 'body-control-node-record try-node nil graph :gravity.type/string facts {} {} nil)
+        functions (leaf 'body-function-effects [{:function-id (sha 50) :body-core-node-id (sha 3)
+                                                 :latent-effects [:memory/allocate :error/throw] :thrown-error-effects [] :capabilities []}]
+                        (assoc graph (sha 3) caught))]
+    (is (= #{:memory/allocate :error/throw} (:transitive caught)))
+    (is (= [] (:escaping-thrown-error-types caught)))
+    (is (= #{} (:escaping-thrown-errors caught)))
+    (is (= [:gravity.type/string] (get-in caught [:covered-source-errors 0 :matched-error-types])))
+    (is (= :pending-profile-handler-capability-authority (:effect-label-discharge caught)))
+    (is (= #{:memory/allocate :error/throw} (get-in functions [(sha 50) :inferred])))
+    (is (= [] (get-in functions [(sha 50) :throws])))))
+
 (deftest body-constructor-allocation-development-kernel
   ;; Current Gravity algorithms on normalized DATA, not source admission.
   (doseq [kind [:vector :map :set] empty? [true false]]

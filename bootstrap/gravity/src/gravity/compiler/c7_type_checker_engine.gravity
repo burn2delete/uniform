@@ -4568,7 +4568,7 @@
           (recur next (get core :call-edges) next work touched))
         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (= :gravity.type/applied-integral-ordering
+              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false)
@@ -4859,7 +4859,8 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (= :gravity.type/applied-integral-ordering (get (get types (first (get node :children))) :kind))
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association}
+                                                    (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (sh08-bm-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
                  :operand-types (sh08-ft-ordered-child-types (get edge :argument-core-node-ids) types)
@@ -4910,7 +4911,8 @@
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
                                       (let [node (get nodes (get edge :call-core-node-id))
                                             descriptor (sh08-io-descriptor core node call edge nodes binding-index types (get core :module))]
-                                        (if (map? descriptor) (= descriptor (get types (first (get node :children)))) false))) true)
+                                        (if (map? descriptor) (= descriptor (get types (first (get node :children))))
+                                          (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types)))) true)
                                 (recur (rest edges)) edge)))) nil)
               recursive? (loop [components (get core :recursion-components)]
                            (if (= 0 (count components)) false
@@ -5986,6 +5988,205 @@
                             :status :solved :diagnostics []}})
             (assoc result :work-count work)))))))
 
+(defn sh08-ma-form-source [form]
+  {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
+   :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
+
+(defn sh08-ma-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (sh08-ft-all-true?
+    [(= ['assoc :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn sh08-ma-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (sh08-ft-ordered-child-types args types)
+        key-node (get nodes (get args 1))
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (sh08-ft-all-true?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 3 (count args)) (= expected-call call) (= expected-edge edge) (sh08-ma-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{assoc gravity.core/assoc} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :literal (get key-node :core-form)) (= [] (get key-node :children))
+           (= :keyword (get (get key-node :attributes) :literal-kind)) (keyword? (get (get key-node :attributes) :value))
+           (= :gravity.type/keyword (get arguments 1))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-map-association :version :sh08-map-association-v1
+       :operation 'assoc :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-assoc
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :key (get (get key-node :attributes) :value) :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
+
+(defn sh08-ma-transition [input value key key-id value-id call-id]
+  (let [parts (get input :parts) index (sh08-sm-part-index input key nil) replace? (= false (= index nil))
+        ordinal (if replace? index (count parts)) old (if replace? (get parts index) nil)
+        part {:coordinate (if replace? (get old :coordinate) (+ 1 (* 2 ordinal))) :key key
+              :value-node-id value-id :shape value :association-call-node-id call-id}
+        part (if replace? (if (contains? old :key-data-origin) (assoc part :key-data-origin (get old :key-data-origin))
+                            (assoc part :key-node-id (get old :key-node-id))) (assoc part :key-node-id key-id))]
+    {:kind (if replace? :replace :add) :entry-index ordinal :old-part old :new-part part
+     :parts (if replace? (assoc parts index part) (conj parts part))}))
+
+(defn sh08-ma-result-type [parts]
+  {:kind :gravity.type/map :member-types
+    (loop [remaining parts out []]
+      (if (= 0 (count remaining)) out
+        (recur (rest remaining) (conj (conj out :gravity.type/keyword) (get (get (first remaining) :shape) :type)))))
+   :shape :literal})
+
+(defn sh08-ma-finish [header input value used]
+  (let [call (get header :source-call) edge (get header :source-edge) args (get call :argument-node-ids)
+        id (get header :call-core-node-id) normal? (= :normal (get header :application))
+        transition (if normal? (sh08-ma-transition input value (get header :key) (get args 1) (get args 2) id) nil)
+        type (if normal? (sh08-ma-result-type (get transition :parts)) :gravity.type/never)
+        ancestry {:source-call call :source-edge edge :source-binding (get header :source-binding)
+                  :input-node-id (get args 0) :key-node-id (get args 1) :value-node-id (get args 2)
+                  :input-shape input :value-shape value :transition transition}
+        size (+ 1 (get input :shape-size 0) (get value :shape-size 0))
+        shape (if normal?
+                {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
+                 :constructor-origin :persistent-map-association :coordinate-system :ordered-map-entry-value-slots
+                 :binding-links [] :parts (get transition :parts) :association ancestry :shape-size size
+                 :call-join-work used :call-links (sh08-ft-add-values-to-set (get value :call-links []) (get input :call-links []))}
+                {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
+                 :binding-links [] :shape-size size :association ancestry :call-join-work used})]
+    {:descriptor (assoc header :input-shape input :value-shape value :transition transition :result-shape (if normal? shape nil)
+                   :parameter-types (get header :argument-types) :return type :result-type type)
+     :shape shape :type type :shape-size size}))
+
+(defn sh08-ma-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-map-association-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-map-association-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :persistent-map-association}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :transition (get descriptor :transition) :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn sh08-ma-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-map-association-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-map-association :applied-map-association descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+; STD3/L2/L5: derive a persistent update from the existing shape owner.
+; Logical entry coordinates describe the derived map, not call child indexes.
+(defn sh08-ma-derive [node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context]
+  (let [id (get node :node-id) call (get (get context :calls) id) edge (get (get context :edges) id)
+        core (get context :source-core) module (get context :module)
+        args (get call :argument-node-ids) key-node (get nodes (get args 1))
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        work (+ 64 (count args) (count (get core :function-records)))]
+    (if (> work (get context :budget-left 0))
+      (assoc (sh08-sm-failure "C7-GENERIC" :map-association-work-limit nil :remaining-type-join-units (get context :budget-left 0)) :call-join-work work)
+      (let [header (sh08-ma-source core node call edge nodes bindings types module)]
+      (if (= header nil)
+        (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
+                 (if (= 3 (count args)) :map-association-key-or-operand-type-required :map-association-arity-mismatch)
+                 nil :established-map-literal-keyword-and-established-value (sh08-ft-ordered-child-types args types)) :call-join-work work)
+      (if (sh08-ft-all-true?
+            [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
+             (= 4 (count ids)) (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+                                  :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+             (loop [i 0]
+               (if (= i 4) true
+                 (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                   (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
+                         (= (get child :source) (sh08-ma-form-source form))]) (recur (+ i 1)) false))))
+             (= :keyword (get (get forms (get ids 2)) :kind))
+             (= (get header :key) (get (get forms (get ids 2)) :value))])
+        (let [input-never? (= :gravity.type/never (get types (get args 0)))
+              value-never? (= :gravity.type/never (get types (get args 2)))
+              input (if input-never? nil
+                      (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
+                        (conj seen id) (+ depth 1) binding-shapes (assoc context :budget-left (- (get context :budget-left) work))))
+              value (if value-never? {:status :accepted :shape-kind :scalar :type :gravity.type/never
+                                       :node-id (get args 2) :source (get (get nodes (get args 2)) :source) :binding-links [] :shape-size 1}
+                      (sh08-sm-shape-with-bindings (get args 2) nodes types binding-types functions lexical bindings forms
+                        (conj seen id) (+ depth 1) binding-shapes
+                        (assoc context :budget-left (- (get context :budget-left) work (get input :call-join-work 0)))))
+              used (+ work (get input :call-join-work 0) (get value :call-join-work 0))]
+          (if (if input-never? true (if (= :accepted (get input :status)) (= :map (get input :shape-kind)) false))
+            (if (= :accepted (get value :status))
+              (let [finished (sh08-ma-finish header input value used)
+                    shape (get finished :shape) type (get finished :type) size (get finished :shape-size)
+                    descriptor (get finished :descriptor)]
+                (if (if (<= size (get (sh08-local-bounds-value) :maximum-core-nodes))
+                      (if (<= used (get context :budget-left 0)) (= :accepted (get (sh08-carrier-preflight descriptor) :status)) false) false)
+                  {:status :accepted :descriptor descriptor :shape shape :type type :call-join-work used}
+                  (assoc (sh08-sm-failure "C7-GENERIC" :map-association-evidence-or-work-limit nil :bounded-map-association size) :call-join-work used)))
+              (assoc value :call-join-work used))
+            (assoc (if (= :rejected (get input :status)) input
+                     (sh08-sm-failure "C7-ANNOTATION" :map-association-map-shape-required nil :established-constructor-quote-binding-or-local-return (get types (get args 0))))
+                   :call-join-work used)))
+        (assoc (sh08-sm-failure "C7-VERIFY" :map-association-source-mismatch nil :exact-operator-map-key-value-source id) :call-join-work work)))))))
+
+(defn sh08-ma-node? [node context]
+  (if (= :call (get node :core-form))
+    (sh08-ma-binding? (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
+                     (get (get context :ordering-core) :module)) false))
+
+(defn sh08-ma-inferred-call-valid? [core node call edge nodes bindings types]
+  (let [descriptor (get types (get call :operator-node-id))
+        header (sh08-ma-source core node call edge nodes bindings types (get core :module))
+        input (get descriptor :input-shape) value (get descriptor :value-shape)
+        used (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records))
+                (get input :call-join-work 0) (get value :call-join-work 0))]
+    (if (map? header)
+      (sh08-ft-all-true? [(= descriptor (get (sh08-ma-finish header input value used) :descriptor))
+                          (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
+                            (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false))
+                          (= (get value :type) (get (get header :argument-types) 2))]) false)))
+
+(defn sh08-ma-step [node types binding-types functions context budget]
+  (let [core (get context :ordering-core)
+        result (sh08-ma-derive node (get context :lookup-nodes) types binding-types functions
+                 (get core :lexical-bindings) (get context :ordering-bindings) (get context :association-forms)
+                 #{} 0 (get context :prior-binding-shapes {})
+                 (assoc (get context :shape-call-context) :source-core core :module (get core :module) :budget-left budget))]
+    (if (= :accepted (get result :status))
+      (assoc result :constraint (sh08-ma-constraint (get result :descriptor)) :work-count (get result :call-join-work))
+      (assoc result :work-count (get result :call-join-work 0)))))
+
 (defn sh08-sm-shape-with-bindings [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context]
   (if (> depth (get (sh08-local-bounds-value) :maximum-carrier-depth))
     (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-constructor-depth depth)
@@ -6029,6 +6230,10 @@
                   (assoc (sh08-sm-failure "C7-ANNOTATION" :structural-shape-node-limit nil :bounded-expanded-shape (get shape :shape-size))
                          :call-join-work (get shape :call-join-work 0))) shape))
             (sh08-sm-failure "C7-VERIFY" :invalid-immutable-shape-link nil :exact-let-initializer (first records)))
+          (if (if (= kind :call) (sh08-ma-binding? (get bindings (get (get (get call-context :calls) id) :operator-binding-id))
+                                                        (get call-context :module)) false)
+            (let [result (sh08-ma-derive node nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context)]
+              (if (= :accepted (get result :status)) (get result :shape) result))
           (if (if (= kind :call) (contains? #{:gravity.type/map :gravity.type/vector} (if (map? type) (get type :kind) type)) false)
             (sh08-sm-call-shape node nodes types binding-types functions lexical bindings forms seen depth binding-shapes call-context)
           (if (= kind :let)
@@ -6123,7 +6328,7 @@
                 (assoc base :status :accepted :shape-kind :scalar
                        :domain (if (= type :gravity.type/bool) {:values [true false]}
                                  (if (= type :gravity.type/nil) {:values [nil]} {:excluded-values []}))))
-              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type)))))))))))))
+              (sh08-sm-failure "C7-ANNOTATION" :unestablished-structural-value-type nil :established-value-type type))))))))))))))
 
 (defn sh08-sm-part-index [shape key coordinate]
   (loop [parts (get shape :parts) index 0]
@@ -6592,6 +6797,8 @@
             arity-ok (= (count args) (count parameters))
             intrinsic (sh08-io-descriptor (get context :ordering-core) (get nodes (get call :core-node-id)) call edge nodes
                         (sh08-ft-binding-index (get context :lookup-bindings)) type-table (get (get context :ordering-core) :module))]
+        (if (sh08-ma-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module))
+          (recur (rest remaining) (rest remaining-edges) next-bindings constraints diagnostics)
         (if (map? intrinsic)
           (recur (rest remaining) (rest remaining-edges) next-bindings (conj constraints (sh08-io-constraint intrinsic)) diagnostics)
         (if (sh08-io-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module))
@@ -6703,7 +6910,7 @@
                   :rule "C7-ANNOTATION"
                   :reason :unsupported-nonlocal-call
                   :expected :supported-local-first-order-call
-                  :actual (get edge :classification)})}))))))))
+                  :actual (get edge :classification)})})))))))))
 
 (defn sh08-ft-call-constraints
   [calls edges nodes type-table binding-types function-types]
@@ -6715,14 +6922,21 @@
    initial-binding-types context]
   (let [context (assoc context :ordering-operators (sh08-ft-index (get (get context :ordering-core) :calls) :operator-node-id)
                   :ordering-edges (sh08-ft-index (get (get context :ordering-core) :call-edges) :call-core-node-id)
-                  :ordering-bindings (sh08-ft-binding-index (get context :lookup-bindings)))
-        demand? (if (map? (get context :lookup-core)) true
+                  :ordering-bindings (sh08-ft-binding-index (get context :lookup-bindings))
+                  :association-forms (if (map? (get context :lookup-forms)) (get context :lookup-forms)
+                                       (sh08-ft-index (get context :lookup-forms) :form-id)))
+        association? (loop [remaining calls]
+                       (if (= 0 (count remaining)) false
+                         (if (sh08-ma-binding? (get (get context :ordering-bindings) (get (first remaining) :operator-binding-id))
+                                              (get (get context :ordering-core) :module)) true (recur (rest remaining)))))
+        demand? (if association? true (if (map? (get context :lookup-core)) true
                  (loop [groups (get context :boolean-matches)]
-                   (if (= 0 (count groups)) false (if (= true (get (first groups) :structural?)) true (recur (rest groups))))))
+                   (if (= 0 (count groups)) false (if (= true (get (first groups) :structural?)) true (recur (rest groups)))))))
         call-products (get context :shape-call-products)
         prepared (if (if demand? (> (count (get call-products :calls)) 0) false)
                    (sh08-sm-call-context call-products (get context :prior-type-table {}) (get context :loop-work-left 65536))
                    {:status :accepted :work-count 0 :budget-left (get context :loop-work-left 65536) :prior-types (get context :prior-type-table {})})
+        prepared (assoc prepared :source-core (get context :ordering-core))
         context (assoc context :shape-call-context prepared)
         groups (sh08-sm-groups-with-call-context (get context :boolean-matches) prepared)
         binding-shapes (sh08-sm-seed-all-shapes groups
@@ -6769,22 +6983,27 @@
                                                 (sh08-ft-add-values-to-set lookup-issues (get call-result :diagnostics)))})
       (let [node (first remaining)
             lookup? (= :keyword-map-lookup (get node :core-form))
-            lookup (if lookup?
+            association? (sh08-ma-node? node context)
+            lookup (if association?
+                     (sh08-ma-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                     (if lookup?
                      (sh08-kl-step node type-table binding-types function-result context
-                                   (- (get context :loop-work-left 65536) lookup-work)) {})
+                                   (- (get context :loop-work-left 65536) lookup-work)) {}))
             node-type
-            (if lookup? (get lookup :type :gravity.type/unknown)
+            (if (if lookup? true association?) (get lookup :type :gravity.type/unknown)
               (sh08-ft-infer-node-with-context
                node type-table binding-types function-result edges context))]
         (recur
          (rest remaining)
-         (assoc type-table (get node :node-id) node-type)
+         (let [table (assoc type-table (get node :node-id) node-type)]
+           (if (if association? (= :accepted (get lookup :status)) false)
+             (assoc table (first (get node :children)) (get lookup :descriptor)) table))
          binding-types
                     (if (= (get (get node :core-form) :none) :none)
            function-result
            function-result)
          (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows)
-         (if (if lookup? (= :rejected (get lookup :status)) false)
+         (if (if (if lookup? true association?) (= :rejected (get lookup :status)) false)
            (conj lookup-issues (assoc lookup :node node)) lookup-issues)
          (+ lookup-work (get lookup :work-count 0))))))))
 
@@ -7109,7 +7328,9 @@
         (recur
          (rest remaining)
          (rest remaining-edges)
-         (conj values (if (= :gravity.type/applied-integral-ordering (get intrinsic :kind))
+         (conj values (if (= :gravity.type/applied-map-association (get intrinsic :kind))
+                       (sh08-ma-call-fact intrinsic module)
+                       (if (= :gravity.type/applied-integral-ordering (get intrinsic :kind))
                        (sh08-io-call-fact intrinsic module)
                        (if (map? imported)
                         (assoc call-fact :dispatch :direct-imported-function
@@ -7120,7 +7341,7 @@
                                :capabilities (get (get imported :function-type) :capabilities)
                                :effect-facts-source :callee-module-declarations
                                :legality-status :pending-imported-effects)
-                        call-fact))))))))
+                        call-fact)))))))))
 
 (defn sh08-ft-call-facts
   [calls edges nodes type-table function-types module]

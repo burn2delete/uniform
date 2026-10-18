@@ -2208,7 +2208,190 @@
               :work-count (+ 64 (get compiled :work-count))) compiled))
         (p15-s23-typed-node-error :unsupported-or-mismatched-typed-integral-ordering node)))))
 
+(defn p15-s23-ma-add [values result]
+  (loop [remaining values out result]
+    (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
+
+(defn p15-s23-ma-part-index [shape key coordinate]
+  (loop [remaining (get shape :parts) i 0]
+    (if (= 0 (count remaining)) nil
+      (if (= key (get (first remaining) :key)) i (recur (rest remaining) (+ i 1))))))
+
+(defn p15-s23-ma-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (p15-s23-typed-all
+    [(= ['assoc :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn p15-s23-ma-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (p15-s23-io-child-types args types)
+        key-node (get nodes (get args 1))
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (p15-s23-typed-all
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 3 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-ma-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{assoc gravity.core/assoc} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :literal (get key-node :core-form)) (= [] (get key-node :children))
+           (= :keyword (get (get key-node :attributes) :literal-kind)) (keyword? (get (get key-node :attributes) :value))
+           (= :gravity.type/keyword (get arguments 1))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-map-association :version :sh08-map-association-v1
+       :operation 'assoc :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-assoc
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :key (get (get key-node :attributes) :value) :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
+
+(defn p15-s23-ma-transition [input value key key-id value-id call-id]
+  (let [parts (get input :parts) index (p15-s23-ma-part-index input key nil) replace? (= false (= index nil))
+        ordinal (if replace? index (count parts)) old (if replace? (get parts index) nil)
+        part {:coordinate (if replace? (get old :coordinate) (+ 1 (* 2 ordinal))) :key key
+              :value-node-id value-id :shape value :association-call-node-id call-id}
+        part (if replace? (if (contains? old :key-data-origin) (assoc part :key-data-origin (get old :key-data-origin))
+                            (assoc part :key-node-id (get old :key-node-id))) (assoc part :key-node-id key-id))]
+    {:kind (if replace? :replace :add) :entry-index ordinal :old-part old :new-part part
+     :parts (if replace? (assoc parts index part) (conj parts part))}))
+
+(defn p15-s23-ma-result-type [parts]
+  {:kind :gravity.type/map :member-types
+    (loop [remaining parts out []]
+      (if (= 0 (count remaining)) out
+        (recur (rest remaining) (conj (conj out :gravity.type/keyword) (get (get (first remaining) :shape) :type)))))
+   :shape :literal})
+
+(defn p15-s23-ma-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-map-association-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-map-association-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :persistent-map-association}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :transition (get descriptor :transition) :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-ma-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-map-association-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-map-association :applied-map-association descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+(defn p15-s23-ma-finish [header input value used]
+  (let [call (get header :source-call) edge (get header :source-edge) args (get call :argument-node-ids)
+        id (get header :call-core-node-id) normal? (= :normal (get header :application))
+        transition (if normal? (p15-s23-ma-transition input value (get header :key) (get args 1) (get args 2) id) nil)
+        type (if normal? (p15-s23-ma-result-type (get transition :parts)) :gravity.type/never)
+        ancestry {:source-call call :source-edge edge :source-binding (get header :source-binding)
+                  :input-node-id (get args 0) :key-node-id (get args 1) :value-node-id (get args 2)
+                  :input-shape input :value-shape value :transition transition}
+        size (+ 1 (get input :shape-size 0) (get value :shape-size 0))
+        shape (if normal?
+                {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
+                 :constructor-origin :persistent-map-association :coordinate-system :ordered-map-entry-value-slots
+                 :binding-links [] :parts (get transition :parts) :association ancestry :shape-size size
+                 :call-join-work used :call-links (p15-s23-ma-add (get value :call-links []) (get input :call-links []))}
+                {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
+                 :binding-links [] :shape-size size :association ancestry :call-join-work used})]
+    {:descriptor (assoc header :input-shape input :value-shape value :transition transition :result-shape (if normal? shape nil)
+                   :parameter-types (get header :argument-types) :return type :result-type type)
+     :shape shape :type type :shape-size size}))
+
+(defn p15-s23-ma-descriptor [context node]
+  (let [core (get context :core) types (get context :types) id (get node :node-id)
+        call (get (get context :calls) id) edge (get (get context :edges) id)
+        candidate (get types (get call :operator-node-id))
+        header (p15-s23-ma-source core node call edge (get context :nodes) (get context :bindings) types (get core :module))
+        input (get candidate :input-shape) value (get candidate :value-shape)]
+    (if (if (map? header)
+          (p15-s23-typed-all
+            [(map? value) (= (get value :type) (get (get header :argument-types) 2))
+             (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
+               (if (map? input) (p15-s23-typed-all [(= :map (get input :shape-kind)) (vector? (get input :parts))
+                     (= (get input :type) (get (get header :argument-types) 0))]) false))]) false)
+      (get (p15-s23-ma-finish header input value
+        (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records))
+           (get input :call-join-work 0) (get value :call-join-work 0))) :descriptor) nil)))
+
+(defn p15-s23-typed-compile-association [context node budget]
+  (let [id (get node :node-id) call (get (get context :calls) id) edge (get (get context :edges) id)
+        core (get context :core) nodes (get context :nodes) forms (get context :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        candidate (get (get context :types) (get call :operator-node-id))
+        input (get candidate :input-shape) value (get candidate :value-shape)
+        charge (+ 64 (count (get input :parts)) (count (get value :parts)))]
+    (if (< budget charge) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+      (let [descriptor (p15-s23-ma-descriptor context node)
+            rows (loop [remaining (get context :ledger) out []]
+                   (if (= 0 (count remaining)) out
+                     (let [row (first remaining)]
+                       (recur (rest remaining) (if (if (= :sh08-map-association-v1 (get row :producer-rule))
+                         (= {:core-node-id id :projection :persistent-map-association} (get row :lhs)) false) (conj out row) out)))))]
+        (if (if (map? descriptor)
+              (p15-s23-typed-all
+                [(= candidate descriptor) (= (get descriptor :result-type) (get (get context :types) id))
+                 (= (get edge :ordinal) (get (get context :call-order) id))
+                 (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+                 (= (p15-s23-ma-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+                 (= [(p15-s23-ma-constraint descriptor)] rows)
+                 (= :list (get owner :kind)) (vector? ids) (= 4 (count ids) (count (get node :children)))
+                 (= (get node :source) (p15-s23-typed-source owner))
+                 (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                 (loop [i 0]
+                   (if (= i 4) true
+                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                       (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
+                             (= (get child :source) (p15-s23-typed-source form))
+                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)
+                             (if (= i 2) (if (= :keyword (get form :kind)) (= (get form :value) (get descriptor :key)) false) true)])
+                         (recur (+ i 1)) false))))]) false)
+          (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
+            (if (p15-s23-compiler-complete? compiled)
+              (assoc (p15-s23-compiler-result {:op :builtin-call :function 'assoc :args (get compiled :value)})
+                :work-count (+ charge (get compiled :work-count))) compiled))
+          (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-association node))))))
+
 (defn p15-s23-typed-compile-call [context node budget]
+  (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
+        (= :gravity.type/applied-map-association (get (get (get context :types) (first (get node :children))) :kind)) false)
+    (p15-s23-typed-compile-association context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (= :gravity.type/applied-integral-ordering (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-ordering context node budget)
@@ -2295,7 +2478,7 @@
               (assoc (p15-s23-compiler-result {:op :function-call :function name :args (get compiled :value)})
                 :work-count (+ 16 (count arguments) (get compiled :work-count))) compiled))
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node)))))
-      (p15-s23-typed-node-error :malformed-typed-call-family node))))))
+      (p15-s23-typed-node-error :malformed-typed-call-family node)))))))
 
 (defn p15-s23-typed-compile-collection [context node budget]
   (let [children (get node :children) attrs (get node :attributes) forms (get context :forms)

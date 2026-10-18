@@ -1029,6 +1029,68 @@ unchanged public C8 module bundle. Select that broader module composition only
 when its forwarding/module interface changes; do not replay unchanged emitter
 or runtime matrices for an effects-only correction.
 
+C8 owns effect reconstruction, not a second implementation of C7's type and
+shape solver. Its current public body-input gate checks a host-bound report
+envelope; a passed report or matching digest does not itself execute fresh C7
+verification. The paired tests above explicitly construct and verify current
+C7 products before checking effects. Preserve that distinction: C8 must check
+the source, ordered operands, completion facts and dependencies that determine
+its effects, but deep type/shape authenticity remains the upstream boundary.
+Do not add a fresh-proof wrapper to the local effect-edit loop or describe
+effect-result reconstruction as independent certification of C7 correctness.
+
+### Persistent map association
+
+The current-source development path for `(assoc map :literal-key value)` uses
+the same C7 engine, effect owner, typed emitter and `gravity.runtime` evaluator.
+Change those owning files rather than adding a new lane or wrapper. Start with:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-map-association-development-kernel \
+  --exact sh08-map-association-premises-development-kernel \
+  --exact body-map-association-development-kernel \
+  --exact body-map-association-catch-effects-development-kernel \
+  --exact current-gravity-map-association-lowering-development-kernel \
+  --exact current-gravity-map-association-runtime-development-kernel
+```
+
+The bounded operation adds or replaces one literal Keyword key in an
+established map without changing its input. Values may have established types,
+including Bool parameters and String results; they need not be literals.
+Association results retain derived shape ancestry for later association,
+lookup, supported local returns and structural matching. They are not
+relabeled literal constructors. Operator, map, key and value retain once-only
+source order; a control transfer prevents invocation. Allocation remains
+conditional on normal operand completion, with operand effects preserved.
+Typed catches can clear escaping error types without erasing the performed
+`:error/throw` effect. Check those projections separately; effect-label
+discharge remains pending profile, handler and capability authority.
+
+General or dynamic keys, variadic association, unknown map parameters,
+transients and complete collection-library support remain outside this slice.
+Changes to the type/shape carrier, effect projection or executable instruction
+require the affected real source/type/effect/lowering/runtime composition,
+separately from these normalized kernels. Neither check admits a stable module
+revision or establishes authoritative migration, target support or self-hosting.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-association-authenticated-composition
+```
+
+This selector shares each fresh paired source/type product across actual
+lowering, guest execution and C8 checks. Deep association-ancestry mutations are
+checked by the public lowerer's genuine C7 verification; effect-graph mutations
+are checked by C8's whole-result reconstruction. The seven rejected `.gravity`
+sources exercise type/key/arity/allocation boundaries; the cheap fixture check
+establishes byte-identical `.qst` counterparts, not separately executed negative
+source coverage.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary

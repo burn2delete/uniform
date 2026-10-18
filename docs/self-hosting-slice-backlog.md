@@ -1566,6 +1566,82 @@ can follow this correction. Full allocation-strategy, capability, ownership
 and deployment/provider acceptance remain separate outstanding gates; a
 source allowance is not an allocator grant.
 
+### Persistent map association: development increment
+
+The current-source candidate implements the bounded STD3 operation
+`(assoc established-map :literal-key value)` across the C7 engine, effect
+owner, typed emitter and stage-owned runtime. It adds a missing Keyword key or
+replaces its value without mutating the input. Established Bool parameters,
+String results and nested map values are not restricted to literal values.
+Derived association ancestry composes with immutable aliases, local returns,
+later association, Keyword lookup and supported structural matching. The
+descriptor records a derived map, not a fabricated literal-constructor origin.
+Normal completion allocates; a Never operand suppresses only invocation and
+own allocation, not operand effects or legality checks. Evaluation order is
+operator, map, key, value, once each until control transfers.
+
+C7 owns the deep type and shape derivation. C8 reconstructs the finite
+source/binding/order/completion premises that determine its effects, preserves
+operand dependencies and checks graph equations. It does not duplicate C7's
+shape solver. The current public C8 report-envelope gate does not itself
+execute fresh C7 verification; the affected source test explicitly constructs
+current C7 products and the public lowerer verifies them freshly. No upstream
+authentication upgrade is claimed for C8.
+
+The pre-composition focused batch passed ten tests/579 assertions in 2.135
+seconds of execution plus 8.541 seconds of namespace loading at 2 GiB. It covers the new
+type/effect/lowering/runtime kernels, paired fixture parity and allocation,
+ordering and ordinary-call regressions. Earlier failed batches remain failed:
+two synthetic error-evidence setup assertions; one test-load helper-scope
+error before assertions; and three producer mutations that changed unused
+convenience fields instead of the owning call/edge products. Corrections did
+not weaken production semantics. Independent review also caught new C8
+count-before-shape guards; the old shape guard now dominates indexing and the
+new source-vector guard precedes counting, with controlled-negative checks.
+C7 charges association work before its source/caller scan.
+
+The affected source composition completed one test/303 assertions: 299 passed,
+four failed and none errored. It remains a failed aggregate. Execution took
+934.952 seconds plus 7.968 seconds of namespace loading at 2 GiB. Both fresh
+positive source products completed public lowering, 30 guest invocations and
+C8 checking. Thirteen functions and fourteen calls retain ten association
+descriptors: eight normal and two not invoked. Seven public operations freshly
+invoke C7: four positive lowering checks and three descriptor-evidence mutation
+rejections. Two positive whole-C8 verifications and three coherently resealed
+effect-graph rejections completed, as did all seven rejected `.gravity` sources.
+Their `.qst` counterparts are byte-identical fixture checks, not separately
+executed negative source coverage.
+
+All four failed assertions were two incorrect effect expectations repeated for
+the two source extensions. Typed catches clear escaping error types, but
+`:inferred` retains the performed `:error/throw` label while handler/profile/
+capability discharge is pending. The correct inferred sets are
+`#{:memory/allocate :error/throw}` for `caught-value` and `#{:error/throw}` for
+`caught-input`; empty residual `:throws` is a separate fact. Only those test
+expectations were corrected, not production behavior. The expensive source
+composition was not replayed to obtain a green aggregate.
+
+A separate test-only follow-up passed three tests/99 assertions in 1.479
+seconds of execution plus 7.738 seconds of namespace loading at 2 GiB. It adds
+seven current-C8 checks of conservative performed effects versus covered and
+escaping typed errors, and reruns the association effect kernel and fixture
+parity. Production and fixture bytes are unchanged. This repairs the oracle;
+it does not relabel the original 303-assertion aggregate as passed.
+
+The public mutation tests prove genuine C7 rejects before lowering. Although
+repeated descriptor aliases are changed consistently, the altered input/value
+shapes do not regenerate every finite transition/result projection. These are
+not isolated proofs of deep-ancestry authentication independent of finite
+consistency checks. Negative source tests establish rejection and owning rule
+families, not a precise per-fixture diagnostic-reason oracle for every earlier
+inference path.
+
+The direct commands are in `docs/development-verification.md`.
+Dynamic/general keys, variadic association,
+unestablished map parameters, transients, complete collection-library support,
+full allocator/profile/provider/ownership legality, target completion,
+authoritative migration, self-hosting and seedless release remain outstanding.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import

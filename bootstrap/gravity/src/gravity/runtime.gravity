@@ -366,7 +366,14 @@
             (if (contains? fields :args)
               (if (vector? arguments)
                 (if comparison? (= 2 (count arguments))
-                  (if (= function 'str) (contains? #{1 2} (count arguments)) false)) false) false)
+                  (if (= function 'assoc)
+                    (if (= fields #{:op :function :args})
+                      (if (= 3 (count arguments))
+                        (let [key (get arguments 1)]
+                          (if (if (map? key) (= #{:op :value} (set (keys key))) false)
+                            (if (= :literal (get key :op))
+                              (if (keyword? (get key :value)) (if (map? (get arguments 0)) (map? (get arguments 2)) false) false) false) false)) false) false)
+                    (if (= function 'str) (contains? #{1 2} (count arguments)) false))) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -438,6 +445,11 @@
                    arguments environment output [] functions path [])]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
+              (if (= function 'assoc)
+                (if (if (map? left) (keyword? right) false)
+                  [(assoc left right (get values 2)) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :map-association-map-and-keyword-required :operation operation}
+                   (second arguments-result) :rejected])
               (if (if comparison? (if (integer? left) (integer? right) false) true)
               [(if (= function 'str)
                  (if (= (count values) 1)
@@ -454,7 +466,7 @@
                          (>= left right))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected]))
+                (second arguments-result) :rejected])))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

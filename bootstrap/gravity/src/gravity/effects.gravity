@@ -1399,16 +1399,166 @@
       (= descriptor (body-io-descriptor core node call edge (body-index (get core :nodes) :node-id)
         {(get descriptor :operator-binding-id) (get descriptor :source-binding)} (get facts :type-table) (get core :module))) false)))
 
+(defn body-ma-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (body-all?
+    [(= ['assoc :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn body-ma-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (body-io-child-types args types)
+        key-node (get nodes (get args 1))
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (body-all?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 3 (count args)) (= expected-call call) (= expected-edge edge) (body-ma-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{assoc gravity.core/assoc} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (= :literal (get key-node :core-form)) (= [] (get key-node :children))
+           (= :keyword (get (get key-node :attributes) :literal-kind)) (keyword? (get (get key-node :attributes) :value))
+           (= :gravity.type/keyword (get arguments 1))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-map-association :version :sh08-map-association-v1
+       :operation 'assoc :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-assoc
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :key (get (get key-node :attributes) :value) :application (if invoked? :normal :not-invoked)
+       :latent-effects [:memory/allocate] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
+
+(defn body-ma-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-map-association-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-map-association-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :persistent-map-association}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :transition (get descriptor :transition) :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn body-ma-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-map-association-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-map-association :applied-map-association descriptor :effect-facts-source :audited-collection-intrinsic}))
+
+(defn body-ma-context [request facts bindings budget]
+  (let [core (get request :canonical-core-artifact)
+        selected (loop [remaining (get core :calls) out []]
+                   (if (= 0 (count remaining)) out
+                     (recur (rest remaining)
+                       (if (body-ma-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module))
+                         (conj out (first remaining)) out))))]
+    (if (= 0 (count selected)) {:status :accepted :context nil :work-count 0}
+      (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
+        (if (= false (vector? forms)) (body-failure :body-map-association-source-forms-required)
+        (let [work (+ (count forms) (count bindings) (count (get core :nodes)) (count (get core :calls)) (count (get core :call-edges))
+                      (* (count selected) (+ 64 (count (get core :function-records)))))]
+        (if (> work budget) (body-failure :body-deferred-work-limit)
+          {:status :accepted :work-count work
+           :context {:forms (body-index forms :form-id) :nodes (body-index (get core :nodes) :node-id)
+                     :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
+                     :bindings bindings}})))))))
+
+(defn body-ma-call-valid? [core facts bindings node call edge nodes]
+  ; C7 owns the deep shape and transition proof. Reconstruct C8's finite
+  ; dispatch, source, type views and allocation premises; retain opaque C7
+  ; evidence exactly across its three identity-bound products.
+  (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        header (body-ma-source core node call edge nodes bindings types (get core :module))
+        forms (get (get facts :association-context) :forms)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        input-type (get (get descriptor :argument-types) 0) value-type (get (get descriptor :argument-types) 2)
+        result (get types (get node :node-id)) normal? (= :normal (get header :application))
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-association-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :persistent-map-association})]
+    (if (map? header)
+      (body-all?
+        [(= header (body-project descriptor (vec (keys header))))
+         (= (set (keys descriptor)) (set (body-add [:input-shape :value-shape :transition :result-shape :parameter-types :return :result-type]
+                                                   (vec (keys header)))))
+         (= (get descriptor :parameter-types) (get header :argument-types))
+         (= result (get descriptor :return) (get descriptor :result-type))
+         (if (= input-type :gravity.type/never) (= nil (get descriptor :input-shape))
+           (if (= :gravity.type/map (get input-type :kind))
+             (if (map? (get descriptor :input-shape)) (= input-type (get (get descriptor :input-shape) :type)) false) false))
+         (if (map? (get descriptor :value-shape)) (= value-type (get (get descriptor :value-shape) :type)) false)
+         (if normal? (if (= :gravity.type/map (get result :kind))
+                       (if (map? (get descriptor :result-shape)) (= result (get (get descriptor :result-shape) :type)) false) false)
+           (body-all? [(= result :gravity.type/never) (= nil (get descriptor :result-shape)) (= nil (get descriptor :transition))]))
+         (= :list (get owner :kind)) (vector? ids) (= 4 (count ids) (count (get node :children)))
+         (= (get node :source) (get (body-ma-form-node {} owner) :source))
+         (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
+             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+         (loop [i 0]
+           (if (= i 4) true
+             (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+               (if (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                     (= (get child :source) (get (body-ma-form-node {} form) :source))
+                     (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)
+                     (if (= i 2) (if (= :keyword (get form :kind)) (= (get form :value) (get header :key)) false) true)])
+                 (recur (+ i 1)) false))))
+         (= (body-ma-call-fact descriptor (get core :module))
+            (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+         (= [(body-ma-constraint descriptor)] rows)]) false)))
+
+(defn body-ma-form-node [node form]
+  (assoc node :source {:form-id (get form :form-id) :syntax-id (get form :syntax-id) :semantic-span (get form :source-span)
+                       :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)}))
+
+(defn body-ma-node? [node facts core]
+  (let [context (get facts :association-context) id (get node :node-id)]
+    (if (map? context)
+      (body-ma-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
+                          (get (get context :edges) id) (get context :nodes)) false)))
+
 (defn body-call-joins-with-foreign-valid? [core facts bindings foreign]
   (let [nodes (body-index (get core :nodes) :node-id)
         functions (body-index (get facts :function-type-table) :function-id)
         records (body-index (get core :function-records) :function-syntax-id)
         calls (body-index (get core :calls) :core-node-id)
         call-facts (body-index (get facts :call-type-facts) :call-core-node-id)]
-    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows []]
+    (loop [remaining (get core :call-edges) ordinal 0 used #{} intrinsic-rows [] association-rows []]
       (if (= 0 (count remaining))
         (body-all? [(= (count used) (count foreign))
-                    (= intrinsic-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-integral-ordering-v1))])
+                    (= intrinsic-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-integral-ordering-v1))
+                    (= association-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-association-v1))])
         (let [edge (first remaining) id (get edge :call-core-node-id)
               imported (get foreign (get edge :callee-binding-id))
               local? (= :local-function (get edge :classification))]
@@ -1422,12 +1572,16 @@
                     (body-ho-inner-call-valid? edge (get calls id) (get call-facts id) nodes facts)
                     (if (map? imported)
                       (body-import-call-valid? edge (get calls id) (get call-facts id) nodes records imported (get facts :type-table))
-                      (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)))) false)
+                      (if (body-ma-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
+                        (body-ma-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                        (body-io-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))))) false)
             (recur (rest remaining) (+ ordinal 1)
               (if (map? imported) (conj used (get edge :callee-binding-id)) used)
               (if (= :direct-integral-ordering (get (get call-facts id) :dispatch))
                 (conj intrinsic-rows (body-io-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))))
-                intrinsic-rows)) false))))))
+                intrinsic-rows)
+              (if (= :direct-map-association (get (get call-facts id) :dispatch))
+                (conj association-rows (body-ma-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) association-rows)) false))))))
 
 (defn body-ho-outer-fact-valid? [edge fact proof]
   (if (= (get edge :call-core-node-id) (get proof :outer-call-core-node-id))
@@ -2031,7 +2185,10 @@
   (let [ids (if (= target nil) (get node :children) (conj (get node :children) target))
         size (loop [remaining ids out 0]
                (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (body-error-types graph (first remaining)))))))]
-    (+ (if (= :collection-literal (get node :core-form)) (* 2 (+ 1 (count ids))) 0)
+    (+ (if (if (= :collection-literal (get node :core-form)) true
+              (if (= :call (get node :core-form))
+                (= :gravity.type/applied-map-association (get (get (get graph (first (get node :children))) :type) :kind)) false))
+         (* 2 (+ 1 (count ids))) 0)
        (if (= 0 size) 0 (* (+ 2 (count ids)) (+ 1 size))))))
 
 ; L6/STD3: static constructor behavior, not a claim about observed heap
@@ -2049,11 +2206,22 @@
        :extent {:unit (if (= kind :map) :entries :elements) :count (if (= kind :map) (quot (count children) 2) (count children))}
        :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis}) nil))
 
+(defn body-association-allocation [node graph]
+  (if (if (= :call (get node :core-form))
+        (= :gravity.type/applied-map-association (get (get (get graph (first (get node :children))) :type) :kind)) false)
+    {:rule-version :sh09-map-association-allocation-v1 :collection-kind :map :behavior :static-persistent-map-association
+     :condition :normal-operand-completion
+     :normal-completion-possible? (loop [remaining (get node :children)]
+                                    (if (= 0 (count remaining)) true
+                                      (if (= :gravity.type/never (get (get graph (first remaining)) :type)) false (recur (rest remaining)))))
+     :extent {:unit :association-operands :count 3}
+     :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil))
+
 (defn body-node-record [node target graph type]
   (let [kind (get node :core-form) children (get node :children) source (get node :source)
         construction? (= kind :fn) latent (if construction? (body-node-effects children graph) #{})
         deps (if construction? [] (if (= target nil) children (conj children target)))
-        allocation (body-constructor-allocation node graph)
+        allocation (if (= kind :collection-literal) (body-constructor-allocation node graph) (body-association-allocation node graph))
         direct (if (= true (get allocation :normal-completion-possible?)) #{:memory/allocate}
                  (if (if (= kind :throw) (= false (= :gravity.type/never (get (get graph (first children)) :type))) false)
                    #{:error/throw} #{}))
@@ -2199,7 +2367,8 @@
               deps (if (if (= target nil) true backedge?) (get node :children) (conj (get node :children) target))
               deps (if loop-cut? deps (body-add bodies deps))]
           (if (if (body-node-supported? node) (body-order-valid? node) false)
-            (if (if (= kind :call) (if (map? imported) true (if (map? function) true (body-io-node? node typed core)))
+            (if (if (= kind :call) (if (map? imported) true (if (map? function) true
+                                           (if (body-io-node? node typed core) true (body-ma-node? node typed core))))
                     (if (= kind :match) (body-match-valid? node core (get typed :type-table)) true))
               (if (body-ready? deps graph)
                 (recur (rest pending) deferred
@@ -2231,7 +2400,8 @@
               deps (if (= target nil) (get node :children) (conj (get node :children) target))
               deps (if (= :recur (get node :core-form)) (body-add (body-loop-body-ids node core) deps) deps)]
           (if (if (if (= :call (get node :core-form))
-                     (if (= imported nil) (if (map? (body-selected-function edge facts functions)) true (body-io-node? node facts core)) true) true)
+                     (if (= imported nil) (if (map? (body-selected-function edge facts functions)) true
+                                            (if (body-io-node? node facts core) true (body-ma-node? node facts core))) true) true)
                 (if (body-ready? deps graph)
                 (= (get graph id)
                    (if (= imported nil) (body-control-node-record node target graph (get (get facts :type-table) id) facts edge core
@@ -2433,7 +2603,8 @@
           (recur next next (get core :call-edges) touched work))
         (let [edge (first edges) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (body-io-node? (get nodes (get edge :call-core-node-id)) facts core)
+              intrinsic? (if (body-io-node? (get nodes (get edge :call-core-node-id)) facts core) true
+                             (body-ma-node? (get nodes (get edge :call-core-node-id)) facts core))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false) (body-failure :unsupported-throwing-call-component)
             (recur scope (if touches? (if local? (conj (conj next caller) callee) (conj next caller)) next) (rest edges)
@@ -2525,7 +2696,8 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (= :gravity.type/applied-integral-ordering (get (get types (first (get node :children))) :kind))
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association}
+                                                    (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
                  :operand-types argument-types :callee-source-body-id body :normal-invocation? invoked?
@@ -2624,9 +2796,13 @@
              :effect missing})))))))
 
 (defn body-analyze-module [request facts foreign budget]
-  (let [core (get request :canonical-core-artifact)
-        bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
+  (let [core (get request :canonical-core-artifact)]
     (if (body-shape-valid? core facts)
+    (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)
+        associations (body-ma-context request facts bindings budget)
+        source-work (get associations :work-count 0)
+        facts (assoc facts :association-context (get associations :context)) budget (- budget source-work)]
+    (if (= :accepted (get associations :status))
       (if (if (if (contains? facts :higher-order-proof) (body-ho-proof-valid? core facts bindings) true)
             (if (body-function-joins-valid? core facts bindings)
             (if (body-call-joins-with-foreign-valid? core facts bindings foreign)
@@ -2665,9 +2841,9 @@
                               (- budget (get handlers :work-count) (get throws :work-count) (get derived :work-count)
                                         (get handler-check :work-count) (get propagated :work-count))) propagated)]
               (if (= :accepted (get allowed :status))
-                {:status :accepted :graph graph :work-count (+ (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
+                {:status :accepted :graph graph :work-count (+ source-work (get handlers :work-count) (get handler-check :work-count) (get throws :work-count) (get derived :work-count)
                                                              (get propagated :work-count) (get allowed :work-count))} allowed)) derived))
-        (body-failure :incoherent-function-or-call-body-type-origin-join))
+        (body-failure :incoherent-function-or-call-body-type-origin-join)) associations))
       (body-failure :incomplete-canonical-core-coverage))))
 
 (defn body-analyze-producers [entries]
