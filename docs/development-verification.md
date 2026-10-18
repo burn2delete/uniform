@@ -1611,7 +1611,7 @@ The backlog records the original partial-error composition and its separate
 remaining-negative result. The oversized literal reaches C6's fragment-form
 bound before C7's vector extent check; the latter has normalized kernel coverage.
 
-### Atomic and Vector value equality development
+### Value equality development
 
 STD2 owns value equality; STD4 requires exact text semantics. The current
 binary `=` development slice covers Nil, Bool, Character, String, Symbol and
@@ -1628,6 +1628,15 @@ not a requirement for literal-constructor ancestry. Counts, positions and
 stored values matter; physical sharing and type identity do not decide the
 answer. Numeric members, bare/unknown Vector types and other collection
 domains remain unsupported by this implementation, not forbidden by STD3.
+
+The integral path follows STD5 and SAFE9: two independently established
+operands of the same integral type compare their original integer values.
+It records `:proof-required` and `:proven-safe` because comparison performs
+no conversion or arithmetic and cannot overflow or round. The supported type
+families are Integer, I8/I16/I32/I64 and U8/U16/U32/U64. Generic Integer does not
+select a new machine-width or arbitrary-precision arithmetic policy. Mixed
+types, floating/decimal/ratio equality and numeric Vector members remain
+separate implementation frontiers.
 
 Use the owning type, effect, lowering and runtime kernels without rebuilding
 upstream products:
@@ -1657,7 +1666,26 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-vector-equality-development-kernel --fail-fast
 ```
 
-These checks cover bounded type/value traversal and rejected-work accounting.
+For an integral equality change, use its corresponding owners:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-integral-equality-development-kernel \
+  --exact body-integral-equality-development-kernel \
+  --exact current-gravity-integral-equality-lowering-development-kernel \
+  --exact current-gravity-integral-equality-runtime-development-kernel --fail-fast
+```
+
+Its fixed-width type cases are normalized compiler evidence. Runtime checks
+exercise the existing represented-Integer primitive, including adjacent values
+above `2^53`; a host `integer?` check does not admit arbitrary raw values into
+fixed-width source parameters. One Never operand does not excuse the other
+operand's type legality.
+
+The Vector checks cover bounded type/value traversal and rejected-work accounting.
 Both complete runtime operand domains are validated before a length or earlier
 element mismatch can return false. The query adds no guest allocation; operand
 constructors still retain their C8 allocation effects. This is not a claim
@@ -1705,6 +1733,15 @@ products for hostile mutations. Run this affected composition once after the
 owning checks and review; documentation edits do not require reconstructing
 unchanged products. The fixture's explicit allocation allowance does not settle
 the full W5 module's current empty effect declaration.
+
+The corresponding integral selector is
+`current-gravity-integral-value-equality-authenticated-composition`. It checks
+real W5-style count and private ordinal comparisons, a typed left-operand
+transfer that suppresses the right operand, and mixed I64/U64 source rejection.
+The accepted I64/U64 function bodies are compiled and checked, not invoked with
+raw host values. Handler type flow does not discharge profile/provider or
+capability authority; the effect artifact retains that pending boundary. Keep
+those claims separate from the executed generic-Integer results.
 
 ### Persistent List prepend: focused feedback
 

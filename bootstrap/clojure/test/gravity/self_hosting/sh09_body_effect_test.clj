@@ -1217,6 +1217,71 @@
               (is (= analyzed (analyze work)))
               (is (= :rejected (:status (analyze (dec work))))))))))))
 
+(deftest body-integral-equality-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)
+        families [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64]]
+    (doseq [family families arguments [[family family] [family :gravity.type/never] [:gravity.type/never family]]]
+      (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1450 1460)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
+            types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+            result (c7 'sh08-ie-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-ie-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-ie-constraint [descriptor])]}
+            context (leaf 'body-ae-context request facts (:bindings base) 65536)
+            facts (assoc facts :equality-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)])
+            coherent (fn [changed]
+                       (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                           (assoc :call-type-facts [(c7 'sh08-ie-call-fact [changed (:module base)])]
+                                  :constraint-ledger [(c7 'sh08-ie-constraint [changed])])))]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (nil? (get-in context [:context :vector-domains])))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :arg0 :arg1]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (leaf 'body-ae-context request facts (:bindings base) (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-ae-context request facts (:bindings base) (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :version :sh08-integral-ordering-v1)
+                         (assoc descriptor :numeric-mode :arbitrary-precision)
+                         (assoc descriptor :safety :runtime-checked)
+                         (assoc descriptor :safety-rule :host-default)
+                         (assoc descriptor :integer-type :gravity.type/string)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc descriptor :layer0-owner 'host.math)
+                         (assoc-in descriptor [:equality-policy :conversion] :widen)
+                         (assoc-in descriptor [:equality-policy :comparison] :type-based-constant)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :result-type :gravity.type/string)]]
+          (is (false? (valid (coherent changed)))))
+        (doseq [changed [(assoc facts :constraint-ledger [])
+                         (update facts :constraint-ledger into (:constraint-ledger facts))
+                         (assoc-in facts [:type-table (ids :arg0)] :gravity.type/unknown)
+                         (assoc-in facts [:type-table (ids :arg0)] :gravity.type/string)
+                         (assoc-in facts [:type-table (ids :arg0)] :gravity.type/never)
+                         (assoc-in facts [:call-type-facts 0 :dispatch] :direct-atomic-equality)]]
+          (when-not (= changed facts) (is (false? (valid changed)))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                          (assoc-in (:nodes graph) [(ids :call) :direct] #{:memory/allocate}))))))))
+
 (deftest body-vector-equality-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)

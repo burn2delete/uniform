@@ -4955,6 +4955,32 @@
         (is (str/ends-with? text ")\n"))
         (is (not (str/ends-with? text "\n\n")))))))
 
+(deftest current-gravity-integral-equality-runtime-development-kernel
+  ;; This checks the existing represented-Integer primitive. It grants no
+  ;; fixed-width raw-host range or source-admission authority.
+  (let [runtime-plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+        literal (fn [value] {:op :literal :value value})
+        compare (fn [left right] {:op :builtin-call :function '= :args [left right]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        values [-9223372036854775808N -1 0 7 9007199254740992N 9007199254740993N 9223372036854775807N 18446744073709551615N]]
+    (doseq [left values right values]
+      (is (= [(= left right) "" :normal] (evaluate (compare (literal left) (literal right))))))
+    (is (= [true "" :normal] (evaluate (compare (literal 7) (literal 7N)))))
+    (doseq [unsupported [nil false "7" :seven 'seven 7.0 7M 1/2]
+            pair [[7 unsupported] [unsupported 7]]]
+      (let [result (evaluate (apply compare (mapv literal pair)))]
+        (is (= :rejected (last result)))
+        (is (= :atomic-value-equality-domain-required (get-in result [0 :reason])))))
+    (let [result (evaluate (compare (literal [7]) (literal [7])))]
+      (is (= :rejected (last result)))
+      (is (= :vector-value-equality-domain-required (get-in result [0 :reason]))))
+    (let [say (fn [value] {:op :println :args [(literal value)] :effect :io/write :capability :io/stdout})
+          marked (fn [label value] {:op :do :body [(say label) (literal value)]})]
+      (is (= [true "left\nright\n" :normal] (evaluate (compare (marked "left" 7) (marked "right" 7)))))
+      (is (= [:stop "" :thrown]
+             (evaluate (compare {:op :throw :value (literal :stop)} (marked "unreached" 7))))))))
+
 (deftest current-gravity-vector-equality-development-kernel
   (let [runtime-plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
@@ -5370,6 +5396,177 @@
         (is (= ['span] (nth (first definitions) 2)))
         (is (= #{:memory/allocate} (:effects directives)))
         (is (= ['span-one 'span-two 'main] (:exports directives)))))))
+
+(deftest current-gravity-integral-value-equality-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom []) executions (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        modes [:artifact :manifest :diagnostic :conformance :runtime-output :ir-modulo-id :reviewed-delta]
+        checks [['w5-stage-equivalence-modes modes] ['equal-count true] ['different-count false]
+                ['ordinal-different false] ['caught-first true] ['main true]]
+        definition-text "(def w5-se-required-modes\n  [:artifact :manifest :diagnostic :conformance :runtime-output\n   :ir-modulo-id :reviewed-delta])"
+        getter-text "(defn w5-stage-equivalence-modes []\n  w5-se-required-modes)"
+        w5 (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        _ (doseq [snippet [definition-text getter-text]] (is (str/includes? w5 snippet)))
+        _ (doseq [[directory name] [["accepted" "integral-value-equality"] ["rejected" "integral-value-equality-mixed-types"]]]
+            (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
+                  gravity (slurp (io/file root (str stem ".gravity"))) qst (slurp (io/file root (str stem ".qst")))]
+              (is (= gravity qst))
+              (doseq [snippet [definition-text getter-text]] (is (str/includes? gravity snippet)))))
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/integral-value-equality" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                  _ (is (= :passed (get-in input [:verification :status])))
+                  _ (when-not (= :accepted (get-in input [:typed :status]))
+                      (throw (ex-info "Integral equality C7 rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  records (into {} (map (juxt :definition-name identity) (:function-records core)))
+                  calls (:call-type-facts facts)
+                  descriptors (mapv :applied-integral-equality (filter #(= :direct-integral-equality (:dispatch %)) calls))
+                  rows (filterv #(= :sh08-integral-equality-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  caught (first (filter #(= (get-in records ['caught-first :function-syntax-id])
+                                            (get-in % [:source-edge :caller-function-syntax-id])) descriptors))
+                  throw-row (first (filter #(and (= :sh08-acyclic-local-thrown-errors-v1 (:producer-rule %))
+                                                 (= (:call-core-node-id caught) (get-in % [:lhs :core-node-id]))) (:constraint-ledger facts)))
+                  attempt (first (filter #(and (= :try (:core-form %))
+                                               (= (get-in records ['caught-first :function-syntax-id])
+                                                  (get-in % [:evaluation :owner-function-syntax-id]))) (:nodes core)))
+                  bindings (get-in input [:request :b47-context :authenticated-core-request :binding-table])
+                  private-binding (first (filter #(and (= 'same-ordinal (:name %)) (= :namespace (:binding-class %))) bindings))
+                  entries (filterv #(= (get-in records ['same-ordinal :function-syntax-id]) (:callee-function-syntax-id %)) calls)
+                  manifest (:module-initialization assembled) global (first (:roots manifest))
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                  _ (when-not (= :accepted (:status effects)) (throw (ex-info "Integral equality C8 rejected" {:effects effects})))
+                  effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                  _ (is (= :passed (:status effect-verification)))
+                  _ (when-not (= :passed (:status effect-verification))
+                      (throw (ex-info "Integral equality C8 verification rejected" {:verification effect-verification})))
+                  graph (:effect-graph effects)
+                  results (mapv (fn [[name expected]]
+                                  (let [result (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [(assoc assembled :entrypoint name)])]
+                                    (swap! executions conj name)
+                                    (is (= :complete (:status result)) (pr-str result))
+                                    (is (= expected (:entrypoint-result result)) (str extension " " name))
+                                    (is (= "" (:stdout result)))
+                                    (is (= [(:binding-id global)] (get-in result [:module-initialization :initialized-binding-ids])))
+                                    (is (= {(:binding-id global) {:vector-literal 1}}
+                                           (get-in result [:module-initialization :validated-constructor-occurrences])))
+                                    result)) checks)]
+              (is (= 9 (count (:function-records core)) (count functions) (count (:functions assembled))))
+              (is (= 17 (count (:calls core)) (count (:call-edges core)) (count calls)))
+              (is (= 6 (count descriptors) (count rows)))
+              (is (= {:gravity.type/integer 4 :gravity.type/i64 1 :gravity.type/u64 1} (frequencies (map :integer-type descriptors))))
+              (is (= {:normal 5 :not-invoked 1} (frequencies (map :application descriptors))))
+              (is (= 11 (get-in assembled [:instruction-summary :builtin-call])))
+              (is (= 1 (get-in assembled [:instruction-summary :vector-literal])))
+              (is (= 10 (count (:roots manifest))))
+              (is (= 1 (count (:initializers manifest))))
+              (is (= '[expected actual] (get-in definitions ['same-ordinal :params])))
+              (is (= :private (:visibility private-binding)))
+              (is (not (contains? (set (get-in core [:module :exports])) 'same-ordinal)))
+              (is (= [:gravity.type/integer :gravity.type/integer] (mapv :type (get-in functions ['same-ordinal :parameters]))))
+              (is (= 2 (count entries)))
+              (is (every? #(= [:gravity.type/integer :gravity.type/integer] (:argument-types %)) entries))
+              ;; Fixed-width source declarations are compiled and checked, not
+              ;; invoked with raw host values through an untyped test boundary.
+              (doseq [[name family] [['same-i64 :gravity.type/i64] ['same-u64 :gravity.type/u64]]]
+                (is (= [family family] (mapv :type (get-in functions [name :parameters])))))
+              (doseq [descriptor descriptors]
+                (is (= :gravity.type/applied-integral-equality (:kind descriptor)))
+                (is (= :sh08-integral-equality-v1 (:version descriptor)))
+                (is (= ['gravity.math 'gravity.math.core] ((juxt :semantic-owner :layer0-owner) descriptor)))
+                (is (= [:proof-required :proven-safe :same-integral-value-equality-no-conversion-overflow-or-rounding]
+                       ((juxt :numeric-mode :safety :safety-rule) descriptor)))
+                (is (= :original-integer-values (get-in descriptor [:equality-policy :comparison])))
+                (is (= :none (get-in descriptor [:equality-policy :conversion])))
+                (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
+                (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+                (is (nil? (get-in graph [:nodes (:call-core-node-id descriptor) :allocation]))))
+              (is (= [:gravity.type/never :gravity.type/integer] (:argument-types caught)))
+              (is (= :gravity.type/never (:result-type caught)))
+              (is (= :not-invoked (:application caught)))
+              (is (= caught (get-in throw-row [:dependencies :callee-normal-type])))
+              (is (= false (get-in throw-row [:dependencies :normal-invocation?])))
+              (is (= [:gravity.type/string] (:rhs throw-row)))
+              (is (= 2 (count (:error-transfers core))))
+              (is (= 1 (count (:error-handlers core))))
+              (is (= #{:error/throw} (get-in graph [:nodes (:call-core-node-id caught) :transitive])))
+              (is (= false (get-in graph [:nodes (:call-core-node-id caught) :throw-call-dependency :normal-invocation?])))
+              (is (= [] (get-in graph [:nodes (:node-id attempt) :escaping-thrown-error-types])))
+              (is (= :pending-profile-handler-capability-authority (get-in graph [:nodes (:node-id attempt) :effect-label-discharge])))
+              (doseq [[name function] functions]
+                (is (= (if (= name 'caught-first) #{:error/throw} #{}) (get-in graph [:functions (:function-id function) :inferred]))))
+              (is (= [] (get-in graph [:functions (get-in functions ['caught-first :function-id]) :throws])))
+              (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) facts {} %)
+                      analyzed (analyze 65536) work (:work-count analyzed)]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze work)))
+                  (is (= :rejected (:status (analyze (dec work)))))))
+              {:input input :module module :definitions definitions :assembled assembled :descriptors descriptors
+               :caught caught :attempt attempt :binding binding :effects effects :results results}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions assembled caught attempt effects binding]} (first cases)
+        changed (assoc caught :numeric-mode :wrapping)
+        hostile (walk/postwalk #(if (= caught %) changed %) (:typed input))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (= (:module-initialization assembled) (get-in cases [1 :assembled :module-initialization])))
+    (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [verification (assoc (:verification input) :expected hostile :candidate hostile)
+          hostile-binding (seal (:request input) hostile verification)
+          result (c8 'build-body-effect-result hostile verification hostile-binding)]
+      (is (true? (c8 'body-input-valid? hostile verification hostile-binding)))
+      (is (= :rejected (:status result)))
+      (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason]))))
+    (let [graph (:effect-graph effects) id (:call-core-node-id caught)]
+      (doseq [candidate [(assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                         (assoc-in graph [:nodes id :transitive] #{})
+                         (assoc-in graph [:nodes id :throw-call-dependency :normal-invocation?] true)
+                         (assoc-in graph [:nodes (:node-id attempt) :escaping-thrown-error-types] [:gravity.type/string])]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects candidate)))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/integral-value-equality-mixed-types.gravity")
+          diagnostics (get-in products [:typed :diagnostics])]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (some #(= ["C7-TYPE-MISMATCH" :integral-equality-same-type-required] ((juxt :rule :reason) %)) diagnostics) (pr-str diagnostics)))
+    (is (= 3 (count @verified)))
+    (is (= (vec (mapcat (fn [_] (mapv first checks)) [".gravity" ".qst"])) @executions))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/integral-value-equality.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/integral-value-equality.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/integral-value-equality-mixed-types.gravity"] @built))))
 
 (deftest current-gravity-vector-value-equality-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
@@ -9595,6 +9792,71 @@
         (is (= :rejected (get-in products [:typed :status])) suffix)
         (is (contains? expected ((juxt :rule :reason) diagnostic)) (pr-str [suffix diagnostic]))))))
 
+
+(deftest current-gravity-integral-equality-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        families [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64]
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [family families arguments [[family family] [family :gravity.type/never] [:gravity.type/never family]]]
+      (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
+            result (c7 'sh08-ie-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-ie-call-fact [descriptor module])} :ledger [(c7 'sh08-ie-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node %1 :call %2)
+            own #(invoke 'p15-s23-typed-compile-integral-equality %1 node %2)
+            lowered (compile context 65536)
+            coherent (fn [changed]
+                       (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-ie-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-ie-constraint [changed])])))]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (is (= lowered (compile context (:work-count lowered))))
+        (let [charge (+ 66 (count (:function-records core)))
+              limited (compile context (dec (:work-count lowered)))]
+          (is (= :typed-lowering-work-limit (get-in limited [:facts :reason])))
+          (is (= (:work-count lowered) (:work-count limited)))
+          (is (= charge (:work-count (own context (dec charge)))))
+          (is (= (inc charge) (:work-count (own context charge))))
+          (is (= charge (:work-count (own (assoc-in context [:forms :operator :value] 'identical?) 65536))))
+          (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+            (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
+                                (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
+                                (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
+                  child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id 65536)
+                  failure (compile candidate 65536)]
+              (is (= :rejected (:status child) (:status failure)))
+              (is (= (:facts child) (:facts failure)))
+              (is (= (+ charge index (:work-count child)) (:work-count failure))))))
+        (doseq [changed [(assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :version :sh08-integral-ordering-v1)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc descriptor :numeric-mode :wrapping)
+                         (assoc descriptor :safety :runtime-checked)
+                         (assoc descriptor :safety-rule :host-default)
+                         (assoc-in descriptor [:equality-policy :conversion] :widen)
+                         (assoc-in descriptor [:equality-policy :comparison] :type-based-constant)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :result-type :gravity.type/string)]]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:types :arg0] :gravity.type/unknown)
+                        #(assoc-in % [:types :arg0] :gravity.type/string)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
 
 (deftest current-gravity-vector-equality-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)

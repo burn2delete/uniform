@@ -2279,11 +2279,59 @@ Negative QST files have byte-parity coverage only. Never, hidden unsupported
 payloads and lowering failure-work cases have focused kernel coverage, not
 additional source constructions. Constructor-occurrence metadata is not
 allocation-event instrumentation; cross-instance nonidentity is not a
-no-sharing theorem. Scalar integral equality, general collection equality,
+no-sharing theorem. Scalar integral equality is covered separately below;
+general collection equality,
 full W5's empty effect declaration, provider/profile/ownership and other
 targets, authoritative migration, self-hosting and release remain separate
 gates. These results are executable development evidence, not a benchmark or
 completion of those broader contracts.
+
+### Same-type integral value equality: development implementation
+
+Binary `=` now compares original values of two independently established
+operands of the same integral type: Integer, I8/I16/I32/I64 or U8/U16/U32/U64.
+The numeric-owned descriptor retains the existing core compatibility binding.
+STD5/SAFE9 comparison is `:proof-required` and `:proven-safe`: it performs no
+conversion or arithmetic, so it cannot overflow or round. Generic Integer
+does not select a new fixed-width or arbitrary-precision arithmetic policy.
+Mixed types and unsupported domains reject; a Never operand does not excuse
+the other operand's legality. Numeric Vector members remain unsupported.
+
+C7 records the distinct numeric constraint and call fact; C8 independently
+reconstructs its type, source, binding and policy premises. The typed emitter
+preserves once-only left-to-right operands and rejected-work accounting.
+The existing runtime integer equality primitive is unchanged. Its represented
+Integer checks are not authority to admit arbitrary host values into typed
+fixed-width source parameters.
+
+Focused type/runtime checks passed 6 tests / 1,964 assertions, including atomic,
+nil-bearing, Vector and integral-ordering regressions. Effect/lowering checks
+passed 9 / 2,160. These batches include overlapping loader and compatibility
+assertions. All nine integral families and coherent source, binding, type,
+numeric-policy and budget negatives have normalized compiler coverage;
+runtime checks include adjacent integer values above `2^53`, original values,
+operand order and first-transfer suppression. Those focused results alone do
+not establish fresh source composition or authoritative migration.
+
+The separate sole source composition passed 1 test / 293 assertions (287
+composition checks plus six loader checks), with 345.616 seconds of selected
+execution after 9.825 seconds of namespace loading at 2 GiB. Three fresh
+products cover the accepted Gravity/QST pair and mixed-I64/U64 Gravity
+rejection. Three tracked public C7 assembly/forgery gates are separate from
+upstream verification. Twelve closed executions follow accepted C8 analysis
+and passed verification: the original W5 modes getter, count equality and
+inequality, private ordinal inference and the typed transfer/handler path.
+An actual left-operand String throw suppresses the right operand; its handler
+leaves no escaping typed error while C8 retains the error effect label and
+pending handler-authority boundary. Same-I64/U64 source functions are compiled
+and checked, not invoked with raw host values. Negative QST has byte-parity
+coverage only. Coherent type/effect/graph negatives and exact/one-less C8
+budgets reuse the retained products. No AR attempt failed or was replayed.
+
+Floating, decimal, ratio and mixed-type equality, arithmetic, numeric Vector
+members, full W5, provider/profile/ownership and other targets remain separate
+frontiers. No self-hosting, seed-retirement, release or performance claim is
+made by these development checks.
 
 ### Private call-entry Map presence: development implementation
 

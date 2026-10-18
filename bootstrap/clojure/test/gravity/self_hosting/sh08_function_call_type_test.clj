@@ -3412,6 +3412,81 @@
         (is (= :accepted (:status (derive work))))
         (is (= :atomic-equality-work-limit (:reason (derive (dec work)))))))))
 
+(deftest sh08-integral-equality-development-kernel
+  (let [families [:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64]
+        derive (fn [input budget]
+                 (let [{:keys [core node call edge nodes bindings types forms]} input]
+                   (invoke-c7 'sh08-ie-derive [core node call edge nodes bindings types forms budget])))]
+    ;; Fixed-width coverage here is normalized type evidence, not raw-host admission.
+    (doseq [family families pair [[family family] [family :gravity.type/never] [:gravity.type/never family]]]
+      (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input} (atomic-equality-input pair)
+            result (derive input 65536) descriptor (:descriptor result) normal? (= pair [family family])
+            established (assoc types :operator descriptor)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :gravity.type/applied-integral-equality (:kind descriptor)))
+        (is (= :sh08-integral-equality-v1 (:version descriptor)))
+        (is (= family (:integer-type descriptor)))
+        (is (= pair (:argument-types descriptor)))
+        (is (= [family family] (:parameter-types descriptor)))
+        (is (= :gravity.type/bool (:return descriptor)))
+        (is (= (if normal? :gravity.type/bool :gravity.type/never) (:type result) (:result-type descriptor)))
+        (is (= (if normal? :normal :not-invoked) (:application descriptor)))
+        (is (= [:proof-required :proven-safe :same-integral-value-equality-no-conversion-overflow-or-rounding]
+               ((juxt :numeric-mode :safety :safety-rule) descriptor)))
+        (is (= 'gravity.math (:semantic-owner descriptor)))
+        (is (= 'gravity.math.core (:layer0-owner descriptor)))
+        (is (= :original-integer-values (get-in descriptor [:equality-policy :comparison])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-ie-constraint [descriptor])] (:constraints inferred)))
+        (is (= :direct-integral-equality (:dispatch (invoke-c7 'sh08-ie-call-fact [descriptor (:module input)]))))
+        (is (= true (invoke-c7 'sh08-ae-inferred-call-valid? [core node call edge nodes bindings established])))
+        (is (= result (derive input (:work-count result))))
+        (let [limited (derive input (dec (:work-count result)))]
+          (is (= :integral-equality-work-limit (:reason limited)))
+          (is (= (:work-count result) (:work-count limited))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :numeric-mode :wrapping)
+                         (assoc descriptor :safety :runtime-checked)
+                         (assoc descriptor :integer-type :gravity.type/string)
+                         (assoc-in descriptor [:equality-policy :conversion] :widen)
+                         (assoc-in descriptor [:equality-policy :comparison] :type-based-constant)]]
+          (is (false? (invoke-c7 'sh08-ae-inferred-call-valid?
+                         [core node call edge nodes bindings (assoc established :operator changed)]))))))
+    (doseq [left families right families :when (not= left right)]
+      (is (= :integral-equality-same-type-required
+             (:reason (derive (atomic-equality-input [left right]) 65536)))))
+    (doseq [unsupported [nil :gravity.type/unknown :gravity.type/bool :gravity.type/string :gravity.type/nil
+                         :gravity.type/f32 :gravity.type/f64 :gravity.type/decimal :gravity.type/ratio
+                         {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/integer]}
+                         {:kind :gravity.type/nil-or :value-type :gravity.type/integer}]
+            pair [[:gravity.type/integer unsupported] [unsupported :gravity.type/integer]
+                  [:gravity.type/never unsupported] [unsupported :gravity.type/never]]]
+      (is (= :rejected (:status (derive (atomic-equality-input pair) 65536)))))
+    (let [input (atomic-equality-input [:gravity.type/integer :gravity.type/integer])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :ordered-evaluation-node-ids] [:operator :arg1 :arg0])
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :unrelated)
+                      #(assoc-in % [:forms :operator :value] 'identical?)]]
+        (is (= :integral-equality-source-mismatch (:reason (derive (mutate input) 65536)))))
+      (is (= :integral-equality-arity-mismatch (:reason (derive (assoc-in input [:call :argument-node-ids] [:arg0]) 65536)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "type hash")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "type equals"))))]
+      (is (= false (invoke-c7 'sh08-ie-type? [opaque])))
+      (is (nil? (invoke-c7 'sh08-ie-family [[:gravity.type/integer opaque]])))
+      (is (= 0 @callbacks)))))
+
 (deftest sh08-vector-equality-development-kernel
   (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
         nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
