@@ -2191,6 +2191,50 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Proven-present Map lookup: development implementation
+
+This increment adds `(get map :key)` when independent finite Map-shape facts
+establish the literal Keyword's presence and selected stored type. STD3's
+present-key rule preserves false/nil values, inert payloads, the original Map
+and Map-then-key evaluation. It defines no absent-key result. C7 derives shape
+from the existing owning analysis; C8 and lowering check the retained finite
+selection and their own source/type/row premises. Existing three-argument
+lookup remains unchanged. No new runtime operation or testing lane is added.
+
+Focused checks currently have six distinct passing selectors / 809 assertions:
+C7 present lookup 134, C8 present lookup 190, present lowering 154, and existing
+defaulted lookup C7 183, C8 68 and lowering 80. The lowering count includes six
+unchanged runtime-loader assertions; its five normal field extractions observe
+String, Integer, Keyword, false and nil values. These are normalized inputs,
+not accepted source modules.
+
+The first batch remains failed with 794 passing assertions and 15 failures:
+full inference had not registered two-argument lookup's shape-context demand.
+The correction selects only the authenticated two-argument operation in the
+existing demand loop. Its first targeted run stopped on a delimiter error
+before semantic assertions; the corrected targeted C7 run passed 134. The
+other five passing selectors were retained, not rerun for a green aggregate.
+
+The paired-source composition passed 1 test / 416 assertions, including six
+unchanged runtime-loader assertions, in 424.148 seconds at a 2 GiB heap. It
+constructed exactly the accepted Gravity/QST pair and the existing empty-Map
+missing-key rejection. The accepted products cover 15 functions, 15 calls,
+12 present-key lookups (eight normal and four non-returning), one unchanged
+defaulted lookup and 30 guest executions. Eight caught String identity checks
+preserve real Map/key transfers. Local Map returns and immutable aliases retain
+their independently derived selection facts; original Maps and quoted payloads
+remain unchanged and inert.
+
+Both whole C8 results passed. Exact/one-below work, ledger/effect mutations and
+same-type wrong-field selection reject. Public C7 reconstructs deep source
+shape; C8 checks selection against genuine retained input shape, not an
+independent quote/type solver. The real missing-key source now rejects with
+`C7-ANNOTATION` / `:map-get-presence-required`; its QST counterpart was not
+separately built. All 15 selected inputs remained unchanged. This is executable
+development support, not unknown-member or dynamic-key lookup, an absent-key
+policy, whole W5 execution, authoritative migration, target completion,
+self-hosting or release evidence.
+
 ### Bare Map parameters: development implementation
 
 This slice adds explicitly annotated bare `Map` parameters and family-only

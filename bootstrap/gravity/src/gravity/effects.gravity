@@ -3311,6 +3311,54 @@
                   (recur (+ i 2)) false)))) false)
         true) false)))
 
+(defn body-mg-present-operands? [arguments args nodes]
+  (let [map-type (get arguments 0) key-type (get arguments 1) key-node (get nodes (get args 1))
+        normal? (if (= :gravity.type/never map-type) false (= false (= :gravity.type/never key-type)))]
+    (if (if (= :gravity.type/never map-type) true (body-mg-map-valid? map-type))
+      (if (if (= :gravity.type/never key-type) true
+            (body-all? [(= :gravity.type/keyword key-type) (= :literal (get key-node :core-form))
+                  (= [] (get key-node :children)) (= :keyword (get (get key-node :attributes) :literal-kind))
+                  (keyword? (get (get key-node :attributes) :value))]))
+        (if normal? (if (map? map-type) (= :gravity.type/map (get map-type :kind)) false) true) false) false)))
+
+(defn body-mg-present-header [header nodes]
+  (let [args (get (get header :source-call) :argument-node-ids) key-node (get nodes (get args 1))]
+    (assoc header :version :sh08-map-get-present-v1 :intrinsic :gravity.collections/map-lookup-present
+      :key-node-id (get args 1) :key (if (= :gravity.type/never (get (get header :argument-types) 1)) nil
+                                   (get (get key-node :attributes) :value))
+      :lookup-policy {:input :established-finite-map :keys [:literal-keyword] :key-equality :value
+                      :presence :proven-present :default :none :normalization :none :coercion :none
+                      :operand-evaluation :map-then-key-once :result :selected-stored-type}
+      :invalidation (conj (get header :invalidation) :actual-key :finite-map-shape :selected-part))))
+
+(defn body-mg-present-selection [header input]
+  ; C7 owns the source-derived shape. Each consumer joins its actual key,
+  ; finite coordinates and selected type without inferring presence from types.
+  (let [parts (get input :parts) type (get (get header :argument-types) 0) members (get type :member-types)]
+    (if (if (= :normal (get header :application))
+          (if (vector? parts) (if (<= (count parts) 512)
+            (body-all? [(= :accepted (get input :status)) (= :map (get input :shape-kind))
+                  (= type (get input :type)) (vector? members) (= (* 2 (count parts)) (count members))]) false) false) false)
+      (loop [index 0 seen #{} selected nil]
+        (if (= index (count parts)) selected
+          (let [part (get parts index) key (get part :key) shape (get part :shape)]
+            (if (body-all? [(keyword? key) (= false (contains? seen key)) (= (+ 1 (* 2 index)) (get part :coordinate))
+                      (= :gravity.type/keyword (get members (* 2 index)))
+                      (= :accepted (get shape :status)) (body-mg-normal-known? (get shape :type))
+                      (= (get shape :type) (get members (+ 1 (* 2 index))))])
+              (recur (+ index 1) (conj seen key) (if (= key (get header :key)) part selected)) nil)))) nil)))
+
+(defn body-mg-present-finish [header input]
+  (let [normal? (= :normal (get header :application)) part (if normal? (body-mg-present-selection header input) nil)
+        type (if normal? (get (get part :shape) :type) :gravity.type/never)]
+    (if (if normal? (map? part) (= input nil))
+      (assoc header :parameter-types (get header :argument-types) :return type :result-type type
+        :presence-proof (if normal?
+                          {:kind :finite-map-key-presence :key (get header :key)
+                           :operand-node-id (get (get (get header :source-call) :argument-node-ids) 0)
+                           :operand-type (get (get header :argument-types) 0) :operand-shape input
+                           :selected-part part :selected-coordinate (get part :coordinate) :selected-type type} nil)) nil)))
+
 (defn body-mg-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (body-all?
@@ -3343,7 +3391,7 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (body-all?
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (= 3 (count args)) (= expected-call call) (= expected-edge edge) (body-mg-binding? binding module)
+           (contains? #{2 3} (count args)) (= expected-call call) (= expected-edge edge) (body-mg-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
@@ -3351,11 +3399,11 @@
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
-           (body-mg-operands? arguments invoked?)
+           (if (= 2 (count args)) (body-mg-present-operands? arguments args nodes) (body-mg-operands? arguments invoked?))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-map-get :version :sh08-map-get-v1
+      (let [header {:kind :gravity.type/applied-map-get :version :sh08-map-get-v1
        :operation 'get :semantic-owner 'gravity.collections :intrinsic :gravity.collections/map-lookup-default
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -3367,7 +3415,8 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :member-types :key-domain :default-type :lookup-policy :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :member-types :key-domain :default-type :lookup-policy :profile :target :evaluation-order]}]
+        (if (= 2 (count args)) (body-mg-present-header header nodes) header)) nil)) nil))
 
 (defn body-mg-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-get-constraint-v1 :application descriptor}
@@ -3402,7 +3451,9 @@
                    (let [call (first remaining)
                          selected? (body-mg-binding? (get bindings (get call :operator-binding-id)) (get core :module))]
                      (recur (rest remaining) (+ count-calls (if selected? 1 0))
-                       (+ member-work (if selected? (body-mg-member-count (get (get facts :type-table) (first (get call :argument-node-ids)))) 0))))))
+                       (+ member-work (if selected?
+                         (let [members (body-mg-member-count (get (get facts :type-table) (first (get call :argument-node-ids))))]
+                           (+ members (if (= 2 (count (get call :argument-node-ids))) (+ 1 (* 2 members)) 0))) 0))))))
         count-calls (get census :calls)]
     (if (= 0 count-calls) {:status :accepted :context nil :work-count 0}
       (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
@@ -3415,7 +3466,41 @@
                          :calls (body-index (get core :calls) :core-node-id) :edges (body-index (get core :call-edges) :call-core-node-id)
                          :bindings bindings}})))))))
 
+(defn body-mg-present-forms? [node nodes forms header]
+  (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        children (get node :children)]
+    (if (if (vector? ids) (= 3 (count ids) (count children)) false)
+      (body-all? [(= :list (get owner :kind)) (= (get node :source) (get (body-ma-form-node {} owner) :source))
+            (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+            (loop [i 0]
+              (if (= i 3) true
+                (let [form (get forms (get ids i)) child (get nodes (get children i))]
+                  (if (body-all? [(= (get owner :form-id) (get form :parent-form-id))
+                            (= (get child :source) (get (body-ma-form-node {} form) :source))
+                            (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)
+                            (if (= i 2) (if (= :gravity.type/never (get (get header :argument-types) 1)) true
+                              (if (= :keyword (get form :kind)) (= (get header :key) (get form :value)) false)) true)])
+                    (recur (+ i 1)) false))))]) false)))
+
+(defn body-mg-present-call-valid? [core facts bindings node call edge nodes]
+  (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+        header (body-mg-source core node call edge nodes bindings types (get core :module))
+        forms (get (get facts :map-get-context) :forms)
+        input (get (get descriptor :presence-proof) :operand-shape)
+        expected (if (map? header) (body-mg-present-finish header input) nil)
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1)
+                          :lhs {:core-node-id (get node :node-id) :projection :map-get})]
+    (if (map? expected)
+      (body-all? [(= expected descriptor) (= (get expected :result-type) (get types (get node :node-id)))
+                  (body-mg-present-forms? node nodes forms header)
+                  (= (body-mg-call-fact expected (get core :module))
+                     (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+                  (= [(body-mg-constraint expected)] rows)]) false)))
+
 (defn body-mg-call-valid? [core facts bindings node call edge nodes]
+  (if (= 2 (count (get call :argument-node-ids)))
+    (body-mg-present-call-valid? core facts bindings node call edge nodes)
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
         header (body-mg-source core node call edge nodes bindings types (get core :module))
         forms (get (get facts :map-get-context) :forms)
@@ -3437,7 +3522,7 @@
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
          (= (body-mg-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-mg-constraint descriptor)] rows)]) false)))
+         (= [(body-mg-constraint descriptor)] rows)]) false))))
 
 (defn body-mg-node? [node facts core]
   (let [context (get facts :map-get-context) id (get node :node-id)]

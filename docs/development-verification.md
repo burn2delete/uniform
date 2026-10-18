@@ -2145,10 +2145,53 @@ It assembles all functions once per accepted extension, retaining fresh public
 verification, rather than also compiling the same positive function separately.
 Representative real source rejections complement the complete focused type
 matrix; this is not a request to replay the preceding membership composition.
-The result type does not confer selected deep-shape ancestry. Two-argument lookup,
-heterogeneous normal results, general stored-key families, first-class calls,
+The result type does not confer selected deep-shape ancestry. General stored-key
+families, first-class calls,
 full profile/provider support and authoritative migration remain separate
-frontiers rather than new language prohibitions.
+frontiers rather than new language prohibitions. The distinct proven-present
+two-argument route below can select a type from a heterogeneous finite Map.
+
+### Map lookup with established presence
+
+For `(get map :key)`, change the existing C7 Map-lookup owner, effect checker
+and typed emitter. Normal invocation needs independently established finite
+Map shape, the actual literal Keyword, its selected coordinate and stored type;
+a member-type family does not establish key presence. Use the direct kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-map-present-get-development-kernel \
+  --exact body-map-present-get-development-kernel \
+  --exact current-gravity-map-present-get-lowering-development-kernel
+```
+
+These are normalized development inputs, not fresh source products. Keep the
+three-argument lookup's existing descriptor and behavior unchanged. Missing or
+unproved presence is a typing rejection, not a fabricated nil/default result.
+Stored false and nil remain values. A transferring operand needs no normally
+returned value or presence proof, but other returning operands retain their
+domain checks. Lower both operands non-tail and once in source order; only a
+validated inert literal Keyword may be reordered in the existing lookup IR.
+C8 checks its retained compatibility premises, not a duplicate source-shape
+solver. Affected source composition remains necessary before accepting the
+changed integration; authoritative migration is separate.
+
+For that stable-candidate composition, select:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-present-get-authenticated-composition
+```
+
+It constructs the accepted Gravity/QST pair and one real missing-key rejection,
+then reuses the accepted products for whole C8, public lowering and runtime
+observations. Keep coherent deep source-shape forgeries at the public C7
+boundary, and test C8's own selection premises with genuine input shape.
+Do not construct another source product for each malformed proof field.
 
 ### Map key membership
 

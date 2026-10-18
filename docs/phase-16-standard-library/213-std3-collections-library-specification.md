@@ -50,6 +50,20 @@ aborts invocation; the default is not an implicit thunk or lazy branch.
 Key matching follows STD2 value semantics, and lookup preserves the original
 map. This rule does not select a representation or grant profile support.
 
+## Map Lookup With Established Presence
+
+For maps, when independent facts establish that the evaluated key is present,
+`(get map key)` returns its stored value, including false or nil. The stored
+payload is not evaluated, and the original Map is unchanged. Member-type
+families alone do not establish the identity or presence of a particular key.
+
+Both operands are ordinary L2 arguments: evaluate the Map, then the key, once
+each. A control transfer aborts invocation without requiring a value or presence
+fact for an operand that does not return. This present-key rule does not define
+the result for an absent key, invent a host-null fallback, or select a storage
+representation or profile. Implementations must not assume presence when it is
+unestablished; unsupported cases retain their owning typing diagnostics.
+
 ## Persistent Map Removal
 
 For maps, `(dissoc map key)` returns a Map without the association matching
@@ -155,6 +169,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
+- Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
 - Persistent List queries cover empty and nonempty ordered values and cardinality without executing stored payloads, and declare their suffix storage policy.
 - Binary persistent List prepend preserves the old ordered values after the new head, ordinary operand evaluation and the original List, with explicit allocation/storage policy.

@@ -3219,8 +3219,9 @@
                  (m (vec (repeat 1026 s)))]
             default [s nv]]
       (is (= :rejected (:status (map-get-derived (map-get-input [bad s default]))))))
-    (doseq [arguments [[] [(m []) s] [(m []) s s s]]]
+    (doseq [arguments [[] [(m []) s s s]]]
       (is (= :map-get-arity-mismatch (:reason (map-get-derived (map-get-input arguments))))))
+    (is (= :map-get-operand-type-required (:reason (map-get-derived (map-get-input [(m []) s])))))
     (let [input (map-get-input [(m [s s]) s s])]
       (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
                       #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
@@ -3518,6 +3519,109 @@
   ([{:keys [core node nodes types binding-types bindings forms products]} budget]
    (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
      (invoke-c7 'sh08-mr-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context]))))
+
+(defn- map-present-get-input
+  ([key] (map-present-get-input key false false))
+  ([key never-input? never-key?]
+   (let [base (walk/postwalk-replace {:removal :present-get :removal-binding :get-binding :removal-definition :get-definition 'dissoc 'get}
+                                   (map-removal-input key false))
+         entries [[:file "source.gravity" :string :gravity.type/string]
+                  [:line 17 :integer :gravity.type/integer]
+                  [:kind :span :keyword :gravity.type/keyword]
+                  [:enabled false :boolean :gravity.type/bool]
+                  [:payload nil :nil :gravity.type/nil]]
+         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+         literal (fn [id kind value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                                      :attributes {:literal-kind kind :value value} :source (source id) :evaluation {:kind :left-to-right :order []}})
+         form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                                                    :kind kind :value value :parent-form-id parent :child-form-ids children})
+         parts (mapv (fn [index [key value kind type]]
+                       (let [kid (keyword (str "entry-key-" index)) vid (keyword (str "entry-value-" index))]
+                         {:ids [kid vid] :nodes [(literal kid :keyword key) (literal vid kind value)]
+                          :forms [(form kid :keyword key :input []) (form vid kind value :input [])]
+                          :types {kid :gravity.type/keyword vid type}})) (range) entries)
+         children (vec (mapcat :ids parts))
+         map-type {:kind :gravity.type/map :member-types (vec (mapcat #(vector :gravity.type/keyword (nth % 3)) entries)) :shape :literal}
+         input (if never-input?
+                 (-> (get-in base [:nodes :input]) (assoc :core-form :reference :children [] :attributes {:binding-id :never-input})
+                     (assoc-in [:evaluation :order] []))
+                 (-> (get-in base [:nodes :input]) (assoc :children children :attributes {:literal-kind :map :element-count (count children)})
+                     (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children))))
+         key-node (if never-key?
+                    (-> (get-in base [:nodes :key]) (assoc :core-form :reference :attributes {:binding-id :never-key}))
+                    (get-in base [:nodes :key]))
+         node-list (vec (concat [(get-in base [:nodes :operator])] (when-not never-input? (mapcat :nodes parts)) [input key-node (:node base)]))
+         forms (merge (dissoc (:forms base) :input-key :input-value)
+                      (when-not never-input? (into {} (map (juxt :form-id identity) (mapcat :forms parts))))
+                      {:input (form :input (if never-input? :symbol :map) (if never-input? 'aborts (into {} (map #(subvec % 0 2) entries)))
+                                    :present-get (if never-input? [] children))
+                       :key (form :key (if never-key? :symbol :keyword) (if never-key? 'aborts key) :present-get [])})
+         types (merge (when-not never-input? (apply merge (map :types parts)))
+                      {:input (if never-input? :gravity.type/never map-type) :key (if never-key? :gravity.type/never :gravity.type/keyword)})
+         binding-types (cond-> {} never-input? (assoc :never-input :gravity.type/never) never-key? (assoc :never-key :gravity.type/never))
+         bindings (merge (:bindings base) (into {} (map (fn [[id _]] [id {:binding-id id :binding-class :lexical :kind :local :name 'aborts}]) binding-types)))]
+     (assoc base :core (assoc (:core base) :nodes node-list) :nodes (into {} (map (juxt :node-id identity) node-list))
+                 :forms forms :types types :bindings bindings :binding-types binding-types))))
+
+(defn- map-present-get-derived
+  ([input] (map-present-get-derived input 65536))
+  ([{:keys [core node nodes types binding-types bindings forms products]} budget]
+   (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
+     (invoke-c7 'sh08-mg-present-derive [node nodes types binding-types {} [] bindings forms {} context budget]))))
+
+(deftest sh08-map-present-get-development-kernel
+  (doseq [[key expected coordinate] [[:file :gravity.type/string 1] [:line :gravity.type/integer 3] [:kind :gravity.type/keyword 5]
+                                     [:enabled :gravity.type/bool 7] [:payload :gravity.type/nil 9]]]
+    (let [{:keys [core node nodes types binding-types bindings forms products call edge] :as input} (map-present-get-input key)
+          result (map-present-get-derived input) descriptor (:descriptor result) proof (:presence-proof descriptor)
+          work (:work-count result) table (assoc types :operator descriptor :present-get expected)
+          context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                   :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+          inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                     [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= expected (:type result) (:return descriptor) (:result-type descriptor) (:selected-type proof)))
+      (is (= :sh08-map-get-present-v1 (:version descriptor)))
+      (is (= :normal (:application descriptor)))
+      (is (= :finite-map-key-presence (:kind proof)))
+      (is (= key (:key descriptor) (:key proof) (get-in proof [:selected-part :key])))
+      (is (= coordinate (:selected-coordinate proof) (get-in proof [:selected-part :coordinate])))
+      (is (= :input (:operand-node-id proof)))
+      (is (= (:input types) (:operand-type proof) (get-in proof [:operand-shape :type])))
+      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
+      (is (= result (map-present-get-derived input work)))
+      (is (= :map-get-work-limit (:reason (map-present-get-derived input (dec work)))))
+      (is (true? (invoke-c7 'sh08-mg-inferred-call-valid? [core node call edge nodes bindings table])))
+      (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
+      (is (= [] (:diagnostics inferred)))
+      (is (= descriptor (get-in inferred [:type-table :operator])))
+      (is (= expected (get-in inferred [:type-table :present-get])))
+      (doseq [changed [(assoc-in descriptor [:presence-proof :key] :absent)
+                       (assoc-in descriptor [:presence-proof :selected-coordinate] 999)
+                       (assoc-in descriptor [:presence-proof :selected-type] :gravity.type/symbol)
+                       (assoc-in descriptor [:presence-proof :operand-node-id] :sibling)
+                       (dissoc descriptor :presence-proof)]]
+        (is (false? (invoke-c7 'sh08-mg-inferred-call-valid? [core node call edge nodes bindings (assoc table :operator changed)]))))))
+  (doseq [[never-input? never-key?] [[true false] [false true] [true true]]]
+    (let [input (map-present-get-input :file never-input? never-key?) result (map-present-get-derived input) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= :gravity.type/never (:type result)))
+      (is (= :not-invoked (:application descriptor)))
+      (is (nil? (:presence-proof descriptor)))))
+  (is (= ["C7-ANNOTATION" :map-get-presence-required]
+         ((juxt :rule :reason) (map-present-get-derived (map-present-get-input :absent)))))
+  (let [base (map-present-get-input :file)]
+    (doseq [mutate [#(assoc-in % [:forms :key :value] :line)
+                    #(assoc-in % [:forms :key :parent-form-id] :sibling)
+                    #(assoc-in % [:node :evaluation :order] [])
+                    #(assoc-in % [:products :calls 0 :extra] true)
+                    #(assoc-in % [:products :call-edges 0 :evaluation-order] :key-first)
+                    #(assoc-in % [:bindings :get-binding :effects] [:io/write])
+                    #(assoc-in % [:nodes :key :attributes :value] :absent)]]
+      (is (= :rejected (:status (map-present-get-derived (mutate base)))))))
+  (doseq [type [:gravity.type/string :gravity.type/unknown :gravity.type/vector :gravity.type/nil]]
+    (let [input (assoc-in (map-present-get-input :file false true) [:types :input] type)]
+      (is (= :map-get-operand-type-required (:reason (map-present-get-derived input)))))))
 
 (defn- map-family-removal-input [key never-key? never-input?]
   (let [base (map-removal-input key false)

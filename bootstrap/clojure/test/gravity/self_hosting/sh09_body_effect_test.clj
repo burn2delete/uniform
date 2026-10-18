@@ -911,6 +911,69 @@
                                           (assoc-in request [:canonical-core-artifact :module :effects] [])
                                           (assoc-in facts [:module :effects] []) {} 65536)))))))))))
 
+(deftest body-map-present-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-present-get-input) derive (ns-resolve upstream 'map-present-get-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [[key never-input? never-key?] [[:file false false] [:line false false] [:kind false false]
+                                          [:enabled false false] [:payload false false]
+                                          [:file true false] [:file false true] [:file true true]]]
+      (let [base (input-fn key never-input? never-key?)
+            ids (zipmap (keys (:nodes base)) (map sha (range 1500 1550)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base)))
+                         :products (assoc (:products base) :calls [call] :call-edges [edge]))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :present-get) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-mg-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-mg-constraint [descriptor])]}
+            context (leaf 'body-mg-context request facts (:bindings base) 65536)
+            facts (assoc facts :map-get-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :present-get)])]
+        (is (= :accepted (:status result)) (pr-str result))
+        (is (= :accepted (:status context)))
+        (is (true? (valid facts)))
+        (is (= :accepted (:status graph)) (pr-str graph))
+        (is (= #{} (:direct record)))
+        (is (= (if never-input? #{} #{:memory/allocate}) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :input :key]) (:dependencies record) (:evaluated-children record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (leaf 'body-mg-context request facts (:bindings base) (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-mg-context request facts (:bindings base) (dec (:work-count context))))))
+        (doseq [changed (concat [(assoc descriptor :direct-effects [:memory/allocate])
+                                 (assoc-in descriptor [:lookup-policy :default] :host-nil)
+                                 (assoc-in descriptor [:lookup-policy :operand-evaluation] :key-then-map)
+                                 (assoc descriptor :version :sh08-map-get-v1)]
+                                (when-not (or never-input? never-key?)
+                                  [(assoc-in descriptor [:presence-proof :key] :absent)
+                                   (assoc-in descriptor [:presence-proof :selected-coordinate] 99)
+                                   (assoc-in descriptor [:presence-proof :selected-part :key] :absent)
+                                   (assoc-in descriptor [:presence-proof :selected-type] :gravity.type/symbol)
+                                   (assoc-in descriptor [:presence-proof :operand-node-id] (sha 9997))
+                                   (dissoc descriptor :presence-proof)]))]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-mg-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-mg-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (doseq [candidate [(assoc facts :constraint-ledger []) (update facts :constraint-ledger into (:constraint-ledger facts))
+                           (assoc facts :call-type-facts []) (assoc-in facts [:map-get-context :forms :key :parent-form-id] :sibling)]]
+          (is (false? (valid candidate))))
+        (is (false? (leaf 'body-graph-equations-valid? core facts {}
+                         (assoc-in (:nodes graph) [(ids :present-get) :direct] #{:memory/allocate}))))))))
+
 (deftest body-map-get-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
