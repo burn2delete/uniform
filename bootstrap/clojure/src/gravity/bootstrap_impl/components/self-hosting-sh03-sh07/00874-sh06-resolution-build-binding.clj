@@ -2,7 +2,7 @@
 
 (defn sh06-resolution-build-binding!
   [request-source]
-  (let [source (sh06-resolution-read-pinned-source! request-source)
+  (let [source (sh06-resolution-read-current-source! request-source)
         emitter
         (:emitter
          (c-backend-stage2-plan-emitter-source-rule!
@@ -20,18 +20,7 @@
           (= #{} (get-in raw-plan [:module :effects]))
           (= #{} (get-in raw-plan [:module :capabilities]))
           (= :safe (get-in raw-plan [:module :safety]))
-          (= sh06-resolution-expected-plan-semantic-hash
-             (:plan-semantic-hash identities))
-          (= sh06-resolution-expected-functions-semantic-hash
-             (:functions-semantic-hash identities))
-          (= sh06-resolution-expected-function-count
-             (:function-count identities))
-          (= sh06-resolution-expected-function-names-hash
-             (:function-names-hash identities))
-          (= sh06-resolution-expected-function-shapes-hash
-             (:function-shapes-hash identities))
-          (= sh06-resolution-public-function-hashes
-             (:public-function-hashes identities))
+          (= (:source-content-hash source) (get-in raw-plan [:source :sha256]))
           (= sh06-resolution-public-function-shapes
              (:public-function-shapes identities)))
       (sh06-resolution-boundary-fail!
@@ -48,7 +37,8 @@
                         (c-backend-canonical-value
                          authenticated-plan-base)))))]
       (merge source identities
-             {:artifact :gravity/sh06-pinned-resolution-plan-binding
+             {:artifact :gravity/sh06-current-resolution-plan-binding
+              :revision-status :development-unadmitted
               :status :complete
               :semantic-authority :gravity-source
               :compiled-by :clojure-stage0-seed
@@ -57,29 +47,41 @@
               :self-hosted? false
               :plan plan}))))
 
-(def ^:private sh06-resolution-cached-binding
-  (delay (sh06-resolution-build-binding!
-          "<sh06-resolution-bootstrap>")))
+(defn- sh06-resolution-current-source-key []
+  (let [source (sh06-resolution-resolve-source-path)
+        compiler (java.io.File. (c-backend-resolve-p15-s23-compiler-source-path))
+        emitter (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
+        snapshot (fn [file] [(.getCanonicalPath ^java.io.File file)
+                            (str "sha256:" (sha256-bytes-hex
+                              (java.nio.file.Files/readAllBytes (.toPath ^java.io.File file))))])]
+    {:source (snapshot (java.io.File. source)) :toolchain [(snapshot compiler) (snapshot emitter)]}))
+
+(def ^:private sh06-resolution-cached-binding (atom nil))
+(def ^:private ^:dynamic *sh06-resolution-operation-binding* nil)
+
+(defn- sh06-resolution-binding-current! [source-path binding]
+  (when-not (= (:input-key binding) (sh06-resolution-current-source-key))
+    (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path
+      :resolution-source-or-toolchain-drift (dissoc binding :plan :source-text) {}))
+  binding)
 
 (defn sh06-resolution-current-binding!
   [request-source]
-  (let [fresh (sh06-resolution-read-pinned-source! request-source)
-        binding @sh06-resolution-cached-binding
-        identities (sh06-resolution-plan-identities (:plan binding))]
-    (when-not
-     (and (= (:source-byte-count fresh) (:source-byte-count binding))
-          (= (:source-content-hash fresh) (:source-content-hash binding))
-          (= (select-keys
-              binding
-              [:plan-semantic-hash :functions-semantic-hash
-               :function-count :function-names-hash
-               :function-shapes-hash :public-function-hashes
-               :public-function-shapes])
-             identities))
-      (sh06-resolution-boundary-fail!
-       "C5-UNRESOLVED" request-source
-       :fresh-resolution-source-and-plan-binding binding {}))
-    binding))
+  (if *sh06-resolution-operation-binding*
+    (sh06-resolution-binding-current! request-source *sh06-resolution-operation-binding*)
+    (locking sh06-resolution-cached-binding
+      (let [key (sh06-resolution-current-source-key)
+            cached @sh06-resolution-cached-binding]
+        (when (and cached (not= (:toolchain key) (:toolchain (:input-key cached))))
+          (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source
+            :resolution-toolchain-drift {} {}))
+        (if (= key (:input-key cached)) cached
+          (let [binding (assoc (sh06-resolution-build-binding! request-source) :input-key key)]
+            (when-not (= (second (:source key)) (:source-content-hash binding))
+              (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source :resolution-source-drift {} {}))
+            (sh06-resolution-binding-current! request-source binding)
+            (reset! sh06-resolution-cached-binding binding)
+            binding))))))
 
 (defn sh06-resolution-execute!
   [source-path binding function arguments]

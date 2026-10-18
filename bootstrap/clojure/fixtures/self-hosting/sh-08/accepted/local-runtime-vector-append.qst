@@ -1,0 +1,36 @@
+(ns example.local-runtime-vector-append
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn extend [tail :- Keyword]
+  (let [original [:read]
+        extended (conj original tail)
+        empty (conj [] tail)
+        chained (conj extended :last)]
+    [original extended (count original) (count extended)
+     (nth extended 0) (nth extended 1) empty chained]))
+
+(defn selected [tail :- Keyword]
+  (match (nth (conj '[{"unrelated" 1}] tail) 1)
+    :read "read"
+    _ "other"))
+
+(defn prefix []
+  (match (nth (conj [{:tag :read}] :tail) 0)
+    {:tag value} value))
+
+(defn nested []
+  (match (nth (nth (conj [:read] [{:tag :tail}]) 1) 0)
+    {:tag value} value))
+
+(defn vector-throws []
+  (conj (throw :vector-stop) (throw :value-stop)))
+
+(defn value-throws []
+  (conj [:read] (throw :value-stop)))
+
+(defn main []
+  (count (conj [] :tail)))

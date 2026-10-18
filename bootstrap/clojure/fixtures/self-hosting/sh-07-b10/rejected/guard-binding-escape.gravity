@@ -1,0 +1,8 @@
+(ns self-hosting.sh07-b10.reject.guard-binding-escape
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :sh07-b10 {:expected-rule "C5-UNRESOLVED" :expected-stage :name-resolution
+                         :expected-severity :error :expected-remediation :declare-or-import-binding}}))
+
+(def invalid
+  (do (match 0 {:id item :when item} item _ 2) item))

@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.atomic-catch-unresolved-type
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn recover [problem :- String] :- String
+  (try (throw problem) (catch MissingError e "handled")))

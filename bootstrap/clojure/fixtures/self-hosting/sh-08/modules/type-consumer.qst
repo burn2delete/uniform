@@ -1,0 +1,9 @@
+(ns example.type-consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.type-values :as values])
+  (:exports [forward-i64 forward-bool forward-string])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn forward-i64 [value :- I64] :- I64 (values/identity-i64 value))
+(defn forward-bool [value :- Bool] :- Bool (example.type-values/identity-bool value))
+(defn forward-string [value :- String] :- String (values/identity-string value))

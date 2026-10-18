@@ -1,0 +1,23 @@
+(ns self-hosting.sh08.local-runtime-direct-call
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn identity [problem :- String] :- String problem)
+(defn relay [clash :- String] :- String (identity clash))
+(defn aliased [problem :- String] :- String
+  (let [clash problem] (relay clash)))
+(defn qualified [problem :- String] :- String
+  (self-hosting.sh08.local-runtime-direct-call/identity problem))
+(defn thrower [problem :- String] :- String (throw problem))
+(defn recover [problem :- String] :- String
+  (try (thrower problem) (catch String e e)))
+(defn rethrow [problem :- String] :- String
+  (try (thrower problem) (catch String e (throw e))))
+(defn outer [problem :- String] :- String
+  (try (rethrow problem) (catch String e e)))
+(defn bool-callee [value :- String] :- String (throw false))
+(defn never-arg [problem :- String] :- String
+  (try (bool-callee (throw problem)) (catch String e e)))
+(defn second-argument [left :- String right :- String] :- String left)
+(defn first-arg [problem :- String] :- String
+  (try (second-argument (throw problem) (throw false)) (catch String e e)))
+(defn main [] :- String (aliased "recovered"))

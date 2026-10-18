@@ -144,7 +144,7 @@
         sh05-artifact
         (sh05-macro-artifact-from-c3-artifact*
          source-path c3-artifact true)
-        base-request (sh06-resolution-request source-path sh05-artifact)
+        base-request (sh06-resolution-base-request source-path sh05-artifact)
         c5-authority
         (p15-s23-sh07-b51-c5-external-binding-authority
          module-ordinal source sh05-artifact base-request c5-preimage)
@@ -197,7 +197,7 @@
              (get-in c2-artifact [:source-unit-record :project-root-record]))
           (= :passed (:status resolution-verification))
           (= base-request
-             (sh06-resolution-request source-path sh05-artifact))
+             (sh06-resolution-base-request source-path sh05-artifact))
           (= (:authority-id c5-authority)
              (get-in sh06-context
                      [:external-binding-authority :authority-id]))

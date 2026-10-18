@@ -675,7 +675,7 @@
            :variadic-function-recur :recur-type-compatibility
            :higher-order-and-cross-module-recursion :try-finally
            :try-protected-sequencing :try-handler-sequencing
-           :map-list-set-record-constructor-patterns
+           :non-keyword-map-list-set-record-constructor-patterns
            :variable-width-vector-patterns :duplicate-pattern-binding-policy
            :guard-patterns :match-exhaustiveness :match-result-type-join]
           :sh07-complete? false :self-hosted? false}

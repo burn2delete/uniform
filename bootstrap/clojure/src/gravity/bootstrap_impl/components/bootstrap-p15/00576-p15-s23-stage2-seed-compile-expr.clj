@@ -1,10 +1,13 @@
-
+(declare p15-s23-stage2-module-compile-call)
 (defn p15-s23-stage2-seed-compile-expr
   [emitter module locals form]
   (cond
     (symbol? form)
-    (if (contains? locals form)
-      {:op :local :name form}
+    (cond
+      (contains? locals form) {:op :local :name form}
+      (contains? (:p15-s23-stage2-module-literals module) form)
+      {:op :literal :value (get (:p15-s23-stage2-module-literals module) form)}
+      :else
       (fail! "L2-UNKNOWN-SYMBOL"
              "stage2 plan emitter cannot resolve symbol"
              {:source-span {:source (:source-path module)}
@@ -18,11 +21,8 @@
                          (assoc module :p15-s23-sh07-callsite-path
                                 (conj parent-path index)))
           special-rule (get-in emitter [:special-form-rules callee])
-          builtin-functions (set (get-in emitter
-                                         [:call-rules :builtin-functions]))
-          internal-arities
-          (get-in emitter [:call-rules
-                           :compiler-internal-builtin-arities])]
+          builtin-functions (set (get-in emitter [:call-rules :builtin-functions]))
+          internal-arities (get-in emitter [:call-rules :compiler-internal-builtin-arities])]
       (cond
         (= callee 'println)
         {:op (:op special-rule)
@@ -32,14 +32,12 @@
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
                      (range 1 (count form)) (rest form))}
-
         (= callee 'do)
         {:op (:op special-rule)
          :body (mapv (fn [index body-form]
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals body-form))
                      (range 1 (count form)) (rest form))}
-
         (= callee 'if)
         (let [actual-arity (count (rest form))]
           (when-not (= 3 actual-arity)
@@ -60,7 +58,6 @@
         (= callee 'let)
         (let [[_ bindings & body] form]
           (p15-s23-stage2-seed-compile-let emitter module locals bindings body))
-
         (= callee 'loop)
         (let [[_ bindings & body] form]
           (p15-s23-stage2-seed-compile-loop emitter module locals bindings body))
@@ -71,6 +68,10 @@
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
                      (range 1 (count form)) (rest form))}
+
+        (= callee 'throw)
+        (do (p15-s23-stage2-seed-throw-arity! module form)
+            {:op :throw :value (p15-s23-stage2-seed-compile-expr emitter (child-module 1) locals (second form))})
 
         (= callee 'quote)
         {:op (:op special-rule) :value (second form)}
@@ -110,6 +111,10 @@
                          (p15-s23-stage2-seed-compile-expr
                           emitter (child-module index) locals argument))
                        (range 1 (count form)) (rest form))})
+
+        (contains? (:p15-s23-stage2-module-routes module)
+                   [(:p15-s23-sh07-enclosing-function module) parent-path])
+        (p15-s23-stage2-module-compile-call emitter module locals form child-module)
 
         (contains? builtin-functions callee)
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
@@ -194,19 +199,14 @@
 
 (def p15-s23-stage2-compiler-artifact-source-relative-path
   "bootstrap/gravity/p15_s23/emitter.gravity")
-
 (def p15-s23-stage2-compiler-artifact-function
   'p15-s23-compile-function)
-
 (def p15-s23-stage2-compiler-artifact-expression-function
   'p15-s23-compile-expr)
-
 (def p15-s23-stage2-compiler-artifact-collection-function
   'p15-s23-compile-collection)
-
 (def p15-s23-stage2-compiler-artifact-let-function
   'p15-s23-compile-let)
-
 (def p15-s23-stage2-compiler-artifact-plan-assembly-function
   'p15-s23-assemble-plan-products)
 

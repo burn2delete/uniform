@@ -1,0 +1,17 @@
+(ns self-hosting.sh08.private-entry-span-missing-key
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [span-one span-two main]))
+(defn w5-se-span-without-path [span]
+  {:source-id (get span :source-id)
+   :start-byte (get span :start-byte)
+   :end-byte (get span :end-byte)
+   :line (get span :line)
+   :column (get span :column)})
+(defn span-one []
+  (w5-se-span-without-path
+    {:source-id "alpha" :start-byte 10 :end-byte 20 :line 2 :column 3 :actual-path "alpha.gravity"}))
+(defn span-two []
+  (w5-se-span-without-path
+    {:source-id "beta" :unrelated 4 :line 3 :end-byte 40 :start-byte 30 :actual-path "beta.gravity"}))
+(defn main [] (span-one))

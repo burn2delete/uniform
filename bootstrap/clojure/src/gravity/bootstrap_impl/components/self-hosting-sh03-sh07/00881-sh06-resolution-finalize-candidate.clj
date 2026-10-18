@@ -37,14 +37,21 @@
     artifact)))
 
 (defn sh06-resolution-source-artifact
-  [source-path source-text]
+  ([source-path source-text]
+   (sh06-resolution-source-artifact source-path source-text
+    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path source-text module-inputs]
+  (let [plan-binding (sh06-resolution-current-binding! source-path)]
+   (binding [*sh06-resolution-operation-binding* plan-binding]
   (with-sh06-resolution-transport-bounds
-   (sh06-resolution-finalize-candidate
+   (let [artifact (sh06-resolution-finalize-candidate
     source-path
     (sh06-resolution-source-artifact-candidate
      source-path
      (sh05-macro-source-artifact source-path source-text)
-     true))))
+     true ::legacy module-inputs))]
+     (sh06-resolution-binding-current! source-path plan-binding)
+     artifact))))))
 
 (defn sh06-resolution-artifact-from-sh05-artifact
   "Resolve an already authenticated SH-05 artifact without rebuilding C3/SH-05.
@@ -57,11 +64,15 @@
    (sh06-resolution-artifact-from-sh05-artifact
     (get-in sh05-artifact [:provenance :source-path]) sh05-artifact))
   ([source-path sh05-artifact]
+   (let [plan-binding (sh06-resolution-current-binding! source-path)]
+    (binding [*sh06-resolution-operation-binding* plan-binding]
    (with-sh06-resolution-transport-bounds
-    (sh06-resolution-finalize-candidate
+    (let [artifact (sh06-resolution-finalize-candidate
      source-path
      (sh06-resolution-source-artifact-candidate
-      source-path sh05-artifact false))))
+      source-path sh05-artifact false))]
+      (sh06-resolution-binding-current! source-path plan-binding)
+      artifact)))))
   ([source-path sh05-artifact context]
    (when (nil? context)
      (sh06-resolution-c5-fail! source-path :missing-context {}))
@@ -73,10 +84,13 @@
      context))))
 
 (defn sh06-resolution-file-artifact
-  [source-path]
+  ([source-path]
+   (sh06-resolution-file-artifact source-path
+    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path module-inputs]
   (let [c2-artifact (compiler-c2-reader-file-artifact source-path)
         source-text (c2-reader-artifact-source-text source-path c2-artifact)]
-    (sh06-resolution-source-artifact source-path source-text)))
+    (sh06-resolution-source-artifact source-path source-text module-inputs))))
 
 (defn sh06-resolution-utf8-byte-count-up-to
   [^String text maximum]

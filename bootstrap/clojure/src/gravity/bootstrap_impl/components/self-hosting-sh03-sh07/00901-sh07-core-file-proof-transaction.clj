@@ -18,6 +18,7 @@
               {:id "C6-VERIFY"
                :stage :sh07-proof-transaction
                :reason :nested-transaction})))
+  (sh07-core-assert-pinned-revision!)
   (let [source-snapshot
         (sh07-proof-transaction-source-snapshot source-path)
         core-snapshot (sh07-proof-transaction-core-snapshot)

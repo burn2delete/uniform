@@ -18,6 +18,7 @@
            (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
            authoritative-module
            (parse-module source-path (:forms authoritative-products))
+           _ (validate-seed-source-headers! source-path (:forms authoritative-module))
            ;; Export visibility and provider selection are semantic.  The
            ;; historical macro artifact retains neither ns clause, while the
            ;; C2/C3 stage2 front end does.  Restore those authoritative fields at
@@ -57,10 +58,10 @@
         function-instructions-equivalent?
         (= (update-vals (:functions stage2-plan)
                         #(select-keys % [:params :body :arity
-                                         :body-form-count :instructions]))
+                                         :body-form-count :source-declarations :instructions]))
            (update-vals (:functions stage0-plan)
                         #(select-keys % [:params :body :arity
-                                         :body-form-count :instructions])))
+                                         :body-form-count :source-declarations :instructions])))
         instruction-summary-equivalent?
         (= (:instruction-summary stage2-plan)
            (:instruction-summary stage0-plan))

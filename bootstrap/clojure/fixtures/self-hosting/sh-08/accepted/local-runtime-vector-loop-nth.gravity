@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.local-runtime-vector-loop-nth
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn scan [middle :- Bool failure :- String]
+  (let [flags [true middle true] access flags]
+    (loop [cursor 0]
+      (if (< cursor (count flags))
+        (if (nth access cursor)
+          (if middle (recur (inc cursor)) (recur (inc cursor)))
+          (throw failure))
+        cursor))))
+(defn caught []
+  (try (scan false "caught") (catch String problem 99)))
+(defn main [] (scan true "unused"))

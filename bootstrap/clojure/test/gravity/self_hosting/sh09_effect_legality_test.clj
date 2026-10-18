@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh09-effect-legality-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
 (defn- repository-root
   []
@@ -49,8 +50,9 @@
         (:emitter
          (bootstrap/c-backend-stage2-plan-emitter-source-rule!
           source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+    (if (= relative-path c8-source-relative-path)
+      (body-effects/compile-c8-module-bundle source-path)
+      (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text))))
 
 (def ^:private c8-plan
   (delay (compile-plan c8-source-relative-path)))
@@ -130,14 +132,14 @@
    ["C8-VERIFY" :malformed-normalized-effect-request :request-shape]})
 
 (deftest sh09-source-and-fixtures-compile-as-gravity
-  (is (= :gravity/stage2-compiler-artifact-plan (:kind @c8-plan)))
-  (is (= :meta (get-in @c8-plan [:module :profile])))
-  (is (= :jvm (get-in @c8-plan [:module :target])))
+  (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind @c8-plan)))
+  (is (= :meta (get-in (body-effects/module-root-plan @c8-plan) [:module :profile])))
+  (is (= :jvm (get-in (body-effects/module-root-plan @c8-plan) [:module :target])))
   (doseq [function
           '[sh09-effect-policy
             sh09-check-effect-request
             sh09-verify-effect-result]]
-    (is (map? (get-in @c8-plan [:functions function])) function))
+    (is (map? (get-in (body-effects/module-root-plan @c8-plan) [:functions function])) function))
   (let [policy (invoke-c8 'sh09-effect-policy [])]
     (is (= :gravity/sh09-effect-policy (:artifact policy)))
     (is (= 2 (:version policy)))

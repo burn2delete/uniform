@@ -172,14 +172,20 @@
      "C6-VERIFY" source-path :canonical-value-domain
      {:class (some-> value class .getName)})))
 
+(defn- p15-s23-c6c10-canonical-form-and-stats
+  [source-path value]
+  (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
+                     :scalar-bytes 0 :maximum-scalar-bytes 0
+                     :maximum-integer-bits 0})
+        form (p15-s23-c6c10-canonical-form* source-path stats 0 value)]
+    {:form form :stats @stats}))
+
 (defn p15-s23-c6c10-canonical-record
   ([value]
    (p15-s23-c6c10-canonical-record "<c6-c10-canonical>" value))
   ([source-path value]
-   (let [stats (atom {:nodes 0 :maximum-depth 0 :maximum-width 0
-                      :scalar-bytes 0 :maximum-scalar-bytes 0
-                      :maximum-integer-bits 0})
-         form (p15-s23-c6c10-canonical-form* source-path stats 0 value)
+   (let [{:keys [form stats]}
+         (p15-s23-c6c10-canonical-form-and-stats source-path value)
          text
          (binding [*print-length* nil
                    *print-level* nil
@@ -188,15 +194,35 @@
                    *print-readably* true
                    *print-namespace-maps* false]
            (pr-str [:gravity/canonical-edn-v1 form]))]
-     {:form form :text text :stats @stats})))
+     {:form form :text text :stats stats})))
+
+(defn- p15-s23-c6c10-digest-validated-form
+  [form]
+     (str "sha256:"
+       (digest/sha256-output-hex
+         (fn [output]
+           (let [writer (java.io.OutputStreamWriter.
+                         output java.nio.charset.StandardCharsets/UTF_8)]
+             (try
+               (binding [*out* writer *print-length* nil *print-level* nil
+                         *print-meta* false *print-dup* false
+                         *print-readably* true *print-namespace-maps* false]
+                 (pr [:gravity/canonical-edn-v1 form]))
+               (catch Throwable primary
+                 (try (.close writer)
+                      (catch Throwable secondary
+                        (when-not (identical? primary secondary)
+                          (try (.addSuppressed primary secondary)
+                               (catch Throwable _ nil)))))
+                 (throw primary)))
+             (.close writer))))))
 
 (defn p15-s23-c6c10-canonical-digest
   ([value]
    (p15-s23-c6c10-canonical-digest "<c6-c10-canonical>" value))
   ([source-path value]
-   (str "sha256:"
-        (sha256-hex (:text (p15-s23-c6c10-canonical-record
-                            source-path value))))))
+   (p15-s23-c6c10-digest-validated-form
+     (:form (p15-s23-c6c10-canonical-form-and-stats source-path value)))))
 
 (defn p15-s23-c6c10-class-supported-carrier?
   [value]

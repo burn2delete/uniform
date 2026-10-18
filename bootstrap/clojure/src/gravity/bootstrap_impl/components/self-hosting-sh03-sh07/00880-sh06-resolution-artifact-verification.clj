@@ -34,7 +34,7 @@
       (when (nil? context)
         (sh06-resolution-c5-fail! source-path :missing-context {}))
       (let [sh05 (:sh05-macro-artifact artifact)
-            base (sh06-resolution-request source-path sh05)
+            base (sh06-resolution-base-request source-path sh05)
             expected
             (sh06-resolution-c5-authority-request!
              source-path sh05 base context)
@@ -86,7 +86,7 @@
           :resolution-boundary-map? (map? boundary)
           :exact-boundary-shape?
           (and (map? boundary)
-               (= sh06-resolution-boundary-keys (set (keys boundary))))}
+               (= (sh06-resolution-boundary-keys-for boundary) (set (keys boundary))))}
          shape-failed
          (->> shape-checks
               (keep (fn [[key passed?]] (when-not passed? key)))
@@ -168,18 +168,24 @@
 
 (defn sh06-resolution-artifact-verification
   ([artifact]
+   (let [source-path (or (get-in artifact [:provenance :source-path]) "<sh06-verification>")
+         plan-binding (sh06-resolution-current-binding! source-path)]
+    (binding [*sh06-resolution-operation-binding* plan-binding]
+     (let [report
    (sh07-proof-transaction-report
     :sh06 :final
     {:verifier-root
      (var-get #'sh06-resolution-artifact-verification-contained)
      :report-schema-version 1
      :check-catalog-domain :gravity/sh06-final-verification-checks
-     :source-content-hash sh06-resolution-expected-source-content-hash
-     :plan-semantic-hash sh06-resolution-expected-plan-semantic-hash
+     :source-content-hash (:source-content-hash plan-binding)
+     :plan-semantic-hash (:plan-semantic-hash plan-binding)
      :functions-semantic-hash
-     sh06-resolution-expected-functions-semantic-hash}
+     (:functions-semantic-hash plan-binding)}
     artifact
-    #(sh06-resolution-artifact-verification-contained artifact false)))
+    #(sh06-resolution-artifact-verification-contained artifact false))]
+      (sh06-resolution-binding-current! source-path plan-binding)
+      report))))
   ([artifact context]
    (let [validation (sh06-resolution-context-validation artifact context)]
      (if-not (= :passed (:status validation))

@@ -127,22 +127,32 @@
 (def ^:private artifacts (atom {}))
 (def ^:private c2-artifacts (atom {}))
 
+(defn- real-module-inputs [source-path source-text]
+  ;; These fixtures explicitly provide a real shared.core library artifact.
+  (let [module (bootstrap/parse-module source-path (mapv :form (bootstrap/read-source-form-records source-path source-text)))
+        extension (if (str/ends-with? source-path ".qst") ".qst" ".gravity")]
+    {:artifact :gravity/sh06-module-inputs :schema-version 1
+     :module-artifacts (if (some #(= 'shared.core (:module %)) (:requires module))
+                         [(bootstrap/sh06-resolution-file-artifact
+                           (path (str "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core" extension)))] [])}))
+
 (defn- file-artifact
   [family basename extension]
   (let [key [family basename extension]]
     (or (get @artifacts key)
         (let [artifact
-              ((required-var 'sh07-core-file-artifact)
-               (fixture-path family basename extension))]
+              (let [source-path (fixture-path family basename extension)]
+                (bootstrap/sh07-core-from-resolution-artifact
+                 (bootstrap/sh06-resolution-file-artifact source-path (real-module-inputs source-path (source-text source-path)))))]
           (swap! artifacts assoc key artifact)
           artifact))))
 
 (defn- direct-artifact
   [family basename extension]
   (let [source-path (fixture-path family basename extension)]
-    ((required-var 'sh07-core-source-artifact)
-     source-path
-     (source-text source-path))))
+    (let [text (source-text source-path)]
+      (bootstrap/sh07-core-from-resolution-artifact
+       (bootstrap/compiler-c5-resolution-source-artifact source-path text (real-module-inputs source-path text))))))
 
 (defn- b11-file-artifact
   [extension]
@@ -319,7 +329,7 @@
            (source-text (fixture-path "accepted" % ".gravity")))
          accepted))))
 
-(deftest sh07-b12-direct-and-public-routing-use-v13
+(deftest sh07-b12-source-and-file-compose-real-module-artifacts
   (doseq [basename (sort (accepted-fixtures))
           extension extensions]
     (let [direct (direct-artifact "accepted" basename extension)
@@ -417,7 +427,7 @@
         (is (= (:symbol resolution) (:symbol use)))
         (is (= (:reference-syntax-id resolution) (:syntax-id use)))))))
 
-(deftest sh07-b12-alias-targets-may-be-a-binding-target-subset
+(deftest sh07-b12-alias-targets-come-from-the-actual-module
   (doseq [extension extensions]
     (let [artifact
           (file-artifact "accepted" "alias-multitarget-binding" extension)
@@ -430,7 +440,7 @@
       (testing extension
         (is (= :accepted (:status artifact)))
         (is (= [:jvm] (:targets alias-record)))
-        (is (= [:jvm :wasm] (:target-set binding)))
+        (is (= [:jvm] (:target-set binding)))
         (is (every? (set (:target-set binding))
                     (:targets alias-record)))))))
 
@@ -554,10 +564,13 @@
          target
          (source-bytes fixture)
          (make-array java.nio.file.OpenOption 0)))
-      (let [left ((required-var 'sh07-core-file-artifact) (str left-path))
-            repeated
-            ((required-var 'sh07-core-file-artifact) (str left-path))
-            right ((required-var 'sh07-core-file-artifact) (str right-path))]
+      (let [build (fn [p]
+                    (bootstrap/sh07-core-from-resolution-artifact
+                     (bootstrap/sh06-resolution-file-artifact
+                      (str p) (real-module-inputs (str p) (source-text (str p))))))
+            left (build left-path)
+            repeated (build left-path)
+            right (build right-path)]
         (is (= :accepted (:status left) (:status right)))
         (is (= left repeated))
         (is (= (:artifact-id left) (:artifact-id right)))
@@ -885,7 +898,7 @@
              :recur-type-compatibility
              :general-recursion
              :try-finally
-             :map-list-set-record-constructor-patterns
+             :non-keyword-map-list-set-record-constructor-patterns
              :variable-width-vector-patterns
              :guard-patterns
              :match-exhaustiveness

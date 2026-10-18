@@ -1,0 +1,22 @@
+(ns self-hosting.sh08.local-runtime-map-association
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn add [value :- String] (assoc {} :value value))
+(defn lookup [value :- String] :- String (:value (add value)))
+(defn replace [flag :- Bool] :- Bool
+  (let [original {:value "old"} updated (assoc original :value flag)] (:value updated)))
+(defn original [] :- String
+  (let [data {:value "old"} updated (assoc data :value false)] (:value data)))
+(defn structural [flag :- Bool] :- String
+  (match (assoc '{:value false} :value flag) {:value true} "yes" {:value false} "no"))
+(defn chained [flag :- Bool] :- Bool
+  (let [first (assoc {} :value "first") alias first] (:value (assoc alias :value flag))))
+(defn returned [flag :- Bool] :- Bool (:value (assoc (base) :value flag)))
+(defn base [] {:value "old"})
+(defn nested [] :- String (:value (:nested (assoc {} :nested (base)))))
+(defn caught-input [first :- String second :- String] :- String
+  (try (assoc (throw first) :value (throw second)) (catch String error error)))
+(defn caught-value [problem :- String] :- String
+  (try (assoc {:before "retained"} :value (throw problem)) (catch String error error)))
+(defn shadowed [assoc :- String] :- String assoc)
+(defn main [] :- String (lookup "main"))

@@ -1,0 +1,19 @@
+(ns self-hosting.sh08.local-runtime-collection-count
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn empty-map [] (count {}))
+(defn empty-vector [] (count []))
+(defn nested [flag :- Bool] (count [flag {:value [1 2]}]))
+(defn map-items [flag :- Bool] (count {:flag flag :nested [1 2 3]}))
+(defn quoted [] (count '{"key" #{a b} [:nested :key] (throw untouched/data)}))
+(defn quoted-duplicate [] (count '{:same 1 :same 2}))
+(defn aliases [flag :- Bool] (let [value {:flag flag :nested [1]} alias value] (count alias)))
+(defn returned [flag :- Bool] (count (build flag)))
+(defn build [flag :- Bool] (assoc {:old 7} :new flag))
+(defn replaced [flag :- Bool] (count (assoc (build flag) :old false)))
+(defn guarded [flag :- Bool] :- String
+  (match {:value [flag true]} {:value items :when (< (count items) 3)} "small" _ "other"))
+(defn caught [first :- String second :- String] :- String
+  (try (count [{:before first} (throw first) (throw second)]) (catch String error error)))
+(defn shadowed [count :- String] :- String count)
+(defn main [] (returned true))

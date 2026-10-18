@@ -1,0 +1,17 @@
+(ns self-hosting.sh08.integral-value-equality-mixed-types
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [w5-stage-equivalence-modes mixed-types main]))
+
+(def w5-se-required-modes
+  [:artifact :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :reviewed-delta])
+
+(defn w5-stage-equivalence-modes []
+  w5-se-required-modes)
+
+(defn mixed-types [left :- I64 right :- U64] :- Bool
+  (= left right))
+
+(defn main [] :- Bool
+  true)

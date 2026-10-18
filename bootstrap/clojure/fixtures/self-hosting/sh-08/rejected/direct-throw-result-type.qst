@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.direct-throw-result-type
+  (:profile :meta) (:target :jvm) (:exports [choose])
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn choose [flag :- Bool problem :- String] :- Bool
+  (if flag (throw problem) problem))

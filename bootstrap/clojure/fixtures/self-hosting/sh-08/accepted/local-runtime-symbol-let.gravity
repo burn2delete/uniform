@@ -1,0 +1,22 @@
+(ns self-hosting.sh08.local-runtime-symbol-let
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn aliases [problem :- String] :- String
+  (let [first problem second first] second))
+(defn empty-bindings [problem :- String] :- String
+  (let [] problem))
+(defn repeated-name [problem :- String] :- String
+  (let [value problem value value] value))
+(defn nested-initializer [problem :- String] :- String
+  (let [value problem] (let [value value] value)))
+(defn restore-outer [problem :- String] :- String
+  (let [value problem] (do (let [value "inner"] value) value)))
+(defn multiple-body [problem :- String] :- String
+  (let [value problem] "discarded" value))
+(defn never-initializer [problem :- String] :- String
+  (try (let [first (throw problem) later "unreachable"] "unreachable")
+       (catch String e e)))
+(defn catch-alias [problem :- String] :- String
+  (try (throw problem) (catch String e (let [alias e] alias))))
+(defn main [] :- String
+  (let [value "recovered" value value] value))

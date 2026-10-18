@@ -29,7 +29,8 @@
   ["ordered-top-level-mutations"
    "function-var-mutation"
    "conditional-mutations"
-   "nested-value-mutation"])
+   "nested-value-mutation"
+   "qualified-set-target"])
 (def ^:private shape-remediation
   "Provide a bounded, delimiter-linked SH-06 form graph with exact core-form shape.")
 (def ^:private gap-remediation
@@ -48,7 +49,11 @@
    {:rule "C6-LOWERING-GAP"
     :reason :lexical-set-target-deferred
     :remediation gap-remediation}
-   "qualified-set-target"
+   "external-qualified-set-target"
+   {:rule "C6-LOWERING-GAP"
+    :reason :qualified-set-target-deferred
+    :remediation gap-remediation}
+   "alias-qualified-set-target"
    {:rule "C6-LOWERING-GAP"
     :reason :qualified-set-target-deferred
     :remediation gap-remediation}
@@ -146,6 +151,300 @@
           '[artifact expected upstream-verification]
           'sh07-core-from-authenticated-request
           '[resolution-artifact authenticated-request]}}))))
+
+(deftest sh07-character-c3-occurrence-development-kernel
+  (let [input (fn [value]
+                (let [form {:form-id :character :open-token :token :close-token :token :kind :character :value value
+                            :children [] :raw "\\character" :span {:source "<character-kernel>"}}
+                      literal {:form-id :character :literal-id :literal :kind :character :decoded value
+                               :raw (:raw form) :span (:span form)}]
+                  [{:form-id :character :form value} form {:form-tree [form] :literal-decoding-records [literal]} {:authentic? true}]))
+        invoke #(apply bootstrap/c3-source-form-kind %)
+        scalar #(bootstrap/sh03-reader-host-character-value! "<character-kernel>" {:codepoint %})]
+    (doseq [codepoint [0 0xd7ff 0xe000 0xffff 0x10000 0x1f600 0x10ffff]]
+      (let [args (input (scalar codepoint))]
+        (is (= :character (invoke args)))
+        (let [map-value (if (map? (scalar codepoint)) (scalar codepoint)
+                           {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint codepoint :text (str (scalar codepoint))})
+              args (-> (input map-value) (assoc-in [1 :kind] :map)
+                       (assoc-in [2 :form-tree 0 :kind] :map) (assoc-in [2 :literal-decoding-records] []))]
+          (is (= :map (invoke args))))))
+    (let [args (input (scalar 0x1f600))]
+      (doseq [changed [(assoc-in args [3 :authentic?] false)
+                       (assoc-in args [0 :form-id] :other)
+                       (assoc-in args [2 :form-tree] [])
+                       (update-in args [2 :form-tree] conj (get-in args [2 :form-tree 0]))
+                       (assoc-in args [2 :literal-decoding-records] [])
+                       (update-in args [2 :literal-decoding-records] conj (get-in args [2 :literal-decoding-records 0]))
+                       (assoc-in args [2 :literal-decoding-records 0 :form-id] :other)
+                       (assoc-in args [2 :literal-decoding-records 0 :decoded :codepoint] 0x1f601)]]
+        (let [failure (try (invoke changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= ["C3-ORIGIN" :character-c2-occurrence-mismatch] ((juxt :id :reason) failure))))))
+    (doseq [value [(char 0xd800)
+                   {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 0xd800 :text "bad"}
+                   {:artifact :gravity/unicode-scalar-character :schema-version 1 :codepoint 65 :text "A"}
+                   (assoc (scalar 0x1f600) :extra true)
+                   (assoc (scalar 0x1f600) :text "wrong") (assoc (scalar 0x1f600) :text "xx")]]
+      (is (= "C3-ORIGIN" (:id (try (invoke (input value)) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))))))))
+
+(defn- map-order-kernel
+  ([value] (map-order-kernel value #{}))
+  ([value character-paths]
+  ;; Normalized retained C2 occurrences. Each map's source order deliberately
+  ;; reverses host entry order, without changing values or projected paths.
+  (let [sources (atom []) next-id (atom 0)
+        build (fn build [value parent path]
+                (let [id (keyword (str "c2-map-order-" (swap! next-id inc)))
+                      metadata (meta value) wrapper? (seq metadata)
+                      abbreviation? (and (seq? value) (= 2 (count value)) (= 'quote (first value)))
+                      kind (cond wrapper? :metadata-wrapper (contains? character-paths path) :character
+                                 abbreviation? :abbreviation :else (bootstrap/sh07-core-value-kind value))
+                      children (cond wrapper? [metadata (with-meta value nil)]
+                                     (= :character kind) []
+                                     abbreviation? [(second value)]
+                                     (map? value) (vec (mapcat identity (reverse (vec value))))
+                                     (set? value) (vec (reverse (bootstrap/sh07-core-children value)))
+                                     :else (bootstrap/sh07-core-children value))
+                      records (mapv #(build %1 id (conj path %2)) children (range))
+                      record (cond-> {:form-id id :parent-form-id parent :kind kind :value value
+                                      :children (mapv :form-id records) :span {:source "<map-order-kernel>"}}
+                               (= :character kind) (assoc :raw "\\character")
+                               abbreviation? (assoc :abbrev :quote))]
+                  (swap! sources conj record) record))
+        root (build value nil [])
+        decimals (mapv (fn [form] {:kind (:kind form) :decoded (:value form) :form-id (:form-id form)
+                                   :raw (:raw form) :span (:span form) :literal-id (:form-id form) :token-id (:form-id form)})
+                       (filter #(contains? #{:decimal :character} (:kind %)) @sources))
+        defn? (and (seq? value) (= 'defn (first value)))
+        syntax {:syntax/id :upstream-map-root :sh07/root-syntax-id :projected-map-root
+                :source {:form-id (:form-id root)} :span {} :form (bootstrap/sh05-expanded-form value)}
+        resolution {:provenance {:source-path "<map-order-kernel>"}
+                    :sh05-macro-artifact
+                    {:gravity-macro-boundary {:authenticated-sh04-artifact
+                                             {:c2-reader-artifact {:form-tree @sources :literal-decoding-records decimals}}}
+                     :macro-expansion-trace (if defn? [{:macro 'defn :output-syntax-id :upstream-map-root}] [])}}
+        context ((ns-resolve 'gravity.bootstrap 'sh07-core-source-occurrence-context) resolution [syntax])
+        syntax (assoc syntax :sh07/source-occurrences (get context :projected-map-root))
+        evidence (bootstrap/sh07-core-decimal-evidence resolution)
+        trace (when defn? (bootstrap/sh07-core-macro-trace {:source-revision-id :revision}
+                              {:input-syntax-id :input-map-root :output-syntax-id :projected-map-root}))
+        tree (bootstrap/sh07-core-build-form-tree "<map-order-kernel>" :revision evidence syntax trace)
+        records (mapv #(assoc % :scope-id :preserved-scope :metadata (assoc (:metadata %) :binding-marker :preserved)) (:records tree))
+        indexed (into {} (map (juxt :form-id identity)) records)]
+    {:resolution resolution :syntaxes [syntax] :trees [{:root (get indexed (get-in tree [:root :form-id])) :records records}]})))
+
+(deftest sh07-character-source-occurrence-development-kernel
+  (let [scalar (bootstrap/sh03-reader-host-character-value! "<character-kernel>" {:codepoint 0x1f600})
+        ordinary (into {} scalar)
+        cases [[scalar #{[]} 1 0]
+               [[scalar ordinary (char 65)] #{[0]} 2 1]
+               [[scalar scalar ordinary] #{[0] [1]} 2 1]
+               [(list 'quote [scalar ordinary]) #{[0 0]} 1 1]
+               [(list 'defn 'characters '[] [scalar ordinary]) #{[3 0]} 1 1]
+               [(with-meta [scalar ordinary] {:doc "metadata path"}) #{[1 0]} 1 1]
+               [(array-map :character scalar :data ordinary) #{[3]} 1 2]]]
+    (doseq [[value paths characters maps] cases]
+      (let [{:keys [resolution syntaxes trees]} (map-order-kernel value paths)
+            result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)
+            records (get-in result [0 :records])
+            character-records (filterv #(= :character (:kind %)) records)
+            map-records (filterv #(= :map (:kind %)) records)
+            context (get-in syntaxes [0 :sh07/source-occurrences])]
+        (is (= characters (count character-records)))
+        (is (= maps (count map-records)))
+        (is (= (count records) (count (set (map :form-id records)))))
+        (doseq [record character-records]
+          (is (= [] (:child-form-ids record)))
+          (is (or (char? (:value record)) (= scalar (:value record))))
+          (is (= :preserved-scope (:scope-id record))))
+        (doseq [record (filter #(= ordinary (:value %)) map-records)]
+          (is (= 8 (count (:child-form-ids record)))))
+        (doseq [[path source] (:sources context) :when (= :character (:kind source))]
+          (is (some #(= (bootstrap/sh07-core-projected-form-id :revision :projected-map-root path :character) (:form-id %))
+                    character-records)))
+        (is (= result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel [scalar ordinary scalar] #{[0] [2]})
+          prefix [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact]
+          forms (get-in resolution (conj prefix :form-tree))
+          literals (get-in resolution (conj prefix :literal-decoding-records))
+          character (first (filter #(= :character (:kind %)) forms))
+          character-index (first (keep-indexed #(when (= (:form-id character) (:form-id %2)) %1) forms))
+          literal-index (first (keep-indexed #(when (= (:form-id character) (:form-id %2)) %1) literals))
+          context (ns-resolve 'gravity.bootstrap 'sh07-core-source-occurrence-context)
+          derive (fn [r] (try (context r syntaxes) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+      (doseq [changed [(update-in resolution (conj prefix :form-tree) conj character)
+                       (assoc-in resolution (into prefix [:form-tree character-index :children]) [:missing])
+                       (update-in resolution (conj prefix :literal-decoding-records)
+                                  #(vec (remove (fn [record] (= (:form-id character) (:form-id record))) %)))
+                       (update-in resolution (conj prefix :literal-decoding-records) conj (get literals literal-index))
+                       (assoc-in resolution (into prefix [:literal-decoding-records literal-index :form-id]) :retargeted)
+                       (assoc-in resolution (into prefix [:literal-decoding-records literal-index :decoded :text]) "wrong")]]
+        (is (= "C6-ORIGIN" (:id (derive changed)))))
+      (doseq [[kind field value reason] [[:map :kind :character :map-source-value-or-kind]
+                                         [:string :value "altered" :map-source-projected-literal]]]
+        (let [index (first (keep-indexed #(when (= kind (:kind %2)) %1) (get-in trees [0 :records])))
+              altered (assoc-in trees [0 :records index field] value)
+              failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes altered) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= ["C6-ORIGIN" reason] ((juxt :id :reason) failure)))))
+      (let [character-index (first (keep-indexed #(when (= :character (:kind %2)) %1) (get-in trees [0 :records])))
+            altered (assoc-in trees [0 :records character-index :kind] :map)
+            failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes altered) nil
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= ["C6-ORIGIN" :character-c2-occurrence-mismatch] ((juxt :id :reason) failure)))))))
+
+(deftest sh07-map-source-order-development-kernel
+  (let [mixed (array-map :a 'value '[key] '(quote {ready "quoted"}) '(identity key) {:nested [true false]})
+        values [(into {} (map #(vector (keyword (str "key" %)) (str "value" %)) (range 9)))
+                mixed (list 'quote mixed) #{mixed {:other 'value}}
+                (with-meta mixed {:doc "metadata map"})
+                (list 'defn 'packet '[key value] mixed)
+                (list 'defn 'typed '[key :- Symbol value :- String] ':- 'String (list 'quote mixed))
+                (array-map :first (java.math.BigDecimal. "1.25") :second (java.math.BigDecimal. "1.25"))]]
+    (doseq [value values]
+      (let [{:keys [resolution syntaxes trees]} (map-order-kernel value)
+            result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)
+            before (get-in trees [0 :records]) after (get-in result [0 :records])]
+        (is (= (mapv :form-id before) (mapv :form-id after)))
+        (is (= (mapv #(dissoc % :child-form-ids) before) (mapv #(dissoc % :child-form-ids) after)))
+        (doseq [[original changed] (map vector before after)]
+          (let [indexed (into {} (map (juxt :form-id identity)) before)
+                inert? (loop [child original]
+                         (when-let [parent (get indexed (:parent-form-id child))]
+                           (or (and (seq? (:value parent)) (= 'quote (first (:value parent)))
+                                    (= (:form-id child) (second (:child-form-ids parent))))
+                               (recur parent))))]
+          (is (= (if (and (= :map (:kind original)) (not inert?))
+                   (vec (mapcat identity (reverse (partition 2 (:child-form-ids original)))))
+                   (:child-form-ids original)) (:child-form-ids changed)))))
+        (is (= result (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel mixed)
+          sources (get-in resolution [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree])
+          map-index (first (keep-indexed #(when (= (get-in syntaxes [0 :source :form-id]) (:form-id %2)) %1) sources))
+          root-id (get-in trees [0 :root :form-id])
+          projected-index (first (keep-indexed #(when (= root-id (:form-id %2)) %1) (get-in trees [0 :records])))
+          source-path [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree]]
+      (doseq [[label r s t] [[:duplicate-source (update-in resolution source-path conj (first sources)) syntaxes trees]
+                             [:missing-child (assoc-in resolution (into source-path [map-index :children 0]) :missing) syntaxes trees]
+                             [:duplicate-child (assoc-in resolution (into source-path [map-index :children]) [(:form-id (first sources)) (:form-id (first sources))]) syntaxes trees]
+                             [:missing-origin resolution (assoc-in syntaxes [0 :source :form-id] :missing) trees]
+                             [:missing-projected resolution syntaxes (assoc-in trees [0 :records projected-index :child-form-ids 0] :missing)]]]
+        (let [failure (try (bootstrap/sh07-core-source-map-order r s t) nil
+                          (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-ORIGIN" (:id failure)) label)
+          (is (= :core-lowering (:stage failure)) label))))
+    (let [{:keys [resolution syntaxes trees]} (map-order-kernel '(defn packet [] {:a true :b false}))
+          resolution (assoc-in resolution [:sh05-macro-artifact :macro-expansion-trace 0 :macro] 'unverified-macro)]
+      (is (= :map-source-defn-transfer
+             (:reason (try (bootstrap/sh07-core-source-map-order resolution syntaxes trees) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))))))))
+
+(deftest sh07-map-quoted-duplicate-source-development-kernel
+  (doseq [mode [:prefix-quote :list-quote :evaluated]]
+    (let [quoted? (not= mode :evaluated)
+          {:keys [resolution syntaxes trees]} (map-order-kernel (if quoted? (list 'quote {:a 2}) {:a 2}))
+          source-path [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :form-tree]
+          sources (get-in resolution source-path)
+          index (first (keep-indexed #(when (= :map (:kind %2)) %1) sources))
+          owner (get sources index) old-children (:children owner)
+          key {:form-id :original-first-key :parent-form-id (:form-id owner) :kind :keyword :value :a :children []}
+          value {:form-id :original-first-value :parent-form-id (:form-id owner) :kind :integer :value 1 :children []}
+          original-sources (-> sources (assoc-in [index :children] (into [(:form-id key) (:form-id value)] old-children)) (conj key value))
+          original-sources (if (= mode :list-quote)
+                             (let [root-id (get-in syntaxes [0 :source :form-id])
+                                   root-index (first (keep-indexed #(when (= root-id (:form-id %2)) %1) original-sources))
+                                   operator {:form-id :original-quote-operator :parent-form-id root-id :kind :symbol :value 'quote :children []}]
+                               (-> original-sources (assoc-in [root-index :kind] :list)
+                                   (update-in [root-index :children] #(into [(:form-id operator)] %)) (conj operator))) original-sources)
+          resolution (assoc-in resolution source-path original-sources)]
+      (is (= 4 (count (get-in original-sources [index :children]))))
+      (is (= {:a 2} (get-in original-sources [index :value])))
+      (if quoted?
+        (is (= trees (bootstrap/sh07-core-source-map-order resolution syntaxes trees)))
+        (let [failure (try (bootstrap/sh07-core-source-map-order resolution syntaxes trees) nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-ORIGIN" (:id failure)))
+          (is (= :map-source-entry-bijection (:reason failure))))))))
+
+(deftest sh07-map-source-order-authenticated-composition
+  (let [cases
+        (mapv
+         (fn [extension]
+           (let [source-path (path (str "bootstrap/clojure/fixtures/self-hosting/sh-07/map-entry-source-order" extension))
+                 text (slurp source-path)
+                 resolution (bootstrap/compiler-c5-resolution-file-artifact source-path)
+                 artifact (bootstrap/sh07-core-from-resolution-artifact resolution)
+                 verification (bootstrap/sh07-core-artifact-verification artifact)
+                 request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
+                 core (get-in artifact [:gravity-core-boundary :canonical-core-artifact])
+                 c2 (get-in resolution [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
+                 source-forms (into {} (map (juxt :form-id identity)) (:form-tree c2))
+                 source-roots (mapv source-forms (:top-level-form-ids c2))
+                 projected (into {} (map (juxt :form-id identity)) (:forms request))
+                 projected-roots (mapv projected (:top-level-form-ids request))
+                 nodes (into {} (map (juxt :node-id identity)) (:nodes core))
+                 orders
+                 (into {}
+                  (for [[name expected] [['forward [:a :b :c :d :e :f :g :h :i]]
+                                        ['backward [:i :h :g :f :e :d :c :b :a]]]]
+                    (let [source-root (first (filter #(= name (second (:value %))) source-roots))
+                          source-map (get source-forms (get (:children source-root) 3))
+                          original-keys (mapv #(get-in source-forms [% :value]) (take-nth 2 (:children source-map)))
+                          projected-root (first (filter #(= name (get-in projected [(second (:child-form-ids %)) :value])) projected-roots))
+                          function-form (get projected (get (:child-form-ids projected-root) 2))
+                          projected-map (get projected (get (:child-form-ids function-form) 2))
+                          projected-keys (mapv #(get-in projected [% :value]) (take-nth 2 (:child-form-ids projected-map)))
+                          function (first (filter #(= name (:definition-name %)) (:function-records core)))
+                          body (get nodes (:body-core-node-id function))
+                          keys (mapv #(get-in nodes [% :attributes :value]) (take-nth 2 (:children body)))
+                          values (mapv (fn [id] (get-in nodes [(first (:children (get nodes id))) :attributes :value]))
+                                       (take-nth 2 (rest (:children body))))]
+                      (is (= :map (:kind source-map) (:kind projected-map)))
+                      (is (= expected original-keys projected-keys keys))
+                      (is (= (mapv #(str "value-" (clojure.core/name %)) expected) values))
+                      (is (= :collection-literal (:core-form body)))
+                      (is (= :map (get-in body [:attributes :literal-kind])))
+                      (is (= (:children body) (mapv :core-node-id (get-in body [:evaluation :order]))))
+                      (is (= :left-to-right (get-in body [:evaluation :kind])))
+                      [name {:source-map source-map :projected-map projected-map :keys keys}])))
+                 quoted-source-root (first (filter #(= 'quoted-duplicates (second (:value %))) source-roots))
+                 quoted-prefix (get source-forms (get (:children quoted-source-root) 2))
+                 quoted-source-map (get source-forms (first (:children quoted-prefix)))
+                 quoted-root (first (filter #(= 'quoted-duplicates (get-in projected [(second (:child-form-ids %)) :value])) projected-roots))
+                 quote-form (get projected (get (:child-form-ids quoted-root) 2))
+                 quoted-map (get projected (get (:child-form-ids quote-form) 1))
+                 quote-node (first (filter #(= :quote (:core-form %)) (:nodes core)))]
+             (is (= :accepted (:status resolution)))
+             (is (= :passed (:status verification)))
+             (is (= [:meta :jvm] [(get-in request [:module :profile]) (get-in request [:module :target])]))
+             (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in c2 [:source-unit-record :bytes-hash])))
+             (is (= (:artifact-id resolution) (get-in request [:lineage :authenticated-sh06-artifact-id])))
+             (is (= (reverse (get-in orders ['forward :keys])) (get-in orders ['backward :keys])))
+             (is (= (vec (keys (get-in orders ['forward :source-map :value])))
+                    (vec (keys (get-in orders ['backward :source-map :value])))))
+             (is (= 4 (count (:children quoted-source-map))))
+             (is (= 2 (count (:child-form-ids quoted-map))))
+             (is (= {:a 2} (:value quoted-source-map) (:value quoted-map) (get-in quote-node [:attributes :quoted-value])))
+             (is (= [] (:children quote-node)))
+             {:artifact artifact :resolution resolution :request request :orders orders}))
+         [".gravity" ".qst"])
+        {:keys [resolution request orders]} (first cases)
+        id (get-in orders ['forward :projected-map :form-id])
+        index (first (keep-indexed #(when (= id (:form-id %2)) %1) (:forms request)))
+        children (get-in request [:forms index :child-form-ids])
+        changed (assoc-in request [:forms index :child-form-ids] (vec (mapcat identity (reverse (partition 2 children)))))
+        changed (assoc changed :projection-binding
+                       (bootstrap/reader-canonical-hash (bootstrap/sh07-core-projection-binding-input changed)))
+        executed (atom 0)
+        failure (with-redefs [bootstrap/sh07-core-run-structural-request-for-test
+                             (fn [_] (swap! executed inc) (throw (AssertionError. "tampered source order reached core execution")))]
+                  (try (bootstrap/sh07-core-run-request-for-test resolution changed) nil
+                       (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= (get-in cases [0 :artifact :artifact-id]) (get-in cases [1 :artifact :artifact-id])))
+    (is (= (set children) (set (get-in changed [:forms index :child-form-ids]))))
+    (is (= "C6-VERIFY" (:rule failure)))
+    (is (= :authenticated-sh06-request-membership-mismatch (get-in failure [:facts :reason])))
+    (is (zero? @executed))))
 
 (def ^:private artifacts (atom {}))
 (def ^:private c2-artifacts (atom {}))
@@ -249,6 +548,213 @@
                       (update-function resolution)
                       resolution))
                   resolutions))))
+
+(deftest sh07-b6-qualified-set-development-kernel
+  ;; Normalized development fixtures exercise compiled Gravity leaves, not
+  ;; authenticated SH-06 provenance. Real composition is checked separately.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke (fn [function arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true}
+                  plan function arguments))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        target {:form-id (sha 1) :syntax-id (sha 2) :kind :symbol
+                :value 'demo.value/target}
+        value {:form-id (sha 3) :syntax-id (sha 4) :kind :integer :value 7
+               :metadata {} :generated-origin [] :origin-chain []}
+        form {:form-id (sha 5) :syntax-id (sha 6) :kind :list
+              :child-form-ids [(sha 7) (:form-id target) (:form-id value)]
+              :metadata {} :generated-origin [] :origin-chain []}
+        binding {:binding-id (sha 8) :binding-class :namespace :kind :var
+                 :namespace 'demo.value :upstream-binding-id (sha 9)
+                 :definition-syntax-id (sha 10) :definition-artifact-id (sha 11)}
+        resolution {:symbol (:value target) :position :expression
+                    :binding-id (:binding-id binding)
+                    :upstream-binding-id (:upstream-binding-id binding)
+                    :resolution-order :fully-qualified-namespace-binding}
+        request {:module {:namespace 'demo.value :profile :meta :target :jvm
+                          :effects #{:state/write} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 12)
+                           :sh06-semantic-projection-id (sha 13)}
+                 :internal-indexes
+                 {:forms {:by-id {(:form-id target) target (:form-id value) value}}
+                  :bindings {:by-id {(:binding-id binding) binding}}
+                  :resolutions {:by-reference {(:syntax-id target) resolution}}}}
+        resolution-path [:internal-indexes :resolutions :by-reference (:syntax-id target)]
+        binding-path [:internal-indexes :bindings :by-id (:binding-id binding)]
+        lower #(invoke 'sh07-lower-set [% (invoke 'sh07-empty-state []) form])]
+    (testing "development-unadmitted qualified and ordinary var/function targets"
+      (doseq [kind [:var :function]
+              order [:fully-qualified-namespace-binding :current-namespace-binding]]
+        (let [target-symbol (if (= order :current-namespace-binding) 'target (:value target))
+              input (-> request
+                        (assoc-in (conj binding-path :kind) kind)
+                        (assoc-in (conj resolution-path :resolution-order) order)
+                        (assoc-in (conj resolution-path :symbol) target-symbol)
+                        (assoc-in [:internal-indexes :forms :by-id (:form-id target) :value] target-symbol))
+              result (lower input)
+              nodes (get-in result [:state :nodes])
+              node (last nodes)
+              record (first (get-in result [:state :mutations]))
+              rhs-id (sha 14)
+              resolved-node (-> node (assoc :children [rhs-id])
+                                (assoc-in [:evaluation :order] [{:index 0 :core-node-id rhs-id}]))
+              resolved (invoke 'sh07-resolve-mutation-record [record [rhs-id (sha 15)]])]
+          (is (= :accepted (:status result)))
+          (is (= [:literal :set!] (mapv :core-form nodes)))
+          (is (= 7 (get-in (first nodes) [:attributes :value])))
+          (is (= 1 (count (get-in result [:state :mutations]))))
+          (is (= order (:resolution-order record) (get-in node [:attributes :resolution-order])))
+          (is (= kind (:target-definition-kind record)))
+          (is (= [] (:target-evaluated-children record)))
+          (is (= [(:value-core-node-id record)] (:children node) (:evaluated-children record)))
+          (is (= [:evaluate-value :write-target :yield-unit] (:ordered-steps record)))
+          (is (= :unit (:result-policy record)))
+          (is (= :state/write (:required-effect record)))
+          (is (= #{(:syntax-id target)} (get-in result [:state :used-reference-syntax-ids])))
+          (is (= {:type-legality :pending-sh08 :effect-registry-legality :pending-sh09
+                  :effect-profile-capability-legality :pending-sh09
+                  :ownership-legality :pending-sh10 :safety-classification :pending-sh11}
+                 (select-keys record [:type-legality :effect-registry-legality
+                                      :effect-profile-capability-legality :ownership-legality
+                                      :safety-classification])))
+          (is (true? (invoke 'sh07-resolved-b6-node-valid? [resolved-node])))
+          (is (= :accepted (:status resolved)))
+          (is (= rhs-id (get-in resolved [:value :value-core-node-id])))
+          (is (false? (invoke 'sh07-resolved-b6-node-valid?
+                              [(assoc-in resolved-node [:attributes :resolution-order]
+                                         :alias-qualified-required-binding)])))
+          (is (= :rejected (:status (invoke 'sh07-resolve-mutation-record
+                                           [(assoc record :resolution-order :alias-qualified-required-binding)
+                                            [rhs-id (sha 15)]])))))))
+    (testing "foreign, alias, lexical and forged joins retain exact rejections"
+      (doseq [[input rule reason]
+              [[(assoc-in request (conj binding-path :namespace) 'foreign.value)
+                "C6-LOWERING-GAP" :qualified-set-target-deferred]
+               [(assoc-in request (conj resolution-path :resolution-order) :alias-qualified-required-binding)
+                "C6-LOWERING-GAP" :qualified-set-target-deferred]
+               [(assoc-in request (conj binding-path :binding-class) :lexical)
+                "C6-LOWERING-GAP" :lexical-set-target-deferred]
+               [(assoc-in request (conj binding-path :kind) :type)
+                "C6-LOWERING-GAP" :unsupported-set-location-kind]
+               [(assoc-in request (conj resolution-path :symbol) 'target)
+                "C6-VERIFY" :set-resolution-reference-mismatch]
+               [(assoc-in request (conj resolution-path :binding-id) (sha 16))
+                "C6-VERIFY" :set-resolution-binding-missing]
+               [(assoc-in request (conj resolution-path :upstream-binding-id) (sha 16))
+                "C6-VERIFY" :set-resolution-binding-identity-mismatch]
+               [(assoc-in request (conj resolution-path :resolution-order) :lexical-binding)
+                "C6-VERIFY" :set-same-namespace-binding-required]]]
+        (let [result (lower input)]
+          (is (= :rejected (:status result)))
+          (is (= rule (:rule result)))
+          (is (= reason (get-in result [:facts :reason]))))))))
+
+(deftest sh07-b6-qualified-set-preserves-authenticated-products-and-mapping
+  (let [artifact (file-artifact "accepted" "qualified-set-target" ".gravity")
+        canonical (core artifact)
+        records (:mutations canonical)
+        nodes (exactly-once-index (:nodes canonical) :node-id)
+        bindings (exactly-once-index (:binding-table (request artifact)) :binding-id)
+        resolutions (exactly-once-index (:resolution-table (request artifact)) :reference-syntax-id)
+        mapping-result
+        (bootstrap/sh07-core-execute!
+         (fixture-path "accepted" "qualified-set-target" ".gravity")
+         'sh07-resolve-source-core-map-preimage
+         [(:preimage (last (get-in artifact [:gravity-core-boundary :digest-requests])))
+          (pop (get-in artifact [:gravity-core-boundary :resolved-digests]))])
+        mapping (get-in mapping-result [:value :records])]
+    (is (= [:var :function :var] (mapv :target-definition-kind records)))
+    (is (= :accepted (:status mapping-result)))
+    (is (= [0 1 2] (mapv :ordinal records)))
+    (is (= :passed (:status (bootstrap/sh07-core-artifact-verification artifact))))
+    (is (= :development-unadmitted (get-in artifact [:gravity-core-boundary :plan-binding :revision-status])))
+    (is (false? (get-in artifact [:gravity-core-boundary :plan-binding :self-hosted?])))
+    (is (= (source-text (fixture-path "accepted" "qualified-set-target" ".gravity"))
+           (source-text (fixture-path "accepted" "qualified-set-target" ".qst"))))
+    (doseq [record records]
+      (let [node (get nodes (:core-node-id record))
+            binding (get bindings (:target-binding-id record))
+            resolution (get resolutions (:target-syntax-id record))
+            row (first (filter #(= (:target-form-id record) (get-in % [:source :form-id])) mapping))]
+        (is (= :fully-qualified-namespace-binding (:resolution-order record)
+               (:resolution-order resolution) (get-in node [:attributes :resolution-order])))
+        (is (= :namespace (:binding-class binding) (:target-binding-class record)))
+        (is (= (:binding-id binding) (:binding-id resolution) (:target-binding-id record)))
+        (is (= (:target-symbol record) (:symbol resolution)))
+        (is (= (select-keys record mutation-attribute-keys)
+               (dissoc (:attributes node) :target-evaluation :value-child-index :evaluation-order)))
+        (is (= (:upstream-binding-id binding) (:upstream-binding-id resolution)
+               (:target-upstream-binding-id record)))
+        (is (= (get-in (request artifact) [:module :namespace])
+               (:namespace binding) (:target-namespace record)))
+        (is (= [] (:target-evaluated-children record)))
+        (is (= [(:value-core-node-id record)] (:children node) (:evaluated-children record)))
+        (is (= [:evaluate-value :write-target :yield-unit] (:ordered-steps record)))
+        (is (= :unit (:result-policy record)))
+        (is (= :state/write (:required-effect record)))
+        (is (= :pending-sh09 (:effect-registry-legality record) (:effect-profile-capability-legality record)))
+        (is (= :consumed (:disposition row)))
+        (is (= :mutation-target (:reason row)))
+        (is (= [] (:emitted-node-ids row)))))
+    (let [shadow-write (last records)
+          rhs (get nodes (:value-core-node-id shadow-write))
+          rhs-resolution (get resolutions (get-in rhs [:source :syntax-id]))
+          reference (first (filter #(= (:value-core-node-id shadow-write) (:core-node-id %))
+                                   (:reference-uses canonical)))
+          rhs-row (first (filter #(= (get-in rhs [:source :form-id]) (get-in % [:source :form-id])) mapping))]
+      (is (= :reference (:core-form rhs)))
+      (is (= :lexical (:binding-class (get bindings (:binding-id rhs-resolution)))))
+      (is (not= (:binding-id rhs-resolution) (:target-binding-id shadow-write)))
+      (is (= (:binding-id rhs-resolution) (:binding-id reference) (get-in rhs [:attributes :binding-id])))
+      (is (= (:reference-syntax-id rhs-resolution) (:syntax-id reference) (get-in rhs [:source :syntax-id])))
+      (is (= (:form-id reference) (get-in rhs [:source :form-id]) (get-in rhs-row [:source :form-id])))
+      (is (= 1 (count (filter #(= (:node-id rhs) (:core-node-id %)) (:reference-uses canonical)))))
+      (is (= :emitted (:disposition rhs-row)))
+      (is (= [(:node-id rhs)] (:emitted-node-ids rhs-row))))))
+
+(deftest sh07-b6-qualified-set-forgeries-fail-membership-and-replay
+  (let [artifact (file-artifact "accepted" "qualified-set-target" ".gravity")
+        authenticated (request artifact)
+        record (first (:mutations (core artifact)))
+        wrong-id "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"]
+    (doseq [[field value] [[:resolution-order :current-namespace-binding]
+                         [:resolution-order :alias-qualified-required-binding]
+                         [:symbol 'target]
+                         [:binding-id wrong-id]
+                         [:upstream-binding-id wrong-id]]]
+      (let [mutation (update-request-resolution authenticated (:target-syntax-id record) #(assoc % field value))
+            result (diagnostic-result #(bootstrap/sh07-core-from-authenticated-request
+                                        (:sh06-resolution-artifact artifact) mutation))
+            diagnostic (diagnostic-data result)]
+        (is (not= authenticated mutation))
+        (is (nil? (:raw-host-error result)))
+        (is (= "C6-VERIFY" (:rule diagnostic)))
+        (is (= :authenticated-sh06-request-membership-mismatch (get-in diagnostic [:facts :reason])))
+        (is (true? (get-in diagnostic [:facts :fail-closed])))))
+    (doseq [[field value] [[:resolution-order :current-namespace-binding]
+                         [:target-binding-id wrong-id]
+                         [:value-core-node-id wrong-id]
+                         [:target-evaluated-children [(:value-core-node-id record)]]]]
+      (let [mutant (assoc-in artifact [:gravity-core-boundary :canonical-core-artifact :mutations 0 field] value)
+            checks (bootstrap/sh07-core-verification-checks mutant artifact {:status :passed})]
+        (is (false? (:canonical-core-replays? checks)))
+        (is (false? (:mutations-replay? checks)))
+        (is (false? (:authoritative-products-replay? checks)))))))
+
+(deftest sh07-b6-qualified-set-external-and-alias-diagnostics
+  (doseq [basename ["external-qualified-set-target" "alias-qualified-set-target"]]
+    (let [source-path (fixture-path "rejected" basename ".gravity")
+          result (diagnostic-result #(bootstrap/sh07-core-file-artifact source-path))
+          diagnostic (diagnostic-data result)]
+      (is (= (source-text source-path) (source-text (fixture-path "rejected" basename ".qst"))))
+      (is (= :qualified-set-target-deferred (get-in (fixture-oracle basename ".gravity") [:expected-reason])))
+      (is (nil? (:raw-host-error result)))
+      (is (= "C6-LOWERING-GAP" (:rule diagnostic)))
+      (is (= :core-lowering (:stage diagnostic)))
+      (is (= :qualified-set-target-deferred (get-in diagnostic [:facts :reason])))
+      (is (= gap-remediation (:remediation diagnostic)))
+      (is (true? (get-in diagnostic [:facts :fail-closed]))))))
 
 (deftest sh07-b6-fixtures-are-paired-complete-and-path-neutral
   (doseq [family ["accepted" "rejected"]
@@ -441,9 +947,9 @@
             (is (= :namespace (:binding-class binding)
                    (:target-binding-class record)))
             (is (= (:target-symbol record)
-                   (:name binding)
                    (:symbol resolution)
                    (:value target-form)))
+            (is (= (name (:target-symbol record)) (name (:name binding))))
             (is (= (:target-binding-id record)
                    (:binding-id binding)
                    (:binding-id resolution)))
@@ -466,8 +972,9 @@
             (is (= (:upstream-binding-id binding)
                    (:upstream-binding-id resolution)
                    (:target-upstream-binding-id record)))
-            (is (= :current-namespace-binding
-                   (:resolution-order resolution)
+            (is (contains? #{:current-namespace-binding :fully-qualified-namespace-binding}
+                           (:resolution-order resolution)))
+            (is (= (:resolution-order resolution)
                    (:resolution-order record)))
             (is (= (:definition-artifact-id binding)
                    (:target-definition-artifact-id record)))
@@ -650,7 +1157,7 @@
           (is (= :gravity/sh07-core-diagnostic
                  (:artifact diagnostic)))
           (is (= "C6-VERIFY" (:rule diagnostic)))
-          (is (= :authenticated-sh06-projection-mismatch
+          (is (= :authenticated-sh06-request-membership-mismatch
                  (get-in diagnostic [:facts :reason])))
           (is (true?
                (get-in diagnostic [:facts :fail-closed]))))))))

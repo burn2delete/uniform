@@ -1,0 +1,25 @@
+(ns self-hosting.sh08.local-runtime-map-removal
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn prune [] (gravity.core/dissoc {:left false :middle nil :right "kept"} :left))
+(defn survivors [] :- String (:right (prune)))
+(defn absent [] (dissoc '{:old false} :missing))
+(defn empty-map [] (dissoc '{} :missing))
+(defn contains-removed [] :- Bool (contains? (dissoc '{:old false :keep nil} :old) :old))
+(defn get-removed [] :- String (get (dissoc '{:old false :keep "kept"} :old) :old "fallback"))
+(defn false-survivor [] :- Bool (:old (dissoc '{:old false :keep nil} :keep)))
+(defn nil-survivor [] (:keep (dissoc '{:old false :keep nil} :old)))
+(defn remaining-count [] (count (dissoc '{:old false :keep nil} :old)))
+(defn associated [] :- String (:new (assoc (dissoc '{:old false} :old) :new "value")))
+(defn structural [] :- String
+  (match (dissoc '{:drop true :keep false} :drop) {:keep false} "kept"))
+(defn strip-identity-paths []
+  (dissoc (dissoc '{:actual-path "a" :semantic "kept" :actual-source-path "b"} :actual-path) :actual-source-path))
+(defn original [] :- Bool
+  (let [data {:old false :keep true} removed (dissoc data :old)] (:old data)))
+(defn caught-input [first :- String second :- String] :- String
+  (try (dissoc (throw first) (throw second)) (catch String error error)))
+(defn caught-key [problem :- String] :- String
+  (try (dissoc {:before "retained"} (throw problem)) (catch String error error)))
+(defn shadowed [dissoc :- String] :- String dissoc)
+(defn main [] :- String (survivors))

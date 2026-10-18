@@ -93,6 +93,128 @@ Type inference is local and evidence-producing. It must not invent hidden dynami
 
 Subtyping/coercion is explicit or profile-defined. Numeric widening, pointer casts, host object casts, and schema coercions are not silently inserted in systems profiles.
 
+### Bare List Parameters
+
+Bare `List` in a parameter annotation denotes persistent List values without
+static element-type or length information. An explicitly annotated parameter
+may receive a List whose actual type carries positional refinements. This
+boundary forgets those refinements for the parameter, not the value or its
+provenance; type artifacts must retain the actual argument type and the
+justification for compatibility with the declared type.
+
+It does not imply `Dynamic`, arbitrary sequence compatibility, an element type,
+or profile/memory legality. Recur operands remain subject to L2 parameter
+compatibility. Other type obligations, including schema identity, ownership,
+linearity and regions, are not erased.
+
+### Bare Map Parameters
+
+Bare `Map` in a parameter annotation denotes persistent Map values without
+static key-presence, member-type or size information. An explicitly annotated
+parameter may receive a Map whose independently established actual type carries
+those refinements. This boundary forgets the refinements for the parameter,
+not the value or its provenance; type artifacts must retain the actual argument
+type and the boundary-specific justification for compatibility with the
+declared type.
+
+This rule applies per parameter, including calls that also have List or scalar
+parameters. It does not infer a structural Map shape from a bare Map, imply
+`Dynamic`, accept unrelated collection families, or change return inference or
+recur compatibility. Key presence, member access and other operations must
+establish their own required facts. Schema identity, ownership, linearity,
+regions, effects and profile/memory legality remain obligations.
+
+### Private Call-Entry Member Facts
+
+Local inference may establish a literal Map key's presence at an immutable
+parameter from complete private call-entry evidence. The function must be
+closed to unaccounted callers: retain its actual visibility/export facts and
+account for every resolved use, entry and parameter re-entry. A spelling,
+member-type vector, first caller or absence of observed callers is not proof.
+
+At least one normally invoking entry must independently establish the key and
+selected stored type. Every other normal entry must establish that same key
+and compatible selected type, retaining its own argument source, shape and
+selection coordinates. A non-invoked call with a transferring argument supplies
+no normal-entry witness. Escapes, public/external entry and recursive parameter
+transfers require their own complete evidence; they cannot be omitted from the
+entry set. Ordinary nested-loop transfers are not function-parameter re-entry.
+
+Retain these as entry-specific facts on the parameter, not a fabricated common
+constructor or deep shape. Invalidate them when callers, uses, visibility,
+exports, arguments, binding or transfer facts change. This introduces no Map
+annotation, coercion, runtime check elision or public structural-record API.
+Other ownership, effect, profile and safety obligations remain unchanged.
+
+### Homogeneous List Declarations
+
+`(List T)` in a parameter or return annotation denotes persistent Lists whose elements
+have the declared atomic type `T`. The empty List is included; length is not
+fixed. `List` and `T` resolve in type positions. A positional List can satisfy
+this declaration when every positional element type is established and matches
+`T`; the actual argument or body type and the checked boundary-specific
+compatibility premise remain in the artifacts. Bare `List` alone does not
+establish an element type.
+
+For returns, establish the body type independently before checking it against
+the declared type. This rule does not infer element types from the expected
+declaration, widen incompatible branch types, or erase the actual body type.
+A normally returning bare List does not satisfy `(List T)` without independent
+member evidence. Non-returning bodies retain the existing bottom-type rule.
+
+`rest` preserves `(List T)`. `first` of an empty List still returns nil under
+STD3. Typing the result solely as `T`, rather than accounting for the
+empty-List nil result, requires established nonemptiness when `T` excludes nil.
+Empty/nonempty facts derived from control flow must be scoped to that value
+and path; a fact for another binding or for a List before taking its tail
+cannot authorize the head access without an independent justification.
+Rebinding or mutation must not silently preserve an invalid fact.
+
+This does not introduce implicit `Dynamic`, arbitrary sequence compatibility
+or a general generic-function framework. Schema identity, ownership,
+linearity, regions, effects and profile legality remain obligations.
+
+### Independently Established List Branch Joins
+
+For canonical `if`, otherwise unequal normally returning branch types may join
+to `(List T)` when each independently established branch type is either
+homogeneous `(List T)` or a positional List whose established member types all
+equal the same atomic `T`. At least one branch must independently supply `T`:
+an empty positional List supplies no element type, while a homogeneous List
+supplies its declared element type even when its runtime value is empty.
+
+Retain both actual branch types and a join-specific compatibility premise;
+do not record false type equality or infer `T` from an expected return
+declaration. Existing exact-type and non-returning branch rules are unchanged;
+two empty positional Lists retain their exact empty type. This rule introduces
+no runtime conversion, general subtyping, union inference, or extension to
+match, try, loop or recur joins. Effects, ownership, regions, profile legality
+and bounded type-validation work remain obligations.
+
+### Independently Established Nil-Bearing Branch Joins
+
+For canonical `if`, an independently established nil branch and an
+independently established non-nil atomic type `T` may join to a closed
+nil-or-`T` inference type. Joining that type with nil, `T`, or the identical
+nil-or-`T` type retains the same alternatives. Existing exact-type and
+non-returning branch rules take precedence. Unknown or conflicting non-nil
+alternatives do not establish `T`.
+
+Retain both actual branch types and a source-bound join premise. The type
+artifact must identify the nil alternative and exact non-nil type in a closed,
+bounded representation. Establish this result independently of any expected
+return declaration. Local inferred function returns and calls retain it; it
+does not satisfy a declared non-nil `T` by silently discarding nil.
+
+The runtime values are unchanged: explicit Gravity nil or a value of `T`, not
+an `Option` wrapper, host null, or implicit recovery/absence convention. Equality
+compares those actual values; even different nil-bearing types can both hold
+nil. A nil-or-Bool result is not an established Bool for an L7 guard. This rule
+adds no annotation syntax, general union inference, coercion, or widening of
+match, try, loop or recur joins. Effects, ownership, profile legality and other
+type obligations remain unchanged. An implementation's supported atomic
+families must be stated separately from the language rule.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -226,6 +348,13 @@ L5 rejects:
 ## Conformance Criteria
 
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
+- Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
+- Explicit bare-Map parameter fixtures retain actual argument types and per-parameter compatibility evidence, including mixed collection/scalar calls, while rejecting unrelated values and uses that require unestablished member or key facts.
+- Private call-entry member fixtures retain each actual incoming key witness, reject missing or vacuous evidence and uncovered entry/escape/re-entry paths, and do not invent a common constructor shape from matching member types.
+- Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
+- Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
+- Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.
+- Canonical `if` nil-bearing joins preserve independently established branch types through local inferred returns and value equality, reject conflicting/unknown evidence and non-nil return or Bool-guard narrowing, and retain exact and non-returning branch rules.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

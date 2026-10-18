@@ -1,0 +1,5 @@
+(ns example.list-prepend-bare-head
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn main [parts :- List] :- String (first (conj parts "head")))

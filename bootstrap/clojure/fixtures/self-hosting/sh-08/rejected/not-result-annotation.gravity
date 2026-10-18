@@ -1,0 +1,4 @@
+(ns example.not-result-annotation
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn check [] :- String (not false))

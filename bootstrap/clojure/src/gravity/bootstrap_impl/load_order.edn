@@ -873,7 +873,10 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00578-p15-s23-stage2-runtime-execute-function.clj", :reader-line 86035, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-function"}
  {:resource "gravity/bootstrap_impl/components/backends/00579-c-backend-resolve-p15-s23-compiler-source-path.clj", :reader-line 86037, :owner :backends, :first-form "c-backend-resolve-p15-s23-compiler-source-path"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj", :reader-line 86039, :owner :bootstrap-p15, :first-form "p15-s23-stage2-compiler-artifact-expected-artifact-hash"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-module-fail!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-bundle.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-module-boundary"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-compiler-artifact-binding.clj", :reader-line 86181, :owner :bootstrap-p15, :first-form "p15-s23-stage2-compiler-artifact-binding!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-typed-lowering-operation.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-typed-lowering-operation"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00582-p15-s23-stage2-construct-emitted-core-plan.clj", :reader-line 86385, :owner :bootstrap-p15, :first-form "p15-s23-stage2-construct-emitted-core-plan"}
  {:resource "gravity/bootstrap_impl/components/foundation/00583-p15-s23-stage2-plan-emission-context.clj", :reader-line 86488, :owner :foundation, :first-form "*p15-s23-stage2-plan-emission-context*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00584-p15-s23-with-stage2-plan-emission-context.clj", :reader-line 86495, :owner :bootstrap-p15, :first-form "p15-s23-with-stage2-plan-emission-context"}
@@ -889,6 +892,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00591-p15-s23-stage2-runtime-invoke-unary-or-generic-builtin.clj", :reader-line 87724, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-invoke-unary-or-generic-builtin"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00592-p15-s23-stage2-runtime-execute-instruction.clj", :reader-line 87866, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-instruction", :stage :complete-form}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj", :reader-line 88115, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-function"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-module-runtime.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-execute-call-scoped"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function-02.clj", :reader-line 88329, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-kernel-accepted-record"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00946-p15-s23-sh07-b51-runtime-machine.clj", :reader-line 88200, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-runtime-machine-maximum-steps"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00946-p15-s23-sh07-b51-runtime-machine-02.clj", :reader-line 88378, :owner :bootstrap-p15, :first-form "p15-s23-sh07-b51-runtime-machine-continue"}

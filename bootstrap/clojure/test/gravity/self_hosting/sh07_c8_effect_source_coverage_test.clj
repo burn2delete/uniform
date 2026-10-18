@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
-            [gravity.bootstrap]))
+            [gravity.bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
 (defn- repository-root
   []
@@ -612,8 +613,9 @@
 
 (def ^:private c8-artifact
   (delay
-    ((required-var 'sh07-core-file-artifact)
-     (path c8-relative-path))))
+    ((required-var 'sh07-core-from-resolution-artifact)
+     (:resolution-artifact (body-effects/module-root-entry
+                            (body-effects/compile-c8-module-bundle (path c8-relative-path)))))))
 
 (def ^:private c8-upstream-verification
   (delay
@@ -638,7 +640,9 @@
          right-path bytes (make-array java.nio.file.OpenOption 0))
         {:left @c8-artifact
          :right
-         ((required-var 'sh07-core-file-artifact) (str right-path))
+         ((required-var 'sh07-core-from-resolution-artifact)
+          (:resolution-artifact (body-effects/module-root-entry
+                                 (body-effects/compile-c8-module-bundle (str right-path)))))
          :left-path left-path
          :right-path (str right-path)}
         (finally

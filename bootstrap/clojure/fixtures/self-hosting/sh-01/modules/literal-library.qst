@@ -1,0 +1,7 @@
+(ns example.literal-library
+  (:profile :meta) (:target :jvm) (:exports [catalog identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(def catalog {:module :library :nested [nil true 7 "value" #{:a :b}]})
+(def secret :library-private)
+(defn identity [value] [catalog secret value])

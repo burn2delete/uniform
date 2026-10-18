@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.integral-ordering-nonintegral
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn rejected [value :- F64 other :- F64] :- Bool (< value other))

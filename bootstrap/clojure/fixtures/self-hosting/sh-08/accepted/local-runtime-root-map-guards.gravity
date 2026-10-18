@@ -1,0 +1,32 @@
+(ns self-hosting.sh08.local-runtime-root-map-guards
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn choose [allowed :- Bool value :- String item :- String] :- String
+  (match {:value value} {:value item :when allowed} item _ item))
+(defn false-result [value :- String fallback :- String] :- String
+  (match {:value value} {:value item :when false} false _ fallback))
+(defn never-total [problem :- String] :- String
+  (match {:value problem} {:value item :when (throw item)} false))
+(defn never-subset [flag :- Bool problem :- String fallback :- String] :- String
+  (match {:ok flag :value problem} {:ok true :value item :when (throw item)} false _ fallback))
+(defn inline-if [fail :- Bool allowed :- Bool value :- String item :- String] :- String
+  (match {:value value} {:value item :when (if fail (throw item) allowed)} item _ item))
+(defn caught [recover :- Bool value :- String item :- String] :- String
+  (match {:value value} {:value item :when (try (throw item) (catch String caught recover))} item _ item))
+(defn nested [allowed :- Bool] :- Bool
+  (match {:allowed allowed} {:allowed ok}
+    (match {:value true} {:value inner :when ok} ok _ false)))
+(defn nested-loop [value :- String fallback :- String] :- String
+  (match {:value value}
+    {:value item :when (loop [again true] (if again (recur false) true))} item _ fallback))
+(defn selected-recur [again :- Bool allowed :- Bool value :- String fallback :- String] :- String
+  (match {:again again :value value}
+    {:again true :value item :when allowed} (recur false allowed item fallback)
+    {:again false :value item} item
+    _ fallback))
+(defn forward [flag :- Bool value :- String]
+  (match flag true (later value) false (throw value)))
+(defn later [value :- String] value)
+(defn permit [allowed :- Bool] :- Bool allowed)
+(defn called [allowed :- Bool value :- String fallback :- String] :- String
+  (match {:value value} {:value item :when (permit allowed)} item _ fallback))
+(defn main [] (choose true "payload" "fallback"))

@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.function-structural-match-pattern
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn wrong-field [flag :- Bool value :- I64 fallback :- I64] :- I64
+  (let [packet {:payload [flag {:value value}]}]
+    (match packet {:payload [true {:value "wrong"}]} value _ fallback)))

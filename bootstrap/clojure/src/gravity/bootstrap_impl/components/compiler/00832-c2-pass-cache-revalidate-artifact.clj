@@ -155,14 +155,11 @@
 (defn compiler-c2-reader-file-artifact
   "Compile one source file through the ordinary C2 reader path.
 
-  Reuse is content-addressed below the source's explicit project root and is
-  accepted only after current C2, pass, diagnostic, provenance, and SH-03
-  boundary revalidation.  The returned value is the unchanged C2 artifact;
-  local cache receipts remain non-authoritative."
+  Execute the existing bounded, authenticated SH-03 reader and return its
+  unchanged C2 artifact. Persistent local reuse is opt-in through
+  compiler-c2-reader-file-artifact-cached and its explicit cache base."
   [path]
-  (:c2-reader-artifact
-   (compiler-c2-reader-file-artifact-cached
-    path (.getPath (reader-project-root-path (str path))))))
+  (compiler-c2-reader-file-artifact-uncached path))
 
 (def c3-syntax-diagnostic-ids
   c3-syntax-diagnostics/c3-syntax-diagnostic-ids)

@@ -1,0 +1,984 @@
+; Development evaluator implementation; namespace declarations do not grant authority.
+(ns gravity.runtime
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [p15-s23-runtime-execute-closed-plan
+             p15-s23-runtime-evaluate-closed-instruction
+             p15-s23-runtime-evaluate-in-context
+             p15-s23-runtime-activate-function])
+  (:effects #{:memory/allocate})
+  (:capabilities #{:memory/allocator}))
+
+; The local evaluator keeps private state as [value output control], where
+; control is :normal, :thrown, :rejected, or :recur. The latter adds a fourth
+; target-ID position and carries ordered slot values. Payloads never select control.
+; This development control representation is not a target error ABI. Output is a
+; Gravity string accumulator rather than a host writer, which preserves empty
+; strings, embedded NULs, and Unicode bytes until a target adapter performs the
+; declared :io/write operation.
+(defn p15-s23-runtime-evaluate-arguments
+  [arguments environment output values]
+  (p15-s23-runtime-evaluate-arguments-in-context arguments environment output values {} [] [] nil))
+
+(defn p15-s23-runtime-evaluate-arguments-in-context
+  [arguments environment output values functions path targets pool]
+  (loop [remaining arguments stdout output collected values]
+    (if (= (count remaining) 0)
+      [collected stdout :normal]
+      (let [head-result
+            (p15-s23-runtime-evaluate-in-instance
+             (first remaining) environment stdout functions path targets pool)]
+        (if (= :normal (get head-result 2))
+          (recur (rest remaining) (second head-result)
+                 (conj collected (first head-result)))
+          head-result)))))
+
+(defn p15-s23-runtime-remove-map-key [input removed-key]
+  (loop [remaining (keys input) result {}]
+    (if (= 0 (count remaining)) result
+      (let [key (first remaining)]
+        (recur (rest remaining)
+          (if (= key removed-key) result (assoc result key (get input key))))))))
+
+(defn p15-s23-runtime-println-output
+  [values output]
+  (if (= (count values) 0)
+    (str output "\n")
+    (if (= (count values) 1)
+      (str output (str (first values)) "\n")
+      (p15-s23-runtime-println-output
+       (rest values)
+       (str output (str (first values)) " ")))))
+
+(defn p15-s23-runtime-evaluate-bindings
+  [bindings environment output]
+  (p15-s23-runtime-evaluate-bindings-in-context bindings environment output {} [] [] nil))
+
+(defn p15-s23-runtime-evaluate-bindings-in-context
+  [bindings environment output functions path targets pool]
+  (if (= (count bindings) 0)
+    [environment output :normal]
+    (let [binding (first bindings)
+          value-result
+          (p15-s23-runtime-evaluate-in-instance
+           (get binding :expr) environment output functions path [] pool)]
+      (if (= :normal (get value-result 2))
+        (p15-s23-runtime-evaluate-bindings-in-context
+         (rest bindings)
+         (assoc environment (get binding :name) (first value-result))
+         (second value-result) functions path targets pool)
+        value-result))))
+
+(defn p15-s23-runtime-evaluate-sequence
+  [instructions environment output]
+  (p15-s23-runtime-evaluate-sequence-in-context instructions environment output {} [] [] nil))
+
+(defn p15-s23-runtime-evaluate-sequence-in-context
+  [instructions environment output functions path targets pool]
+  (if (= (count instructions) 0)
+    [nil output :normal]
+    (let [head-result
+          (p15-s23-runtime-evaluate-in-instance
+           (first instructions) environment output functions path (if (= 1 (count instructions)) targets []) pool)]
+      (if (if (= :normal (get head-result 2)) (= (count instructions) 1) true)
+        head-result
+        (p15-s23-runtime-evaluate-sequence-in-context
+         (rest instructions) environment (second head-result) functions path targets pool)))))
+
+(defn p15-s23-runtime-typed-handlers-valid? [instruction]
+  (if (= #{:op :protected :handlers} (set (keys instruction)))
+    (if (map? (get instruction :protected))
+      (if (vector? (get instruction :handlers))
+        (if (if (> (count (get instruction :handlers)) 0) (<= (count (get instruction :handlers)) 65536) false)
+          (loop [remaining (get instruction :handlers)]
+            (if (= 0 (count remaining)) true
+              (let [handler (first remaining)]
+                (if (map? handler)
+                  (if (= #{:type :name :body} (set (keys handler)))
+                    (if (contains? #{:gravity.type/bool :gravity.type/string :gravity.type/symbol :gravity.type/keyword} (get handler :type))
+                      (if (symbol? (get handler :name))
+                        (if (map? (get handler :body)) (recur (rest remaining)) false) false) false) false) false)))) false) false) false) false))
+
+(defn p15-s23-runtime-atomic-error-match? [type value]
+  (if (= type :gravity.type/bool) (if (= true value) true (= false value))
+    (if (= type :gravity.type/string) (string? value)
+      (if (= type :gravity.type/symbol) (symbol? value)
+        (if (= type :gravity.type/keyword) (keyword? value) false)))))
+
+(defn p15-s23-runtime-select-typed-handler [handlers result environment]
+  (p15-s23-runtime-select-handler-in-context handlers result environment {} [] [] nil))
+
+(defn p15-s23-runtime-select-handler-in-context [handlers result environment functions path targets pool]
+  (loop [remaining handlers]
+    (if (= 0 (count remaining)) result
+      (let [handler (first remaining)]
+        (if (p15-s23-runtime-atomic-error-match? (get handler :type) (first result))
+          (p15-s23-runtime-evaluate-in-instance (get handler :body)
+            (assoc environment (get handler :name) (first result)) (second result) functions path [] pool)
+          (recur (rest remaining)))))))
+
+(defn p15-s23-runtime-evaluate-closed-instruction
+  [instruction environment output]
+  (p15-s23-runtime-evaluate-in-context instruction environment output {} []))
+
+(defn p15-s23-runtime-activate-function [function values output functions path]
+  (p15-s23-runtime-activate-function-in-instance function values output functions path nil))
+
+(defn p15-s23-runtime-evaluate-with-targets [instruction environment output functions path targets]
+  (p15-s23-runtime-evaluate-in-instance instruction environment output functions path targets nil))
+
+(defn p15-s23-runtime-module-id? [value]
+  (if (string? value) (if (< 0 (count value)) (<= (count value) 256) false) false))
+
+(defn p15-s23-runtime-module-source? [source]
+  (if (map? source)
+    (if (= #{:form-id :syntax-id :semantic-span :origin-chain :generated-origin} (set (keys source)))
+      (if (p15-s23-runtime-module-id? (get source :form-id))
+        (p15-s23-runtime-module-id? (get source :syntax-id)) false) false) false))
+
+(defn p15-s23-runtime-namespace-read-source? [instruction definition]
+  (if (if (map? instruction) (map? definition) false)
+    (if (= #{:op :version :binding-id :definition-core-node-id :definition-syntax-id :definition-source
+             :value-core-node-id :value-source :type :reference-core-node-id :reference-source} (set (keys instruction)))
+      (if (= [:namespace-read :p15-s23-namespace-read-v1] [(get instruction :op) (get instruction :version)])
+        (if (if (p15-s23-runtime-module-id? (get instruction :reference-core-node-id))
+                (p15-s23-runtime-module-source? (get instruction :reference-source)) false)
+          (loop [fields [:binding-id :definition-core-node-id :definition-syntax-id :definition-source
+                         :value-core-node-id :value-source :type]]
+            (if (= 0 (count fields)) true
+              (if (= (get instruction (first fields)) (get definition (first fields))) (recur (rest fields)) false))) false) false) false) false))
+
+(defn p15-s23-runtime-namespace-read-valid? [instruction pool]
+  (if (map? pool)
+    (let [entry (get pool (get instruction :binding-id))]
+      (if (if (map? entry) (= #{:definition :value} (set (keys entry))) false)
+        (p15-s23-runtime-namespace-read-source? instruction (get entry :definition)) false)) false))
+
+(defn p15-s23-runtime-initializer-work [instruction budget]
+  ; This measures a closed constructor/data tree, not arbitrary guest code.
+  (loop [pending [{:value instruction :mode :instruction :depth 0}] work 0 constructors {}]
+    (if (= 0 (count pending)) {:status :accepted :work-count work :constructors constructors}
+      (let [frame (get pending (- (count pending) 1)) value (get frame :value) mode (get frame :mode)
+            depth (get frame :depth) tail (subvec pending 0 (- (count pending) 1))
+            op (get value :op)
+            width (if (= mode :data)
+                    (if (map? value) (* 2 (count value))
+                      (if (if (vector? value) true (if (seq? value) true (set? value))) (count value) 0))
+                    (if (= op :quote) 1
+                      (if (= op :vector-literal) (if (vector? (get value :items)) (count (get value :items)) 0)
+                        (if (= op :map-literal) (if (vector? (get value :entries)) (* 2 (count (get value :entries))) 0) 0))))
+            reserved (+ work 1 width)
+            children
+            (if (if (> reserved budget) true (> depth 128)) nil
+            (if (= mode :data)
+              (if (map? value)
+                (loop [remaining (keys value) out []]
+                  (if (= 0 (count remaining)) out
+                    (recur (rest remaining) (conj (conj out (first remaining)) (get value (first remaining))))))
+                (if (if (vector? value) true (if (seq? value) true (set? value))) (vec value)
+                  (if (= true (p15-s23-runtime-atomic-equality value value)) [] nil)))
+              (if (map? value)
+                (if (contains? #{:literal :quote} op)
+                  (if (= #{:op :value} (set (keys value)))
+                    (if (= op :quote) [(get value :value)]
+                      (if (= true (p15-s23-runtime-atomic-equality (get value :value) (get value :value))) [] nil)) nil)
+                (if (= op :vector-literal)
+                  (if (= #{:op :items} (set (keys value))) (get value :items) nil)
+                (if (= op :map-literal)
+                  (if (if (= #{:op :entries} (set (keys value))) (vector? (get value :entries)) false)
+                    (loop [remaining (get value :entries) out [] seen #{}]
+                      (if (= 0 (count remaining)) out
+                        (let [entry (first remaining) key (get entry :key)]
+                          (if (if (map? entry) (= #{:key :value} (set (keys entry))) false)
+                            (if (if (map? key) (= #{:op :value} (set (keys key))) false)
+                              (if (if (= :literal (get key :op)) (keyword? (get key :value)) false)
+                                (if (contains? seen (get key :value)) nil
+                                  (recur (rest remaining) (conj (conj out key) (get entry :value)) (conj seen (get key :value)))) nil) nil) nil)))) nil) nil))) nil)))
+            next-work reserved]
+        (if (> next-work budget) {:status :rejected :reason :module-initialization-work-limit :work-count next-work}
+          (if (if (<= depth 128) (vector? children) false)
+            (let [added (loop [remaining children out tail]
+                          (if (= 0 (count remaining)) out
+                            (recur (rest remaining) (conj out {:value (first remaining) :depth (+ depth 1)
+                              :mode (if (if (= mode :data) true (= op :quote)) :data :instruction)}))))]
+              (recur added next-work
+                (if (if (= mode :instruction) (contains? #{:map-literal :vector-literal} op) false)
+                  (assoc constructors op (+ 1 (get constructors op 0))) constructors)))
+            {:status :rejected :reason :unsupported-module-initializer :work-count next-work}))))))
+
+(defn p15-s23-runtime-initializer-type? [definition instruction]
+  (let [type (get definition :type) kind (if (map? type) (get type :kind) type)
+        op (get instruction :op) value (get instruction :value)]
+    (if (= :gravity.type/vector kind) (if (= :vector-literal op) true (if (= :quote op) (vector? value) false))
+    (if (= :gravity.type/map kind) (if (= :map-literal op) true (if (= :quote op) (map? value) false))
+    (if (= :gravity.type/list kind) (if (= :quote op) (seq? value) false)
+    (if (= :gravity.type/set kind) (if (= :quote op) (set? value) false)
+      (if (contains? #{:literal :quote} op)
+        (if (= :gravity.type/nil kind) (= nil value)
+        (if (= :gravity.type/bool kind) (boolean? value)
+        (if (= :gravity.type/integer kind) (integer? value)
+        (if (= :gravity.type/string kind) (string? value)
+        (if (= :gravity.type/symbol kind) (symbol? value)
+        (if (= :gravity.type/keyword kind) (keyword? value)
+        (if (= :gravity.type/character kind)
+          (if (char? value) true
+            (if (map? value) (if (= :gravity/unicode-scalar-character (get value :artifact))
+                              (= true (p15-s23-runtime-atomic-equality value value)) false) false)) false))))))) false)))))))
+
+(defn p15-s23-runtime-function-valid? [function arity]
+  (if (map? function)
+    (let [params (get function :params []) body (get function :instructions)]
+      (if (if (vector? params) (vector? body) false)
+        (if (if (<= (count params) 65536)
+              (if (> (count body) 0) (<= (count body) 65536) false) false)
+          (if (= arity (get function :arity (count params)) (count params))
+            (if (if (contains? function :recur-target)
+                  (if (string? (get function :recur-target))
+                    (if (> (count (get function :recur-target)) 0) (<= (count (get function :recur-target)) 256) false) false) true)
+              (loop [remaining params seen #{}]
+                (if (= 0 (count remaining))
+                  (loop [instructions body]
+                    (if (= 0 (count instructions)) true (if (map? (first instructions)) (recur (rest instructions)) false)))
+                  (if (symbol? (first remaining))
+                    (if (contains? seen (first remaining)) false (recur (rest remaining) (conj seen (first remaining)))) false))) false)
+            false) false) false)) false))
+
+(defn p15-s23-runtime-call-target-valid? [instruction functions path]
+  (if (map? functions)
+  (if (vector? path)
+  (if (< (count path) 256)
+  (if (symbol? (get instruction :function))
+  (if (loop [index (- (count path) 1) current? true]
+        (if (< index 0) true
+          (let [active (get path index)]
+            (if (symbol? active)
+              (if (= (get instruction :function) active)
+                (if current? (recur (- index 1) true) false)
+                (recur (- index 1) false)) false))))
+  (let [target (get functions (get instruction :function)) args (get instruction :args)]
+    (if (if (map? target) (if (contains? target :params) (contains? target :arity) false) false)
+      (if (vector? args) (p15-s23-runtime-function-valid? target (count args)) false) false)) false) false) false) false) false))
+
+(defn p15-s23-runtime-activate-function-in-instance [function values output functions path pool]
+  ; A backedge restarts this activation, not an ordinary guest call. Rebuilding
+  ; the environment from all collected values drops prior body locals and
+  ; replaces parameters simultaneously without changing the active call path.
+  (if (if (vector? values) (p15-s23-runtime-function-valid? function (count values)) false)
+    (let [params (get function :params []) target (get function :recur-target)
+          targets (if (= target nil) [] [{:id target :names params}])]
+      (loop [arguments values stdout output]
+        (let [locals (loop [index 0 out {}]
+                       (if (= index (count params)) out
+                         (recur (+ index 1) (assoc out (get params index) (get arguments index)))))
+              result (p15-s23-runtime-evaluate-sequence-in-context (get function :instructions) locals stdout functions path targets pool)]
+          (if (= :recur (get result 2))
+            (if (if (= target (get result 3))
+                  (if (vector? (first result)) (= (count params) (count (first result))) false) false)
+              (recur (first result) (second result))
+              [{:diagnostic "P15S23X002" :reason :unmatched-function-recur} (second result) :rejected]) result))))
+    [{:diagnostic "P15S23X002" :reason :invalid-function-activation} output :rejected]))
+
+(defn p15-s23-runtime-evaluate-call [instruction environment output functions path targets pool]
+  (let [arguments (p15-s23-runtime-evaluate-arguments-in-context (get instruction :args) environment output [] functions path [] pool)]
+    (if (= :normal (get arguments 2))
+      (p15-s23-runtime-activate-function-in-instance (get functions (get instruction :function)) (first arguments) (second arguments)
+        functions (conj path (get instruction :function)) pool) arguments)))
+
+(defn p15-s23-runtime-evaluate-in-context
+  [instruction environment output functions path]
+  (p15-s23-runtime-evaluate-in-instance instruction environment output functions path [] nil))
+
+(defn p15-s23-runtime-loop-valid? [instruction targets]
+  (if (vector? targets)
+  (if (< (count targets) 256)
+  (if (= #{:op :target :bindings :body} (set (keys instruction)))
+  (if (string? (get instruction :target))
+  (if (vector? (get instruction :bindings))
+  (if (vector? (get instruction :body))
+  (if (if (<= (count (get instruction :bindings)) 65536)
+        (if (> (count (get instruction :body)) 0) (<= (count (get instruction :body)) 65536) false) false)
+    (if (loop [remaining targets]
+          (if (= 0 (count remaining)) true
+            (if (= (get instruction :target) (get (first remaining) :id)) false (recur (rest remaining)))))
+      (loop [remaining (get instruction :bindings)]
+        (if (= 0 (count remaining))
+          (loop [body (get instruction :body)]
+            (if (= 0 (count body)) true (if (map? (first body)) (recur (rest body)) false)))
+          (let [binding (first remaining)]
+            (if (map? binding)
+              (if (= #{:name :expr} (set (keys binding)))
+                (if (symbol? (get binding :name)) (if (map? (get binding :expr)) (recur (rest remaining)) false) false) false) false)))) false)
+    false) false) false) false) false) false) false))
+
+(defn p15-s23-runtime-recur-valid? [instruction targets]
+  (if (vector? targets)
+    (if (> (count targets) 0)
+      (let [target (get targets (- (count targets) 1))]
+        (if (= #{:op :target :args} (set (keys instruction)))
+          (if (vector? (get instruction :args))
+            (if (vector? (get target :names))
+              (if (<= (count (get target :names)) 65536)
+                (if (= (get target :id) (get instruction :target))
+                  (= (count (get target :names)) (count (get instruction :args))) false) false) false) false) false)) false) false))
+
+(defn p15-s23-runtime-evaluate-loop [instruction environment output functions path targets pool]
+  (let [initial (p15-s23-runtime-evaluate-bindings-in-context (get instruction :bindings) environment output functions path [] pool)
+        names (loop [remaining (get instruction :bindings) out []]
+                (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (first remaining) :name)))))]
+    (if (= :normal (get initial 2))
+      (loop [current (first initial) stdout (second initial)]
+        (let [result (p15-s23-runtime-evaluate-sequence-in-context (get instruction :body) current stdout functions path
+                       (conj targets {:id (get instruction :target) :names names}) pool)]
+          (if (= :recur (get result 2))
+            (if (if (= (get instruction :target) (get result 3))
+                  (if (vector? (first result)) (= (count names) (count (first result))) false) false)
+              (let [next (loop [index 0 out current]
+                           (if (= index (count names)) out
+                             (recur (+ index 1) (assoc out (get names index) (get (first result) index)))))]
+                (recur next (second result)))
+              [{:diagnostic "P15S23X002" :reason :unmatched-local-recur} (second result) :rejected]) result))) initial)))
+
+(defn p15-s23-runtime-pattern-atom? [family value]
+  (if (= family :nil) (= nil value)
+    (if (= family :boolean) (boolean? value)
+      (if (= family :string) (string? value)
+        (if (= family :keyword) (keyword? value)
+          (if (= family :symbol) (symbol? value)
+            (if (= family :character) (char? value)
+              (if (= family :integer) (integer? value) false))))))))
+
+(defn p15-s23-runtime-structural-match-valid? [instruction]
+  ; Descriptor traversal is bounded separately from guest execution. These
+  ; existing shape ceilings do not establish a global evaluator CPU bound.
+  (if (if (map? instruction) (= #{:op :scrutinee :clauses} (set (keys instruction))) false)
+    (let [clauses (get instruction :clauses)]
+      (if (if (map? (get instruction :scrutinee)) (vector? clauses) false)
+        (if (if (> (count clauses) 0) (<= (count clauses) 65536) false)
+          (loop [remaining clauses pending [] names #{} work 0]
+            (if (> work 65536) false
+              (if (= 0 (count pending))
+                (if (= 0 (count remaining)) true
+                  (let [clause (first remaining)]
+                    (if (if (map? clause) (= (if (contains? clause :guard) #{:pattern :body :guard} #{:pattern :body}) (set (keys clause))) false)
+                      (if (if (map? (get clause :body)) (if (contains? clause :guard) (map? (get clause :guard)) true) false)
+                        (recur (rest remaining) [{:pattern (get clause :pattern) :depth 0}] #{} (+ work 1)) false) false)))
+                (let [frame (get pending (- (count pending) 1)) pattern (get frame :pattern)
+                      depth (get frame :depth) kind (get pattern :kind)
+                      tail (subvec pending 0 (- (count pending) 1))]
+                  (if (if (map? pattern) (<= depth 128) false)
+                    (if (= kind :wildcard)
+                      (if (= #{:kind} (set (keys pattern))) (recur remaining tail names (+ work 1)) false)
+                    (if (= kind :binding)
+                      (let [name (get pattern :name)]
+                        (if (if (= #{:kind :name} (set (keys pattern))) (symbol? name) false)
+                          (if (contains? names name) false (recur remaining tail (conj names name) (+ work 1))) false))
+                    (if (= kind :literal)
+                      (if (if (= #{:kind :family :value} (set (keys pattern)))
+                            (p15-s23-runtime-pattern-atom? (get pattern :family) (get pattern :value)) false)
+                        (recur remaining tail names (+ work 1)) false)
+                    (if (contains? #{:map :vector} kind)
+                      (let [map-pattern? (= kind :map) children (get pattern (if map-pattern? :entries :items))]
+                        (if (if (= (if map-pattern? #{:kind :entries} #{:kind :items}) (set (keys pattern))) (vector? children) false)
+                          (if (> (+ work 1 (count children)) 65536) false
+                            (let [added (loop [index 0 out tail keys #{}]
+                                          (if (= index (count children)) {:pending out}
+                                            (let [child (get children index) key (get child :key)]
+                                              (if (if map-pattern?
+                                                    (if (map? child) (if (= #{:key :pattern} (set (keys child))) (keyword? key) false) false) true)
+                                                (if (if map-pattern? (contains? keys key) false) nil
+                                                  (recur (+ index 1) (conj out {:pattern (if map-pattern? (get child :pattern) child) :depth (+ depth 1)})
+                                                         (if map-pattern? (conj keys key) keys))) nil))))]
+                              (if (map? added) (recur remaining (get added :pending) names (+ work 1 (count children))) false))) false)) false)))) false))))) false) false)) false))
+
+(defn p15-s23-runtime-match-pattern [pattern value environment]
+  ; Called only after the complete closed descriptor has passed validation.
+  (loop [pending [{:pattern pattern :value value}] active environment]
+    (if (= 0 (count pending)) {:matched? true :environment active}
+      (let [frame (get pending (- (count pending) 1)) pattern (get frame :pattern) value (get frame :value)
+            kind (get pattern :kind) tail (subvec pending 0 (- (count pending) 1))]
+        (if (= kind :wildcard) (recur tail active)
+        (if (= kind :binding) (recur tail (assoc active (get pattern :name) value))
+        (if (= kind :literal)
+          (if (p15-s23-runtime-pattern-atom? (get pattern :family) value)
+            (if (= value (get pattern :value)) (recur tail active) {:matched? false}) {:matched? false})
+          (let [map-pattern? (= kind :map) children (get pattern (if map-pattern? :entries :items))]
+            (if (if map-pattern? (map? value) (if (vector? value) (= (count value) (count children)) false))
+              (let [added (loop [index (- (count children) 1) out tail]
+                            (if (< index 0) {:pending out}
+                              (let [child (get children index) key (get child :key)]
+                                (if (if map-pattern? (contains? value key) true)
+                                  (recur (- index 1) (conj out {:pattern (if map-pattern? (get child :pattern) child)
+                                                              :value (get value (if map-pattern? key index))})) nil))))]
+                (if (map? added) (recur (get added :pending) active) {:matched? false})) {:matched? false})))))))))
+
+(defn p15-s23-runtime-evaluate-structural-match [instruction environment output functions path targets pool]
+  (let [result (p15-s23-runtime-evaluate-in-instance (get instruction :scrutinee) environment output functions path [] pool)]
+    (if (= :normal (get result 2))
+      (loop [remaining (get instruction :clauses) current-output (second result)]
+        (if (= 0 (count remaining))
+          [{:diagnostic "P15S23X002" :reason :structural-match-no-selected-clause :operation :structural-match} current-output :rejected]
+          (let [clause (first remaining) selected (p15-s23-runtime-match-pattern (get clause :pattern) (first result) environment)]
+            (if (= true (get selected :matched?))
+              (if (contains? clause :guard)
+                (let [guard (p15-s23-runtime-evaluate-in-instance (get clause :guard) (get selected :environment) current-output functions path [] pool)]
+                  (if (= :normal (get guard 2))
+                    (if (boolean? (first guard))
+                      (if (first guard)
+                        (p15-s23-runtime-evaluate-in-instance (get clause :body) (get selected :environment) (second guard) functions path targets pool)
+                        (recur (rest remaining) (second guard)))
+                      [{:diagnostic "P15S23X002" :reason :non-boolean-structural-guard :operation :structural-match} (second guard) :rejected]) guard))
+                (p15-s23-runtime-evaluate-in-instance (get clause :body) (get selected :environment) current-output functions path targets pool))
+              (recur (rest remaining) current-output))))) result)))
+
+; Private IR value semantics, not source authentication. C2 owns Unicode
+; decoding; this guard recognizes the existing supplementary representation.
+(defn p15-s23-runtime-atomic-equality [left right]
+  (if (if (integer? left) (integer? right) false)
+    (= left right)
+    (let [families
+          (loop [remaining [left right] out []]
+            (if (= 0 (count remaining)) out
+              (let [value (first remaining)
+                    family (if (= nil value) :nil
+                             (if (boolean? value) :boolean
+                             (if (char? value) :character
+                             (if (string? value) :string
+                             (if (symbol? value) :symbol
+                             (if (keyword? value) :keyword
+                             (if (map? value)
+                               (if (if (= 4 (count value))
+                                     (loop [fields (keys value)]
+                                       (if (= 0 (count fields)) true
+                                         (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                               (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                 (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                   (if (= 1 (get value :schema-version))
+                                     (if (integer? (get value :codepoint))
+                                       (if (<= 65536 (get value :codepoint) 1114111)
+                                         (if (string? (get value :text))
+                                           (if (= 2 (count (get value :text))) :character :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported) :unsupported)
+                               :unsupported)))))))]
+                (recur (rest remaining) (conj out family)))))]
+      (if (contains? (set families) :unsupported) :unsupported
+        (if (= false (= (first families) (second families))) false
+          (if (= :character (first families))
+            (if (char? left) (if (char? right) (= left right) false)
+              (if (char? right) false (= (get left :codepoint) (get right :codepoint))))
+            (= left right)))))))
+
+(defn p15-s23-runtime-vector-domain [values budget]
+  (let [limit (if (< budget 65536) budget 65536)]
+  (if (if (vector? values) (= 2 (count values)) false)
+    (if (if (vector? (get values 0)) (vector? (get values 1)) false)
+      (if (< limit 2) {:status :rejected :reason :vector-equality-work-limit :work-count 2}
+        (loop [pending [[(get values 1) 0] [(get values 0) 0]] work 2]
+          (if (= 0 (count pending)) {:status :accepted :work-count work}
+            (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
+                  value (get frame 0) depth (get frame 1)]
+              (if (> depth 128) {:status :rejected :reason :vector-equality-value-depth :work-count work}
+                (if (vector? value)
+                  (let [width (count value) total (+ work width)]
+                    (if (> width 1024) {:status :rejected :reason :vector-equality-value-width :work-count work}
+                    (if (> total limit) {:status :rejected :reason :vector-equality-work-limit :work-count total}
+                      (if (if (= depth 128) (> width 0) false)
+                        {:status :rejected :reason :vector-equality-value-depth :work-count total}
+                        (let [children (loop [i (- width 1) out tail]
+                                         (if (< i 0) out
+                                           (recur (- i 1) (conj out [(get value i) (+ depth 1)]))))]
+                          (recur children total))))))
+                  (if (if (integer? value) false (= true (p15-s23-runtime-atomic-equality value value)))
+                    (recur tail work)
+                    {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))
+      {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})
+    {:status :rejected :reason :vector-value-equality-domain-required :work-count 0})))
+
+(defn p15-s23-runtime-vector-equality-work [left right budget]
+  (let [limit (if (< budget 65536) budget 65536)]
+  ; Validate BOTH complete value domains before any early mismatch can return.
+  (let [domain (p15-s23-runtime-vector-domain [left right] limit)]
+    (if (= :accepted (get domain :status))
+      (let [initial (+ 1 (get domain :work-count))]
+        (if (> initial limit) {:status :rejected :reason :vector-equality-work-limit :work-count initial}
+          (loop [pending [[left right]] work initial]
+            (if (= 0 (count pending)) {:status :accepted :value true :work-count work}
+              (let [pair (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
+                    a (get pair 0) b (get pair 1)]
+                (if (vector? a)
+                  (if (vector? b)
+                    (if (= (count a) (count b))
+                      (let [total (+ work (count a))]
+                        (if (> total limit) {:status :rejected :reason :vector-equality-work-limit :work-count total}
+                          (let [children (loop [i (- (count a) 1) out tail]
+                                           (if (< i 0) out
+                                             (recur (- i 1) (conj out [(get a i) (get b i)]))))]
+                            (recur children total))))
+                      {:status :accepted :value false :work-count work})
+                    {:status :accepted :value false :work-count work})
+                  (if (vector? b) {:status :accepted :value false :work-count work}
+                    (let [equal (p15-s23-runtime-atomic-equality a b)]
+                      (if (= true equal) (recur tail work)
+                        (if (= false equal) {:status :accepted :value false :work-count work}
+                          {:status :rejected :reason :vector-value-equality-domain-required :work-count work})))))))))) domain))))
+
+(defn p15-s23-runtime-vector-equality [left right]
+  (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
+    (if (= :accepted (get result :status)) (get result :value) :unsupported)))
+
+(defn p15-s23-runtime-evaluate-in-instance
+  [instruction environment output functions path targets pool]
+  (let [operation (get instruction :op)
+        fields (if (map? instruction) (set (keys instruction)) #{})
+        arguments (get instruction :args)
+        function (get instruction :function)
+        comparison? (contains? '#{= < <= > >=} function)
+        shape?
+        (if (= operation :namespace-read) (p15-s23-runtime-namespace-read-valid? instruction pool)
+        (if (map? instruction)
+          (if (contains? #{:literal :quote} operation) true
+          (if (= operation :structural-match) (p15-s23-runtime-structural-match-valid? instruction)
+          (if (= operation :keyword-map-lookup)
+            (if (= fields #{:op :args})
+              (if (vector? arguments)
+                (if (= 2 (count arguments))
+                  (let [key (first arguments)]
+                    (if (map? key)
+                      (if (= #{:op :value} (set (keys key)))
+                        (if (= :literal (get key :op))
+                          (if (keyword? (get key :value)) (map? (second arguments)) false) false) false) false)) false) false) false)
+          (if (= operation :map-literal)
+            (if (= fields #{:op :entries})
+              (if (vector? (get instruction :entries))
+                (if (<= (count (get instruction :entries)) 65536)
+                  (loop [remaining (get instruction :entries) seen #{}]
+                    (if (= 0 (count remaining)) true
+                      (let [entry (first remaining) key (get entry :key)]
+                        (if (if (map? entry) (= #{:key :value} (set (keys entry))) false)
+                          (if (if (map? key) (= #{:op :value} (set (keys key))) false)
+                            (if (if (= :literal (get key :op)) (keyword? (get key :value)) false)
+                              (if (contains? seen (get key :value)) false
+                                (if (map? (get entry :value)) (recur (rest remaining) (conj seen (get key :value))) false)) false) false) false)))) false) false) false)
+          (if (= operation :vector-literal)
+            (if (= fields #{:op :items})
+              (if (vector? (get instruction :items))
+                (if (<= (count (get instruction :items)) 65536)
+                  (loop [remaining (get instruction :items)]
+                    (if (= 0 (count remaining)) true
+                      (if (map? (first remaining)) (recur (rest remaining)) false))) false) false) false)
+          (if (= operation :try) (p15-s23-runtime-typed-handlers-valid? instruction)
+          (if (= operation :function-call)
+            (if (= fields #{:op :function :args}) (p15-s23-runtime-call-target-valid? instruction functions path) false)
+          (if (= operation :loop) (p15-s23-runtime-loop-valid? instruction targets)
+          (if (= operation :recur) (p15-s23-runtime-recur-valid? instruction targets)
+          (if (= operation :local)
+            (if (contains? fields :name)
+              (if (symbol? (get instruction :name)) (contains? environment (get instruction :name)) false) false)
+          (if (= operation :throw)
+            (if (= fields #{:op :value}) (map? (get instruction :value)) false)
+          (if (= operation :builtin-call)
+            (if (contains? fields :args)
+              (if (vector? arguments)
+                (if comparison? (= 2 (count arguments))
+                  (if (= function 'inc)
+                    (if (= fields #{:op :function :args :proof})
+                      (if (= 1 (count arguments))
+                        (let [proof (get instruction :proof) extent (get proof :vector-extent)]
+                          (if (map? (first arguments))
+                            (if (map? proof)
+                              (if (= #{:kind :numeric-mode :integer-type :operation-core-node-id :target-id :slot-binding-id :slot-name
+                                       :guard-core-node-id :condition-core-node-id :count-core-node-id :count-operand-node-id
+                                       :vector-origin-node-id :vector-extent :maximum-vector-extent :lower :step :guard-relation :result-relation}
+                                     (set (keys proof)))
+                                (if (= [:gravity.runtime/bounded-successor :proof-required :gravity.type/integer 1024 0 1
+                                        :zero-le-counter-lt-extent :zero-lt-successor-le-extent]
+                                       [(get proof :kind) (get proof :numeric-mode) (get proof :integer-type)
+                                        (get proof :maximum-vector-extent) (get proof :lower) (get proof :step)
+                                        (get proof :guard-relation) (get proof :result-relation)])
+                                  (if (integer? extent)
+                                    (if (if (<= 0 extent) (<= extent 1024) false)
+                                      (if (symbol? (get proof :slot-name))
+                                        (if (contains? environment (get proof :slot-name))
+                                          (loop [remaining [:operation-core-node-id :target-id :slot-binding-id :guard-core-node-id
+                                                            :condition-core-node-id :count-core-node-id :count-operand-node-id :vector-origin-node-id]]
+                                            (if (= 0 (count remaining)) true
+                                              (let [id (get proof (first remaining))]
+                                                (if (string? id)
+                                                  (if (if (> (count id) 0) (<= (count id) 256) false)
+                                                    (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
+                  (if (contains? '#{nth conj contains? dissoc} function)
+                    (if (= fields #{:op :function :args})
+                      (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
+                  (if (contains? '#{count first rest empty?} function)
+                    (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
+                  (if (= function 'get)
+                    (if (= fields #{:op :function :args})
+                      (if (= 3 (count arguments))
+                        (if (map? (first arguments)) (if (map? (get arguments 1)) (map? (get arguments 2)) false) false) false) false)
+                  (if (= function 'assoc)
+                    (if (= fields #{:op :function :args})
+                      (if (= 3 (count arguments))
+                        (let [key (get arguments 1)]
+                          (if (if (map? key) (= #{:op :value} (set (keys key))) false)
+                            (if (= :literal (get key :op))
+                              (if (keyword? (get key :value)) (if (map? (get arguments 0)) (map? (get arguments 2)) false) false) false) false)) false) false)
+                    (if (= function 'list)
+                      (if (= fields #{:op :function :args})
+                        (if (<= (count arguments) 1023)
+                          (loop [remaining arguments]
+                            (if (= 0 (count remaining)) true
+                              (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))) false) false)
+          (if (= operation :println)
+            (if (contains? fields :args)
+              (if (vector? arguments)
+                (if (= :io/write (get instruction :effect)) (= :io/stdout (get instruction :capability)) false) false) false)
+          (if (= operation :do)
+            (if (contains? fields :body) (vector? (get instruction :body)) false)
+          (if (= operation :if)
+            (if (contains? fields :test)
+              (if (map? (get instruction :test))
+                (if (map? (get instruction :then)) (map? (get instruction :else)) false) false) false)
+          (if (= operation :let)
+            (if (contains? fields :bindings)
+              (if (vector? (get instruction :body))
+                (if (vector? (get instruction :bindings))
+                  (loop [remaining (get instruction :bindings) seen #{}]
+                    (if (= 0 (count remaining)) true
+                      (let [binding (first remaining) name (get binding :name)]
+                        (if (map? binding)
+                          (if (contains? binding :expr)
+                            (if (symbol? name)
+                              (if (contains? seen name) false
+                                (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
+            false)))))))))))))))) false))]
+    (if (= false shape?)
+      [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
+    (if (= operation :namespace-read)
+      [(get (get pool (get instruction :binding-id)) :value) output :normal]
+    (if (= operation :structural-match)
+      (p15-s23-runtime-evaluate-structural-match instruction environment output functions path targets pool)
+    (if (= operation :keyword-map-lookup)
+      (let [result (p15-s23-runtime-evaluate-arguments-in-context arguments environment output [] functions path [] pool)]
+        (if (= :normal (get result 2))
+          (if (map? (get (first result) 1))
+            [(get (get (first result) 1) (get (first result) 0)) (second result) :normal]
+            [{:diagnostic "P15S23X002" :reason :keyword-lookup-map-required :operation operation} (second result) :rejected]) result))
+    (if (= operation :map-literal)
+      (let [items (loop [remaining (get instruction :entries) out []]
+                    (if (= 0 (count remaining)) out
+                      (recur (rest remaining) (conj (conj out (get (first remaining) :key)) (get (first remaining) :value)))))
+            result (p15-s23-runtime-evaluate-arguments-in-context items environment output [] functions path [] pool)]
+        (if (= :normal (get result 2))
+          [(loop [index 0 out {}]
+             (if (= index (count (first result))) out
+               (recur (+ index 2) (assoc out (get (first result) index) (get (first result) (+ index 1))))))
+           (second result) :normal] result))
+    (if (= operation :vector-literal)
+      (p15-s23-runtime-evaluate-arguments-in-context (get instruction :items) environment output [] functions path [] pool)
+    (if (= operation :loop) (p15-s23-runtime-evaluate-loop instruction environment output functions path targets pool)
+    (if (= operation :recur)
+      (let [arguments (p15-s23-runtime-evaluate-arguments-in-context (get instruction :args) environment output [] functions path [] pool)]
+        (if (= :normal (get arguments 2)) [(first arguments) (second arguments) :recur (get instruction :target)] arguments))
+    (if (= operation :function-call) (p15-s23-runtime-evaluate-call instruction environment output functions path targets pool)
+    (if (= operation :try)
+      (let [result (p15-s23-runtime-evaluate-in-instance (get instruction :protected) environment output functions path [] pool)]
+        (if (= :thrown (get result 2))
+          (p15-s23-runtime-select-handler-in-context (get instruction :handlers) result environment functions path [] pool) result))
+    (if (= operation :literal)
+      [(get instruction :value) output :normal]
+      (if (= operation :quote)
+        [(get instruction :value) output :normal]
+        (if (= operation :local)
+          [(get environment (get instruction :name)) output :normal]
+          (if (= operation :throw)
+            (let [value-result (p15-s23-runtime-evaluate-in-instance (get instruction :value) environment output functions path [] pool)]
+              (if (= :normal (get value-result 2))
+                [(first value-result) (second value-result) :thrown]
+                value-result))
+          (if (= operation :builtin-call)
+            (let [arguments-result
+                  (p15-s23-runtime-evaluate-arguments-in-context
+                   arguments environment output [] functions path [] pool)]
+              (if (= :normal (get arguments-result 2))
+              (let [values (first arguments-result) left (first values) right (second values)]
+              (if (contains? '#{first rest empty?} function)
+                (if (list? left)
+                  [(if (= function 'empty?) (= 0 (count left))
+                     (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :list-query-persistent-list-required :operation operation}
+                   (second arguments-result) :rejected])
+              (if (= function 'get)
+                (if (if (map? left) (if (string? right) true (keyword? right)) false)
+                  [(get left right (get values 2)) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :map-get-map-and-key-domain-required :operation operation}
+                   (second arguments-result) :rejected])
+              (if (= function 'contains?)
+                (if (if (map? left) (if (string? right) true (keyword? right)) false)
+                  [(contains? left right) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :map-contains-map-and-key-domain-required :operation operation}
+                   (second arguments-result) :rejected])
+              (if (= function '=)
+                (let [vectors? (if (vector? left) (vector? right) false)
+                      equal (if vectors? (p15-s23-runtime-vector-equality left right)
+                                (p15-s23-runtime-atomic-equality left right))]
+                  (if (boolean? equal) [equal (second arguments-result) :normal]
+                    [{:diagnostic "P15S23X002" :reason (if vectors? :vector-value-equality-domain-required :atomic-value-equality-domain-required) :operation operation}
+                     (second arguments-result) :rejected]))
+              (if (= function 'inc)
+                (let [proof (get instruction :proof) extent (get proof :vector-extent)]
+                  (if (if (integer? left)
+                        (if (if (<= 0 left) (< left extent) false) (= left (get environment (get proof :slot-name))) false) false)
+                    (let [successor (+ left 1)]
+                      (if (<= successor extent) [successor (second arguments-result) :normal]
+                        [{:diagnostic "P15S23X002" :reason :bounded-successor-result-out-of-range :operation operation}
+                         (second arguments-result) :rejected]))
+                    [{:diagnostic "P15S23X002" :reason :bounded-successor-counter-and-range-required :operation operation}
+                     (second arguments-result) :rejected]))
+              (if (= function 'conj)
+                (if (list? left)
+                  [(conj left right) (second arguments-result) :normal]
+                (if (if (vector? left) (< (count left) 1024) false)
+                  [(conj left right) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :vector-append-vector-and-extent-required :operation operation}
+                   (second arguments-result) :rejected]))
+              (if (= function 'nth)
+                (if (if (vector? left) (if (integer? right) (if (<= 0 right) (< right (count left)) false) false) false)
+                  [(get left right) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :vector-nth-vector-integer-and-bounds-required :operation operation}
+                   (second arguments-result) :rejected])
+              (if (= function 'count)
+                (if (if (list? left) true (if (map? left) true (vector? left)))
+                  [(count left) (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason :collection-count-map-or-vector-required :operation operation}
+                   (second arguments-result) :rejected])
+              (if (contains? '#{assoc dissoc} function)
+                (if (if (map? left) (keyword? right) false)
+                  [(if (= function 'dissoc) (p15-s23-runtime-remove-map-key left right) (assoc left right (get values 2)))
+                   (second arguments-result) :normal]
+                  [{:diagnostic "P15S23X002" :reason (if (= function 'dissoc) :map-removal-map-and-keyword-required :map-association-map-and-keyword-required) :operation operation}
+                   (second arguments-result) :rejected])
+              (if (if comparison? (if (integer? left) (integer? right) false) true)
+              [(if (= function 'list)
+                 (loop [index (- (count values) 1) result '()]
+                   (if (< index 0) result
+                     (recur (- index 1) (conj result (get values index)))))
+                 (if (= function 'str)
+                 (if (= (count values) 1)
+                   (str left)
+                   (str left right))
+                 (if (= function '=)
+                   (= left right)
+                   (if (= function '<)
+                     (< left right)
+                     (if (= function '<=)
+                       (<= left right)
+                       (if (= function '>)
+                         (> left right)
+                         (>= left right)))))))
+               (second arguments-result) :normal]
+               [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
+                (second arguments-result) :rejected])))))))))))
+              arguments-result))
+            (if (= operation :println)
+              (let [arguments-result
+                    (p15-s23-runtime-evaluate-arguments-in-context
+                     (get instruction :args) environment output [] functions path [] pool)]
+                (if (= :normal (get arguments-result 2))
+                [nil
+                 (p15-s23-runtime-println-output
+                  (first arguments-result) (second arguments-result)) :normal]
+                arguments-result))
+              (if (= operation :do)
+                (p15-s23-runtime-evaluate-sequence-in-context
+                 (get instruction :body) environment output functions path targets pool)
+                (if (= operation :if)
+                  (let [test-result
+                        (p15-s23-runtime-evaluate-in-instance
+                         (get instruction :test) environment output functions path [] pool)]
+                    (if (= :normal (get test-result 2))
+                    (if (first test-result)
+                      (p15-s23-runtime-evaluate-in-instance
+                       (get instruction :then)
+                       environment
+                       (second test-result) functions path targets pool)
+                      (p15-s23-runtime-evaluate-in-instance
+                       (get instruction :else)
+                       environment
+                       (second test-result) functions path targets pool)) test-result))
+                  (if (= operation :let)
+                  (let [binding-result
+                        (p15-s23-runtime-evaluate-bindings-in-context
+                         (get instruction :bindings) environment output functions path [] pool)]
+                    (if (= :normal (get binding-result 2))
+                    (p15-s23-runtime-evaluate-sequence-in-context
+                     (get instruction :body)
+                     (first binding-result)
+                     (second binding-result) functions path targets pool) binding-result))
+                    [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
+                     output :rejected])))))))))))))))))))))
+
+(defn p15-s23-runtime-module-census [plan budget]
+  (let [manifest (get plan :module-initialization) functions (get plan :functions)
+        roots (get manifest :roots) initializers (get manifest :initializers)
+        width (if (map? functions) (count functions) 0)
+        base (+ 8 width (if (vector? roots) (* 16 (count roots)) 0)
+                        (if (vector? initializers) (* 4 (count initializers)) 0))]
+    (if (> base budget) {:status :rejected :reason :module-initialization-work-limit :work-count base}
+      (if (if (= manifest nil) (= false (contains? plan :module-initialization)) false)
+        {:status :accepted :work-count base :definitions {} :initializers [] :module nil}
+        (if (if (map? manifest)
+              (if (= #{:version :module :instance-policy :roots :initializers} (set (keys manifest)))
+                (if (= [:p15-s23-module-literals-v1 :fresh-per-closed-plan-execution]
+                       [(get manifest :version) (get manifest :instance-policy)])
+                  (if (symbol? (get manifest :module))
+                    (if (vector? roots) (if (vector? initializers) (map? functions) false) false) false) false) false) false)
+          (loop [remaining roots pending initializers ordinal 0 definitions {} names #{} bindings #{} nodes #{} functions-seen #{} out [] used base]
+            (if (= 0 (count remaining))
+              (if (if (= 0 (count pending)) (= functions-seen (set (keys functions))) false)
+                {:status :accepted :work-count used :definitions definitions :initializers out :module (get manifest :module)}
+                {:status :rejected :reason :module-initialization-census :work-count used})
+              (let [root (first remaining) id (get root :binding-id) name (get root :name)
+                    def-id (get root :definition-core-node-id) value-id (get root :value-core-node-id)
+                    function? (= :function (get root :kind)) initializer (first pending)
+                    function (get functions name)
+                    record? (if (map? root)
+                              (= #{:ordinal :kind :name :visibility :binding-id :definition-core-node-id :definition-syntax-id
+                                   :definition-source :value-core-node-id :value-source :type} (set (keys root))) false)]
+                (if (if record?
+                      (if (= ordinal (get root :ordinal))
+                        (if (contains? #{:function :literal} (get root :kind))
+                          (if (symbol? name)
+                            (if (contains? #{:private :public} (get root :visibility))
+                              (if (if (p15-s23-runtime-module-id? id) (p15-s23-runtime-module-id? def-id) false)
+                                (if (if (p15-s23-runtime-module-id? value-id)
+                                        (p15-s23-runtime-module-id? (get root :definition-syntax-id)) false)
+                                  (if (if (p15-s23-runtime-module-source? (get root :definition-source))
+                                          (p15-s23-runtime-module-source? (get root :value-source)) false)
+                                    (if (if (= def-id value-id) true
+                                          (if (contains? names name) false
+                                          (if (contains? bindings id) false
+                                            (if (contains? nodes def-id) false (contains? nodes value-id)))))
+                                      false true) false) false) false) false) false) false) false) false)
+                  (if function?
+                    (if (if (map? function)
+                          (if (vector? (get function :params))
+                            (if (p15-s23-runtime-function-valid? function (count (get function :params)))
+                              (if (= name (get function :name)) (= root (get function :module-root)) false) false) false) false)
+                      (if (= [id value-id] [(get (get function :type-input) :definition-binding-id)
+                                             (get (get function :type-input) :function-core-node-id)])
+                        (recur (rest remaining) pending (+ ordinal 1) definitions (conj names name) (conj bindings id)
+                               (conj (conj nodes def-id) value-id) (conj functions-seen name) out used)
+                        {:status :rejected :reason :module-initialization-function-source :work-count used})
+                      {:status :rejected :reason :module-initialization-function-source :work-count used})
+                    (if (if (map? initializer) (= #{:ordinal :binding-id :instruction} (set (keys initializer))) false)
+                      (if (= [ordinal id] [(get initializer :ordinal) (get initializer :binding-id)])
+                        (let [instruction (get initializer :instruction)
+                              checked (p15-s23-runtime-initializer-work instruction (- budget used))
+                              total (+ used (get checked :work-count))]
+                          (if (= :accepted (get checked :status))
+                            (if (p15-s23-runtime-initializer-type? root instruction)
+                              (recur (rest remaining) (rest pending) (+ ordinal 1) (assoc definitions id root)
+                                     (conj names name) (conj bindings id) (conj (conj nodes def-id) value-id) functions-seen
+                                     (conj out {:definition root :instruction instruction :constructors (get checked :constructors)}) total)
+                              {:status :rejected :reason :module-initialization-type :work-count total})
+                            (assoc checked :work-count total)))
+                        {:status :rejected :reason :module-initialization-source-order :work-count used})
+                      {:status :rejected :reason :module-initialization-source-order :work-count used}))
+                  {:status :rejected :reason :module-initialization-root-source :work-count used}))))
+          {:status :rejected :reason :invalid-module-initialization-manifest :work-count base})))))
+
+(defn p15-s23-runtime-instruction-children [instruction budget]
+  (let [op (get instruction :op)
+        args? (contains? #{:function-call :builtin-call :keyword-map-lookup :recur :println} op)
+        values (get instruction (if args? :args (if (= op :vector-literal) :items :body)))
+        bindings? (contains? #{:let :loop} op)
+        entries (get instruction (if (= op :map-literal) :entries (if (= op :try) :handlers :clauses)))
+        width (if args? (if (vector? values) (count values) 0)
+                (if (= op :vector-literal) (if (vector? values) (count values) 0)
+                (if (= op :do) (if (vector? values) (count values) 0)
+                (if bindings? (+ (if (vector? values) (count values) 0)
+                                 (if (vector? (get instruction :bindings)) (count (get instruction :bindings)) 0))
+                (if (= op :if) 3
+                (if (= op :throw) 1
+                (if (= op :map-literal) (if (vector? entries) (* 2 (count entries)) 0)
+                (if (= op :try) (+ 1 (if (vector? entries) (count entries) 0))
+                (if (= op :structural-match) (+ 1 (if (vector? entries) (* 2 (count entries)) 0)) 0)))))))))]
+    (if (> (+ 1 width) budget) {:status :rejected :reason :module-initialization-work-limit :work-count (+ 1 width)}
+      {:status :accepted :work-count (+ 1 width)
+       :children (if (if args? true (contains? #{:vector-literal :do} op))
+                   (if (vector? values) values [])
+                 (if bindings?
+                   (loop [remaining (if (vector? (get instruction :bindings)) (get instruction :bindings) []) out (if (vector? values) values [])]
+                     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (first remaining) :expr)))))
+                 (if (= op :if) [(get instruction :test) (get instruction :then) (get instruction :else)]
+                 (if (= op :throw) [(get instruction :value)]
+                 (if (contains? #{:map-literal :try :structural-match} op)
+                   (loop [remaining (if (vector? entries) entries [])
+                          out (if (= op :try) [(get instruction :protected)]
+                                (if (= op :structural-match) [(get instruction :scrutinee)] []))]
+                     (if (= 0 (count remaining)) out
+                       (let [entry (first remaining)]
+                         (recur (rest remaining)
+                           (if (= op :map-literal) (conj (conj out (get entry :key)) (get entry :value))
+                             (if (= op :try) (conj out (get entry :body))
+                               (if (if (map? entry) (contains? entry :guard) false) (conj (conj out (get entry :guard)) (get entry :body))
+                                 (conj out (get entry :body))))))))) [])))))})))
+
+(defn p15-s23-runtime-module-reads-work [functions definitions budget]
+  (let [count-functions (if (map? functions) (count functions) 0)]
+    (if (> count-functions budget) {:status :rejected :reason :module-initialization-work-limit :work-count count-functions}
+      (loop [remaining (if (map? functions) (keys functions) []) pending [] used count-functions]
+        (if (= 0 (count pending))
+          (if (= 0 (count remaining)) {:status :accepted :work-count used}
+            (let [instructions (get (get functions (first remaining)) :instructions)
+                  width (if (vector? instructions) (count instructions) 0)]
+              (if (> (+ used width) budget) {:status :rejected :reason :module-initialization-work-limit :work-count (+ used width)}
+                (recur (rest remaining)
+                  (loop [items (if (vector? instructions) instructions []) out []]
+                    (if (= 0 (count items)) out (recur (rest items) (conj out {:instruction (first items) :depth 0}))))
+                  (+ used width)))))
+          (let [frame (get pending (- (count pending) 1)) instruction (get frame :instruction)
+                depth (get frame :depth) tail (subvec pending 0 (- (count pending) 1))
+                read? (= :namespace-read (get instruction :op))]
+            (if (> depth 128) {:status :rejected :reason :module-initialization-work-limit :work-count (+ used 1)}
+              (if (if read? (p15-s23-runtime-namespace-read-source? instruction (get definitions (get instruction :binding-id))) true)
+                (let [children (p15-s23-runtime-instruction-children instruction (- budget used)) total (+ used (get children :work-count))]
+                  (if (= :accepted (get children :status))
+                    (recur remaining
+                      (loop [items (get children :children) out tail]
+                        (if (= 0 (count items)) out
+                          (recur (rest items) (conj out {:instruction (first items) :depth (+ depth 1)})))) total)
+                    (assoc children :work-count total)))
+                {:status :rejected :reason :namespace-read-without-initialized-definition :work-count (+ used 1)}))))))))
+
+(defn p15-s23-runtime-initialize-module [census functions]
+  (loop [remaining (get census :initializers) pool {} order [] constructors {}]
+    (if (= 0 (count remaining))
+      {:status :accepted :pool pool :report {:version :p15-s23-module-literals-v1 :module (get census :module)
+        :instance-policy :fresh-per-closed-plan-execution :initialized-binding-ids order :validated-constructor-occurrences constructors}}
+      (let [item (first remaining) definition (get item :definition) id (get definition :binding-id)
+            result (p15-s23-runtime-evaluate-in-instance (get item :instruction) {} "" functions [] [] nil)]
+        (if (if (= :normal (get result 2)) (= "" (second result)) false)
+          (recur (rest remaining) (assoc pool id {:definition definition :value (first result)}) (conj order id)
+                 (assoc constructors id (get item :constructors)))
+          {:status :rejected :reason :module-initialization-evaluation :result result})))))
+
+; Development entrypoint for a closed instruction plan. The result records
+; normal completion, a thrown value, or rejection with accumulated output.
+; This source revision is not admitted or bound to a current target runtime.
+(defn p15-s23-runtime-execute-closed-plan [plan]
+  (let [entrypoint (get plan :entrypoint) functions (get plan :functions)
+        module? (contains? plan :module-initialization)
+        census (if module? (p15-s23-runtime-module-census plan 65536) {:status :accepted})
+        reads (if (if module? (= :accepted (get census :status)) false)
+                (p15-s23-runtime-module-reads-work functions (get census :definitions) (- 65536 (get census :work-count))) census)
+        initialized (if (if module? (= :accepted (get reads :status)) false) (p15-s23-runtime-initialize-module census functions) reads)
+        result (if (= :accepted (get initialized :status))
+                 (p15-s23-runtime-activate-function-in-instance (get functions entrypoint) [] "" functions [entrypoint] (get initialized :pool))
+                 [{:diagnostic "P15S23X002" :reason (get initialized :reason)} "" :rejected])
+        base {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record :entrypoint entrypoint
+              :stdout (second result) :clojure-seed-boundary? true :self-hosted? false}
+        record (if (= false module?) base
+                   (if (= :accepted (get initialized :status)) (assoc base :module-initialization (get initialized :report)) base))]
+    (if (= :normal (get result 2)) (assoc record :entrypoint-result (first result) :status :complete)
+      (if (= :thrown (get result 2)) (assoc record :thrown-value (first result) :status :thrown)
+        (assoc record :diagnostic (first result) :status :rejected)))))

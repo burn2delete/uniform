@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.function-boolean-match-unknown
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn unknown-scrutinee [b]
+  (match b true true false false))

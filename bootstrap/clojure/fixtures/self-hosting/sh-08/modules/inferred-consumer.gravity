@@ -1,0 +1,10 @@
+(ns example.inferred-consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.inferred-values :as producer])
+  (:exports [call-ready call-i64 call-text call-integer])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn call-ready [] (producer/ready))
+(defn call-i64 [value :- I64] (producer/identity-i64 value))
+(defn call-text [] (example.inferred-values/identity "consumer"))
+(defn call-integer [] (producer/integer-chain 9))

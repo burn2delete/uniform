@@ -1,0 +1,26 @@
+(ns self-hosting.sh08.local-runtime-vector-nth
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn first-item [value :- String] :- String (nth [value true] 0))
+(defn last-item [value :- String] :- String (nth [false 7 value] 2))
+(defn nil-item [] (nth [nil] 0))
+(defn scalar-quoted [] :- String (nth '[{"unrelated" #{a b}} "selected"] 1))
+(defn aliases [value :- String] :- String
+  (let [items ['{"unrelated" 1} {:value value}] alias items] (:value (nth alias 1))))
+(defn build [value :- String] ['{"unrelated" 1} {:value value}])
+(defn nested [value :- String] :- String (:value (nth (build value) 1)))
+(defn direct-demand [value :- String] :- String (:value (nth ['{"unrelated" 1} {:value value}] 1)))
+(defn quoted-demand [] :- String (:value (nth '[{"unrelated" 1} {:value "selected"}] 1)))
+(defn nested-chain [value :- String] :- String (:value (nth (nth [['{"unrelated" 1} {:value value}]] 0) 1)))
+(defn nested-quoted [] :- String (:value (nth (nth '[[{"unrelated" 1} {:value "selected"}]] 0) 1)))
+(defn match-payload [flag :- Bool value :- String] :- String
+  (match (nth [{:flag flag :value value} false] 0) {:flag true :value item} item _ "other"))
+(defn quoted-map [] :- String (:value (nth '[false {:value "quoted"}] 1)))
+(defn caught-left [first :- String second :- String] :- String
+  (try (nth (throw first) (throw second)) (catch String error error)))
+(defn caught-index [problem :- String] :- String
+  (try (nth [] (throw problem)) (catch String error error)))
+(defn caught-vector [problem :- String] :- String
+  (try (nth [{:before true} (throw problem)] 0) (catch String error error)))
+(defn shadowed [nth :- String] :- String nth)
+(defn main [] :- String (nested "main"))

@@ -1,0 +1,29 @@
+(ns example.local-runtime-atomic-equality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn check-id [left :- String right :- String] :- Keyword
+  (if (= left right) :same (throw :mismatch)))
+
+(defn atoms []
+  [(= nil nil) (= true false) (= 'a/x 'b/x)
+   (= :a/x :a/x) (= :a/x :b/x) (= nil false)])
+
+(defn characters []
+  [(= \😀 '\😀) (= \A \😀) (= (nth [\😀] 0) \😀)])
+
+(defn cross [] (= "same" :same))
+
+(defn left-first [left :- String right :- String]
+  (= (throw left) (throw right)))
+
+(defn right-throws [right :- String]
+  (= "value" (throw right)))
+
+(defn map-data []
+  {:artifact :gravity/unicode-scalar-character :schema-version 1
+   :codepoint 128512 :text "😀"})
+
+(defn shadowed [= :- String] :- String =)
+
+(defn main [] (check-id "id" "id"))

@@ -1,0 +1,5 @@
+(ns example.list-prepend-wrong-member
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn main [parts :- (List String)] (conj parts :wrong))

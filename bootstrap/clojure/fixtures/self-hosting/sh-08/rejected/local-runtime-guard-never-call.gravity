@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.local-runtime-guard-never-call
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn text [value :- String] :- String value)
+(defn invalid [value :- String] :- String
+  (match {:value value} {:value item :when (throw item)} (text false)))

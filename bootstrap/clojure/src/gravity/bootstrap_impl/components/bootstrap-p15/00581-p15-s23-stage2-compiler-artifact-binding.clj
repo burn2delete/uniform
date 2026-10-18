@@ -208,18 +208,24 @@
     p15-s23-stage2-compiler-artifact-expression-function
     [emitter module locals form])))
 
+(declare p15-s23-stage2-typed-lowering-operation)
+
 (defn p15-s23-stage2-compile-function
-  [emitter module definition]
+  ([emitter module definition]
   (p15-s23-stage2-compiler-result!
    module
    (p15-s23-stage2-compiler-artifact-invoke
     p15-s23-stage2-compiler-artifact-function
     [emitter module definition])))
+  ([emitter module definition typed-input]
+   (p15-s23-stage2-typed-lowering-operation :function emitter module definition typed-input)))
 
 (defn p15-s23-stage2-assemble-plan-products
-  [emitter module ordered-definitions]
+  ([emitter module ordered-definitions]
   (p15-s23-stage2-compiler-result!
    module
    (p15-s23-stage2-compiler-artifact-invoke
     p15-s23-stage2-compiler-artifact-plan-assembly-function
     [emitter module ordered-definitions])))
+  ([emitter module ordered-definitions typed-input]
+   (p15-s23-stage2-typed-lowering-operation :module emitter module ordered-definitions typed-input)))

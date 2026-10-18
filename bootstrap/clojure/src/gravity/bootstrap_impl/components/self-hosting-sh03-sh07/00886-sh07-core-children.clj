@@ -94,10 +94,26 @@
       :path path
       :kind kind})))
 
+(defn- sh07-core-projected-source-mismatch [source target]
+  (when source
+    (let [value (:value source) expected-kind (if (= :character (:kind source)) :character (sh07-core-value-kind value))]
+      (cond
+        (not= expected-kind (:kind target)) :map-source-value-or-kind
+        (and (not (coll? value))
+             (not (if (instance? java.math.BigDecimal value)
+                    (and (= :gravity/arbitrary-decimal-literal (:kind (:value target)))
+                         (= (.scale ^java.math.BigDecimal value) (:scale (:value target)))
+                         (= (str (.unscaledValue ^java.math.BigDecimal value)) (:unscaled-value (:value target))))
+                    (= value (:value target))))) :map-source-projected-literal
+        :else nil))))
+
 (defn sh07-core-neutral-value
-  [source-path source-revision-id root-syntax-id path
-   decimal-evidence value]
+  ([source-path source-revision-id root-syntax-id path decimal-evidence value]
+   (sh07-core-neutral-value source-path source-revision-id root-syntax-id path decimal-evidence value nil))
+  ([source-path source-revision-id root-syntax-id path decimal-evidence value source-occurrences]
   (cond
+    (= :character (get-in source-occurrences [:sources path :kind]))
+    (if (instance? clojure.lang.IObj value) (with-meta value nil) value)
     (instance? java.math.BigDecimal value)
     (let [descriptor (p15-s23-c6c10-literal-scalar-descriptor value)
           cache-key [root-syntax-id path]
@@ -123,18 +139,18 @@
              [(sh07-core-neutral-value
                source-path source-revision-id root-syntax-id
                (conj path (* 2 index))
-               decimal-evidence key)
+               decimal-evidence key source-occurrences)
               (sh07-core-neutral-value
                source-path source-revision-id root-syntax-id
                (conj path (inc (* 2 index)))
-               decimal-evidence child)]))
+               decimal-evidence child source-occurrences)]))
           value)
     (vector? value)
     (mapv
      (fn [index child]
        (sh07-core-neutral-value
         source-path source-revision-id root-syntax-id
-        (conj path index) decimal-evidence child))
+        (conj path index) decimal-evidence child source-occurrences))
      (range) value)
     (set? value)
     (into #{}
@@ -142,7 +158,7 @@
            (fn [index child]
              (sh07-core-neutral-value
               source-path source-revision-id root-syntax-id
-              (conj path index) decimal-evidence child)))
+              (conj path index) decimal-evidence child source-occurrences)))
           (sort-by pr-str value))
     (seq? value)
     (apply list
@@ -150,9 +166,9 @@
             (fn [index child]
               (sh07-core-neutral-value
                source-path source-revision-id root-syntax-id
-               (conj path index) decimal-evidence child))
+               (conj path index) decimal-evidence child source-occurrences))
             value))
-    :else value))
+    :else value)))
 
 (defn sh07-core-macro-trace
   [lineage sh05-step]

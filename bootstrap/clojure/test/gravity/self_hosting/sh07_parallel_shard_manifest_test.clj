@@ -11,6 +11,8 @@
 ;; Frozen selector parity table from the pre-manifest parallel runner at the
 ;; candidate base.  The table is intentionally data-only: it is the reviewed
 ;; oracle for the compatibility projection, not another executable catalog.
+;; Owning semantic test renames and newly consumed fixture paths are updated
+;; explicitly here and in the catalog; historical result records are unchanged.
 (def ^:private expected-shards
   {"accepted"
    {:namespace "gravity.self-hosting.sh07-vector-pattern-test"
@@ -38,10 +40,10 @@
    "b12-contract-accepted"
    {:namespace "gravity.self-hosting.sh07-alias-qualified-reference-test"
     :selectors ["sh07-b12-fixtures-are-dynamically-discovered-paired-and-bounded"
-                "sh07-b12-direct-and-public-routing-use-v13"
+                "sh07-b12-source-and-file-compose-real-module-artifacts"
                 "sh07-b12-declared-alias-table-is-exact-bounded-and-projected"
                 "sh07-b12-alias-qualified-value-and-operator-references-bind-exactly"
-                "sh07-b12-alias-targets-may-be-a-binding-target-subset"
+                "sh07-b12-alias-targets-come-from-the-actual-module"
                 "sh07-b12-reference-and-call-record-contract-remains-b11-compatible"
                 "sh07-b12-alias-call-evaluates-operator-before-arguments"
                 "sh07-b12-alias-fully-qualified-and-core-controls-remain-distinct"]}
@@ -144,6 +146,9 @@
 (def ^:private alias-reference-closure
   {:module-ids ["sh07-checked-core"]
    :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+           "bootstrap/gravity/src/gravity/resolution.gravity"
+           "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
+           "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
            "bootstrap/gravity/src/gravity/checked_core.gravity"
            "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"

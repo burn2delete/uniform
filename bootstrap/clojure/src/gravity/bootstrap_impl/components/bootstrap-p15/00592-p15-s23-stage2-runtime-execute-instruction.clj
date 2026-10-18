@@ -1,5 +1,6 @@
 (declare p15-s23-sh07-b51-runtime-authorize-external-link
          p15-s23-sh07-b51-runtime-execute-external-machine
+         p15-s23-stage2-module-execute-call p15-s23-stage2-runtime-execute-call-scoped
          ^:private p15-s23-stage2-runtime-execute-function-scoped)
 (defn- p15-s23-stage2-runtime-execute-instruction-scoped
   [runtime plan env instruction public-invocation-scope]
@@ -116,6 +117,14 @@
      (p15-s23-stage2-runtime-execute-values-scoped
       runtime plan env (:args instruction) :recur-inside-recur-argument
       public-invocation-scope))
+    :throw
+    (do
+      (when-not (and (= #{:op :value} (set (keys instruction))) (map? (:value instruction)))
+        (fail! "L2-THROW-ILLEGAL" "seed throw instruction requires one operand instruction"
+               {:source-span {:source (get-in plan [:source :path])} :reason :malformed-throw-instruction}))
+      (p15-s23-stage2-runtime-source-throw! plan
+        (p15-s23-stage2-runtime-execute-value-scoped
+         runtime plan env (:value instruction) :recur-inside-throw-operand public-invocation-scope)))
     :builtin-call
     (let [function (:function instruction)
           argument-instructions (:args instruction)
@@ -223,22 +232,9 @@
             (p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
              runtime plan env instruction function public-invocation-scope)))))
     :function-call
-    (let [function (:function instruction)
-          external-authority
-          (when (contains? instruction :external-link)
-            ;; Authenticate the complete M0/M1/M2/M3 route before argument
-            ;; evaluation.  A rejected route cannot commit argument effects,
-            ;; a result, output, or a trace row.
-            (p15-s23-sh07-b51-runtime-authorize-external-link
-             runtime plan instruction))
-          args (p15-s23-stage2-runtime-execute-values-scoped
-                runtime plan env (:args instruction) :recur-inside-function-argument public-invocation-scope)]
-      (if external-authority
-        (p15-s23-sh07-b51-runtime-execute-external-machine
-         runtime plan instruction external-authority args
-         public-invocation-scope)
-        (p15-s23-stage2-runtime-execute-function-scoped
-         runtime plan function args public-invocation-scope)))
+    (p15-s23-stage2-runtime-execute-call-scoped runtime plan env instruction public-invocation-scope)
+    :compiler-module-call
+    (p15-s23-stage2-module-execute-call runtime plan env instruction public-invocation-scope)
     (fail! "L2-UNKNOWN-CORE-FORM"
            "stage2 runtime plan contains an unknown instruction"
            {:source-span {:source (get-in plan [:source :path])}

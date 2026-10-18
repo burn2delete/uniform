@@ -1,5 +1,5 @@
 (ns gravity.digest
-  "Stage 0 SHA-256 primitives for string and byte-array inputs.
+  "Stage 0 SHA-256 primitives for strings, byte arrays, and byte output.
 
   This leaf owns only SHA-256 computation and the historical lowercase
   hexadecimal rendering. It intentionally does not claim canonical encoding,
@@ -15,8 +15,17 @@
      :returns :lowercase-64-character-hex-string}
     'sha256-bytes-hex
     {:arglists '([bytes])
+     :returns :lowercase-64-character-hex-string}
+    'sha256-output-hex
+    {:arglists '([write-bytes!])
+     :callback-invocations 1
+     :callback-return :ignored
+     :callback-input :scoped-byte-output-stream
+     :callback-trust :host-caller
+     :callback-exceptions :propagated
+     :stream-lifetime :closed-before-return
      :returns :lowercase-64-character-hex-string}}
-   :artifact-inputs [:utf8-string :byte-array]
+   :artifact-inputs [:utf8-string :byte-array :byte-output-producer]
    :artifact-outputs [:sha256-lowercase-hex]
    :ownership
    {:owns [:sha256-computation :lowercase-hex-rendering]
@@ -29,7 +38,8 @@
                    :artifact-cache-policy
                    :artifact-provenance]}
    :dependency-direction
-   {:requires ['clojure.core 'java.security.MessageDigest]
+   {:requires ['clojure.core 'java.security.MessageDigest
+               'java.security.DigestOutputStream 'java.io.OutputStream]
     :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :test-owner 'gravity.digest-test/sha256-namespace-contract-is-narrow-and-acyclic
    :bootstrap-hosted? true
@@ -56,3 +66,16 @@
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         bytes)]
     (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+
+(defn sha256-output-hex
+  "Hash bytes written by one invocation of write-bytes! to a scoped sink.
+
+  The sink is closed before the lowercase digest is returned. Producer
+  exceptions propagate; this primitive does not encode text, retain output,
+  or define canonical identity. The producer is trusted host code, not sandboxed."
+  [write-bytes!]
+  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
+    (with-open [output (java.security.DigestOutputStream.
+                       (java.io.OutputStream/nullOutputStream) digest)]
+      (write-bytes! output))
+    (apply str (map #(format "%02x" (bit-and % 0xff)) (.digest digest)))))

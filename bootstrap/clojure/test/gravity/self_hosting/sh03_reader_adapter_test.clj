@@ -652,6 +652,186 @@
               (:missing-fields data)))
     (is (nil? (:unexpected-host-error data)))))
 
+(deftest sh03-digest-resolution-reuses-only-its-fresh-canonical-form
+  (let [form-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form-and-stats)
+        hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
+        phase-var (ns-resolve 'gravity.bootstrap 'sh03-reader-resolve-digest-request-sequence!)
+        original-form (var-get form-var) hash-form (var-get hash-var)
+        original-phase (var-get phase-var)
+        original-resolve bootstrap/p15-s23-c6c10-resolve-digest-references!]
+    (is (true? (:private (meta hash-var))))
+    (is (true? (:private (meta phase-var))))
+    (is (not (contains? (ns-publics 'gravity.bootstrap) 'sh03-reader-resolve-digest-request-sequence!)))
+    (is (contains? (ns-publics 'gravity.bootstrap) 'sh03-reader-resolve-digest-requests!))
+    (doseq [[disposition basename status] [["accepted" "newline-lf" :accepted]
+                                          ["rejected" "delimiter-mismatched" :rejected]]]
+      (let [source (fixture-path disposition basename ".gravity") bytes (source-bytes source)
+            execution (sh03-result source) raw (:raw-result execution)
+            requests (:resolved-requests execution) nonraw (vec (rest requests))
+            calls (atom {}) completions (atom []) phase-returns (atom []) phase-complete? (atom false)
+            resolve-once (fn []
+                           (with-redefs-fn
+                             {form-var (fn [request-source value]
+                                         (doseq [request nonraw :when (= value (:preimage request))]
+                                           (swap! calls update (:key request) (fnil inc 0)))
+                                         (original-form request-source value))
+                              phase-var (fn [request-source input input-bytes]
+                                          (let [result (original-phase request-source input input-bytes)]
+                                            (swap! phase-returns conj result)
+                                            (reset! phase-complete? true)
+                                            result))
+                              #'bootstrap/p15-s23-c6c10-resolve-digest-references!
+                              (fn [request-source value count consumer digests]
+                                (when (nil? consumer)
+                                  (is (true? @phase-complete?))
+                                  (swap! completions conj value))
+                                (original-resolve request-source value count consumer digests))}
+                             #(bootstrap/sh03-reader-resolve-digest-requests! source raw bytes)))
+            first-result (resolve-once)]
+        (is (= status (:status raw)))
+        (is (= (if (= status :accepted)
+                 bootstrap/sh03-reader-accepted-digest-request-names
+                 bootstrap/sh03-reader-rejected-digest-request-names)
+               (mapv :key requests)))
+        (is (= (select-keys execution [:resolved-requests :resolved-digests :reader-result-id])
+               (select-keys first-result [:resolved-requests :resolved-digests :reader-result-id])))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= [(assoc raw :digest-requests [])] @completions))
+        (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))
+        (let [legacy-result (original-resolve source raw (count requests) nil (:resolved-digests first-result))
+              legacy-result (assoc legacy-result :digest-requests (:resolved-requests first-result)
+                              :incremental-reader-hashes
+                              (assoc (:incremental-reader-hashes legacy-result) :status
+                                     (if (= status :accepted) :stable :rejected)))]
+          (is (= legacy-result (:result first-result))))
+        (doseq [request nonraw]
+          (let [identity (bootstrap/sh03-reader-canonical-identity source (:preimage request))]
+            (is (= (:digest request)
+                   (bootstrap/sh03-reader-canonical-digest source (:preimage request))
+                   (hash-form identity)))))
+        (reset! calls {})
+        (reset! completions [])
+        (reset! phase-returns [])
+        (reset! phase-complete? false)
+        (is (= first-result (resolve-once)))
+        (is (= (zipmap (map :key nonraw) (repeat 1)) @calls))
+        (is (= [(assoc raw :digest-requests [])] @completions))
+        (is (= [(select-keys first-result [:resolved-digests :resolved-requests])] @phase-returns))))))
+
+(deftest sh03-fused-digest-resolution-preserves-rejection-controls
+  (let [source (fixture-path "accepted" "newline-lf" ".gravity") bytes (source-bytes source)
+        execution (sh03-result source) raw (:raw-result execution)
+        request-one (get-in raw [:digest-requests 1])
+        cases [[(update raw :digest-requests #(vec (reverse %))) :exact-sh03-reader-digest-request-set]
+               [(assoc-in raw [:digest-requests 1 :ordinal] 2) :exact-sh03-reader-digest-request-schema]
+               [(assoc-in raw [:digest-requests 1 :algorithm] :sha512) :exact-sh03-reader-digest-request-schema]
+               [(update-in raw [:digest-requests 1] dissoc :preimage) :exact-sh03-reader-digest-request-schema]
+               [(assoc-in raw [:digest-requests 1 :depends-on] [1]) :prior-only-sh03-reader-digest-dependencies]
+               [(assoc-in raw [:digest-requests 1 :encoding] :raw-byte-vector-v1) :declared-sh03-reader-digest-encoding]
+               [(assoc-in raw [:digest-requests 0 :preimage] [99]) :source-bound-sh03-reader-digest-request]
+               [(assoc-in raw [:digest-requests 0 :observed-id] "sha256:forged") :unique-bound-sh03-reader-digest]
+               [(-> raw (assoc-in [:digest-requests 2 :preimage] (:preimage request-one))
+                        (assoc-in [:digest-requests 2 :depends-on] (:depends-on request-one)))
+                :unique-bound-sh03-reader-digest]]]
+    (doseq [[candidate missing] cases]
+      (let [data (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source candidate bytes))]
+        (is (= "C2-HASH" (:id data)))
+        (is (some #{missing} (:missing-fields data)))))
+    (let [hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
+          original (var-get hash-var) calls (atom 0) previous (atom nil)
+          boundary (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-boundary-fail!))
+          data (with-redefs-fn
+                 {hash-var (fn [form]
+                             (let [result (original form)]
+                               (if (= 2 (swap! calls inc)) @previous
+                                 (do (reset! previous result) result))))}
+                 #(thrown-data (fn [] (bootstrap/sh03-reader-resolve-digest-requests! source raw bytes))))]
+      (is (= "C2-HASH" (:id data)))
+      (is (some #{:unique-bound-sh03-reader-digest} (:missing-fields data)))
+      (is (= (thrown-data #(boundary source :unique-bound-sh03-reader-digest
+                                    (get-in raw [:digest-requests 2])
+                                    {:ordinal 2 :digest @previous}))
+             data)))
+    (let [boundary (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-boundary-fail!))
+          replace-pair
+          (fn [left right]
+            (-> raw
+                (assoc-in [:digest-requests 1 :preimage] left)
+                (assoc-in [:digest-requests 1 :depends-on] [])
+                (assoc-in [:digest-requests 2 :preimage] right)
+                (assoc-in [:digest-requests 2 :depends-on] [])))]
+      (doseq [[left right] [[(array-map :a 1 :b 2) (array-map :b 2 :a 1)]
+                            [(hash-set :a :b) (hash-set :b :a)]
+                            [1 (bigint 1)]]]
+        (let [candidate (replace-pair left right)
+              digest (bootstrap/sh03-reader-canonical-digest source left)
+              legacy-error
+              (thrown-data #(boundary source :unique-bound-sh03-reader-digest
+                                      (get-in candidate [:digest-requests 2])
+                                      {:ordinal 2 :digest digest}))
+              actual-error
+              (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests!
+                             source candidate bytes))]
+          (is (= (bootstrap/sh03-reader-canonical-identity source left)
+                 (bootstrap/sh03-reader-canonical-identity source right)))
+          (is (= legacy-error actual-error))))
+      (doseq [[left right] [[(list 1) [1]] [1.0M 1.00M]]]
+        (let [candidate (replace-pair left right)
+              result (bootstrap/sh03-reader-resolve-digest-requests! source candidate bytes)]
+          (is (not= (bootstrap/sh03-reader-canonical-identity source left)
+                    (bootstrap/sh03-reader-canonical-identity source right)))
+          (is (not= (get (:resolved-digests result) 1)
+                    (get (:resolved-digests result) 2)))
+          (is (= result (bootstrap/sh03-reader-resolve-digest-requests!
+                         source candidate bytes))))))
+    (let [hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
+          original (var-get hash-var) calls (atom [])
+          candidate (-> raw
+                        (assoc-in [:digest-requests 1 :preimage]
+                                  (java.math.BigDecimal. java.math.BigInteger/ONE 65537))
+                        (assoc-in [:digest-requests 1 :depends-on] []))
+          data (with-redefs-fn
+                 {hash-var (fn [form]
+                             (swap! calls conj
+                                    (if (some #{[:keyword "gravity" "c6-c10-upstream-diagnostic-id-v1"]}
+                                              (tree-seq vector? seq form))
+                                      :diagnostic :request))
+                             (original form))}
+                 #(thrown-data (fn [] (bootstrap/sh03-reader-resolve-digest-requests!
+                                      source candidate bytes))))]
+      (is (= "C6-VERIFY" (:id data)))
+      (is (= :bounded-decimal-scale (:missing-fact data)))
+      (is (= [:diagnostic] @calls)))))
+
+(deftest sh03-completion-reuse-preserves-map-set-collisions-and-precedence
+  (let [source (fixture-path "accepted" "newline-lf" ".gravity") bytes (source-bytes source)
+        execution (sh03-result source) raw (:raw-result execution)
+        digests (:resolved-digests execution) count (count digests)
+        collision-map (array-map {:digest-ref 0} :reference (first digests) :literal)
+        collision-set (hash-set {:digest-ref 0} (first digests))]
+    (doseq [[collision missing] [[collision-map :collision-free-resolved-map-keys]
+                                  [collision-set :collision-free-resolved-set-items]]]
+      (let [inside (-> raw (assoc-in [:digest-requests 1 :preimage] collision)
+                           (assoc-in [:digest-requests 1 :depends-on] [0]))
+            outside (assoc-in raw [:semantic-reader-template :completion-collision] collision)
+            old-inside (thrown-data #(bootstrap/p15-s23-c6c10-resolve-digest-references!
+                                      source collision count 1 [(first digests)]))
+            actual-inside (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source inside bytes))
+            old-outside (thrown-data #(bootstrap/p15-s23-c6c10-resolve-digest-references!
+                                       source outside count nil digests))
+            actual-outside (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source outside bytes))]
+        (is (= "C6-VERIFY" (:id old-inside) (:id old-outside)))
+        (is (= missing (:missing-fact old-inside) (:missing-fact old-outside)))
+        (is (= old-inside actual-inside))
+        (is (= old-outside actual-outside))))
+    (let [inside (-> raw (assoc-in [:digest-requests 1 :preimage] collision-map)
+                         (assoc-in [:digest-requests 1 :depends-on] [0]))
+          both (assoc-in inside [:semantic-reader-template :completion-collision] collision-set)
+          inside-error (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source inside bytes))
+          both-error (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source both bytes))]
+      (is (= :collision-free-resolved-map-keys (:missing-fact both-error)))
+      (is (= inside-error both-error)))))
+
 (deftest sh03-gravity-facade-rejects-source-result-and-report-substitution
   (let [source-path
         (fixture-path "accepted" "complete-reader-surface" ".gravity")

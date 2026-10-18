@@ -1,0 +1,25 @@
+(ns self-hosting.sh08.local-runtime-structural-match
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn choose [flag :- Bool text :- String fallback :- String] :- String
+  (match (packet flag text) {:payload [true {:value item}]} item _ fallback))
+(defn packet [flag :- Bool text :- String] {:extra :retained :payload [flag {:value text}]})
+(defn multi [flag :- Bool text :- String] :- String
+  (match [text flag] [item true] item [item observed] (if observed "wrong" item)))
+(defn rollback [flag :- Bool value :- String item :- String] :- String
+  (match [value flag] [item true] item _ item))
+(defn nested [flag :- Bool text :- String] :- String
+  (match (packet flag text) {:payload [true {:value text}]} (match [text] [text] text) _ text))
+(defn present-nil [] :- String (match {:present nil :extra :retained} {:present nil} "present"))
+(defn absent-map [] :- String (match {:other nil} {:other _} "absent"))
+(defn quoted [] :- String (match '{:payload [true {:value "quoted"}]} {:payload [true {:value item}]} item))
+(defn literals [] :- String
+  (match {:nothing nil :keyword :ready :character \a :symbol 'ready}
+    {:nothing nil :keyword :ready :character \a :symbol 'ready} "literals"))
+(defn gate [raise :- Bool problem :- String flag :- Bool] :- Bool (if raise (throw problem) flag))
+(defn checked [raise :- Bool flag :- Bool text :- String problem :- String fallback :- String] :- String
+  (match {:payload [(gate raise problem flag) {:value text}]} {:payload [true {:value item}]} item _ fallback))
+(defn checked-wrapper [raise :- Bool flag :- Bool text :- String problem :- String fallback :- String] :- String
+  (checked raise flag text problem fallback))
+(defn selected-recur [again :- Bool value :- String] :- String
+  (match [again value] [true item] (recur false item) [false item] item))
+(defn main [] (choose true "payload" "fallback"))

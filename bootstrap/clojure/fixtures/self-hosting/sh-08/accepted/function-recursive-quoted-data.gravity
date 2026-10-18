@@ -1,0 +1,23 @@
+(ns self-hosting.sh08.function-recursive-quoted-data
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn token [] :- Symbol 'unresolved-data-name)
+(defn inert-data [] '(throw unresolved-data-name))
+(defn all-data []
+  '[nil true false 17 \a "text" :key symbol () [] {} #{}
+    (quote nested) {:nested [ready]} #{symbol :key}])
+(defn empty-data [] '[() [] {} #{}])
+(defn extract-token [] :- Symbol
+  (match '[true {:value ready}]
+    [flag {:value result}] result))
+(defn nested-alias [] :- Symbol
+  (let [data '{:payload [true {:value ready}]} forward data]
+    (match forward
+      {:payload packet}
+      (match packet [flag {:value result}] result))))
+(defn quoted-false [] :- Symbol
+  (match '{:value ready}
+    {:value result :when 'false} result
+    _ 'fallback))
+(defn non-keyword-map [] '{ready [true]})
+(defn forward-token [] :- Symbol (token))

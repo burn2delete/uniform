@@ -4,7 +4,7 @@
          p15-s23-stage2-compiler-artifact-augmented-emitter
          sh06-resolution-definition-records sh06-resolution-core-records
          sh06-resolution-analysis-inputs sh06-resolution-package
-         sh06-resolution-request
+         sh06-resolution-base-request
          sh06-resolution-artifact-from-sh05-artifact
          sh06-resolution-artifact-verification
          sh06-resolution-plan-identities

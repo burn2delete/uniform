@@ -1,0 +1,5 @@
+(ns self-hosting.sh08.direct-throw-unknown-payload
+  (:profile :meta) (:target :jvm) (:exports [choose])
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn choose [flag :- Bool problem] :- String
+  (if flag (throw problem) "done"))

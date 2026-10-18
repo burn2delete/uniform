@@ -1,0 +1,29 @@
+(ns self-hosting.sh08.local-runtime-loop
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn swap [left :- String right :- String] :- String
+  (loop [again true a left b right]
+    (if again (recur false b a) b)))
+(defn sequential [problem :- String] :- String
+  (loop [value problem saved value value "shadow"] saved))
+(defn nested [left :- String right :- String] :- String
+  (loop [again true value left]
+    (if again
+      (let [inner (loop [more true value right]
+                    (if more (recur false value) value))]
+        (recur false inner))
+      value)))
+(defn zero [] :- String (loop [] "zero"))
+(defn integers []
+  (do
+    (loop [again true value 0] (if again (recur false value) value))
+    (loop [again true value -7] (if again (recur false value) value))
+    (loop [again true value 0x1f] (if again (recur false value) value))))
+(defn integer-call [] (integers))
+(defn throw-init [problem :- String] :- String
+  (try (loop [value (throw problem)] "unreachable") (catch String e e)))
+(defn throw-arg [problem :- String] :- String
+  (try (loop [value problem] (recur (throw value))) (catch String e e)))
+(defn throw-body [problem :- String] :- String
+  (try (loop [] (throw problem)) (catch String e e)))
+(defn main [] :- String (swap "left" "right"))

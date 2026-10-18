@@ -435,7 +435,8 @@
              [artifact construction? context])
            (:arglists bounded)))
     (is (= '([source-path sh05-artifact legacy?]
-             [source-path sh05-artifact legacy? context])
+             [source-path sh05-artifact legacy? context]
+             [source-path sh05-artifact legacy? context module-inputs])
            (:arglists candidate)))))
 
 ;; C6 mapping erratum V1. Exercise the real producer and the exact consumer

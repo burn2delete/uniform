@@ -9,6 +9,9 @@
    (sh06-resolution-source-artifact-candidate
     source-path sh05-artifact legacy? ::legacy))
   ([source-path sh05-artifact legacy? context]
+   (sh06-resolution-source-artifact-candidate source-path sh05-artifact legacy? context
+    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path sh05-artifact legacy? context module-inputs]
   (with-sh06-resolution-transport-bounds
    (let [contextual? (not= ::legacy context)
         _ (when (and contextual? (nil? context))
@@ -26,19 +29,18 @@
            legacy? context)
           (sh06-authenticated-source-snapshot!
            source-path c2-artifact :source-authentication-before-c5 legacy?))
-        upstream-report (sh05-macro-artifact-verification sh05-artifact)
         request (if contextual?
                   (sh06-resolution-request source-path sh05-artifact context)
-                  (sh06-resolution-request source-path sh05-artifact))
+                  (sh06-resolution-module-request source-path sh05-artifact module-inputs))
         binding (if contextual?
                   (sh06-resolution-context-plan-binding! source-path context)
                   (sh06-resolution-current-binding! source-path))
         run (sh06-resolution-run-request! source-path binding request)
         analysis (:resolved-analysis run)
         projections (sh06-resolution-product-projections analysis)
-        plan-binding (dissoc binding :plan :source-text)
+        plan-binding (dissoc binding :plan :source-text :input-key)
         boundary-base
-        {:slice :SH-06
+        (cond-> {:slice :SH-06
          :owner :gravity-source
          :adapter-contract sh06-resolution-adapter-contract
          :plan-binding plan-binding
@@ -53,6 +55,7 @@
          :target-source-reread? false
          :clojure-adapter-residual? true
          :self-hosted? false}
+          (not contextual?) (assoc :module-inputs module-inputs))
         artifact-base
         (merge
          {:kind :gravity/sh06-resolution-artifact

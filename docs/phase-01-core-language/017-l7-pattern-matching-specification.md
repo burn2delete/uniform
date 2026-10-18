@@ -87,6 +87,18 @@ Open maps, host objects, dynamic values, and untrusted external data require run
 
 Guards are expressions and carry effects.
 
+A guard that completes normally must produce `Bool`. `true` selects the branch
+body; `false` continues with the next clause. There is no implicit truthiness
+conversion: `nil`, numbers, strings and other non-Boolean values are not guard
+results. The type checker must establish the Boolean result or report
+`L7-GUARD-TYPE`; an unknown or dynamic result is not assumed Boolean.
+
+Evaluate a guard exactly once, after its structural pattern succeeds and its
+bindings are available, and before evaluating the branch body. Structural
+failure skips the guard and body. A guard that throws or otherwise does not
+return preserves that control transfer; it does not manufacture a Boolean
+result. These rules do not authorize otherwise illegal effects.
+
 ```clojure
 (match packet
   {:kind :data :payload p :when (checksum/valid? p)} (accept p)
@@ -147,6 +159,7 @@ Backends may lower decision trees into jumps, if chains, tables, vtables, hardwa
 - Branch bindings must have precise narrowed types.
 - Closed tagged unions and enums must support exhaustiveness checking.
 - Guard effects must be included in match effect summaries.
+- Normally returning guards must have Boolean type; truthiness coercion is not implicit.
 - Pattern matching must preserve source spans for every pattern and branch.
 - Pattern lowering must be deterministic and artifacted enough for compiler diagnostics and optimization.
 - Matching untrusted data as a closed shape requires validation evidence.
@@ -176,6 +189,7 @@ L7 rejects:
 - non-exhaustive closed matches where totality is required,
 - duplicate binding names in one pattern,
 - guard effects not legal for the active context,
+- normally returning guards with a non-Boolean or unestablished result type,
 - matching unvalidated external data as a trusted closed shape,
 - pattern moves that violate ownership or linear-resource rules,
 - backend lowering that changes branch order where guards/effects make order observable,
@@ -188,6 +202,7 @@ L7 rejects:
 - `L7-DUP-BINDING`: pattern binds same name illegally.
 - `L7-PATTERN-TYPE`: pattern incompatible with scrutinee type.
 - `L7-GUARD-EFFECT`: guard uses undeclared or forbidden effect.
+- `L7-GUARD-TYPE`: guard result is not established as Boolean.
 - `L7-UNVALIDATED-SHAPE`: untrusted value matched as validated shape.
 - `L7-LINEAR-MOVE`: pattern violates ownership or linear-resource rules.
 
@@ -196,6 +211,7 @@ L7 rejects:
 - Fixtures cover literals, records, maps, vectors, tagged unions, enums, guards, defaults, schema-derived shapes, and linear resources.
 - Exhaustiveness fixtures include accepted total matches and rejected missing cases.
 - Guard fixtures prove effects are tracked and ordered.
+- Guard fixtures accept true/false results, reject non-Boolean results, and preserve single evaluation and non-returning control transfer.
 - Schema fixtures reject unvalidated AI/network/tool outputs before closed-shape matching.
 - Lowering fixtures preserve branch source spans and generated decision trees.
 - Backend fixtures produce equivalent branch behavior for representative targets.

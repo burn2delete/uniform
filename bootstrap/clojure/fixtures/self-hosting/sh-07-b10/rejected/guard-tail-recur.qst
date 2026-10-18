@@ -1,0 +1,9 @@
+(ns self-hosting.sh07-b10.reject.guard-tail-recur
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:metadata {:slice :SH-07-B10
+              :sh07-b10 {:expected-rule "C6-VERIFY" :expected-stage :core-lowering
+                         :expected-severity :error :expected-reason :recur-tail-position-required
+                         :expected-remediation "Place recur in tail position inside the nearest loop or fixed-arity function target and pass exactly the target arity."}}))
+
+(defn invalid [value]
+  (match value {:when (recur value)} 1 _ 2))

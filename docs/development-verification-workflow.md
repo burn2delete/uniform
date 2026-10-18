@@ -3,7 +3,7 @@
 The live workflow is defined in `docs/development-verification.md` and uses the
 repository's Clojure runners directly.
 
-Current coordination is owned by the Clojure workstream-governance and
-worktree-preflight gates. Compiler and self-hosting behavior remains owned by
-the applicable Clojure and Gravity tests and by the evidence requirements in
-the normative contracts.
+Start with its default SH-07 edit-to-test workflow and three boundaries:
+semantic implementation, affected integration validation, and explicit
+authoritative migration. Workstream governance and preflight govern admission;
+they are not prerequisites for ordinary focused development feedback.

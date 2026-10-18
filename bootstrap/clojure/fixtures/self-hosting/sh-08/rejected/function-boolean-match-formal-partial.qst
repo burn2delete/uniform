@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.function-boolean-match-formal-partial
+  (:profile :formal) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn missing-case [b :- Bool] :- Bool
+  (match b true true))

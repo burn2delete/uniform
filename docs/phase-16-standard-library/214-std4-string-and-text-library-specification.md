@@ -39,6 +39,23 @@ Text APIs must expose whether they allocate, borrow, slice, normalize, validate,
 - Pattern APIs: `pattern`, `match`, `find`, `replace-pattern`, and bounded parser combinators.
 - Artifact APIs: `unicode-version`, `normalization-table-id`, and `text-fixture-id`.
 
+## Binary String Concatenation
+
+The binary String overload of the existing compatibility spelling
+`(str left right)` has its semantic contract here. If both operands complete
+normally, the result is the left String's scalar sequence followed by the
+right String's scalar sequence, exactly, without normalization, coercion, or
+generic formatting.
+
+Operands evaluate once, left-to-right under L2; a transfer aborts invocation.
+This allocating overload declares `:memory/allocate` on normal invocation,
+including empty-String operands. Operand effects remain visible when
+concatenation is not invoked. Profile and allocation restrictions still apply.
+
+This rule does not establish an implemented `gravity.text` export, a pure
+`gravity.core` export, another `str` overload, or a representation, provider, or
+profile permission.
+
 ## Dependencies
 
 - `D1` and `D3` for string literals, source spans, diagnostics, and terminology.
@@ -98,6 +115,7 @@ If `n` is outside the valid range, the operation returns a checked text error or
 
 ## Conformance Criteria
 
+- Binary String concatenation preserves exact scalar sequences and operand order, retains operand transfers and effects, and rejects invocation without the required allocation allowance.
 - UTF-8 fixtures distinguish valid, invalid, incomplete, overlong, and boundary-sensitive inputs.
 - Normalization fixtures record Unicode version and produce stable results across targets.
 - Locale-sensitive APIs reject calls without explicit locale data.

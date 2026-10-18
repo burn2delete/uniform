@@ -1,0 +1,17 @@
+(ns self-hosting.sh07-b10.irrefutable-terminal-patterns
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10 :fixture :irrefutable-terminal-patterns}))
+
+(defn terminal-wildcard [value]
+  (match value
+    ['_ item] item
+    {:id item} item
+    _ value))
+(defn terminal-binding [value]
+  (match value
+    '_ :quoted
+    item item))

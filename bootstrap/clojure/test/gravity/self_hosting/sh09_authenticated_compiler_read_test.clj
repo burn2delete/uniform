@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]
             [gravity.self-hosting.sh08-function-call-type-test]))
 
 (defn- repository-root
@@ -57,14 +58,7 @@
 
 (defn- compile-plan
   []
-  (let [source-path (path c8-source)
-        source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+  (body-effects/compile-c8-module-bundle (path c8-source)))
 
 (def ^:private c8-plan (delay (compile-plan)))
 
@@ -222,10 +216,10 @@
      (seal-binding (:request products) forged-typed forged-verification)}))
 
 (deftest sh09-authenticated-compiler-read-policy-is-closed-and-bounded
-  (let [functions (:functions @c8-plan)
+  (let [functions (:functions (body-effects/module-root-plan @c8-plan))
         policy
         (invoke-c8 'sh09-authenticated-compiler-read-policy [])]
-    (is (= :gravity/stage2-compiler-artifact-plan (:kind @c8-plan)))
+    (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind @c8-plan)))
     (is (= {:arity 4
             :params ['typed 'verification 'binding 'context]}
            (select-keys

@@ -5,6 +5,7 @@
 (ns gravity.bootstrap.p15-s23.runtime
   (:profile :hosted)
   (:target :jvm)
+  (:requires [gravity.runtime :as runtime])
   (:effects #{:memory/allocate :io/write})
   (:capabilities #{:memory/allocator :io/stdout})
   (:providers [{:capability :memory/allocator
@@ -21,7 +22,7 @@
 ; The Clojure seed validates every key, cross-link, source hash, function hash,
 ; and operation fact before it delegates to the typed reference adapter.
 (def p15-s23-reference-runtime-contract
-  {:artifact :gravity/p15-s23-reference-runtime-contract
+  '{:artifact :gravity/p15-s23-reference-runtime-contract
    :schema-version 1
    :status :complete-for-pinned-reference-runtime-contract-slice
    :runtime-family :managed
@@ -118,7 +119,7 @@
 ; exact program principal, source hash, plan id, provider selection, and grant
 ; record to this pinned policy before any reference-runtime invocation.
 (def p15-s23-checked-core-program-authority-policy
-  {:artifact :gravity/p15-s23-checked-core-program-authority-policy
+  '{:artifact :gravity/p15-s23-checked-core-program-authority-policy
    :schema-version 1
    :policy-id :gravity.reference/checked-core-program-authority-policy
    :audit-policy-id :gravity.reference/runtime-audit-policy
@@ -176,7 +177,7 @@
 ; grants, lifetime, and audit boundary.  It never consumes the checked
 ; program's fourth-argument authority and never reaches deployment stdout.
 (def p15-s23-checked-core-verification-replay-policy
-  {:artifact :gravity/p15-s23-checked-core-verification-replay-policy
+  '{:artifact :gravity/p15-s23-checked-core-verification-replay-policy
    :schema-version 1
    :policy-id :gravity.reference/checked-core-verification-replay-policy
    :audit-policy-id
@@ -298,7 +299,7 @@
    :authority-widening? false})
 
 (def p15-s23-checked-core-verification-replay-audit-policy
-  {:artifact
+  '{:artifact
    :gravity/p15-s23-checked-core-verification-replay-audit-policy
    :schema-version 1
    :policy-id
@@ -359,7 +360,7 @@
    :authority-widening? false})
 
 (def p15-s23-reference-runtime-function-graph
-  {:artifact :gravity/p15-s23-runtime-function-graph
+  '{:artifact :gravity/p15-s23-runtime-function-graph
    :schema-version 1
    :graph-id :gravity.reference/runtime-function-graph
    :functions
@@ -466,7 +467,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-function-effects
-  {:artifact :gravity/p15-s23-runtime-function-effect-table
+  '{:artifact :gravity/p15-s23-runtime-function-effect-table
    :schema-version 1
    :table-id :gravity.reference/runtime-function-effects
    :allocation-provider-id :gravity.reference/jvm-managed-allocator
@@ -727,7 +728,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-effect-graph
-  {:artifact :gravity/effect-graph
+  '{:artifact :gravity/effect-graph
    :schema-version 1
    :graph-id :gravity.reference/runtime-effect-graph
    :module gravity.bootstrap.p15-s23.runtime
@@ -930,7 +931,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-managed-allocator-provider
-  {:artifact :gravity/provider-declaration
+  '{:artifact :gravity/provider-declaration
    :schema-version 1
    :kind :managed-memory-provider
    :provider-id :gravity.reference/jvm-managed-allocator
@@ -973,7 +974,7 @@
    :conformance :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-transcript-capture-provider
-  {:artifact :gravity/provider-declaration
+  '{:artifact :gravity/provider-declaration
    :schema-version 1
    :kind :effect-handler-provider
    :provider-id :gravity.reference/transcript-capture
@@ -1021,7 +1022,7 @@
    :deployment-authority? false})
 
 (def p15-s23-reference-transcript-capture-handler
-  {:artifact :gravity/typed-effect-handler
+  '{:artifact :gravity/typed-effect-handler
    :schema-version 1
    :handler-id :gravity.reference/transcript-string-handler
    :handled-label :io/write
@@ -1070,7 +1071,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-provider-selections
-  {:artifact :gravity/provider-selection-record-set
+  '{:artifact :gravity/provider-selection-record-set
    :schema-version 1
    :selection-record-set-id
    :gravity.reference/runtime-provider-selections
@@ -1157,7 +1158,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-proofs
-  {:artifact :gravity/capability-proof-record-set
+  '{:artifact :gravity/capability-proof-record-set
    :schema-version 1
    :record-set-id :gravity.reference/runtime-capability-proofs
    :records
@@ -1284,7 +1285,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-stdout-deployment-requirement
-  {:artifact :gravity/p15-s23-stdout-deployment-requirement
+  '{:artifact :gravity/p15-s23-stdout-deployment-requirement
    :schema-version 1
    :effect :io/write
    :capability :io/stdout
@@ -1485,7 +1486,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-audit-policy
-  {:artifact :gravity/runtime-audit-policy
+  '{:artifact :gravity/runtime-audit-policy
    :schema-version 1
    :policy-id :gravity.reference/runtime-audit-policy
    :principals
@@ -1505,7 +1506,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-manifest
-  {:artifact :gravity/runtime-capabilities
+  '{:artifact :gravity/runtime-capabilities
    :schema-version 1
    :manifest-id :gravity.reference/runtime-capabilities
    :inputs
@@ -1531,7 +1532,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-capability-table
-  {:artifact :gravity/runtime-capability-table
+  '{:artifact :gravity/runtime-capability-table
    :schema-version 1
    :table-id :gravity.reference/runtime-capability-table
    :rows
@@ -1603,7 +1604,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-observability-manifest
-  {:artifact :gravity/runtime-observability
+  '{:artifact :gravity/runtime-observability
    :schema-version 1
    :manifest-id :gravity.reference/runtime-observability
    :events #{:allocation :capability :failure :handled-effect}
@@ -1643,7 +1644,7 @@
    :status :complete-for-pinned-reference-runtime-contract-slice})
 
 (def p15-s23-reference-runtime-grant-records
-  {:artifact :gravity/grant-record-set
+  '{:artifact :gravity/grant-record-set
    :schema-version 1
    :grant-record-set-id :gravity.reference/runtime-grants
    :source-principal gravity.bootstrap.p15-s23.runtime
@@ -1755,140 +1756,18 @@
   [left right]
   (println (str left " " right)))
 
-; The closed-plan executor keeps its state as [value output].  Output is a
-; Gravity string accumulator rather than a host writer, which preserves empty
-; strings, embedded NULs, and Unicode bytes until a target adapter performs the
-; declared :io/write operation.
-(defn p15-s23-runtime-evaluate-arguments
-  [arguments environment output values]
-  (if (= (count arguments) 0)
-    [values output]
-    (let [head-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (first arguments) environment output)]
-      (p15-s23-runtime-evaluate-arguments
-       (rest arguments)
-       environment
-       (second head-result)
-       (conj values (first head-result))))))
+; Compatibility entrypoints delegate to the ordinary hosted runtime module.
+(defn p15-s23-runtime-execute-closed-plan [plan]
+  (runtime/p15-s23-runtime-execute-closed-plan plan))
 
-(defn p15-s23-runtime-println-output
-  [values output]
-  (if (= (count values) 0)
-    (str output "\n")
-    (if (= (count values) 1)
-      (str output (str (first values)) "\n")
-      (p15-s23-runtime-println-output
-       (rest values)
-       (str output (str (first values)) " ")))))
+(defn p15-s23-runtime-evaluate-closed-instruction [instruction environment output]
+  (runtime/p15-s23-runtime-evaluate-closed-instruction instruction environment output))
 
-(defn p15-s23-runtime-evaluate-bindings
-  [bindings environment output]
-  (if (= (count bindings) 0)
-    [environment output]
-    (let [binding (first bindings)
-          value-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (get binding :expr) environment output)]
-      (p15-s23-runtime-evaluate-bindings
-       (rest bindings)
-       (assoc environment (get binding :name) (first value-result))
-       (second value-result)))))
+(defn p15-s23-runtime-evaluate-in-context [instruction environment output functions path]
+  (runtime/p15-s23-runtime-evaluate-in-context instruction environment output functions path))
 
-(defn p15-s23-runtime-evaluate-sequence
-  [instructions environment output]
-  (if (= (count instructions) 0)
-    [nil output]
-    (let [head-result
-          (p15-s23-runtime-evaluate-closed-instruction
-           (first instructions) environment output)]
-      (if (= (count instructions) 1)
-        head-result
-        (p15-s23-runtime-evaluate-sequence
-         (rest instructions) environment (second head-result))))))
-
-(defn p15-s23-runtime-evaluate-closed-instruction
-  [instruction environment output]
-  (let [operation (get instruction :op)]
-    (if (= operation :literal)
-      [(get instruction :value) output]
-      (if (= operation :quote)
-        [(get instruction :value) output]
-        (if (= operation :local)
-          [(get environment (get instruction :name)) output]
-          (if (= operation :builtin-call)
-            (let [function (get instruction :function)
-                  arguments-result
-                  (p15-s23-runtime-evaluate-arguments
-                   (get instruction :args) environment output [])
-                  values (first arguments-result)
-                  left (first values)
-                  right (second values)]
-              [(if (= function 'str)
-                 (if (= (count values) 1)
-                   (str left)
-                   (str left right))
-                 (if (= function '=)
-                   (= left right)
-                   (if (= function '<)
-                     (< left right)
-                     (if (= function '<=)
-                       (<= left right)
-                       (if (= function '>)
-                         (> left right)
-                         (>= left right))))))
-               (second arguments-result)])
-            (if (= operation :println)
-              (let [arguments-result
-                    (p15-s23-runtime-evaluate-arguments
-                     (get instruction :args) environment output [])]
-                [nil
-                 (p15-s23-runtime-println-output
-                  (first arguments-result) (second arguments-result))])
-              (if (= operation :do)
-                (p15-s23-runtime-evaluate-sequence
-                 (get instruction :body) environment output)
-                (if (= operation :if)
-                  (let [test-result
-                        (p15-s23-runtime-evaluate-closed-instruction
-                         (get instruction :test) environment output)]
-                    (if (first test-result)
-                      (p15-s23-runtime-evaluate-closed-instruction
-                       (get instruction :then)
-                       environment
-                       (second test-result))
-                      (p15-s23-runtime-evaluate-closed-instruction
-                       (get instruction :else)
-                       environment
-                       (second test-result))))
-                  (let [binding-result
-                        (p15-s23-runtime-evaluate-bindings
-                         (get instruction :bindings) environment output)]
-                    (p15-s23-runtime-evaluate-sequence
-                     (get instruction :body)
-                     (first binding-result)
-                     (second binding-result))))))))))))
-
-; Pinned public entrypoint for the authenticated closed hosted-core plan.  The
-; Clojure seed invokes this Gravity function once for the authoritative packet
-; execution.  Each target consumer separately replays the pinned function to
-; authenticate the packet; that verification replay is recorded outside the
-; authoritative invocation count.  The result is also compared with the
-; preceding stage2 executor and stage0 oracle while the seed boundary remains.
-(defn p15-s23-runtime-execute-closed-plan
-  [plan]
-  (let [entrypoint (get plan :entrypoint)
-        function (get (get plan :functions) entrypoint)
-        result
-        (p15-s23-runtime-evaluate-sequence
-         (get function :instructions) {} "")]
-    {:artifact :gravity/p15-s23-runtime-closed-plan-execution-record
-     :entrypoint entrypoint
-     :entrypoint-result (first result)
-     :stdout (second result)
-     :status :complete
-     :clojure-seed-boundary? true
-     :self-hosted? false}))
+(defn p15-s23-runtime-activate-function [function values output functions path]
+  (runtime/p15-s23-runtime-activate-function function values output functions path))
 
 ; Attempt-24 fixes the cross-plan execution schedule independently of the
 ; remaining host interpreter bridge.  The host must replay these exact bounds

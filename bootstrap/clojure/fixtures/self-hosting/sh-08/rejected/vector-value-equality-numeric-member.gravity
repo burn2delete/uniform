@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.vector-value-equality-numeric-member
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [w5-stage-equivalence-modes main]))
+
+(def w5-se-required-modes
+  [:artifact :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :reviewed-delta])
+
+(defn w5-stage-equivalence-modes []
+  w5-se-required-modes)
+
+(defn main [] :- Bool
+  (= [1] [1]))

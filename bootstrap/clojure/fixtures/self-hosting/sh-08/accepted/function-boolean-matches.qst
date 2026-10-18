@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.function-boolean-matches
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn select-value [b :- Bool x :- I64 y :- I64] :- I64
+  (match b true x false y))
+(defn retain-bool [b :- Bool] :- Bool
+  (match b true true remainder remainder))
+(defn default-value [b :- Bool x :- I64] :- I64
+  (match b _ x))
+(defn forward-selection [b :- Bool x :- I64 y :- I64] :- I64
+  (select-value b x y))

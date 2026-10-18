@@ -16,6 +16,19 @@ compilation, plugins, diagnostics, and pass correctness.
 Compiler tests prove that a correct source program is not made unsound by
 analysis, optimization, code generation preparation, or caching.
 
+## Development feedback and admission evidence
+
+Run focused phase tests with accepted/rejected fixtures during implementation.
+Exercise affected upstream/downstream composition when behavior or a pass
+interface changes. These checks must preserve the requirements below, but do
+not require a fresh bootstrap proof or authority-admission receipt merely to
+execute current compiler source. Record source/compiler context and accurate
+development status; do not present test success as a proof certificate.
+Fresh provenance, stage equivalence and bootstrap verification are separate
+requirements of an explicit authoritative migration or release claim (BOOT3,
+TEST13 and D9). Changed inputs invalidate that evidence until re-established;
+they do not prohibit testing the changed implementation.
+
 ## Test Areas
 
 - reader implementation;

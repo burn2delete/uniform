@@ -1,0 +1,18 @@
+; L2 mutation and L3 qualified current-namespace targets bypass lexical search.
+(ns self-hosting.sh07-b6.qualified-set-target
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [target direct-write callable replace-callable shadow])
+  (:effects #{:state/write})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B6 :fixture :qualified-set-target}))
+
+(def target 0)
+(def direct-write
+  (set! self-hosting.sh07-b6.qualified-set-target/target 1))
+(defn callable [] 1)
+(def replace-callable
+  (set! self-hosting.sh07-b6.qualified-set-target/callable (fn [] 2)))
+(defn shadow [target]
+  (set! self-hosting.sh07-b6.qualified-set-target/target target))

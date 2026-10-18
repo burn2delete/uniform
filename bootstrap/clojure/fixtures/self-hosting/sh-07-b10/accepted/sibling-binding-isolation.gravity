@@ -12,5 +12,5 @@
 
 (defn select-sibling [value]
   (match value
-    item (do item :first)
-    item (do item :second)))
+    [item] (do item :first)
+    {:item item} (do item :second)))

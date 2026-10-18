@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh09-c7-effect-adapter-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
 
 (defn- repository-root
   []
@@ -34,14 +35,7 @@
 
 (defn- compile-plan
   []
-  (let [source-path (str (.resolve @root source-relative-path))
-        source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+  (body-effects/compile-c8-module-bundle (str (.resolve @root source-relative-path))))
 
 (def ^:private c8-plan (delay (compile-plan)))
 
@@ -282,11 +276,81 @@
    'sh09-build-authenticated-pure-effect-result
    [typed verification]))
 
+(deftest sh09-atomic-signature-identity-development-kernel
+  ;; Normalized adapter inputs exercise identity reconstruction, not C7 proof.
+  (let [higher-order (function-typed-result "/development/function.gravity")
+        first-order
+        (-> higher-order
+            (assoc :scope :first-order-fixed-arity-functions-locals-calls)
+            (dissoc :higher-order-proof :higher-order-call-facts)
+            (update :typed-core dissoc :higher-order-proof :higher-order-call-facts))
+        declaration {:source-child-index 1 :marker-form-id sha-a :marker-syntax-id sha-b
+                     :type-form-id sha-c :type-syntax-id sha-d :type-symbol 'Bool
+                     :type-binding-id sha-e :type-id :gravity.type/bool}
+        signature {:rule-version :sh07-atomic-function-signature-v1
+                   :mapping-rule-version :sh07-atomic-function-declaration-map-v1
+                   :parameter-source-child-indexes [0] :parameters [declaration]
+                   :return (assoc declaration :source-child-index 2) :body-source-child-index 4}
+        constraint {:constraint-id-request
+                    {:domain :gravity/sh08-atomic-function-declaration-constraint-v1
+                     :function-core-node-id sha-b :role :parameter :ordinal 0
+                     :declaration declaration}
+                    :kind :equality :producer-rule :sh08-atomic-function-signature-v1
+                    :lhs sha-e :rhs :gravity.type/bool :source-syntax-id sha-d
+                    :profile :meta :target :jvm :status :solved :diagnostics []}
+        raw (-> first-order
+                (assoc-in [:function-products :function-records] [{:signature signature}])
+                (assoc-in [:function-type-table 0 :signature] signature)
+                (assoc-in [:function-type-table 0 :declaration-rule-version]
+                          :sh08-atomic-function-signature-v1)
+                (assoc :constraint-ledger [constraint]))
+        identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
+        typed (assoc raw :identity-input identity :artifact-id-request identity
+                     :typed-core (invoke-c8 'sh09-adapter-function-typed-core [raw]))
+        verification (function-verification typed)
+        result (build typed verification)]
+    (is (= :gravity/sh08-function-typed-core-v3
+           (invoke-c8 'sh09-adapter-function-identity-domain [first-order])))
+    (is (= :gravity/sh08-authoritative-higher-order-type-v1
+           (invoke-c8 'sh09-adapter-function-identity-domain
+                      [(assoc higher-order :function-products (:function-products raw))])))
+    (is (= :gravity/sh08-atomic-function-signature-typed-core-v1 (:domain identity)))
+    (is (= signature (get-in identity [:function-records 0 :signature])))
+    (is (= [constraint] (:constraint-ledger identity)))
+    (is (= :accepted (:status result)))
+    (is (= (:typed-core typed) (:typed-core result)))
+    (is (= (:function-type-table typed) (:function-type-table result)))
+    (is (= [constraint] (get-in result [:typed-core :constraints])))
+    (is (= identity (get-in result [:identity-input :sh08-identity-input])))
+    (is (= :passed (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result
+                                       [typed verification result]))))
+    (doseq [altered [(-> typed
+                        (assoc-in [:identity-input :domain] :gravity/sh08-function-typed-core-v3)
+                        (assoc-in [:artifact-id-request :domain] :gravity/sh08-function-typed-core-v3))
+                     (update-in typed [:function-products :function-records 0] dissoc :signature)
+                     (update-in typed [:function-type-table 0] dissoc :signature)
+                     (assoc-in typed [:function-products :function-records 0 :signature :return :type-id]
+                               :gravity.type/i64)
+                     (assoc typed :constraint-ledger [])]]
+      (is (= :rejected (:status (build altered (function-verification altered))))))
+    (doseq [records [0 nil {} [nil] [0] [{}]]]
+      (let [altered (assoc-in typed [:function-products :function-records] records)]
+        (is (= :gravity/sh08-function-typed-core-v3
+               (invoke-c8 'sh09-adapter-function-identity-domain [altered])))
+        (is (= :rejected (:status (build altered (function-verification altered)))))))
+    (doseq [candidate [(update-in result [:function-type-table 0] dissoc :signature)
+                       (assoc-in result [:typed-core :constraints] [])
+                       (assoc-in result [:identity-input :sh08-identity-input :function-records] [])]]
+      (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result
+                                         [typed verification candidate])))))
+    (is (= :rejected (:status (build typed (assoc verification :status :rejected)))))
+    (is (= :rejected (:status (build typed (assoc verification :candidate raw)))))))
+
 (deftest sh09-c7-adapter-source-structure-and-policy-are-exact
-  (let [functions (:functions @c8-plan)
+  (let [functions (:functions (body-effects/module-root-plan @c8-plan))
         policy
         (invoke-c8 'sh09-authenticated-sh08-adapter-policy [])]
-    (is (= :gravity/stage2-compiler-artifact-plan (:kind @c8-plan)))
+    (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind @c8-plan)))
     (is (= {:arity 0 :params []}
            (select-keys
             (get functions 'sh09-authenticated-sh08-adapter-policy)
@@ -412,6 +476,25 @@
               (invoke-c8
                'sh09-verify-authenticated-pure-effect-result
                [typed verification candidate])))))))
+
+(deftest sh09-imported-type-only-diagnostic-development-kernel
+  ;; DATA-only selection check; authentic C7/C8 composition lives in SH08.
+  (let [base (function-typed-result "imported-types.gravity")
+        local (assoc (first (:call-type-facts base)) :dispatch :direct-local-function)
+        imported (assoc local :call-core-node-id sha-a :syntax-id sha-b :dispatch :direct-imported-function
+                              :source-span {:source "imported-types.gravity" :start-byte 9 :end-byte 10})
+        typed (assoc base :scope :direct-imported-functions-types-only :call-type-facts [local imported])
+        result (invoke-c8 'sh09-build-authenticated-pure-effect-result [typed (upstream-verification typed)])
+        diagnostic (first (:diagnostics result))]
+    (is (= :rejected (:status result)))
+    (is (= :imported-body-effects-pending (:reason diagnostic)))
+    (is (= sha-a (:core-node-id diagnostic)))
+    (is (= sha-b (:syntax-id diagnostic)))
+    (is (= (:source-span imported) (:source-span diagnostic)))
+    (is (every? #(some? (get diagnostic %)) [:profile :target :namespace :function :remediation]))
+    (let [top-level (assoc typed :call-type-facts [(assoc imported :caller-function-syntax-id nil)])
+          d (first (:diagnostics (invoke-c8 'sh09-build-authenticated-pure-effect-result [top-level {}])))]
+      (is (= (get-in typed [:module :namespace]) (:function d))))))
 
 (deftest sh09-c7-adapter-derives-declared-pure-function-call-effects
   (let [typed-a (function-typed-result "/checkout-a/function.gravity")

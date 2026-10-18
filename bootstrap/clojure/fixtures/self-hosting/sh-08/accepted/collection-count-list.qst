@@ -1,0 +1,11 @@
+(ns self-hosting.sh08.collection-count-list
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn quoted [] (count '(1 2)))
+(defn bare [items :- List] (count items))
+(defn tail [items :- (List String)] (count (rest items)))
+(defn produced [] :- (List String) (list "a" "b"))
+(defn from-producer [] (count (produced)))
+(defn aborting [problem :- String] (count (throw problem)))
+(defn main [] (bare (list "a" "b" "c")))

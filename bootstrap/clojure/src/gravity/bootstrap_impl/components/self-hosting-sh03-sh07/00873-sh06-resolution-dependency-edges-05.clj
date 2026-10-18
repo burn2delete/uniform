@@ -1,6 +1,8 @@
 
-(defn sh06-resolution-request
-  ([source-path sh05-artifact]
+(declare sh06-resolution-module-request)
+
+(defn sh06-resolution-base-request-data
+  [source-path sh05-artifact overrides]
    (let [verification (sh05-macro-artifact-verification sh05-artifact)
         _ (when-not (= :passed (:status verification))
             (c5-resolution-fail!
@@ -9,7 +11,6 @@
              {:missing-fields [:verified-sh05-macro-artifact]}))
         forms (mapv :form (:expanded-syntax-stream sh05-artifact))
         module (parse-module source-path forms)
-        overrides (sh06-resolution-request-overrides module)
         imports (sh06-resolution-import-records
                  source-path module overrides)
         explicit-definitions
@@ -54,12 +55,24 @@
       :authenticated-envelope-id
       (sh06-resolution-envelope-id sh05-artifact)}
      :provenance {:actual-source-path source-path}}))
+
+(defn sh06-resolution-base-request
+  ([source-path sh05-artifact]
+   (let [module (parse-module source-path (mapv :form (:expanded-syntax-stream sh05-artifact)))]
+     (sh06-resolution-base-request-data source-path sh05-artifact (sh06-resolution-request-overrides module))))
   ([source-path sh05-artifact context]
    (when (nil? context)
      (sh06-resolution-c5-fail! source-path :missing-context {}))
-   (let [base (sh06-resolution-request source-path sh05-artifact)]
+   (let [base (sh06-resolution-base-request source-path sh05-artifact)]
      (sh06-resolution-c5-authority-request!
       source-path sh05-artifact base context))))
+
+(defn sh06-resolution-request
+  ([source-path sh05-artifact]
+   (sh06-resolution-module-request source-path sh05-artifact
+    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
+  ([source-path sh05-artifact context]
+   (sh06-resolution-base-request source-path sh05-artifact context)))
 
 (def sh06-resolution-source-relative-path
   "bootstrap/gravity/src/gravity/resolution.gravity")
@@ -136,7 +149,7 @@
              (recur (.getParentFile directory))))))
      sh06-resolution-source-relative-path)))
 
-(defn sh06-resolution-read-pinned-source!
+(defn sh06-resolution-read-current-source!
   [request-source]
   (let [source-path (sh06-resolution-resolve-source-path)
         nio-path (.toPath (java.io.File. source-path))
@@ -159,25 +172,26 @@
              source-path {:cause-message (.getMessage error)})))
         content-hash (str "sha256:" (sha256-bytes-hex bytes))]
     (when-not
-     (and (number? sh06-resolution-expected-source-byte-count)
-          (string? sh06-resolution-expected-source-content-hash)
-          attributes (.isRegularFile attributes)
-          (= (long sh06-resolution-expected-source-byte-count)
-             (.size attributes))
-          (= sh06-resolution-expected-source-byte-count (alength bytes))
-          (= sh06-resolution-expected-source-content-hash content-hash))
+     (and attributes (.isRegularFile attributes)
+          (= (.size attributes) (alength bytes)))
       (sh06-resolution-boundary-fail!
        "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
        {:source-path source-path
         :source-byte-count (alength bytes)
         :source-content-hash content-hash}
-       {:expected-byte-count sh06-resolution-expected-source-byte-count
-        :expected-content-hash
-        sh06-resolution-expected-source-content-hash}))
+       {}))
     {:source-path source-path
      :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
      :source-byte-count (alength bytes)
      :source-content-hash content-hash}))
+
+(defn sh06-resolution-read-pinned-source! [request-source]
+  (let [source (sh06-resolution-read-current-source! request-source)]
+    (when-not (= [sh06-resolution-expected-source-byte-count sh06-resolution-expected-source-content-hash]
+                 ((juxt :source-byte-count :source-content-hash) source))
+      (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source
+        :exact-pinned-resolution-source (dissoc source :source-text) {}))
+    source))
 
 (defn sh06-resolution-plan-identities
   [plan]

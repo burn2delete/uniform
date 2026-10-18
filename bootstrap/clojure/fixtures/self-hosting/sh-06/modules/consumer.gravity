@@ -1,0 +1,6 @@
+(ns example.consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.values :as values])
+  (:exports [forward])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn forward [x :- I64] :- I64 (values/identity-i64 x))

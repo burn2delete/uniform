@@ -1,0 +1,8 @@
+(ns example.type-values
+  (:profile :meta) (:target :jvm)
+  (:exports [identity-i64 identity-bool identity-string])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity-i64 [value :- I64] :- I64 value)
+(defn identity-bool [value :- Bool] :- Bool value)
+(defn identity-string [value :- String] :- String value)

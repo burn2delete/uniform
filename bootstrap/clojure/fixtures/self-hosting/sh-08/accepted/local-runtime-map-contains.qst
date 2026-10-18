@@ -1,0 +1,36 @@
+(ns example.local-runtime-map-contains
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn registry []
+  '{"true" true "false" false "nil" nil
+    "é" true "a\u0000b" false "😀" nil})
+
+(defn lookup [key :- String] :- Bool
+  (contains? (registry) key))
+
+(defn retained [key :- String]
+  (let [original (registry) alias original]
+    [original (contains? alias key) original]))
+
+(defn keyword-key [key :- Keyword] :- Bool
+  (contains? {:a/key false :nil nil} key))
+
+(defn edges [key :- String]
+  [(contains? {} key)
+   (contains? '{"key0" nil "key1" false "key2" true "key3" nil
+                "key4" false "key5" true "key6" nil "key7" false
+                "key8" true "key9" nil "key10" false "key11" true} key)])
+
+(defn missing [key :- String] :- Bool
+  (not (contains? (registry) key)))
+
+(defn map-throws [payload :- String key :- String]
+  (contains? (throw payload) key))
+
+(defn key-throws [payload :- String]
+  (contains? {:present false} (throw payload)))
+
+(defn shadowed [contains? :- String] :- String contains?)
+
+(defn main [] (lookup "false"))

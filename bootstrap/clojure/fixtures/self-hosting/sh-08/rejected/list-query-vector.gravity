@@ -1,0 +1,8 @@
+(ns example.list-query-vector
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main [] (rest ["value"]))

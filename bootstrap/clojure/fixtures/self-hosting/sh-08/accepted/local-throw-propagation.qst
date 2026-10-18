@@ -1,0 +1,14 @@
+(ns self-hosting.sh08.local-throw-propagation
+  (:profile :meta) (:target :jvm) (:exports [relay2 abort])
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn pure-value [problem :- String] :- String problem)
+(defn choose [flag :- Bool problem :- String] :- String
+  (if flag (throw problem) (pure-value problem)))
+(defn relay [flag :- Bool problem :- String] :- String
+  (choose flag problem))
+(defn relay2 [flag :- Bool problem :- String] :- String
+  (relay flag problem))
+(defn bool-choice [flag :- Bool problem :- String] :- String
+  (if flag (throw flag) problem))
+(defn abort [] :- String
+  (bool-choice (throw "argument") (relay2 true "later")))

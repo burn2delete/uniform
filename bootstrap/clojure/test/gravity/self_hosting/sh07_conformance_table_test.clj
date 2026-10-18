@@ -53,9 +53,9 @@
     (is (= table/expected-suite-ids (:suite-order value)))
     (is (= 14 (count (:suites value))))
     (is (= {:suite-count 14
-            :accepted-count 68
-            :rejected-count 79
-            :pair-count 147
+            :accepted-count 77
+            :rejected-count 96
+            :pair-count 173
             :source-of-truth :rows}
            (:coverage value)))
     (is (= :non-authoritative (:authority value)))
@@ -71,10 +71,10 @@
         rejected (filter #(= :rejected (:status %)) all-rows)]
     ;; table/table performs the byte-identity, source-declaration, ownership,
     ;; and oracle checks; these assertions make its exact census explicit.
-    (is (= 147 (count all-rows)))
-    (is (= 147 (count (set (map :id all-rows)))))
-    (is (= 68 (count accepted)))
-    (is (= 79 (count rejected)))
+    (is (= (get-in value [:coverage :pair-count]) (count all-rows)))
+    (is (= (count all-rows) (count (set (map :id all-rows)))))
+    (is (= (get-in value [:coverage :accepted-count]) (count accepted)))
+    (is (= (get-in value [:coverage :rejected-count]) (count rejected)))
     (is (every? #(and (= (str (:basename %) ".gravity") (:gravity %))
                        (= (str (:basename %) ".qst") (:qst %)))
                 all-rows))

@@ -115,13 +115,113 @@
 (deftest public-parent-apis-expose-no-compatibility-bypass
   (is (= '([c3-artifact] [source-path c3-artifact])
          (:arglists (meta #'bootstrap/sh05-macro-artifact-from-c3-artifact))))
-  (is (= '([sh05-artifact] [source-path sh05-artifact])
+  (is (= '([sh05-artifact] [source-path sh05-artifact] [source-path sh05-artifact context])
          (:arglists
           (meta #'bootstrap/sh06-resolution-artifact-from-sh05-artifact))))
   (is (nil? (ns-resolve 'gravity.bootstrap '*legacy-supplied-source*)))
   (is (thrown? clojure.lang.ArityException
                (bootstrap/sh05-macro-artifact-from-c3-artifact
                 accepted-path {} true)))
-  (is (thrown? clojure.lang.ArityException
-               (bootstrap/sh06-resolution-artifact-from-sh05-artifact
-                accepted-path {} true))))
+  (is (= "C5-UNRESOLVED"
+         (str (ex-id #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                       accepted-path {} true)))))
+  (is (= "C5-UNRESOLVED"
+         (str (ex-id #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                       accepted-path {} nil))))))
+
+(deftest sh06-construction-preserves-consumed-parent-gates
+  (let [sh05 (bootstrap/sh05-macro-source-artifact accepted-path (slurp accepted-path))
+        candidate-var (ns-resolve 'gravity.bootstrap 'sh06-resolution-source-artifact-candidate)
+        snapshot-var (ns-resolve 'gravity.bootstrap 'sh06-authenticated-source-snapshot!)
+        original-snapshot (var-get snapshot-var)
+        owner-verify bootstrap/sh05-macro-artifact-verification
+        candidate (var-get candidate-var)]
+    (letfn [(run [legacy? parent build]
+              (let [trace (atom []) discarded (atom 0)]
+                {:value
+                 (with-redefs-fn
+                   {#'bootstrap/sh05-macro-artifact-verification
+                    (fn [artifact]
+                      (swap! trace conj :consumed-owner-verification)
+                      (owner-verify artifact))
+                    snapshot-var
+                    (fn [& args]
+                      (let [result (apply original-snapshot args)
+                            phase (nth args 2)]
+                        (swap! trace conj phase)
+                        ;; The old candidate's unused call was immediately
+                        ;; after this snapshot and before request construction.
+                        (when (and legacy? (= phase :source-authentication-before-c5))
+                          (swap! discarded inc)
+                          (owner-verify parent))
+                        result))}
+                   build)
+                 :trace @trace :discarded @discarded}))
+            (failure [f]
+              (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+      (let [old-candidate (run true sh05 #(candidate accepted-path sh05 false))
+            new-candidate (run false sh05 #(candidate accepted-path sh05 false))
+            old-final (run true sh05 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact accepted-path sh05))
+            new-final (run false sh05 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact accepted-path sh05))
+            repeated (run false sh05 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact accepted-path sh05))]
+        (is (= 1 (:discarded old-candidate) (:discarded old-final)))
+        (is (zero? (:discarded new-candidate)))
+        (is (= (:value old-candidate) (:value new-candidate)))
+        (is (= (:value old-final) (:value new-final) (:value repeated)))
+        (is (= (:trace old-candidate) (:trace new-candidate)))
+        (is (= (:trace old-final) (:trace new-final) (:trace repeated)))
+        (is (<= 2 (count (filter #{:consumed-owner-verification} (:trace new-candidate)))))
+        (is (= :consumed-owner-verification (first (:trace new-candidate))))
+        (is (some #{:source-authentication-before-c5} (:trace new-candidate)))
+        (is (= (seq (.getBytes (bootstrap/sh06-resolution-serialize (:value old-final))
+                              java.nio.charset.StandardCharsets/UTF_8))
+               (seq (.getBytes (bootstrap/sh06-resolution-serialize (:value new-final))
+                              java.nio.charset.StandardCharsets/UTF_8))))
+        (let [tamper #(assoc-in % [:gravity-resolution-boundary :raw-analysis :artifact-id] "sha256:forged")
+              old-report (bootstrap/sh06-resolution-artifact-verification (tamper (:value old-final)))
+              new-report (bootstrap/sh06-resolution-artifact-verification (tamper (:value new-final)))]
+          (is (= :failed (:status old-report) (:status new-report)))
+          (is (= old-report new-report))))
+      ;; The context arity still requires real authority even with a valid parent.
+      (is (= "C5-UNRESOLVED"
+             (str (ex-id #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                           accepted-path sh05 true)))))
+      (let [forged (assoc sh05 :artifact-id "sha256:forged")
+            requests (atom 0) base-var #'bootstrap/sh06-resolution-base-request-data
+            original-base (var-get base-var)
+            errors
+            (with-redefs-fn
+              {base-var (fn [& args] (swap! requests inc) (apply original-base args))}
+              #(mapv (fn [legacy?]
+                       (failure (fn [] (run legacy? forged
+                                            (fn [] (bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                                    accepted-path forged))))))
+                     [true false]))]
+        (is (= "C5-UNRESOLVED" (:id (first errors))))
+        (is (= (first errors) (second errors)))
+        (is (zero? @requests)))
+      (let [snapshot (c2-pass-cache/bounded-source-snapshot! accepted-path)
+            errors
+            (with-redefs [c2-pass-cache/bounded-source-snapshot!
+                          (constantly (assoc snapshot :bytes-hash "sha256:stale"))]
+              (mapv (fn [legacy?]
+                      (failure #(run legacy? sh05
+                                     (fn [] (bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                             accepted-path sh05)))))
+                    [true false]))]
+        (is (= "C5-UNRESOLVED" (:id (first errors))))
+        (is (= (first errors) (second errors))))
+      (let [thread (Thread/currentThread) was-interrupted? (.isInterrupted thread)
+            interrupted (InterruptedException. "retained owner gate")]
+        (try
+          (with-redefs [bootstrap/sh05-macro-artifact-verification (fn [_] (throw interrupted))]
+            (let [caught (try (bootstrap/sh06-resolution-artifact-from-sh05-artifact accepted-path sh05)
+                              nil (catch InterruptedException error error))
+                  interrupted-after-gate? (.isInterrupted thread)]
+              ;; Capture before clojure.test's reporting transactions run.
+              (Thread/interrupted)
+              (is (identical? interrupted caught))
+              (is interrupted-after-gate?)))
+          (finally
+            (Thread/interrupted)
+            (when was-interrupted? (.interrupt thread))))))))

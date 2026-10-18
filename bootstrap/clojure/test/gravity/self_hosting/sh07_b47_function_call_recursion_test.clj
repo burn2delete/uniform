@@ -227,6 +227,354 @@
         (assoc-in [:calls 0] replacement-call)
         (assoc-in [:call-edges 0] replacement-edge))))
 
+(deftest sh07-b47-atomic-signature-lowering-development-kernel
+  ;; Normalized graphs execute the current Gravity lowering pass. Source
+  ;; authentication and C7 legality are separate composition obligations.
+  (let [plan (:plan (bootstrap/sh07-core-current-binding!))
+        invoke #(bootstrap/p15-s23-stage2-runtime-execute-function
+                 {:engine :gravity-sh07-development-fixture :compiler-artifact-plan? true} plan %1 %2)
+        sha #(str "sha256:" (format "%064x" %))
+        counter (atom 0) forms (atom {})]
+    (letfn [(make! [value]
+              (let [children (mapv make! (if (coll? value) (vec value) []))
+                    n (swap! counter inc)
+                    form {:form-id (sha n) :syntax-id (sha (+ n 1000)) :value value
+                          :kind (cond (vector? value) :vector (seq? value) :list
+                                      (symbol? value) :symbol (keyword? value) :keyword :else :integer)
+                          :child-form-ids (mapv :form-id children) :scope-id (sha 5000)
+                          :metadata {} :origin-chain [] :generated-origin []}]
+                (swap! forms assoc (:form-id form) form)
+                (doseq [child children] (swap! forms assoc-in [(:form-id child) :parent-form-id] (:form-id form)))
+                form))
+            (input [form]
+              (let [parameters (get @forms (get (:child-form-ids form) 1))
+                    paths (bootstrap/sh07-core-parameter-binding-paths (:value parameters) [])
+                    locals (mapv (fn [ordinal entry]
+                                   (let [parameter (get @forms (get (:child-form-ids parameters) (first (:path entry))))]
+                                     {:binding-id (sha (+ 5002 ordinal)) :binding-class :lexical :kind :local :name (:name entry)
+                                      :scope-id (sha 5000) :definition-syntax-id (:syntax-id parameter)})) (range) paths)
+                    cores [{:binding-id (sha 5001) :binding-class :core :kind :type :name 'I64
+                            :namespace 'gravity.core :definition-syntax-id (sha 6000)}
+                           {:binding-id (sha 5101) :binding-class :core :kind :type :name 'Bool
+                            :namespace 'gravity.core :definition-syntax-id (sha 6100)}
+                           {:binding-id (sha 5201) :binding-class :core :kind :type :name 'List
+                            :namespace 'gravity.core :definition-syntax-id (sha 6200)}
+                           {:binding-id (sha 5301) :binding-class :core :kind :type :name 'Vector
+                            :namespace 'gravity.core :definition-syntax-id (sha 6300)}
+                           {:binding-id (sha 5401) :binding-class :core :kind :type :name 'Map
+                            :namespace 'gravity.core :definition-syntax-id (sha 6400)}]
+                    by-name (into {} (map (juxt :name identity) (into locals cores)))
+                    resolutions (into {} (for [value (vals @forms)
+                                               :let [symbol (:value value)
+                                                     name (if (and (symbol? symbol) (= "gravity.core" (namespace symbol)))
+                                                            (clojure.core/symbol (clojure.core/name symbol)) symbol)]
+                                               :when (contains? by-name name)
+                                               :let [binding (get by-name name) core? (= :core (:binding-class binding))]]
+                                           [(:syntax-id value)
+                                            {:symbol (:value value) :binding-id (:binding-id binding)
+                                             :position (if core? :type :expression)
+                                             :resolution-order (if (and (symbol? symbol) (namespace symbol)) :fully-qualified-namespace-binding
+                                                                 (if core? :profile-allowed-core-binding :local-lexical-binding))}]))]
+                {:module {:namespace 'demo.signature :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe}
+                 :lineage {:authenticated-sh06-artifact-id (sha 6001) :sh06-semantic-projection-id (sha 6002)}
+                 :internal-indexes {:forms {:by-id @forms :by-syntax (into {} (map (juxt :syntax-id identity) (vals @forms)))}
+                                    :bindings {:by-id (into {} (map (juxt :binding-id identity) (into locals cores)))
+                                               :by-definition (into {} (map (juxt :definition-syntax-id identity) locals))}
+                                    :resolutions {:by-reference resolutions}}}))]
+      (let [form (make! '(fn [x :- I64] :- I64 x)) request (input form)
+            header (invoke 'sh07-function-header [request form])
+            lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+            node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])]
+        (is (= :accepted (:status header)))
+        (is (= 4 (:body-index header)))
+        (is (= :accepted (:status lowered)) (pr-str lowered))
+        (is (= :sh07-atomic-function-signature-v1 (:lowering-rule-version node)))
+        (is (= 1 (get-in node [:attributes :fixed-arity])))
+        (is (= '[x] (get-in node [:attributes :parameters])))
+        (is (= [0] (:parameter-source-child-indexes signature)))
+        (is (= :gravity.type/i64 (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+        (is (= [(sha 5002)] (:resolved-binding-ids node)))
+        (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+        (is (true? (invoke 'sh07-function-node-signature-valid? [node])))
+        (let [record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              key [(:node-id node) nil] indexes {:functions {key record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              marker (get @forms (get (:child-form-ids parameter-vector) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request marker form node indexes :function-type-marker])))
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request type-form form node indexes :function-type-declaration])))
+          (is (false? (invoke 'sh07-source-core-map-declaration-join? [request marker form node indexes :function-type-declaration])))
+          (is (false? (invoke 'sh07-source-core-map-parameter-join? [request type-form form node indexes :parameter])))
+          (let [forged-signature (assoc-in signature [:parameters 0 :type-binding-id] (sha 8888))]
+            (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                [request type-form form (assoc-in node [:attributes :signature] forged-signature)
+                                 (assoc-in indexes [:functions key :signature] forged-signature) :function-type-declaration])))))
+        (doseq [bad [0 nil {} []]]
+          (is (false? (invoke 'sh07-function-node-signature-valid? [(assoc-in node [:attributes :parameters] bad)]))))
+        (doseq [mutant [(assoc signature :rule-version nil) (assoc signature :parameters [])
+                        (assoc-in signature [:parameters 0 :type-id] :gravity.type/integer)]]
+          (is (false? (invoke 'sh07-signature-valid? [mutant 1])))))
+      (let [form (make! '(fn [x :- I64 y :- Bool z] x))
+            lowered (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])
+            node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+            parameters (get @forms (get (:child-form-ids form) 1))]
+        (is (= :accepted (:status lowered)))
+        (is (= '[x y z] (get-in node [:attributes :parameters])))
+        (is (= [(sha 5002) (sha 5003) (sha 5004)] (:resolved-binding-ids node)))
+        (is (= [0 3 6] (:parameter-source-child-indexes signature)))
+        (is (= [:gravity.type/i64 :gravity.type/bool nil] (mapv :type-id (:parameters signature))))
+        (is (= [1 4 nil] (mapv :source-child-index (:parameters signature))))
+        (is (= [:parameter-vector :parameter :function-type-marker :function-type-declaration
+                :parameter :function-type-marker :function-type-declaration :parameter]
+               (mapv second (invoke 'sh07-source-core-parameter-events [(input form) (:form-id parameters)])))))
+      (let [form (make! '(fn [items :- List] :- List items))
+            lowered (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])
+            signature (get-in (last (get-in lowered [:state :nodes])) [:attributes :signature])]
+        (is (= :accepted (:status lowered)))
+        (is (= :gravity.type/list (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+        (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+        (is (nil? (invoke 'sh07-atomic-type-id ['List]))))
+      (doseq [value ['(fn [packet :- Map] :- Map packet)
+                     '(fn [packet :- gravity.core/Map] :- gravity.core/Map packet)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :gravity.type/map (get-in signature [:parameters 0 :type-id]) (get-in signature [:return :type-id])))
+          (is (= 'Map (get-in signature [:parameters 0 :type-symbol]) (get-in signature [:return :type-symbol])))
+          (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+          (is (true? (invoke 'sh07-source-core-map-declaration-join? [request type-form form node indexes :function-type-declaration])))
+          (is (nil? (invoke 'sh07-atomic-type-id ['Map])))
+          (is (= :rejected (:status (invoke 'sh07-function-header
+                                           [(assoc-in request [:internal-indexes :bindings :by-id (sha 5401) :kind] :var) form]))))))
+      (doseq [value ['(fn [parts :- (List I64)] parts)
+                     '(fn [parts :- (gravity.core/List gravity.core/Bool)] parts)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              declaration (get-in signature [:parameters 0])
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              parameter-vector (get @forms (get (:child-form-ids form) 1))
+              type-form (get @forms (get (:child-form-ids parameter-vector) 2))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :sh07-list-parameter-declaration-v1 (:rule-version declaration)))
+          (is (= {:kind :gravity.type/list :shape :homogeneous
+                  :element-type (if (= 'I64 (:element-symbol declaration)) :gravity.type/i64 :gravity.type/bool)}
+                 (:type-id declaration)))
+          (is (= (:form-id type-form) (:type-form-id declaration)))
+          (is (true? (invoke 'sh07-signature-valid? [signature 1])))
+          (is (false? (invoke 'sh07-type-declaration-valid? [declaration])))
+          (doseq [id (into [(:form-id type-form)] (:child-form-ids type-form))]
+            (is (true? (invoke 'sh07-source-core-map-declaration-join?
+                              [request (get @forms id) form node indexes :function-type-declaration]))))
+          (doseq [field [:constructor-form-id :constructor-syntax-id :element-form-id :element-syntax-id :element-binding-id]]
+            (let [bad (assoc declaration field (sha 8888))
+                  changed (assoc-in node [:attributes :signature :parameters 0] bad)
+                  changed-indexes (assoc-in indexes [:functions [(:node-id node) nil] :signature :parameters 0] bad)]
+              (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                 [request type-form form changed changed-indexes :function-type-declaration])))))
+          (is (true? (get (last (invoke 'sh07-source-core-parameter-events [request (:form-id parameter-vector)])) 2)))
+          (is (= (mapv #(vector % :function-type-declaration (:form-id form)) (:child-form-ids type-form))
+                 (invoke 'sh07-source-core-intent-children [request type-form :function-type-declaration (:form-id form)])))))
+      (doseq [value ['(fn [] :- (List I64) 0)
+                     '(fn [parts :- (List I64)] :- (List I64) parts)
+                     '(fn [parts :- List] :- (gravity.core/List gravity.core/Bool) parts)]]
+        (let [form (make! value) request (input form)
+              lowered (invoke 'sh07-lower-fn [request (invoke 'sh07-empty-state []) form])
+              node (last (get-in lowered [:state :nodes])) signature (get-in node [:attributes :signature])
+              declaration (:return signature)
+              record (first (invoke 'sh07-build-function-records [(:state lowered)]))
+              indexes {:functions {[(:node-id node) nil] record}}
+              type-form (get @forms (get (:child-form-ids form) 3))]
+          (is (= :accepted (:status lowered)) (pr-str lowered))
+          (is (= :sh07-list-return-declaration-v1 (:rule-version declaration)))
+          (is (= 2 (:source-child-index declaration)))
+          (is (= 4 (:body-source-child-index signature)))
+          (is (true? (invoke 'sh07-return-type-declaration-valid? [declaration])))
+          (is (true? (invoke 'sh07-signature-valid? [signature (count (:parameters signature))])))
+          (is (= [(:constructor-reference-symbol declaration) (:element-reference-symbol declaration)]
+                 (mapv #(get-in @forms [% :value]) (:child-form-ids type-form))))
+          (doseq [id (into [(:form-id type-form)] (:child-form-ids type-form))]
+            (is (true? (invoke 'sh07-source-core-map-declaration-join?
+                              [request (get @forms id) form node indexes :function-type-declaration]))))
+          (is (true? (get (second (invoke 'sh07-source-core-return-events [request form])) 2)))
+          (doseq [field [:constructor-form-id :constructor-syntax-id :element-form-id :element-syntax-id :element-binding-id
+                         :constructor-reference-symbol :element-reference-symbol]]
+            (let [bad (assoc declaration field (if (contains? #{:constructor-reference-symbol :element-reference-symbol} field) 'Wrong (sha 8888)))
+                  changed (assoc-in node [:attributes :signature :return] bad)
+                  changed-indexes (assoc-in indexes [:functions [(:node-id node) nil] :signature :return] bad)]
+              (is (false? (invoke 'sh07-source-core-map-declaration-join?
+                                 [request type-form form changed changed-indexes :function-type-declaration])))))))
+      (doseq [value ['(fn [parts :- (List)] parts) '(fn [parts :- (List I64 Bool)] parts)
+                     '(fn [parts :- (List (List I64))] parts) '(fn [parts :- (I64 Bool)] parts)
+                     '(fn [parts :- (List List)] parts) '(fn [] :- (Vector I64) 0)
+                     '(fn [] :- (List) 0) '(fn [] :- (List I64 Bool) 0)
+                     '(fn [] :- (List (List I64)) 0)]]
+        (let [form (make! value) result (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (:rule result)))))
+      (doseq [[value reason actual supported]
+              [['(fn 0) :fn-multiple-body-or-shape 2 3]
+               ['(fn 0 1) :fn-parameter-vector-required nil nil]
+               ['(fn [] 1 2) :fn-multiple-body-or-shape 4 3]]]
+        (let [form (make! value) header (invoke 'sh07-function-header [(input form) form])]
+          (is (= :rejected (:status header)))
+          (is (= reason (get-in header [:facts :reason])))
+          (when actual
+            (is (= actual (get-in header [:facts :actual-child-count])))
+            (is (= supported (get-in header [:facts :supported-child-count]))))))
+      (doseq [value ['(fn [x :-] x) '(fn [:- I64] x) '(fn [x :- (Vector I64)] x)]]
+        (let [form (make! value) result (invoke 'sh07-lower-fn [(input form) (invoke 'sh07-empty-state []) form])]
+          (is (= :rejected (:status result)))
+          (is (= "C6-LOWERING-GAP" (:rule result))))))))
+
+(deftest sh07-b47-list-parameter-reference-projection-development-kernel
+  ;; Normalized inputs exercise both retained adapters and their bijection.
+  ;; These bindings are DATA, not authenticated C5 source authority.
+  (let [source "<homogeneous-list-projection-kernel>" revision :normalized-list-projection
+        hash bootstrap/reader-canonical-hash]
+    (letfn [(input [form]
+              (let [root (bootstrap/sh07-core-root-syntax-id revision 0 form)
+                    syntax {:syntax/id root :sh07/root-syntax-id root :form form :span {:source source}}
+                    request (bootstrap/sh06-resolution-analysis-inputs {} {:expanded-syntax-stream [syntax]} {})
+                    locals (vec (for [scope (:lexical-scopes request) binding (:bindings scope)]
+                                  (assoc binding :binding-id (:binding-syntax-id binding) :binding-class :lexical
+                                                 :definition-syntax-id (:binding-syntax-id binding) :scope-id (:scope-id scope))))
+                    local-by-name (into {} (map (juxt :name identity) locals))
+                    cores (vec (distinct (for [reference (:references request)
+                                               :when (or (= :type (:position reference))
+                                                         (not (contains? local-by-name (:symbol reference))))]
+                                           {:binding-id (hash {:kind (:position reference) :name (:name reference)})
+                                            :name (:name reference) :namespace 'gravity.core :binding-class :core
+                                            :kind (if (= :type (:position reference)) :type :var)})))
+                    by-name (into {} (map (juxt (juxt :name :kind) identity) cores))
+                    resolutions (mapv (fn [reference]
+                                        (let [binding (if (= :type (:position reference))
+                                                        (get by-name [(:name reference) :type])
+                                                        (or (get local-by-name (:symbol reference)) (get by-name [(:name reference) :var])))]
+                                          (assoc reference :binding-id (:binding-id binding)
+                                                           :resolution-order (if (= :lexical (:binding-class binding)) :local-lexical-binding
+                                                                               (if (:qualifier reference) :fully-qualified-namespace-binding :profile-allowed-core-binding)))))
+                                      (:references request))
+                    tree (bootstrap/sh07-core-build-form-tree source revision {:records {} :next (atom {})} syntax nil)]
+                {:syntax syntax :tree tree :request request
+                 :resolved {:module-contract {:namespace 'normalized.projection} :binding-table (into locals cores)
+                            :resolution-table resolutions :alias-table []}}))
+            (project [{:keys [syntax tree request resolved]}]
+              (bootstrap/sh07-core-resolution-projection! source revision [syntax] [tree] [] request resolved))]
+      (doseq [form ['(fn [parts :- (List String) text :- String] :- String parts)
+                     '(fn [parts :- (gravity.core/List gravity.core/String) text :- String] :- String parts)
+                     '(fn named [parts :- (List String) text :- String] :- String parts)]]
+        (let [data (input form) projected (project data)
+              references (get-in data [:request :references]) resolutions (:resolution-table projected)
+              forms (into {} (map (juxt :syntax-id identity) (:forms projected)))
+              applications (filter #(= :list (:kind %)) (:forms projected))
+              application (first (filter #(= 2 (count (:child-form-ids %))) applications))
+              by-form (into {} (map (juxt :form-id identity) (:forms projected)))]
+          (is (= (mapv (juxt :symbol :position) references) (mapv (juxt :symbol :position) resolutions)))
+          (is (= [:operator :type :type :type :type :expression] (mapv :position resolutions)))
+          (is (= (count references) (count (set (map :reference-syntax-id resolutions)))))
+          (is (every? #(contains? forms (:reference-syntax-id %)) resolutions))
+          (is (some? (:scope-id application)))
+          (is (= [(:scope-id application) (:scope-id application)]
+                 (mapv #(get-in by-form [% :scope-id]) (:child-form-ids application))))
+          (doseq [changed [(assoc-in data [:request :references 1 :position] :operator)
+                           (update-in data [:request :references] #(assoc % 1 (get % 2) 2 (get % 1)))
+                           (update-in data [:resolved :resolution-table] pop)]]
+            (let [failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+              (is (= "C6-VERIFY" (:id failure)))
+              (is (contains? #{:sh06-reference-projection-mismatch :sh06-resolution-projection-incomplete} (:reason failure)))))))
+      (doseq [[form expected]
+              [['(fn [parts] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [parts :expression]]]
+               ['(fn [parts :- (List String) text :- String] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [String :type] [List :type] [String :type] [parts :expression]]]
+               ['(fn named [parts :- (List String)] :- (gravity.core/List gravity.core/String) parts)
+                '[[fn :operator] [List :type] [String :type] [gravity.core/List :type] [gravity.core/String :type] [parts :expression]]]
+               ['(fn named [parts] :- (List String) parts)
+                '[[fn :operator] [List :type] [String :type] [parts :expression]]]]]
+        (let [data (input form) projected (project data) resolutions (:resolution-table projected)
+              by-form (into {} (map (juxt :form-id identity) (:forms projected)))
+              fn-form (first (filter #(= form (:value %)) (:forms projected)))
+              header-index (if (symbol? (second form)) 3 2)
+              application (get by-form (get (:child-form-ids fn-form) (inc header-index)))
+              child-ids (:child-form-ids application)
+              child-syntax-ids (mapv #(get-in by-form [% :syntax-id]) child-ids)
+              type-resolutions (filterv #(contains? (set child-syntax-ids) (:reference-syntax-id %)) resolutions)]
+          (is (= expected (mapv (juxt :symbol :position) resolutions)))
+          (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+                 (mapv (juxt :symbol :position) resolutions)))
+          (is (= 2 (count child-ids) (count type-resolutions)))
+          (is (= (mapv #(get-in by-form [% :syntax-id]) child-ids) (mapv :reference-syntax-id type-resolutions)))
+          (is (some? (:scope-id application)))
+          (is (= [(:scope-id application) (:scope-id application)] (mapv #(get-in by-form [% :scope-id]) child-ids)))
+          (doseq [changed [(assoc-in data [:request :references 1 :position] :operator)
+                           (update-in data [:request :references] #(assoc % 1 (get % 2) 2 (get % 1)))
+                           (update-in data [:resolved :resolution-table] pop)]]
+            (let [failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+              (is (= "C6-VERIFY" (:id failure)))
+              (is (contains? #{:sh06-reference-projection-mismatch :sh06-resolution-projection-incomplete} (:reason failure)))))))
+      (let [data (input '(fn [parts] :- (List String) parts)) projected (project data)
+            c5-fields #{:syntax-id :symbol :position :semantic-span :source-span :resolution-order :binding-id}
+            c5-rows (mapv #(select-keys % c5-fields) (get-in data [:resolved :resolution-table]))
+            c6-rows (:resolution-table projected)]
+        ;; C5 resolution.gravity's closed row schema uses :syntax-id. The C6
+        ;; projection uses :reference-syntax-id; its install checks every C5
+        ;; raw/resolved ID against the occurrence before consuming that row.
+        (is (every? #(= c5-fields (set (keys %))) c5-rows))
+        (is (every? #(and (string? (:syntax-id %)) (not (contains? % :reference-syntax-id))) c5-rows))
+        (is (= (count c5-rows) (count (set (map :syntax-id c5-rows)))
+               (count c6-rows) (count (set (map :reference-syntax-id c6-rows)))))
+        (is (= 1 (count (set (map :reference-syntax-id c5-rows)))))
+        (is (> (count c5-rows) 1))
+        (is (= (mapv (juxt :symbol :position) c5-rows) (mapv (juxt :symbol :position) c6-rows)))
+        (let [duplicate (get-in data [:request :references 1 :syntax-id])
+              changed (-> data (assoc-in [:request :references 2 :syntax-id] duplicate)
+                               (assoc-in [:resolved :resolution-table 2 :syntax-id] duplicate))
+              failure (try (project changed) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-VERIFY" (:id failure)))
+          (is (= :sh06-reference-projection-mismatch (:reason failure)))))
+      (let [data (input '(fn [parts :- List text :- String] :- String parts))
+            projected (project data)]
+        (is (= '[[fn :operator] [List :type] [String :type] [String :type] [parts :expression]]
+               (mapv (juxt :symbol :position) (:resolution-table projected))))
+        (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+               (mapv (juxt :symbol :position) (:resolution-table projected)))))
+      (doseq [form ['(fn [parts :- (List)] :- String parts)
+                     '(fn [parts :- (List String Bool)] :- String parts)
+                     '(fn [parts :- (List (List String))] :- String parts)
+                     '(fn [parts] :- (List) parts)
+                     '(fn [parts] :- (List String Bool) parts)
+                     '(fn [parts] :- (List (List String)) parts)]]
+        (let [data (input form) projected (project data)]
+          (is (= (mapv (juxt :symbol :position) (get-in data [:request :references]))
+                 (mapv (juxt :symbol :position) (:resolution-table projected))))
+          (is (= (if (seq? (get (vec form) 3)) '[[fn :operator] [parts :expression]]
+                       '[[fn :operator] [String :type] [parts :expression]])
+                 (mapv (juxt :symbol :position) (:resolution-table projected)))))))))
+
+(deftest sh07-b47-atomic-signature-source-shape-rejections
+  (doseq [basename ["function-annotation-dangling" "function-annotation-duplicate" "function-annotation-composite"]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename)
+          source-path (path (str relative ".gravity"))
+          result (try {:value (bootstrap/sh07-core-file-artifact source-path)}
+                   (catch clojure.lang.ExceptionInfo error {:data (ex-data error)})
+                   (catch Throwable error {:host-error (.getName (class error))}))
+          data (:data result) diagnostic (or (:diagnostic data) data)]
+      (is (nil? (:host-error result)) (pr-str result))
+      (is (= "C6-LOWERING-GAP" (:rule diagnostic)))
+      (is (= :core-lowering (:stage diagnostic)))
+      (is (= (if (= basename "function-annotation-composite") :unsupported-atomic-type-annotation
+                 :atomic-type-annotation-required) (get-in diagnostic [:facts :reason])))
+      (is (= source-path (get-in diagnostic [:source-span :source])))
+      (is (true? (get-in diagnostic [:facts :fail-closed])))
+      (is (= (slurp source-path) (slurp (path (str relative ".qst"))))))))
+
 (deftest sh07-b47-fixtures-are-paired-path-neutral-and-deterministic
   (let [gravity-path (fixture-path ".gravity")
         qst-path (fixture-path ".qst")]

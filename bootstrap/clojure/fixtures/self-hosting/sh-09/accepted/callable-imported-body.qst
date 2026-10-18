@@ -1,0 +1,8 @@
+; Scalar identity import from the existing authentic one-hop producer.
+(ns self-hosting.sh09.callable-imported-body
+  (:profile :meta) (:target :jvm)
+  (:requires [self-hosting.sh08.function-call-nonlocal :as producer])
+  (:exports [call-identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn call-identity [] (producer/sh08-nonlocal-target 9))

@@ -2,7 +2,7 @@
   "Focused tests for the bounded SH-07 semantic parity projection.
 
   These tests exercise selection, normalization, and an injected oracle.  They
-  do not launch the full 147-row table; a representative real legacy oracle
+  do not launch the full fixture table; a representative real legacy oracle
   invocation is an explicit, separately coordinated smoke check."
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.self-hosting.sh07-conformance-parity :as parity]
@@ -100,8 +100,10 @@
 (deftest all-reviewed-rows-split-into-bounded-suite-batches
   (let [suite-ids table/expected-suite-ids
         batches (mapcat #(parity/exact-batch-row-ids % 8) suite-ids)]
-    (is (= 147 (count (mapcat identity batches))))
-    (is (= 147 (count (set (mapcat identity batches)))))
+    (is (= (set (map :id (table/rows (table/table))))
+           (set (mapcat identity batches))))
+    (is (= (count (mapcat identity batches))
+           (count (set (mapcat identity batches)))))
     (is (every? #(<= 1 (count %) parity/maximum-batch-size) batches))
     (is (= "SH07-PARITY-BATCH-BOUND"
            (error-id #(parity/exact-batch-row-ids "sh07-b1"

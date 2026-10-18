@@ -1,0 +1,23 @@
+(ns self-hosting.sh08.local-runtime-boolean-match
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn true-first [flag :- Bool value :- String] :- String (match flag true value false "false"))
+(defn false-first [flag :- Bool value :- String] :- String (match flag false value true "true"))
+(defn residual-shadow [flag :- Bool value :- String] :- String (match flag true value value "bound"))
+(defn whole-shadow [flag :- Bool] :- Bool (match flag flag flag))
+(defn whole-binder-string [flag :- Bool value :- String] :- String (match flag observed value))
+(defn whole-wildcard [raise :- Bool problem :- String value :- String] :- String
+  (match (probe raise problem) _ value))
+(defn probe [raise :- Bool problem :- String] :- Bool (if raise (throw problem) false))
+(defn wildcard-wrapper [raise :- Bool problem :- String value :- String] :- String
+  (whole-wildcard raise problem value))
+(defn throwing-wildcard [raise :- Bool problem :- String value :- String] :- String
+  (match (if raise (throw problem) false) _ (throw value)))
+(defn nested [flag :- Bool value :- String] :- String
+  (let [selected (match flag true (match false flag (if flag "wrong" value)) _ "outer-false")]
+    (if flag selected "after-false")))
+(defn packet-match [flag :- Bool value :- String] :- String (match (:flag (packet-forward flag)) true value false "packet-false"))
+(defn packet-forward [flag :- Bool] (packet flag))
+(defn packet [flag :- Bool] {:flag flag})
+(defn selected-recur [again :- Bool value :- String] :- String (match again true (recur false value) false value))
+(defn main [] (true-first true "payload"))

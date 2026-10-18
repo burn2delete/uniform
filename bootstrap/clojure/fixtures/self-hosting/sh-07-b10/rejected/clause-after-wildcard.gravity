@@ -1,0 +1,14 @@
+(ns self-hosting.sh07-b10.reject.clause-after-wildcard
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10 :sh07-b10 {:expected-rule "C6-VERIFY" :expected-stage :core-lowering :expected-severity :error
+               :expected-reason :match-clause-after-irrefutable-pattern :semantic-rule "L7-UNREACHABLE"
+               :expected-remediation "Remove the unreachable clause or move it before the root wildcard or binding pattern."}}))
+
+(def invalid
+  (match 0
+    _ :all
+    1 :late))

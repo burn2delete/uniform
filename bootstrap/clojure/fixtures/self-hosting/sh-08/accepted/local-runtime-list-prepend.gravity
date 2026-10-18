@@ -1,0 +1,19 @@
+(ns example.local-runtime-list-prepend
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn join-parts [parts :- (List String) text :- String] :- String
+  (if (empty? parts) text
+      (recur (rest parts) (str text (first parts)))))
+(defn reverse-and-join [pending :- (List String) reversed :- (List String)] :- String
+  (if (empty? pending) (join-parts reversed "")
+      (recur (rest pending) (conj reversed (first pending)))))
+(defn relay [parts :- (List String)] :- String
+  (str (join-parts parts "") (reverse-and-join parts (list))))
+(defn empty [] :- String (relay (list)))
+(defn singleton [part :- String] :- String (relay (conj (list) part)))
+(defn bare-prepend [parts :- List head :- String] :- Bool
+  (empty? (conj parts head)))
+(defn aborting [parts :- (List String) problem :- String] :- String
+  (join-parts (conj parts (throw problem)) ""))
+(defn main [] :- String (relay (list "a" "b")))

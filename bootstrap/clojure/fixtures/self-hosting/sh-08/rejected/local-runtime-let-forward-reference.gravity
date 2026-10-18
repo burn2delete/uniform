@@ -1,0 +1,3 @@
+(ns self-hosting.sh08.local-runtime-let-forward-reference
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn broken [] :- String (let [first later later "later"] first))

@@ -1,0 +1,12 @@
+(ns self-hosting.sh08.local-runtime-evaluated-vector
+  (:profile :meta) (:target :jvm) (:effects #{:error/throw :memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn empty-vector [] [])
+(defn mixed-vector [] [nil true 17 \a "text" :key])
+(defn packed [flag :- Bool value :- String] [flag value])
+(defn nested-vector [] [[] [true ["text"]] ['unresolved/data '(throw unresolved/data)]])
+(defn let-forward [value :- String] (let [data [true value] alias data] alias))
+(defn build [value :- String] [value])
+(defn direct-forward [value :- String] (build value))
+(defn caught [problem :- String] (try [(throw problem) "later"] (catch String error [error])))
+(defn main [] (packed true "payload"))

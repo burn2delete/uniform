@@ -1,0 +1,5 @@
+(ns example.homogeneous-list-return-unresolved
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn main [] :- (List MissingReturnElement) (list))

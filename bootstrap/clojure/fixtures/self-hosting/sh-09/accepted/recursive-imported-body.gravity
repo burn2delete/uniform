@@ -1,0 +1,10 @@
+; Direct imports of the existing bounded recursive Integer/String producers.
+(ns self-hosting.sh09.recursive-imported-body
+  (:profile :meta) (:target :jvm)
+  (:requires [self-hosting.sh08.function-self-recursive-type :as integers]
+             [self-hosting.sh08.function-self-recursive-string-type :as strings])
+  (:exports [call-integer call-string])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn call-integer [] (integers/self-recursive-type 9))
+(defn call-string [] (strings/self-recursive-string-type "caller"))

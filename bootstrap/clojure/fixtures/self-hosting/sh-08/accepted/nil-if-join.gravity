@@ -1,0 +1,32 @@
+(ns self-hosting.sh08.nil-if-join
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn w5-se-canonical-form [mode]
+  (if (= mode :artifact)
+    :canonical-content-hash
+    (if (= mode :manifest)
+      :canonical-manifest
+      (if (= mode :diagnostic)
+        :stable-code-and-source-span
+        (if (= mode :conformance)
+          :accepted-rejected-transcripts
+          (if (= mode :runtime-output)
+            :canonical-runtime-output
+            (if (= mode :ir-modulo-id)
+              :normalized-structure-modulo-id
+              (if (= mode :reviewed-delta)
+                :reviewed-provenance-delta
+                nil))))))))
+(defn optional-text [mode]
+  (if (= mode :abort)
+    (throw "optional text aborted")
+    (if (= mode :known) "known" nil)))
+(defn known-equal [] :- Bool (= (w5-se-canonical-form :artifact) :canonical-content-hash))
+(defn missing-equal [] :- Bool (= (w5-se-canonical-form :unknown-mode) nil))
+(defn different-value [] :- Bool (= (w5-se-canonical-form :manifest) :canonical-content-hash))
+(defn cross-nil [] :- Bool (= (w5-se-canonical-form :unknown-mode) (optional-text :unknown-mode)))
+(defn cross-value [] :- Bool (= (w5-se-canonical-form :artifact) (optional-text :known)))
+(defn caught-text [] :- Bool
+  (try (= (optional-text :abort) nil)
+    (catch String error (= error "optional text aborted"))))
+(defn main [] :- Bool (cross-nil))

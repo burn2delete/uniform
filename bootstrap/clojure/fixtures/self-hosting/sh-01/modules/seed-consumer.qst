@@ -1,0 +1,7 @@
+(ns example.seed-consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.seed-library :as library]) (:exports [identity relay])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity [value] [:caller value])
+(defn relay [value] (library/identity value))

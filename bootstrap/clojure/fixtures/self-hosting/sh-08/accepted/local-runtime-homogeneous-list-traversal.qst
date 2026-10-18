@@ -1,0 +1,14 @@
+(ns example.local-runtime-homogeneous-list-traversal
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn join-parts [parts :- (List String) text :- String] :- String
+  (if (empty? parts) text
+      (recur (rest parts) (str text (first parts)))))
+(defn head-or-empty [parts :- (gravity.core/List gravity.core/String)] :- String
+  (if (empty? parts) "" (first parts)))
+(defn relay [parts :- (List String)] :- String (join-parts parts ""))
+(defn empty [] :- String (join-parts (list) ""))
+(defn singleton [part :- String] :- String (join-parts (list part) ""))
+(defn aborting [problem :- String] :- String (join-parts (throw problem) ""))
+(defn main [] :- String (join-parts (list "alpha" "beta") ""))

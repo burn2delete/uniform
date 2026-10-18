@@ -187,9 +187,132 @@
     (:function-records carrier) (:calls carrier) (:edges carrier)
     (:recursion-components carrier) (:module carrier)]))
 
+(defn- recursive-inference-nodes [carrier]
+  ;; C6 emits child nodes before their consumers. Keep the normalized proof
+  ;; carrier's stable indexes for hostile mutations, then use C6 order at the
+  ;; inference boundary; the cold-if checker does not infer from a parent first.
+  (let [nodes (into {} (map (juxt :node-id identity) (:nodes carrier)))]
+    (vec (keep nodes [:recursive-condition-node :recursive-operator-node
+                     :recursive-parameter-node :transformed-self-argument
+                     :recursive-call-node :recursive-base-node
+                     :recursive-body-node :recursive-function-node
+                     :recursive-external-operator-node :recursive-external-literal-node
+                     :recursive-external-call-node]))))
+
+(deftest current-gravity-declared-self-value-development-kernel
+  (let [base (-> (recursive-carrier)
+                (assoc-in [:function-records 0 :signature]
+                          {:parameters [{:type-id :gravity.type/string}]
+                           :return {:type-id :gravity.type/string}})
+                (assoc-in [:nodes 6 :attributes :literal-kind] :string)
+                (assoc-in [:nodes 8 :attributes :literal-kind] :string)
+                (update :nodes conj
+                        (node :transformed-self-argument :literal []
+                              {:literal-kind :string} :recursive-function-syntax))
+                (assoc-in [:nodes 5 :children]
+                          [:recursive-operator-node :transformed-self-argument])
+                (assoc-in [:calls 0 :argument-node-ids] [:transformed-self-argument])
+                (assoc-in [:calls 0 :ordered-evaluation-node-ids]
+                          [:recursive-operator-node :transformed-self-argument])
+                (assoc-in [:call-edges 0 :argument-core-node-ids] [:transformed-self-argument])
+                (assoc-in [:call-edges 0 :ordered-evaluation-node-ids]
+                          [:recursive-operator-node :transformed-self-argument]))
+        prove (fn [carrier]
+                (invoke-c7 'sh08-ds-proof
+                           [{:nodes (:nodes carrier)} carrier (:bindings carrier) (:module carrier)]))
+        proof (prove base)
+        record (first (:function-records base))
+        skeleton (invoke-c7 'sh08-ft-function-type-skeleton [record (:module base)])
+        completed (invoke-c7 'sh08-ft-recursive-complete-function [skeleton proof])
+        infer (fn [carrier]
+                (let [nodes (into {} (map (juxt :node-id identity) (:nodes carrier)))
+                      ordered (recursive-inference-nodes carrier)]
+                  (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [ordered nodes [] (:definitions carrier)
+                              (:calls carrier) (:call-edges carrier)
+                              {(:function-id skeleton) skeleton}
+                              {:recursive-definition-binding skeleton
+                               :recursive-parameter-binding :gravity.type/string}
+                              64 (assoc proof :loop-work-left (- 65536 (:work-count proof)))])))
+        inferred (infer base)
+        facts (invoke-c7 'sh08-ft-call-facts
+                         [(:calls base) (:call-edges base)
+                          (into {} (map (juxt :node-id identity) (:nodes base)))
+                          (:type-table inferred) (:function-types inferred) (:module base)])
+        artifact (invoke-c7 'sh08-ft-recursive-result-fields
+                            [{:status :accepted} proof facts])]
+    (is (= :accepted (:status proof)))
+    (is (= :sh08-declared-self-value-v1 (:rule-version proof)))
+    (is (not (contains? proof :recursive-call-core-node-id)))
+    (is (not (contains? proof :recursive-base-type)))
+    (is (= skeleton completed))
+    (is (= [:pending-sh09] (:thrown-error-effects completed)))
+    (is (= #{} (:latent-effects completed)))
+    (is (= [:recursive-call-node :recursive-external-call-node]
+           (:incoming-call-node-ids proof)))
+    (is (= (set (map :node-id (filter #(= :recursive-function-syntax
+                                        (get-in % [:evaluation :owner-function-syntax-id]))
+                                    (:nodes base))))
+           (set (:owned-node-ids proof))))
+    (is (= :converged (:convergence-status inferred)))
+    (is (= [] (:diagnostics inferred)))
+    (is (= :gravity.type/string (get-in inferred [:type-table :recursive-call-node])))
+    (is (= :gravity.type/string (get-in inferred [:type-table :recursive-body-node])))
+    (is (= :gravity/sh08-declared-self-value-proof-v1
+           (get-in artifact [:recursive-proof :domain])))
+    (is (= :pending-sh09-recursive-body
+           (get-in artifact [:recursive-proof :effect-error-status])))
+    (is (= [:self-recursive-call :incoming-declared-call]
+           (mapv :role (:recursive-call-facts artifact))))
+    (is (= facts (mapv #(dissoc % :role) (:recursive-call-facts artifact))))
+    (is (= :sh08-declared-self-value-v1
+           (:producer-rule (first (invoke-c7 'sh08-ft-recursive-constraint-ledger [proof])))))
+    (is (= :gravity.type/string
+           (invoke-c7 'sh08-ft-if-join-with-context
+                      [[:condition :left :right]
+                       {:left :gravity.type/never :right :gravity.type/string} proof])))
+    (is (= :gravity.type/unknown
+           (invoke-c7 'sh08-ft-if-join-with-context [[:condition :left :right] {} proof])))
+    (doseq [changed [(assoc-in base [:function-records 0 :signature :return] nil)
+                     (assoc-in base [:function-records 0 :signature :parameters 0] nil)
+                     (assoc-in base [:function-records 0 :signature :return :type-id] :gravity.type/unknown)
+                     (assoc-in base [:recursion-components 0 :kind] :mutually-recursive)
+                     (assoc-in base [:call-edges 0 :ordinal] 9)
+                     (assoc-in base [:calls 0 :argument-node-ids] [])
+                     (assoc-in base [:nodes 4 :attributes :binding-id] :arbitrary-global)
+                     (assoc-in base [:nodes 1 :core-form] :try)]]
+      (is (= :rejected (:status (prove changed)))))
+    (let [bad-argument (infer (assoc-in base [:nodes 10 :attributes :literal-kind] :boolean))
+          bad-body (infer (assoc-in base [:nodes 6 :attributes :literal-kind] :boolean))
+          bad-entry (infer (assoc-in base [:nodes 8 :attributes :literal-kind] :boolean))]
+      (is (seq (:diagnostics bad-argument)))
+      (is (= :gravity.type/unknown (get-in bad-body [:type-table :recursive-body-node])))
+      (is (seq (:diagnostics bad-entry)))
+      (is (= :gravity.type/bool (get-in bad-argument [:type-table :transformed-self-argument])))
+      (is (= :gravity.type/bool (get-in bad-body [:type-table :recursive-base-node])))
+      (is (= :gravity.type/bool (get-in bad-entry [:type-table :recursive-external-literal-node]))))
+    (let [many (assoc base :nodes (vec (repeat 9000 (first (:nodes base)))))]
+      (is (= :declared-self-work-limit (:reason (prove many)))))))
+
+(deftest current-gravity-declared-self-resource-diagnostic-development-kernel
+  (let [module (:module (recursive-carrier))
+        exhausted (invoke-c7 'sh08-ft-recursive-diagnostic
+                             [{:status :rejected :reason :declared-self-work-limit :work-count 65537} module])
+        old {:status :rejected :reason :recursive-argument-shape}
+        old-result (invoke-c7 'sh08-ft-recursive-diagnostic [old module])
+        expected-old (invoke-c7 'sh08-ft-diagnostic
+                                ["C7-ANNOTATION" nil module
+                                 :bounded-named-self-recursive-fixed-arity-positive-positional-literal-base
+                                 :recursive-argument-shape :recursive-argument-shape {}])]
+    (is (= "C7-GENERIC" (:rule exhausted)))
+    (is (= :bounded-declared-self-work (:expected-type exhausted)))
+    (is (= 65537 (:actual-type exhausted)))
+    (is (= :declared-self-work-limit (:reason exhausted)))
+    (is (= old-result expected-old))))
+
 (deftest sh08-recursive-source-reachability-and-structure
   (let [artifact-function
-        (get-in @c7-plan [:functions 'sh08-ft-function-type-core-artifact])
+        (get-in @c7-plan [:functions 'sh08-ft-function-type-core-artifact-with-imports])
         recursive-function
         (get-in @c7-plan [:functions 'sh08-ft-recursive-proof])
         calls
@@ -230,8 +353,9 @@
                                 'sh08-ft-recursive-call-proof-facts])))
     (is (map? inference-call))
     (is (map? proof-results-call))
-    (is (= 'sh08-ft-context-proof
-           (get-in inference-call [:args 9 :function])))
+    (is (some #(and (map? %) (= :function-call (:op %))
+                    (= 'sh08-ft-context-proof (:function %)))
+              (tree-seq coll? seq (get-in inference-call [:args 9]))))
     (is (= :if (:op context-proof-branch)))
     (is (= :local (get-in context-proof-branch [:then :op])))
     (is (= 'recursive-proof
@@ -269,7 +393,7 @@
         inference
         (invoke-c7
          'sh08-ft-infer-acyclic-with-context
-         [(:nodes carrier) node-table [] (:definitions carrier)
+         [(recursive-inference-nodes carrier) node-table [] (:definitions carrier)
           (:calls carrier) (:edges carrier)
           {(:function-id complete) complete}
           {(get-in proof [:definition :binding-id]) complete}
@@ -287,7 +411,7 @@
         permuted-inference
         (invoke-c7
          'sh08-ft-infer-acyclic-with-context
-         [(:nodes permuted) permuted-node-table [] (:definitions permuted)
+         [(recursive-inference-nodes permuted) permuted-node-table [] (:definitions permuted)
           (:calls permuted) (:edges permuted)
           {(:function-id permuted-complete) permuted-complete}
           {(get-in permuted-proof [:definition :binding-id])
@@ -455,7 +579,7 @@
             inference
             (invoke-c7
              'sh08-ft-infer-acyclic-with-context
-             [(:nodes carrier) node-table [] (:definitions carrier)
+             [(recursive-inference-nodes carrier) node-table [] (:definitions carrier)
               (:calls carrier) (:edges carrier)
               {(:function-id complete) complete}
               {(get-in proof [:definition :binding-id]) complete}
@@ -522,7 +646,7 @@
         inference
         (invoke-c7
          'sh08-ft-infer-acyclic-with-context
-         [(:nodes carrier) node-table [] (:definitions carrier)
+         [(recursive-inference-nodes carrier) node-table [] (:definitions carrier)
           (:calls carrier) (:edges carrier)
           {(:function-id complete) complete}
           {(get-in proof [:definition :binding-id]) complete}

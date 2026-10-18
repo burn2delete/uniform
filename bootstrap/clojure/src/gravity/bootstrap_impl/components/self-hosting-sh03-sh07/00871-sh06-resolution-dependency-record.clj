@@ -157,6 +157,12 @@
       (range)
       pattern))
 
+    (map? pattern)
+    (vec (mapcat (fn [index [key child]]
+                   (if (= :when key) []
+                     (sh06-match-pattern-binding-paths child (conj path (inc (* 2 index))))))
+                 (range) pattern))
+
     :else
     []))
 
@@ -165,6 +171,11 @@
   (cond
     (vector? pattern)
     (every? sh06-fixed-vector-pattern? pattern)
+
+    (map? pattern)
+    (and (not (contains? pattern :when))
+         (every? keyword? (keys pattern))
+         (every? sh06-fixed-vector-pattern? (vals pattern)))
 
     (symbol? pattern)
     (not= '& pattern)
@@ -176,7 +187,9 @@
         (number? pattern)
         (char? pattern)
         (string? pattern)
-        (keyword? pattern))))
+        (keyword? pattern)
+        (and (seq? pattern) (= 2 (count pattern))
+             (= 'quote (first pattern)) (symbol? (second pattern))))))
 
 (defn sh06-unique-match-binding-paths
   [pattern path]

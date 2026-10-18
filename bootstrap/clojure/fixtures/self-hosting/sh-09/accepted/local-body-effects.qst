@@ -1,0 +1,17 @@
+(ns self-hosting.sh09.local-body-effects
+  (:profile :meta) (:target :jvm)
+  (:effects #{:compiler/read-ir :memory/allocate}) (:capabilities #{:compiler/ir-read}) (:safety :safe))
+
+(defn permit [flag :- Bool] :- Bool flag)
+(defn constant [] 7)
+(defn inert-data [] '(throw unresolved/data))
+(defn choose [flag :- Bool value fallback]
+  (match {:ok flag :value value}
+    {:ok ok :value item :when (permit ok)} item
+    {:value again :when false} again
+    _ fallback))
+(defn conditional [flag :- Bool value fallback]
+  (if flag value fallback))
+(defn assemble []
+  (let [value (choose true (constant) 9)]
+    {:value [value (conditional false 1 2)] :inert (inert-data) :tags #{:ready}}))

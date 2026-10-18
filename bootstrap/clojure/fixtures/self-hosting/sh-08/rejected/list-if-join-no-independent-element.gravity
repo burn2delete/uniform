@@ -1,0 +1,6 @@
+(ns self-hosting.sh08.list-if-join-no-independent-element
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn choose [include :- Bool parts :- List] :- (List String)
+  (if include parts (list)))

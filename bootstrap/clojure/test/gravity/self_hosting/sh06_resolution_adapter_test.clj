@@ -133,13 +133,23 @@
       (throw (ex-info "Required SH-06 coordinator adapter is absent"
                       {:id "SH06-ADAPTER-ABSENT" :symbol symbol}))))
 
+(defn- fixture-module-inputs [source-path source-text]
+  ;; Explicit test libraries; production constructors never discover modules.
+  (let [forms (mapv :form (bootstrap/read-source-form-records source-path source-text))
+        module (bootstrap/parse-module source-path forms)
+        extension (if (str/ends-with? source-path ".qst") ".qst" ".gravity")
+        catalog {'shared.core "shared-core" 'gravity.io "io"}]
+    {:artifact :gravity/sh06-module-inputs :schema-version 1
+     :module-artifacts (mapv #(bootstrap/sh06-resolution-file-artifact (fixture-path "modules" % extension))
+                            (distinct (keep #(get catalog (:module %)) (:requires module))))}))
+
 (defn- sh06-file-artifact
   [source-path]
-  ((required-var 'sh06-resolution-file-artifact) source-path))
+  ((required-var 'sh06-resolution-file-artifact) source-path (fixture-module-inputs source-path (slurp source-path))))
 
 (defn- sh06-source-artifact
   [source-path source-text]
-  ((required-var 'sh06-resolution-source-artifact) source-path source-text))
+  ((required-var 'sh06-resolution-source-artifact) source-path source-text (fixture-module-inputs source-path source-text)))
 
 (defn- verification
   [artifact]
@@ -204,6 +214,17 @@
     (catch Throwable error
       {:raw-host-error (.getName (class error))
        :message (.getMessage error)})))
+
+(defn- normalized-policy-rejection [source-path source-text]
+  ;; Historical metadata-driven matrices exercise v1 DATA policy only. They
+  ;; never create or supply an ordinary module artifact.
+  (try
+    (let [parent (bootstrap/sh05-macro-source-artifact source-path source-text)
+          request (bootstrap/sh06-resolution-base-request source-path parent)
+          binding (bootstrap/sh06-resolution-current-binding! source-path)]
+      (bootstrap/sh06-resolution-run-request! source-path binding request)
+      {:unexpected-success true})
+    (catch clojure.lang.ExceptionInfo e (ex-data e))))
 
 (defn- rejection-data
   [source-path]
@@ -282,6 +303,453 @@
          (= (set source-paths) (set assigned))
          (= (count assigned) (count (set assigned))))))
 
+(defn- module-policy-input [namespace exports definitions imports references]
+  ;; Normalized DATA for the Gravity policy kernel, never an ordinary artifact.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        module {:namespace namespace :package {:name namespace :version "workspace"}
+                :profile :meta :target :jvm :safety :safe :effects [] :capabilities [] :exports exports
+                :source-revision-id (sha 1) :c4-artifact-id (sha 2)}
+        definitions (mapv (fn [index name]
+                            {:name name :kind :function :namespace namespace :package (:package module)
+                             :binding-class :namespace :visibility (if (contains? (set exports) name) :public :private)
+                             :profile-set [:meta] :target-set [:jvm] :type-ref :gravity.type/function :effects [] :capabilities [] :safety :safe
+                             :semantic-span {:ordinal index} :source-span {:source "<kernel>" :form-index index}
+                             :definition-syntax-id (sha (+ 20 index)) :definition-artifact-id (sha 2)}) (range) definitions)]
+    {:artifact :gravity/sh06-ordinary-module-resolution-request :schema-version 2
+     :module module :definitions definitions :imports imports :import-bindings [] :lexical-scopes [] :references references
+     :core-bindings [] :dependency-edges [] :module-premises []
+     :namespace-source {:semantic-span {:namespace-syntax-id (sha 5)} :source-span {:source "<kernel>" :form-index 0}}
+     :macro-expansion-binding {:artifact :gravity/sh05-macro-expansion-binding :schema-version 1
+                              :c4-artifact-id (sha 2) :source-revision-id (sha 1) :macro-result-id (sha 3) :authenticated-envelope-id (sha 4)}
+     :provenance {:actual-source-path "<kernel>"}}))
+
+(deftest sh06-ordinary-module-policy-development-kernel
+  (let [binding (bootstrap/sh06-resolution-current-binding! "<module-policy>")
+        invoke #(bootstrap/sh06-resolution-execute! "<module-policy>" binding %1 %2)
+        run #(bootstrap/sh06-resolution-run-request! "<module-policy>" binding %)
+        library (module-policy-input 'example.values '[identity-i64] '[identity-i64 hidden] [] [])
+        premise-for (fn [request]
+                      (let [result (run request)]
+                        {:artifact-id (sha256-text (pr-str request)) :request request
+                         :definitions (:definitions request) :analysis (:resolved-analysis result)
+                         :raw-analysis (:raw-analysis result) :digest-requests (:digest-requests result)
+                         :resolved-digests (:resolved-digests result)}))
+        premise (premise-for library)
+        dependency {:namespace 'example.values :alias 'values :kind :namespace :profile :meta :targets [:jvm]
+                    :visibility :public :refer [] :effects [] :capabilities [] :safety :safe :boundary nil
+                    :semantic-span {:dependency-ordinal 0} :source-span {:source "<kernel>" :form-index 0}
+                    :dependency-artifact-id (sha256-text "ignored-header") :foreign-record-complete? true}
+        reference {:syntax-id (sha256-text "use") :symbol 'values/identity-i64 :qualifier 'values :name 'identity-i64
+                   :position :expression :scope-chain [] :semantic-span {:ordinal 0} :source-span {:source "<kernel>"}}
+        caller (assoc (module-policy-input 'example.consumer [] [] [dependency] [reference]) :module-premises [premise])
+        prepared (:request (invoke 'sh06-module-prepare [caller]))
+        result (invoke 'sh06-build-resolution-template [caller])
+        imported (first (:import-bindings prepared))
+        original (first (filter #(= 'identity-i64 (:name %)) (get-in premise [:analysis :binding-table])))
+        reason #(get-in (invoke 'sh06-build-resolution-template [%]) [:diagnostics 0 :facts :reason])
+        rule #(get-in (invoke 'sh06-build-resolution-template [%]) [:diagnostics 0 :rule])]
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= (:artifact-id premise) (get-in prepared [:imports 0 :dependency-artifact-id]) (:definition-artifact-id imported)))
+    (is (= (:definition-syntax-id original) (:definition-syntax-id imported)))
+    (is (= (:binding-id original) (get-in imported [:semantic-span :origin-binding-id])))
+    (is (not (contains? (get-in imported [:semantic-span :origin-definition]) :source-span)))
+    (is (= :missing-module-artifact (reason (assoc caller :module-premises [] :references []))))
+    (is (= "C5-PRIVATE" (rule (assoc-in caller [:references 0 :name] 'hidden))))
+    (is (= "C5-PRIVATE" (rule (-> caller (assoc :references []) (assoc-in [:imports 0 :refer] '[hidden])))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:references 0 :name] 'missing))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:references 0 :qualifier] nil))))
+    (is (= :accepted (:status (invoke 'sh06-build-resolution-template [(-> caller
+               (assoc-in [:references 0 :qualifier] nil) (assoc-in [:imports 0 :refer] '[identity-i64]))]))))
+    (is (= "C5-AMBIGUOUS" (rule (assoc caller :module-premises [premise premise]))))
+    (is (= "C5-ALIAS" (rule (update caller :imports conj dependency))))
+    (let [repeated (-> caller (update :imports conj (assoc dependency :alias 'also-values))
+                       (update :imports conj (assoc dependency :alias nil :refer '[identity-i64])))
+          normalized (:request (invoke 'sh06-module-prepare [repeated]))]
+      (is (= :accepted (:status (invoke 'sh06-build-resolution-template [repeated]))))
+      (is (= :accepted (:status (invoke 'sh06-build-resolution-template
+                                        [(assoc-in repeated [:references 0 :qualifier] 'example.values)]))))
+      (is (= :accepted (:status (invoke 'sh06-build-resolution-template
+                                        [(-> repeated (assoc-in [:references 0 :qualifier] nil)
+                                             (update :imports conj (assoc dependency :alias nil :refer '[identity-i64])))]))))
+      (is (= 2 (count (:import-bindings normalized))))
+      (is (= 3 (count (:imports normalized)))))
+    (doseq [[expected altered] [["C5-TARGET" (assoc-in caller [:module :target] :wasm)]
+                               ["C5-CROSS-PROFILE" (assoc-in caller [:module :profile] :hosted)]]]
+      (is (= expected (rule altered))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:module-premises 0 :definitions 0 :definition-syntax-id] (sha256-text "forged")))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:module-premises 0 :analysis :exports] '[fabricated]))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:module-premises 0 :analysis :dependency-graph :edges]
+                                          [{:from 'example.values :to 'fabricated}]))))
+    (is (= :accepted (:status (invoke 'sh06-build-resolution-template
+                              [(assoc-in caller [:references 0 :qualifier] 'example.values)]))))
+    (is (= "C5-UNRESOLVED" (rule (assoc-in caller [:module :exports] '[fabricated]))))
+    (is (= [(:artifact-id premise)] (get-in (run caller) [:resolved-analysis :incremental-invalidation-inputs :module-artifact-ids])))
+    (let [a0 (module-policy-input 'example.consumer [] [] [] [])
+          b (-> library
+                (assoc :imports [(assoc dependency :namespace 'example.consumer :alias 'consumer)]
+                       :module-premises [(premise-for a0)]))
+          cyclic (assoc caller :module-premises [(premise-for b)])]
+      (is (= "C5-CYCLE" (rule cyclic))))
+    (let [other (module-policy-input 'example.other '[identity-i64] '[identity-i64] [] [])
+          ambiguous (-> caller
+                        (assoc :module-premises [premise (premise-for other)])
+                        (assoc-in [:imports 0 :refer] '[identity-i64])
+                        (update :imports conj (assoc dependency :namespace 'example.other :alias 'other :refer '[identity-i64]))
+                        (assoc-in [:references 0 :qualifier] nil))]
+      (is (= "C5-AMBIGUOUS" (rule ambiguous))))
+    (let [impure-core (-> library
+                          (assoc-in [:module :profile] :core)
+                          (assoc-in [:module :effects] [:io/write])
+                          (update :definitions #(mapv (fn [d] (assoc d :profile-set [:core] :effects [:io/write])) %)))
+          same-profile (-> caller (assoc-in [:module :profile] :core)
+                           (assoc :module-premises [(premise-for impure-core)]))
+          prepared (:request (invoke 'sh06-module-prepare [same-profile]))]
+      (is (= :accepted (:status (invoke 'sh06-build-resolution-template [same-profile]))))
+      (is (nil? (get-in prepared [:imports 0 :boundary]))))
+    (doseq [[expected target effects capabilities grants]
+            [[nil :jvm [] [] []] ["C5-TARGET" :wasm [] [] []]
+             ["C5-CAPABILITY" :jvm [] [:fs/read] []]
+             ["C5-CROSS-PROFILE" :jvm [:filesystem/read] [:fs/read] [:fs/read]]]]
+      (let [request (-> library (assoc-in [:module :profile] :core) (assoc-in [:module :target] target)
+                        (assoc-in [:module :effects] effects) (assoc-in [:module :capabilities] capabilities)
+                        (update :definitions #(mapv (fn [d] (assoc d :profile-set [:core] :target-set [target]
+                                                                   :effects effects :capabilities capabilities)) %)))
+            changed (-> caller (assoc :module-premises [(premise-for request)]) (assoc-in [:module :capabilities] grants))
+            result (invoke 'sh06-build-resolution-template [changed])]
+        (is (= expected (get-in result [:diagnostics 0 :rule])) (pr-str (:diagnostics result)))
+        (when-not expected (is (= :accepted (:status result))))))
+    (is (= (get-in caller [:imports 0 :source-span]) (get-in (invoke 'sh06-build-resolution-template
+                       [(assoc caller :module-premises [])]) [:diagnostics 0 :source-span])))))
+
+(deftest sh06-ordinary-and-strict-request-routing-remain-distinct
+  (let [source-path "<module-route>.gravity"
+        parent (bootstrap/sh05-macro-source-artifact source-path
+                 "(ns example.route (:profile :meta) (:target :jvm))")
+        base (bootstrap/sh06-resolution-base-request source-path parent)
+        ordinary (bootstrap/sh06-resolution-request source-path parent)
+        context {:strict-source-context :sentinel}
+        calls (atom [])]
+    (is (= :gravity/sh06-authenticated-c4-resolution-request (:artifact base)))
+    (is (= 1 (:schema-version base)))
+    (is (= :gravity/sh06-ordinary-module-resolution-request (:artifact ordinary)))
+    (is (= 2 (:schema-version ordinary)))
+    (with-redefs [bootstrap/sh06-resolution-base-request
+                  (fn [& args] (swap! calls conj args) :strict-dispatch)]
+      (is (= :strict-dispatch (bootstrap/sh06-resolution-request source-path parent context))))
+    (is (= [[source-path parent context]] @calls))
+    ;; These existing SOURCE authority paths hash the v1 base. This is a
+    ;; structural routing regression check, not SOURCE admission evidence.
+    (doseq [[suffix expected-count] [["" 0] ["-12" 1] ["-14" 2] ["-18" 1]]]
+      (let [text (slurp (path (str "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00945-p15-s23-sh07-b51-plan-linker" suffix ".clj")))]
+        (is (not (re-find #"\bsh06-resolution-request\b" text)))
+        (if (zero? expected-count)
+          (is (str/includes? text "sh06-resolution-base-request"))
+          (is (= expected-count (count (re-seq #"\(sh06-resolution-base-request\b" text)))))))))
+
+(deftest sh06-ordinary-module-authenticated-composition
+  (let [results
+        (mapv
+         (fn [extension]
+           (let [library (bootstrap/sh06-resolution-file-artifact (fixture-path "modules" "values" extension))
+                 inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+                 caller (bootstrap/compiler-c5-resolution-file-artifact (fixture-path "modules" "consumer" extension) inputs)
+                 lib-binding (first (filter #(and (= :namespace (:binding-class %)) (= 'identity-i64 (:name %)))
+                                            (get-in library [:binding-table :bindings])))
+                 imported (first (filter #(= 'identity-i64 (:name %)) (filter #(= :import (:binding-class %))
+                                                                                    (get-in caller [:binding-table :bindings]))))
+                 alias (first (get-in caller [:alias-table :aliases]))
+                 core-artifact (bootstrap/sh07-core-from-resolution-artifact caller)
+                 core (get-in core-artifact [:gravity-core-boundary :canonical-core-artifact])
+                 call (first (:calls core))
+                 operator (first (filter #(= (:node-id %) (:operator-node-id call)) (:nodes core)))
+                 binding (first (filter #(= (:binding-id %) (get-in operator [:attributes :binding-id]))
+                                        (get-in core-artifact [:gravity-core-boundary :authenticated-core-request :binding-table])))]
+             (is (= :accepted (:status library) (:status caller) (:status core-artifact)))
+             (is (= :passed (:status (verification library)) (:status (verification caller))))
+             (is (= (:artifact-id library) (:dependency-artifact-id alias) (:definition-artifact-id imported)
+                    (:definition-artifact-id binding)))
+             (is (= (:binding-id imported) (:upstream-binding-id binding)))
+             (is (= (:definition-syntax-id lib-binding) (:definition-syntax-id imported)
+                    (:definition-syntax-id binding) (get-in operator [:attributes :definition-syntax-id])))
+             (is (= (:binding-id lib-binding) (get-in imported [:semantic-span :origin-binding-id])))
+             (is (= [(:artifact-id library)] (get-in caller [:incremental-invalidation-keys :inputs :module-artifact-ids])))
+             (is (= 1 (count (:calls core))))
+             (is (= :nonlocal-or-nonfunction (get-in core [:call-edges 0 :classification])))
+             (is (= :passed (:status (bootstrap/sh07-core-artifact-verification core-artifact))))
+             (require 'gravity.self-hosting.sh08-function-call-type-test)
+             (let [typed ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'function-result) core-artifact)]
+               (is (= :rejected (:status typed)))
+               (is (= :missing-imported-function-typing (get-in typed [:diagnostics 0 :reason]))))
+             {:library library :caller caller :core core-artifact}))
+         [".gravity" ".qst"])]
+    (is (= (get-in results [0 :library :artifact-id]) (get-in results [1 :library :artifact-id])))
+    (is (= (get-in results [0 :caller :artifact-id]) (get-in results [1 :caller :artifact-id])))
+    (is (= (get-in results [0 :core :artifact-id]) (get-in results [1 :core :artifact-id])))))
+
+(deftest sh06-ordinary-module-origin-negative-and-replay-composition
+  (with-redefs-fn {(private-bootstrap-var 'sh06-resolution-cached-binding) (atom nil)}
+    (fn []
+      (let [library-path (fixture-path "modules" "values" ".gravity")
+            caller-path (fixture-path "modules" "consumer" ".gravity")
+            text (slurp caller-path)
+            library (bootstrap/sh06-resolution-file-artifact library-path)
+            inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+            caller (bootstrap/sh06-resolution-source-artifact caller-path text inputs)
+            core-request (bootstrap/sh07-core-authenticated-request caller)
+            imported (first (filter #(and (= :import (:binding-class %)) (= 'identity-i64 (:name %)))
+                                    (get-in caller [:binding-table :bindings])))
+            rows (filter #(= (:binding-id imported) (:upstream-binding-id %)) (:binding-table core-request))
+            row (first rows)
+            reject (fn [source supplied]
+                     (try (bootstrap/compiler-c5-resolution-source-artifact caller-path source supplied)
+                          {:unexpected-success true}
+                          (catch clojure.lang.ExceptionInfo e (ex-data e))))]
+        (is (= :accepted (:status library) (:status caller)))
+        (is (= 1 (count rows)))
+        (is (= (:artifact-id library) (:definition-artifact-id imported) (:definition-artifact-id row)))
+        (is (= (:binding-id imported) (:upstream-binding-id row)))
+        (is (= (:definition-syntax-id imported) (:definition-syntax-id row)))
+        (is (some #(= (:binding-id row) (:binding-id %)) (:resolution-table core-request)))
+        (let [missing (try
+                        (bootstrap/compiler-c5-resolution-source-artifact caller-path
+                          (str/replace text "(values/identity-i64 x)" "x"))
+                        {:unexpected-success true}
+                        (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+          (is (= "C5-UNRESOLVED" (:id missing)))
+          (is (= :missing-module-artifact (get-in missing [:facts :reason])) (pr-str missing))
+          (is (= 'example.values (get-in missing [:dependency-edge :namespace])))
+          (is (= 'values (get-in missing [:dependency-edge :alias])))
+          (is (= caller-path (get-in missing [:source-span :source]))))
+        (doseq [[symbol expected] [["private-i64" "C5-PRIVATE"] ["missing-i64" "C5-UNRESOLVED"]]]
+          (let [failure (reject (str/replace text "values/identity-i64" (str "values/" symbol)) inputs)]
+            (is (= expected (:id failure)) (pr-str failure))
+            (is (= :name-resolution (:stage failure)))
+            (is (= caller-path (get-in failure [:source-span :source])))))
+        (doseq [forged [(assoc-in library [:import-export-table :exports] '[fabricated])
+                        (assoc-in library [:binding-table :bindings 0 :definition-syntax-id] (sha256-text "forged"))
+                        (assoc-in library [:sh05-macro-artifact :artifact-id] (sha256-text "stale-source"))]]
+          (let [failure (try
+                          (bootstrap/sh06-resolution-module-input-views! caller-path (assoc inputs :module-artifacts [forged]))
+                          {:unexpected-success true}
+                          (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+            (is (= "C5-UNRESOLVED" (:id failure)))
+            (is (= :invalid-module-artifact (get-in failure [:facts :reason])))))
+        (let [serialized (bootstrap/sh06-resolution-serialize caller)
+              restored (bootstrap/sh06-resolution-deserialize serialized)]
+          (is (= caller restored))
+          (is (= :passed (:status (verification restored))))
+          (is (= (:artifact-id library)
+                 (get-in restored [:gravity-resolution-boundary :module-inputs :module-artifacts 0 :artifact-id]))))
+        (let [changed-source (str/replace (slurp library-path) "(:exports [identity-i64])" "(:exports [identity-i64 private-i64])")
+              changed-library (bootstrap/sh06-resolution-source-artifact library-path changed-source)
+              changed (bootstrap/sh06-resolution-source-artifact caller-path text
+                       (assoc inputs :module-artifacts [changed-library]))]
+          (is (not= (:artifact-id library) (:artifact-id changed-library)))
+          (is (not= (:artifact-id caller) (:artifact-id changed)))
+          (is (not= (get-in caller [:incremental-invalidation-keys :invalidation-id])
+                    (get-in changed [:incremental-invalidation-keys :invalidation-id]))))))))
+
+(deftest sh06-ordinary-seed-build-does-not-call-public-frontdoors
+  (let [frontdoors (mapv required-var '[compiler-c4-macro-source-artifact compiler-c5-resolution-source-artifact compiler-c6-lowering-source-artifact])
+        forbidden (fn [& _] (throw (ex-info "Seed compilation reached a public frontdoor" {:id "SH06-SEED-FRONTDOOR"})))
+        binding (with-redefs-fn (zipmap frontdoors (repeat forbidden))
+                  #(bootstrap/sh06-resolution-build-binding! "<seed-frontdoor-kernel>"))]
+    (is (= :clojure-stage0-seed (:compiled-by binding)))
+    (is (= :development-unadmitted (:revision-status binding)))
+    (is (false? (:self-hosted? binding)))
+    (is (= (:source-content-hash binding) (sha256-text (:source-text binding))))))
+
+(deftest sh06-atomic-signature-type-namespace-development-kernel
+  (let [binding (bootstrap/sh06-resolution-current-binding! "<type-namespace-kernel>")
+        plan (:plan binding)
+        invoke #(bootstrap/sh06-resolution-execute! "<type-namespace-kernel>" binding %1 %2)
+        core (bootstrap/sh06-resolution-core-record 'I64 :type 0)
+        variable (assoc core :kind :var :namespace 'demo.types :binding-class :namespace
+                            :definition-syntax-id "var-I64")
+        var-only (assoc variable :name 'OnlyVar)
+        local {:name 'I64 :kind :local}
+        local-binding {:name 'I64 :kind :local :binding-class :lexical :scope-id :scope :binding-id :local}
+        bindings [(assoc core :binding-id :core) (assoc variable :binding-id :var)
+                  (assoc var-only :binding-id :var-only) local-binding]
+        request {:module {:namespace 'demo.types} :definitions [variable var-only]
+                 :core-bindings [core] :imports [] :import-bindings []
+                 :lexical-scopes [{:scope-id :scope :bindings [local]}]}
+        reference {:position :type :qualifier nil :symbol 'I64 :name 'I64 :scope-chain [:scope]}]
+    (is (= :development-unadmitted (:revision-status binding)))
+    (is (false? (:self-hosted? binding)))
+    (is (identical? binding (bootstrap/sh06-resolution-current-binding! "<same-input>")))
+    (is (= (:source-content-hash binding) (get-in plan [:source :sha256])))
+    (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates [request bindings reference]))))
+    (is (= [:local] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                            [request bindings (assoc reference :position :expression)]))))
+    (is (= [] (invoke 'sh06-reference-candidates [request bindings (assoc reference :symbol 'OnlyVar :name 'OnlyVar)])))
+    (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                           [request bindings (assoc reference :qualifier 'gravity.core :symbol 'gravity.core/I64)]))))
+    (is (thrown? clojure.lang.ExceptionInfo (bootstrap/sh06-resolution-read-pinned-source! "<historical-boundary>")))
+    (let [key-var (private-bootstrap-var 'sh06-resolution-current-source-key)
+          captured-var (private-bootstrap-var '*sh06-resolution-operation-binding*)
+          original-key (var-get key-var)]
+      (with-redefs-fn {key-var #(assoc (original-key) :source [:changed :changed])}
+        #(with-bindings {captured-var binding}
+           (is (thrown? clojure.lang.ExceptionInfo
+                        (bootstrap/sh06-resolution-current-binding! "<operation-drift>"))))))))
+
+(deftest sh06-qualified-core-var-development-kernel
+  (let [binding (bootstrap/sh06-resolution-current-binding! "<qualified-core-kernel>")
+        invoke #(bootstrap/sh06-resolution-execute! "<qualified-core-kernel>" binding %1 %2)
+        core (bootstrap/sh06-resolution-core-record 'count :var 0)
+        reference {:syntax-id (sha256-text "qualified-count") :symbol 'gravity.core/count
+                   :qualifier 'gravity.core :name 'count :position :operator :scope-chain []
+                   :semantic-span {:ordinal 0} :source-span {:source "<qualified-core-kernel>"}}
+        request (assoc (module-policy-input 'demo.qualified [] [] [] [reference]) :core-bindings [core])
+        candidates (fn [request reference]
+                     (let [records (vec (concat (:definitions request) (:core-bindings request) (:import-bindings request)))
+                           bindings (mapv #(assoc %1 :binding-id %2) records (range))]
+                       (invoke 'sh06-reference-candidates [request bindings reference])))
+        check (fn [request reference]
+                (let [records (vec (concat (:definitions request) (:core-bindings request) (:import-bindings request)))
+                      bindings (mapv #(assoc %1 :binding-id %2) records (range))
+                      result (invoke 'sh06-reference-check [request bindings reference])]
+                  (is (= (:rule result) (invoke 'sh06-reference-rule [request bindings reference])))
+                  result))
+        reject (fn [request reference rule reason]
+                 (let [result (check request reference)]
+                   (is (= rule (:rule result)))
+                   (is (= reason (get-in result [:facts :reason])))
+                   result))]
+    (doseq [position [:operator :expression]]
+      (let [reference (assoc reference :position position)
+            unqualified (assoc reference :symbol 'count :qualifier nil)]
+        (is (= [0] (mapv :binding-id (candidates request reference))))
+        (is (= (candidates request reference) (candidates request unqualified)))
+        (is (nil? (check request reference)))
+        (is (nil? (check request unqualified)))))
+    (let [local {:name 'count :kind :local}
+          request (assoc request :lexical-scopes [{:scope-id :scope :bindings [local]}])
+          bindings [(assoc core :binding-id :core)
+                    (assoc local :scope-id :scope :binding-class :lexical :binding-id :local)]]
+      (is (= [:local] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                       [request bindings (assoc reference :qualifier nil :scope-chain [:scope])]))))
+      (is (= [:core] (mapv :binding-id (invoke 'sh06-reference-candidates
+                                      [request bindings (assoc reference :scope-chain [:scope])])))))
+    (reject request (assoc reference :name 'missing :symbol 'gravity.core/missing)
+            "C5-UNRESOLVED" :no-legal-binding)
+    (reject request (assoc reference :qualifier 'other.core)
+            "C5-ALIAS" :unknown-namespace-alias)
+    (doseq [position [:macro :declaration nil]]
+      (reject request (assoc reference :position position) "C5-UNRESOLVED" :no-legal-binding))
+    (doseq [[kind position] [[:special-form :operator] [:macro :operator] [:type :expression]]]
+      (let [changed (assoc request :core-bindings [(assoc core :kind kind)])]
+        (reject changed (assoc reference :position position) "C5-UNRESOLVED" :no-legal-binding)))
+    (doseq [changed-core [(assoc core :namespace 'other.core) (assoc core :binding-class :import)]]
+      (reject (assoc request :core-bindings [changed-core]) reference "C5-UNRESOLVED" :no-legal-binding))
+    (doseq [owner [{:imports [{:alias 'gravity.core :namespace 'owned.library}]}
+                  {:imports [{:alias 'owned :namespace 'gravity.core}]}
+                  {:definitions [(assoc core :name 'another :kind :function :binding-class :namespace)]}
+                  {:module (assoc (:module request) :namespace 'gravity.core)}]]
+      (reject (merge request owner) reference "C5-UNRESOLVED" :no-legal-binding))
+    (let [private-import (assoc core :binding-class :import :namespace 'owned.library :visibility :private)
+          owned (assoc request :imports [{:alias 'gravity.core :namespace 'owned.library}]
+                               :import-bindings [private-import])]
+      (is (= :import (:binding-class (first (candidates owned reference)))))
+      (reject owned reference "C5-PRIVATE" :private-binding-access))
+    (let [private-core (assoc core :visibility :private :profile-set nil :target-set nil)]
+      (reject (assoc request :core-bindings [private-core]) reference "C5-PRIVATE" :private-binding-access)
+      (reject (assoc request :core-bindings [core private-core]) reference "C5-AMBIGUOUS" :multiple-legal-bindings))
+    (doseq [kind [:var :type :special-form]
+            qualified? [false true]
+            :when (or (= kind :var) (= kind :type) (not qualified?))]
+      (let [reference (assoc reference :qualifier (when qualified? 'gravity.core)
+                                       :position (if (= kind :type) :type :operator))
+            request (assoc request :core-bindings [(assoc core :kind kind)])]
+        (is (nil? (check request reference)))
+        (is (nil? (check (assoc-in request [:core-bindings 0 :target-set] [:all]) reference)))
+        (is (nil? (check (assoc-in request [:core-bindings 0 :target-set] [:jvm]) reference)))
+        (doseq [[key value] [[:profile-set nil] [:profile-set :meta] [:profile-set '(:meta)]
+                            [:profile-set [[:meta]]] [:profile-set [nil]] [:profile-set ["meta"]]
+                            [:target-set nil] [:target-set :all] [:target-set #{:all}]
+                            [:target-set [[:jvm]]] [:target-set ["jvm"]]]]
+          (reject (assoc-in request [:core-bindings 0 key] value) reference
+                  "C5-UNRESOLVED" :malformed-core-binding-availability))
+        (doseq [targets [[] [:llvm]]]
+          (reject (assoc-in request [:core-bindings 0 :target-set] targets) reference
+                  "C5-TARGET" :core-binding-target-excluded))
+        (doseq [profiles [[] [:core] [:native]]]
+          (reject (assoc-in request [:core-bindings 0 :profile-set] profiles) reference
+                  "C5-CROSS-PROFILE" :core-binding-profile-excluded))
+        (reject (-> request (assoc-in [:core-bindings 0 :profile-set] [:core])
+                            (assoc-in [:core-bindings 0 :target-set] [:llvm])) reference
+                "C5-TARGET" :core-binding-target-excluded)))
+    (let [second-reference (assoc reference :qualifier nil :symbol 'count :syntax-id (sha256-text "plain-count"))
+          request (assoc request :references [reference second-reference])
+          result (bootstrap/sh06-resolution-run-request! "<qualified-core-kernel>" binding request)
+          analysis (:resolved-analysis result)
+          rows (:resolution-table analysis)
+          selected (first (filter #(= 'count (:name %)) (:binding-table analysis)))]
+      (is (= 2 (count rows)))
+      (is (apply = (map :binding-id rows)))
+      (is (= 2 (count (set (map :syntax-id rows)))))
+      (is (= [:fully-qualified-namespace-binding :profile-allowed-core-binding] (mapv :resolution-order rows)))
+      (is (= (dissoc core :source-span) (dissoc selected :source-span :binding-id :artifact)))
+      (is (= :passed (:status (invoke 'sh06-verify-resolution-resolved
+                                    [analysis (:digest-requests result) (:resolved-digests result)]))))
+      (doseq [[key value] [[:profile-set [:core]] [:target-set [:llvm]]
+                          [:effects [:io/write]] [:capabilities [:io/stdout]]
+                          [:binding-class :import] [:visibility :private]]]
+        (is (= :failed (:status (invoke 'sh06-verify-resolution-resolved
+                                       [(assoc-in analysis [:binding-table 0 key] value)
+                                        (:digest-requests result) (:resolved-digests result)]))))))))
+
+(deftest sh06-list-parameter-type-projection-development-kernel
+  (let [references (atom [])
+        project (var-get (private-bootstrap-var 'sh06-resolution-analysis-inputs))
+        walk (fn [form]
+               (let [result (project {} {:expanded-syntax-stream
+                                         [{:form form :syntax/id :function
+                                           :span {:source "list-parameter-projection.gravity"}}]} {})]
+                 (reset! references (mapv (juxt :symbol :position) (:references result)))
+                 result))]
+    (let [result (walk '(fn [parts :- (gravity.core/List String) text :- String] :- String parts))]
+      (is (= '[parts text] (mapv :name (:bindings (first (:lexical-scopes result)))))))
+    (is (= '[[fn :operator] [gravity.core/List :type] [String :type] [String :type]
+             [String :type] [parts :expression]] @references))
+    (reset! references [])
+    (walk '(fn [parts :- (UnknownConstructor MissingElement)] parts))
+    (is (= '[[fn :operator] [UnknownConstructor :type] [MissingElement :type] [parts :expression]] @references))
+    (reset! references [])
+    (walk '(fn [parts] :- (List String) parts))
+    (is (= '[[fn :operator] [List :type] [String :type] [parts :expression]] @references))
+    (doseq [form ['(fn named [parts :- (List String)] :- (gravity.core/List gravity.core/String) parts)
+                  '(fn [parts] :- (UnknownConstructor MissingElement) parts)]]
+      (let [result (walk form)]
+        (is (= (if (= 'named (second form))
+                 '[[fn :operator] [List :type] [String :type] [gravity.core/List :type] [gravity.core/String :type] [parts :expression]]
+                 '[[fn :operator] [UnknownConstructor :type] [MissingElement :type] [parts :expression]]) @references))
+        (is (every? #(= (:scope-id (first (:lexical-scopes result))) (first (:scope-chain %)))
+                    (filter #(= :type (:position %)) (:references result))))))
+    (reset! references [])
+    (walk '(fn [parts :- (List (List String))] parts))
+    (is (= '[[fn :operator] [parts :expression]] @references))
+    (doseq [form ['(fn [parts] :- (List) parts) '(fn [parts] :- (List String Bool) parts)
+                  '(fn [parts] :- (List (List String)) parts)]]
+      (walk form)
+      (is (= '[[fn :operator] [parts :expression]] @references)))))
+
+(deftest sh06-atomic-signature-source-type-rejections
+  (doseq [[basename symbol] [["function-annotation-unknown" 'MissingType]
+                             ["function-annotation-var-only" 'OnlyVar]]]
+    (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/" basename)
+          source-path (path (str relative ".gravity"))
+          data (rejection-data source-path)]
+      (is (nil? (:raw-host-error data)) (pr-str data))
+      (is (= "C5-UNRESOLVED" (:id data)))
+      (is (= :name-resolution (:stage data)))
+      (is (= symbol (:symbol data)))
+      (is (= source-path (get-in data [:source-span :source])))
+      (is (string? (:syntax-id data)))
+      (is (seq (:remediation data)))
+      (is (= (slurp source-path) (slurp (path (str relative ".qst"))))))))
+
 (deftest sh06-fixture-inventory-is-co-canonical-and-behavioral
   (testing "the checked-in inventory is explicit and symmetric"
     (is (= accepted-fixtures (fixture-basenames "accepted" ".gravity")))
@@ -328,8 +796,8 @@
          'sh06-resolution-artifact-verification*
          'sh06-resolution-artifact-verification-contained
          'sh06-resolution-capability-based-proof-for-construction]]
-    (is (= '([source-path source-text]) (:arglists (meta source-var))))
-    (is (= '([source-path]) (:arglists (meta file-var))))
+    (is (= '([source-path source-text] [source-path source-text module-inputs]) (:arglists (meta source-var))))
+    (is (= '([source-path] [source-path module-inputs]) (:arglists (meta file-var))))
     (doseq [symbol construction-seams]
       (is (true? (:private (meta (private-bootstrap-var symbol))))
           (str symbol " must remain coordinator-private")))))
@@ -440,12 +908,12 @@
         (doseq [tree [root-a root-b unrelated-cwd]]
           (delete-tree! (.toFile tree)))))))
 
-(deftest sh06-rejections-are-structured-pathful-and-rule-exact
+(deftest sh06-normalized-policy-rejections-are-structured-pathful-and-rule-exact
   (doseq [basename (sort rejected-fixtures)
           extension [".gravity" ".qst"]]
     (let [source-path (fixture-path "rejected" basename extension)
           oracle (rejection-oracle basename extension)
-          data (rejection-data source-path)]
+          data (normalized-policy-rejection source-path (slurp source-path))]
       (testing (str basename extension)
         (is (nil? (:raw-host-error data)))
         (is (nil? (:unexpected-success data)))
@@ -463,7 +931,7 @@
         (is (contains? data :dependency-edge))
         (is (seq (:remediation data)))))))
 
-(deftest sh06-dispatch-does-not-consume-scenario-labels-or-oracles
+(deftest sh06-normalized-policy-does-not-consume-scenario-labels-or-oracles
   (doseq [basename ["unresolved" "ambiguous" "cycle"]]
     (let [source-path (fixture-path "rejected" basename ".gravity")
           source-text (slurp source-path)
@@ -474,11 +942,11 @@
                              "{:request-version 1 :scenario :ignored")
           with-changed-oracle
           (str/replace source-text expected "C5-FOREIGN")
-          baseline (rejection-data-for-source source-path source-text)
+          baseline (normalized-policy-rejection source-path source-text)
           scenario-result
-          (rejection-data-for-source source-path with-ignored-scenario)
+          (normalized-policy-rejection source-path with-ignored-scenario)
           oracle-result
-          (rejection-data-for-source source-path with-changed-oracle)]
+          (normalized-policy-rejection source-path with-changed-oracle)]
       (is (not= source-text with-ignored-scenario) basename)
       (is (not= source-text with-changed-oracle) basename)
       (is (= expected (:id baseline)) basename)
@@ -513,7 +981,7 @@
     (is (not (contains-value? request :sh06)))
     (is (not (contains-expected-key? request)))))
 
-(deftest sh06-semantic-input-substitution-changes-resolution-behavior
+(deftest sh06-normalized-policy-input-substitution-changes-resolution-behavior
   (let [ambiguous-path (fixture-path "rejected" "ambiguous" ".gravity")
         ambiguous-source (slurp ambiguous-path)
         single-candidate
@@ -529,8 +997,8 @@
          ":from self-hosting.sh06.reject.cycle-peer\n                                                   :to self-hosting.sh06.reject.cycle}"
          ":from self-hosting.sh06.reject.cycle-peer\n                                                   :to terminal.module}")
         ambiguous-result
-        (rejection-data-for-source ambiguous-path single-candidate)
-        cycle-result (rejection-data-for-source cycle-path acyclic)]
+        (normalized-policy-rejection ambiguous-path single-candidate)
+        cycle-result (normalized-policy-rejection cycle-path acyclic)]
     (is (not= ambiguous-source single-candidate))
     (is (not= cycle-source acyclic))
     (is (not= "C5-AMBIGUOUS" (:id ambiguous-result)))

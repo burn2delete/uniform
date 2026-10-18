@@ -1,5 +1,3 @@
-
-
 (defn sh07-b13-module-assembly-manifest
   [lineage fragment-manifest]
   (let [content
@@ -77,6 +75,9 @@
                           (:source-revision-id lineage)
                           ordinal (:form syntax)))))
                vec)
+          source-occurrences (sh07-core-source-occurrence-context resolution-artifact executable-syntax)
+          executable-syntax (mapv #(assoc % :sh07/source-occurrences
+                                          (get source-occurrences (:sh07/root-syntax-id %))) executable-syntax)
           root-id-by-upstream-id
           (into {}
                 (map (fn [syntax]
@@ -106,12 +107,12 @@
            raw-traces)
           trace-by-output
           (into {} (map (juxt :output-def-syntax-id identity)) traces)
-          trees
+          trees (sh07-core-source-map-order resolution-artifact executable-syntax
           (mapv
            #(sh07-core-build-form-tree
              source-path (:source-revision-id lineage) decimal-evidence %
              (get trace-by-output (:sh07/root-syntax-id %)))
-           executable-syntax)
+           executable-syntax))
           _ (sh07-core-decimal-evidence-complete!
              source-path decimal-evidence)
           authenticated-sh06-request
@@ -209,7 +210,6 @@
   (mapv #(sh07-core-resolve-reference!
           source-path % resolved-digests)
         values))
-
 (defn sh07-core-semantic-projection-id
   [value]
   (or (get-in value [:lineage :sh06-semantic-projection-id])

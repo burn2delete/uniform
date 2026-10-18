@@ -1,0 +1,5 @@
+(ns self-hosting.sh09.local-body-guard
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn invalid-guard [value :- I64] :- I64
+  (match {:value value} {:value item :when 1} item _ value))

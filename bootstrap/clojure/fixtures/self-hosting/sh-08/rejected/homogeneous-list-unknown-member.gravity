@@ -1,0 +1,6 @@
+(ns example.homogeneous-list-unknown-member
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+
+(defn consume [parts :- (List String)] :- Bool (empty? parts))
+(defn main [value] :- Bool (consume (list value)))

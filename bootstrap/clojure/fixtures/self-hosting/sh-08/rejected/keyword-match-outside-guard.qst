@@ -1,0 +1,10 @@
+(ns self-hosting.sh08.keyword-match-outside-guard
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn invalid [middle :- Keyword]
+  (let [tags [:read middle :write]]
+    (loop [cursor 0]
+      (let [tag (nth tags cursor)]
+        (if (< cursor (count tags))
+          (match tag :read (recur (inc cursor)) unexpected (throw unexpected))
+          cursor)))))

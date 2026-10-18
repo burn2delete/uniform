@@ -1,0 +1,12 @@
+(ns example.literal-consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.literal-library :as library])
+  (:exports [catalog identity relay])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(def catalog {:module :caller})
+(def secret :caller-private)
+(defn shadow [catalog] catalog)
+(defn identity [value]
+  [catalog (let [catalog value] catalog) (shadow value) (quote catalog) secret])
+(defn relay [value] (library/identity value))

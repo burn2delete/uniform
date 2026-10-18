@@ -1,0 +1,14 @@
+(ns self-hosting.sh07-b11.recursive-map-patterns
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B11 :fixture :recursive-map-patterns}))
+
+(defn inspect [value]
+  (match value
+    {:id id :name name :nested {:values [first 'ready '_]}} [id name first]
+    {:k0 _ :k1 _ :k2 _ :k3 _ :k4 _ :k5 _ :k6 _ :k7 _ :k8 _ :k9 _ :k10 _ :k11 _} :wide-shape
+    {} :empty-shape
+    _ :other))

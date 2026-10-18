@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.function-recur-unresolved-slot
+  (:profile :meta) (:target :jvm) (:exports [run])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn again [flag value] :- String
+  (if flag (recur false value) value))
+
+(defn run [] :- String
+  (again true "done"))

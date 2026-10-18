@@ -82,8 +82,10 @@
           :loop (concat (map :expr (:bindings instruction))
                         (:body instruction))
           :recur (:args instruction)
+          :throw [(:value instruction)]
           :builtin-call (:args instruction)
           :function-call (:args instruction)
+          :compiler-module-call (:args instruction)
           :vector-literal (:items instruction)
           :set-literal (:items instruction)
           :map-literal (mapcat (fn [{:keys [key value]}] [key value])

@@ -11,6 +11,7 @@
    [:plan-binding [:gravity-resolution-boundary :plan-binding]]
    [:authenticated-resolution-request
     [:gravity-resolution-boundary :authenticated-resolution-request]]
+   [:module-inputs [:gravity-resolution-boundary :module-inputs]]
    [:raw-template-result
     [:gravity-resolution-boundary :raw-template-result]]
    [:raw-analysis [:gravity-resolution-boundary :raw-analysis]]
@@ -66,7 +67,7 @@
         (and (map? artifact)
              (= sh06-resolution-artifact-keys (set (keys artifact)))
              (map? boundary)
-             (= sh06-resolution-boundary-keys (set (keys boundary))))]
+             (= (sh06-resolution-boundary-keys-for boundary) (set (keys boundary))))]
     {:aggregate aggregate
      :components
      (when exact-shape?

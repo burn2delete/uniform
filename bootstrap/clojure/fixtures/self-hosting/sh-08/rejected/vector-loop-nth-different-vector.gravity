@@ -1,0 +1,9 @@
+(ns self-hosting.sh08.vector-loop-nth-different-vector
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn invalid [middle :- Bool failure :- String]
+  (let [flags [true middle true] other [true middle true]]
+    (loop [cursor 0]
+      (if (< cursor (count flags))
+        (if (nth other cursor) (recur (inc cursor)) (throw failure))
+        cursor))))

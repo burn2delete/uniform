@@ -1,9 +1,11 @@
-
+(declare p15-s23-stage2-module-entry-scope! p15-s23-stage2-module-scope? p15-s23-stage2-module-execute-function)
 
 (defn- p15-s23-stage2-runtime-execute-function-scoped
   [runtime plan callee args public-invocation-scope]
+  (let [public-invocation-scope
+        (p15-s23-stage2-module-entry-scope! plan callee args public-invocation-scope)]
   (p15-s23-sh07-b51-assert-scoped-function-entry!
-   runtime plan callee args public-invocation-scope)
+   runtime plan callee args (if (p15-s23-stage2-module-scope? public-invocation-scope) nil public-invocation-scope))
   (let [definition (get-in plan [:functions callee])
         params (:params definition)
         instructions (:instructions definition)]
@@ -28,12 +30,13 @@
                :function-arity-mismatch))
             (recur
              (p15-s23-stage2-runtime-bind-values {} params values)))
-          result)))))
+          result))))))
 
 (defn p15-s23-stage2-runtime-execute-function
   [runtime plan callee args]
-  (p15-s23-stage2-runtime-execute-function-scoped
-   runtime plan callee args nil))
+  (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
+    (p15-s23-stage2-module-execute-function runtime plan callee args)
+    (p15-s23-stage2-runtime-execute-function-scoped runtime plan callee args nil)))
 
 (defn p15-s23-stage2-runtime-artifact-invoke
   "Generic host runner for a Gravity-authored runtime function plan.

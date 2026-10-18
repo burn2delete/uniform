@@ -5,7 +5,28 @@
  semantic-late-sh06-resolution-analysis-inputs-make-traversal
  [parameter-names add-reference! add-scope!]
  (clojure.core/letfn
-  [(walk-form
+  [(walk-types [parameters scope-chain syntax]
+     (loop [remaining (seq parameters)]
+       (when (seq remaining)
+         (if (= ':- (first remaining))
+           (do (let [type (second remaining)]
+                 (if (symbol? type)
+                   (walk-form type scope-chain syntax :type)
+                   (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+                     (doseq [item type] (walk-form item scope-chain syntax :type)))))
+               (recur (nnext remaining)))
+           (recur (next remaining))))))
+   (walk-function-body [body scope-chain syntax]
+     (let [annotated? (= ':- (first body))]
+       (when annotated?
+         (let [type (second body)]
+           (if (and (symbol? type) (not= ':- type))
+             (walk-form type scope-chain syntax :type)
+             (when (and (seq? type) (= 2 (count type)) (every? symbol? type))
+               (doseq [item type] (walk-form item scope-chain syntax :type))))))
+       (doseq [item (if annotated? (drop 2 body) body)]
+         (walk-form item scope-chain syntax :expression))))
+   (walk-form
     [value scope-chain syntax position]
     (cond
      (symbol? value)
@@ -31,9 +52,8 @@
          scope-id
          (add-scope! (:syntax/id syntax) (first scope-chain) names (:span syntax))]
         (add-reference! 'defn scope-chain syntax :operator (:span syntax))
-        (doseq
-         [item (drop 3 value)]
-         (walk-form item (cons scope-id scope-chain) syntax :expression)))
+        (walk-types parameters (cons scope-id scope-chain) syntax)
+        (walk-function-body (drop 3 value) (cons scope-id scope-chain) syntax))
        (= operator 'fn)
        (let
         [named?
@@ -47,7 +67,8 @@
          scope-id
          (add-scope! (:syntax/id syntax) (first scope-chain) names (:span syntax))]
         (add-reference! 'fn scope-chain syntax :operator (:span syntax))
-        (doseq [item body] (walk-form item (cons scope-id scope-chain) syntax :expression)))
+        (walk-types parameters (cons scope-id scope-chain) syntax)
+        (walk-function-body body (cons scope-id scope-chain) syntax))
        (= operator 'match)
        (do
         (add-reference! 'match scope-chain syntax :operator (:span syntax))
@@ -59,12 +80,15 @@
           (let
            [scope-id (add-scope! (:syntax/id syntax) (first scope-chain) [pattern] (:span syntax))]
            (walk-form branch (cons scope-id scope-chain) syntax :expression))
-          (and (vector? pattern) (sh06-fixed-vector-pattern? pattern))
+          (and (or (vector? pattern) (map? pattern))
+               (sh06-fixed-vector-pattern? (if (map? pattern) (dissoc pattern :when) pattern)))
           (when-let
            [binding-paths (sh06-unique-match-binding-paths pattern [])]
            (if
             (empty? binding-paths)
-            (walk-form branch scope-chain syntax :expression)
+            (do (when (and (map? pattern) (contains? pattern :when))
+                  (walk-form (:when pattern) scope-chain syntax :expression))
+                (walk-form branch scope-chain syntax :expression))
             (let
              [scope-id
               (add-scope!
@@ -72,6 +96,8 @@
                (first scope-chain)
                (mapv :name binding-paths)
                (:span syntax))]
+             (when (and (map? pattern) (contains? pattern :when))
+               (walk-form (:when pattern) (cons scope-id scope-chain) syntax :expression))
              (walk-form branch (cons scope-id scope-chain) syntax :expression))))
           (or
            (= '_ pattern)
@@ -81,7 +107,9 @@
            (number? pattern)
            (char? pattern)
            (string? pattern)
-           (keyword? pattern))
+           (keyword? pattern)
+           (and (seq? pattern) (= 2 (count pattern))
+                (= 'quote (first pattern)) (symbol? (second pattern))))
           (walk-form branch scope-chain syntax :expression)
           :else
           nil)))

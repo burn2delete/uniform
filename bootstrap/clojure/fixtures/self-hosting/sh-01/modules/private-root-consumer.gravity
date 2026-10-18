@@ -1,0 +1,10 @@
+; Explicit unadmitted interpreter entry remains inside the root module.
+(ns example.private-root-consumer
+  (:profile :meta) (:target :jvm)
+  (:requires [example.seed-library :as library])
+  (:exports [public-entry catalog])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(def catalog {:kind :exported-data})
+(defn private-relay [value] (library/identity value))
+(defn public-entry [value] (private-relay value))

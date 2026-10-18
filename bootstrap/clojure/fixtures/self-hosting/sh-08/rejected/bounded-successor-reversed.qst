@@ -1,0 +1,6 @@
+(ns self-hosting.sh08.bounded-successor-reversed
+  (:profile :meta) (:target :jvm) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+(defn invalid []
+  (let [values [true "value" :done]]
+    (loop [i 0]
+      (if (< (count values) i) (recur (inc i)) i))))

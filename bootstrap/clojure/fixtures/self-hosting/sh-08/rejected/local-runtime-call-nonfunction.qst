@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.local-runtime-call-nonfunction
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(def value "value")
+(defn main [] :- String (value))

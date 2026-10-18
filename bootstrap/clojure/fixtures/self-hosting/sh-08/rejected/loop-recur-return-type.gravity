@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.reject.loop-recur-return-type
+  (:profile :meta) (:target :jvm) (:exports [run])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn run [] :- String
+  (loop [again true value 7]
+    (if again (recur false value) value)))

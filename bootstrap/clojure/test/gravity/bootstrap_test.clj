@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
+            [gravity.digest :as digest]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
@@ -32306,6 +32307,116 @@
          (bootstrap/p15-s23-c6c10-canonical-digest source-path 1.250M))
         "decimal scale is part of exact canonical identity")))
 
+(deftest gravity-c6c10-streamed-digest-preserves-record-bytes
+  (let [source "/tmp/gravity-canonical-stream-parity.gravity"
+        supplementary (String. (Character/toChars 0x1f642))
+        prefix-size (count "[:gravity/canonical-edn-v1 [:string \"")
+        boundary-strings (for [boundary [8192 16384] delta [-1 0 1]]
+                           (str (apply str (repeat (+ (- boundary prefix-size) delta) "x"))
+                                supplementary "\u00e9\u03bb\u0000\n\"\\"))
+        scalars [nil false true -17 0 9223372036854775807N 3/4 -7/9
+                 1.25M 1.250M "" "\u00e9\u03bb\ud83d\ude42\u0000\n\t\"\\"
+                 \newline (char 0x03bb) :plain :ns/key 'plain 'ns/name]
+        containers (for [size (range 25)]
+                     [(vec (range size)) (apply list (range size))
+                      (into (sorted-map) (map #(vector (keyword (str "key-" %)) [size %]) (range size)))
+                      (set (map #(vector :item %) (range size)))])
+        values (concat scalars boundary-strings containers)
+        legacy (fn [value] (str "sha256:" (bootstrap/sha256-hex
+                                           (:text (bootstrap/p15-s23-c6c10-canonical-record source value)))))]
+    (doseq [value values]
+      (is (= (legacy value) (bootstrap/p15-s23-c6c10-canonical-digest source value))))
+    (let [value {:ns/key [(apply list scalars) (set (range 12))]}
+          expected (legacy value)]
+      (binding [*print-length* 1 *print-level* 1 *print-meta* true
+                *print-dup* true *print-readably* false *print-namespace-maps* true]
+        (is (= expected (bootstrap/p15-s23-c6c10-canonical-digest source value)))))
+    (is (not= (legacy [1 2]) (legacy (list 1 2))))
+    (is (not= (legacy 1.25M) (legacy 1.250M)))
+    (let [original digest/sha256-output-hex callback-count (atom 0)]
+      (with-redefs [digest/sha256-output-hex
+                    (fn [emit!]
+                      (original (fn [^java.io.OutputStream output]
+                                  (swap! callback-count inc)
+                                  (emit! output)
+                                  ;; UTF-8 writer completion closes its byte sink
+                                  ;; before the digest primitive finalizes SHA.
+                                  (is (thrown? java.io.IOException (.write output (int 0)))))))]
+        (is (= (legacy "\ud83d\ude42")
+               (bootstrap/p15-s23-c6c10-canonical-digest source "\ud83d\ude42"))))
+      (is (= 1 @callback-count)))))
+
+(deftest gravity-c6c10-identity-and-digest-do-not-materialize-record-text
+  (let [source "/tmp/gravity-canonical-no-text.gravity"
+        value {:ns/key [1 1.250M (list true nil) #{:a :b}]}
+        record (bootstrap/p15-s23-c6c10-canonical-record source value)
+        expected (str "sha256:" (bootstrap/sha256-hex (:text record)))
+        original-pr-str pr-str]
+    (with-redefs [bootstrap/p15-s23-c6c10-canonical-record
+                  (fn [& _] (throw (AssertionError. "record text must not be requested")))
+                  clojure.core/pr-str
+                  (fn [& args]
+                    (when (and (= 1 (count args)) (vector? (first args))
+                               (= :gravity/canonical-edn-v1 (first (first args))))
+                      (throw (AssertionError. "complete canonical text must not be allocated")))
+                    (apply original-pr-str args))]
+      (is (= (:form record) (bootstrap/p15-s23-c6c10-canonical-identity source value)))
+      (is (= expected (bootstrap/p15-s23-c6c10-canonical-digest source value))))))
+
+(deftest gravity-c6c10-streamed-digest-preserves-rejections-and-errors
+  (let [source "/tmp/gravity-canonical-stream-rejections.gravity"
+        rejected [(with-meta {:a 1} {:hostile true}) (->ReaderCanonicalCollisionRecord 1)
+                  (into {} (map #(vector % %) (range 129))) (nth (iterate vector 0) 65)
+                  (.shiftLeft java.math.BigInteger/ONE 256)
+                  (/ (.shiftLeft java.math.BigInteger/ONE 256) 3N)
+                  (java.math.BigDecimal. java.math.BigInteger/ONE 65537)
+                  (str "bad-" (char 0xd800)) (char 0xd800) 1.0
+                  (vec (repeat 128 (vec (repeat 128 (vec (range 4))))))
+                  (apply str (repeat 65537 "x"))
+                  [(vec (repeat 128 (apply str (repeat 65536 "x")))) "x"]]]
+    (doseq [value rejected]
+      (let [expected (diagnostic-data #(bootstrap/p15-s23-c6c10-canonical-record source value))]
+        (is (some? expected))
+        (is (= expected (diagnostic-data #(bootstrap/p15-s23-c6c10-canonical-identity source value))))
+        (is (= expected (diagnostic-data #(bootstrap/p15-s23-c6c10-canonical-digest source value)))))))
+  (doseq [failure [(java.io.IOException. "encoder output failure")
+                   (AssertionError. "encoder output error")]]
+    (let [finalized? (atom false)
+          output (proxy [java.io.OutputStream] []
+                   (write ([value] (throw failure))
+                          ([value offset length] (throw failure))))
+          caught (try
+                   (with-redefs [digest/sha256-output-hex
+                                 (fn [emit!]
+                                   (emit! output)
+                                   (reset! finalized? true)
+                                   "partial-hash-must-not-escape")]
+                     (bootstrap/p15-s23-c6c10-canonical-digest "<encoder-failure>" "value"))
+                   (catch Throwable observed observed))]
+      (is (identical? failure caught))
+      (is (false? @finalized?))))
+  (doseq [[primary secondary] [[(ex-info "primary print failure" {}) (AssertionError. "secondary close error")]
+                                [(AssertionError. "primary print error") (java.io.IOException. "secondary close failure")]]]
+    (let [original-pr pr finalized? (atom false)
+          output (proxy [java.io.OutputStream] []
+                   (write ([value] (throw secondary))
+                          ([value offset length] (throw secondary))))
+          caught (try
+                   (with-redefs [digest/sha256-output-hex
+                                 (fn [emit!]
+                                   (emit! output)
+                                   (reset! finalized? true)
+                                   "partial-hash-must-not-escape")
+                                 clojure.core/pr
+                                 (fn [& _]
+                                   (original-pr :buffered-before-primary)
+                                   (throw primary))]
+                     (bootstrap/p15-s23-c6c10-canonical-digest "<primary-and-close-failure>" "value"))
+                   (catch Throwable observed observed))]
+      (is (identical? primary caught))
+      (is (false? @finalized?))
+      (is (some #(identical? secondary %) (.getSuppressed primary))))))
+
 (deftest gravity-c6c10-strict-map-order-caches-sort-keys
   (let [source-path "/tmp/gravity-c6c10-strict-map-order.gravity"
         value (into {}
@@ -32358,7 +32469,7 @@
                  :public-function-shapes])
                copied-identities))))))
 
-(deftest p15-s23-stage2-compiler-only-list-predicate-is-contained
+(deftest p15-s23-stage2-list-predicate-is-pure-and-contained
   (let [source-path "/tmp/p15-s23-compiler-list-predicate.gravity"
         compiler-plan
         {:compiler-artifact-plan? true
@@ -32370,17 +32481,16 @@
         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
           compiler-plan 'list? [%])
         outside
-        (diagnostic-data
-         #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
-           {:source {:path source-path}} 'list? [(list :value)]))
+        (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+          {:source {:path source-path}} 'list? [(list :value)])
         wrong-arity
         (diagnostic-data
          #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
            compiler-plan 'list? []))]
     (is (true? (invoke (list :value))))
     (is (false? (invoke [:value])))
-    (is (= "L2-BUILTIN-ERROR" (:id outside)))
-    (is (= 'list? (:function outside)))
+    (is (true? outside))
+    (is (false? (bootstrap/p15-s23-stage2-compiler-artifact-plan-context? compiler-plan)))
     (is (= "L2-BUILTIN-ARITY" (:id wrong-arity)))
     (is (= 1 (:expected-arity wrong-arity)))
     (is (= 0 (:actual-arity wrong-arity)))))

@@ -1,0 +1,6 @@
+(ns self-hosting.sh08.function-pattern-alias-missing
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn invalid [value :- I64] :- I64
+  (match [{:value value}]
+    [packet]
+    (match packet {:absent item} item)))

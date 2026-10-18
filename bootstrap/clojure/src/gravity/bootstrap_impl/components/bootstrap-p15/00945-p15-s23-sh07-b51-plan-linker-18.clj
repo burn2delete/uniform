@@ -76,7 +76,7 @@
                                      [:resolution-artifact :sh05-macro-artifact])]
                     (p15-s23-sh07-b51-c5-external-binding-authority
                      ordinal source sh05
-                     (sh06-resolution-request (:path source) sh05) preimage)))
+                     (sh06-resolution-base-request (:path source) sh05) preimage)))
                 (range 7) sources transactions)
           contexts (mapv #(p15-s23-sh07-b51-sh06-context
                            % (:sh06-resolution-plan-authority products))

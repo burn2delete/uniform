@@ -38,6 +38,87 @@ Implementations may vary by backend, but equality, iteration order where specifi
 - Protocols: `Seqable`, `Associative`, `Indexed`, `Counted`, `Reducible`, `Buildable`, `Hashable`, and `ComparableCollection`.
 - Bounded systems APIs: `fixed-vector`, `ring-buffer`, `static-map`, and `memory-view`.
 
+## Persistent Vector Value Equality
+
+For two persistent Vectors whose stored values support Gravity equality,
+`(= left right)` returns true exactly when their counts agree and corresponding
+stored values are equal under their applicable Gravity value rules. Position
+and order matter. Stored payloads are not evaluated, and the original Vectors
+are unchanged; equality is not an object-identity or physical-sharing test.
+
+Ordinary L2 operand evaluation and control-transfer rules apply. This rule
+does not select numeric conversions, cross-collection equality, a storage
+representation or profile support; their governing contracts still apply.
+
+## Map Lookup With An Explicit Default
+
+For maps, `(get map key default)` returns the associated value when the key is
+present, including a stored false or nil, and otherwise returns the default,
+if all operands complete normally. Presence is not a truthiness test.
+
+All three operands are ordinary call arguments under L2: evaluate the map,
+key, then default eagerly, even when the key is present. A control transfer
+aborts invocation; the default is not an implicit thunk or lazy branch.
+Key matching follows STD2 value semantics, and lookup preserves the original
+map. This rule does not select a representation or grant profile support.
+
+## Map Lookup With Established Presence
+
+For maps, when independent facts establish that the evaluated key is present,
+`(get map key)` returns its stored value, including false or nil. The stored
+payload is not evaluated, and the original Map is unchanged. Member-type
+families alone do not establish the identity or presence of a particular key.
+
+Both operands are ordinary L2 arguments: evaluate the Map, then the key, once
+each. A control transfer aborts invocation without requiring a value or presence
+fact for an operand that does not return. This present-key rule does not define
+the result for an absent key, invent a host-null fallback, or select a storage
+representation or profile. Implementations must not assume presence when it is
+unestablished; unsupported cases retain their owning typing diagnostics.
+
+## Persistent Map Removal
+
+For maps, `(dissoc map key)` returns a Map without the association matching
+`key` under STD2 value equality. A missing key returns a value-equivalent
+unchanged Map. Stored false and nil are values, not evidence of absence.
+The original Map and all other stored associations are preserved; stored
+payloads are not evaluated.
+
+Both operands are ordinary L2 arguments evaluated left to right. A control
+transfer aborts invocation. The selected representation must declare possible
+allocation and storage/lifetime policy for both present and absent keys under
+effects, ownership and profile rules. This rule promises neither physical
+sharing nor object identity nor allocation-free execution, and does not grant
+variadic or arbitrary-key implementation support.
+
+## Persistent List Queries
+
+For persistent Lists, `(first items)` returns the first stored value, or nil
+for an empty List. `(rest items)` returns the ordered List suffix after the
+first element, or an empty List when items is empty. `(empty? items)` returns
+Bool true exactly when the List contains no elements, and false otherwise.
+`(count items)` returns the non-negative integer number of stored elements,
+including zero for an empty List.
+The operand is evaluated under L2 before querying its value. These queries
+do not mutate the original List or evaluate stored payloads.
+
+The implementation must declare whether its suffix retains input storage,
+borrows, or copies under the memory and profile rules. A no-allocation claim
+requires the selected representation.
+
+## Persistent List Prepend
+
+For persistent Lists, `(conj items value)` returns a List whose first stored
+value is `value` and whose remaining ordered values are those of `items`.
+Both operands are ordinary L2 arguments evaluated left to right; a control
+transfer aborts invocation. The old List is unchanged, and stored payloads are
+not evaluated.
+
+The selected representation must declare allocation and storage/lifetime
+policy for constructing the returned List under effects, ownership and profile
+rules. The ordered suffix need not use the identical storage object. This
+binary rule does not grant variadic or arbitrary sequence support.
+
 ## Dependencies
 
 - `D1` and `D3` for literal data, metadata, namespaces, and syntax objects.
@@ -99,6 +180,12 @@ In a no-allocation profile, this function must choose a bounded representation o
 ## Conformance Criteria
 
 - Persistent operations preserve old collection values in all supported profiles.
+- Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
+- Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
+- Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
+- Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
+- Persistent List queries cover empty and nonempty ordered values and cardinality without executing stored payloads, and declare their suffix storage policy.
+- Binary persistent List prepend preserves the old ordered values after the new head, ordinary operand evaluation and the original List, with explicit allocation/storage policy.
 - Bounds fixtures pass with static proofs and runtime checks where appropriate.
 - Equality and hash fixtures agree with STD2 across targets.
 - Bounded systems profiles reject unbounded collection construction.

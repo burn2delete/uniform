@@ -52,3 +52,38 @@
        :verified-resolution-artifact-after-deserialization
        (:failed-checks report) {}))
     artifact))
+(defn sh06-resolution-module-input-views!
+  [source-path inputs]
+  (when-not (and (map? inputs) (= #{:artifact :schema-version :module-artifacts} (set (keys inputs)))
+                 (= :gravity/sh06-module-inputs (:artifact inputs)) (= 1 (:schema-version inputs))
+                 (vector? (:module-artifacts inputs))
+                 (<= (count (:module-artifacts inputs)) 256)
+                 (= :passed (:status (sh06-resolution-carrier-validation inputs sh06-resolution-artifact-bounds))))
+    (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path :ordinary-module-inputs inputs
+                                  {:reason :malformed-module-inputs}))
+  (mapv
+   (fn [artifact]
+     (let [boundary (:gravity-resolution-boundary artifact)
+           request (:authenticated-resolution-request boundary)]
+       (when-not (and (= :gravity/sh06-resolution-artifact (:kind artifact))
+                      (= :accepted (:status artifact)) (= :gravity-source (:owner boundary))
+                      (= :gravity/sh06-ordinary-module-resolution-request (:artifact request))
+                      (= 2 (:schema-version request))
+                      (= :passed (:status (sh06-resolution-artifact-verification artifact))))
+         (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path :verified-ordinary-module-artifact
+                                       (:artifact-id artifact) {:reason :invalid-module-artifact}))
+       {:artifact-id (:artifact-id artifact) :analysis (:resolved-analysis boundary) :request request
+        :raw-analysis (:raw-analysis boundary) :digest-requests (:digest-requests boundary)
+        :resolved-digests (:resolved-digests boundary) :definitions (:definitions request)}))
+   (:module-artifacts inputs)))
+
+(defn sh06-resolution-module-request
+  [source-path sh05-artifact inputs]
+  (let [base (sh06-resolution-base-request-data source-path sh05-artifact {})
+        views (sh06-resolution-module-input-views! source-path inputs)
+        header (first (:expanded-syntax-stream sh05-artifact))
+        imports (mapv #(-> % (assoc :source-span (:span header))
+                            (assoc-in [:semantic-span :namespace-syntax-id] (:syntax/id header))) (:imports base))]
+    (assoc base :artifact :gravity/sh06-ordinary-module-resolution-request :schema-version 2
+           :namespace-source {:semantic-span {:namespace-syntax-id (:syntax/id header)} :source-span (:span header)}
+           :module-premises views :imports imports)))

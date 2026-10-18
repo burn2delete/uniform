@@ -1,0 +1,31 @@
+; L7/C6: guard expressions retain effects and pending later legality.
+(ns self-hosting.sh07-b10.root-map-guards
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:state/write :error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata {:slice :SH-07-B10 :fixture :root-map-guards
+              :legality :pending-sh08-sh09-sh10-sh11}))
+
+(def counter 0)
+(defn permit [value] true)
+
+(defn choose [value]
+  (match value
+    {:when (do (set! counter item) (permit tag)) :id [item {:tag tag}]}
+    (do item tag)
+    {:id item :when false} item
+    {:when nil} :pending
+    _ :fallback))
+
+(defn again [value]
+  (match value {:when true :next next} (recur next) _ value))
+
+(defn nested [value]
+  (match value
+    {:when (match true true true _ false)} (quote {:when (match ignored)})
+    {:when (if true (throw "guard") false)} :unreachable-at-runtime
+    {:when (try (throw "protected")
+             (catch Exception error (do (set! counter 1) (throw error))))} :pending-handler
+    _ :fallback))

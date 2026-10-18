@@ -1,0 +1,24 @@
+(ns self-hosting.sh08.list-if-join
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{}) (:safety :safe))
+
+(defn optional-part [include :- Bool part :- String]
+  (if include (list part) (list)))
+(defn optional-reverse [include :- Bool part :- String]
+  (if include (list) (list part)))
+(defn different-widths [include :- Bool part :- String]
+  (if include (list part) (list part part)))
+(defn homogeneous-left [include :- Bool parts :- (List String)]
+  (if include parts (list)))
+(defn homogeneous-right [include :- Bool parts :- (List String) part :- String]
+  (if include (list part) parts))
+(defn annotated [include :- Bool part :- String] :- (List String)
+  (if include (list part) (list)))
+(defn exact [include :- Bool part :- String]
+  (if include (list part) (list part)))
+(defn aborted [include :- Bool problem :- String part :- String]
+  (if include (throw problem) (list part)))
+(defn joined-count [include :- Bool part :- String]
+  (count (optional-part include part)))
+(defn main [] (joined-count true "piece"))

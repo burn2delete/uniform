@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.reject.annotation-integer
+  (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn identity-i64 [x :- I64] :- I64 x)
+(def implicit-coercion (identity-i64 1))
