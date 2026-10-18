@@ -4268,6 +4268,231 @@
 (deftest current-gravity-vector-append-remaining-negatives-authenticated-composition
   (vector-append-remaining-negative-checks))
 
+(deftest current-gravity-not-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] (concat [["accepted" "local-runtime-not" 8]]
+                                                (map #(vector "rejected" (str "not-" %) 1)
+                                                     ["arity-zero" "arity-two" "unknown" "result-annotation" "non-tail-recur" "guard-nonbool"]))]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            text (slurp (io/file root (str relative ".gravity")))]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (re-seq #"(?m)^\(defn " text))))))
+    (doseq [extension [".gravity" ".qst"]]
+      (let [reader (bootstrap/compiler-c2-reader-file-artifact
+                     (.getPath (io/file root (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-not" extension))))
+            characters (filterv #(= :character (:kind %)) (:form-tree reader))]
+        (is (= 2 (count characters)))
+        (is (= {true 1 false 1} (frequencies (map #(map? (:value %)) characters))))))))
+
+(deftest current-gravity-not-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        payload (String. "not operand transfer")
+        specs [['guarded [:accepted] :accepted :normal] ['guarded [:rejected] :rejected :normal]
+               ['guarded [:outside/value] :accepted :normal]
+               ['truth [] [true true false false false false false false false] :normal]
+               ['constructed [] [false false] :normal] ['characters [] [false false] :normal]
+               ['marker-map [] false :normal] ['thrown [payload] payload :thrown]
+               ['shadowed ["ordinary parameter"] "ordinary parameter" :normal] ['main [] :accepted :normal]]
+        cases (mapv
+                (fn [extension]
+                  (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-not" extension)
+                        path (.getPath (io/file root relative)) products (fresh relative)
+                        input (select-keys products [:request :typed :verification])
+                        ready (= :accepted (get-in input [:typed :status]))
+                        _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                        _ (when-not ready (throw (ex-info "not source rejected before lowering" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                        standalone (operation #(bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'guarded) input))
+                        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                        calls (:call-type-facts facts) descriptors (mapv :applied-not (filter #(= :direct-not (:dispatch %)) calls))
+                        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding) graph (:effect-graph effects)]
+                    (is (= :passed (get-in input [:verification :status])))
+                    (is (= 8 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                    (is (= 18 (count (:calls core)) (count (:call-edges core)) (count calls)))
+                    (is (= {:direct-not 16 :direct-atomic-equality 1 nil 1} (frequencies (map :dispatch calls))))
+                    (let [local-call (first (filter #(nil? (:dispatch %)) calls))
+                          id (:call-core-node-id local-call)
+                          edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))
+                          call (first (filter #(= id (:core-node-id %)) (:calls core)))]
+                      (is (= [:local-function (get-in functions ['main :function-id]) (get-in functions ['guarded :function-id])]
+                             [(:classification edge) (:caller-function-syntax-id edge) (:callee-function-syntax-id edge)]))
+                      (is (= (:caller-function-syntax-id edge) (:caller-function-syntax-id local-call)))
+                      (is (= (:callee-function-syntax-id edge) (:callee-function-syntax-id local-call)))
+                      (is (= (:ordered-evaluation-node-ids edge) (:ordered-evaluation-node-ids call)))
+                      (is (= [:gravity.type/keyword] (:argument-types local-call)))
+                      (is (= :gravity.type/keyword (:result-type local-call))))
+                    (is (= 16 (count descriptors) (count (filter #(= :sh08-not-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                    (is (= {:normal 15 :not-invoked 1} (frequencies (map :application descriptors))))
+                    (is (= standalone (get-in assembled [:functions 'guarded])))
+                    (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+                    (is (= :gravity.type/keyword (get-in functions ['guarded :return])))
+                    (is (= :gravity.type/never (get-in functions ['thrown :return])))
+                    (is (= :gravity.type/string (get-in functions ['shadowed :return])))
+                    (doseq [descriptor descriptors]
+                      (is (= 1 (count (:argument-types descriptor))))
+                      (is (= 7 (count (:source-call descriptor))))
+                      (is (= 12 (count (:source-edge descriptor))))
+                      (is (= 'gravity.core (:semantic-owner descriptor)))
+                      (is (= {:falsy-values [nil false] :other-values :truthy :operation :complement
+                              :operand-evaluation :once :operand-position :non-tail} (:truthiness-policy descriptor)))
+                      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+                      (is (= (if (= :normal (:application descriptor)) :gravity.type/bool :gravity.type/never) (:result-type descriptor))))
+                    (doseq [[name args expected tag] specs]
+                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                     [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                        (is (= [expected "" tag] result) (str extension " " name))
+                        (when (identical? expected payload) (is (identical? payload (first result))))))
+                    (let [ready (and (= :accepted (:status effects)) (map? graph) (seq (:nodes graph)))]
+                      (is (true? (boolean ready)) (pr-str (:diagnostics effects)))
+                      (when-not ready (throw (ex-info "not C8 graph missing before whole verification" {:effects effects})))
+                      (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+                      (doseq [descriptor descriptors]
+                        (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                          (is (= #{} (:direct record)))
+                          (is (nil? (:allocation record)))
+                          (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))
+                          (is (nil? (:call-body-dependency record)))))
+                      (is (= #{:error/throw} (get-in graph [:functions (get-in functions ['thrown :function-id]) :inferred])))
+                      (let [constructs (filter #(and (= :normal (:application %))
+                                                    (= (get-in functions ['constructed :function-id])
+                                                       (get-in % [:source-edge :caller-function-syntax-id]))
+                                                    (= :gravity.type/vector (get-in % [:argument-types 0 :kind]))) descriptors)]
+                        (is (= 1 (count constructs)))
+                        (is (= #{:memory/allocate} (get-in graph [:nodes (:call-core-node-id (first constructs)) :transitive])))))
+                    {:input input :module module :definitions definitions :descriptors descriptors :effects effects :binding binding}))
+                [".gravity" ".qst"])
+        {:keys [input module definitions descriptors effects binding]} (first cases)
+        descriptor (first (filter #(= :normal (:application %)) descriptors))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (map? descriptor))
+    (when-not (map? descriptor) (throw (ex-info "not descriptor absent before hostile checks" {})))
+    (doseq [changed [(assoc-in descriptor [:source-binding :package :version] "forged")
+                     (assoc-in descriptor [:truthiness-policy :falsy-values] [nil false 0])
+                     (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                     (assoc descriptor :argument-types [:gravity.type/unknown] :parameter-types [:gravity.type/unknown])
+                     (-> descriptor (assoc-in [:source-call :argument-node-ids] [])
+                         (assoc-in [:source-edge :argument-core-node-ids] []))]]
+      (let [changed-call (c7 'sh08-nt-call-fact [changed (get-in input [:request :canonical-core-artifact :module])])
+            changed-row (c7 'sh08-nt-constraint [changed])
+            id (:call-core-node-id descriptor) operator (:operator-node-id descriptor)
+            typed (walk/postwalk
+                    (fn [value]
+                      (cond
+                        (= value descriptor) changed
+                        (and (map? value) (= :gravity/c7-call-type-fact (:artifact value)) (= id (:call-core-node-id value))) changed-call
+                        (and (map? value) (= :sh08-not-v1 (:producer-rule value)) (= id (get-in value [:lhs :core-node-id]))) changed-row
+                        (and (map? value) (= changed (get value operator)) (contains? value id)) (assoc value id (:result-type changed))
+                        :else value)) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function emitter module (get definitions 'guarded) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 9 (count @verified)))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)]
+      (doseq [changed [(assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:nodes id :dependencies] [])
+                       (assoc-in graph [:nodes id :result-type] :gravity.type/string)
+                       (update graph :nodes #(into {} (map (fn [[node-id record]] [node-id (-> record (assoc :transitive #{} :escaping #{})
+                                                                                                  (dissoc :allocation :escaping-thrown-errors :escaping-thrown-error-types))]) %)))]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (doseq [[suffix expected] [["arity-zero" #{["C7-TYPE-MISMATCH" :not-arity-mismatch]}]
+                               ["arity-two" #{["C7-TYPE-MISMATCH" :not-arity-mismatch]}]
+                               ["unknown" #{["C7-TYPE-MISMATCH" :not-operand-type-required]
+                                            ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]}]
+                               ["result-annotation" #{["C7-TYPE-MISMATCH" :function-result-type-mismatch]}]
+                               ["guard-nonbool" #{["L7-GUARD-TYPE" :guard-result-not-boolean]}]]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/not-" suffix ".gravity"))
+            diagnostic (get-in products [:typed :diagnostics 0])]
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (contains? expected ((juxt :rule :reason) diagnostic)) (pr-str [suffix diagnostic]))))
+    (let [failure (diagnostic #(fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/not-non-tail-recur.gravity"))]
+      (is (= ["C6-VERIFY" :core-lowering :recur-tail-position-required]
+             [(:rule failure) (:stage failure) (get-in failure [:facts :reason])]))
+      (is (= 'example.not-non-tail-recur (:namespace failure))))))
+
+(deftest current-gravity-not-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'not-input)
+        derive (ns-resolve upstream 'not-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [type [:gravity.type/string :gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/integer
+                  {:kind :gravity.type/vector :element-types [] :shape :literal} :gravity.type/never]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-nt-call-fact [descriptor module])} :ledger [(c7 'sh08-nt-constraint [descriptor])]
+                     :locals {:arg0 'value} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :if :test {:op :local :name 'value} :then {:op :literal :value false} :else {:op :literal :value true}} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc-in descriptor [:truthiness-policy :falsy-values] [nil false 0])
+                         (assoc-in descriptor [:truthiness-policy :operand-evaluation] :twice)
+                         (assoc-in descriptor [:truthiness-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :result-type :gravity.type/string :return :gravity.type/string)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:call (c7 'sh08-nt-call-fact [changed module])} :ledger [(c7 'sh08-nt-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-not-existing-if-runtime-development-kernel
+  ;; X adds no runtime builtin or helper. Exercise the emitted existing if.
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        negate (fn [operand] {:op :if :test operand :then (literal false) :else (literal true)})
+        scalar (bootstrap/sh03-reader-host-character-value! "<not-kernel>" {:codepoint 0x1f600})]
+    (doseq [[value expected] [[nil true] [false true] [true false] [0 false] ["" false] ["text" false]
+                              [[] false] [{} false] [#{} false] ['() false] ['(value) false]
+                              [(char 65) false] [scalar false] [:read false] ['example/name false]]]
+      (is (= [expected "" :normal] (evaluate (negate (literal value))))))
+    (let [payload (String. "not operand transfer")
+          print-once {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout} (literal false)]}
+          throw-once {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout}
+                                     {:op :throw :value (literal payload)}]}
+          thrown (evaluate (negate throw-once))]
+      (is (= [true "operand\n" :normal] (evaluate (negate print-once))))
+      (is (= [payload "operand\n" :thrown] thrown))
+      (is (identical? payload (first thrown))))))
+
 (deftest current-gravity-atomic-equality-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]

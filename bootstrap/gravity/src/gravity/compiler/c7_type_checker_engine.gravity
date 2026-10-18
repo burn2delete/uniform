@@ -4582,7 +4582,7 @@
           (recur next (get core :call-edges) next work touched))
         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
-              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality}
+              intrinsic? (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality :gravity.type/applied-not}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind))
               touches? (if (contains? scope caller) true (if local? (contains? scope callee) false))]
           (if (if touches? (if local? false (= false intrinsic?)) false)
@@ -4873,7 +4873,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-atomic-equality :gravity.type/applied-not}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (sh08-bm-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))
@@ -4934,9 +4934,11 @@
                                             (sh08-cq-inferred-call-valid? core node call edge nodes binding-index types)
                                             (if (sh08-va-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                               (sh08-va-inferred-call-valid? core node call edge nodes binding-index types)
+                                              (if (sh08-nt-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
+                                                (sh08-nt-inferred-call-valid? core node call edge nodes binding-index types)
                                               (if (sh08-ae-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                                 (sh08-ae-inferred-call-valid? core node call edge nodes binding-index types)
-                                                (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types))))))))) true)
+                                                (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types)))))))))) true)
                                 (recur (rest edges)) edge)))) nil)
               recursive? (loop [components (get core :recursion-components)]
                            (if (= 0 (count components)) false
@@ -6348,6 +6350,131 @@
 
 (defn sh08-va-step [node types binding-types functions context budget]
   (sh08-va-derive (get context :ordering-core) node
+    (get (get context :ordering-operators) (first (get node :children)))
+    (get (get context :ordering-edges) (get node :node-id))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+
+(defn sh08-nt-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (sh08-ft-all-true?
+    [(= ['not :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn sh08-nt-source [core node call edge nodes bindings types module]
+  (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (sh08-ft-ordered-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (sh08-ft-all-true?
+          [(= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 1 (count args)) (= expected-call call) (= expected-edge edge) (sh08-nt-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{not gravity.core/not} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-not :version :sh08-not-v1
+       :operation 'not :semantic-owner 'gravity.core :intrinsic :gravity.core/truthiness-complement
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
+       :truthiness-policy {:falsy-values [nil false] :other-values :truthy :operation :complement
+                           :operand-evaluation :once :operand-position :non-tail}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :truthiness-policy :operand-type :profile :target :evaluation-order]} nil)) nil))
+
+(defn sh08-nt-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-not-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-not-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :not}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn sh08-nt-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-not-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-not :applied-not descriptor :effect-facts-source :audited-truthiness-intrinsic}))
+
+
+(defn sh08-nt-finish [header]
+  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn sh08-nt-derive [core node call edge nodes bindings types forms budget]
+  ; STD2/L2 not complements false/nil truthiness over every independently
+  ; established value type. Operand evaluation remains single and non-tail.
+  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records)))
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
+    (if (> work budget)
+      (assoc (sh08-sm-failure "C7-GENERIC" :not-work-limit nil :remaining-type-join-units budget) :work-count work)
+      (let [header (sh08-nt-source core node call edge nodes bindings types (get core :module))]
+        (if (= header nil)
+          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
+                   (if (= 1 (count args)) :not-operand-type-required :not-arity-mismatch)
+                   nil :one-independently-established-value (sh08-ft-ordered-child-types args types)) :work-count work)
+          (if (sh08-ft-all-true?
+                [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 2 (if (vector? ids) (count ids) 0))
+                 (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                 (loop [i 0]
+                   (if (= i 2) true
+                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                       (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
+                             (= (get child :source) (sh08-ma-form-source form))
+                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                         (recur (+ i 1)) false))))])
+            (let [descriptor (sh08-nt-finish header)]
+              {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
+               :constraint (sh08-nt-constraint descriptor) :work-count work})
+            (assoc (sh08-sm-failure "C7-VERIFY" :not-source-mismatch nil :exact-operator-operand-source (get node :node-id)) :work-count work)))))))
+
+(defn sh08-nt-node? [node context]
+  (if (= :call (get node :core-form))
+    (sh08-nt-binding? (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
+                     (get (get context :ordering-core) :module)) false))
+
+(defn sh08-nt-inferred-call-valid? [core node call edge nodes bindings types]
+  (let [header (sh08-nt-source core node call edge nodes bindings types (get core :module))]
+    (if (map? header) (= (get types (get call :operator-node-id)) (sh08-nt-finish header)) false)))
+
+(defn sh08-nt-step [node types binding-types functions context budget]
+  (sh08-nt-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
     (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
@@ -8231,12 +8358,13 @@
             arity-ok (= (count args) (count parameters))
             intrinsic (sh08-io-descriptor (get context :ordering-core) (get nodes (get call :core-node-id)) call edge nodes
                         (sh08-ft-binding-index (get context :lookup-bindings)) type-table (get (get context :ordering-core) :module))]
-        (if (if (sh08-ae-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
+        (if (if (sh08-nt-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
+              (if (sh08-ae-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
               (if (sh08-va-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
               (if (sh08-si-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
               (if (sh08-ma-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
               (if (sh08-cq-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)) true
-                (sh08-vn-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module)))))))
+                (sh08-vn-binding? (get (get context :ordering-bindings) (get call :operator-binding-id)) (get (get context :ordering-core) :module))))))))
           (recur (rest remaining) (rest remaining-edges) next-bindings constraints diagnostics)
         (if (map? intrinsic)
           (recur (rest remaining) (rest remaining-edges) next-bindings (conj constraints (sh08-io-constraint intrinsic)) diagnostics)
@@ -8422,8 +8550,10 @@
                                                 (sh08-ft-add-values-to-set lookup-issues (get call-result :diagnostics)))})
       (let [node (first remaining)
             lookup? (= :keyword-map-lookup (get node :core-form))
-            association? (if (sh08-ae-node? node context) true (if (sh08-va-node? node context) true (if (sh08-si-node? node context) true (if (sh08-ma-node? node context) true (if (sh08-cq-node? node context) true (sh08-vn-node? node context))))))
+            association? (if (sh08-nt-node? node context) true (if (sh08-ae-node? node context) true (if (sh08-va-node? node context) true (if (sh08-si-node? node context) true (if (sh08-ma-node? node context) true (if (sh08-cq-node? node context) true (sh08-vn-node? node context)))))))
             lookup (if association?
+                     (if (sh08-nt-node? node context)
+                       (sh08-nt-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
                      (if (sh08-ae-node? node context)
                        (sh08-ae-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
                      (if (sh08-va-node? node context)
@@ -8434,7 +8564,7 @@
                        (sh08-vn-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
                      (if (sh08-cq-node? node context)
                        (sh08-cq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
-                       (sh08-ma-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))))))
+                       (sh08-ma-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))))))))
                      (if lookup?
                      (sh08-kl-step node type-table binding-types function-result context
                                    (- (get context :loop-work-left 65536) lookup-work)) {}))
@@ -8777,7 +8907,9 @@
         (recur
          (rest remaining)
          (rest remaining-edges)
-         (conj values (if (= :gravity.type/applied-atomic-equality (get intrinsic :kind))
+         (conj values (if (= :gravity.type/applied-not (get intrinsic :kind))
+                       (sh08-nt-call-fact intrinsic module)
+                       (if (= :gravity.type/applied-atomic-equality (get intrinsic :kind))
                        (sh08-ae-call-fact intrinsic module)
                        (if (= :gravity.type/applied-vector-append (get intrinsic :kind))
                        (sh08-va-call-fact intrinsic module)
@@ -8800,7 +8932,7 @@
                                :capabilities (get (get imported :function-type) :capabilities)
                                :effect-facts-source :callee-module-declarations
                                :legality-status :pending-imported-effects)
-                        call-fact))))))))))))))
+                        call-fact)))))))))))))))
 
 (defn sh08-ft-call-facts
   [calls edges nodes type-table function-types module]

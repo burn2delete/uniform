@@ -1417,6 +1417,52 @@ identities rather than rewriting every equal host-map payload. The cheap
 inputs before that run, not the complete semantic composition. No authoritative
 migration or standard-library completion follows from these development checks.
 
+### Unary truthiness complement
+
+STD2's unary `not` complements L2 truthiness: false and nil produce true; other
+established normally returning values produce false. This is not equality's
+six-family restriction or an implicit conversion in match guards. L7 guards
+still require Bool; an explicit `not` supplies a Bool result.
+
+Edit the existing C7 engine, effect owner and typed emitter. The existing
+runtime conditional already implements the needed evaluation semantics:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-not-development-kernel \
+  --exact body-not-development-kernel \
+  --exact current-gravity-not-lowering-development-kernel \
+  --exact current-gravity-not-existing-if-runtime-development-kernel --fail-fast
+```
+
+The operand is evaluated once, in non-tail position. Lowering uses the existing
+conditional with literal false/true branches, not a new runtime instruction or
+seed primitive. Never transfers before either branch. Operand allocation and
+errors remain visible; `not` adds none. Empty text and collections, zero and
+Characters are truthy. Their existing unsupported source or lowering boundaries
+remain separate from `not`; they are not new truthiness prohibitions.
+
+Keep the exact binding, unary call/source/order, operand type and Bool/Never
+result joins, fresh type/effect reconstruction and cumulative work limits.
+These kernels are normalized development feedback. Real source composition,
+including Bool match guards and rejected non-tail recur, remains a separate
+integration check before accepting the executable slice:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-not-authenticated-composition --fail-fast
+```
+
+The paired source uses `(not (= tag :rejected))` in a Bool guard and retains
+raw non-Bool guard rejection. Ordinary local-call facts omit `:dispatch`;
+check their canonical caller/callee edges rather than assigning the separate
+higher-order-call tag. First-class `not`, other predicates, profile/provider
+completion and authoritative migration are not established by these checks.
+
 ### Proven vector indexing
 
 The same C7 engine, effect owner, typed emitter and runtime own the bounded

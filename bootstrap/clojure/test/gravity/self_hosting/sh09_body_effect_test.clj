@@ -356,6 +356,72 @@
     (is (= #{:memory/allocate :error/throw} (get-in functions [(sha 50) :inferred])))
     (is (= [] (get-in functions [(sha 50) :throws])))))
 
+(deftest body-not-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'not-input) derive (ns-resolve upstream 'not-derived)
+        c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [arguments [[:gravity.type/string] [:gravity.type/character] [:gravity.type/nil] [:gravity.type/bool]
+                       [:gravity.type/integer] [{:kind :gravity.type/vector :element-types [] :shape :literal}] [:gravity.type/never]]]
+      (let [base (input-fn arguments) ids (zipmap (keys (:nodes base)) (map sha (range 1250 1260)))
+            convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                        (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+            node-list (mapv convert-node (get-in base [:core :nodes]))
+            call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                     (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+            edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                     (update :ordered-evaluation-node-ids #(mapv ids %)))
+            core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
+            input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                         :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
+            result (derive input) descriptor (:descriptor result)
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
+            facts {:module (:module base) :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                   :function-type-table [] :call-type-facts [(c7 'sh08-nt-call-fact [descriptor (:module base)])]
+                   :constraint-ledger [(c7 'sh08-nt-constraint [descriptor])]}
+            context (leaf 'body-nt-context request facts (:bindings base) 65536)
+            facts (assoc facts :not-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % (:bindings base) {})
+            graph (leaf 'body-derive-nodes-with-foreign core facts {} 65536)
+            record (get-in graph [:nodes (ids :call)])]
+        (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
+        (is (true? (valid facts)))
+        (is (= #{} (:direct record) (:transitive record)))
+        (is (nil? (:allocation record)))
+        (is (= (mapv ids [:operator :arg0]) (:dependencies record) (:evaluated-children record)))
+        (is (nil? (:call-body-dependency record)))
+        (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes graph))))
+        (is (= context (leaf 'body-nt-context request facts (:bindings base) (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-nt-context request facts (:bindings base) (dec (:work-count context))))))
+        (doseq [changed [(assoc-in descriptor [:truthiness-policy :falsy-values] [nil false 0])
+                         (assoc-in descriptor [:truthiness-policy :operand-evaluation] :twice)
+                         (assoc-in descriptor [:truthiness-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
+                              (assoc :call-type-facts [(c7 'sh08-nt-call-fact [changed (:module base)])]
+                                     :constraint-ledger [(c7 'sh08-nt-constraint [changed])]))]
+            (is (false? (valid candidate)))))
+        (when (= arguments [:gravity.type/string])
+          (let [core (merge core {:root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+                preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                                   :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                                :nodes (leaf 'body-throw-semantic-nodes core))
+                core (assoc core :identity-preimage preimage)
+                request (-> request (assoc :canonical-core-artifact core)
+                            (assoc-in [:b47-context :authenticated-core-request :binding-table] (vec (vals (:bindings base)))))
+                facts (merge facts (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings]) {:local-binding-facts []})
+                analyze #(leaf 'body-analyze-module request facts {} %)
+                analyzed (analyze 65536) work (:work-count analyzed)]
+            (is (= :accepted (:status analyzed)) (pr-str analyzed))
+            (when (= :accepted (:status analyzed))
+              (is (>= work (+ (:work-count context) (:work-count graph))))
+              (is (= analyzed (analyze work)))
+              (is (= :rejected (:status (analyze (dec work))))))))))))
+
 (deftest body-atomic-equality-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test

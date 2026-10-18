@@ -2146,6 +2146,58 @@ work, not language prohibitions. Ordinary integer runtime compatibility is
 preserved without claiming new numeric typing. Authoritative migration,
 self-hosting and seedless release remain outstanding.
 
+### Unary truthiness complement: development implementation
+
+The existing C7, C8 and typed-emitter owners implement direct unary `not`
+under STD2/L2. False and nil yield true; other independently established,
+normally returning values yield false. This does not inherit atomic equality's
+six-family restriction. Existing unsupported operand source or lowering forms
+remain separate frontiers, not new truthiness prohibitions.
+
+The operand evaluates once in non-tail position. Lowering emits the existing
+conditional with literal false/true branches, without a runtime, seed, public
+API or instruction change. Never transfers before either branch. The operand's
+allocation and error effects remain visible; `not` adds none. Bool-only L7
+guards are unchanged: `(not (= tag :rejected))` supplies a Bool explicitly,
+while a raw Keyword guard still rejects.
+
+The producer kernel passed 165 assertions and the effect/lowering/existing-if
+batch passed three tests/245 assertions. The combined affected batch passed
+19 tests/1,539 assertions, including prior equality, Character, quoted-DATA,
+guard and throw regressions. These overlap, rather than form an additive total.
+Pre-run review corrected an authored oracle: ordinary local-call facts have no
+`:dispatch`; the higher-order-call tag was inappropriate. Six explicit
+canonical caller/callee/order/type joins now retain the local-call evidence.
+The corrected namespace and unchanged lowering/runtime kernels passed two
+tests/136 assertions before the sole source run.
+
+The paired source composition passed all 464 assertions in 674.647 seconds
+after 8.132 seconds of loading at 2 GiB. Each extension passed eight function
+types, eighteen call facts and sixteen `not` applications (fifteen normal,
+one Never), plus one atomic equality and one ordinary local call. Twenty guest
+executions cover three map-guard outcomes, false/nil/zero/empty text and quoted
+collections, evaluated vector/map operands, BMP and supplementary Characters,
+an ordinary marker-shaped Map, retained String throw payloads and parameter
+shadowing. Runtime code remained unchanged.
+
+Nine fresh public C7 lowering operations include five altered type/fact/row
+cases. Two accepted, nonempty C8 graphs pass whole-result verification; four
+resealed graph mutations reject. A genuine constructed-vector operand retains
+transitive allocation while `not` has no own allocation, and the throwing
+operand retains its error effect. Five negative `.gravity` cases reject wrong
+arity, unknown type, result annotation or raw non-Bool guards. The separate
+non-tail recur case rejects with the exact C6 core-lowering diagnostic.
+Negative `.qst` coverage is paired-source parity only; the unknown-type oracle
+permits two existing diagnostic paths rather than claiming a unique observed
+reason. All 20 compiler/test/fixture inputs and the Git base remained unchanged
+throughout the source run. No expensive prior equality proof was replayed.
+
+Use `docs/development-verification.md` for the focused and source-composition
+commands. First-class `not`, other predicates, complete profile/provider and
+standard-library support, target support, authoritative migration, self-hosting
+and seedless release remain outstanding. This is scoped executable development
+support, not admission of a stable module revision.
+
 ### Artifact-backed ordinary module imports: development increment
 
 Under L3, C5 and C16, `gravity/resolution.gravity` now owns ordinary import
