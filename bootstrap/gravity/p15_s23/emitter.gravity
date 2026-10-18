@@ -4158,6 +4158,277 @@
                            :operand-type (get (get header :argument-types) 0) :operand-shape input
                            :selected-part part :selected-coordinate (get part :coordinate) :selected-type type} nil)) nil)))
 
+(defn p15-s23-pe-work [core]
+  ; Reserve every global row before measuring selected entries or field widths.
+  (+ 64 (* 8 (+ (count (get core :nodes)) (count (get core :definitions)) (count (get core :function-records))
+                 (count (get core :reference-uses)) (count (get (get core :preserved-resolution) :resolution-table)) (count (get core :calls))
+                 (count (get core :call-edges)) (count (get core :var-references)) (count (get core :mutations))
+                 (count (get core :recur-targets)) (count (get core :recur-transfers)) (count (get core :recursion-components))
+                 (count (get (get core :module) :exports))))))
+
+(defn p15-s23-pe-reserve [core receiver nodes bindings budget]
+  (let [base (p15-s23-pe-work core)
+        failure {:status :rejected :reason :map-get-work-limit :work-count base}]
+    (if (> base budget) failure
+      (if (= false
+             (loop [families [(get core :nodes) (get core :definitions) (get core :function-records)
+                              (get core :reference-uses) (get (get core :preserved-resolution) :resolution-table) (get core :calls)
+                              (get core :call-edges) (get core :var-references) (get core :mutations)
+                              (get core :recur-targets) (get core :recur-transfers) (get core :recursion-components)
+                              (get (get core :module) :exports)]]
+               (if (= 0 (count families)) true
+                 (if (vector? (first families)) (recur (rest families)) false))))
+        (assoc failure :reason :map-get-entry-families-required)
+        (let [record (p15-s23-pe-one (get core :function-records) :function-syntax-id
+                       (get (get receiver :evaluation) :owner-function-syntax-id))
+              parameters (get record :parameter-binding-ids)
+              binding (get bindings (get record :definition-binding-id))
+              ids (loop [remaining (get core :nodes) width 0]
+                    (if (= 0 (count remaining)) width
+                      (let [values (get (first remaining) :resolved-binding-ids)]
+                        (if (vector? values) (recur (rest remaining) (+ width (count values))) nil))))
+              targets (loop [remaining (get core :recur-targets) maximum 0]
+                        (if (= 0 (count remaining)) maximum
+                          (let [values (get (first remaining) :binding-ids)]
+                            (if (vector? values)
+                              (recur (rest remaining) (if (< maximum (count values)) (count values) maximum)) nil))))
+              components (loop [remaining (get core :recursion-components) width 0]
+                           (if (= 0 (count remaining)) width
+                             (let [values (get (first remaining) :function-syntax-ids)]
+                               (if (vector? values) (recur (rest remaining) (+ width (count values))) nil))))
+              exports (loop [remaining (get (get core :module) :exports) width 0]
+                        (if (= 0 (count remaining)) width
+                          (if (symbol? (first remaining))
+                            (recur (rest remaining) (+ width (count (str (first remaining))))) nil)))
+              entries (loop [remaining (get core :calls) matched 0 arguments 0 children 0]
+                        (if (= 0 (count remaining))
+                          {:matched matched :arguments arguments :children children}
+                          (let [call (first remaining)]
+                            (if (= (get record :definition-binding-id) (get call :operator-binding-id))
+                              (let [args (get call :argument-node-ids) order (get call :ordered-evaluation-node-ids)
+                                    child-ids (get (get nodes (get call :core-node-id)) :children)]
+                                (if (if (vector? args) (if (vector? order) (vector? child-ids) false) false)
+                                  (recur (rest remaining) (+ matched 1) (+ arguments (count args))
+                                         (+ children (count child-ids) (count order))) nil))
+                              (recur (rest remaining) matched arguments children)))))]
+          (if (p15-s23-typed-all [(integer? ids) (integer? targets) (integer? components) (integer? exports)
+                    (map? entries) (vector? parameters)])
+            (let [name-width (count (str (get binding :name))) namespace-width (count (str (get binding :namespace)))
+                  ; Each entry's only row searches are uses, resolutions, edges,
+                  ; and caller records. Source/header checks cost 64 units.
+                  work (+ base
+                          (* (get entries :matched)
+                             (+ 64 (* 2 (+ (count (get core :reference-uses)) (count (get (get core :preserved-resolution) :resolution-table))
+                                            (count (get core :call-edges)) (count (get core :function-records))))))
+                          (* 4 (get entries :children)) (* 5 (get entries :arguments))
+                          (* 2 ids) (* 2 components) (count parameters)
+                          (* (count (get core :recur-transfers)) (+ 8 (* 2 (count (get core :recur-targets))) targets))
+                          (* 3 exports) (* (count (get (get core :module) :exports)) (+ (* 2 name-width) namespace-width 1))
+                          (* 2 (+ name-width namespace-width)))]
+              (if (> work budget) (assoc failure :work-count work)
+                {:status :accepted :work-count work :matched-call-count (get entries :matched)}))
+            (assoc failure :reason :map-get-entry-families-required)))))))
+
+(defn p15-s23-pe-select [records key value]
+  (loop [remaining records out []]
+    (if (= 0 (count remaining)) out
+      (recur (rest remaining) (if (= value (get (first remaining) key)) (conj out (first remaining)) out)))))
+
+(defn p15-s23-pe-one [records key value]
+  (let [matches (p15-s23-pe-select records key value)]
+    (if (= 1 (count matches)) (first matches) nil)))
+
+(defn p15-s23-pe-recursive? [core id]
+  (loop [remaining (get core :recursion-components)]
+    (if (= 0 (count remaining)) false
+      (if (contains? (set (get (first remaining) :function-syntax-ids)) id) true (recur (rest remaining))))))
+
+(defn p15-s23-pe-reentry? [core record]
+  (let [parameters (set (get record :parameter-binding-ids)) fid (get record :function-core-node-id)]
+    (loop [remaining (get core :recur-transfers)]
+      (if (= 0 (count remaining)) false
+        (let [transfer (first remaining) target (p15-s23-pe-one (get core :recur-targets) :target-id (get transfer :target-id))]
+          (if (if (= target nil) true
+                (if (= fid (get target :owner-core-node-id)) true
+                (loop [ids (get target :binding-ids)]
+                  (if (= 0 (count ids)) false
+                    (if (contains? parameters (first ids)) true (recur (rest ids)))))))
+            true (recur (rest remaining))))))))
+
+(defn p15-s23-pe-census [header core nodes bindings forms]
+  ; Presence belongs to a closed parameter entry set, never a common Map shape.
+  (let [receiver (get nodes (get (get (get header :source-call) :argument-node-ids) 0))
+        pid (get (get receiver :attributes) :binding-id)
+        parameter (get bindings pid)
+        record (p15-s23-pe-one (get core :function-records) :function-syntax-id
+                 (get (get receiver :evaluation) :owner-function-syntax-id))
+        params (get record :parameter-binding-ids) bid (get record :definition-binding-id)
+        binding (get bindings bid) definition (p15-s23-pe-one (get core :definitions) :binding-id bid)
+        fn-node (get nodes (get record :function-core-node-id))
+        def-node (get nodes (get definition :core-node-id))
+        def-form (get forms (get (get def-node :source) :form-id))
+        name-form (get forms (get (get def-form :child-form-ids) 1))
+        fn-form (get forms (get record :function-form-id))
+        exports (get (get core :module) :exports)
+        uses (p15-s23-pe-select (get core :reference-uses) :binding-id bid)
+        resolutions (p15-s23-pe-select (get (get core :preserved-resolution) :resolution-table) :binding-id bid)
+        references (loop [remaining (get core :nodes) out []]
+                     (if (= 0 (count remaining)) out
+                       (let [node (first remaining)]
+                         (recur (rest remaining)
+                           (if (if (= :reference (get node :core-form))
+                                 (if (= bid (get (get node :attributes) :binding-id)) true
+                                   (contains? (set (get node :resolved-binding-ids)) bid)) false)
+                             (conj out node) out)))))
+        calls (p15-s23-pe-select (get core :calls) :operator-binding-id bid)
+        edges (loop [remaining (get core :call-edges) out []]
+                (if (= 0 (count remaining)) out
+                  (let [edge (first remaining)]
+                    (recur (rest remaining)
+                      (if (if (= bid (get edge :callee-binding-id)) true
+                            (= (get record :function-syntax-id) (get edge :callee-function-syntax-id)))
+                        (conj out edge) out)))))
+        index (loop [i 0 found nil]
+                (if (= i (count params)) found
+                  (recur (+ i 1) (if (= pid (get params i)) (if (= found nil) i -1) found))))]
+    (if (p15-s23-typed-all [(= :normal (get header :application)) (map? record) (map? definition) (integer? index)
+          (if (integer? index) (<= 0 index) false) (vector? params)
+          (= :reference (get receiver :core-form)) (= [] (get receiver :children))
+          (= [pid] (get receiver :resolved-binding-ids))
+          (= :expression (get (get receiver :attributes) :position))
+          (= :lexical (get parameter :binding-class) (get (get receiver :attributes) :binding-class))
+          (= :local (get parameter :kind))
+          (= :named-top-level (get record :definition-kind))
+          (= :function (get binding :kind)) (= :namespace (get binding :binding-class))
+          (= :private (get binding :visibility) (get (get def-node :attributes) :visibility))
+          (= (get (get core :module) :namespace) (get binding :namespace))
+          (= (get binding :name) (get definition :name) (get record :definition-name) (get name-form :value))
+          (= (get binding :definition-syntax-id) (get (get def-node :attributes) :name-syntax-id) (get name-form :syntax-id))
+          (= :def (get def-node :core-form)) (= :fn (get fn-node :core-form))
+          (= (get record :definition-core-node-id) (get definition :core-node-id) (get def-node :node-id))
+          (= [(get fn-node :node-id)] (get def-node :children))
+          (= [bid] (get def-node :resolved-binding-ids))
+          (= (get record :function-core-node-id) (get definition :value-node-id) (get fn-node :node-id))
+          (= [(get record :body-core-node-id)] (get fn-node :children))
+          (= params (get fn-node :resolved-binding-ids))
+          (= (count params) (get record :fixed-arity))
+          (= (get record :function-syntax-id) (get fn-form :syntax-id) (get (get fn-node :source) :syntax-id))
+          (= (get record :function-form-id) (get fn-form :form-id) (get (get def-form :child-form-ids) 2))
+          (vector? exports)
+          (loop [remaining exports]
+            (if (= 0 (count remaining)) true
+              (if (if (= (str (first remaining)) (str (get binding :name))) true
+                    (= (str (first remaining)) (str (get binding :namespace) "/" (get binding :name))))
+                false (recur (rest remaining)))))
+          (= false (p15-s23-pe-recursive? core (get record :function-syntax-id)))
+          (= false (p15-s23-pe-reentry? core record))
+          (= 0 (count (p15-s23-pe-select (get core :var-references) :binding-id bid)))
+          (= 0 (count (p15-s23-pe-select (get core :mutations) :target-binding-id bid))
+               (count (p15-s23-pe-select (get core :mutations) :target-binding-id pid)))
+          (< 0 (count calls)) (= (count calls) (count edges) (count uses) (count resolutions) (count references))
+          (loop [remaining calls seen #{}]
+            (if (= 0 (count remaining)) true
+              (let [call (first remaining) id (get call :core-node-id) node (get nodes id)
+                    children (get node :children) op (get nodes (get call :operator-node-id))
+                    source (get op :source) form (get forms (get source :form-id))
+                    owner (get forms (get (get node :source) :form-id))
+                    use (p15-s23-pe-one uses :core-node-id (get op :node-id))
+                    resolution (p15-s23-pe-one resolutions :reference-syntax-id (get source :syntax-id))
+                    edge (p15-s23-pe-one edges :call-core-node-id id)
+                    caller (p15-s23-pe-one (get core :function-records) :function-syntax-id (get edge :caller-function-syntax-id))]
+                (if (p15-s23-typed-all [(= false (contains? seen (get op :node-id))) (map? caller)
+                      (= :call (get node :core-form)) (= :reference (get op :core-form)) (= [] (get op :children))
+                      (= [bid] (get node :resolved-binding-ids) (get op :resolved-binding-ids))
+                      (= {:symbol (get form :value) :position :operator :binding-id bid :binding-class :namespace
+                          :definition-syntax-id (get binding :definition-syntax-id)} (get op :attributes))
+                      (= :symbol (get form :kind))
+                      (= {:core-node-id (get op :node-id) :form-id (get source :form-id) :syntax-id (get source :syntax-id)
+                          :symbol (get form :value) :position :operator :binding-id bid :binding-class :namespace
+                          :definition-syntax-id (get binding :definition-syntax-id)} use)
+                      (= {:reference-syntax-id (get source :syntax-id) :symbol (get form :value) :position :operator
+                          :binding-id bid :upstream-binding-id (get binding :upstream-binding-id)
+                          :resolution-order (get resolution :resolution-order) :source-span (get form :source-span)} resolution)
+                      (= {:core-node-id id :operator-node-id (first children) :operator-binding-id bid
+                          :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                          :evaluation-order :operator-then-arguments :result-policy :call-result} call)
+                      (= {:ordinal (get edge :ordinal) :call-core-node-id id
+                          :caller-function-syntax-id (get caller :function-syntax-id)
+                          :caller-function-core-node-id (get caller :function-core-node-id)
+                          :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                          :callee-function-syntax-id (get record :function-syntax-id)
+                          :callee-function-core-node-id (get record :function-core-node-id)
+                          :argument-core-node-ids (get call :argument-node-ids) :ordered-evaluation-node-ids children
+                          :evaluation-order :operator-then-arguments :classification :local-function} edge)
+                      (= (get caller :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                      (= :operator-then-arguments (get (get node :evaluation) :kind))
+                      (= (get record :fixed-arity) (count (get call :argument-node-ids)))
+                      (= :list (get owner :kind)) (= (count children) (count (get owner :child-form-ids)))
+                      (loop [i 0]
+                        (if (= i (count children)) true
+                          (let [child (get nodes (get children i)) child-form (get forms (get (get owner :child-form-ids) i))]
+                            (if (p15-s23-typed-all [(= (get owner :form-id) (get child-form :parent-form-id))
+                                  (= (get child :source) (p15-s23-typed-source child-form))
+                                  (= {:index i :core-node-id (get child :node-id)} (get (get (get node :evaluation) :order) i))])
+                              (recur (+ i 1)) false))))])
+                  (recur (rest remaining) (conj seen (get op :node-id))) false))))])
+      {:kind :closed-private-parameter-entry :receiver-node-id (get receiver :node-id) :receiver-source (get receiver :source)
+       :parameter-index index :parameter-binding parameter :function-record record :definition definition
+       :definition-binding binding :exports exports :reference-uses uses :resolutions resolutions :calls calls :edges edges}
+      nil)))
+
+(defn p15-s23-pe-invoked? [types arguments]
+  (loop [remaining arguments]
+    (if (= 0 (count remaining)) true
+      (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
+
+(defn p15-s23-pe-finish [header census shapes core nodes types]
+  (if (map? census)
+    (loop [remaining (get census :calls) inputs shapes entries [] selected nil normal-count 0]
+      (if (= 0 (count remaining))
+        (if (if (= 0 (count inputs)) (< 0 normal-count) false)
+          (assoc header :version :sh08-map-get-private-entry-v1
+            :lookup-policy (assoc (get header :lookup-policy) :input :closed-private-parameter-entries)
+            :invalidation (conj (get header :invalidation) :visibility :exports :reference-uses :resolution-table
+                            :var-references :mutations :recur-targets :recur-transfers :incoming-arguments)
+            :parameter-types (get header :argument-types) :return selected :result-type selected
+            :presence-proof {:kind :private-call-entry-key-presence :key (get header :key)
+                             :entry-census census :entries entries :selected-type selected}) nil)
+        (let [call (first remaining) args (get call :argument-node-ids)
+              argument-id (get args (get census :parameter-index))
+              argument-type (get types argument-id) invoked? (p15-s23-pe-invoked? types args)
+              shape (first inputs)
+              part (if (if invoked? (= argument-type (get (get header :argument-types) 0)) false) (p15-s23-mg-present-selection
+                                  (assoc header :argument-types [argument-type :gravity.type/keyword]) shape) nil)
+              value-type (get (get part :shape) :type)]
+          (if (p15-s23-typed-all [(< 0 (count inputs))
+                (loop [ids args] (if (= 0 (count ids)) true
+                  (if (contains? #{nil :gravity.type/unknown} (get types (first ids))) false (recur (rest ids)))))
+                (if invoked?
+                  (p15-s23-typed-all [(map? part)
+                    (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                                 :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
+                                 :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} value-type)
+                    (if (= normal-count 0) true (= selected value-type))])
+                  (= shape nil))])
+            (recur (rest remaining) (rest inputs)
+              (conj entries {:call-core-node-id (get call :core-node-id) :argument-node-id argument-id
+                            :argument-source (get (get nodes argument-id) :source) :argument-type argument-type
+                            :argument-types (loop [ids args out []] (if (= 0 (count ids)) out
+                                              (recur (rest ids) (conj out (get types (first ids))))))
+                            :entry (if invoked? :invoked :not-invoked) :argument-shape shape
+                            :selected-part part :selected-coordinate (get part :coordinate) :selected-type value-type})
+              (if invoked? value-type selected) (if invoked? (+ normal-count 1) normal-count)) nil)))) nil))
+
+(defn p15-s23-pe-recheck [header descriptor core nodes bindings forms types]
+  (let [census (p15-s23-pe-census header core nodes bindings forms)
+        entries (get (get descriptor :presence-proof) :entries)]
+    (if (if (map? census) (if (vector? entries) (= (count entries) (count (get census :calls))) false) false)
+      (let [shapes (loop [remaining entries out []]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))]
+        (p15-s23-pe-finish header census shapes core nodes types)) nil)))
+
 (defn p15-s23-mg-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (p15-s23-typed-all
@@ -4264,11 +4535,22 @@
   (let [id (get node :node-id) core (get context :core) call (get (get context :calls) id) edge (get (get context :edges) id)
         nodes (get context :nodes) types (get context :types) args (get call :argument-node-ids)
         members (p15-s23-mg-member-count (get types (first args)))
-        charge (+ 67 (count (get core :function-records)) members (* 2 members))]
-    (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+        base (+ 67 (count (get core :function-records)) members (* 2 members))]
+    (if (< budget base) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
+      (let [reserved (if (= :sh08-map-get-private-entry-v1 (get (get types (get call :operator-node-id)) :version))
+                       (p15-s23-pe-reserve core (get nodes (first args)) nodes (get context :bindings) (- budget base))
+                       {:status :accepted :work-count 0 :matched-call-count 0})
+            charge (+ base (get reserved :work-count) (* (get reserved :matched-call-count 0) (+ 1 (* 2 members))))]
+        (if (if (= :rejected (get reserved :status)) true (< budget charge))
+          (assoc (p15-s23-typed-node-error
+                   (if (if (= :map-get-work-limit (get reserved :reason)) true (< budget charge))
+                     :typed-lowering-work-limit :unsupported-or-mismatched-typed-map-get) node) :work-count charge)
       (let [header (p15-s23-mg-source core node call edge nodes (get context :bindings) types (get core :module))
             descriptor (get types (get call :operator-node-id))
-            expected (if (map? header) (p15-s23-mg-present-finish header (get (get descriptor :presence-proof) :operand-shape)) nil)
+            expected (if (map? header)
+                       (if (= :sh08-map-get-private-entry-v1 (get descriptor :version))
+                         (p15-s23-pe-recheck header descriptor core nodes (get context :bindings) (get context :forms) types)
+                         (p15-s23-mg-present-finish header (get (get descriptor :presence-proof) :operand-shape))) nil)
             rows (loop [remaining (get context :ledger) out []]
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
@@ -4299,7 +4581,7 @@
                 (if (p15-s23-compiler-complete? child)
                   (recur (rest remaining) (conj values (get child :value)) (+ used (get child :work-count)))
                   (assoc child :work-count (+ charge used (get child :work-count 0)))))))
-          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-get node) :work-count charge))))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-get node) :work-count charge))))))))
 
 (defn p15-s23-typed-compile-get [context node budget]
   (if (= 2 (count (get (get (get context :calls) (get node :node-id)) :argument-node-ids)))

@@ -124,6 +124,28 @@ recur compatibility. Key presence, member access and other operations must
 establish their own required facts. Schema identity, ownership, linearity,
 regions, effects and profile/memory legality remain obligations.
 
+### Private Call-Entry Member Facts
+
+Local inference may establish a literal Map key's presence at an immutable
+parameter from complete private call-entry evidence. The function must be
+closed to unaccounted callers: retain its actual visibility/export facts and
+account for every resolved use, entry and parameter re-entry. A spelling,
+member-type vector, first caller or absence of observed callers is not proof.
+
+At least one normally invoking entry must independently establish the key and
+selected stored type. Every other normal entry must establish that same key
+and compatible selected type, retaining its own argument source, shape and
+selection coordinates. A non-invoked call with a transferring argument supplies
+no normal-entry witness. Escapes, public/external entry and recursive parameter
+transfers require their own complete evidence; they cannot be omitted from the
+entry set. Ordinary nested-loop transfers are not function-parameter re-entry.
+
+Retain these as entry-specific facts on the parameter, not a fabricated common
+constructor or deep shape. Invalidate them when callers, uses, visibility,
+exports, arguments, binding or transfer facts change. This introduces no Map
+annotation, coercion, runtime check elision or public structural-record API.
+Other ownership, effect, profile and safety obligations remain unchanged.
+
 ### Homogeneous List Declarations
 
 `(List T)` in a parameter or return annotation denotes persistent Lists whose elements
@@ -328,6 +350,7 @@ L5 rejects:
 - Type fixtures cover literals, functions, records, unions, protocols, generics, dynamic values, schema-derived types, ownership types, and linear resources.
 - Explicit bare-List parameter fixtures retain actual argument types and compatibility evidence while rejecting unrelated sequence families and preserving other type obligations.
 - Explicit bare-Map parameter fixtures retain actual argument types and per-parameter compatibility evidence, including mixed collection/scalar calls, while rejecting unrelated values and uses that require unestablished member or key facts.
+- Private call-entry member fixtures retain each actual incoming key witness, reject missing or vacuous evidence and uncovered entry/escape/re-entry paths, and do not invent a common constructor shape from matching member types.
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.

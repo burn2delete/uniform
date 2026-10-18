@@ -3569,6 +3569,364 @@
    (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
      (invoke-c7 'sh08-mg-present-derive [node nodes types binding-types {} [] bindings forms {} context budget]))))
 
+(defn- private-entry-get-input
+  ([] (private-entry-get-input :file))
+  ([key]
+   (let [base (map-present-get-input key)
+         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+         form (fn [id kind value parent children]
+                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                 :kind kind :value value :parent-form-id parent :child-form-ids children})
+         node (fn [id kind children attributes owner]
+                {:node-id id :core-form kind :children children :attributes attributes :source (source id)
+                 :resolved-binding-ids [] :evaluation {:kind :left-to-right :owner-function-syntax-id owner
+                                                      :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+         parameter {:binding-id :span-binding :name 'span :kind :local :binding-class :lexical}
+         helper {:function-syntax-id :helper-form :function-form-id :helper-form :function-core-node-id :helper-fn
+                 :body-core-node-id :present-get :parameter-binding-ids [:span-binding] :fixed-arity 1
+                 :definition-kind :named-top-level :definition-binding-id :helper-binding :definition-core-node-id :helper-def
+                 :definition-name 'without-path}
+         binding {:binding-id :helper-binding :name 'without-path :kind :function :binding-class :namespace
+                  :namespace (get-in base [:module :namespace]) :visibility :private
+                  :definition-syntax-id :helper-name :upstream-binding-id :helper-upstream}
+         definition {:binding-id :helper-binding :name 'without-path :core-node-id :helper-def
+                     :value-node-id :helper-fn :syntax-id :helper-def}
+         maps (mapv (fn [ordinal]
+                      (let [ids (into {} (for [id (concat [:input] (get-in base [:nodes :input :children]))]
+                                           [id (keyword (str (name id) "-" ordinal))]))
+                            rename #(walk/postwalk-replace ids %)
+                            literal-nodes (mapv #(rename (get-in base [:nodes %])) (get-in base [:nodes :input :children]))
+                            map-node (-> (rename (get-in base [:nodes :input]))
+                                         (assoc-in [:source :form-id] (ids :input))
+                                         (assoc-in [:source :syntax-id] (ids :input)))
+                            map-node (assoc-in map-node [:evaluation :owner-function-syntax-id] (keyword (str "caller-" ordinal)))
+                            forms (into {} (for [[old id] ids]
+                                             [id (rename (get-in base [:forms old]))]))
+                            forms (assoc-in forms [(ids :input) :parent-form-id] (keyword (str "entry-" ordinal)))]
+                        {:node map-node :nodes literal-nodes :forms forms
+                         :types (into {} (for [[old id] ids] [id (get-in base [:types old])])) :id (ids :input)})) [0 1])
+         entries (mapv (fn [ordinal input]
+                         (let [id (keyword (str "entry-" ordinal)) op-id (keyword (str "entry-operator-" ordinal))
+                               owner (keyword (str "caller-" ordinal)) children [op-id (:id input)]
+                               op (-> (node op-id :reference [] {:symbol 'without-path :position :operator :binding-id :helper-binding
+                                                                :binding-class :namespace :definition-syntax-id :helper-name} owner)
+                                      (assoc :resolved-binding-ids [:helper-binding]))
+                               call-node (-> (node id :call children {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                                                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} owner)
+                                             (assoc :resolved-binding-ids [:helper-binding])
+                                             (assoc-in [:evaluation :kind] :operator-then-arguments))
+                               call {:core-node-id id :operator-node-id op-id :operator-binding-id :helper-binding
+                                     :argument-node-ids [(:id input)] :ordered-evaluation-node-ids children
+                                     :evaluation-order :operator-then-arguments :result-policy :call-result}
+                               edge {:ordinal (inc ordinal) :call-core-node-id id :caller-function-syntax-id owner
+                                     :caller-function-core-node-id owner :callee-binding-id :helper-binding :callee-definition-syntax-id :helper-name
+                                     :callee-function-syntax-id :helper-form :callee-function-core-node-id :helper-fn
+                                     :argument-core-node-ids [(:id input)] :ordered-evaluation-node-ids children
+                                     :evaluation-order :operator-then-arguments :classification :local-function}]
+                           {:node call-node :operator op :call call :edge edge
+                            :caller {:function-syntax-id owner :function-core-node-id owner}
+                            :forms {id (form id :list nil nil children) op-id (form op-id :symbol 'without-path id [])}
+                            :use {:core-node-id op-id :form-id op-id :syntax-id op-id :symbol 'without-path :position :operator
+                                  :binding-id :helper-binding :binding-class :namespace :definition-syntax-id :helper-name}
+                            :resolution {:reference-syntax-id op-id :symbol 'without-path :position :operator :binding-id :helper-binding
+                                         :upstream-binding-id :helper-upstream :resolution-order ordinal :source-span nil}})) [0 1] maps)
+         receiver (-> (node :input :reference [] {:symbol 'span :position :expression :binding-id :span-binding
+                                                 :binding-class :lexical :definition-syntax-id :span-name} :helper-form)
+                      (assoc :resolved-binding-ids [:span-binding]))
+         get-node (assoc-in (:node base) [:evaluation :owner-function-syntax-id] :helper-form)
+         get-edge (assoc (:edge base) :caller-function-syntax-id :helper-form :caller-function-core-node-id :helper-fn)
+         fn-node (-> (node :helper-fn :fn [:present-get] {} nil) (assoc :source (source :helper-form) :resolved-binding-ids [:span-binding]))
+         def-node (-> (node :helper-def :def [:helper-fn] {:name 'without-path :name-syntax-id :helper-name :visibility :private} nil)
+                      (assoc :resolved-binding-ids [:helper-binding]))
+         all-nodes (vec (concat [(get-in base [:nodes :operator]) receiver (get-in base [:nodes :key]) get-node fn-node def-node]
+                                (mapcat #(concat (:nodes %) [(:node %)]) maps)
+                                (mapcat #(vector (:operator %) (:node %)) entries)))
+         core (-> (:core base)
+                  (assoc :nodes all-nodes :definitions [definition] :function-records (into [helper] (map :caller entries))
+                         :calls (into [(:call base)] (map :call entries)) :call-edges (into [get-edge] (map :edge entries))
+                         :reference-uses (mapv :use entries)
+                         :preserved-resolution {:resolution-table (mapv :resolution entries) :alias-table []
+                                                :binding-table (vec (vals (assoc (:bindings base) :span-binding parameter :helper-binding binding)))}
+                         :mutations [] :var-references [] :recur-targets [] :recur-transfers [])
+                  (assoc-in [:module :exports] ['main]))
+         forms (merge (select-keys (:forms base) [:present-get :operator :key])
+                      {:input (form :input :symbol 'span :present-get [])
+                       :helper-def (form :helper-def :list nil nil [:def-op :helper-name :helper-form])
+                       :helper-name (form :helper-name :symbol 'without-path :helper-def [])
+                       :helper-form (form :helper-form :list nil :helper-def [])}
+                      (apply merge (map :forms maps)) (apply merge (map :forms entries)))
+         types (merge {:input (get-in base [:types :input]) :key :gravity.type/keyword} (apply merge (map :types maps)))]
+     (assoc base :core core :module (:module core) :nodes (into {} (map (juxt :node-id identity) all-nodes))
+                 :node get-node :edge get-edge :forms forms :types types
+                 :bindings (assoc (:bindings base) :span-binding parameter :helper-binding binding)
+                 :binding-types {:span-binding (:input types)}
+                 :products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core) :definitions [definition]
+                            :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+                            :recursion-components []}))))
+
+(deftest sh08-private-entry-get-development-kernel
+  (let [input (private-entry-get-input) result (map-present-get-derived input)
+        descriptor (:descriptor result) proof (:presence-proof descriptor)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :gravity.type/string (:type result)))
+    (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
+    (is (= :private-call-entry-key-presence (:kind proof)))
+    (is (vector? (get-in input [:core :preserved-resolution :resolution-table])))
+    (is (not (contains? (:core input) :resolution-table)))
+    (is (= (get-in input [:core :preserved-resolution :resolution-table]) (get-in proof [:entry-census :resolutions])))
+    (is (= 2 (count (:entries proof))))
+    (is (= [:input-0 :input-1] (mapv :argument-node-id (:entries proof))))
+    (is (nil? (:operand-shape proof)))
+    (is (= result (map-present-get-derived input (:work-count result))))
+    (is (= :map-get-work-limit (:reason (map-present-get-derived input (dec (:work-count result))))))
+    (doseq [[label mutate]
+            [[:export #(assoc-in % [:core :module :exports] ['without-path])]
+             [:public #(assoc-in % [:bindings :helper-binding :visibility] :public)]
+             [:var #(assoc-in % [:core :var-references] [{:binding-id :helper-binding}])]
+             [:set #(assoc-in % [:core :mutations] [{:target-binding-id :helper-binding}])]
+             [:parameter-set #(assoc-in % [:core :mutations] [{:target-binding-id :span-binding}])]
+             [:use #(update-in % [:core :reference-uses] pop)]
+             [:resolution #(update-in % [:core :preserved-resolution :resolution-table] pop)]
+             [:flat-resolution #(-> % (assoc-in [:core :resolution-table] (get-in % [:core :preserved-resolution :resolution-table]))
+                                     (update-in [:core :preserved-resolution] dissoc :resolution-table))]
+             [:edge #(update-in % [:core :call-edges] pop)]
+             [:escape #(assoc-in % [:core :reference-uses 0 :position] :expression)]
+             [:cycle #(assoc-in % [:core :recursion-components] [{:function-syntax-ids [:helper-form]}])]
+             [:reentry #(-> % (assoc-in [:core :recur-targets] [{:target-id :again :target-kind :function
+                                                               :owner-core-node-id :helper-fn :binding-ids [:span-binding]}])
+                              (assoc-in [:core :recur-transfers] [{:target-id :again :target-kind :function}]))]]]
+      (is (not= :accepted (:status (map-present-get-derived (mutate input)))) (name label)))
+    (let [header (invoke-c7 'sh08-mg-source [(:core input) (:node input) (:call input) (:edge input)
+                                           (:nodes input) (:bindings input) (:types input) (:module input)])]
+      (is (= descriptor (invoke-c7 'sh08-pe-recheck [header descriptor (:core input) (:nodes input) (:bindings input) (:forms input)
+                                                    (:types input)])))
+      (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                       (assoc-in descriptor [:presence-proof :entries] :invalid)
+                       (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
+                       (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts 0 :key] :different)
+                       (assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 99)
+                       (assoc-in descriptor [:presence-proof :entries 1 :argument-source] {})
+                       (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])]]
+        (is (not= changed (invoke-c7 'sh08-pe-recheck [header changed (:core input) (:nodes input) (:bindings input) (:forms input)
+                                                     (:types input)])))))))
+
+(deftest sh08-private-entry-get-entry-controls-development-kernel
+  (let [input (private-entry-get-input) result (map-present-get-derived input)]
+    (is (= :map-get-work-limit (:reason (map-present-get-derived input 0))))
+    (is (= :accepted (:status (map-present-get-derived (assoc-in input [:types :entry-0] :gravity.type/never)))))
+    (let [never-one (assoc-in input [:types :input-0] :gravity.type/never)
+          checked (map-present-get-derived never-one)]
+      (is (= :accepted (:status checked)) (pr-str checked))
+      (is (= [:not-invoked :invoked] (mapv :entry (get-in checked [:descriptor :presence-proof :entries]))))
+      (is (nil? (get-in checked [:descriptor :presence-proof :entries 0 :argument-shape])))
+      (is (= :map-get-private-entry-presence-required
+             (:reason (map-present-get-derived (assoc-in never-one [:types :input-1] :gravity.type/never))))))
+    (is (= :deferred (:status (map-present-get-derived (assoc-in input [:types :input-1] :gravity.type/unknown)))))
+    (is (= :accepted (:status (map-present-get-derived
+                               (assoc-in input [:core :recursion-components] [{:function-syntax-ids [:caller-0]}])))))
+    (let [nested (-> input
+                     (assoc-in [:core :recur-targets] [{:target-id :nested :target-kind :loop
+                                                       :owner-core-node-id :loop-node :binding-ids [:loop-value]}])
+                     (assoc-in [:core :recur-transfers] [{:target-id :nested :target-kind :loop}]))]
+      (is (= :accepted (:status (map-present-get-derived nested)))))
+    (let [changed (-> input
+                      (assoc-in [:nodes :entry-key-0-1 :attributes :value] :archive)
+                      (assoc-in [:forms :entry-key-0-1 :value] :archive)
+                      (update-in [:forms :input-1 :value] #(-> % (assoc :archive (:file %)) (dissoc :file))))
+          changed (assoc-in changed [:core :nodes] (mapv #(get (:nodes changed) (:node-id %)) (get-in input [:core :nodes])))]
+      (is (= (get-in input [:types :input-0]) (get-in changed [:types :input-1])))
+      (is (= :map-get-private-entry-presence-required (:reason (map-present-get-derived changed)))))
+    (let [plain (map-present-get-input :file)
+          args [(:node plain) (:nodes plain) (:types plain) (:binding-types plain) {} [] (:bindings plain) (:forms plain) {}
+                (assoc (invoke-c7 'sh08-sm-call-context [(:products plain) (:types plain) 65536])
+                       :source-core (:core plain) :budget-left 65536) 65536]]
+      (is (= (invoke-c7 'sh08-mg-present-finite-derive args) (map-present-get-derived plain))))
+    (let [fallback (assoc-in input [:core :module :exports] ['without-path])
+          context (assoc (invoke-c7 'sh08-sm-call-context [(:products fallback) (:types fallback) 65536])
+                         :source-core (:core fallback) :budget-left 65536)
+          args [(:node fallback) (:nodes fallback) (:types fallback) (:binding-types fallback) {} [] (:bindings fallback)
+                (:forms fallback) {} context]
+          prework (+ 3 (:work-count (invoke-c7 'sh08-pe-reserve [(:core fallback) (get-in fallback [:nodes :input])
+                                                                 (:nodes fallback) (:bindings fallback) 65536]))
+                     (* 2 (count (:types fallback))))
+          finite (invoke-c7 'sh08-mg-present-finite-derive (conj args (- 65536 prework)))
+          checked (map-present-get-derived fallback)]
+      (is (= (+ prework (:work-count finite)) (:work-count checked)))
+      (is (= (:reason finite) (:reason checked)))
+      (is (= prework (:work-count (map-present-get-derived fallback (dec prework))))))))
+
+(deftest sh08-private-entry-get-nonparameter-fallback-development-kernel
+  (let [base (map-present-get-input :file)
+        [group _] (keyword-match-alias-group {:node (:node base) :nodes (:nodes base) :forms (:forms base) :binding-index (:bindings base)}
+                                            (get-in base [:nodes :input]) (:types base))
+        alias (first (get-in group [:node :children])) bid (first (get-in group [:nodes alias :resolved-binding-ids]))
+        receiver (-> (get-in group [:nodes alias]) (assoc-in [:attributes :binding-class] :lexical))
+        children [:operator alias :key]
+        node (-> (:node base) (assoc :children children)
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [alias :key] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [alias :key] :ordered-evaluation-node-ids children)
+        nodes (assoc (:nodes group) alias receiver :present-get node)
+        forms (-> (:forms group) (assoc-in [:present-get :child-form-ids] children) (assoc-in [alias :parent-form-id] :present-get))
+        types (assoc (:types base) alias (get-in base [:types :input]))
+        core (assoc (:core base) :nodes (vec (vals nodes)) :calls [call] :call-edges [edge]
+                    :lexical-bindings (:lexical-bindings group) :reference-uses (vec (repeat 1000 {:binding-id :unrelated})))
+        context (assoc (invoke-c7 'sh08-sm-call-context [(assoc (:products base) :calls [call] :call-edges [edge]) types 65536])
+                       :source-core core :budget-left 65536)
+        args [node nodes types {bid (:input types)} {} (:lexical-bindings group) (:binding-index group) forms {} context]
+        finite (invoke-c7 'sh08-mg-present-finite-derive (conj args 65536))
+        budget (+ 2 (:work-count finite))
+        checked (invoke-c7 'sh08-mg-present-derive (conj args budget))]
+    (is (= :accepted (:status finite)) (pr-str finite))
+    (is (< budget (invoke-c7 'sh08-pe-work [core])))
+    (is (= :accepted (:status checked)) (pr-str checked))
+    (is (= (:descriptor finite) (:descriptor checked)))
+    (is (= budget (:work-count checked)))
+    (is (= :rejected (:status (invoke-c7 'sh08-mg-present-derive (conj args (dec budget))))))))
+
+(defn- private-entry-cold-input []
+  (let [base (private-entry-get-input)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        node (fn [id kind children attributes owner resolved]
+               {:node-id id :core-form kind :children children :attributes attributes :source (source id)
+                :resolved-binding-ids resolved :evaluation {:kind :left-to-right :owner-function-syntax-id owner
+                                                           :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+        fields [:source-id :start-byte :end-byte :line :column]
+        maps (mapv
+               (fn [ordinal]
+                 (let [id (keyword (str "input-" ordinal)) old (get-in base [:nodes id])
+                       pairs (mapv (fn [i key]
+                                     (let [kid (keyword (str "cold-key-" ordinal "-" i)) vid (keyword (str "cold-value-" ordinal "-" i))
+                                           value (if (= i 0) (if (zero? ordinal) "alpha" "beta")
+                                                     (if (= i 5) (if (zero? ordinal) "alpha.gravity" "beta.gravity") (+ (* 20 ordinal) i)))
+                                           kind (if (string? value) :string :integer)]
+                                       {:ids [kid vid] :nodes [(node kid :literal [] {:literal-kind :keyword :value key} (keyword (str "caller-" ordinal)) [])
+                                                              (node vid :literal [] {:literal-kind kind :value value} (keyword (str "caller-" ordinal)) [])]
+                                        :forms [(form kid :keyword key id []) (form vid kind value id [])]}))
+                                   (range) (conj fields :actual-path))
+                       children (vec (mapcat :ids pairs))
+                       map-node (-> old (assoc :children children :attributes {:literal-kind :map :element-count 12})
+                                    (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))]
+                   {:node map-node :nodes (vec (mapcat :nodes pairs))
+                    :forms (into {id (form id :map nil (keyword (str "entry-" ordinal)) children)}
+                                 (map (juxt :form-id identity) (mapcat :forms pairs)))})) [0 1])
+        gets (mapv
+               (fn [i key]
+                 (let [ids {:present-get (keyword (str "cold-get-" i)) :operator (keyword (str "cold-op-" i))
+                            :input (keyword (str "cold-span-" i)) :key (keyword (str "cold-selection-" i))}
+                       rename #(walk/postwalk-replace ids %)
+                       nodes (mapv #(rename (get-in base [:nodes %])) [:operator :input :key :present-get])
+                       nodes (assoc-in nodes [0 :attributes :position] :operator)
+                       nodes (assoc-in nodes [2 :attributes :value] key)
+                       output-key (keyword (str "cold-output-key-" i))
+                       forms (rename (select-keys (:forms base) [:present-get :operator :input :key]))
+                       forms (-> forms (assoc-in [(ids :key) :value] key) (assoc-in [(ids :present-get) :parent-form-id] :helper-output))]
+                   {:id (ids :present-get) :output-key output-key
+                    :nodes (into [(node output-key :literal [] {:literal-kind :keyword :value key} :helper-form [])] nodes)
+                    :forms (assoc forms output-key (form output-key :keyword key :helper-output []))
+                    :call (rename (:call base)) :edge (assoc (rename (:edge base)) :ordinal i)})) (range) fields)
+        result-children (vec (mapcat #(vector (:output-key %) (:id %)) gets))
+        result-node (node :helper-output :collection-literal result-children {:literal-kind :map :element-count 10} :helper-form [])
+        named (fn [ordinal name fid fnid defid bid body parameters]
+                (let [name-id (keyword (str (clojure.core/name defid) "-name"))]
+                  {:record {:ordinal ordinal :function-syntax-id fid :function-form-id fid :function-core-node-id fnid
+                            :body-core-node-id body :parameter-binding-ids parameters :fixed-arity (count parameters)
+                            :definition-kind :named-top-level :definition-binding-id bid :definition-core-node-id defid :definition-name name}
+                   :binding {:binding-id bid :name name :kind :function :binding-class :namespace :namespace (get-in base [:module :namespace])
+                             :visibility (if (zero? ordinal) :private :public) :definition-syntax-id name-id
+                             :upstream-binding-id (keyword (str (clojure.core/name bid) "-upstream"))}
+                   :definition {:binding-id bid :name name :core-node-id defid :value-node-id fnid :syntax-id defid}
+                   :nodes [(assoc (node fnid :fn [body] {} nil parameters) :source (source fid))
+                           (node defid :def [fnid] {:name name :name-syntax-id name-id :visibility (if (zero? ordinal) :private :public)} nil [bid])]
+                   :forms {defid (form defid :list nil nil [:def-op name-id fid])
+                           name-id (form name-id :symbol name defid []) fid (form fid :list nil defid [])}}))
+        helper (named 0 'without-path :helper-form :helper-fn :helper-def :helper-binding :helper-output [:span-binding])
+        caller-one (named 1 'span-one :caller-0 :caller-0 :caller-def-0 :caller-binding-0 :entry-0 [])
+        caller-two (named 2 'span-two :caller-1 :caller-1 :caller-def-1 :caller-binding-1 :entry-1 [])
+        main (named 3 'main :main-form :main-fn :main-def :main-binding :main-call [])
+        main-op (node :main-op :reference [] {:symbol 'span-one :position :operator :binding-id :caller-binding-0
+                                             :binding-class :namespace :definition-syntax-id (get-in caller-one [:binding :definition-syntax-id])}
+                      :main-form [:caller-binding-0])
+        main-call (assoc-in (node :main-call :call [:main-op] {:operator-child-index 0 :argument-count 0 :argument-child-indexes []
+                                                             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                                 :main-form [:caller-binding-0]) [:evaluation :kind] :operator-then-arguments)
+        main-call-record {:core-node-id :main-call :operator-node-id :main-op :operator-binding-id :caller-binding-0
+                          :argument-node-ids [] :ordered-evaluation-node-ids [:main-op] :evaluation-order :operator-then-arguments :result-policy :call-result}
+        main-edge {:ordinal 7 :call-core-node-id :main-call :caller-function-syntax-id :main-form :caller-function-core-node-id :main-fn
+                   :callee-binding-id :caller-binding-0 :callee-definition-syntax-id (get-in caller-one [:binding :definition-syntax-id])
+                   :callee-function-syntax-id :caller-0 :callee-function-core-node-id :caller-0
+                   :argument-core-node-ids [] :ordered-evaluation-node-ids [:main-op] :evaluation-order :operator-then-arguments :classification :local-function}
+        functions [helper caller-one caller-two main]
+        bindings (merge (:bindings base) (into {} (map #(vector (get-in % [:binding :binding-id]) (:binding %)) functions)))
+        adjust-op (fn [n] (if (= :helper-binding (get-in n [:attributes :binding-id]))
+                           (assoc-in n [:attributes :definition-syntax-id] (get-in helper [:binding :definition-syntax-id])) n))
+        all-nodes (vec (concat (mapcat :nodes gets) [result-node] (:nodes helper)
+                               [(adjust-op (get-in base [:nodes :entry-operator-0]))]
+                               (:nodes (maps 0)) [(:node (maps 0)) (get-in base [:nodes :entry-0])] (:nodes caller-one)
+                               [(adjust-op (get-in base [:nodes :entry-operator-1]))]
+                               (:nodes (maps 1)) [(:node (maps 1)) (get-in base [:nodes :entry-1])] (:nodes caller-two)
+                               [main-op main-call] (:nodes main)))
+        calls (vec (concat (map :call gets) (rest (get-in base [:core :calls])) [main-call-record]))
+        edges (vec (concat (map :edge gets)
+                           (map-indexed #(assoc %2 :ordinal (+ 5 %1) :callee-definition-syntax-id (get-in helper [:binding :definition-syntax-id]))
+                                        (rest (get-in base [:core :call-edges]))) [main-edge]))
+        forms (merge (apply merge (map :forms gets)) (apply merge (map :forms maps))
+                     (apply merge (map :forms functions))
+                     (select-keys (:forms base) [:entry-0 :entry-1 :entry-operator-0 :entry-operator-1])
+                     {:helper-output (form :helper-output :map nil :helper-form result-children)
+                      :main-op (form :main-op :symbol 'span-one :main-call []) :main-call (form :main-call :list nil :main-form [:main-op])})
+        uses (mapv (fn [n] {:core-node-id (:node-id n) :form-id (get-in n [:source :form-id]) :syntax-id (get-in n [:source :syntax-id])
+                            :symbol (get-in n [:attributes :symbol]) :position (get-in n [:attributes :position])
+                            :binding-id (get-in n [:attributes :binding-id]) :binding-class (get-in n [:attributes :binding-class])
+                            :definition-syntax-id (get-in n [:attributes :definition-syntax-id])})
+                   (filter #(= :reference (:core-form %)) all-nodes))
+        resolutions (mapv (fn [ordinal use] {:reference-syntax-id (:syntax-id use) :symbol (:symbol use) :position (:position use)
+                                            :binding-id (:binding-id use) :upstream-binding-id (get-in bindings [(:binding-id use) :upstream-binding-id])
+                                            :resolution-order ordinal :source-span nil}) (range) uses)
+        records (mapv :record functions)
+        core (assoc (assoc-in (:core base) [:module :exports] ['span-one 'span-two 'main]) :nodes all-nodes :calls calls :call-edges edges :definitions (mapv :definition functions)
+                    :function-records records :reference-uses uses
+                    :preserved-resolution {:resolution-table resolutions :binding-table (vec (vals bindings)) :alias-table []}
+                    :root-core-node-ids (mapv #(get-in % [:definition :core-node-id]) functions)
+                    :recur-targets (mapv (fn [record] {:target-id (:function-syntax-id record) :target-kind :function
+                                                      :owner-core-node-id (:function-core-node-id record) :binding-ids (:parameter-binding-ids record)}) records))]
+    {:core core :nodes (into {} (map (juxt :node-id identity) all-nodes)) :forms forms :bindings bindings
+     :products {:module (:module core) :calls calls :call-edges edges :definitions (:definitions core)
+                :function-index (into {} (map (juxt :function-syntax-id identity) records)) :recursion-components []}}))
+
+(deftest sh08-private-entry-get-cold-inference-development-kernel
+  (let [{:keys [core nodes forms bindings products]} (private-entry-cold-input)
+        skeletons (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
+                 :boolean-matches [] :shape-call-products products}
+        run (fn [budget] (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                   [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core)
+                                    skeletons {} 100 (assoc context :loop-work-left budget)]))
+        inferred (run 65536) used (- 65536 (:type-join-work-left inferred))]
+    (println "AO normalized cold inference" {:rounds (:round-count inferred) :cumulative-work used
+                                             :remaining-work (:type-join-work-left inferred)})
+    (is (= 66 (count (:nodes core))))
+    (is (= 4 (count (:function-records core))))
+    (is (= 8 (count (:calls core))))
+    (is (= :gravity.type/unknown (get-in skeletons [:helper-form :parameters 0 :type])))
+    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:round-count :diagnostics :type-join-work-left])))
+    (is (= [] (:diagnostics inferred)))
+    (is (< 0 used 65536))
+    (is (<= 4 (:round-count inferred)))
+    (is (= 5 (count (filter #(= :sh08-map-get-private-entry-v1 (:version %)) (vals (:type-table inferred))))))
+    (doseq [record (:function-records core)]
+      (is (= :gravity.type/map (get-in inferred [:function-types (:function-syntax-id record) :return :kind]))))
+    (let [exact (run used) below (run (dec used))]
+      (is (= :converged (:convergence-status exact)))
+      (is (= 0 (:type-join-work-left exact)))
+      (is (= (:type-table inferred) (:type-table exact)))
+      (is (= (:function-types inferred) (:function-types exact)))
+      (is (seq (:diagnostics below)))
+      (is (some #(= :map-get-work-limit (:reason %)) (:diagnostics below))))))
+
 (deftest sh08-map-present-get-development-kernel
   (doseq [[key expected coordinate] [[:file :gravity.type/string 1] [:line :gravity.type/integer 3] [:kind :gravity.type/keyword 5]
                                      [:enabled :gravity.type/bool 7] [:payload :gravity.type/nil 9]]]

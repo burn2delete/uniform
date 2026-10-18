@@ -4948,6 +4948,174 @@
         (is (str/ends-with? text ")\n"))
         (is (not (str/ends-with? text "\n\n")))))))
 
+(deftest current-gravity-private-entry-span-fixture-preparation
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        w5 (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        exact (str/join "\n" (take 6 (drop 487 (str/split-lines w5))))]
+    (doseq [family ["accepted/private-entry-span" "rejected/private-entry-span-missing-key"]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" family)
+            contents (slurp (io/file root (str relative ".gravity")))
+            forms (bootstrap/read-forms relative contents)
+            definitions (filter #(and (seq? %) (= 'defn (first %))) forms)
+            directives (into {} (map (fn [entry] [(first entry) (second entry)]) (drop 2 (first forms))))]
+        (is (= contents (slurp (io/file root (str relative ".qst")))))
+        (is (str/includes? contents exact))
+        (is (= 4 (count definitions)))
+        (is (= ['span] (nth (first definitions) 2)))
+        (is (= #{:memory/allocate} (:effects directives)))
+        (is (= ['span-one 'span-two 'main] (:exports directives)))))))
+
+(deftest current-gravity-private-entry-span-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        one {:source-id "alpha" :start-byte 10 :end-byte 20 :line 2 :column 3}
+        two {:source-id "beta" :start-byte 30 :end-byte 40 :line 3 :column 4}
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-entry-span" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  ready (= :accepted (get-in input [:typed :status]))
+                  _ (is ready (pr-str (get-in input [:typed :diagnostics])))
+                  _ (when-not ready (throw (ex-info "Private W5 span helper rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  calls (:call-type-facts facts)
+                  descriptors (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) calls))
+                  rows (filterv #(= :sh08-map-get-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  helper (functions 'w5-se-span-without-path)
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 4 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+              (is (= 8 (count (:calls core)) (count (:call-edges core)) (count calls)))
+              (is (= 5 (count descriptors) (count rows)))
+              (is (= #{:source-id :start-byte :end-byte :line :column} (set (map :key descriptors))))
+              (is (= ['span] (get-in definitions ['w5-se-span-without-path :params])))
+              (is (= :gravity.type/map (get-in helper [:parameters 0 :type :kind])))
+              (is (= 12 (count (get-in helper [:parameters 0 :type :member-types]))))
+              (is (= :gravity.type/map (get-in helper [:return :kind])))
+              (is (= [:gravity.type/keyword :gravity.type/string
+                      :gravity.type/keyword :gravity.type/integer :gravity.type/keyword :gravity.type/integer
+                      :gravity.type/keyword :gravity.type/integer :gravity.type/keyword :gravity.type/integer]
+                     (get-in helper [:return :member-types])))
+              (doseq [descriptor descriptors]
+                (let [proof (:presence-proof descriptor) census (:entry-census proof) entries (:entries proof)
+                      expected (if (= :source-id (:key descriptor)) :gravity.type/string :gravity.type/integer)]
+                  (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
+                  (is (= :private-call-entry-key-presence (:kind proof)))
+                  (is (not (contains? proof :operand-shape)))
+                  (is (= :private (get-in census [:definition-binding :visibility])))
+                  (is (= ['span-one 'span-two 'main] (:exports census)))
+                  (is (= 2 (count (:calls census)) (count (:edges census)) (count (:reference-uses census))
+                         (count (:resolutions census)) (count entries)))
+                  (is (= [:invoked :invoked] (mapv :entry entries)))
+                  (is (= expected (:return descriptor) (:result-type descriptor) (:selected-type proof)))
+                  (is (= 2 (count (set (map :argument-node-id entries))) (count (set (map :argument-source entries)))))
+                  (is (= (get-in entries [0 :argument-type]) (get-in entries [1 :argument-type])))
+                  (is (= (= :source-id (:key descriptor))
+                         (= (get-in entries [0 :selected-coordinate]) (get-in entries [1 :selected-coordinate]))))
+                  (doseq [entry entries]
+                    (is (= expected (:selected-type entry) (get-in entry [:selected-part :shape :type])))
+                    (is (= (:key descriptor) (get-in entry [:selected-part :key])))
+                    (is (= (:selected-coordinate entry) (get-in entry [:selected-part :coordinate]))))
+                  (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+                  (is (nil? (get-in graph [:nodes (:call-core-node-id descriptor) :allocation])))))
+              (doseq [[name expected] [['span-one one] ['span-two two] ['main one]]]
+                (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args []} {} "" (:functions assembled) []])]
+                  (is (= [expected "" :normal] result) (str extension " " name))
+                  (is (= #{:source-id :start-byte :end-byte :line :column} (set (keys (first result)))))
+                  (is (not (contains? (first result) :actual-path)))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Private W5 span C8 rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [function (vals functions)]
+                (is (= #{:memory/allocate} (get-in graph [:functions (:function-id function) :inferred]))))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) % {} %2)
+                      analyzed (analyze facts 65536) work (:work-count analyzed)
+                      row (first rows) ledger (:constraint-ledger facts)
+                      replace-row (fn [changed] (mapv #(if (= row %) changed %) ledger))]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze facts work)))
+                  (is (= :rejected (:status (analyze facts (dec work)))))
+                  (doseq [changed [(vec (remove #(= row %) ledger)) (conj ledger row)
+                                   (replace-row (update-in row [:dependencies :presence-proof :entries] pop))
+                                   (replace-row (assoc-in row [:dependencies :presence-proof :entries 1 :selected-coordinate] 999))]]
+                    (is (= :rejected (:status (analyze (assoc facts :constraint-ledger changed) 65536)))))))
+              {:input input :module module :definitions definitions :functions functions :descriptors descriptors
+               :rows rows :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions functions descriptors rows effects binding]} (first cases)
+        descriptor (first descriptors)
+        entries (get-in descriptor [:presence-proof :entries])
+        transplanted (-> descriptor
+                         (assoc-in [:presence-proof :entries 1 :argument-shape] (:argument-shape (first entries)))
+                         (assoc-in [:presence-proof :entries 1 :selected-part] (:selected-part (first entries)))
+                         (assoc-in [:presence-proof :entries 1 :selected-coordinate] (:selected-coordinate (first entries))))
+        erased (update-in descriptor [:presence-proof :entries] pop)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [changed [transplanted erased]]
+      (let [typed (walk/postwalk #(if (= descriptor %) changed %) (:typed input))
+            failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                     emitter module (get definitions 'w5-se-span-without-path) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 4 (count @verified)))
+    (doseq [changed [(assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 999)
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts
+                                           (quot (dec (get-in descriptor [:presence-proof :entries 1 :selected-coordinate])) 2) :key] :unrelated)]]
+      (let [typed (walk/postwalk #(if (= descriptor %) changed %) (:typed input))
+            verification (assoc (:verification input) :expected typed :candidate typed)
+            hostile-binding (seal (:request input) typed verification)
+            result (c8 'build-body-effect-result typed verification hostile-binding)]
+        (is (true? (c8 'body-input-valid? typed verification hostile-binding)))
+        (is (= :rejected (:status result)))
+        (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason])))))
+    (let [graph (:effect-graph effects) id (:call-core-node-id descriptor)
+          helper-id (get-in functions ['w5-se-span-without-path :function-id])]
+      (doseq [changed [(assoc-in graph [:nodes id :type] :gravity.type/symbol)
+                       (assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:functions helper-id :inferred] #{})
+                       (assoc-in graph [:nodes id :allocation] {:behavior :invented-entry-proof})]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-entry-span-missing-key.gravity")
+          diagnostics (get-in products [:typed :diagnostics])]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (some #(= ["C7-ANNOTATION" :map-get-private-entry-presence-required]
+                    ((juxt :rule :reason) %)) diagnostics) (pr-str diagnostics)))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-entry-span.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-entry-span.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-entry-span-missing-key.gravity"] @built))))
+
 (deftest current-gravity-nil-if-join-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -7869,6 +8037,54 @@
             failure (get-in products [:typed :diagnostics 0])]
         (is (= :rejected (get-in products [:typed :status])) suffix)
         (is (= expected ((juxt :rule :reason) failure)) (pr-str [suffix failure]))))))
+
+(deftest current-gravity-private-entry-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node nodes forms bindings types module call edge binding-types] :as input}
+        ((ns-resolve upstream 'private-entry-get-input))
+        result ((ns-resolve upstream 'map-present-get-derived) input) descriptor (:descriptor result)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :present-get (:type result))
+                 :calls {:present-get call} :edges {:present-get edge} :call-order {:present-get 0}
+                 :current-function {:function-syntax-id :helper-form}
+                 :call-facts {:present-get (c7 'sh08-mg-call-fact [descriptor module])}
+                 :ledger [(c7 'sh08-mg-constraint [descriptor])]
+                 :locals {:span-binding 'span} :parameter-types binding-types :tail? true}
+        compile (fn [ctx budget] (invoke 'p15-s23-typed-compile-node ctx :present-get budget))
+        lowered (compile context 65536)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (let [flat (-> core (assoc :resolution-table (get-in core [:preserved-resolution :resolution-table]))
+                         (update :preserved-resolution dissoc :resolution-table))
+          rejected (compile (assoc context :core flat) 65536)]
+      (is (= :rejected (:status rejected)))
+      (is (= :unsupported-or-mismatched-typed-map-get (get-in rejected [:facts :reason]))))
+    (let [recursive-caller (compile (assoc-in context [:core :recursion-components] [{:function-syntax-ids [:caller-0]}]) 65536)]
+      (is (= :complete (:status recursive-caller)) (pr-str recursive-caller))
+      (is (= (:value lowered) (:value recursive-caller))))
+    (when (= :complete (:status lowered))
+      (is (= {:op :keyword-map-lookup :args [{:op :literal :value :file} {:op :local :name 'span}]} (:value lowered)))
+      (is (= lowered (compile context (:work-count lowered))))
+      (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+    (is (= :typed-lowering-work-limit (get-in (compile context 0) [:facts :reason])))
+    (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                     (assoc-in descriptor [:presence-proof :entries] :invalid)
+                     (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts 0 :key] :absent)
+                     (assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 99)
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-source] {})
+                     (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])
+                     (assoc descriptor :version :sh08-map-get-present-v1)]]
+      (let [changed-context (-> context (assoc-in [:types :operator] changed)
+                               (assoc :ledger [(c7 'sh08-mg-constraint [changed])])
+                               (assoc-in [:call-facts :present-get] (c7 'sh08-mg-call-fact [changed module])))]
+        (is (= :rejected (:status (compile changed-context 65536))))))))
 
 (deftest current-gravity-map-present-get-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)

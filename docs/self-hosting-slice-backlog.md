@@ -2191,6 +2191,89 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Private call-entry Map presence: development implementation
+
+This increment derives literal Keyword presence for an immutable parameter of
+a closed private function. It preserves W5's unannotated
+`w5-se-span-without-path` helper rather than adding a structural annotation.
+Each normally invoking caller must independently establish the same key and
+selected scalar type, retaining its own argument source, shape and coordinate.
+Matching member-type vectors do not establish keys or a common deep shape.
+At least one invoking entry is required; an all-aborting or unused function
+cannot establish presence vacuously.
+
+The existing C7 owner checks the complete binding-use, resolution, operator,
+call and edge census, actual private visibility and absent export, fixed arity,
+escape/mutation exclusions and parameter re-entry. C8 and the typed emitter
+reconstruct the finite entry premises against genuine retained upstream shapes;
+public C7 owns coherent deep-source verification. Helper cycles and function
+parameter recur remain unsupported. A recursive caller can still supply an
+independently proved literal argument, and nested-loop recur is not function
+parameter re-entry. Existing defaulted and finite-constructor Map lookup paths
+and runtime instructions are unchanged.
+
+Independent review identified a cold-inference accounting defect before any
+source composition: multiplying every module call by unrelated module data
+at each of five lookups and each inference round could not fit the unchanged
+65,536-unit budget. The correction retains fresh analysis, reserves global
+scans first, then charges actual canonical incoming calls and measured
+argument, child, binding-slot and component widths before detailed checks.
+Failure/fallback retains spent work. No cache, new wrapper, larger budget or
+smaller source helper is used. Known symbol text conversion remains bounded
+by the existing canonical scalar contract, not a hard local CPU/allocation
+precharge. Candidate entry count must match the actual census before gathering
+supplied shapes.
+
+The normalized cold regression passed 1 test / 19 assertions: four functions,
+eight calls and five gets infer from Unknown skeletons in six rounds, using
+46,030 cumulative units. The exact budget reproduces types and returns with
+zero units left; one less rejects. Its first attempt remains failed with 13
+passes and six failures: the fixture's node renamer also renamed the semantic
+`:operator` position tag. Only that fixture field was corrected; the rejected
+fixture's reported 27,720 units is not successful convergence evidence.
+
+The accounting-focused batch passed 6 tests / 209 assertions. A later guard
+delta passed 3 / 60, adding scalar and oversized candidate-entry rejection to
+the C7, C8 and emitter kernels. These overlap earlier component results and
+are not an additive green aggregate. They are development feedback, not source
+composition, authoritative module migration, full W5 execution, target
+completion, self-hosting or release evidence.
+
+The first source composition remains failed: 1 test / six passes / one failure
+and one error, after 108.525 seconds of selected-test execution at 2 GiB. The
+first accepted-source candidate instead rejected all five lookups in C7 with
+`:map-get-entry-families-required`. No accepted C7 source product, public assembly,
+C8 result or guest observation completed; the QST and negative products were
+not built. Static inspection of the owning C6 constructor and exact schema
+identified the defect: canonical resolutions live under
+`[:preserved-resolution :resolution-table]`, while the new consumers and their
+normalized inputs incorrectly used the flat identity-preimage field. The
+correction belongs to those consumers and test inputs, not a C6 schema change
+or a fallback authority channel. The corrected-path focused batch passed six
+tests / 108 assertions, including rejection of a flat lookalike table and the
+same six-round cold inference with exact/one-below budgets.
+
+The corrected-candidate source composition passed 1 test / 279 assertions
+(273 composition checks plus six existing runtime-loader checks) in 322.282
+seconds of selected execution, with 9.050 seconds of namespace loading at the
+unchanged 2 GiB heap. It built the accepted Gravity/QST pair and one real
+missing-key Gravity rejection. Four tracked public C7 gates cover the two
+assemblies and two coherent entry forgeries, separately from upstream
+verification. Six guest entry evaluations check all five returned fields and
+path removal. Each accepted case retains five private-entry descriptors and
+constraint rows over two genuine incoming spans with different key orders.
+Whole C8 results, equation/ledger/graph hostiles, exact/one-below C8 work and
+semantic G/Q equality passed. All sixteen selected inputs remained unchanged.
+
+This supports the unchanged helper in the fixture's explicit allocation
+context, not W5's complete module or its current effect declaration. The
+negative QST file has parity coverage only. Public or escaping inputs,
+unproved/unknown keys, general structural inference, recursive parameter
+transfers, other target/profile/provider/ownership gates, authoritative
+migration, self-hosting and release remain outstanding. These timings are
+development observations, not benchmarks or speedup evidence; the failed V1
+did less work and is not a comparison baseline.
+
 ### Proven-present Map lookup: development implementation
 
 This increment adds `(get map :key)` when independent finite Map-shape facts

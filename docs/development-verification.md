@@ -2236,6 +2236,49 @@ observations. Keep coherent deep source-shape forgeries at the public C7
 boundary, and test C8's own selection premises with genuine input shape.
 Do not construct another source product for each malformed proof field.
 
+### Private call-entry Map key presence
+
+For an immutable private function parameter, L5 permits entry-specific key
+facts when every normally invoking incoming call independently establishes the
+key and selected scalar type. Edit the same C7, effect and emitter owners, not a new
+admission wrapper. Preserve each caller's distinct source, Map shape and key
+coordinate; equal member types do not imply equal keys or a common deep shape.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-private-entry-get-development-kernel \
+  --exact sh08-private-entry-get-entry-controls-development-kernel \
+  --exact sh08-private-entry-get-nonparameter-fallback-development-kernel \
+  --exact sh08-private-entry-get-cold-inference-development-kernel \
+  --exact body-private-entry-get-development-kernel \
+  --exact current-gravity-private-entry-get-development-kernel
+```
+
+These normalized checks are development feedback. The
+complete binding-use/call census, visibility, nonvacuity, parameter re-entry
+and work bounds are compiler obligations, not a prerequisite authority record
+for editing the implementation. Public/escaping helpers, unproved keys,
+function-parameter recursion and general deep structural inference remain
+outside this increment. Recursive callers can supply independent literal
+arguments; ordinary nested loops are not function re-entry.
+
+For a stable changed integration, run the accepted Gravity/QST pair and one
+real missing-key rejection through the existing source composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-private-entry-span-authenticated-composition --fail-fast
+```
+
+It preserves W5's original unannotated span helper, reuses accepted products
+for C8/lowering/runtime checks, and does not migrate W5 or admit a compiler
+revision. Do not repeat unchanged upstream construction for every mutant or
+subsequent documentation edit.
+
 ### Map key membership
 
 STD3's direct Map `contains?` query distinguishes key presence from value
