@@ -5407,6 +5407,96 @@
     {:core (update core :nodes conj node) :node node :nodes nodes :forms forms :types types :bindings bindings
      :nids nids :fids fids :owner owner :definition definition :refs refs})))
 
+(deftest sh08-nil-if-join-type-development-kernel
+  (let [n :gravity.type/nil nv :gravity.type/never
+        families [:gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        normal #(invoke-c7 'sh08-ij-normal-type [%1 %2])]
+    (doseq [t families :let [nt (nullable t)]]
+      (doseq [[a b] [[n t] [t n] [nt n] [n nt] [nt t] [t nt]]]
+        (let [result (invoke-c7 'sh08-ij-type-work [a b 65536])]
+          (is (= :accepted (:status result)))
+          (is (= nt (:type result) (normal a b)))
+          (is (= [a b] (:branch-types result)))
+          (is (= :nil-or (:join-family result)))
+          (is (= :gravity.type/nil (:nil-type result)))
+          (is (= t (:value-type result)))
+          (is (= result (invoke-c7 'sh08-ij-type-work [a b (:work-count result)])))
+          (is (= :rejected (:status (invoke-c7 'sh08-ij-type-work [a b (dec (:work-count result))]))))))
+      (doseq [[a b expected] [[n n n] [t t t] [nt nt nt] [nv nt nt] [nt nv nt] [nv t t] [nv nv nv]]]
+        (is (= expected (normal a b))))
+      (is (true? (invoke-c7 'sh08-ni-type? [nt])))
+      (is (= {:status :accepted :work-count 2} (invoke-c7 'sh08-lc-type-work [[nt] 2])))
+      (is (= :work-limit (:reason (invoke-c7 'sh08-lc-type-work [[nt] 1]))))
+      (doseq [bad [(assoc nt :extra true) (assoc nt :value-type :gravity.type/unknown)
+                    (assoc nt :value-type :gravity.type/never) (assoc nt :value-type n)
+                    (assoc nt :value-type (nullable t)) (dissoc nt :value-type)
+                    (assoc nt :value-type :gravity.type/integer)]]
+        (is (false? (invoke-c7 'sh08-ni-type? [bad])))
+        (is (false? (invoke-c7 'sh08-ft-known? [bad])))
+        (is (= :rejected (:status (invoke-c7 'sh08-lc-type-work [[bad] 65536]))))
+        (is (= :gravity.type/unknown (normal bad bad)))))
+    (doseq [[a b] [[n :gravity.type/unknown] [:gravity.type/unknown :gravity.type/keyword]
+                    [n :gravity.type/integer] [:gravity.type/keyword :gravity.type/string]
+                    [(nullable :gravity.type/keyword) (nullable :gravity.type/string)]]]
+      (is (= :gravity.type/unknown (normal a b))))
+    (is (= :gravity.type/unknown (invoke-c7 'sh08-ft-normal-return-type [:try [n :gravity.type/keyword] :gravity.type/unknown])))
+    (let [nb (nullable :gravity.type/bool)
+          node {:node-id :guard :core-form :reference :children [] :attributes {}}
+          result (invoke-c7 'sh08-gd-result [{:nodes {:guard node}} {:guard {:node-id :guard}} {:guard nb} true])]
+      (is (= ["L7-GUARD-TYPE" :guard-result-not-boolean] ((juxt :rule :reason) result))))))
+
+(deftest sh08-nil-if-join-inference-development-kernel
+  (let [n :gravity.type/nil k :gravity.type/keyword nk {:kind :gravity.type/nil-or :value-type k}]
+    (doseq [[left right] [[n k] [k n] [nk n] [n nk] [nk k] [k nk]]]
+      (let [{:keys [core node nodes forms types bindings nids refs definition fids]} (list-if-join-input left right)
+            context {:ordering-core core :lookup-core core :lookup-nodes nodes
+                     :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}
+            seeds (into {} (for [[role id] refs] [id (get types (nids role))]))
+            run #(invoke-c7 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} seeds (assoc context :loop-work-left %)])
+            result (run 65536) row (first (:constraints result)) premise (:dependencies row)
+            derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6 65536])]
+        (is (= [] (:diagnostics result)) (pr-str (:diagnostics result)))
+        (is (= nk (get-in result [:type-table (nids :if)])))
+        (is (= :sh08-nil-if-join-v1 (:producer-rule row) (:version premise)))
+        (is (= [left right] (:branch-types premise)))
+        (is (= :gravity.type/nil (:nil-type premise)))
+        (is (= k (:value-type premise)))
+        (is (not (contains? premise :element-type)))
+        (is (= :none (:expected-return-premise premise) (:runtime-conversion premise)))
+        (is (= (dissoc result :shape-call-context) (dissoc (run (:loop-work-count result)) :shape-call-context)))
+        (is (some #(= :list-if-join-work-limit (:reason %)) (:diagnostics (run (dec (:loop-work-count result))))))
+        (let [functions {:owner {:function-id :owner :body-core-node-id (nids :if) :return :gravity.type/unknown}}
+              updated (invoke-c7 'sh08-ft-update-function-returns [functions nodes (:type-table result)])
+              declared (invoke-c7 'sh08-ft-update-function-returns [(assoc-in functions [:owner :return] k) nodes (:type-table result)])]
+          (is (= nk (get-in updated [:owner :return])))
+          (is (nil? (get-in updated [:owner :return-conflict])))
+          (is (= nk (get-in declared [:owner :return-conflict :actual]))))
+        (is (= nk (:type (derive (assoc-in core [:function-records 0 :signature :return :type-id] :gravity.type/string)
+                                 node nodes types bindings forms))))
+        (doseq [changed [(assoc core :control-flow []) (update core :control-flow conj (first (:control-flow core)))]]
+          (is (= :rejected (:status (derive changed node nodes types bindings forms)))))
+        (is (= :rejected (:status (derive core (assoc node :children (mapv nids [:condition :else :then])) nodes types bindings forms))))
+        (is (= :rejected (:status (derive core node (assoc-in nodes [(nids :then) :source :syntax-id] :sibling) types bindings forms))))
+        (is (= :rejected (:status (derive core node nodes types (assoc-in bindings [definition :kind] :var) forms))))
+        (is (= :rejected (:status (derive core node nodes types bindings (assoc-in forms [(fids :then) :parent-form-id] :sibling)))))))))
+
+(deftest sh08-nil-atomic-equality-development-kernel
+  (let [families [:gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)]
+    (doseq [a families b families]
+      (let [input (atomic-equality-input [(nullable a) (nullable b)]) result (atomic-equality-derived input)
+            descriptor (:descriptor result)]
+        (is (= :accepted (:status result)))
+        (is (= :gravity.type/bool (:type result)))
+        (is (= :sh08-nil-atomic-equality-v1 (:version descriptor)))
+        (is (= :compare-original-values (get-in descriptor [:equality-policy :nil-bearing])))
+        (is (= :actual-value-families (get-in descriptor [:equality-policy :cross-family])))))
+    (doseq [bad [{:kind :gravity.type/nil-or :value-type :gravity.type/keyword :extra true}
+                 {:kind :gravity.type/nil-or :value-type :gravity.type/nil}
+                 {:kind :gravity.type/nil-or :value-type :gravity.type/integer}]]
+      (is (= :rejected (:status (atomic-equality-derived (atomic-equality-input [bad :gravity.type/nil]))))))))
+
 (deftest sh08-list-if-join-source-development-kernel
   (let [s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}

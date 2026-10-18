@@ -2481,6 +2481,76 @@ earlier failed aggregate. Match/try/loop/recur widening, other element types,
 ownership and profile legality beyond this subset, other targets,
 authoritative migration, self-hosting and release gates remain outstanding.
 
+### Nil-bearing canonical-if joins: development implementation
+
+L5 permits an independently established nil branch to join with a known atomic
+type without changing either runtime value. The current C7, C8 and emitter
+increment represents Bool, Character, String, Symbol and Keyword alternatives
+as a closed nil-or type. It retains source-bound branch premises through local
+inferred returns and calls. A non-nil return declaration cannot erase nil, and
+nil-or-Bool does not satisfy L7's Bool-only guard rule. Ordinary `if` remains
+truthy except for false and nil. Other control-flow joins are not widened.
+
+Binary equality compares the original values. In particular, nil-or-Keyword
+and nil-or-String can both contain nil; their differing non-nil alternatives
+are not grounds for folding equality to false. Existing atomic equality and
+List-join records retain their previous versions and contents. No runtime
+instruction, annotation syntax, reader rule or seed primitive was added.
+Independent review caught an unsupported compiler-seed `dissoc` call before
+the first execution; premise construction now uses existing primitives.
+
+The first focused batch passed 15 tests / 2,799 assertions: six new kernels
+covering 806 assertions and nine affected regressions covering 1,993. It checks
+closed type carriers, independent inference, source and binding mutations,
+mixed List/nil row census, work limits, lowering and actual runtime equality.
+The separate fixture-fidelity kernel passed 1 test / 10 assertions. The paired
+positive source preserves W5's exact unannotated `w5-se-canonical-form [mode]`
+helper; runtime cases retain all seven known modes plus an unknown mode. The
+negative retains a real Keyword caller but declares a non-nil Keyword return
+on the same body.
+
+The first source composition attempt failed after its first accepted Gravity
+product reached C7: 1 test / 7 passing assertions / 1 error. Public lowering
+then rejected the existing whole-context work reservation before assembly;
+the QST and negative products, runtime observations and C8 source checks did
+not run. The 170.772-second failed attempt is retained. Its 17-function fixture
+included eight redundant mode wrappers. The bounded follow-up simplifies those
+test callers while preserving the exact W5 helper, inferred nil-bearing local
+return, actual equality/error cases and all mode observations. It does not
+increase the work limit or change production accounting.
+
+The context reservation is distinct from JVM startup or scheduling overhead:
+it charges whole-table cross-products before lowering. A bounded follow-up,
+when a concrete larger-module integration requires it, should measure those
+families and compare indexed validation with the current exact joins and
+rejection behavior. Preserve source/provenance checks and cumulative work
+limits; neither raising the ceiling nor redesigning verification-product
+representation is part of this semantic increment.
+
+The changed nine-function fixture passed the affected source composition:
+1 test / 371 assertions, including six unchanged loader checks, in 386.096
+seconds plus 8.815 seconds of namespace loading at a 2 GiB heap. It built the
+accepted Gravity/QST pair and one representative negative Gravity product
+once each. Accepted products were reused for 36 guest observations, four
+tracked public C7 verification operations, whole-C8 reconstruction, exact and
+one-below budgets, and coherent join/effect mutations. Upstream construction
+also verifies its products; four is not a count of every C7 invocation.
+
+The actual source has 25 calls, eight nil-bearing join rows and inferred
+Keyword parameters for both unannotated helpers. W5's helper returns
+nil-or-Keyword; the separate helper returns nil-or-String. Their local calls
+retain these types through equality, including nil equals nil across those
+two families. The declared-Keyword negative rejects with
+`C7-TYPE-MISMATCH` / `function-result-type-mismatch`, actual nil-or-Keyword.
+Bool, Character and Symbol alternatives have focused-kernel coverage here,
+not additional source-composition coverage.
+Throw/catch execution and inferred throw effects are retained, without a
+claim that all caught effects escape. All 16 recorded inputs remained
+unchanged. The earlier failed attempt is not relabeled as passing.
+
+These development checks do not admit a module revision or establish complete
+W5, numeric/general union support, other targets, self-hosting or release.
+
 ### Qualified core vars and availability: development implementation
 
 This slice closes the C5 qualified-core frontier found before the List

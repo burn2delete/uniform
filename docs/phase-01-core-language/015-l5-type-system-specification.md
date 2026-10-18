@@ -169,6 +169,30 @@ no runtime conversion, general subtyping, union inference, or extension to
 match, try, loop or recur joins. Effects, ownership, regions, profile legality
 and bounded type-validation work remain obligations.
 
+### Independently Established Nil-Bearing Branch Joins
+
+For canonical `if`, an independently established nil branch and an
+independently established non-nil atomic type `T` may join to a closed
+nil-or-`T` inference type. Joining that type with nil, `T`, or the identical
+nil-or-`T` type retains the same alternatives. Existing exact-type and
+non-returning branch rules take precedence. Unknown or conflicting non-nil
+alternatives do not establish `T`.
+
+Retain both actual branch types and a source-bound join premise. The type
+artifact must identify the nil alternative and exact non-nil type in a closed,
+bounded representation. Establish this result independently of any expected
+return declaration. Local inferred function returns and calls retain it; it
+does not satisfy a declared non-nil `T` by silently discarding nil.
+
+The runtime values are unchanged: explicit Gravity nil or a value of `T`, not
+an `Option` wrapper, host null, or implicit recovery/absence convention. Equality
+compares those actual values; even different nil-bearing types can both hold
+nil. A nil-or-Bool result is not an established Bool for an L7 guard. This rule
+adds no annotation syntax, general union inference, coercion, or widening of
+match, try, loop or recur joins. Effects, ownership, profile legality and other
+type obligations remain unchanged. An implementation's supported atomic
+families must be stated separately from the language rule.
+
 ## Dynamic Values
 
 `Dynamic` is a type, not a loophole.
@@ -307,6 +331,7 @@ L5 rejects:
 - Homogeneous List parameter fixtures check every positional member type, preserve the element type through `rest`, and reject head-result refinements justified by the wrong value or control-flow path.
 - Homogeneous List return fixtures accept independently established matching finite, empty and homogeneous body types, retain return-specific compatibility evidence, and reject bare, unknown or mismatched member types without expected-type-driven inference.
 - Canonical `if` List-join fixtures preserve actual branch types and join-specific evidence, cover both branch orders and empty branches, and reject missing or incompatible independent element evidence without changing other control-flow joins.
+- Canonical `if` nil-bearing joins preserve independently established branch types through local inferred returns and value equality, reject conflicting/unknown evidence and non-nil return or Bool-guard narrowing, and retain exact and non-returning branch rules.
 - Hosted fixtures accept checked dynamic behavior while constrained profile fixtures reject it.
 - Function type fixtures preserve latent effects into effect checking.
 - Schema fixtures prove generated types preserve validation semantics.

@@ -4746,6 +4746,78 @@
              ((juxt :rule :reason :expected-type :actual-type) failure))))
     (is (= 3 (count @built)))))
 
+(deftest current-gravity-nil-if-and-equality-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-if-join-input)
+        equality-input (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-input)
+        equality-derived (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-derived)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        n :gravity.type/nil k :gravity.type/keyword nk (nullable k)]
+    (doseq [[left right] [[n k] [k n] [nk n]]]
+      (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            row (c7 'sh08-ij-row [(:premise derived)])
+            types (assoc types (:node-id node) nk)
+            facts {:type-table types :constraint-ledger [row]}
+            checked (invoke 'p15-s23-ij-context core facts bindings forms 65536)
+            context {:core core :types types :nodes nodes :forms forms :bindings bindings :ledger [row]
+                     :if-join-context (:context checked)
+                     :locals {(refs :condition) 'include (refs :then) 'left (refs :else) 'right}
+                     :parameter-types (into {} (for [[role id] refs] [id (get types (nids role))]))}
+            compile #(invoke 'p15-s23-typed-compile-node %1 (:node-id node) %2)
+            result (compile context 65536)]
+        (is (= :accepted (:status checked)))
+        (is (= :complete (:status result)) (pr-str result))
+        (is (= :if (get-in result [:value :op])))
+        (is (= result (compile context (:work-count result))))
+        (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count result))) [:facts :reason])))
+        (doseq [changed [(assoc context :ledger []) (update context :ledger conj row)
+                         (assoc context :if-join-context {:premises {}})
+                         (assoc-in context [:ledger 0 :kind] :equality)
+                         (assoc-in context [:ledger 0 :dependencies :nil-type] :host-null)
+                         (assoc-in context [:types (:node-id node) :extra] true)]]
+          (is (= :rejected (:status (compile changed 65536)))))
+        (doseq [[condition-type condition] [[:gravity.type/bool true] [:gravity.type/bool false]
+                                            [(nullable :gravity.type/bool) nil] [(nullable :gravity.type/bool) false]]]
+          (let [actual-types (assoc types (nids :condition) condition-type)
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-row (c7 'sh08-ij-row [(:premise actual-join)])
+                actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
+                actual-checked (invoke 'p15-s23-ij-context core actual-facts bindings forms 65536)
+                actual-context (-> context (assoc :types actual-types :ledger [actual-row] :if-join-context (:context actual-checked))
+                                   (assoc-in [:parameter-types (refs :condition)] condition-type))
+                lowered (compile actual-context 65536)
+                a (when-not (= left n) :kept) b (when-not (= right n) :kept)
+                value (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-closed-instruction
+                        [(:value lowered) {'include condition 'left a 'right b} ""])]
+            (is (= :complete (:status lowered)))
+            (is (= [(if condition a b) "" :normal] value))))))
+    (doseq [[a b x y expected] [[(nullable k) (nullable :gravity.type/string) nil nil true]
+                                [(nullable k) (nullable :gravity.type/string) :kept nil false]
+                                [(nullable k) (nullable :gravity.type/string) nil "kept" false]
+                                [(nullable k) (nullable :gravity.type/string) :kept "kept" false]
+                                [(nullable :gravity.type/bool) (nullable :gravity.type/bool) false false true]]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (equality-input [a b])
+            descriptor (:descriptor (equality-derived input))
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call :gravity.type/bool)
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-ae-call-fact [descriptor module])} :ledger [(c7 'sh08-ae-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            lowered (invoke 'p15-s23-typed-compile-node context :call 65536)
+            actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-closed-instruction
+                     [(:value lowered) {'left x 'right y} ""])]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (is (= [expected "" :normal] actual))
+        (is (= lowered (invoke 'p15-s23-typed-compile-node context :call (:work-count lowered))))
+        (is (= :typed-lowering-work-limit (get-in (invoke 'p15-s23-typed-compile-node context :call (dec (:work-count lowered))) [:facts :reason])))))))
+
 (deftest current-gravity-list-if-join-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'list-if-join-input)
@@ -4837,6 +4909,34 @@
         (is (= result (run (:work-count result))))
         (is (= :list-if-join-work-limit (:reason (run (dec (:work-count result))))))))))
 
+(deftest current-gravity-nil-if-join-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        source (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        start (.indexOf source "(defn w5-se-canonical-form [mode]")
+        end (.indexOf source "\n\n(defn w5-se-diagnostic-entry-valid?" start)
+        reference (subs source start end)
+        positive-path (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/nil-if-join.gravity")
+        negative-path (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/nil-if-join-declared-non-nil.gravity")
+        positive (slurp positive-path) negative (slurp negative-path)
+        forms (bootstrap/read-forms (.getPath positive-path) positive)
+        definitions (filterv #(and (seq? %) (= 'defn (first %))) forms)
+        names (set (map second definitions))
+        bodies (map #(last %) definitions)
+        calls (filter #(and (seq? %) (symbol? (first %)) (or (= '= (first %)) (contains? names (first %))))
+                      (mapcat #(tree-seq coll? seq %) bodies))]
+    (is (= positive (slurp (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/nil-if-join.qst"))))
+    (is (= negative (slurp (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/nil-if-join-declared-non-nil.qst"))))
+    (is (every? #(< (int %) 128) (str positive negative)))
+    (is (str/includes? positive reference))
+    (is (str/includes? negative (str/replace-first reference "(defn w5-se-canonical-form [mode]"
+                                                 "(defn w5-se-canonical-form [mode] :- Keyword")))
+    (is (= 9 (count definitions)))
+    (is (= 25 (count calls)))
+    (is (= 16 (count (filter #(= '= (first %)) calls))))
+    (is (= 9 (count (filter #(contains? names (first %)) calls))))
+    (is (str/includes? negative "(defn check [] (w5-se-canonical-form :artifact))"))))
+
 (deftest current-gravity-list-if-join-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -4847,6 +4947,174 @@
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
         (is (str/ends-with? text ")\n"))
         (is (not (str/ends-with? text "\n\n")))))))
+
+(deftest current-gravity-nil-if-join-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        nk {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}
+        ns-type {:kind :gravity.type/nil-or :value-type :gravity.type/string}
+        keyword-functions ['w5-se-canonical-form]
+        specs [['w5-se-canonical-form [:artifact] :canonical-content-hash :normal]
+               ['w5-se-canonical-form [:manifest] :canonical-manifest :normal]
+               ['w5-se-canonical-form [:diagnostic] :stable-code-and-source-span :normal]
+               ['w5-se-canonical-form [:conformance] :accepted-rejected-transcripts :normal]
+               ['w5-se-canonical-form [:runtime-output] :canonical-runtime-output :normal]
+               ['w5-se-canonical-form [:ir-modulo-id] :normalized-structure-modulo-id :normal]
+               ['w5-se-canonical-form [:reviewed-delta] :reviewed-provenance-delta :normal]
+               ['w5-se-canonical-form [:unknown-mode] nil :normal]
+               ['optional-text [:known] "known" :normal] ['optional-text [:unknown-mode] nil :normal]
+               ['optional-text [:abort] "optional text aborted" :thrown]
+               ['known-equal [] true :normal] ['missing-equal [] true :normal]
+               ['different-value [] false :normal] ['cross-nil [] true :normal]
+               ['cross-value [] false :normal] ['caught-text [] true :normal] ['main [] true :normal]]
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/nil-if-join" extension)
+                  path (.getPath (io/file root relative)) products (fresh relative)
+                  input (select-keys products [:request :typed :verification])
+                  ready (= :accepted (get-in input [:typed :status]))
+                  _ (is ready (pr-str (take 3 (get-in input [:typed :diagnostics]))))
+                  _ (when-not ready (throw (ex-info "Nil-bearing W5 helper source rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                  artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                  parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                  raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                  definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                  rows (filterv #(= :sh08-nil-if-join-v1 (:producer-rule %)) (:constraint-ledger facts))
+                  calls (:call-type-facts facts)
+                  equalities (mapv :applied-atomic-equality (filter #(= :direct-atomic-equality (:dispatch %)) calls))
+                  nil-equalities (filterv #(= :sh08-nil-atomic-equality-v1 (:version %)) equalities)
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)]
+              (is (= :passed (get-in input [:verification :status])))
+              (is (= 9 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+              (is (= 25 (count (:calls core)) (count (:call-edges core)) (count calls)))
+              (is (= 9 (count (filter #(= :if (:core-form %)) (:nodes core)))))
+              (is (= 8 (count rows)))
+              (is (= {:gravity.type/keyword 7 :gravity.type/string 1} (frequencies (map #(get-in % [:dependencies :value-type]) rows))))
+              (is (empty? (filter #(= :sh08-list-if-join-v1 (:producer-rule %)) (:constraint-ledger facts))))
+              (is (= ['mode] (get-in definitions ['w5-se-canonical-form :params])))
+              (is (= :gravity.type/keyword (get-in functions ['w5-se-canonical-form :parameters 0 :type])
+                     (get-in functions ['optional-text :parameters 0 :type])))
+              (doseq [name keyword-functions] (is (= nk (get-in functions [name :return]))))
+              (is (= ns-type (get-in functions ['optional-text :return])))
+              (doseq [row rows]
+                (let [premise (:dependencies row) branches (:branch-node-ids premise)
+                      actual (mapv #(get-in facts [:type-table %]) branches)]
+                  (is (= :join-compatibility (:kind row)))
+                  (is (= :sh08-nil-if-join-v1 (:version premise)))
+                  (is (= :independent-nil-or-atomic-join (:relation premise)))
+                  (is (= :gravity.type/nil (:nil-type premise)))
+                  (is (= actual (:branch-types premise) (get-in row [:rhs :actual-branch-types])))
+                  (is (= {:kind :gravity.type/nil-or :value-type (:value-type premise)}
+                         (:result-type premise) (get-in row [:rhs :result-type])
+                         (get-in facts [:type-table (:if-core-node-id premise)])))
+                  (is (= :none (:expected-return-premise premise) (:runtime-conversion premise)))
+                  (is (not (contains? premise :element-type)))))
+              (is (= 16 (count equalities)))
+              (is (= 6 (count nil-equalities)))
+              (doseq [descriptor nil-equalities]
+                (is (= :compare-original-values (get-in descriptor [:equality-policy :nil-bearing])))
+                (is (= :actual-value-families (get-in descriptor [:equality-policy :cross-family])))
+                (is (= [] (:direct-effects descriptor) (:latent-effects descriptor))))
+              (let [ids (set (map #(get-in functions [% :function-id]) (conj keyword-functions 'optional-text)))
+                    local (filterv #(contains? ids (:callee-function-syntax-id %)) calls)]
+                (is (= 8 (count local)))
+                (doseq [call local]
+                  (is (contains? #{nk ns-type} (:result-type call)))))
+              (doseq [[name args expected tag] specs]
+                (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                       [{:op :function-call :function name :args (literal-instructions args)} {} "" (:functions assembled) []])]
+                  (is (= [expected "" tag] result) (str extension " " name))))
+              (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+              (when-not (= :accepted (:status effects)) (throw (ex-info "Nil-bearing W5 helper C8 rejected" {:effects effects})))
+              (is (= :passed (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))))
+              (doseq [name (concat keyword-functions ['known-equal 'missing-equal 'different-value])]
+                (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (doseq [name ['optional-text 'cross-nil 'cross-value 'caught-text 'main]]
+                (is (= #{:error/throw} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+              (doseq [descriptor equalities]
+                (let [record (get-in graph [:nodes (:call-core-node-id descriptor)])]
+                  (is (= #{} (:direct record)))
+                  (is (nil? (:allocation record)))))
+              (when (= extension ".gravity")
+                (let [analyze #(c8 'body-analyze-module (:request input) % {} %2)
+                      analyzed (analyze facts 65536) work (:work-count analyzed)
+                      row (first rows) ledger (:constraint-ledger facts)
+                      replace-row (fn [changed] (mapv #(if (= row %) changed %) ledger))]
+                  (is (= :accepted (:status analyzed)) (pr-str analyzed))
+                  (is (= graph (:graph analyzed)))
+                  (is (= analyzed (analyze facts work)))
+                  (is (= :rejected (:status (analyze facts (dec work)))))
+                  (doseq [changed [(vec (remove #(= row %) ledger)) (conj ledger row)
+                                   (replace-row (assoc-in row [:lhs :core-node-id] (sha 9998)))
+                                   (replace-row (assoc-in row [:dependencies :nil-type] :host-null))
+                                   (replace-row (assoc-in row [:dependencies :expected-return-premise] :declared))
+                                   (replace-row (assoc row :kind :equality))]]
+                    (is (= :rejected (:status (analyze (assoc facts :constraint-ledger changed) 65536)))))))
+              {:input input :module module :definitions definitions :functions functions :rows rows :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions functions rows effects binding]} (first cases)
+        row (first rows)
+        erased (walk/postwalk #(if (= nk %) :gravity.type/keyword %) (:typed input))
+        keep-row? (fn [entry]
+                    (not (and (map? entry) (= :sh08-nil-if-join-v1 (:producer-rule entry))
+                              (= :gravity.type/keyword (get-in entry [:dependencies :value-type])))))
+        erased (walk/postwalk #(if (vector? %) (filterv keep-row? %) %) erased)
+        wrong-row (assoc-in row [:dependencies :expected-return-premise] :declared-return)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (doseq [typed [erased (walk/postwalk #(if (= row %) wrong-row %) (:typed input))]]
+      (let [failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                     emitter module (get definitions 'w5-se-canonical-form) (assoc input :typed typed)))))]
+        (is (= "P15S23Q002" (:id failure)))
+        (is (= :rejected (:status (last @verified))))))
+    (is (= 4 (count @verified)))
+    (doseq [changed [wrong-row (assoc-in row [:dependencies :nil-type] :host-null)]]
+      (let [typed (walk/postwalk #(if (= row %) changed %) (:typed input))
+            verification (assoc (:verification input) :expected typed :candidate typed)
+            hostile-binding (seal (:request input) typed verification)
+            result (c8 'build-body-effect-result typed verification hostile-binding)]
+        (is (true? (c8 'body-input-valid? typed verification hostile-binding)))
+        (is (= :rejected (:status result)))
+        (is (not= :untrusted-sh08-body-effect-input (get-in result [:diagnostics 0 :reason])))))
+    (let [graph (:effect-graph effects) id (get-in row [:lhs :core-node-id])
+          optional-id (get-in functions ['optional-text :function-id])]
+      (doseq [changed [(assoc-in graph [:nodes id :type] :gravity.type/keyword)
+                       (assoc-in graph [:nodes id :direct] #{:memory/allocate})
+                       (assoc-in graph [:functions optional-id :inferred] #{})
+                       (assoc-in graph [:nodes id :allocation] {:behavior :invented-union-conversion})]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (let [products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/nil-if-join-declared-non-nil.gravity")
+          diagnostics (get-in products [:typed :diagnostics])]
+      (is (= :rejected (get-in products [:typed :status])))
+      (is (some #(= ["C7-TYPE-MISMATCH" :function-result-type-mismatch :gravity.type/keyword nk]
+                    ((juxt :rule :reason :expected-type :actual-type) %)) diagnostics) (pr-str diagnostics)))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/nil-if-join.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/nil-if-join.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/nil-if-join-declared-non-nil.gravity"] @built))))
 
 (deftest current-gravity-list-if-join-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)

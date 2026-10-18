@@ -2634,7 +2634,7 @@
     (= value :gravity.type/unknown)))
 
 (defn sh08-ft-known? [value]
-  (if (sh08-ft-unknown? value) false true))
+  (if (sh08-ft-unknown? value) false (sh08-ni-valid-view? value)))
 
 ; L2/L5/C7: bounded loop typing over original canonical-core DATA.
 ; Each index, parent-edge, target, slot, argument and ancestor visit consumes
@@ -2652,6 +2652,41 @@
     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining))))))
 
 ; L5 canonical-if fallback: branch evidence supplies T, never an expected return.
+(defn sh08-ni-atomic? [type]
+  (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword} type))
+
+(defn sh08-ni-tagged? [type]
+  (if (map? type) (= :gravity.type/nil-or (get type :kind)) false))
+
+(defn sh08-ni-type? [type]
+  (if (sh08-ni-tagged? type)
+    (if (= 2 (count type))
+      (if (= #{:kind :value-type} (set (keys type))) (sh08-ni-atomic? (get type :value-type)) false) false) false))
+
+(defn sh08-ni-valid-view? [type]
+  (if (sh08-ni-tagged? type) (sh08-ni-type? type) true))
+
+(defn sh08-ni-candidate? [left right]
+  (if (= :gravity.type/nil left) true
+    (if (= :gravity.type/nil right) true
+      (if (sh08-ni-tagged? left) true (sh08-ni-tagged? right)))))
+
+(defn sh08-ni-branch [type]
+  (if (= :gravity.type/nil type) {:relation :nil-alternative :value-type nil}
+    (if (sh08-ni-atomic? type) {:relation :atomic-alternative :value-type type}
+      (if (sh08-ni-type? type) {:relation :nil-or-identity :value-type (get type :value-type)} nil))))
+
+(defn sh08-ni-type-work [left right budget]
+  (if (< budget 4) {:status :rejected :reason :list-if-join-work-limit :work-count 4}
+    (let [a (sh08-ni-branch left) b (sh08-ni-branch right)
+          x (get a :value-type) y (get b :value-type) value (if (= x nil) y x)]
+      (if (if (sh08-ni-candidate? left right)
+            (if (map? a) (if (map? b)
+              (if (= value nil) false (if (= x nil) true (if (= y nil) true (= x y)))) false) false) false)
+        {:status :accepted :join-family :nil-or :type {:kind :gravity.type/nil-or :value-type value}
+         :branch-types [left right] :branch-compatibility [a b] :nil-type :gravity.type/nil :value-type value :work-count 4}
+        {:status :not-applicable :reason :independent-nil-or-atomic-required :work-count 4}))))
+
 (defn sh08-ij-atomic? [type]
   (if (keyword? type)
     (sh08-hl-type? {:kind :gravity.type/list :shape :homogeneous :element-type type}) false))
@@ -2685,6 +2720,8 @@
           {:status :not-applicable :reason :independent-list-element-required :work-count work})))))
 
 (defn sh08-ij-type-work [left right budget]
+  (if (sh08-ni-candidate? left right)
+    (sh08-ni-type-work left right budget)
   (let [a (sh08-ij-element left budget)
         b (if (= :accepted (get a :status))
             (sh08-ij-element right (- budget (get a :work-count))) nil)
@@ -2703,13 +2740,14 @@
                  :element-type element :work-count work}
                 {:status :not-applicable :reason :incompatible-independent-list-elements :work-count work}))
             {:status :not-applicable :reason (get b :reason) :work-count work}))
-        {:status :not-applicable :reason (get a :reason) :work-count work}))))
+        {:status :not-applicable :reason (get a :reason) :work-count work})))))
 
 (defn sh08-ij-normal-type [left right]
+  (if (if (sh08-ni-valid-view? left) (sh08-ni-valid-view? right) false)
   (if (= left right) left
     (if (= left :gravity.type/never) right
       (if (= right :gravity.type/never) left
-        (get (sh08-ij-type-work left right 65536) :type :gravity.type/unknown)))))
+        (get (sh08-ij-type-work left right 65536) :type :gravity.type/unknown)))) :gravity.type/unknown))
 
 (defn sh08-ij-derive [core node nodes types bindings forms budget]
   (let [children (get node :children)]
@@ -2793,7 +2831,7 @@
                                                                               (recur (rest rows) (conj out (get (first rows) :binding-id))))))])
                                    (recur (+ i 1)) false))))])
                       {:status :accepted :work-count work :type (get validation :type)
-                       :premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
+                       :premise (let [premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
                                  :if-core-node-id (get node :node-id) :source-node node
                                  :function-record function :definition-binding binding
                                  :condition-type condition :branch-types [left right]
@@ -2804,17 +2842,24 @@
                                  :child-bindings branch-bindings :source-form (sh08-lr-source form)
                                  :operator-source (sh08-lr-source operator) :control-flow control
                                  :branch-compatibility (get validation :branch-compatibility)
-                                 :element-type (get validation :element-type) :result-type (get validation :type)
+                                 :result-type (get validation :type)
                                  :expected-return-premise :none :runtime-conversion :none
                                  :preserves [:actual-branch-types :source :bindings :value :ownership :linearity :regions :effects]
-                                 :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
+                                 :profile (get (get core :module) :profile) :target (get (get core :module) :target)}]
+                         (if (= :nil-or (get validation :join-family))
+                           (assoc premise :version :sh08-nil-if-join-v1
+                             :relation :independent-nil-or-atomic-join :nil-type :gravity.type/nil :value-type (get validation :value-type))
+                           (assoc premise :element-type (get validation :element-type))))}
                       {:status :rejected :reason (if (> work budget) :list-if-join-work-limit :list-if-join-source-mismatch) :work-count work}))
                   (assoc validation :work-count work :type-work-count (get validation :work-count))))))))
       {:status :not-applicable :work-count 1})))
 
 (defn sh08-ij-row [premise]
-  {:constraint-id-request {:domain :gravity/sh08-list-if-join-constraint-v1 :join-compatibility premise}
-   :kind :join-compatibility :producer-rule :sh08-list-if-join-v1
+  {:constraint-id-request {:domain (if (= :sh08-nil-if-join-v1 (get premise :version))
+                                     :gravity/sh08-nil-if-join-constraint-v1 :gravity/sh08-list-if-join-constraint-v1)
+                            :join-compatibility premise}
+   :kind :join-compatibility :producer-rule (if (= :sh08-nil-if-join-v1 (get premise :version))
+                                            :sh08-nil-if-join-v1 :sh08-list-if-join-v1)
    :lhs {:core-node-id (get premise :if-core-node-id) :role :canonical-if-result}
    :rhs {:actual-branch-types (get premise :branch-types) :result-type (get premise :result-type)}
    :dependencies premise :solution {:result-type (get premise :result-type)}
@@ -7048,8 +7093,10 @@
                   {:status :rejected :reason :nested-never :work-count next-work})
                 (if (map? type)
                   (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (sh08-hl-type? type)
-                        children (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types)))
-                        valid? (if homogeneous? true (if (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind)
+                        nil-bearing? (sh08-ni-type? type)
+                        children (if nil-bearing? [(get type :value-type)]
+                                   (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
+                        valid? (if nil-bearing? true (if homogeneous? true (if (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind)
                                  (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
                                    (if (= :literal (get type :shape))
                                      (if (vector? children)
@@ -7057,7 +7104,7 @@
                                          (if members? (loop [remaining children]
                                                         (if (= 0 (count remaining)) true
                                                           (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) true)
-                                         false) false) false) false) false))]
+                                         false) false) false) false) false)))]
                     (if valid?
                       (if (> (+ next-work (count tail) (count children)) 65536)
                         {:status :rejected :reason :type-size :work-count next-work}
@@ -8201,13 +8248,14 @@
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
-               (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
-                                :gravity.type/symbol :gravity.type/keyword :gravity.type/never} (first remaining))
+               (if (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
+                                    :gravity.type/symbol :gravity.type/keyword :gravity.type/never} (first remaining)) true
+                       (sh08-ni-type? (first remaining)))
                  (recur (rest remaining)) false)))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-atomic-equality :version :sh08-atomic-equality-v1
+      (let [header {:kind :gravity.type/applied-atomic-equality :version :sh08-atomic-equality-v1
        :operation '= :semantic-owner 'gravity.core :intrinsic :gravity.core/atomic-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
@@ -8219,7 +8267,14 @@
        :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]} nil)) nil))
+                      :callee-body :equality-domain :value-policy :profile :target :evaluation-order]}]
+        (if (loop [remaining arguments]
+              (if (= 0 (count remaining)) false
+                (if (sh08-ni-type? (first remaining)) true (recur (rest remaining)))))
+          (assoc header :version :sh08-nil-atomic-equality-v1
+            :equality-policy (assoc (get header :equality-policy) :nil-bearing :compare-original-values
+                               :cross-family :actual-value-families)
+            :invalidation (conj (get header :invalidation) :nil-or-types)) header)) nil)) nil))
 
 (defn sh08-ae-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-equality-constraint-v1 :application descriptor}

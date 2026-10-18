@@ -1840,6 +1840,49 @@ checks and rerun only affected regressions instead of rebuilding unchanged
 source proofs to obtain a green aggregate. This is development integration,
 not authoritative migration or target/self-hosting completion.
 
+### Nil-bearing canonical-if joins: focused feedback
+
+Edit the existing C7 type owner, C8 effect checker and typed emitter for L5's
+independently established nil-or-atomic branch join. The current frontier is
+Bool, Character, String, Symbol and Keyword. Preserve the actual nil/value,
+local inferred return type and source-bound join premise; an expected non-nil
+return declaration cannot remove nil. Different nil-bearing atomic families
+can both contain nil, so equality compares their actual values rather than
+folding the result from their non-nil types.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-nil-if-join-type-development-kernel \
+  --exact sh08-nil-if-join-inference-development-kernel \
+  --exact sh08-nil-atomic-equality-development-kernel \
+  --exact body-nil-if-join-development-kernel \
+  --exact body-nil-atomic-equality-development-kernel \
+  --exact current-gravity-nil-if-and-equality-development-kernel
+```
+
+These normalized checks cover closed type validation, source-bound premises,
+ordered mixed List/nil join rows, budgets, lowering and runtime value equality.
+They are not cold source inference or authoritative migration. The separate
+`current-gravity-nil-if-join-fixtures-development-kernel` checks that the paired
+fixture preserves W5's actual unannotated `w5-se-canonical-form` helper.
+For affected cold source composition, run separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-nil-if-join-authenticated-composition --fail-fast
+```
+
+It checks the unannotated helper's local callers and declared-non-nil rejection,
+reusing the accepted pair and one negative product for consumer and runtime
+observations. It is not a prerequisite for each subsequent unchanged edit.
+Ordinary `if` truthiness and Bool-only match guards remain distinct:
+nil-or-Bool is not a legal guard type. Numeric/general unions, new annotation syntax and widening
+of match, try, loop or recur joins are outside this increment.
+
 ### Homogeneous List traversal: focused feedback
 
 The `(List T)` parameter and guarded-head slice supports content-consuming
