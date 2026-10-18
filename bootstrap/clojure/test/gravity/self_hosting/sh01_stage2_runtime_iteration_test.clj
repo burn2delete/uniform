@@ -2806,21 +2806,27 @@
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         forms (bootstrap/read-forms path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-println-output 2 'p15-s23-runtime-remove-map-key 2
-                 'p15-s23-runtime-evaluate-arguments-in-context 7 'p15-s23-runtime-evaluate-bindings-in-context 6 'p15-s23-runtime-evaluate-sequence-in-context 6
-                 'p15-s23-runtime-select-handler-in-context 6 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 6
+                 'p15-s23-runtime-evaluate-arguments-in-context 8 'p15-s23-runtime-evaluate-bindings-in-context 7 'p15-s23-runtime-evaluate-sequence-in-context 7
+                 'p15-s23-runtime-select-handler-in-context 7 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 7
                  'p15-s23-runtime-function-valid? 2 'p15-s23-runtime-activate-function 5 'p15-s23-runtime-atomic-equality 2
-                 'p15-s23-runtime-evaluate-with-targets 6 'p15-s23-runtime-loop-valid? 2 'p15-s23-runtime-recur-valid? 2 'p15-s23-runtime-evaluate-loop 6
+                 'p15-s23-runtime-activate-function-in-instance 6 'p15-s23-runtime-evaluate-in-instance 7
+                 'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
+                 'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
+                 'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
+                 'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
+                 'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
+                 'p15-s23-runtime-evaluate-with-targets 6 'p15-s23-runtime-loop-valid? 2 'p15-s23-runtime-recur-valid? 2 'p15-s23-runtime-evaluate-loop 7
                  'p15-s23-runtime-evaluate-bindings 3 'p15-s23-runtime-evaluate-sequence 3
                  'p15-s23-runtime-evaluate-closed-instruction 3 'p15-s23-runtime-execute-closed-plan 1
                  'p15-s23-runtime-typed-handlers-valid? 1 'p15-s23-runtime-atomic-error-match? 2 'p15-s23-runtime-select-typed-handler 3
                  'p15-s23-runtime-pattern-atom? 2 'p15-s23-runtime-structural-match-valid? 1
-                 'p15-s23-runtime-match-pattern 3 'p15-s23-runtime-evaluate-structural-match 6}
+                 'p15-s23-runtime-match-pattern 3 'p15-s23-runtime-evaluate-structural-match 7}
         selected (filterv #(and (seq? %) (= 'defn (first %)) (contains? arities (second %))) forms)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 28 (count selected) (count (set (map second selected)))))
+    (is (= 40 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -4948,6 +4954,351 @@
         (is (str/ends-with? text ")\n"))
         (is (not (str/ends-with? text "\n\n")))))))
 
+(defn- module-literal-runtime-input []
+  (let [source (fn [id] {:form-id (str id "-form") :syntax-id (str id "-syntax") :semantic-span nil :origin-chain [] :generated-origin []})
+        root (fn [ordinal kind name]
+               (let [stem (str name)]
+                 {:ordinal ordinal :kind kind :name name :visibility (if (= kind :literal) :private :public)
+                  :binding-id (str "binding-" stem) :definition-core-node-id (str "definition-" stem)
+                  :definition-syntax-id (str "binding-site-" stem) :definition-source (source (str "definition-" stem))
+                  :value-core-node-id (str "initializer-" stem) :value-source (source (str "initializer-" stem))
+                  :type (if (= kind :literal) {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}
+                            :gravity.type/function)}))
+        definition (root 0 :literal 'modes) getter-root (root 1 :function 'getter) main-root (root 2 :function 'main)
+        read (merge (select-keys definition [:binding-id :definition-core-node-id :definition-syntax-id :definition-source :value-core-node-id :value-source :type])
+                    {:op :namespace-read :version :p15-s23-namespace-read-v1 :reference-core-node-id "reference-modes" :reference-source (source "reference-modes")})
+        function (fn [entry parameters instructions]
+                   {:name (:name entry) :params parameters :arity (count parameters) :instructions instructions :module-root entry
+                    :type-input {:definition-binding-id (:binding-id entry) :function-core-node-id (:value-core-node-id entry)}})
+        initializer {:op :vector-literal :items (mapv #(hash-map :op :literal :value %) [:artifact :manifest :diagnostic :conformance :runtime-output :ir-modulo-id :reviewed-delta])}
+        main-ir {:op :vector-literal :items [{:op :function-call :function 'getter :args []} {:op :function-call :function 'getter :args []}]}
+        plan {:entrypoint 'main :functions {'getter (function getter-root [] [read]) 'main (function main-root [] [main-ir])}
+              :module-initialization {:version :p15-s23-module-literals-v1 :module 'example.module-literals
+                                      :instance-policy :fresh-per-closed-plan-execution :roots [definition getter-root main-root]
+                                      :initializers [{:ordinal 0 :binding-id (:binding-id definition) :instruction initializer}]}}]
+    {:plan plan :read read :definition definition :root root :source source :function function :initializer initializer :main-ir main-ir}))
+
+(deftest current-gravity-module-literal-runtime-development-kernel
+  (let [{:keys [plan read definition root source function initializer main-ir]} (module-literal-runtime-input)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+        execute #(invoke 'p15-s23-runtime-execute-closed-plan %)
+        first-run (execute plan) second-run (execute plan) pair (:entrypoint-result first-run)
+        expected (mapv :value (:items initializer))]
+    (is (= :complete (:status first-run)) (pr-str first-run))
+    (is (= [expected expected] pair))
+    (is (identical? (first pair) (second pair)))
+    (is (not (identical? (first pair) (first (:entrypoint-result second-run)))))
+    (is (= ["binding-modes"] (get-in first-run [:module-initialization :initialized-binding-ids])))
+    (is (= {"binding-modes" {:vector-literal 1}} (get-in first-run [:module-initialization :validated-constructor-occurrences])))
+    (is (= "" (:stdout first-run)))
+    (let [census (invoke 'p15-s23-runtime-module-census plan 65536) work (:work-count census)]
+      (is (= :accepted (:status census)) (pr-str census))
+      (is (= census (invoke 'p15-s23-runtime-module-census plan work)))
+      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-census plan (dec work)))))
+      (let [reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) 65536)]
+        (is (= :accepted (:status reads)))
+        (is (= reads (invoke 'p15-s23-runtime-module-reads-work (:functions plan) (:definitions census) (:work-count reads))))
+        (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-module-reads-work
+                                                                 (:functions plan) (:definitions census) (dec (:work-count reads))))))))
+    (doseq [evaluate [(invoke 'p15-s23-runtime-evaluate-closed-instruction read {'modes expected :namespace-pool {"binding-modes" expected}} "")
+                      (invoke 'p15-s23-runtime-evaluate-in-context read {} "" (assoc (:functions plan) :namespace-pool {"binding-modes" expected}) [])
+                      (invoke 'p15-s23-runtime-activate-function (get-in plan [:functions 'getter]) [] "" (:functions plan) [])]]
+      (is (= :rejected (get evaluate 2))))
+    (let [saying (assoc-in plan [:functions 'main :instructions]
+                          [{:op :do :body [{:op :println :args [{:op :literal :value "entry"}] :effect :io/write :capability :io/stdout} main-ir]}])
+          bad-plans [(assoc saying :module-initialization nil)
+                     (update-in saying [:module-initialization :initializers] conj (first (get-in saying [:module-initialization :initializers])))
+                     (assoc-in saying [:module-initialization :initializers 0 :ordinal] 1)
+                     (assoc-in saying [:module-initialization :initializers 0 :binding-id] "other-binding")
+                     (assoc-in saying [:module-initialization :roots 0 :value-source] (source "forged-source"))
+                     (assoc-in saying [:module-initialization :roots 0 :type] :gravity.type/integer)
+                     (assoc-in saying [:module-initialization :roots 0 :definition-core-node-id] (:value-core-node-id definition))
+                     (assoc-in saying [:module-initialization :roots 2 :ordinal] 1)
+                     (assoc-in saying [:module-initialization :roots 2 :value-source] (source "wrong-function"))
+                     (assoc-in saying [:module-initialization :initializers 0 :instruction] {:op :function-call :function 'getter :args []})
+                     (assoc-in saying [:module-initialization :initializers 0 :instruction] {:op :local :name 'modes})
+                     (assoc-in saying [:module-initialization :initializers 0 :instruction] {:op :recur :target "main" :args []})]]
+      (doseq [legacy [(dissoc saying :module-initialization)
+                      (assoc (dissoc saying :module-initialization) :namespace-pool {"binding-modes" expected})]]
+        (let [result (execute legacy)]
+          (is (= :rejected (:status result)))
+          (is (= "entry\n" (:stdout result)))))
+      (doseq [bad bad-plans]
+        (let [result (execute bad)]
+          (is (= :rejected (:status result)) (pr-str result))
+          (is (= "" (:stdout result))))))
+    (let [walker-root (root 3 :function 'walker)
+          body {:op :if :test {:op :local :name 'again}
+                :then {:op :recur :target "walker-target" :args [{:op :literal :value false} read]}
+                :else {:op :vector-literal :items [{:op :local :name 'saved} read]}}
+          walker (assoc (function walker-root ['again 'saved] [body]) :recur-target "walker-target")
+          recur-plan (-> plan (update-in [:module-initialization :roots] conj walker-root)
+                             (assoc-in [:functions 'walker] walker)
+                             (assoc-in [:functions 'main :instructions]
+                                       [{:op :function-call :function 'walker :args [{:op :literal :value true} {:op :literal :value nil}]}]))
+          result (execute recur-plan)]
+      (is (= :complete (:status result)) (pr-str result))
+      (is (= [expected expected] (:entrypoint-result result)))
+      (is (identical? (first (:entrypoint-result result)) (second (:entrypoint-result result)))))
+    (let [shadow-root (root 3 :function 'shadow)
+          shadow-plan (-> plan (update-in [:module-initialization :roots] conj shadow-root)
+                               (assoc-in [:functions 'shadow] (function shadow-root ['modes] [{:op :vector-literal :items [{:op :local :name 'modes} read]}]))
+                               (assoc-in [:functions 'main :instructions]
+                                         [{:op :function-call :function 'shadow :args [{:op :literal :value :local-shadow}]}]))]
+      (is (= [:local-shadow expected] (:entrypoint-result (execute shadow-plan)))))
+    (let [unused (root 3 :literal 'unused)
+          unused-plan (-> plan (update-in [:module-initialization :roots] conj unused)
+                               (update-in [:module-initialization :initializers] conj {:ordinal 3 :binding-id (:binding-id unused) :instruction initializer}))
+          result (execute unused-plan)]
+      (is (= :complete (:status result)))
+      (is (= ["binding-modes" "binding-unused"] (get-in result [:module-initialization :initialized-binding-ids])))
+      (is (= {:vector-literal 1} (get-in result [:module-initialization :validated-constructor-occurrences "binding-unused"])))
+      (is (= :rejected (:status (execute (update-in unused-plan [:module-initialization :initializers] pop))))))
+    (let [old {:entrypoint 'main :functions {'main {:name 'main :params [] :arity 0 :instructions [{:op :literal :value :old-result}]}}}
+          result (execute old)]
+      (is (= :complete (:status result)))
+      (is (= :old-result (:entrypoint-result result)))
+      (is (= result (execute (assoc-in old [:functions 'unused]
+                              {:params [] :arity 0 :instructions [(nth (iterate (fn [item] {:op :do :body [item]}) {:op :literal :value nil}) 130)]}))))
+      (is (not (contains? result :module-initialization))))))
+
+(defn- module-literal-emitter-input []
+  ;; Normalized C6/C5/type data for the existing private lowering owner.
+  (let [{:keys [plan read definition source initializer]} (module-literal-runtime-input)
+        roots (get-in plan [:module-initialization :roots])
+        form (fn [src kind value parent children]
+               {:form-id (:form-id src) :syntax-id (:syntax-id src) :kind kind :value value
+                :parent-form-id parent :child-form-ids children :source-span nil :origin-chain [] :generated-origin []})
+        node (fn [id src kind children attributes resolved evaluation]
+               {:node-id id :source src :core-form kind :children children :attributes attributes
+                :resolved-binding-ids resolved :evaluation evaluation})
+        keywords (mapv (fn [ordinal item]
+                         (let [id (str "keyword-" ordinal) src (source id)]
+                           {:node (node id src :literal [] {:literal-kind :keyword :value (:value item)} []
+                                        {:kind :value :region :module-initialization :owner-function-syntax-id nil :order []})
+                            :form (form src :keyword (:value item) (get-in definition [:value-source :form-id]) [])}))
+                       (range) (:items initializer))
+        value-ids (mapv #(get-in % [:node :node-id]) keywords)
+        vector-node (node (:value-core-node-id definition) (:value-source definition) :collection-literal value-ids
+                          {:literal-kind :vector :element-count 7} []
+                          {:kind :left-to-right :region :module-initialization :owner-function-syntax-id nil
+                           :order (mapv #(hash-map :index %1 :core-node-id %2) (range) value-ids)})
+        vector-form (form (:value-source definition) :vector (mapv :value (:items initializer))
+                          (get-in definition [:definition-source :form-id]) (mapv #(get-in % [:form :form-id]) keywords))
+        ref-node (node (:reference-core-node-id read) (:reference-source read) :reference []
+                       {:symbol 'modes :position :expression :binding-id (:binding-id definition) :binding-class :namespace
+                        :definition-syntax-id (:definition-syntax-id definition)}
+                       [(:binding-id definition)]
+                       {:kind :value :region :function-body :owner-function-syntax-id (get-in roots [1 :value-source :syntax-id]) :order []})
+        ref-form (form (:reference-source read) :symbol 'modes (get-in roots [1 :value-source :form-id]) [])
+        nil-source (source "main-result")
+        nil-node (node "main-result" nil-source :literal [] {:literal-kind :nil :value nil} []
+                       {:kind :value :region :function-body :owner-function-syntax-id (get-in roots [2 :value-source :syntax-id]) :order []})
+        nil-form (form nil-source :nil nil (get-in roots [2 :value-source :form-id]) [])
+        declarations
+        (mapv (fn [root]
+                (let [name (:name root) ordinal (:ordinal root) def-src (:definition-source root) value-src (:value-source root)
+                      name-src {:form-id (str (:definition-syntax-id root) "-form") :syntax-id (:definition-syntax-id root)}
+                      op-src (source (str "def-op-" name)) fn-op-src (source (str "fn-op-" name)) params-src (source (str "params-" name))
+                      body (if (= name 'getter) ref-node nil-node)
+                      raw-value (if (= :literal (:kind root)) (:value vector-form) (list 'fn [] (if (= name 'getter) 'modes nil)))
+                      value-form (if (= :literal (:kind root)) vector-form
+                                   (form value-src :list raw-value (:form-id def-src)
+                                         [(:form-id fn-op-src) (:form-id params-src) (get-in body [:source :form-id])]))
+                      value-node (if (= :literal (:kind root)) vector-node
+                                   (node (:value-core-node-id root) value-src :fn [(:node-id body)] {:parameters [] :fixed-arity 0} []
+                                         {:kind :function-creation :region :module-initialization :owner-function-syntax-id nil :order []}))
+                      def-node (node (:definition-core-node-id root) def-src :def [(:value-core-node-id root)]
+                                     {:name name :name-form-id (:form-id name-src) :name-syntax-id (:syntax-id name-src) :visibility (:visibility root)}
+                                     [(:binding-id root)]
+                                     {:kind :initialize-once :region :module-initialization :owner-function-syntax-id nil
+                                      :order [{:index 0 :core-node-id (:value-core-node-id root)}]})
+                      raw (list 'def name raw-value)]
+                  {:root root :nodes [value-node def-node]
+                   :forms (into [(form def-src :list raw nil [(:form-id op-src) (:form-id name-src) (:form-id value-src)])
+                                 (form op-src :symbol 'def (:form-id def-src) [])
+                                 (form name-src :symbol name (:form-id def-src) []) value-form]
+                                (if (= :literal (:kind root)) []
+                                  [(form fn-op-src :symbol 'fn (:form-id value-src) [])
+                                   (form params-src :vector [] (:form-id value-src) [])]))
+                   :raw raw
+                   :definition {:name name :binding-id (:binding-id root) :core-node-id (:definition-core-node-id root)
+                                :value-node-id (:value-core-node-id root) :syntax-id (:syntax-id def-src)}
+                   :binding {:binding-id (:binding-id root) :name name :kind (if (= :literal (:kind root)) :var :function)
+                             :binding-class :namespace :namespace 'example.module-literals :visibility (:visibility root)
+                             :definition-syntax-id (:definition-syntax-id root)}
+                   :record (when-not (= :literal (:kind root))
+                             {:ordinal (dec ordinal) :definition-name name :definition-binding-id (:binding-id root)
+                              :definition-core-node-id (:definition-core-node-id root) :function-core-node-id (:value-core-node-id root)
+                              :function-syntax-id (:syntax-id value-src) :body-core-node-id (:node-id body)})})) roots)
+        all-nodes (vec (concat (map :node keywords) (:nodes (get declarations 0)) [ref-node]
+                               (:nodes (get declarations 1)) [nil-node] (:nodes (get declarations 2))))
+        forms (into {} (map (juxt :form-id identity) (concat (map :form keywords) [ref-form nil-form] (mapcat :forms declarations))))
+        bindings (into {} (map #(vector (get-in % [:binding :binding-id]) (:binding %)) declarations))
+        types (merge (into {} (map #(vector (get-in % [:node :node-id]) :gravity.type/keyword) keywords))
+                     {(:node-id ref-node) (:type definition) "main-result" :gravity.type/nil}
+                     (into {} (mapcat #(vector [(get-in % [:root :value-core-node-id]) (get-in % [:root :type])]
+                                               [(get-in % [:root :definition-core-node-id]) (get-in % [:root :type])]) declarations)))
+        records (vec (keep :record declarations))
+        core {:module {:namespace 'example.module-literals :profile :meta :target :jvm :effects [:memory/allocate] :exports ['getter 'main]}
+              :root-core-node-ids (mapv :definition-core-node-id roots) :nodes all-nodes
+              :evaluation-order (mapv (fn [node] (let [evaluation (:evaluation node)]
+                                                 {:core-node-id (:node-id node) :kind (:kind evaluation) :region (:region evaluation)
+                                                  :owner-function-syntax-id (:owner-function-syntax-id evaluation)
+                                                  :children (mapv :core-node-id (:order evaluation))})) all-nodes)
+              :definitions (mapv :definition declarations) :function-records records :var-references [] :mutations []}
+        context {:core core :nodes (into {} (map (juxt :node-id identity) all-nodes)) :forms forms :bindings bindings :types types
+                 :records (into {} (map (juxt :definition-name identity) records)) :budget 65536
+                 :source-root-form-ids (mapv #(get-in % [:root :definition-source :form-id]) declarations)
+                 :raw-roots (into {} (map #(vector (get-in % [:root :definition-source :form-id]) (:raw %)) declarations))}]
+    {:context context :ref ref-node :definition definition :initializer initializer :plan plan}))
+
+(defn- module-literal-conditional-input []
+  (let [{:keys [context ref] :as input} (module-literal-emitter-input)
+        getter (get-in context [:records 'getter]) owner (:function-syntax-id getter)
+        source (fn [id] {:form-id (str id "-form") :syntax-id (str id "-syntax") :semantic-span nil :origin-chain [] :generated-origin []})
+        if-id "conditional-if" condition-id "conditional-test" else-id "conditional-else"
+        if-source (source if-id) condition-source (source condition-id) else-source (source else-id)
+        region (fn [role] {:kind :conditional-branch :if-syntax-id (:syntax-id if-source) :if-form-id (:form-id if-source)
+                           :role role :execution :selected-exactly-once :parent-region-kind :function-body
+                           :parent-if-syntax-id nil :parent-branch-role nil})
+        then (assoc-in ref [:evaluation :region] (region :then))
+        other (-> ref (assoc :node-id else-id :source else-source) (assoc-in [:evaluation :region] (region :else)))
+        condition {:node-id condition-id :source condition-source :core-form :literal :children [] :resolved-binding-ids []
+                   :attributes {:literal-kind :boolean :value true}
+                   :evaluation {:kind :value :region :function-body :owner-function-syntax-id owner :order []}}
+        conditional {:node-id if-id :source if-source :core-form :if :children [condition-id (:node-id ref) else-id] :resolved-binding-ids []
+                     :attributes {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
+                                  :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}}
+                     :evaluation {:kind :condition-then-exclusive-branch :region :function-body :owner-function-syntax-id owner
+                                  :order [{:index 0 :core-node-id condition-id}]}}
+        fn-id (:function-core-node-id getter) fn-node (assoc-in (get-in context [:nodes fn-id]) [:children] [if-id])
+        getter (assoc getter :body-core-node-id if-id)
+        form (fn [src kind value parent children]
+               {:form-id (:form-id src) :syntax-id (:syntax-id src) :kind kind :value value :parent-form-id parent
+                :child-form-ids children :source-span nil :origin-chain [] :generated-origin []})
+        fn-form-id (get-in fn-node [:source :form-id]) def-form-id (get-in context [:nodes (:definition-core-node-id getter) :source :form-id])
+        fn-value '(fn [] (if true modes modes)) raw (list 'def 'getter fn-value)
+        op-source (source "conditional-op")
+        forms (-> (:forms context)
+                  (assoc (:form-id if-source) (form if-source :list '(if true modes modes) fn-form-id
+                                                   [(:form-id op-source) (:form-id condition-source) (get-in then [:source :form-id]) (:form-id else-source)])
+                         (:form-id op-source) (form op-source :symbol 'if (:form-id if-source) [])
+                         (:form-id condition-source) (form condition-source :boolean true (:form-id if-source) [])
+                         (:form-id else-source) (form else-source :symbol 'modes (:form-id if-source) []))
+                  (assoc-in [(get-in ref [:source :form-id]) :parent-form-id] (:form-id if-source))
+                  (assoc-in [fn-form-id :value] fn-value)
+                  (update-in [fn-form-id :child-form-ids] #(conj (subvec % 0 2) (:form-id if-source)))
+                  (assoc-in [def-form-id :value] raw))
+        old-nodes (get-in context [:core :nodes])
+        all-nodes (vec (mapcat (fn [node]
+                                (cond (= (:node-id ref) (:node-id node)) [condition then other conditional]
+                                      (= fn-id (:node-id node)) [fn-node]
+                                      :else [node])) old-nodes))
+        evaluations (mapv (fn [node] (let [e (:evaluation node)]
+                                      {:core-node-id (:node-id node) :kind (:kind e) :region (:region e)
+                                       :owner-function-syntax-id (:owner-function-syntax-id e) :children (mapv :core-node-id (:order e))})) all-nodes)
+        changed (-> context (assoc :forms forms :nodes (into {} (map (juxt :node-id identity) all-nodes)))
+                            (assoc-in [:core :nodes] all-nodes) (assoc-in [:core :evaluation-order] evaluations)
+                            (assoc-in [:core :control-flow] [{:core-node-id if-id :kind :if :condition-node-id condition-id
+                                                             :branches [{:role :then :predicate :truthy :core-node-id (:node-id ref)}
+                                                                        {:role :else :predicate :falsey :core-node-id else-id}]
+                                                             :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}
+                                                             :result-policy :selected-branch}])
+                            (assoc-in [:records 'getter] getter)
+                            (update-in [:core :function-records] #(mapv (fn [record] (if (= 'getter (:definition-name record)) getter record)) %))
+                            (assoc-in [:raw-roots def-form-id] raw)
+                            (update :types merge {condition-id :gravity.type/bool else-id (get-in context [:types (:node-id ref)])
+                                                  if-id (get-in context [:types (:node-id ref)])}))]
+    (assoc input :context changed :conditional conditional :else other)))
+
+(deftest current-gravity-module-literal-emitter-development-kernel
+  (let [{:keys [context ref definition initializer plan]} (module-literal-emitter-input)
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        lowerer (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path (slurp emitter-path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime lowerer name (vec args)))
+        prepare #(invoke 'p15-s23-typed-module-initialization-context %)
+        prepared (prepare context) active (assoc (:value prepared) :current-function (get-in context [:records 'getter]))
+        manifest (get-in prepared [:value :module-initialization])
+        compile #(invoke 'p15-s23-typed-compile-node % (:node-id ref) %2)
+        lowered (compile active 65536)]
+    (is (= :complete (:status prepared)) (pr-str prepared))
+    (is (= :p15-s23-module-literals-v1 (:version manifest)))
+    (is (= [0 1 2] (mapv :ordinal (:roots manifest))))
+    (is (= 0 (get-in context [:records 'getter :ordinal])))
+    (is (= 1 (get-in prepared [:value :module-roots 'getter :ordinal])))
+    (is (= [{:ordinal 0 :binding-id (:binding-id definition) :instruction initializer}] (:initializers manifest)))
+    (is (= {:vector-literal 1 :literal 7} (get-in prepared [:value :initializer-summary])))
+    (let [exact (prepare (assoc context :budget (:work-count prepared)))]
+      (is (= (dissoc (:value prepared) :budget) (dissoc (:value exact) :budget)))
+      (is (= (:work-count prepared) (:work-count exact)))
+      (is (= 0 (get-in exact [:value :budget]))))
+    (is (= :typed-lowering-work-limit (get-in (prepare (assoc context :budget (dec (:work-count prepared)))) [:facts :reason])))
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (is (= :namespace-read (get-in lowered [:value :op])))
+    (is (= (:binding-id definition) (get-in lowered [:value :binding-id])))
+    (is (= lowered (compile active (:work-count lowered))))
+    (is (= :typed-lowering-work-limit (get-in (compile active (dec (:work-count lowered))) [:facts :reason])))
+    (doseq [mutate [#(update-in % [:core :root-core-node-ids] pop)
+                    #(update-in % [:core :definitions] pop)
+                    #(update % :source-root-form-ids (comp vec reverse))
+                    #(assoc-in % [:nodes (:definition-core-node-id definition) :evaluation :kind] :value)
+                    #(assoc-in % [:nodes (:definition-core-node-id definition) :evaluation :order] [])
+                    #(assoc-in % [:bindings (:binding-id definition) :visibility] :public)
+                    #(assoc-in % [:nodes (:value-core-node-id definition) :core-form] :reference)
+                    #(assoc-in % [:nodes (:value-core-node-id definition) :core-form] :call)
+                    #(assoc-in % [:core :var-references] [{:binding-id (:binding-id definition)}])
+                    #(assoc-in % [:core :mutations] [{:target-binding-id (:binding-id definition)}])]]
+      (is (not= :complete (:status (prepare (mutate context))))))
+    (doseq [mutate [#(assoc-in % [:nodes (:node-id ref) :evaluation :kind] :left-to-right)
+                    #(assoc-in % [:nodes (:node-id ref) :evaluation :region] :module-initialization)
+                    #(assoc-in % [:nodes (:node-id ref) :attributes :binding-class] :lexical)
+                    #(assoc-in % [:namespace-definitions (:binding-id definition) :type] :gravity.type/string)
+                    #(assoc-in % [:namespace-definitions (:binding-id definition) :value-source] {})]]
+      (is (= :rejected (:status (compile (mutate active) 65536)))))
+    (let [local-id "lexical-modes" local (-> ref (assoc :resolved-binding-ids [local-id])
+                                           (assoc-in [:attributes :binding-id] local-id)
+                                           (assoc-in [:attributes :binding-class] :lexical))
+          shadow (-> active (assoc-in [:nodes (:node-id ref)] local)
+                            (assoc :locals {local-id 'modes} :parameter-types {local-id (:type definition)}))]
+      (is (= {:op :local :name 'modes} (:value (compile shadow 65536)))))
+    (let [{conditional-context :context conditional :conditional} (module-literal-conditional-input)
+          checked (prepare conditional-context)
+          scoped (assoc (:value checked) :current-function (get-in conditional-context [:records 'getter]))
+          compiled (invoke 'p15-s23-typed-compile-node scoped (:node-id conditional) 65536)
+          ref-id (:node-id ref)
+          bad-region (-> scoped
+                         (assoc-in [:nodes ref-id :evaluation :region :if-syntax-id] "another-if")
+                         (update-in [:core :nodes] #(mapv (fn [node] (if (= ref-id (:node-id node))
+                                                                      (assoc-in node [:evaluation :region :if-syntax-id] "another-if") node)) %)))
+          bad-owner (-> scoped (assoc-in [:nodes ref-id :evaluation :owner-function-syntax-id] "another-function")
+                                (assoc-in [:module-source-evaluations ref-id :owner-function-syntax-id] "another-function"))]
+      (is (= :complete (:status checked)) (pr-str checked))
+      (is (= :conditional-branch (get-in scoped [:nodes ref-id :evaluation :region :kind])))
+      (is (= :complete (:status compiled)) (pr-str compiled))
+      (is (= :if (get-in compiled [:value :op])))
+      (is (= :namespace-read (get-in compiled [:value :then :op]) (get-in compiled [:value :else :op])))
+      (is (= :rejected (:status (compile bad-region 65536))))
+      (is (= :rejected (:status (compile bad-owner 65536))))
+      (let [runtime-plan (:plan (typed-catch-runtime-projection))
+            guest (-> plan (assoc :module-initialization (get-in checked [:value :module-initialization]))
+                           (assoc-in [:functions 'getter :instructions] [(:value compiled)])
+                           (assoc-in [:functions 'getter :module-root] (get-in checked [:value :module-roots 'getter]))
+                           (assoc-in [:functions 'main :module-root] (get-in checked [:value :module-roots 'main])))
+            result (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [guest])]
+        (is (= :complete (:status result)) (pr-str result))
+        (is (identical? (first (:entrypoint-result result)) (second (:entrypoint-result result))))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))
+          guest (-> plan (assoc :module-initialization manifest)
+                         (assoc-in [:functions 'getter :instructions] [(:value lowered)])
+                         (assoc-in [:functions 'getter :module-root] (get-in prepared [:value :module-roots 'getter]))
+                         (assoc-in [:functions 'main :module-root] (get-in prepared [:value :module-roots 'main])))
+          result (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-execute-closed-plan [guest])]
+      (is (= :complete (:status result)) (pr-str result))
+      (is (identical? (first (:entrypoint-result result)) (second (:entrypoint-result result)))))))
+
 (deftest current-gravity-private-entry-span-fixture-preparation
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
@@ -4965,6 +5316,150 @@
         (is (= ['span] (nth (first definitions) 2)))
         (is (= #{:memory/allocate} (:effects directives)))
         (is (= ['span-one 'span-two 'main] (:exports directives)))))))
+
+(deftest current-gravity-module-literal-modes-authenticated-composition
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom []) executions (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        execute (fn [assembled entrypoint]
+                  (let [result (original runtime runtime-plan 'p15-s23-runtime-execute-closed-plan
+                                         [(assoc assembled :entrypoint entrypoint)])]
+                    (swap! executions conj entrypoint) result))
+        prepare (fn [relative]
+                  (let [products (fresh relative) input (select-keys products [:request :typed :verification])
+                        path (.getPath (io/file root relative))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw)]
+                    (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                    (is (= :passed (get-in input [:verification :status])))
+                    (when-not (= :accepted (get-in input [:typed :status]))
+                      (throw (ex-info "Module literal C7 rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+                    {:input input :module (assoc raw :function-table definitions) :definitions definitions}))
+        expected [:artifact :manifest :diagnostic :conformance :runtime-output :ir-modulo-id :reviewed-delta]
+        source (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        definition-text "(def w5-se-required-modes\n  [:artifact :manifest :diagnostic :conformance :runtime-output\n   :ir-modulo-id :reviewed-delta])"
+        getter-text "(defn w5-stage-equivalence-modes []\n  w5-se-required-modes)"
+        _ (doseq [snippet [definition-text getter-text]] (is (str/includes? source snippet)))
+        _ (doseq [[directory name] [["accepted" "module-literal-modes"]
+                                   ["rejected" "module-literal-modes-call-initializer"]
+                                   ["rejected" "module-literal-modes-missing-allocation"]]]
+            (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
+                  gravity (slurp (io/file root (str stem ".gravity"))) qst (slurp (io/file root (str stem ".qst")))]
+              (is (= gravity qst))
+              (doseq [snippet [definition-text getter-text]] (is (str/includes? gravity snippet)))))
+        cases
+        (mapv
+          (fn [extension]
+            (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/module-literal-modes" extension)
+                  {:keys [input module definitions]} (prepare relative)
+                  assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                  manifest (:module-initialization assembled) roots (:roots manifest)
+                  global (first roots) initializer (first (:initializers manifest))
+                  getter (get-in assembled [:functions 'w5-stage-equivalence-modes]) read (first (:instructions getter))
+                  core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                  functions (:function-type-table facts)
+                  binding (seal (:request input) (:typed input) (:verification input))
+                  effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                  graph (:effect-graph effects)
+                  effect-verification
+                  (do (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                      (when-not (= :accepted (:status effects)) (throw (ex-info "Module literal C8 rejected" {:effects effects})))
+                      (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects))
+                  _ (do (is (= :passed (:status effect-verification)))
+                        (when-not (= :passed (:status effect-verification))
+                          (throw (ex-info "Module literal C8 verification rejected" {:verification effect-verification}))))
+                  main-result (execute assembled 'main) one (execute assembled 'w5-stage-equivalence-modes)
+                  two (execute assembled 'w5-stage-equivalence-modes)]
+              (is (= 2 (count (:function-records core)) (count functions) (count (:functions assembled))))
+              (is (= 5 (count (:calls core)) (count (:call-edges core))))
+              (is (= :p15-s23-module-literals-v1 (:version manifest)))
+              (is (= :fresh-per-closed-plan-execution (:instance-policy manifest)))
+              (is (= [0 1 2] (mapv :ordinal roots)))
+              (is (= [:literal :function :function] (mapv :kind roots)))
+              (is (= '[w5-se-required-modes w5-stage-equivalence-modes main] (mapv :name roots)))
+              (is (= :private (:visibility global)))
+              (is (= 1 (count (:initializers manifest))))
+              (is (= 0 (:ordinal initializer)))
+              (is (= (:binding-id global) (:binding-id initializer) (:binding-id read)))
+              (is (= {:op :vector-literal :items (literal-instructions expected)} (:instruction initializer)))
+              (is (= :namespace-read (:op read)))
+              (is (= :p15-s23-namespace-read-v1 (:version read)))
+              (is (= (select-keys global [:binding-id :definition-core-node-id :definition-syntax-id :definition-source
+                                          :value-core-node-id :value-source :type])
+                     (select-keys read [:binding-id :definition-core-node-id :definition-syntax-id :definition-source
+                                       :value-core-node-id :value-source :type])))
+              (is (= 1 (get-in assembled [:instruction-summary :vector-literal])))
+              (is (= :pending-c8-and-profile-authority (get-in assembled [:effect-summary :legality])))
+              (is (= :non-authoritative (get-in assembled [:effect-summary :authority])))
+              (doseq [result [main-result one two]]
+                (is (= :complete (:status result)) (pr-str result))
+                (is (= "" (:stdout result)))
+                (is (= [(:binding-id global)] (get-in result [:module-initialization :initialized-binding-ids])))
+                (is (= {(:binding-id global) {:vector-literal 1}}
+                       (get-in result [:module-initialization :validated-constructor-occurrences]))))
+              (is (= true (:entrypoint-result main-result)))
+              (is (= expected (:entrypoint-result one) (:entrypoint-result two)))
+              (is (not (identical? (:entrypoint-result one) (:entrypoint-result two))))
+              (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
+              (doseq [function functions] (is (= #{} (get-in graph [:functions (:function-id function) :inferred]))))
+              (is (= #{:memory/allocate} (get-in graph [:nodes (:value-core-node-id global) :direct])))
+              (is (= #{} (get-in graph [:nodes (:reference-core-node-id read) :direct])))
+              (is (nil? (get-in graph [:nodes (:reference-core-node-id read) :allocation])))
+              {:input input :module module :definitions definitions :assembled assembled :global global :read read
+               :effects effects :binding binding}))
+          [".gravity" ".qst"])
+        {:keys [input module definitions assembled global read effects binding]} (first cases)]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (= (:module-initialization assembled) (get-in cases [1 :assembled :module-initialization])))
+    (let [typed (walk/postwalk #(if (= (:type global) %) :gravity.type/bool %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed typed)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [graph (:effect-graph effects)]
+      (doseq [changed [(assoc-in graph [:nodes (:value-core-node-id global) :direct] #{})
+                       (assoc-in graph [:nodes (:reference-core-node-id read) :direct] #{:memory/allocate})
+                       (assoc-in graph [:namespace :inferred] #{})]]
+        (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding (reseal effects changed)))))))
+    (let [{:keys [input module definitions]}
+          (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-literal-modes-call-initializer.gravity")
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) input))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :passed (:status (last @verified))))
+      (is (some #{:unsupported-typed-module-initializer} (tree-seq coll? seq failure)) (pr-str failure)))
+    (let [{:keys [input]} (prepare "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-literal-modes-missing-allocation.gravity")
+          binding (seal (:request input) (:typed input) (:verification input))
+          result (c8 'build-body-effect-result (:typed input) (:verification input) binding)]
+      (is (= :rejected (:status result)))
+      (is (some #(= ["C8-UNDECLARED" :namespace-effect-outside-source-allowance] ((juxt :rule :reason) %))
+                (:diagnostics result)) (pr-str (:diagnostics result))))
+    (is (= 4 (count @verified)))
+    (is (= '[main w5-stage-equivalence-modes w5-stage-equivalence-modes
+             main w5-stage-equivalence-modes w5-stage-equivalence-modes] @executions))
+    (is (= ["bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/module-literal-modes.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/module-literal-modes.qst"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-literal-modes-call-initializer.gravity"
+            "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-literal-modes-missing-allocation.gravity"] @built))))
 
 (deftest current-gravity-private-entry-span-authenticated-composition
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)

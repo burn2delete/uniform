@@ -1596,6 +1596,7 @@
                                         (if (= :loop-recur-type (first (first remaining))) (conj out (get (first remaining) 1)) out)))))
                                     (= owner-ids (set (keys owner-index))) (= transfer-ids (set (keys transfer-index)))])
               (p15-s23-compiler-result {:core core :typed typed :nodes node-index :forms form-index :bindings binding-index :raw-roots raw-roots
+                :source-root-form-ids roots
                 :records record-index :functions function-index :types (get typed :type-table)
                 :observation observation :ledger ledger :error-handlers handlers :lexical lexical :local-facts fact-index
                 :calls call-index :edges edge-index :call-facts call-fact-index :recursion-components recursive
@@ -6640,6 +6641,170 @@
               (assoc (p15-s23-typed-node-error :typed-if-join-evidence-mismatch node) :work-count work))))
         (assoc (p15-s23-typed-node-error :typed-control-shape-mismatch node) :work-count base)))))
 
+(defn p15-s23-typed-initializer-closure [context id budget]
+  (loop [pending [{:id id :depth 0}] work 0]
+    (if (= 0 (count pending)) {:status :accepted :work-count work}
+      (let [frame (get pending (- (count pending) 1)) node (get (get context :nodes) (get frame :id))
+            kind (get node :core-form) children (get node :children) depth (get frame :depth)
+            width (if (vector? children) (count children) 0) total (+ work 1 (* 2 width))]
+        (if (> total budget) {:status :rejected :reason :typed-lowering-work-limit :work-count total}
+          (if (if (if (map? node) (vector? children) false) (<= depth 128) false)
+            (if (if (contains? #{:literal :quote} kind) (= 0 width)
+                    (if (= :collection-literal kind) (contains? #{:vector :map} (get (get node :attributes) :literal-kind)) false))
+              (recur
+                (loop [remaining children out (subvec pending 0 (- (count pending) 1))]
+                  (if (= 0 (count remaining)) out
+                    (recur (rest remaining) (conj out {:id (first remaining) :depth (+ depth 1)})))) total)
+              {:status :rejected :reason :unsupported-typed-module-initializer :work-count total})
+            {:status :rejected :reason :unsupported-typed-module-initializer :work-count total}))))))
+
+(defn p15-s23-typed-module-initialization-context [context]
+  (let [core (get context :core) roots (get core :root-core-node-ids) definitions (get core :definitions)
+        nodes (get context :nodes) forms (get context :forms) bindings (get context :bindings)
+        vars (get core :var-references []) mutations (get core :mutations [])
+        budget (get context :budget)
+        families? (p15-s23-typed-all [(vector? roots) (vector? definitions) (vector? vars) (vector? mutations)
+                                     (vector? (get context :source-root-form-ids)) (vector? (get core :evaluation-order))])
+        base (if families? (+ 64 (count nodes) (count forms) (* 2 (count definitions)) (* 64 (count roots)) (count bindings) (count (get context :records))
+                                 (count vars) (count mutations) (count (get core :evaluation-order))) 65537)]
+    (if (> base budget) (assoc (p15-s23-typed-error :typed-lowering-work-limit) :work-count base)
+      (let [by-node (p15-s23-typed-index definitions :core-node-id)
+            by-binding (p15-s23-typed-index definitions :binding-id)
+            evaluations (p15-s23-typed-index (get core :evaluation-order) :core-node-id)
+            root-set (set roots)
+            all-defs (loop [remaining (get core :nodes) out #{}]
+                       (if (= 0 (count remaining)) out
+                         (recur (rest remaining) (if (= :def (get (first remaining) :core-form))
+                                                  (conj out (get (first remaining) :node-id)) out))))]
+        (if (p15-s23-typed-all [(map? by-node) (map? by-binding) (= (count roots) (count root-set) (count definitions) (count (get context :source-root-form-ids)))
+                               (= root-set all-defs (set (keys by-node)))
+                               (map? evaluations) (= (set (keys nodes)) (set (keys evaluations)))])
+          (loop [remaining roots ordinal 0 rows [] initializers [] globals {} by-name {} summary {} used base]
+            (if (= 0 (count remaining))
+              (let [literal-ids (set (keys globals))
+                    forbidden? (loop [remaining vars]
+                                 (if (= 0 (count remaining))
+                                   (loop [items mutations]
+                                     (if (= 0 (count items)) false
+                                       (if (contains? literal-ids (get (first items) :target-binding-id)) true (recur (rest items)))))
+                                   (if (contains? literal-ids (get (first remaining) :binding-id)) true (recur (rest remaining)))))
+                    function-names (loop [remaining rows out #{}]
+                                     (if (= 0 (count remaining)) out
+                                       (recur (rest remaining) (if (= :function (get (first remaining) :kind))
+                                                                (conj out (get (first remaining) :name)) out))))
+                    manifest (if (= 0 (count initializers)) nil
+                               {:version :p15-s23-module-literals-v1 :module (get (get core :module) :namespace)
+                                :instance-policy :fresh-per-closed-plan-execution :roots rows :initializers initializers})]
+                (if (if forbidden? true (= false (= function-names (set (keys (get context :records))))))
+                  (assoc (p15-s23-typed-error :unsupported-typed-module-binding-use) :work-count used)
+                  (assoc (p15-s23-compiler-result
+                           (assoc context :namespace-definitions globals :module-roots by-name :module-initialization manifest
+                                          :module-source-evaluations evaluations :initializer-summary summary :budget (- budget used))) :work-count used)))
+              (let [id (first remaining) node (get nodes id) definition (get by-node id)
+                    attrs (get node :attributes) bid (get definition :binding-id) binding (get bindings bid)
+                    value-id (get definition :value-node-id) value (get nodes value-id)
+                    form (get forms (get (get node :source) :form-id)) ids (get form :child-form-ids)
+                    operator (get forms (get ids 0)) name-form (get forms (get ids 1)) value-form (get forms (get ids 2))
+                    name (get definition :name) raw (get (get context :raw-roots) (get form :form-id))
+                    function? (= :fn (get value :core-form)) record (get (get context :records) name)
+                    type (get (get context :types) value-id)
+                    row {:ordinal ordinal :kind (if function? :function :literal) :name name :visibility (get binding :visibility)
+                         :binding-id bid :definition-core-node-id id :definition-syntax-id (get binding :definition-syntax-id)
+                         :definition-source (get node :source) :value-core-node-id value-id :value-source (get value :source) :type type}]
+                (if (p15-s23-typed-all
+                      [(= :def (get node :core-form)) (= :namespace (get binding :binding-class))
+                       (= (get (get core :module) :namespace) (get binding :namespace))
+                       (= (if function? :function :var) (get binding :kind))
+                       (contains? #{:private :public} (get binding :visibility))
+                       (= (get binding :visibility) (get attrs :visibility))
+                       (= name (get binding :name) (get attrs :name) (get name-form :value))
+                       (symbol? name) (= false (contains? by-name name))
+                       (= [bid] (get node :resolved-binding-ids)) (= [value-id] (get node :children))
+                       (= {:kind :initialize-once :region :module-initialization :owner-function-syntax-id nil
+                           :order [{:index 0 :core-node-id value-id}]} (get node :evaluation))
+                       (= {:core-node-id id :kind :initialize-once :region :module-initialization :owner-function-syntax-id nil
+                           :children [value-id]} (get evaluations id))
+                       (= (get definition :syntax-id) (get (get node :source) :syntax-id) (get form :syntax-id))
+                       (= (get binding :definition-syntax-id) (get attrs :name-syntax-id) (get name-form :syntax-id))
+                       (= (get name-form :form-id) (get attrs :name-form-id))
+                       (= :list (get form :kind)) (vector? ids) (= 3 (count ids))
+                       (= :symbol (get operator :kind) (get name-form :kind)) (= 'def (get operator :value))
+                       (= (get form :form-id) (get operator :parent-form-id) (get name-form :parent-form-id) (get value-form :parent-form-id))
+                       (= (p15-s23-typed-source form) (get node :source))
+                       (= (get form :form-id) (get (get context :source-root-form-ids) ordinal))
+                       (= (p15-s23-typed-source value-form) (get value :source))
+                       (if (seq? raw)
+                         (if (= 3 (count raw))
+                           (if (= 'def (first raw))
+                             (if (= name (second raw)) (if function? true (= (get (vec raw) 2) (get value-form :value))) false) false) false) false)
+                       (= type (get (get context :types) id)) (= false (contains? #{nil :gravity.type/unknown :gravity.type/never} type))
+                       (if function?
+                         (p15-s23-typed-all [(map? record) (= bid (get record :definition-binding-id))
+                                             (= id (get record :definition-core-node-id)) (= value-id (get record :function-core-node-id))]) true)])
+                  (if function?
+                    (recur (rest remaining) (+ ordinal 1) (conj rows row) initializers globals (assoc by-name name row) summary used)
+                    (let [closure (p15-s23-typed-initializer-closure context value-id (- budget used))
+                          prefix (+ used (get closure :work-count))
+                          reserved (+ prefix (if (= :accepted (get closure :status)) (get closure :work-count) 0))
+                          compiled (if (if (= :accepted (get closure :status)) (<= reserved budget) false)
+                                     (p15-s23-typed-compile-node (assoc context :locals {} :parameter-types {} :namespace-definitions {}
+                                       :tail? false :nearest-target nil :current-function nil)
+                                       value-id (- budget reserved)) nil)
+                          total (+ reserved (get compiled :work-count 0))]
+                      (if (if (> total budget) true (= :rejected (get closure :status)))
+                        (assoc (p15-s23-typed-error (if (> total budget) :typed-lowering-work-limit (get closure :reason))) :work-count total)
+                        (if (p15-s23-compiler-complete? compiled)
+                          (let [counted (p15-s23-summary-instruction (get compiled :value) summary)]
+                            (if (p15-s23-compiler-complete? counted)
+                              (recur (rest remaining) (+ ordinal 1) (conj rows row)
+                                     (conj initializers {:ordinal ordinal :binding-id bid :instruction (get compiled :value)})
+                                     (assoc globals bid row) (assoc by-name name row) (get counted :value) total) counted))
+                          (assoc compiled :work-count total)))))
+                  (assoc (p15-s23-typed-node-error :typed-module-definition-source-mismatch node) :work-count used)))))
+          (assoc (p15-s23-typed-error :unsupported-typed-module-root-census) :work-count base))))))
+
+(defn p15-s23-typed-namespace-reference [context node type budget]
+  (let [id (get node :node-id) attrs (get node :attributes) bid (get attrs :binding-id)
+        definition (get (get context :namespace-definitions) bid) binding (get (get context :bindings) bid)
+        form (get (get context :forms) (get (get node :source) :form-id))
+        def-node (get (get context :nodes) (get definition :definition-core-node-id))
+        initializer (get (get context :nodes) (get definition :value-core-node-id))
+        evaluation (get (get context :module-source-evaluations) id) work 64]
+    (if (< budget work) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count work)
+      (if (p15-s23-typed-all
+            [(map? definition) (= :literal (get definition :kind)) (= :reference (get node :core-form))
+             (= [] (get node :children)) (= [bid] (get node :resolved-binding-ids))
+             (= {:symbol (get form :value) :position :expression :binding-id bid :binding-class :namespace
+                 :definition-syntax-id (get definition :definition-syntax-id)} attrs)
+             (= :symbol (get form :kind)) (= (p15-s23-typed-source form) (get node :source))
+             (= [:namespace :var (get (get (get context :core) :module) :namespace)]
+                [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
+             (= (get binding :definition-syntax-id) (get definition :definition-syntax-id))
+             (= bid (get binding :binding-id) (get definition :binding-id))
+             (= (get binding :name) (get definition :name) (get (get def-node :attributes) :name))
+             (= (get binding :visibility) (get definition :visibility) (get (get def-node :attributes) :visibility))
+             (= definition (get (get context :module-roots) (get binding :name)))
+             (= :def (get def-node :core-form)) (= [bid] (get def-node :resolved-binding-ids))
+             (= [(get initializer :node-id)] (get def-node :children))
+             (= {:kind :initialize-once :region :module-initialization :owner-function-syntax-id nil
+                 :order [{:index 0 :core-node-id (get initializer :node-id)}]} (get def-node :evaluation))
+             (= (get definition :definition-source) (get def-node :source))
+             (= (get definition :value-source) (get initializer :source))
+             (= (get definition :definition-syntax-id) (get (get def-node :attributes) :name-syntax-id))
+             (= type (get definition :type) (get (get context :types) (get initializer :node-id)))
+             (map? (get context :current-function))
+             (= {:core-node-id id :kind :value :region (get evaluation :region)
+                 :owner-function-syntax-id (get (get context :current-function) :function-syntax-id) :children []} evaluation)
+             (= {:kind :value :region (get evaluation :region) :owner-function-syntax-id (get (get context :current-function) :function-syntax-id)
+                 :order []} (get node :evaluation))])
+        (assoc (p15-s23-compiler-result
+                 {:op :namespace-read :version :p15-s23-namespace-read-v1 :binding-id bid
+                  :definition-core-node-id (get definition :definition-core-node-id)
+                  :definition-syntax-id (get definition :definition-syntax-id) :definition-source (get definition :definition-source)
+                  :value-core-node-id (get definition :value-core-node-id) :value-source (get definition :value-source) :type type
+                  :reference-core-node-id id :reference-source (get node :source)}) :work-count work)
+        (assoc (p15-s23-typed-node-error :typed-reference-outside-parameters node) :work-count work)))))
+
 (defn p15-s23-typed-compile-node [context id budget]
   (let [node (get (get context :nodes) id) form (get node :core-form) children (get node :children)
         source (get (get context :forms) (get (get node :source) :form-id)) type (get (get context :types) id)]
@@ -6679,7 +6844,7 @@
             (let [binding (get (get node :attributes) :binding-id) name (get (get context :locals) binding)]
               (if (if (= name nil) false (= type (get (get context :parameter-types) binding)))
                 (assoc (p15-s23-compiler-result {:op :local :name name}) :work-count 1)
-                (p15-s23-typed-node-error :typed-reference-outside-parameters node)))
+                (p15-s23-typed-namespace-reference context node type budget)))
             (if (contains? #{:throw :if :do} form)
               (if (if (= form :throw) (if (= 1 (count children)) (= type :gravity.type/never) false)
                     (if (= form :if) (= 3 (count children)) true))
@@ -6697,7 +6862,8 @@
 (defn p15-s23-typed-provenance [context]
   (let [observation (get context :observation) source (get observation :source)]
     {:boundary :current-gravity-typed-lowering :authority :non-authoritative
-     :emission-scope :current-c6-typed-function-subset
+     :emission-scope (if (map? (get context :module-initialization))
+                       :current-c6-typed-function-and-literal-definition-subset :current-c6-typed-function-subset)
      :compiler-sources (get observation :compiler-sources)
      :source {:path (get source :path) :sha256 (get source :sha256)}
      :typed-core-input (get (get context :core) :artifact-id)
@@ -6734,7 +6900,9 @@
           (get (get context :nodes) (get (get value :record) :function-core-node-id)))) joined)))
 
 (defn p15-s23-typed-compile-function [emitter module definition input observation]
-  (let [checked (p15-s23-typed-context module input observation)]
+  (let [initial (p15-s23-typed-context module input observation)
+        checked (if (p15-s23-compiler-complete? initial)
+                  (p15-s23-typed-module-initialization-context (get initial :value)) initial)]
     (if (p15-s23-compiler-complete? checked)
       (if (p15-s23-typed-module-table? module (get checked :value))
         (p15-s23-typed-lower-function module definition (get checked :value))
@@ -6752,7 +6920,10 @@
                 (recur (rest remaining)) false)))) false)) true))
 
 (defn p15-s23-typed-assemble-plan-products [emitter module definitions input observation]
-  (let [checked (p15-s23-typed-context module input observation) context (get checked :value)]
+  (let [initial (p15-s23-typed-context module input observation)
+        checked (if (p15-s23-compiler-complete? initial)
+                  (p15-s23-typed-module-initialization-context (get initial :value)) initial)
+        context (get checked :value)]
     (if (p15-s23-compiler-complete? checked)
       (if (if (vector? definitions) (= (count definitions) (count (get context :records))) false)
         (let [indexed (p15-s23-typed-index
@@ -6765,20 +6936,23 @@
                           (conj out {}))))) :name)]
       (if (if (map? indexed) (if (p15-s23-typed-module-table? module context)
                               (= (set (keys indexed)) (set (keys (get context :records)))) false) false)
-        (loop [remaining definitions functions {} bindings [] summary {}]
+        (loop [remaining definitions functions {} bindings [] summary (get context :initializer-summary {})]
           (if (= 0 (count remaining))
             (let [entrypoint (get (get emitter :plan-shape) :entrypoint 'main)
                   main-function (get functions entrypoint)
                   products (p15-s23-complete-plan-products module
                              {:functions functions :binding-table bindings :instruction-summary summary}
-                             (if (= main-function nil) nil entrypoint))]
+                             (if (= main-function nil) nil entrypoint))
+                  products (if (= nil (get context :module-initialization)) products
+                               (assoc products :value (assoc (get products :value) :module-initialization (get context :module-initialization))))]
               (if (if (= main-function nil) false (> (count (get main-function :params)) 0))
                 (p15-s23-compiler-error "L2-MAIN-ARITY" {:params (get main-function :params)})
                 (assoc products :value (assoc (get products :value) :typed-lowering-provenance (p15-s23-typed-provenance context)
                   :effect-summary (assoc (get (get products :value) :effect-summary)
                     :legality :pending-c8-and-profile-authority :authority :non-authoritative)))))
             (let [entry (first remaining) compiled (p15-s23-typed-lower-function module (second entry) context)
-                  function (get compiled :value)]
+                  function (if (= nil (get context :module-initialization)) (get compiled :value)
+                               (assoc (get compiled :value) :module-root (get (get context :module-roots) (first entry))))]
               (if (if (= (first entry) (get (second entry) :name)) (p15-s23-compiler-complete? compiled) false)
                 (let [counted (p15-s23-summary-instructions (get function :instructions) summary)]
                   (if (p15-s23-compiler-complete? counted)

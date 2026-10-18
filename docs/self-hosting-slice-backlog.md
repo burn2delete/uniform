@@ -2191,6 +2191,49 @@ legality, other targets, authoritative migration, self-hosting and release
 gates remain outstanding. This is accepted executable development behavior,
 not completion of those broader contracts.
 
+### Module-local literal initialization: development implementation
+
+The typed emitter and `gravity.runtime` now execute supported module-local
+literal definitions once in source root order before the selected entrypoint.
+Each closed-plan execution creates a fresh module instance. Namespace reads
+use its private binding-ID pool through calls and `recur`, independently of
+lexical shadowing. Direct expression/function evaluation does not initialize
+a module or acquire a pool from caller-supplied locals or function tables.
+Plans without initialization retain their existing startup behavior.
+
+The emitter joins the complete canonical root/definition census, including
+unused initializers, with C5 bindings, source identities, types and C6
+evaluation metadata. Function ordinals are not module-root ordinals. Unquoted
+Vector and supported Map initializers remain evaluated constructors; quoted
+DATA stays inert. C8 owns namespace initialization allocation and legality;
+reads add no allocation. Runtime manifest checks do not replace source/type
+verification, and reported constructor occurrences are validation data, not
+allocation-event measurements.
+
+The focused runtime/catch batch passed 2 tests / 142 assertions. The corrected
+emitter kernel passed 1 / 55, including loader assertions that overlap other
+checks. Its first attempt remains 37 passes / one failed residual-budget
+assertion; the corrected check compares semantic products and explicitly
+checks the remaining budget. Independent review also corrected scoped C6
+branch-region handling and reserved known summary work before child lowering.
+
+The sole source composition passed 1 test / 126 assertions (120 composition
+checks plus six loader checks) at 2 GiB, taking 370.889 seconds of selected
+execution after 9.561 seconds of namespace loading.
+It preserves W5's exact literal definition and getter in the accepted G/Q
+pair, verifies C8 before six closed executions, and rejects an unused call
+initializer at the emitter and a missing allocation allowance at C8. It builds
+four fresh source products and reuses accepted products for coherent type/effect
+mutations. Negative
+QST fixtures have byte-parity coverage, not additional source constructions.
+
+Initializer calls, references/aliases, mutation, imported initialization and
+other arbitrary initializer code remain unsupported. Full W5's current empty
+effect declaration, Vector value equality, profile/provider/ownership and
+other target gates, authoritative migration, self-hosting and release remain
+outstanding. This is executable development progress, not completion credit
+for those broader boundaries or a performance benchmark.
+
 ### Private call-entry Map presence: development implementation
 
 This increment derives literal Keyword presence for an immutable parameter of

@@ -2279,6 +2279,34 @@ for C8/lowering/runtime checks, and does not migrate W5 or admit a compiler
 revision. Do not repeat unchanged upstream construction for every mutant or
 subsequent documentation edit.
 
+### Module-local literal initialization and reads
+
+Edit the typed emitter and Gravity runtime for this boundary, not the seed's
+literal-data index. A closed execution initializes supported module-local
+literal definitions once, in source root order, before entry execution. Reads
+use that instance's binding-ID pool through calls and `recur`; direct expression
+evaluation does not implicitly initialize a module or accept a caller's pool.
+Unquoted collection literals remain evaluated constructors, not quoted DATA.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-module-literal-runtime-development-kernel \
+  --exact current-gravity-module-literal-emitter-development-kernel
+```
+
+For a stable changed integration, select
+`current-gravity-module-literal-modes-authenticated-composition` separately in
+the same namespace. It preserves W5's literal definition and getter, checks C8
+legality before execution, and reuses accepted products for malformed-input
+checks. Initialization allocation belongs to the original constructor; reads
+do not add allocation. Initializer calls, references/aliases, mutation,
+imported initialization and other arbitrary initializer code remain outside
+this literal-only implementation. A derived
+constructor-occurrence count is not an allocation-event measurement. The
+fixture's explicit allocation allowance does not migrate the full W5 module,
+whose current empty effect declaration remains a separate integration issue.
+
 ### Map key membership
 
 STD3's direct Map `contains?` query distinguishes key presence from value
@@ -3651,9 +3679,9 @@ fresh and sequential after the parallel lanes drain. Batch reports preserve
 namespace fixture boundaries, deterministic fail-fast skips, bounded output,
 and explicit non-authority.
 
-### Exact SH-07 B8 regression route
+### Retained SH-07 B8 regression wrapper
 
-The current B8 expectation changes are owned by one closed route. It runs the
+This older, route-specific wrapper runs the
 two affected test vars in one bounded child JVM, allowing the existing
 process-local fixture/artifact cache to be shared:
 
@@ -3671,8 +3699,13 @@ development observations only. Unknown routes, mixed namespace/route
 selection, and extra options fail closed before launch. Admission also compares
 the route owner with the live `SH-07` leaf owner and binds its path/namespace to
 the current test dependency catalog; drifted, missing, malformed, or extra
-owner metadata fails closed. This route remains non-authoritative: use the
-complete SH-07 namespace and fresh integration lane for acceptance evidence.
+owner metadata fails closed. These restrictions govern this wrapper, not
+ordinary edits or direct `:dev-test` selections. Use the default three-boundary
+workflow above for current development: focused checks first, affected
+composition when behavior or interfaces change, and fresh authoritative
+verification for an explicit stable-module migration. A complete SH-07
+namespace run is a broad regression decision, not a prerequisite for every
+semantic change. This wrapper and its cached products remain non-authoritative.
 
 ## Bounded P15 Profiling Receipt
 
