@@ -2292,6 +2292,73 @@ targets, authoritative migration, self-hosting and release remain separate
 gates. These results are executable development evidence, not a benchmark or
 completion of those broader contracts.
 
+### Binary unit steps in bounded loops: development implementation
+
+The existing C7, C8, typed emitter and runtime now support exact binary
+`(+ counter 1)` in the previously declared zero-initialized strict bounded-loop
+domain. The counter must be the original Integer slot, the second source
+operand must be the Integer literal one, and the complete incoming-edge census
+must independently establish every step as authentic `inc` or exact unit
+addition. Extent remains at most 1,024. This proves the specific mathematical
+successor; it does not choose a general Integer representation or overflow
+fallback. The semantic owner is `gravity.math`, distinct from the
+`gravity.math.core` layer-0 owner and `gravity.core/+` compatibility binding.
+
+All-inc evidence retains its v1 representation. Any addition edge selects the
+new finite v2 unit-step invariant; mixed inc/addition descriptors, constraints,
+facts and complete ordered ledgers remain distinct and are reconstructed by
+each consumer. Existing nth/Vector-get consumers accept that exact invariant,
+not generic Integer evidence. Binary lowering and runtime preserve both ordered
+operands, transfers and runtime slot/unit/range guards. Never is not an
+induction premise, and no new range solver or check elision was introduced.
+
+Review caught two bounded-work defects before source integration: oversized
+step records could be scanned after an eager failed closure check, and a new
+module-wide classification scan preceded its base reservation. Dominant shape,
+cardinality and budget guards now precede those scans; selected work is charged
+once. Direct hostile no-traversal controls and existing S/T/Vector-get consumer
+regressions passed. Runtime passed 2 tests / 80 assertions, including 12 repeated
+loader checks. Corrected C7 passed 4 / 244 and consumers/lowering 8 / 657;
+these overlap prior development batches and are not disjoint coverage totals.
+
+The first actual source composition failed: six loader passes, one failure,
+one error; the first Gravity C7 guard stopped all downstream work. An exact raw
+inference prefix then failed 1 pass / six failures, establishing resource-limit
+status in round six with -788 remaining work units. A secondary Unknown throw
+diagnostic had masked that original failure. Neither result was a source pass.
+
+The bounded correction advances only an independently computed normal type
+from an accepted v2-bound nth/get into exact immutable lexical records whose
+initializer is that node. Selection and binding work is reserved first; no
+expected-type seed, cache or limit increase is involved. Existing v1 paths pay
+no added charge. Resource-limit diagnostics now retain priority over secondary
+Unknown diagnostics; all non-resource priorities remain unchanged. The lasting
+empty-descriptor two-loop control passed 1 / 12; changed source-prefix and
+diagnostic-priority controls passed 2 / 41; legacy checks passed 3 / 107.
+Earlier test-construction failures, malformed conditional, adapter expectations
+and unknown-selector rejection remain failures, not retroactive passes.
+
+The changed source composition passed 1 / 193: 187 composition assertions plus
+six existing loader assertions. Five fresh products cover the accepted G/Q
+pair and three Gravity negatives; negative QST files have byte parity,
+not extra compilation. Both accepted products passed fresh C7/C8 hard guards
+before 16 function-table activations (not closed-plan execution). The four
+functions exercise an all-addition loop, both mixed inc/addition branches,
+stored Keyword errors/catches and the ordinary entry. Ordered binary IR,
+complete actual source/backedge facts, get consumption, path-projected function
+tables, C7 identities, C8 graphs and results matched across G/Q. Exact/one-less
+C8 work and dependency forgery rejection passed.
+All three negatives rejected with the intended reason checked across their
+full diagnostic vectors; passing vectors were not separately serialized.
+
+Selected construction, verification and execution took 530.465 seconds after
+11.632 seconds of namespace loading at 2 GiB. There is no per-stage attribution
+or speedup claim. Source-level all-inc-v1 coverage was not repeated; preservation
+is supported by focused component regressions. General addition, commuted or
+non-unit steps, arbitrary dynamic bounds, ordinary-call induction, termination,
+TCO, full W5/SH-07, other targets and authoritative migration remain separate.
+No self-hosting, seedless or release status is promoted by this development slice.
+
 ### Guarded loop Vector get: development implementation
 
 The existing C7, C8 and typed emitter now support two-operand persistent

@@ -578,6 +578,34 @@
             (if (contains? fields :args)
               (if (vector? arguments)
                 (if comparison? (= 2 (count arguments))
+                  (if (= function '+)
+                  (if (= fields #{:op :function :args :proof})
+                    (if (= 2 (count arguments))
+                      (if (if (map? (first arguments)) (map? (second arguments)) false)
+                        (let [proof (get instruction :proof) extent (get proof :vector-extent)]
+                          (if (map? proof)
+                            (loop [checks
+                                   [(= #{:kind :numeric-mode :integer-type :operation-core-node-id :target-id :slot-binding-id :slot-name
+                                          :guard-core-node-id :condition-core-node-id :count-core-node-id :count-operand-node-id
+                                          :vector-origin-node-id :unit-core-node-id :vector-extent :maximum-vector-extent :lower :step
+                                          :guard-relation :result-relation} (set (keys proof)))
+                                    (= [:gravity.runtime/bounded-unit-addition :proof-required :gravity.type/integer 1024 0 1
+                                        :zero-le-counter-lt-extent :zero-lt-successor-le-extent]
+                                       [(get proof :kind) (get proof :numeric-mode) (get proof :integer-type)
+                                        (get proof :maximum-vector-extent) (get proof :lower) (get proof :step)
+                                        (get proof :guard-relation) (get proof :result-relation)])
+                                    (if (integer? extent) (<= 0 extent 1024) false)
+                                    (if (symbol? (get proof :slot-name)) (contains? environment (get proof :slot-name)) false)
+                                    (loop [remaining [:operation-core-node-id :target-id :slot-binding-id :guard-core-node-id
+                                                      :condition-core-node-id :count-core-node-id :count-operand-node-id
+                                                      :vector-origin-node-id :unit-core-node-id]]
+                                      (if (= 0 (count remaining)) true
+                                        (let [id (get proof (first remaining))]
+                                          (if (string? id)
+                                            (if (if (> (count id) 0) (<= (count id) 256) false)
+                                              (recur (rest remaining)) false) false))))]]
+                              (if (= 0 (count checks)) true
+                                (if (= true (first checks)) (recur (rest checks)) false))) false)) false) false) false)
                   (if (= function 'inc)
                     (if (= fields #{:op :function :args :proof})
                       (if (= 1 (count arguments))
@@ -626,7 +654,7 @@
                           (loop [remaining arguments]
                             (if (= 0 (count remaining)) true
                               (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
-                      (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))))) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -723,6 +751,18 @@
                   (if (boolean? equal) [equal (second arguments-result) :normal]
                     [{:diagnostic "P15S23X002" :reason (if vectors? :vector-value-equality-domain-required :atomic-value-equality-domain-required) :operation operation}
                      (second arguments-result) :rejected]))
+              (if (= function '+)
+                (let [proof (get instruction :proof) extent (get proof :vector-extent)]
+                  (if (if (integer? left)
+                        (if (if (<= 0 left) (< left extent) false)
+                          (if (= left (get environment (get proof :slot-name)))
+                            (if (integer? right) (= 1 right) false) false) false) false)
+                    (let [successor (+ left right)]
+                      (if (<= successor extent) [successor (second arguments-result) :normal]
+                        [{:diagnostic "P15S23X002" :reason :bounded-unit-addition-result-out-of-range :operation operation}
+                         (second arguments-result) :rejected]))
+                    [{:diagnostic "P15S23X002" :reason :bounded-unit-addition-counter-unit-and-range-required :operation operation}
+                     (second arguments-result) :rejected]))
               (if (= function 'inc)
                 (let [proof (get instruction :proof) extent (get proof :vector-extent)]
                   (if (if (integer? left)
@@ -776,7 +816,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))))))
+                (second arguments-result) :rejected]))))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

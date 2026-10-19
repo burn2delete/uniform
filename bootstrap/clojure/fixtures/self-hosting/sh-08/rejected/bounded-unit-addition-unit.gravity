@@ -1,0 +1,13 @@
+(ns example.rejected-unit-addition
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main []
+  (let [payloads [true true true]]
+    (loop [cursor 0]
+      (if (< cursor (count payloads))
+        (recur (+ cursor 2))
+        cursor))))

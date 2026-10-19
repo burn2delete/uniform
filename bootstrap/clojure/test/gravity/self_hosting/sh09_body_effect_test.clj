@@ -2032,6 +2032,84 @@
                            (assoc-in facts [:type-table :count-query] :gravity.type/i64)]]
           (is (false? (valid candidate))))))))
 
+(defn- body-unit-step-products [input access]
+  ;; Normalized current-source proof consumers, not an authenticated module product.
+  (let [c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        {:keys [core nodes bindings types forms]} input
+        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms 65536])
+        count-descriptor (:descriptor count-result)
+        ordering (c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
+        types (cond-> (assoc types :count-op count-descriptor :less-op ordering) access (assoc :nth-op access))
+        descriptor (fn [call] (get types (:operator-node-id call)))
+        fact (fn [call] (case (:core-node-id call)
+                         :count-query (c7 'sh08-cq-call-fact [(descriptor call) (:module core)])
+                         :guard (c7 'sh08-io-call-fact [(descriptor call) (:module core)])
+                         :read (c7 'sh08-vn-call-fact [(descriptor call) (:module core)])
+                         (c7 'sh08-si-call-fact [(descriptor call) (:module core)])))
+        row (fn [call] (case (:core-node-id call)
+                        :count-query (c7 'sh08-cq-constraint [(descriptor call)])
+                        :guard (c7 'sh08-io-constraint [(descriptor call)])
+                        :read (c7 'sh08-vn-constraint [(descriptor call)])
+                        (c7 'sh08-si-constraint [(descriptor call)])))
+        facts {:module (:module core) :type-table types :function-type-table []
+               :call-type-facts (mapv fact (:calls core)) :constraint-ledger (mapv row (:calls core))}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        counts (leaf 'body-cq-context request facts bindings 65536)
+        successors (leaf 'body-si-context request facts bindings 65536)
+        accesses (leaf 'body-vn-context request facts bindings 65536)]
+    {:request request :successors successors :accesses accesses
+     :facts (assoc facts :count-context (:context counts) :successor-context (:context successors) :vector-nth-context (:context accesses))}))
+
+(deftest body-bounded-unit-addition-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        source (ns-resolve upstream 'bounded-successor-input) two (ns-resolve upstream 'bounded-successor-two-backedges)
+        convert (ns-resolve upstream 'bounded-unit-addition-input) complete (ns-resolve upstream 'bounded-unit-addition-completed)
+        nth-source (ns-resolve upstream 'vector-loop-nth-input) get-source (ns-resolve upstream 'vector-loop-get-input)
+        access-derive (ns-resolve upstream 'vector-loop-nth-derived) c7 (ns-resolve upstream 'invoke-c7)]
+    (doseq [[base access?] [[(source 3) false] [(two (source 3)) false]
+                           [(nth-source 3 false) true] [(get-source 3) true]]]
+      (let [{:keys [core nodes bindings] :as input} (complete (convert base :increment))
+            access (when access? (:descriptor (access-derive input 65536)))
+            {:keys [request facts successors accesses]} (body-unit-step-products input access)
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            descriptor (get-in facts [:type-table :inc-op]) id (:call-core-node-id descriptor)
+            replace-step (fn [changed]
+                           (-> facts (assoc-in [:type-table :inc-op] changed)
+                               (update :call-type-facts #(mapv (fn [fact] (if (= id (:call-core-node-id fact))
+                                                                          (c7 'sh08-si-call-fact [changed (:module core)]) fact)) %))
+                               (update :constraint-ledger #(mapv (fn [row] (if (= id (get-in row [:lhs :core-node-id]))
+                                                                           (c7 'sh08-si-constraint [changed]) row)) %))))]
+        (is (= :accepted (:status successors) (:status accesses)))
+        (is (true? (valid facts)))
+        (is (= successors (leaf 'body-si-context request facts bindings (:work-count successors))))
+        (doseq [steps [7 nil {} [nil] (vec (repeat 2048 (first (get-in descriptor [:range-proof :step-sources]))))]]
+          (is (false? (leaf 'body-si-step-forms-valid? (assoc (:range-proof descriptor) :step-sources steps) core nodes
+                            (get-in facts [:successor-context :forms])))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-si-context request facts bindings (dec (:work-count successors))))))
+        (doseq [changed [(assoc descriptor :kind :gravity.type/applied-bounded-successor :version :sh08-bounded-successor-v1 :operation 'inc)
+                         (assoc-in descriptor [:range-proof :version] :sh08-bounded-successor-v1)
+                         (assoc-in descriptor [:range-proof :step-sources] [])
+                         (assoc-in descriptor [:range-proof :step-sources 0 :unit-source :value] 2)
+                         (assoc-in descriptor [:range-proof :step-sources 0 :unit-node :attributes :value] 2)
+                         (assoc-in descriptor [:range-proof :check-elision] :authorized)
+                         (assoc descriptor :numeric-mode :checked)]]
+          (is (false? (valid (replace-step changed)))))
+        (doseq [candidate [(update facts :constraint-ledger #(filterv (fn [row] (not= id (get-in row [:lhs :core-node-id]))) %))
+                           (update facts :constraint-ledger conj (c7 'sh08-si-constraint [descriptor]))
+                           (update facts :constraint-ledger conj
+                             (assoc-in (c7 'sh08-si-constraint [descriptor]) [:lhs :core-node-id] :orphan))
+                           (assoc-in facts [:successor-context :forms :increment-unit :value] 2)
+                           (assoc-in facts [:type-table :increment-unit] :gravity.type/never)]]
+          (is (false? (valid candidate))))
+        (when access?
+          (is (true? (leaf 'body-vn-node? (nodes :read) facts core)))
+          (is (true? (leaf 'body-vl-proof-valid? access core (nodes :read) nodes bindings (:type-table facts))))
+          (is (false? (leaf 'body-vn-node? (nodes :read)
+                            (assoc-in facts [:vector-nth-context :forms :increment-unit :value] 2) core)))
+          (is (= accesses (leaf 'body-vn-context request facts bindings (:work-count accesses))))
+          (is (= :body-deferred-work-limit (:reason (leaf 'body-vn-context request facts bindings (dec (:work-count accesses)))))))))))
+
 (defn- body-vector-loop-nth-products [input descriptor]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core nodes bindings types forms]} input
