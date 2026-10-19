@@ -23273,6 +23273,12 @@
                                  (bootstrap/read-forms path (slurp path))))]
       (is (= '(get package :signatures) (second (second (nth witness 3))))))))
 
+(defn- private-entry-vector-get-selection-matches? [entry]
+  (let [parts (filterv #(= :signatures (:key %)) (get-in entry [:argument-shape :parts]))]
+    (and (= 1 (count parts))
+         (= (first parts) (:selected-part entry))
+         (= (:coordinate (first parts)) (:selected-coordinate entry)))))
+
 (deftest current-gravity-private-entry-vector-get-authenticated-composition
   ;; One new G positive/negative. Q is covered only by fixture byte/parser checks.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
@@ -23357,7 +23363,7 @@
     (is (= 2 (count entries) (count (get-in head-get [:presence-proof :entry-census :calls]))))
     (is (= 1 (count (get-in empty-get [:presence-proof :entries]))))
     (is (= [:invoked :invoked] (mapv :entry entries)))
-    (is (= #{1 3} (set (map :selected-coordinate entries))))
+    (is (every? private-entry-vector-get-selection-matches? entries))
     (is (= 2 (count (set (map :argument-node-id entries))) (count (set (map :argument-source entries)))))
     (is (= (get-in entries [0 :argument-type]) (get-in entries [1 :argument-type])))
     (is (not= (get-in entries [0 :argument-shape]) (get-in entries [1 :argument-shape])))
@@ -23394,5 +23400,23 @@
                       :selected-map-inner-key-presence :not-established :empty-vector-get :covered :runtime-function-count 54
                       :authority :non-authoritative
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
-                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(deftest current-gravity-private-entry-vector-get-selection-oracle-development-kernel
+  ;; Normalized metadata exercises the source oracle without rebuilding source products.
+  (let [type {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}
+        part (fn [key coordinate] {:key key :coordinate coordinate :shape {:type type}})
+        entry (fn [parts]
+                (let [selected (first (filter #(= :signatures (:key %)) parts))]
+                  {:argument-shape {:parts parts} :selected-part selected :selected-coordinate (:coordinate selected)}))
+        one (entry [(part :signatures 1) (part :decoy 3)])
+        two (entry [(part :decoy 1) (part :signatures 3)])]
+    (is (true? (private-entry-vector-get-selection-matches? one)))
+    (is (true? (private-entry-vector-get-selection-matches? two)))
+    (is (true? (every? private-entry-vector-get-selection-matches? [two two])))
+    (is (true? (every? private-entry-vector-get-selection-matches? [one two])))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc one :selected-coordinate 3))))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc one :selected-part (:selected-part two)))))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc-in one [:argument-shape :parts 0 :key] :unrelated))))
+    (is (false? (private-entry-vector-get-selection-matches? (update-in one [:argument-shape :parts] conj (part :signatures 5)))))))
