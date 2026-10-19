@@ -5358,3 +5358,39 @@
     (is (= :accepted (:status result) (:status context)))
     (is (= :sh08-vector-get-loop-v1 (:version descriptor)))
     (is (= {} (get-in context [:context :private-selected-checks])))))
+
+(deftest body-private-first-entry-composed-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'private-first-entry-input))
+        result ((ns-resolve upstream 'private-first-entry-derived) input)
+        facts ((ns-resolve upstream 'private-first-entry-facts) input result)
+        {:keys [core node call edge nodes bindings forms]} input
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        build (fn [r f budget] (leaf 'body-mg-context r f bindings budget))
+        context (build request facts 65536)
+        current (assoc facts :map-get-context (:context context))
+        valid (fn [c f] (leaf 'body-mg-present-call-valid? c f bindings node call edge nodes))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :accepted (:status context)) (pr-str context))
+    (when (= :accepted (:status result) (:status context))
+      (is (true? (valid core current)))
+      (is (= context (build request facts (:work-count context))))
+      (is (= :body-deferred-work-limit (:reason (build request facts (dec (:work-count context))))))
+      (doseq [f [(assoc-in current [:type-table :operator :key] :changed)
+                 (assoc-in current [:type-table :first-operator :bounds-proof :selected-index] 1)
+                 (assoc-in current [:call-type-facts 0 :effects] [:io/write])
+                 (assoc-in current [:constraint-ledger 1 :rhs] :gravity.type/string)
+                 (update current :call-type-facts conj (first (:call-type-facts current)))
+                 (update current :constraint-ledger conj (second (:constraint-ledger current)))]]
+        (is (false? (valid core f))))
+      (is (false? (valid (assoc-in core [:calls 0 :argument-node-ids 1] :inner-key) current)))
+      (let [parent-index (first (keep-indexed #(when (= :present-get (:node-id %2)) %1) (:nodes core)))]
+        (is (false? (valid (assoc-in core [:nodes parent-index :source :syntax-id] :changed) current))))
+      (doseq [f [(assoc-in facts [:type-table :inner-operator :presence-proof :entries] [])
+                 (assoc-in facts [:type-table :inner-operator :presence-proof :get-call-core-node-id] :first-call)
+                 (update facts :call-type-facts #(vec (rest %)))
+                 (update facts :constraint-ledger #(vec (remove (fn [r] (= :sh08-vector-first-v1 (:producer-rule r))) %)))]]
+        (is (= :rejected (:status (build request f 65536)))))
+      (let [changed-request (assoc-in request [:canonical-core-artifact :module :exports] ['without-path])]
+        (is (= :rejected (:status (build changed-request facts 65536))))))))

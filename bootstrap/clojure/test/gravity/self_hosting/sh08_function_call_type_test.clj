@@ -11426,6 +11426,169 @@
             rejected (project forged (:nodes input) 65536)]
         (is (= :rejected (:status rejected)))))))
 
+(defn- private-first-entry-input
+  ([] (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
+                                [(array-map :algorithm :sha512 :status :rejected)]]))
+  ([values]
+   (let [base (private-entry-vector-get-input values)
+         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+         form (fn [id kind value parent children]
+                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                 :kind kind :value value :parent-form-id parent :child-form-ids children :scope-id :helper-scope})
+         node (fn [id kind children attrs ids]
+                {:node-id id :core-form kind :children children :attributes attrs :resolved-binding-ids ids :source (source id)
+                 :evaluation {:kind (if (= :call kind) :operator-then-arguments :left-to-right)
+                              :owner-function-syntax-id :helper-form
+                              :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+         ref (fn [id name bid definition]
+               (node id :reference [] {:symbol name :position :expression :binding-id bid
+                                      :binding-class :lexical :definition-syntax-id definition} [bid]))
+         get-binding (get-in base [:call :operator-binding-id])
+         first-binding (assoc (get-in base [:bindings get-binding]) :binding-id :first-binding :name 'first
+                              :definition-syntax-id :first-definition)
+         first-op (node :first-operator :reference [] {:symbol 'first :position :operator :binding-id :first-binding
+                                                       :binding-class :core :definition-syntax-id :first-definition} [:first-binding])
+         inner-op (-> (get-in base [:nodes :operator]) (assoc :node-id :inner-operator :source (source :inner-operator)))
+         attrs (fn [n] {:operator-child-index 0 :argument-count n :argument-child-indexes (vec (range 1 (inc n)))
+                         :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+         first-node (node :first-call :call [:first-operator :signatures-reference] (attrs 1) [:first-binding])
+         inner-node (node :inner-get :call [:inner-operator :signature-reference :inner-key] (attrs 2) [get-binding])
+         call (fn [id op bid args] {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids args
+                                    :ordered-evaluation-node-ids (into [op] args) :evaluation-order :operator-then-arguments
+                                    :result-policy :call-result})
+         first-call (call :first-call :first-operator :first-binding [:signatures-reference])
+         inner-call (call :inner-get :inner-operator get-binding [:signature-reference :inner-key])
+         edge (fn [c ordinal definition]
+                {:ordinal ordinal :call-core-node-id (:core-node-id c) :caller-function-syntax-id :helper-form
+                 :caller-function-core-node-id :helper-fn :callee-binding-id (:operator-binding-id c)
+                 :callee-definition-syntax-id definition :callee-function-syntax-id nil :callee-function-core-node-id nil
+                 :argument-core-node-ids (:argument-node-ids c) :ordered-evaluation-node-ids (:ordered-evaluation-node-ids c)
+                 :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction})
+         first-edge (edge first-call 3 :first-definition)
+         inner-edge (edge inner-call 4 (get-in base [:bindings get-binding :definition-syntax-id]))
+         vector-let (node :vector-let :let [:present-get :entry-let]
+                      {:body-count 1 :binding-vector-form-id :vector-bindings :binding-vector-syntax-id :vector-bindings}
+                      [:signatures-binding])
+         entry-let (node :entry-let :let [:first-call :inner-get]
+                     {:body-count 1 :binding-vector-form-id :entry-bindings :binding-vector-syntax-id :entry-bindings}
+                     [:signature-binding])
+         records (mapv (fn [[owner name bid definition init]]
+                         {:let-core-node-id owner :ordinal 0 :name name :binding-id bid :definition-form-id definition
+                          :definition-syntax-id definition :binding-scope-id :helper-scope
+                          :initializer-form-id init :initializer-syntax-id init :initializer-scope-id :helper-scope
+                          :initializer-node-id init :visible-prior-binding-ids [] :mutability :immutable})
+                       [[:vector-let 'signatures :signatures-binding :signatures-name :present-get]
+                        [:entry-let 'signature :signature-binding :signature-name :first-call]])
+         added [vector-let entry-let first-op first-node inner-op inner-node
+                (ref :signatures-reference 'signatures :signatures-binding :signatures-name)
+                (ref :signature-reference 'signature :signature-binding :signature-name)
+                (node :inner-key :literal [] {:literal-kind :keyword :value :algorithm} [])]
+         ordered (into (mapv #(if (= :helper-fn (:node-id %)) (assoc % :children [:vector-let]) %) (get-in base [:core :nodes])) added)
+         core (-> (:core base) (assoc :nodes ordered :lexical-bindings records)
+                  (update :calls into [first-call inner-call]) (update :call-edges into [first-edge inner-edge])
+                  (update :function-records #(mapv (fn [r] (if (= :helper-form (:function-syntax-id r))
+                                                            (assoc r :body-core-node-id :vector-let) r)) %)))
+         forms (-> (:forms base)
+                   (assoc-in [:present-get :parent-form-id] :vector-bindings)
+                   (assoc-in [:present-get :scope-id] :helper-scope)
+                   (merge {:vector-let (form :vector-let :list nil :helper-form [:vector-let-op :vector-bindings :entry-let])
+                           :vector-let-op (form :vector-let-op :symbol 'let :vector-let [])
+                           :vector-bindings (form :vector-bindings :vector nil :vector-let [:signatures-name :present-get])
+                           :signatures-name (form :signatures-name :symbol 'signatures :vector-bindings [])
+                           :entry-let (form :entry-let :list nil :vector-let [:entry-let-op :entry-bindings :inner-get])
+                           :entry-let-op (form :entry-let-op :symbol 'let :entry-let [])
+                           :entry-bindings (form :entry-bindings :vector nil :entry-let [:signature-name :first-call])
+                           :signature-name (form :signature-name :symbol 'signature :entry-bindings [])
+                           :first-call (form :first-call :list nil :entry-bindings [:first-operator :signatures-reference])
+                           :first-operator (form :first-operator :symbol 'first :first-call [])
+                           :signatures-reference (form :signatures-reference :symbol 'signatures :first-call [])
+                           :inner-get (form :inner-get :list nil :entry-let [:inner-operator :signature-reference :inner-key])
+                           :inner-operator (form :inner-operator :symbol 'get :inner-get [])
+                           :signature-reference (form :signature-reference :symbol 'signature :inner-get [])
+                           :inner-key (form :inner-key :keyword :algorithm :inner-get [])}))
+         bindings (merge (:bindings base) {:first-binding first-binding}
+                         (into {} (map (fn [r] [(:binding-id r) {:binding-id (:binding-id r) :name (:name r)
+                                                                :kind :local :binding-class :lexical :scope-id :helper-scope
+                                                                :definition-syntax-id (:definition-syntax-id r)}]) records)))
+         products (assoc (:products base) :calls (:calls core) :call-edges (:call-edges core)
+                                           :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core))))
+         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) ordered)) :forms forms
+                           :bindings bindings :products products)
+         parent (map-present-get-derived input)
+         vector-type (:type parent)
+         types (assoc (:types input) :operator (:descriptor parent) :present-get vector-type
+                       :signatures-reference vector-type :inner-key :gravity.type/keyword)
+         first-result (invoke-c7 'sh08-lq-derive [core first-node first-call first-edge (:nodes input) bindings types forms 65536])
+         map-type (:type first-result)]
+     (assoc input :node inner-node :call inner-call :edge inner-edge :parent-result parent :first-result first-result
+                  :types (assoc types :first-operator (:descriptor first-result) :first-call map-type :signature-reference map-type)
+                  :binding-types (assoc (:binding-types input) :signatures-binding vector-type :signature-binding map-type)))))
+
+(defn- private-first-entry-derived
+  ([input] (private-first-entry-derived input 65536))
+  ([{:keys [core node nodes types binding-types bindings forms products]} budget]
+   (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types 65536]) :source-core core :budget-left budget)]
+     (invoke-c7 'sh08-mg-present-derive [node nodes types binding-types {} (:lexical-bindings core) bindings forms {} context budget]))))
+
+(defn- private-first-entry-facts [input result]
+  (let [parent (:descriptor (:parent-result input)) first-descriptor (:descriptor (:first-result input))
+        descriptor (:descriptor result) module (:module input)]
+    {:type-table (assoc (:types input) :inner-operator descriptor :inner-get (:type result))
+     :call-type-facts [(invoke-c7 'sh08-mg-call-fact [parent module])
+                      (invoke-c7 'sh08-lq-call-fact [first-descriptor module])
+                      (invoke-c7 'sh08-mg-call-fact [descriptor module])]
+     :constraint-ledger [(invoke-c7 'sh08-mg-constraint [parent])
+                         (invoke-c7 'sh08-lq-constraint [first-descriptor])
+                         (invoke-c7 'sh08-mg-constraint [descriptor])]}))
+
+(deftest sh08-private-first-entry-composed-development-kernel
+  (let [input (private-first-entry-input) {:keys [core node nodes call edge bindings types forms]} input
+        result (private-first-entry-derived input) descriptor (:descriptor result)
+        established (assoc types :inner-operator descriptor :inner-get (:type result))
+        current-calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+        check (fn [c t budget] (invoke-c7 'sh08-mg-inferred-work
+                                [c node call edge (into {} (map (juxt :node-id identity) (:nodes c)))
+                                 bindings t (into {} (map (juxt :core-node-id identity) (:calls c))) budget]))]
+    (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))) (pr-str input))
+    (is (= :accepted (:status result)) (pr-str result))
+    (when (= :accepted (:status result))
+      (is (= :sh08-map-get-private-first-entry-v1 (:version descriptor)))
+      (is (= :gravity.type/keyword (:type result)))
+      (is (= [:sha256 :sha512] (mapv #(get-in % [:selection :part :shape :domain :values 0])
+                                     (get-in descriptor [:presence-proof :entries]))))
+      (is (= :present-get (get-in descriptor [:presence-proof :get-call-core-node-id])))
+      (is (= :first-call (get-in descriptor [:presence-proof :first-call-core-node-id])))
+      (is (= 1 (count (get-in descriptor [:presence-proof :receiver-links]))))
+      (is (= 1 (count (get-in descriptor [:presence-proof :vector-links]))))
+      (is (= result (private-first-entry-derived input (:work-count result))))
+      (is (= :map-get-work-limit (:reason (private-first-entry-derived input (dec (:work-count result))))))
+      (let [checked (check core established 65536)]
+        (is (= :accepted (:status checked)) (pr-str checked))
+        (is (= checked (check core established (:work-count checked))))
+        (is (= :map-get-work-limit (:reason (check core established (dec (:work-count checked)))))))
+      (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                       (assoc-in descriptor [:presence-proof :entries 0 :selection :key] :scheme)
+                       (assoc-in descriptor [:presence-proof :entries 0 :selection :source-spine 0 :source-kind] :forged)
+                       (assoc-in descriptor [:presence-proof :get-call-core-node-id] :first-call)
+                       (assoc-in descriptor [:presence-proof :receiver-links 0 :binding-record :mutability] :mutable)
+                       (assoc-in descriptor [:presence-proof :extra] true)]]
+        (is (= :rejected (:status (check core (assoc established :inner-operator changed) 65536)))))
+      (let [renamed (clojure.walk/postwalk-replace {:algorithm :scheme} established)]
+        (is (= :rejected (:status (check core renamed 65536)))))
+      (doseq [c [(update core :calls #(vec (remove (fn [c] (= :entry-1 (:core-node-id c))) %)))
+                 (assoc-in core [:mutations] [{:target-binding-id :signature-binding}])
+                 (assoc-in core [:lexical-bindings 0 :initializer-node-id] :first-call)]]
+        (is (= :rejected (:status (check c established 65536)))))
+      (let [missing (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
+                                               [(array-map :scheme :sha512 :status :rejected)]])]
+        (is (= :accepted (:status (:parent-result missing)) (:status (:first-result missing))))
+        (is (= :map-get-private-first-entry-presence-required (:reason (private-first-entry-derived missing)))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU opaque hash")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "BU opaque string"))))]
+        (is (= :rejected (:status (check core (assoc-in established [:inner-operator :presence-proof :get-call-core-node-id] opaque) 65536))))
+        (is (zero? @callbacks))))))
+
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
                                :attributes {:literal-kind :keyword :value value}})

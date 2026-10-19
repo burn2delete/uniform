@@ -23420,3 +23420,45 @@
     (is (false? (private-entry-vector-get-selection-matches? (assoc one :selected-part (:selected-part two)))))
     (is (false? (private-entry-vector-get-selection-matches? (assoc-in one [:argument-shape :parts 0 :key] :unrelated))))
     (is (false? (private-entry-vector-get-selection-matches? (update-in one [:argument-shape :parts] conj (part :signatures 5)))))))
+
+(deftest current-gravity-private-first-entry-composed-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node nodes forms bindings types module call edge binding-types] :as input}
+        ((ns-resolve upstream 'private-first-entry-input))
+        result ((ns-resolve upstream 'private-first-entry-derived) input)
+        facts ((ns-resolve upstream 'private-first-entry-facts) input result)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings :types (:type-table facts)
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :current-function {:function-syntax-id :helper-form}
+                 :call-facts (into {} (map (juxt :call-core-node-id identity) (:call-type-facts facts)))
+                 :ledger (:constraint-ledger facts) :locals {:signature-binding 'signature}
+                 :parameter-types binding-types :tail? true}
+        compile (fn [ctx budget] (invoke 'p15-s23-typed-compile-node ctx :inner-get budget))
+        lowered (compile context 65536)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (when (= :complete (:status lowered))
+      (is (= {:op :keyword-map-lookup :args [{:op :literal :value :algorithm} {:op :local :name 'signature}]} (:value lowered)))
+      (is (= lowered (compile context (:work-count lowered))))
+      (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason])))
+      (doseq [ctx [(assoc-in context [:types :operator :key] :changed)
+                   (assoc-in context [:types :first-operator :bounds-proof :selected-index] 1)
+                   (assoc-in context [:call-facts :present-get :effects] [:io/write])
+                   (update context :ledger #(vec (remove (fn [r] (= :sh08-vector-first-v1 (:producer-rule r))) %)))
+                   (assoc-in context [:types :inner-operator :presence-proof :entries] [])
+                   (assoc-in context [:core :module :exports] ['without-path])
+                   (assoc-in context [:core :lexical-bindings 1 :mutability] :mutable)]]
+        (is (= :rejected (:status (compile ctx 65536)))))
+      (let [runtime-plan (:plan (typed-catch-runtime-projection))]
+        (doseq [[value expected] [[{:algorithm :sha256 :status :verified} :sha256]
+                                 [{:algorithm :sha512 :status :rejected} :sha512]]]
+          (is (= [expected "" :normal]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                   'p15-s23-runtime-evaluate-in-context [(:value lowered) {'signature value} "" {} []]))))))))
