@@ -125,6 +125,77 @@
     (is (= :complete (get-in artifact [:capability-based-proof :status])))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id artifact)))))
 
+(deftest c6-flat-nested-node-print-amplification-is-bounded-data-only
+  ;; C6 preserves nested children in its flat table. These fixed DATA values
+  ;; isolate printed occurrences, without compiler construction or proof credit.
+  (let [maximum-bytes (* 256 1024)
+        require-bound! (fn [passed? facts]
+                         (when-not passed?
+                           (throw (ex-info "bounded C6 DATA measurement stopped" facts))))
+        observations
+        (mapv
+         (fn [size]
+           (let [nodes
+                 (reduce (fn [built index]
+                           (conj built
+                                 {:artifact :gravity/core-node
+                                  :node-id (str "node-" index)
+                                  :surface-form :bounded-data
+                                  :children (if-let [child (peek built)]
+                                              {:next child} {})}))
+                         [] (range size))
+                 root (peek nodes)
+                 expected-flat (vec (reverse nodes))
+                 flat (c6/c6-flatten-core root)
+                 ;; Reject unexpected data before walking or printing it. The
+                 ;; allowed vector contains only these exact eight-node-or-less chains.
+                 _ (require-bound! (= expected-flat flat) {:size size :phase :flat-shape})
+                 occurrences (fn [value]
+                               (count (filter #(and (map? %)
+                                                    (= :gravity/core-node (:artifact %)))
+                                              (tree-seq coll? seq value))))
+                 root-occurrences (occurrences [root])
+                 flat-occurrences (occurrences flat)
+                 expected-occurrences (quot (* size (inc size)) 2)
+                 _ (require-bound! (= expected-occurrences flat-occurrences)
+                                   {:size size :phase :occurrences})
+                 ;; Each fixed ASCII node contributes fewer than 256 bytes,
+                 ;; including its child-map framing; reserve another 256 for vectors.
+                 print-bound (+ 256 (* 256 flat-occurrences))
+                 _ (require-bound! (<= print-bound maximum-bytes)
+                                   {:size size :phase :before-print})
+                 byte-count
+                 (fn [value]
+                   (let [text (binding [*print-length* nil *print-level* nil
+                                        *print-meta* false *print-dup* false
+                                        *print-namespace-maps* false]
+                                (pr-str value))]
+                     (require-bound! (and (<= (count text) print-bound)
+                                          (every? #(<= (int %) 127) text))
+                                     {:size size :phase :before-utf8})
+                     (let [bytes (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))]
+                       (require-bound! (<= bytes maximum-bytes)
+                                       {:size size :phase :utf8})
+                       bytes)))
+                 root-bytes (byte-count [root])
+                 flat-bytes (byte-count flat)]
+             (is (= size (count flat) (count (set (map :node-id flat)))))
+             (is (= (mapv :node-id expected-flat) (mapv :node-id flat)))
+             (is (= size root-occurrences))
+             (is (= expected-occurrences flat-occurrences))
+             (is (<= root-bytes maximum-bytes))
+             (is (<= flat-bytes maximum-bytes))
+             (is (if (= 1 size) (= root-bytes flat-bytes) (< root-bytes flat-bytes)))
+             {:nodes size :flat-rows (count flat)
+              :root-occurrences root-occurrences :flat-occurrences flat-occurrences
+              :root-utf8-bytes root-bytes :flat-utf8-bytes flat-bytes}))
+         [1 2 4 8])]
+    (is (= [1 3 10 36] (mapv :flat-occurrences observations)))
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (println (pr-str {:c6-structural-data-only true :authoritative? false
+                      :nonclaims [:timing :heap :checked-core-size :cause :self-hosting]
+                      :cases observations}))))
+
 (deftest diagnostic-overrides-retain-c6-identities
   (doseq [[failure expected-id]
           [[:gap "C6-LOWERING-GAP"]
