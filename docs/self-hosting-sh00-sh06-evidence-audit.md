@@ -841,6 +841,36 @@ defect or permission to fabricate a module artifact, weaken the fence or expand
 backend support. Revisit it when an actual target-support or stable migration
 decision makes that composition reachable. All three partial groups stay open.
 
+### Coherent macro-origin rejection at the C5 ingress
+
+The existing
+`sh05-expanded-syntax-and-coherent-outer-trace-substitutions-reject` test was
+extended at development revision `88f9eb18` to exercise the public C5 consumer,
+not only the macro owner's verifier. One genuine tiny `defn-multiple` Gravity
+parent is reused for the original five verifier mutations and an accepted,
+freshly verified C5/hosted-Stage0-C6 control. No parent is reconstructed for
+each mutation and no compiler implementation changed.
+
+The hostile candidate consistently changes the physical call-site source in
+three outer views: expansion trace, generated-origin map and expanded syntax
+origins. Those views agree with one another but disagree with the independent
+retained owning run. This is not an all-field rehashed artifact. The public C5
+consumer rejects it at its first authenticated-parent gate with
+`C5-UNRESOLVED` and top-level missing field
+`:authenticated-sh05-macro-parent`. Observations retain failed macro-owner
+verification and a valid unchanged C3 parent. The source/form-0 locator is an
+upstream authentication diagnostic, not a generated-body binding failure.
+No accepted C5 or Core output is credited to the hostile candidate.
+
+The selected test passed one test/32 assertions in 63.057 seconds after
+6.714 seconds of namespace loading with a 2 GiB heap. The control consumes
+genuine generated code through hosted C6; it does not execute the Gravity C6
+implementation or a user function body. Only the Gravity fixture was
+constructed in this selection; no QST construction is claimed. The reader
+subject remains unrun, all three partial groups remain open, and the resolver
+remains development-unadmitted. No current-closure migration, self-hosting,
+seedless or release claim follows.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
