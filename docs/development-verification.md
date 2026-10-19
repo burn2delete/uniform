@@ -3665,6 +3665,51 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Finite Keyword-Set membership
+
+Edit the existing C7 engine, effects, typed emitter and Gravity runtime for
+binary `(contains? items value)`. The development domain is an existing finite
+literal-Keyword Set type and an independently established Keyword needle;
+the normal result is Bool. This frontier is not a language-wide restriction.
+The closed value-type grammar, existing Map behavior and Never transfers stay
+unchanged. Querying adds no collection-allocation effect; constructors retain
+their own allocation requirements.
+
+Run the owning semantic kernels directly:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-keyword-set-contains-development-kernel --exact sh08-keyword-set-contains-dispatch-guard-development-kernel --exact sh08-keyword-set-contains-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact body-keyword-set-contains-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-set-contains-lowering-development-kernel --exact current-gravity-keyword-set-contains-runtime-development-kernel
+```
+
+These check independent source/type/descriptor joins, budget-first rejection,
+failed-child work, complete producer rows, once-only operand evaluation,
+transfers and original failures. Runtime membership validates all actual Set
+members and their semantic uniqueness before either hit or miss. Width remains
+1,024 and the logical work allowance 65,536. Keyword representation units
+measure prepaid work; membership uses actual Gravity Keyword equality, not
+printed identity, host Set lookup or hashing. This is not a provider CPU bound.
+The query preserves original values and does not execute stored payloads.
+
+Retain the existing Map-contains kernels and proportionate evaluated-Set and
+Set-equality regressions when their shared consumers change. Focused kernels
+are development feedback, not fresh source-composition or migration evidence.
+
+When membership descriptors, effects, lowering or runtime composition change,
+run the paired fixture preflight, then the affected source composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-set-contains-fixtures-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-set-contains-authenticated-composition
+```
+
+The preflight checks paired bytes and parser shape. The composition selects
+one Gravity accepted source and one Gravity C7 rejection; it does not run QST
+typed products. Seed interpretation of the same typed-emitted IR is a runtime
+comparison, not independent raw-source compiler parity. Renew affected paired
+composition when reader/extension/identity handling changes, not every edit.
+
 ### Evaluated literal-Keyword Sets
 
 For the bounded JVM slice, edit the existing typed emitter and runtime owners.
