@@ -22396,5 +22396,5 @@
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
+          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
