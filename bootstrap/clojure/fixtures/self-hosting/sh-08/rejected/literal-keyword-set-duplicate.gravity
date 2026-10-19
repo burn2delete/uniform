@@ -1,0 +1,7 @@
+(ns example.literal-set-duplicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  #{:same :same})

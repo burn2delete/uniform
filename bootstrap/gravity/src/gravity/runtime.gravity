@@ -826,6 +826,68 @@
   (let [result (p15-s23-runtime-vector-equality-work left right 65536)]
     (if (= :accepted (get result :status)) (get result :value) :unsupported)))
 
+(defn p15-s23-runtime-keyword-set-construction-work [input budget]
+  ; Logical selected-JVM content reservation, not a provider CPU bound.
+  ; Freeze Keyword values before comparing them or inserting into a host Set.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (vector? input)
+        (let [n (count input)]
+          (if (if (< n 0) true (> n 1024)) {:status :rejected :reason :set-literal-value-width :work-count 1 :comparison-attempts 0 :insertions 0}
+            (let [base (+ 1 (* 2 n))]
+              (if (> base limit)
+                {:status :rejected :reason :set-literal-work-limit :work-count base :work-count-kind :validation-reservation
+                 :comparison-attempts 0 :insertions 0}
+                (let [checked (loop [i 0 values []]
+                                (if (= i n) {:status :accepted :values values}
+                                  (let [value (get input i)]
+                                    (if (keyword? value) (recur (+ i 1) (conj values value))
+                                      {:status :rejected :reason :set-literal-keyword-domain-required}))))]
+                  (if (= false (= :accepted (get checked :status)))
+                    (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0 :insertions 0)
+                    (let [values (get checked :values)
+                          measured (loop [i 0 units 0]
+                                     (if (= i n) {:status :accepted :units units}
+                                       (let [size (count (str (get values i)))]
+                                         (if (> size (- limit units))
+                                           {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
+                                            :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                                           (recur (+ i 1) (+ units size))))))]
+                      (if (= false (= :accepted (get measured :status))) measured
+                        (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
+                              a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
+                          (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
+                            {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
+                             :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                            (let [pairs (* a b) remaining (- limit base pairs)]
+                              (if (> units (quot remaining (+ n 1)))
+                                {:status :rejected :reason :set-literal-work-limit :work-count (+ limit 1)
+                                 :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                                (let [work (+ base pairs (* (+ n 1) units))
+                                      distinct (loop [i 0 attempts 0]
+                                                 (if (= i n) {:status :accepted :comparison-attempts attempts}
+                                                   (let [checked (loop [j (+ i 1) used attempts]
+                                                                   (if (= j n) {:status :accepted :comparison-attempts used}
+                                                                     (let [left (get values i) right (get values j)]
+                                                                       (if (if (keyword? left) (keyword? right) false)
+                                                                         (let [equal (p15-s23-runtime-atomic-equality left right) next-attempt (+ used 1)]
+                                                                           (if (= false equal) (recur (+ j 1) next-attempt)
+                                                                             {:status :rejected :reason :duplicate-set-literal-keyword :comparison-attempts next-attempt}))
+                                                                         {:status :rejected :reason :set-literal-keyword-domain-required :comparison-attempts used}))))]
+                                                     (if (= :accepted (get checked :status))
+                                                       (recur (+ i 1) (get checked :comparison-attempts)) checked))))
+                                      result (if (= :accepted (get distinct :status))
+                                               {:status :accepted :value (loop [i 0 out #{}]
+                                                                         (if (= i n) out (recur (+ i 1) (conj out (get values i)))))
+                                                :comparison-attempts (get distinct :comparison-attempts) :insertions n}
+                                               (assoc distinct :insertions 0))]
+                                  (assoc result :work-count work :work-count-kind :exact-logical-content-reservation
+                                    :input-element-count n :representation-units units :representation :jvm-utf16-code-units
+                                    :value-work-model :gravity/literal-keyword-set-logical-content-work-v1
+                                    :provider-cpu-bound :not-established))))))))))))))
+        {:status :rejected :reason :set-literal-keyword-domain-required :work-count 0 :comparison-attempts 0 :insertions 0}))
+    {:status :rejected :reason :set-literal-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
+
 (defn p15-s23-runtime-set-conversion-work [values budget]
   ; This quota is a logical content-work reservation in the selected JVM
   ; representation, not a host hash-trie CPU, native, or realtime bound.
@@ -906,6 +968,17 @@
                             (if (if (= :literal (get key :op)) (keyword? (get key :value)) false)
                               (if (contains? seen (get key :value)) false
                                 (if (map? (get entry :value)) (recur (rest remaining) (conj seen (get key :value))) false)) false) false) false)))) false) false) false)
+          (if (= operation :set-literal)
+            (if (= fields #{:op :items})
+              (if (vector? (get instruction :items))
+                (if (<= (count (get instruction :items)) 1024)
+                  (loop [remaining (get instruction :items)]
+                    (if (= 0 (count remaining)) true
+                      (let [item (first remaining)]
+                        (if (map? item)
+                          (if (if (= 2 (count item))
+                                (if (= :literal (get item :op)) (keyword? (get item :value)) false) false)
+                            (recur (rest remaining)) false) false)))) false) false) false)
           (if (= operation :vector-literal)
             (if (= fields #{:op :items})
               (if (vector? (get instruction :items))
@@ -1026,7 +1099,7 @@
                             (if (symbol? name)
                               (if (contains? seen name) false
                                 (if (map? (get binding :expr)) (recur (rest remaining) (conj seen name)) false)) false) false) false)))) false) false) false)
-            false)))))))))))))))) false))]
+            false))))))))))))))))) false))]
     (if (= false shape?)
       [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction :operation operation} output :rejected]
     (if (= operation :namespace-read)
@@ -1049,6 +1122,16 @@
              (if (= index (count (first result))) out
                (recur (+ index 2) (assoc out (get (first result) index) (get (first result) (+ index 1))))))
            (second result) :normal] result))
+    (if (= operation :set-literal)
+      (let [arguments (p15-s23-runtime-evaluate-arguments-in-context
+                        (get instruction :items) environment output [] functions path [] pool)]
+        (if (= :normal (get arguments 2))
+          (let [constructed (p15-s23-runtime-keyword-set-construction-work (first arguments) 65536)]
+            (if (= :accepted (get constructed :status))
+              [(get constructed :value) (second arguments) :normal]
+              [{:diagnostic "P15S23X002" :reason (get constructed :reason) :operation operation
+                :work-count (get constructed :work-count) :work-count-kind (get constructed :work-count-kind)}
+               (second arguments) :rejected])) arguments))
     (if (= operation :vector-literal)
       (p15-s23-runtime-evaluate-arguments-in-context (get instruction :items) environment output [] functions path [] pool)
     (if (= operation :loop) (p15-s23-runtime-evaluate-loop instruction environment output functions path targets pool)
@@ -1216,7 +1299,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets pool) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected]))))))))))))))))))))))
+                     output :rejected])))))))))))))))))))))))
 
 (defn p15-s23-runtime-module-census [plan budget]
   (let [manifest (get plan :module-initialization) functions (get plan :functions)
@@ -1291,11 +1374,11 @@
 (defn p15-s23-runtime-instruction-children [instruction budget]
   (let [op (get instruction :op)
         args? (contains? #{:function-call :builtin-call :keyword-map-lookup :recur :println} op)
-        values (get instruction (if args? :args (if (= op :vector-literal) :items :body)))
+        values (get instruction (if args? :args (if (contains? #{:vector-literal :set-literal} op) :items :body)))
         bindings? (contains? #{:let :loop} op)
         entries (get instruction (if (= op :map-literal) :entries (if (= op :try) :handlers :clauses)))
         width (if args? (if (vector? values) (count values) 0)
-                (if (= op :vector-literal) (if (vector? values) (count values) 0)
+                (if (contains? #{:vector-literal :set-literal} op) (if (vector? values) (count values) 0)
                 (if (= op :do) (if (vector? values) (count values) 0)
                 (if bindings? (+ (if (vector? values) (count values) 0)
                                  (if (vector? (get instruction :bindings)) (count (get instruction :bindings)) 0))
@@ -1306,7 +1389,7 @@
                 (if (= op :structural-match) (+ 1 (if (vector? entries) (* 2 (count entries)) 0)) 0)))))))))]
     (if (> (+ 1 width) budget) {:status :rejected :reason :module-initialization-work-limit :work-count (+ 1 width)}
       {:status :accepted :work-count (+ 1 width)
-       :children (if (if args? true (contains? #{:vector-literal :do} op))
+       :children (if (if args? true (contains? #{:vector-literal :set-literal :do} op))
                    (if (vector? values) values [])
                  (if bindings?
                    (loop [remaining (if (vector? (get instruction :bindings)) (get instruction :bindings) []) out (if (vector? values) values [])]

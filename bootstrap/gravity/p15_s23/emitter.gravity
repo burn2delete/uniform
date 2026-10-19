@@ -8792,6 +8792,97 @@
           (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-direct-call node) :work-count charge)))))
       (p15-s23-typed-node-error :malformed-typed-call-family node))))))))))))))))
 
+(defn p15-s23-typed-compile-keyword-set [context node budget]
+  ; This literal-only constructor uses the existing Set IR and evaluates its children.
+  ; Reserve source validation and distinctness work before operand-value comparisons.
+  (let [limit (if (< budget 65536) budget 65536) children (get node :children)]
+    (if (< limit 12) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count 12)
+      (if (= false (vector? children))
+        (assoc (p15-s23-typed-node-error :malformed-typed-set node) :work-count 12)
+        (let [n (count children) base (+ 12 (* 14 n))]
+          (if (if (< n 0) true (> n 1024)) (assoc (p15-s23-typed-node-error :typed-set-width-limit node) :work-count 12)
+            (if (> base limit) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
+              (let [half (quot n 2) previous (if (> n 0) (- n 1) 0)
+                    a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
+                (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
+                  (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node)
+                    :work-count (+ limit 1) :work-count-kind :exceeded-allowance-lower-bound)
+                  (let [charge (+ base (* a b)) forms (get context :forms)
+                        owner-id (get (get node :source) :form-id)
+                        owner-id? (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false))
+                        owner (if owner-id?
+                                (get forms owner-id) nil)
+                        ids (get owner :child-form-ids) attrs (get node :attributes)
+                        type (get (get context :types) (get node :node-id)) elements (get type :element-types)
+                        child-ids? (loop [i 0]
+                                     (if (= i n) true
+                                       (let [id (get children i)]
+                                         (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                           (recur (+ i 1)) false))))
+                        form-ids? (if (vector? ids)
+                                    (if (= n (count ids))
+                                      (loop [i 0]
+                                        (if (= i n) true
+                                          (let [id (get ids i)]
+                                            (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                              (recur (+ i 1)) false)))) false) false)
+                        header? (if (if owner-id? (if (map? owner) (if child-ids? form-ids? false) false) false)
+                                  (p15-s23-typed-all
+                                  [(map? owner) (= :set (get owner :kind)) (= owner-id (get owner :form-id))
+                                   (= (get node :source) (p15-s23-typed-source owner))
+                                   (= :collection-literal (get node :core-form)) (= [] (get node :resolved-binding-ids))
+                                   (map? attrs) (= 3 (if (map? attrs) (count attrs) 0)) (contains? attrs :source-value)
+                                   (= :set (get attrs :literal-kind))
+                                   (= n (get attrs :element-count)) (vector? ids) (= n (if (vector? ids) (count ids) 0))
+                                   (p15-s23-typed-ordered-node? node :left-to-right)
+                                   (map? type) (= 3 (if (map? type) (count type) 0)) (= :gravity.type/set (get type :kind))
+                                   (= :literal (get type :shape)) (vector? elements) (= n (if (vector? elements) (count elements) 0))]) false)
+                        checked
+                        (if header?
+                          (loop [i 0 values []]
+                            (if (= i n) {:status :accepted :values values}
+                              (let [id (get children i) form-id (get ids i)
+                                    id? (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                    form-id? (if (keyword? form-id) true (if (string? form-id) (= 71 (count form-id)) false))
+                                    child (if id? (get (get context :nodes) id) nil)
+                                    form (if form-id? (get forms form-id) nil) attr (get child :attributes)
+                                    value (get form :value)]
+                                (if (if (keyword? value) (if (keyword? (get attr :value))
+                                      (if (= :keyword (get form :kind)) (if (= :literal (get child :core-form))
+                                        (if (= :keyword (get attr :literal-kind))
+                                          (= :gravity.type/keyword (get elements i) (get (get context :types) id)) false) false) false) false) false)
+                                  (if (p15-s23-typed-all
+                                        [id? form-id? (map? child) (map? form) (= id (get child :node-id))
+                                         (= form-id (get form :form-id)) (= owner-id (get form :parent-form-id))
+                                         (= [] (get child :children) (get child :resolved-binding-ids))
+                                         (p15-s23-typed-ordered-node? child :value)
+                                         (map? attr) (= 2 (if (map? attr) (count attr) 0)) (= value (get attr :value))
+                                         (= (get child :source) (p15-s23-typed-source form))])
+                                    (recur (+ i 1) (conj values value))
+                                    {:status :rejected :reason :typed-set-source-or-type-mismatch})
+                                  {:status :rejected :reason :unsupported-typed-set-member}))))
+                          {:status :rejected :reason :typed-set-source-or-type-mismatch})
+                        unique? (if (= :accepted (get checked :status))
+                                  (let [values (get checked :values)]
+                                    (loop [i 0]
+                                      (if (= i n) true
+                                        (if (loop [j (+ i 1)]
+                                              (if (= j n) true
+                                                (if (= (get values i) (get values j)) false (recur (+ j 1)))))
+                                          (recur (+ i 1)) false)))) false)]
+                    (if (= false (= :accepted (get checked :status)))
+                      (assoc (p15-s23-typed-node-error (get checked :reason) node) :work-count charge)
+                      (if (= false unique?)
+                        (assoc (p15-s23-typed-node-error :duplicate-typed-set-keyword node) :work-count charge)
+                        (loop [i 0 items [] used charge]
+                          (if (= i n)
+                            (assoc (p15-s23-compiler-result {:op :set-literal :items items}) :work-count used)
+                            (let [child (p15-s23-typed-compile-node (assoc context :tail? false) (get children i) (- limit used))
+                                  total (+ used (get child :work-count 1))]
+                              (if (p15-s23-compiler-complete? child)
+                                (recur (+ i 1) (conj items (get child :value)) total)
+                                (assoc child :work-count total)))))))))))))))))
+
 (defn p15-s23-typed-compile-collection [context node budget]
   (let [children (get node :children) attrs (get node :attributes) forms (get context :forms)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
@@ -9616,8 +9707,10 @@
         (if (= form :try) (p15-s23-typed-compile-try context node budget)
         (if (= form :quote) (p15-s23-typed-quote context node budget)
         (if (= form :collection-literal)
-          (if (contains? #{:vector :map} (get (get node :attributes) :literal-kind)) (p15-s23-typed-compile-collection context node budget)
-            (p15-s23-typed-node-error :unsupported-typed-lowering-operation node))
+          (if (= :set (get (get node :attributes) :literal-kind))
+            (p15-s23-typed-compile-keyword-set context node budget)
+            (if (contains? #{:vector :map} (get (get node :attributes) :literal-kind)) (p15-s23-typed-compile-collection context node budget)
+              (p15-s23-typed-node-error :unsupported-typed-lowering-operation node)))
         (if (= form :literal)
           (if (if (if (= :character (get source :kind)) true
                     (if (= :character (get (get node :attributes) :literal-kind)) true (= :gravity.type/character type)))

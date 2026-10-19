@@ -3665,6 +3665,56 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Evaluated literal-Keyword Sets
+
+For the bounded JVM slice, edit the existing typed emitter and runtime owners.
+C7 already describes finite literal Set member types, and C8 already accounts
+for normal constructor allocation, including the empty Set. The lowerer emits
+the existing `:set-literal`/`:items` instruction from authenticated actual
+Keyword children, not the parent's cached `:source-value`. Start with:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-keyword-set-c8-development-kernel \
+  --exact current-gravity-literal-keyword-set-lowering-development-kernel \
+  --exact current-gravity-literal-keyword-set-runtime-development-kernel --fail-fast
+```
+
+Check source/child/type joins, malformed IDs before structural equality,
+own-plus-prefix-plus-failed-child work, complete Keyword domains and duplicate
+rejection before host insertion. Set items must participate in instruction
+width and module-read traversal. L1's duplicate-literal rejection remains in
+force; this is not Vector-to-Set conversion's deduplication behavior.
+The current component limits are width 1,024 and work allowance 65,536;
+fitting the width does not imply that comparison/content work fits.
+
+Quoted Sets remain inert, and evaluated Set module initializers remain outside
+this slice. Non-Keyword or arbitrary effectful Set children, Keyword List
+conversion, `keys` ordering and whole-W5 execution are separate frontiers.
+Pure literal children cannot independently observe once-only evaluation order.
+When assembly/lowering/runtime composition changes, validate genuine accepted
+and representative rejected source through those affected boundaries; ordinary
+kernel edits do not require a fresh corpus or authoritative migration first.
+
+Run the paired fixtures/duplicate-reader check before the affected source
+composition, as separate existing-runner selections:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-keyword-set-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-literal-keyword-set-authenticated-composition --fail-fast
+```
+
+The composition selects one accepted G program and one upstream-accepted,
+lowering-rejected String-member program. Q gets byte/parser checks, plus the
+separate C2 duplicate diagnostic, not typed-product parity. Reference execution
+uses the seed interpreter on the same emitted IR, not independent raw-source
+compilation. Listing these commands does not claim that they passed.
+
 ### Finite Keyword-Set value equality
 
 STD3 owns Set value equality. The bounded development slice uses binary `=`
