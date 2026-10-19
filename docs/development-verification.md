@@ -3610,8 +3610,8 @@ in the backlog.
 ### Set conversion and cardinality
 
 STD3 owns persistent Set conversion and cardinality. The current bounded
-development constructor accepts a finite, independently established String
-Vector on the JVM target and returns a bare Set type. It does not invent
+development constructor accepts a finite, independently established homogeneous
+String or Keyword Vector on the JVM target and returns a bare Set type. It does not invent
 cardinality, ordering or member facts. Normal construction declares possible
 allocation even for an empty input; operand transfers prevent invocation and
 preserve their effects. Set count is a separate outer-family query and is not
@@ -3664,6 +3664,48 @@ Preserve the distinction between normalized JVM/WASM eligibility checks and
 actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
+
+### Keyword Vector Set conversion
+
+Use the same four conversion owners for the Keyword input extension. String,
+empty and Never descriptors retain their existing route. Nonempty homogeneous
+Keyword input has a distinct versioned construction policy; output is still
+bare Set. Input extent is an allocation upper bound, not post-dedup cardinality
+or a finite-member proof for Set equality/membership consumers.
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-keyword-vector-set-conversion-development-kernel --exact sh08-keyword-vector-set-conversion-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-keyword-vector-set-conversion-source-development-kernel --exact current-gravity-keyword-vector-set-conversion-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-vector-set-conversion-lowering-development-kernel --exact current-gravity-keyword-vector-set-conversion-id-guards-development-kernel --exact current-gravity-keyword-vector-set-conversion-runtime-development-kernel
+```
+
+The complete actual Keyword Vector is validated and frozen before printing,
+comparison, hashing or insertion. Reserve `1 + 2n + n(n-1)/2 + (n+1)U` within
+the existing 65,536 logical allowance and 1,024-member limit, with U the total
+printed JVM UTF-16 units used for cost only. Gravity Keyword equality chooses
+representatives; spelling is not equality and provider Set storage is not the
+semantic deduplication proof. Preserve duplicate collapse, namespace/name
+distinctions, original input, precharged work, dominant source/producer ID
+guards, complete C8 ledger and normal/Never allocation. This quota does not
+establish provider CPU or realtime bounds.
+
+For the affected composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-keyword-vector-set-conversion-fixtures-development-kernel --exact current-gravity-keyword-vector-set-conversion-authenticated-composition --fail-fast
+```
+
+The fixture preserves the actual C16 semantic-fields declaration and binary
+conj/conversion expression. Use the existing AP closed module-instance path
+to initialize the declaration, not a nil-pool table wrapper or a replacement
+local helper. Twenty-four input positions produce 23 distinct runtime members;
+this observation does not refine the output type. One Gravity positive and one
+mixed-family C7 negative run; QST is byte/parser only. Do not claim whole C16,
+variadic conj, keys conversion, new Set consumer domains or migration support.
+The retained source run described in the backlog remains failed at one false
+harness expectation; its correction and separate cheap checks do not relabel
+it as a green aggregate. Reuse unchanged completed observations where valid;
+do not reconstruct expensive products solely to change a historical label.
 
 ### Nil value classification
 

@@ -2733,6 +2733,79 @@ outside this increment. Direct focused commands remain in
 `development-verification.md`; ordinary edits require no authority-admission
 maintenance.
 
+### Keyword Vector Set conversion: development implementation
+
+The four existing conversion owners extend unary `set` to a finite,
+independently established homogeneous Keyword Vector under STD3's existing
+law. Nonempty Keyword input carries a distinct versioned input/construction
+policy, independently reconstructed by C7, C8 and typed lowering. String,
+empty and Never behavior stays on its existing route; the output remains a
+bare Set with no member-domain, cardinality, ancestry or ordering refinement.
+Runtime projection is 52 functions with four unchanged exports.
+
+All actual input members are validated and frozen before printing or hashing.
+The existing width 1,024 and logical-work 65,536 ceilings reserve
+`1 + 2n + n(n-1)/2 + (n+1)U`, where U is printed JVM UTF-16 units for cost
+only. Existing Gravity Keyword equality collapses duplicates into semantic
+representatives before provider Set storage. Same-printing distinct Keywords
+remain distinct; original input is preserved. This is not provider CPU evidence.
+Allocation includes empty construction; Vector/conj and Set allocation remain
+separate. Guard and measured-route corrections ensure source/producer IDs are
+validated before lookups and an unrelated integral-ordering probe is skipped
+only after the conversion's own accepted measurement.
+
+Focused failures remain in `263fd3d8` (test projection count 51 versus 52),
+`6f3a44eb` (C8 fixture omitted its allocation allowance) and `c090a8cd`
+(test counted all member reads as owning validation). Accepted nonduplicated
+observations at `2339343f` are twelve selectors / 902 passing assertions:
+one unchanged runtime selector / 109 from V2, five corrected-production
+selectors / 490 from V3 and six / 303 from V4. These are seven new kernels /
+496 assertions plus five String/count regressions / 406, not one green batch.
+Failed-selector assertions are excluded. The actual scoped executor trace
+delegates unchanged arguments/results and retains the meter: thirteen total
+member reads include one owning measurement/read, zero unrelated probes and
+zero hashes. The other twelve reads are outside owning validation; they are
+not individually stack-attributed. Independent audit accepted this reuse and
+the corrected code, policy/source/ledger forgeries and zero-callback guards.
+
+Source V1 at `6073f353` and V2 at `8bf42de1` each had six loader passes and
+one error from unsupported fixture return annotations (Integer at C5, then
+Set at C6). No Int variant ran; no downstream credit follows. Removing only
+unnecessary annotations used existing inference without widening grammar.
+Source V3 at `4ed3f6a5` remains FAILED: one test / 178 passes, one failure,
+zero errors, with the cheap fixture selector unrun. The 178 passes include
+172 composition checks and six loader assertions. Its original exit was one.
+Both Gravity products completed. The positive completed accepted and freshly
+verified C7/C8, assembly, all eight AP closed-module-instance entry executions,
+three same-emitted-IR interpreter controls and tracked verification/tamper
+controls; the mixed-family product reached its genuine C7 rejection. The only
+failure expected an empty inferred effect set
+for a caught throw, but actual C8 retained `:error/throw` while the separate
+escaping-throws assertion passed empty. L6 preserves performed labels and makes
+their discharge authority-dependent; current C8 records that pending state.
+
+The test-only correction at `0b0eb0f5` changes that expectation/comment, not
+production, fixtures or the actual failed result. A separate cheap run passed
+two tests / 18 assertions: fixture/parser/exact-C16-AST checks eleven and the
+existing caught-effect regression seven. Its original exit was zero. The
+corrected source aggregate was deliberately not replayed; independent audit
+accepted the completed behavior with this explicit failed-aggregate limit.
+Selected source execution was 211.571014375 seconds at 2 GiB, including nested
+product construction and assertions, not exclusive scheduling cost or speedup.
+
+Nine functions, fifteen source calls and five conversions (three Keyword,
+one empty, one Never) are checked. The exact C16 declaration contains 23
+Keywords including `:source`; the original binary-conj expression feeds 24
+positions to conversion and runtime count observes 23 members. Existing module
+instances initialize that declaration rather than substituting a local helper.
+Output stays bare Set. The negative asserts primary
+`C7-TYPE-MISMATCH/:set-conversion-operand-type-required`; secondary unresolved
+annotation is a raw observation only. QST has no typed products. This is not
+whole-C16 execution, variadic conj, keys conversion, new Set membership/equality
+typing, full source-compiler parity, native execution or authoritative migration.
+The three partial current-closure groups and resolver development-unadmitted
+status remain unchanged.
+
 ### Finite Set conversion and cardinality: development implementation
 
 The owning C7, C8, typed emitter and runtime support unary `set` on an
