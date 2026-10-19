@@ -10440,15 +10440,26 @@
                         (if (> work limit) {:status :rejected :reason :work-limit :work-count work}
                           (let [size (count type)]
                             (if (= 3 size)
-                              (if (= :gravity.type/vector (get type :kind))
-                                (let [domain (sh08-ve-domain arguments (- limit work))
+                              (let [kind (get type :kind)]
+                                (if (= :gravity.type/vector kind)
+                                  (let [domain (sh08-ve-domain arguments (- limit work))
                                       total (+ work (get domain :work-count))]
                                   (if (= :accepted (get domain :status))
                                     {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total}
                                     {:status :rejected :reason (if (= :vector-equality-work-limit (get domain :reason))
                                                                 :vector-inequality-work-limit (get domain :reason))
                                      :work-count total}))
-                                {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})
+                                  (if (= :gravity.type/set kind)
+                                    (let [domain (sh08-kse-domain arguments (- limit work))
+                                          total (+ work (get domain :work-count))]
+                                      (if (= :accepted (get domain :status))
+                                        {:status :accepted :comparison-domain :keyword-set
+                                         :keyword-set-domain-work (get domain :work-count)
+                                         :operand-counts (get domain :operand-counts) :work-count total}
+                                        {:status :rejected :reason (if (= :keyword-set-equality-work-limit (get domain :reason))
+                                                                    :keyword-set-inequality-work-limit (get domain :reason))
+                                         :work-count total}))
+                                    {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                               (if (if (= 2 size)
                                 (if (= :gravity.type/nil-or (get type :kind))
                                   (let [value (get type :value-type)]
@@ -10579,7 +10590,34 @@
                             :payload-evaluation :none :mutation :none :lowering :owned-equality-branch-complement
                             :entry-contract :type-conforming-typed-calls}
                      :invalidation (conj (conj (conj (get header :invalidation) :vector-equality) :equality-domain) :value-policy))
-              header)))) nil)) nil) nil))
+              (if (= :keyword-set (get validation :comparison-domain))
+                (if (= :jvm (get module :target))
+                  (assoc header :intrinsic :gravity.core/keyword-set-value-inequality
+                         :keyword-set-equality {:version :sh08-keyword-set-inequality-v1 :semantic-owner 'gravity.collections
+                            :equality-version :sh08-keyword-set-equality-v1
+                            :equality-policy {:domain :finite-persistent-keyword-sets :members :keyword-only
+                         :comparison :guarded-atomic-keyword-leaf :order :unobserved
+                         :domain-validation :both-complete-before-result
+                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :identity :unobserved :payload-evaluation :none :mutation :none
+                         :collection-construction :none :provider-cpu-bound :not-established}
+                            :type-domain {:shape :literal :members :keyword-only :maximum-width 1024 :maximum-work 65536
+                                          :validation :both-complete-domains-before-value-comparison
+                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
+                            :operand-counts (get validation :operand-counts)
+                            :domain-type-work (get validation :keyword-set-domain-work)}
+                         :inequality-policy {:operation :complement-of-binary-keyword-set-value-equality
+                            :domain :finite-persistent-keyword-sets :members :keyword-only
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail
+                            :order :unobserved :domain-validation :both-complete-before-result
+                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
+                            :coercion :none :normalization :none :locale :none :numeric :unsupported
+                            :collections :finite-persistent-keyword-sets :construction :none
+                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
+                         :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
+                header))))) nil)) nil) nil))
 
 (defn sh08-ane-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
@@ -10592,7 +10630,9 @@
                 (if (contains? descriptor :numeric-equality)
                   (assoc solution :numeric-equality (get descriptor :numeric-equality))
                   (if (contains? descriptor :vector-equality)
-                    (assoc solution :vector-equality (get descriptor :vector-equality)) solution)))
+                    (assoc solution :vector-equality (get descriptor :vector-equality))
+                    (if (contains? descriptor :keyword-set-equality)
+                      (assoc solution :keyword-set-equality (get descriptor :keyword-set-equality)) solution))))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
@@ -10606,7 +10646,8 @@
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
 
-     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic :audited-atomic-inequality-intrinsic)}))
+     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic
+       (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))}))
 
 (defn sh08-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -10625,8 +10666,9 @@
               work (+ base (get validation :work-count))
               owner (if (if (keyword? (get (get node :source) :form-id)) true (if (string? (get (get node :source) :form-id)) (= 71 (count (get (get node :source) :form-id))) false)) (get forms (get (get node :source) :form-id)) nil) ids (get owner :child-form-ids)]
           (if (= false (= :accepted (get validation :status)))
-            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                     (if (contains? #{:work-limit :vector-inequality-work-limit} (get validation :reason)) (if (= :vector-inequality-work-limit (get validation :reason)) :vector-inequality-work-limit :atomic-inequality-work-limit) :atomic-inequality-operand-type-required)
+            (assoc (sh08-sm-failure (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
+                     (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) (if (contains? #{:vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason))
+                       (get validation :reason) :atomic-inequality-work-limit) :atomic-inequality-operand-type-required)
                      nil :two-supported-values-with-applicable-binary-equality arguments)
               :work-count work :type-check-reason (get validation :reason))
             (let [header (sh08-ane-source core node call edge nodes bindings types (get core :module) validation)]
@@ -10671,7 +10713,7 @@
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
                 {:status :accepted :work-count work}
                 {:status :rejected :reason :atomic-inequality-source-mismatch :work-count work}))
-            {:status :rejected :reason (if (contains? #{:work-limit :vector-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
+            {:status :rejected :reason (if (contains? #{:work-limit :vector-inequality-work-limit :keyword-set-inequality-work-limit} (get validation :reason)) :atomic-inequality-work-limit
                                           :atomic-inequality-operand-type-required)
              :type-check-reason (get validation :reason) :work-count work})) {:status :rejected :reason :atomic-inequality-source-mismatch :work-count base})
         {:status :rejected :reason :atomic-inequality-arity-mismatch :work-count base}))))

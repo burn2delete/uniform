@@ -1,0 +1,19 @@
+(ns self-hosting.sh08.keyword-set-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [declared same different reordered main]))
+
+(defn declared []
+  '#{:compiler/ir-transform})
+
+(defn same [] :- Bool
+  (not= (declared) '#{:compiler/ir-transform}))
+
+(defn different [] :- Bool
+  (not= '#{:compiler/ir-transform} '#{:compiler/read-mir}))
+
+(defn reordered [] :- Bool
+  (not= '#{:read-mir :write-mir} '#{:write-mir :read-mir}))
+
+(defn main [] :- Bool
+  (not= '#{} '#{:compiler/ir-transform}))
