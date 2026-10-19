@@ -683,6 +683,32 @@ source, parent/dependency, profile/target/grant, verifier catalog, reader,
 macro/resolver, rule DATA, emitter-freshness and seed/executor invalidation.
 No wrapper, lane or unchanged proof run is needed for this assessment.
 
+The frontend development helper now omits its additional standalone C5
+verification before that public C6 call. Both production gates in `00042` and
+`00041` remain unchanged and freshly verify the exact supplied input; either
+failure prevents a Core result. The helper still checks returned C5 identity,
+the Core verifier, complete source mapping, subject-read auditing and source
+stability. This removes one test-only verifier invocation, not either public
+gate or artifact construction. It introduces no cached acceptance or new flag.
+
+The tradeoff is explicit: the earlier separately labelled freshness assertion
+is gone. A bad artifact may reach the reference-form comparison before the
+public consumer rejects, and that rejection may be a test error rather than
+the old assertion failure. A future successful helper run has 18 assertions,
+not 19; historical 19-assertion results are unchanged and are not relabelled.
+The removed call does not establish a measured speedup or identify dominant
+representation/construction cost. The large unchanged Core subject is not
+replayed to validate this deletion.
+
+The existing small regression batch passed three tests/74 assertions: 46 for
+genuine two-function public-C6 consumption plus bad-ID and coherently changed
+binding rejection, 15 source-schema checks and 13 subject-read-audit checks.
+The original command exited 0 at 2 GiB; selected work took 56.777 seconds after
+7.110 seconds of namespace loading. This checks the preserved public gates,
+schema and auditing, not a fresh execution of the shortened large-subject
+helper or a renewal of any earlier corpus result. No additional test lane,
+wrapper or skip mode was added. All three partial groups remain open.
+
 ### Genuine source aliases: behavior and corrected span expectations
 
 The new direct selector `sh06-b-source-duplicate-alias-composition` uses two
