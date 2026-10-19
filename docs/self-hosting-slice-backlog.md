@@ -3110,9 +3110,10 @@ C8 dependency deletion. The numeric/Never source negative ran for the first
 time; it retains the primary operand-type-required diagnostic and a secondary
 Unknown annotation diagnostic. The oracle asserts the primary, not a sole or
 exact-vector diagnostic claim. The new `main` calls `observed`; it does not
-retrospectively execute the original nullable wrapper. Both source pairs have
-separate byte/parser checks (one test / eight assertions and one / five), not Q
-typed products. The distinct passing selections total 16 tests / 10,390
+retrospectively execute the original nullable wrapper. The original fixture
+selection (one test / eight assertions) and completion fixture selection
+(one / five) provide separate byte/parser coverage, not Q typed products.
+The distinct passing selections total 16 tests / 10,390
 assertions across runs; the failed source aggregate is excluded.
 
 The completion source took 192.608 seconds of selected execution after 10.169
