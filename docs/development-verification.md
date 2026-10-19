@@ -4625,8 +4625,9 @@ clojure -J-Xmx2g -M:dev-test \
 
 Vector elements retain zero-based callsite paths and left-to-right evaluation,
 including nested vectors, let initializers and loop bodies. Quotes remain
-inert; vectors inside blocked function/map/set contexts do not escape those
-fences. This is function-body expression support, not executable top-level
+inert; vectors inside blocked function/set contexts do not escape those
+fences. An enclosing Map requires the derived context described below.
+This is function-body expression support, not executable top-level
 `def` initialization. Declared allocation/IO metadata does not establish
 checked effects or provider permissions; the seed boundary remains unadmitted.
 
@@ -4664,9 +4665,51 @@ restriction relative to older pure non-Keyword Map compilation, not an L2
 language ban or a claim of arbitrary old-module compatibility. Quoted Maps
 remain inert. The traversal's depth-64 and 65,536-visit guards are local
 constructor bounds, not language limits. Raw three-argument/B51 behavior and
-public bundle interfaces remain unchanged. Qualified imports inside Maps,
-Sets and nested functions remain unsupported; this correction does not enable
-them, establish checked effects or demonstrate Effects token-bound fit.
+public bundle interfaces remain unchanged. This Map-order-only correction did
+not enable imports inside Maps; the subsequent Map-value increment is below.
+Neither increment establishes checked effects or Effects token-bound fit.
+
+For qualified imported calls in supported Map values, change the same
+`00575` Map-order component and existing `00580` module-source/module-bundle
+owners. Use the dedicated focused checks first:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-map-call-test \
+  --exact stage2-module-map-fixture-parity \
+  --exact stage2-module-map-reference-development-kernel \
+  --exact stage2-module-map-context-fences-development-kernel \
+  --exact stage2-module-map-wrapped-arity-diagnostic-development-kernel --fail-fast
+# Affected source resolution -> module construction -> runtime boundary:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-map-call-test \
+  --exact stage2-module-map-authenticated-composition --fail-fast
+```
+
+Keep three coordinates distinct: original C5 host enumeration, seed-host
+callsite paths, and C2 source evaluation order. Repeated callee names cannot be
+joined by symbol counts or a source-ordered zip. For Map-bearing functions,
+project the complete actual expanded owner syntax and match every original
+reference, including unqualified references, by request ordinal, identity,
+position and spans. Bridge Keyword keys to seed-host slots, then check imported
+call origins and arity in source order using those original C5 references.
+Original binding, scope, export, profile and target facts remain C5-owned.
+
+Map values compose with existing let, loop, recur-argument and Vector paths.
+Quote payloads remain inert. Set and nested-function fences remain inherited
+both inside and outside Maps; a missing derived context does not enable the
+new walker. Public construction derives it after fresh verification, never
+from a caller's acceptance flag. Existing recur/throw pass precedence is not
+replaced with a global cross-pass source-error ordering rule.
+
+The existing distinct literal Keyword-key restriction remains. Full reference
+projection and traversal share a local 65,536-unit allowance and depth-64
+guard; unsupported expansion/header shapes reject rather than invent C5
+references. These are bounded development frontiers, not new language limits
+or preservation of every previously accepted module capacity. Raw3/B51,
+runtime and public interfaces are unchanged. No new C5 resolver, admission
+lane or proof cache is introduced; use one changed composition, not an
+unchanged source matrix, when this producer/consumer boundary changes.
 
 Use the existing runtime test namespace, not an admission runner:
 
