@@ -1,0 +1,8 @@
+(ns example.b-alias-duplicate
+  (:profile :meta) (:target :jvm)
+  (:requires [example.b-referred-left :as duplicate]
+             [example.b-referred-right :as duplicate])
+  (:exports [probe])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn probe [value]
+  (duplicate/b-shared-value value))

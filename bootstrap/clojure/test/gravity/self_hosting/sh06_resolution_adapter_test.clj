@@ -2381,6 +2381,95 @@
 (deftest sh06-b-frontend-reader-development-coverage
   (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["bootstrap/reader.gravity" 275])})))
 
+(deftest sh06-b-source-duplicate-alias-composition
+  ;; L3/C5: genuine imports, not caller-invented binding candidates. Only G
+  ;; subjects are constructed; QST receives explicitly separate parser parity.
+  (doseq [name ["b-alias-distinct" "b-alias-duplicate"]]
+    (let [g (fixture-path "composition" name ".gravity")
+          q (fixture-path "composition" name ".qst")
+          text (slurp g)]
+      (is (= text (slurp q)))
+      (is (= (bootstrap/read-forms g text) (bootstrap/read-forms q (slurp q))))))
+  (let [libraries (mapv #(bootstrap/compiler-c5-resolution-file-artifact
+                         (fixture-path "composition" % ".gravity"))
+                       ["b-referred-left" "b-referred-right"])
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1
+                :module-artifacts libraries}
+        positive-path (fixture-path "composition" "b-alias-distinct" ".gravity")
+        negative-path (fixture-path "composition" "b-alias-duplicate" ".gravity")
+        caller (bootstrap/compiler-c5-resolution-file-artifact positive-path inputs)
+        aliases (get-in caller [:alias-table :aliases])
+        imported (filter #(and (= :import (:binding-class %))
+                               (= 'b-shared-value (:name %)))
+                         (get-in caller [:binding-table :bindings]))
+        references (filter #(contains? #{'left/b-shared-value 'right/b-shared-value}
+                                       (:symbol %)) (:resolution-table caller))
+        read-counts (atom {:owner-reads 0 :subject-read-attempts 0})
+        core (b-with-subject-read-audit
+              positive-path read-counts
+              #(bootstrap/sh06-c6-lowering-from-resolution-artifact caller))
+        failure (try
+                  (bootstrap/compiler-c5-resolution-file-artifact negative-path inputs)
+                  {:unexpected-success true}
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        candidates (:candidate-bindings failure)]
+    (doseq [library libraries]
+      (is (= :accepted (:status library)))
+      (is (= :passed (:status (verification library)))))
+    (is (= :accepted (:status caller)))
+    (is (= :development-unadmitted
+           (get-in caller [:gravity-resolution-boundary :plan-binding :revision-status])))
+    (is (= :passed (:status (verification caller))))
+    (is (= #{'left 'right} (set (map :alias aliases))))
+    (is (= 2 (count aliases) (count imported) (count references)))
+    (is (= (set (map :binding-id imported)) (set (map :binding-id references))))
+    (doseq [[library alias-name] (map vector libraries ['left 'right])]
+      (let [definition (first (filter #(and (= :namespace (:binding-class %))
+                                           (= 'b-shared-value (:name %)))
+                                     (get-in library [:binding-table :bindings])))
+            alias (first (filter #(= alias-name (:alias %)) aliases))
+            binding (first (filter #(= (:artifact-id library) (:definition-artifact-id %)) imported))]
+        (is (= (:artifact-id library) (:dependency-artifact-id alias) (:definition-artifact-id binding)))
+        (is (= (:namespace definition) (:namespace alias) (:namespace binding)))
+        (is (= (:definition-syntax-id definition) (:definition-syntax-id binding)))
+        (is (= (:binding-id definition) (get-in binding [:semantic-span :origin-binding-id])))))
+    (is (= :gravity/stage0-c6-core-lowering-artifact (:kind core)))
+    (is (= :passed (get-in core [:core-verifier-report :status])))
+    (is (= (:artifact-id caller) (get-in core [:c5-name-resolution-artifact :artifact-id])))
+    (is (= (mapv :syntax/id (rest (get-in caller [:sh05-macro-artifact :expanded-syntax-stream])))
+           (mapv :surface-syntax (get-in core [:surface-to-core-map :entries]))))
+    (is (zero? (:subject-read-attempts @read-counts)))
+    (is (= "C5-ALIAS" (:id failure)) (pr-str failure))
+    (is (= :name-resolution (:stage failure)))
+    (is (= :duplicate-namespace-alias (get-in failure [:facts :reason])))
+    (is (= 'duplicate (:symbol failure) (get-in failure [:facts :rule-specific :alias])))
+    (is (= negative-path (get-in failure [:source-span :source])))
+    (is (= {:source negative-path :byte-start 0 :line-start 1
+            :byte-end (.indexOf (slurp negative-path) "\n(defn")}
+           (select-keys (get-in failure [:source-span :primary])
+                        [:source :byte-start :line-start :byte-end])))
+    (is (and (seq (get-in failure [:source-span :all]))
+             (some #{(get-in failure [:source-span :primary])}
+                   (get-in failure [:source-span :all]))))
+    (is (= 2 (count candidates)))
+    (is (= #{'example.b-referred-left 'example.b-referred-right}
+           (set (map :namespace candidates))))
+    (is (every? #(and (= 'duplicate (:alias %)) (= :namespace (:kind %))) candidates))
+    (doseq [library libraries]
+      (let [matching (filter #(= (:artifact-id library) (:dependency-artifact-id %)) candidates)]
+        (is (= 1 (count matching)))
+        (is (= (select-keys (:source-span failure) [:all :primary])
+               (:source-span (first matching))))))
+    ;; A header error has no causal generated body reference. Do not fabricate
+    ;; its syntax id or macro-origin chain from the first function-body call.
+    (is (nil? (:syntax-id failure)))
+    (is (empty? (:origin-chain failure)))
+    (is (nil? (:unexpected-success failure)))
+    (is (not (contains? failure :c5-name-resolution-artifact)))
+    (is (not (contains? failure :core-ast-module)))
+    (println (pr-str {:b-duplicate-alias-diagnostic failure
+                     :positive-read-audit @read-counts}))))
+
 (deftest sh06-corpus-shards-cover-the-sorted-inventory-exactly-once
   (let [source-paths (authoritative-compiler-paths)
         relative-paths (authoritative-compiler-relative-paths source-paths)]
