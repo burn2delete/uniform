@@ -4427,7 +4427,8 @@ forms. Initializers see earlier bindings, not later ones; argument evaluation
 remains once, left-to-right. Loop calls also retain their distinct paths through
 conditions and `recur` arguments; nearest targets, tail position and arity still
 come from the existing recur validator/runtime. Imported calls under nested
-functions or collection expressions are not yet supported; forwarding nested DATA through a parameter is distinct from those
+functions, maps or sets are not yet supported; function-body vector expressions
+are supported. Forwarding nested DATA through a parameter is distinct from those
 executable forms. Quoted DATA remains inert. General module initialization and
 checked runtime linking are separate work, not language-level prohibitions.
 
@@ -4494,9 +4495,29 @@ source-bound exports, private-import rejection and a coherently resealed
 transitive-route mutation before argument effects. Paired Q sources provide
 byte/parser parity only. Run this composition when those boundaries change,
 not for unrelated semantic edits or to refresh authoritative evidence.
-Effects extraction also needs the still-unsupported imported collection
-contexts and a concrete source/token-bound fit; transitive and loop routing do
-not close that dependency or the retained C9 source failure.
+For imported calls inside ordered vector expressions, use:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-vector-call-test \
+  --exact stage2-module-vector-fixture-parity \
+  --exact stage2-module-vector-call-path-development-kernel \
+  --exact stage2-module-vector-recur-diagnostics-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-vector-call-test \
+  --exact stage2-module-vector-authenticated-composition --fail-fast
+```
+
+Vector elements retain zero-based callsite paths and left-to-right evaluation,
+including nested vectors, let initializers and loop bodies. Quotes remain
+inert; vectors inside blocked function/map/set contexts do not escape those
+fences. This is function-body expression support, not executable top-level
+`def` initialization. Declared allocation/IO metadata does not establish
+checked effects or provider permissions; the seed boundary remains unadmitted.
+
+Effects extraction still needs its exact remaining call-context coverage and a
+concrete source/token-bound fit; transitive, loop and vector routing do not
+close that dependency or the retained C9 source failure.
 
 Use the existing runtime test namespace, not an admission runner:
 
@@ -4683,6 +4704,28 @@ without printing products. If canonical realization is material, investigate
 only its transient representation/lifetime first, preserving exact bytes,
 digests, ordering, diagnostics and hostile checks. No extra unchanged proof run,
 accepted-result cache, new lane or wrapper is required by this investigation.
+
+The new fixed-DATA case in the existing hosted C6 leaf namespace isolates one
+representation mechanism without itself constructing compiler products:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.c6-core-lowering-test --fail-fast
+```
+
+Its four fixed, guarded DATA chains use the production flattener. For one,
+two, four and eight nodes, nested node occurrences in the flat table are
+1, 3, 10 and 36. Observed root-vector / flat-table UTF-8 bytes are 94 / 94,
+192 / 285, 388 / 961 and 780 / 3,489. Full rows are checked before traversal
+or printing, with conservative pre-print and final 256 KiB bounds. The whole
+leaf namespace passed five tests / 114 assertions. This establishes small-case
+printed amplification, not unique heap size, timing, actual Checked-Core
+size, failure cause or a reason to replay the interrupted large subject.
+The returned hosted C6 keeps a selected C5 view, not the full SH05/C3 ancestry;
+do not attribute all upstream bytes to its whole-artifact hash. Any future
+representation correction must inventory consumers and preserve required
+identity, provenance, diagnostics and fresh verification, or explicitly version
+and invalidate changed evidence. No representation redesign is selected here.
 
 The typed-catch composition exposed a separate retention limitation. Rendering
 its first original request, typed result and verification report as one EDN

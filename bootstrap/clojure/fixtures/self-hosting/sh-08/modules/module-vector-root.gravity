@@ -1,0 +1,16 @@
+(ns example.module-vector-root
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-vector-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write :memory/allocate}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn main []
+  (let [prefix "kept"]
+    [(leaf/identity (do (println "first") prefix))
+     [(let [value prefix]
+        (loop [again true]
+          (if again
+            (recur (leaf/identity (do (println "loop") false)))
+            (leaf/identity value))))]
+     '(leaf/hidden :data)
+     (leaf/pair (leaf/identity (do (println "left") :left))
+                (leaf/identity (do (println "right") :right)))]))
