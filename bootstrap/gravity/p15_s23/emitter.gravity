@@ -5725,7 +5725,7 @@
           (if (= :gravity.type/vector (get type :kind))
             (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false))
 
-(defn p15-s23-pe-selected-work [header census shapes types budget]
+(defn p15-s23-pe-selected-work [header census shapes types private-root? budget]
   ; Existing entry reservations pay guarded key/coordinate and scalar scans.
   ; Validate every selected Vector candidate before deep equality or finish.
   (loop [remaining (get census :calls) inputs shapes used 0]
@@ -5769,11 +5769,12 @@
                                           (if (= :accepted (get walked :status)) (recur (rest pending) total)
                                             {:status :rejected :reason (if (= :work-limit (get walked :reason))
                                                                         :map-get-work-limit :map-get-private-entry-selected-type-required) :work-count total}))
-                                        (if (if (keyword? type)
+                                        (if (if (= false private-root?) true
+                                            (if (keyword? type)
                                               (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                                            :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                                            :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false)
+                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false))
                                           (recur (rest pending) work)
                                           {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count work})))))
                                 {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))
@@ -5831,7 +5832,7 @@
       (let [shapes (loop [remaining entries out []]
                      (if (= 0 (count remaining)) out
                        (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
-            checked (p15-s23-pe-selected-work header census shapes types budget)
+            checked (p15-s23-pe-selected-work header census shapes types true budget)
             expected (if (= :accepted (get checked :status)) (p15-s23-pe-finish header census shapes core nodes types) nil)]
         (if (map? expected) (assoc checked :descriptor expected)
           (if (= :rejected (get checked :status)) checked
@@ -5973,7 +5974,7 @@
                         (p15-s23-pe-check-work header descriptor core nodes (get context :bindings) (get context :forms) types (- budget charge))
                         (let [walked (if (= :normal (get header :application))
                                        (p15-s23-pe-selected-work header {:calls [call] :parameter-index 0}
-                                         [(get proof :operand-shape)] types (- budget charge))
+                                         [(get proof :operand-shape)] types false (- budget charge))
                                        {:status :accepted :work-count 0})
                               result (if (= :accepted (get walked :status))
                                        (p15-s23-mg-present-finish header (get proof :operand-shape)) nil)]
@@ -5989,7 +5990,7 @@
                        (recur (rest remaining)
                          (if (if (= :sh08-map-get-v1 (get row :producer-rule))
                                (= {:core-node-id id :projection :map-get} (get row :lhs)) false) (conj out row) out)))))]
-        (if (if (> charge budget) (= :map-get-work-limit (get checked :reason)) true)
+        (if (if (> charge budget) true (= :map-get-work-limit (get checked :reason)))
           (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
         (if (if (map? expected)
               (p15-s23-typed-all

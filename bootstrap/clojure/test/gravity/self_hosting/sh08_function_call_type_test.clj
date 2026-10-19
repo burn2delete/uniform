@@ -11113,7 +11113,7 @@
                                            (:nodes input) (:bindings input) (:types input) (:module input)])
           census (invoke-c7 'sh08-pe-census [header (:core input) (:nodes input) (:bindings input) (:forms input)])
           shapes (mapv :argument-shape (:entries proof))
-          measured #(invoke-c7 'sh08-pe-selected-work [header census shapes (:types input) %])
+          measured #(invoke-c7 'sh08-pe-selected-work [header census shapes (:types input) true %])
           count-work (* 6 type-visits)]
       (is (= :accepted (:status result)) (pr-str result))
       (is (= expected (:type result) (:return descriptor) (:selected-type proof)))
@@ -11166,7 +11166,7 @@
     (doseq [bad bad-types]
       (let [types (walk/postwalk-replace {good bad} (:types input))
             changed-shapes (walk/postwalk-replace {good bad} shapes)
-            checked (invoke-c7 'sh08-pe-selected-work [header census changed-shapes types 65536])]
+            checked (invoke-c7 'sh08-pe-selected-work [header census changed-shapes types true 65536])]
         (is (= :rejected (:status checked)))
         (is (= :map-get-private-entry-selected-type-required (:reason checked)))))
     (let [changed (-> input (assoc-in [:nodes :entry-key-0-1 :attributes :value] :absent)
@@ -11178,3 +11178,31 @@
     (is (= :accepted (:status empty-result)))
     (is (= ["C7-ANNOTATION" :vector-first-nonempty-complete-positional-type-required]
            ((juxt :rule :reason) first-result)))))
+
+(defn- finite-present-return-type-control [result-type]
+  ;; Normalized type-contract DATA; this is not a source-inference witness.
+  (let [base (map-present-get-input :payload) original (map-present-get-derived base)
+        descriptor (:descriptor original) shape (get-in descriptor [:presence-proof :operand-shape])
+        input-type (assoc-in (get-in base [:types :input]) [:member-types 9] result-type)
+        types (assoc (:types base) :input input-type :entry-value-4 result-type)
+        shape (-> shape (assoc :type input-type) (assoc-in [:parts 4 :shape :type] result-type))
+        header (invoke-c7 'sh08-mg-source [(:core base) (:node base) (:call base) (:edge base)
+                                         (:nodes base) (:bindings base) types (:module base)])
+        expected (invoke-c7 'sh08-mg-present-finish [header shape])]
+    (assoc base :types types :header header :shape shape :descriptor expected :result-type result-type)))
+
+(deftest sh08-finite-present-result-compatibility-development-kernel
+  (doseq [type [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/string]}
+                {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+                {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
+    (let [input (finite-present-return-type-control type) call (:call input)
+          checked (invoke-c7 'sh08-pe-selected-work [(:header input) {:calls [call] :parameter-index 0}
+                                                    [(:shape input)] (:types input) false 65536])
+          types (assoc (:types input) :operator (:descriptor input) :present-get type)
+          calls (into {} (map (juxt :core-node-id identity) (get-in input [:core :calls])))
+          actual (invoke-c7 'sh08-mg-inferred-work [(:core input) (:node input) call (:edge input) (:nodes input)
+                                                   (:bindings input) types calls 65536])]
+      (is (= type (get-in input [:descriptor :result-type])))
+      (is (= :accepted (:status checked) (:status actual)))
+      (is (= 0 (:work-count checked))))))

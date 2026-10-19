@@ -4708,7 +4708,7 @@
           (if (= :gravity.type/vector (get type :kind))
             (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false))
 
-(defn body-pe-selected-work [header census shapes types budget]
+(defn body-pe-selected-work [header census shapes types private-root? budget]
   ; Existing entry reservations pay guarded key/coordinate and scalar scans.
   ; Validate every selected Vector candidate before deep equality or finish.
   (loop [remaining (get census :calls) inputs shapes used 0]
@@ -4752,11 +4752,12 @@
                                           (if (= :accepted (get walked :status)) (recur (rest pending) total)
                                             {:status :rejected :reason (if (= :work-limit (get walked :reason))
                                                                         :map-get-work-limit :map-get-private-entry-selected-type-required) :work-count total}))
-                                        (if (if (keyword? type)
+                                        (if (if (= false private-root?) true
+                                            (if (keyword? type)
                                               (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                                            :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                                            :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false)
+                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false))
                                           (recur (rest pending) work)
                                           {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count work})))))
                                 {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))
@@ -4814,7 +4815,7 @@
       (let [shapes (loop [remaining entries out []]
                      (if (= 0 (count remaining)) out
                        (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
-            checked (body-pe-selected-work header census shapes types budget)
+            checked (body-pe-selected-work header census shapes types true budget)
             expected (if (= :accepted (get checked :status)) (body-pe-finish header census shapes core nodes types) nil)]
         (if (map? expected) (assoc checked :descriptor expected)
           (if (= :rejected (get checked :status)) checked
@@ -4964,7 +4965,7 @@
                                                   (get facts :type-table) (- budget total))
                                                 (let [checked (if (= :normal (get header :application))
                                                                 (body-pe-selected-work header {:calls [call] :parameter-index 0}
-                                                                  [(get proof :operand-shape)] (get facts :type-table) (- budget total))
+                                                                  [(get proof :operand-shape)] (get facts :type-table) false (- budget total))
                                                                 {:status :accepted :work-count 0})
                                                       expected (if (= :accepted (get checked :status))
                                                                  (body-mg-present-finish header (get proof :operand-shape)) nil)]
@@ -5001,10 +5002,26 @@
         forms (get (get facts :map-get-context) :forms)
         input (get (get descriptor :presence-proof) :operand-shape)
         expected (if (map? header)
-                   (let [paid (get (get (get facts :map-get-context) :private-selected-checks) (get node :node-id))]
-                     (if (= :sh08-map-get-private-entry-v1 (get paid :version))
-                       (if (= (body-pe-census header core nodes bindings forms) (get (get paid :presence-proof) :entry-census)) paid nil)
-                       paid)) nil)
+                   (let [paid (get (get (get facts :map-get-context) :private-selected-checks) (get node :node-id))
+                         fields [:kind :operation :semantic-owner :intrinsic :resolution :operator-node-id :operator-binding-id
+                                 :call-core-node-id :source :operator-source :source-call :source-edge :source-binding :argument-types
+                                 :application :latent-effects :direct-effects :capabilities :thrown-error-effects :profile :target :key-node-id :key]
+                         current? (if (map? paid) (= (body-project paid fields) (body-project header fields)) false)]
+                     (if current?
+                       (if (= :sh08-map-get-private-entry-v1 (get paid :version))
+                         (let [census (body-pe-census header core nodes bindings forms)
+                               entries (get (get paid :presence-proof) :entries)]
+                           (if (= census (get (get paid :presence-proof) :entry-census))
+                             (if (loop [remaining entries calls (get census :calls)]
+                                   (if (= 0 (count remaining)) (= 0 (count calls))
+                                     (if (= 0 (count calls)) false
+                                       (let [entry (first remaining) source-call (first calls) args (get source-call :argument-node-ids)
+                                             argument-id (get args (get census :parameter-index))]
+                                         (if (body-all? [(= argument-id (get entry :argument-node-id))
+                                               (= (get entry :argument-type) (get types argument-id))
+                                               (= (get entry :argument-types) (body-io-child-types args types))])
+                                           (recur (rest remaining) (rest calls)) false))))) paid nil) nil))
+                         paid) nil)) nil)
         rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1)
                           :lhs {:core-node-id (get node :node-id) :projection :map-get})]
     (if (map? expected)

@@ -5315,6 +5315,23 @@
           changed-context (leaf 'body-mg-context request coherent bindings 65536)]
       (is (= :rejected (:status changed-context)))
       (is (false? (leaf 'body-mg-present-call-valid? core coherent bindings node call edge nodes))))
+    (doseq [id [:input :input-0 :input-1]]
+      (let [changed (assoc-in facts [:type-table id :member-types 1]
+                             {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character]})]
+        (is (false? (leaf 'body-mg-present-call-valid? core changed bindings node call edge nodes)))))
+    (doseq [type [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/string]}
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
+      (let [data ((ns-resolve upstream 'finite-present-return-type-control) type)
+            d (:descriptor data) core (:core data) facts {:type-table (assoc (:types data) :operator d :present-get type)
+                                                         :call-type-facts [(c7 'sh08-mg-call-fact [d (:module data)])]
+                                                         :constraint-ledger [(c7 'sh08-mg-constraint [d])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms data)))}}}
+            context (leaf 'body-mg-context request facts (:bindings data) 65536)]
+        (is (= :accepted (:status context)))
+        (is (true? (leaf 'body-mg-present-call-valid? core (assoc facts :map-get-context (:context context))
+                          (:bindings data) (:node data) (:call data) (:edge data) (:nodes data))))))
     (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
                      (assoc-in descriptor [:presence-proof :entries] :invalid)
                      (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))

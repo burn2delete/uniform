@@ -23233,6 +23233,17 @@
           (is (= value (:file stored))))))
     (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
     (is (= :typed-lowering-work-limit (get-in (compile context 0) [:facts :reason])))
+    (doseq [type [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/string]}
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
+      (let [data ((ns-resolve upstream 'finite-present-return-type-control) type)
+            checked (invoke 'p15-s23-pe-selected-work (:header data) {:calls [(:call data)] :parameter-index 0}
+                            [(:shape data)] (:types data) false 65536)
+            expected (invoke 'p15-s23-mg-present-finish (:header data) (:shape data))]
+        (is (= :accepted (:status checked)))
+        (is (= 0 (:work-count checked)))
+        (is (= (:descriptor data) expected))))
     (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
                      (assoc-in descriptor [:presence-proof :entries] :invalid)
                      (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
