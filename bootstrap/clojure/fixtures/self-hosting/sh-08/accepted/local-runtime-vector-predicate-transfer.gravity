@@ -1,0 +1,17 @@
+(ns example.runtime-vector-predicate-transfer
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn caught [value :- Keyword]
+  (try
+    (if (vector? [[:stored]])
+      (vector? (throw value))
+      false)
+    (catch Keyword problem (= problem value))))
+
+(defn main []
+  (caught :problem))

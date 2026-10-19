@@ -2559,6 +2559,71 @@ The `vector?` wrapper, arbitrary Vector/index domains, mutual recursion,
 termination, full W5, native/other-target support, authoritative migration,
 self-hosting, seed retirement and release remain outside this increment.
 
+### Vector family classification: development implementation
+
+Unary `vector?` now classifies independently established closed value types
+under STD3: Vector values yield Bool true and supported non-Vector values yield
+false. The operand evaluates once in non-tail position; its effects and
+transfers survive, and Never prevents invocation. Classification does not
+evaluate stored payloads, mutate values or infer member, length, index or
+refinement facts. Unknown operands remain outside this implementation frontier,
+not a new language-wide prohibition on future polymorphic predicates.
+
+C7, C8 and the typed emitter independently check the current source binding,
+unary operand, descriptor, fact and ordered ledger joins. C7's catch/throw
+consumer charges deep operand-type validation against its remaining budget and
+retains work on rejection. The emitter's bounded producer-row census rejects
+orphan rows rather than filtering them away. Runtime uses the existing unary
+builtin-call representation and shallow classification after evaluation. The
+existing private activation state and public compiler interfaces are unchanged.
+
+The final focused batch passed 3 tests/358 assertions: lowering/runtime 114
+(including six actual runtime-source loader checks), C7 235, and unannotated
+cold-wrapper inference nine. The earlier C7/C8 batch passed 2/276, including
+47 independent C8 checks. These runs overlap; do not sum them into a coverage
+score. A 1/19 fixture preflight parsed all five Gravity/QST pairs and checked
+both unchanged W5 bodies. Earlier failed runs remain failed: one mechanical
+Never-tag mismatch, then four orphan-row lowering checks. Legacy kernels passed
+within those failed aggregates; they do not make the aggregates pass. The
+independent audit separately found and closed the remaining-budget accounting
+gap before the final batch.
+
+One affected source composition passed 1 test/239 assertions: 233 composition
+checks plus six runtime-source loader checks. Seven fresh products cover four
+positive chains (two programs in both spellings) and three Gravity negatives.
+The pure program preserves `w5-se-member-from?` and `w5-se-member?` unchanged,
+with independently inferred Vector7/Keyword entry facts and a separate Keyword
+false classifier. The second program covers nested-Vector and Never operands
+through existing typed catch, without widening cold-handler inference.
+
+The run exercised five additionally tracked public C7 gates, including a forged
+compile, independent C8 build/verification and graph-forgery rejection, and
+sixteen actual function-table activations. This is not `execute-closed-plan`.
+Paired typed identities, effect graphs, results and complete emitted functions
+modulo source path were compared; full positive products/tables were not
+serialized as retained evidence. The C7 tamper changes one descriptor field,
+not a coherently resealed all-field forgery. Component exact/one-less budgets
+remain component evidence, not a whole-source budget claim.
+
+All three actual negative vectors include the intended primary diagnostic:
+`vector-predicate-operand-type-required` for Unknown and
+`vector-predicate-arity-mismatch` for zero/two operands. Each also retains a
+secondary `unsupported-or-unresolved-core-node-type` diagnostic. Do not erase
+that secondary output, assign its node kind without evidence, or claim a clean
+single-diagnostic rejection. QST negatives have byte/parser parity only.
+The post-run exact-vector oracle added three future source assertions; the
+executed result stays 239, not 242. A separate two-assertion read-only check
+matched the three complete retained vectors, without a source replay.
+
+Selected source work took 559.381 seconds after 9.242 seconds of namespace
+loading with a 2 GiB heap. This does not separate product construction from
+verification or scheduling cost. Independent review accepted the scoped code
+and actual results. No general heterogeneous W5 wrapper, full W5, broader cold
+inference, native/other-target support, authoritative migration, self-hosting,
+seed retirement or release claim follows. Direct development commands remain
+in `development-verification.md`; ordinary edits require no admission-system
+maintenance or fresh authority proof.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

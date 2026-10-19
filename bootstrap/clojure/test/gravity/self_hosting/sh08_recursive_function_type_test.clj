@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh08-recursive-function-type-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]))
 
@@ -848,6 +849,154 @@
                  (assoc-in [:preserved-resolution :binding-table] (vec (vals bindings))))]
     {:core core :record record :nodes (into {} (map (juxt :node-id identity) all-nodes))
      :bindings (vec (vals bindings)) :forms (vec (vals forms))}))
+
+(defn- indexed-private-cold-wrapper-data []
+  ;; Canonical-shaped normalized inputs. Entry facts come through an unannotated
+  ;; acyclic wrapper; the predicate result never supplies the parameter types.
+  (let [{:keys [core record bindings forms]} (indexed-private-self-data)
+        wrapper-id :caller-0 wrapper-params [:wrapper-values :wrapper-needle]
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        make (fn [id kind children attrs owner]
+               {:node-id id :core-form kind :children children :attributes attrs :source (source id)
+                :resolved-binding-ids (if (= kind :reference) [(:binding-id attrs)] [])
+                :evaluation {:kind :left-to-right :owner-function-syntax-id owner
+                             :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        ref (fn [id bid name] (make id :reference [] {:symbol name :position :expression :binding-id bid
+                                                    :binding-class :lexical :definition-syntax-id nil} wrapper-id))
+        binding-map (into {} (map (juxt :binding-id identity) bindings))
+        vp-binding (assoc (binding-map '=) :binding-id :vp-binding :name 'vector? :definition-syntax-id :vp-definition)
+        wrapper-binding {:binding-id :wrapper-binding :name 'cold-wrapper :kind :function :binding-class :namespace
+                         :namespace (get-in core [:module :namespace]) :visibility :private
+                         :definition-syntax-id :wrapper-name :upstream-binding-id :wrapper-upstream}
+        bindings (into bindings [vp-binding wrapper-binding
+                                 {:binding-id :wrapper-values :name 'values :kind :local :binding-class :lexical}
+                                 {:binding-id :wrapper-needle :name 'value :kind :local :binding-class :lexical}])
+        old-nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        vp-op (assoc (make :wrapper-vp-op :reference [] {:symbol 'vector? :position :operator :binding-id :vp-binding
+                                                       :binding-class :core :definition-syntax-id :vp-definition} wrapper-id)
+                     :resolved-binding-ids [:vp-binding])
+        vp-call {:core-node-id :wrapper-vp-call :operator-node-id :wrapper-vp-op :operator-binding-id :vp-binding
+                 :argument-node-ids [:wrapper-vp-ref] :ordered-evaluation-node-ids [:wrapper-vp-op :wrapper-vp-ref]
+                 :evaluation-order :operator-then-arguments :result-policy :call-result}
+        vp-node (-> (make :wrapper-vp-call :call (:ordered-evaluation-node-ids vp-call)
+                          {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} wrapper-id)
+                    (assoc :resolved-binding-ids [:vp-binding]) (assoc-in [:evaluation :kind] :operator-then-arguments))
+        wrapper-if (-> (make :wrapper-if :if [:wrapper-vp-call :entry-0 :wrapper-false]
+                            (:attributes (old-nodes :recursive-body)) wrapper-id)
+                       (assoc-in [:evaluation :kind] :condition-then-exclusive-branch)
+                       (assoc-in [:evaluation :order] [{:index 0 :core-node-id :wrapper-vp-call}]))
+        wrapper-record {:function-syntax-id wrapper-id :function-form-id wrapper-id :function-core-node-id wrapper-id
+                        :body-core-node-id :wrapper-if :parameter-binding-ids wrapper-params :fixed-arity 2
+                        :definition-kind :named-top-level :definition-binding-id :wrapper-binding
+                        :definition-core-node-id :wrapper-def :definition-name 'cold-wrapper}
+        wrapper-fn (-> (old-nodes :helper-fn) (assoc :node-id wrapper-id :source (source wrapper-id)
+                                                  :children [:wrapper-if] :resolved-binding-ids wrapper-params))
+        wrapper-def (-> (old-nodes :helper-def)
+                        (assoc :node-id :wrapper-def :source (source :wrapper-def) :children [wrapper-id]
+                               :attributes {:name 'cold-wrapper :name-syntax-id :wrapper-name :visibility :private}
+                               :resolved-binding-ids [:wrapper-binding]))
+        retained (filterv #(or (= (:function-syntax-id record) (get-in % [:evaluation :owner-function-syntax-id]))
+                                (contains? #{:helper-fn :helper-def} (:node-id %))) (:nodes core))
+        entry0 (mapv (fn [n] (case (:node-id n)
+                              :input-0 (ref :input-0 :wrapper-values 'values)
+                              :ix-needle-0 (ref :ix-needle-0 :wrapper-needle 'value)
+                              n))
+                     (filter #(and (= wrapper-id (get-in % [:evaluation :owner-function-syntax-id]))
+                                   (not (str/starts-with? (name (:node-id %)) "ix-member-0-"))) (:nodes core)))
+        entry1 (mapv (fn [n] (case (:node-id n)
+                              :entry-operator-1 (-> n (assoc :resolved-binding-ids [:wrapper-binding])
+                                                   (assoc-in [:attributes :symbol] 'cold-wrapper)
+                                                   (assoc-in [:attributes :binding-id] :wrapper-binding)
+                                                   (assoc-in [:attributes :definition-syntax-id] :wrapper-name))
+                              :entry-1 (-> n (assoc :children [:entry-operator-1 :input-1 :ix-needle-1]
+                                                    :resolved-binding-ids [:wrapper-binding])
+                                           (assoc-in [:attributes :argument-count] 2)
+                                           (assoc-in [:attributes :argument-child-indexes] [1 2])
+                                           (assoc-in [:evaluation :order]
+                                                     [{:index 0 :core-node-id :entry-operator-1} {:index 1 :core-node-id :input-1}
+                                                      {:index 2 :core-node-id :ix-needle-1}]))
+                              n))
+                     (filter #(and (= :caller-1 (get-in % [:evaluation :owner-function-syntax-id]))
+                                   (not= :ix-zero-1 (:node-id %))) (:nodes core)))
+        nodes (vec (concat retained [vp-op (ref :wrapper-vp-ref :wrapper-values 'values) vp-node] entry0
+                           [(make :wrapper-false :literal [] {:literal-kind :boolean :value false} wrapper-id)
+                            wrapper-if wrapper-fn wrapper-def] entry1))
+        calls (vec (concat (take 6 (:calls core)) [vp-call (nth (:calls core) 6)
+                                                  (assoc (nth (:calls core) 7) :operator-binding-id :wrapper-binding
+                                                         :argument-node-ids [:input-1 :ix-needle-1]
+                                                         :ordered-evaluation-node-ids [:entry-operator-1 :input-1 :ix-needle-1])]))
+        vp-edge {:ordinal 6 :call-core-node-id :wrapper-vp-call :caller-function-syntax-id wrapper-id
+                 :caller-function-core-node-id wrapper-id :callee-binding-id :vp-binding :callee-definition-syntax-id :vp-definition
+                 :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids [:wrapper-vp-ref]
+                 :ordered-evaluation-node-ids [:wrapper-vp-op :wrapper-vp-ref]
+                 :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
+        edges (vec (concat (take 6 (:call-edges core))
+                           [vp-edge (assoc (nth (:call-edges core) 6) :ordinal 7)
+                            (assoc (nth (:call-edges core) 7) :ordinal 8 :callee-binding-id :wrapper-binding
+                                   :callee-definition-syntax-id :wrapper-name :callee-function-syntax-id wrapper-id
+                                   :callee-function-core-node-id wrapper-id :argument-core-node-ids [:input-1 :ix-needle-1]
+                                   :ordered-evaluation-node-ids [:entry-operator-1 :input-1 :ix-needle-1])]))
+        core (-> core (assoc :nodes nodes :calls calls :call-edges edges)
+                 (assoc-in [:function-records 1] wrapper-record)
+                 (update :definitions conj {:binding-id :wrapper-binding :name 'cold-wrapper :core-node-id :wrapper-def
+                                            :value-node-id wrapper-id :syntax-id :wrapper-def})
+                 (assoc-in [:preserved-resolution :binding-table] bindings)
+                 (update :reference-uses #(mapv (fn [r] (if (= :entry-operator-1 (:core-node-id r))
+                                                       (assoc r :binding-id :wrapper-binding :symbol 'cold-wrapper :definition-syntax-id :wrapper-name) r)) %))
+                 (update-in [:preserved-resolution :resolution-table]
+                            #(mapv (fn [r] (if (= :entry-operator-1 (:reference-syntax-id r))
+                                             (assoc r :binding-id :wrapper-binding :symbol 'cold-wrapper :upstream-binding-id :wrapper-upstream) r)) %))
+                 (update :control-flow conj {:core-node-id :wrapper-if :kind :if :condition-node-id :wrapper-vp-call
+                                            :branches [{:role :then :predicate :truthy :core-node-id :entry-0}
+                                                       {:role :else :predicate :falsey :core-node-id :wrapper-false}]
+                                            :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}
+                                            :result-policy :selected-branch}))
+        forms (into {} (map (juxt :form-id identity) forms))
+        forms (apply dissoc forms (concat (map #(keyword (str "ix-member-0-" %)) (range 7)) [:ix-zero-1]))
+        forms (merge forms {:input-0 (form :input-0 :symbol 'values :entry-0 [])
+                            :ix-needle-0 (form :ix-needle-0 :symbol 'value :entry-0 [])
+                            :wrapper-vp-op (form :wrapper-vp-op :symbol 'vector? :wrapper-vp-call [])
+                            :wrapper-vp-ref (form :wrapper-vp-ref :symbol 'values :wrapper-vp-call [])
+                            :wrapper-vp-call (form :wrapper-vp-call :list nil :wrapper-if [:wrapper-vp-op :wrapper-vp-ref])
+                            :wrapper-false (form :wrapper-false :boolean false :wrapper-if [])
+                            :wrapper-if (form :wrapper-if :list nil wrapper-id [:wrapper-if-op :wrapper-vp-call :entry-0 :wrapper-false])
+                            :wrapper-if-op (form :wrapper-if-op :symbol 'if :wrapper-if [])
+                            wrapper-id (form wrapper-id :list nil :wrapper-def [:wrapper-fn-op :wrapper-params :wrapper-if])
+                            :wrapper-fn-op (form :wrapper-fn-op :symbol 'fn wrapper-id [])
+                            :wrapper-params (form :wrapper-params :vector nil wrapper-id [])
+                            :wrapper-def (form :wrapper-def :list nil nil [:wrapper-def-op :wrapper-name wrapper-id])
+                            :wrapper-def-op (form :wrapper-def-op :symbol 'def :wrapper-def [])
+                            :wrapper-name (form :wrapper-name :symbol 'cold-wrapper :wrapper-def [])})
+        forms (-> forms (assoc-in [:entry-0 :parent-form-id] :wrapper-if)
+                        (assoc-in [:entry-operator-1 :value] 'cold-wrapper)
+                        (assoc-in [:entry-1 :child-form-ids] [:entry-operator-1 :input-1 :ix-needle-1]))]
+    {:core core :record record :bindings bindings :forms (vec (vals forms))}))
+
+(deftest current-gravity-indexed-private-cold-wrapper-development-kernel
+  (let [{:keys [core record bindings forms]} (indexed-private-cold-wrapper-data)
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        cold (invoke-c7 'sh08-is-cold-infer [core (assoc core :node-table nodes) record nodes bindings forms {} :entries [] 65536])
+        types (get-in cold [:inference :type-table])]
+    (is (= :accepted (:status cold)) (pr-str (select-keys cold [:status :reason :work-count :diagnostics])))
+    (when-not (= :accepted (:status cold))
+      (throw (ex-info "Unannotated cold wrapper prerequisite rejected" (select-keys cold [:status :reason :work-count]))))
+    (is (= {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}
+           (get types :input-0)))
+    (is (= :gravity.type/keyword (get types :ix-needle-0)))
+    (is (= :gravity.type/integer (get types :ix-zero-0)))
+    (is (= :gravity.type/bool (get types :wrapper-vp-call)))
+    (is (not (contains? (second (:function-records core)) :signature)))
+    (let [proof (:recursive-proof
+                 (invoke-c7 'sh08-ft-proof-results
+                            [{:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
+                             (assoc core :node-table nodes) bindings (:module core)]))]
+      (is (= :accepted (:status proof)) (pr-str (select-keys proof [:status :reason :work-count])))
+      (is (= :sh08-indexed-private-self-value-v1 (:rule-version proof)))
+      (is (= 1 (get-in proof [:parameter-value-premise :entry-values :normal-entry-count]))))))
 
 (deftest current-gravity-indexed-private-entry-source-development-kernel
   (let [{:keys [core record nodes bindings forms]} (indexed-private-self-data)

@@ -3508,6 +3508,48 @@ new affected integration run is useful. Focused checks are development feedback;
 fresh provenance/equivalence/bootstrap evidence belongs to an explicit stable
 revision admission decision. The backlog records actual outcomes and exclusions.
 
+### Vector family classification
+
+STD3 owns unary `vector?` semantics. The development implementation accepts
+independently established closed operand types, evaluates the operand once,
+preserves effects/transfers, and returns Bool on normal invocation. Never
+aborts invocation; Unknown is unsupported, not a false classification. A Bool
+result supplies no member, length, index or type-refinement facts.
+
+Edit the owning pass, not an authority-admission adapter:
+
+- C7: `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
+- C8: `bootstrap/gravity/src/gravity/effects.gravity`.
+- Typed lowering: `bootstrap/gravity/p15_s23/emitter.gravity`.
+- Runtime: `bootstrap/gravity/src/gravity/runtime.gravity`.
+
+Use the affected existing direct kernel first:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-vector-predicate-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-vector-predicate-source-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-predicate-lowering-runtime-development-kernel --fail-fast
+# Affected source composition, separate from the normal inner loop:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-predicate-authenticated-composition --fail-fast
+```
+
+The paired source programs separately exercise the unchanged W5 indexed
+helper/wrapper and the existing typed-catch path. The cold-wrapper kernel in
+the SH08 recursive-function namespace checks independent caller-derived
+Vector7/Keyword facts; it does not obtain them from `vector?`. Rejected fixture
+pairs cover unknown operands and zero/two arity. QST byte/parser parity is not
+negative source-compilation evidence. Actual results and exclusions belong in
+the backlog. No fresh authority proof is a prerequisite for ordinary edits;
+authoritative migration remains an explicit separate decision.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,
