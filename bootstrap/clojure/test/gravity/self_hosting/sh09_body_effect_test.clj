@@ -5409,5 +5409,17 @@
         (is (= :rejected (:status (build request f 65536)))))
       (is (= :rejected (:status (build (assoc-in request [:b47-context :authenticated-core-request :forms]
                                                (mapv #(if (= :inner-key (:form-id %)) (assoc % :value :scheme) %) (vals forms))) facts 65536))))
+      ;; Every supplied carrier copy is checked, even when its parent ID is unchanged.
+      (doseq [path [[:call-type-facts 0 :fact-id-request :application :key]
+                    [:call-type-facts 0 :applied-map-get :call-core-node-id]
+                    [:call-type-facts 1 :fact-id-request :application :operator-node-id]
+                    [:call-type-facts 1 :applied-vector-first :result-type]
+                    [:constraint-ledger 0 :constraint-id-request :application :call-core-node-id]
+                    [:constraint-ledger 0 :dependencies :key-node-id]
+                    [:constraint-ledger 1 :constraint-id-request :application :operator-binding-id]
+                    [:constraint-ledger 1 :dependencies :profile]]]
+        (let [failed (build request (assoc-in facts path :changed-copy) 65536)]
+          (is (= :rejected (:status failed)))
+          (is (not= :body-deferred-work-limit (:reason failed)))))
       (let [changed-request (assoc-in request [:canonical-core-artifact :module :exports] ['without-path])]
         (is (= :rejected (:status (build changed-request facts 65536))))))))

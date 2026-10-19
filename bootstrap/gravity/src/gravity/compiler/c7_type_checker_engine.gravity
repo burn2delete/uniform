@@ -10011,7 +10011,8 @@
         total (+ used (if (= :accepted (get actual :status)) (get rebuilt :work-count) 0))]
     (if (= :accepted (get rebuilt :status))
       (if (= (get actual :value) (get rebuilt :value))
-        {:status :accepted :work-count total}
+        {:status :accepted :work-count total
+         :parent-reference (get (get rebuilt :value) :parent-reference)}
         {:status :rejected :reason :map-get-source-mismatch :work-count total})
       (assoc rebuilt :work-count total))))
 

@@ -23457,6 +23457,17 @@
                    (assoc-in context [:core :module :exports] ['without-path])
                    (assoc-in context [:core :lexical-bindings 1 :mutability] :mutable)]]
         (is (= :rejected (:status (compile ctx 65536)))))
+      (doseq [path [[:call-facts :present-get :fact-id-request :application :key]
+                    [:call-facts :present-get :applied-map-get :call-core-node-id]
+                    [:call-facts :first-call :fact-id-request :application :operator-node-id]
+                    [:call-facts :first-call :applied-vector-first :result-type]
+                    [:ledger 0 :constraint-id-request :application :call-core-node-id]
+                    [:ledger 0 :dependencies :key-node-id]
+                    [:ledger 1 :constraint-id-request :application :operator-binding-id]
+                    [:ledger 1 :dependencies :profile]]]
+        (let [failed (compile (assoc-in context path :changed-copy) 65536)]
+          (is (= :rejected (:status failed)))
+          (is (not= :typed-lowering-work-limit (get-in failed [:facts :reason])))))
       (let [runtime-plan (:plan (typed-catch-runtime-projection))]
         (doseq [[value expected] [[{:algorithm :sha256 :status :verified} :sha256]
                                  [{:algorithm :sha512 :status :rejected} :sha512]]]

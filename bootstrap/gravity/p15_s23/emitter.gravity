@@ -6893,7 +6893,8 @@
         total (+ used (if (= :accepted (get actual :status)) (get rebuilt :work-count) 0))]
     (if (= :accepted (get rebuilt :status))
       (if (= (get actual :value) (get rebuilt :value))
-        {:status :accepted :work-count total}
+        {:status :accepted :work-count total
+         :parent-reference (get (get rebuilt :value) :parent-reference)}
         {:status :rejected :reason :map-get-source-mismatch :work-count total})
       (assoc rebuilt :work-count total))))
 
@@ -7164,7 +7165,9 @@
               (assoc checked :work-count total)))))
       projected)))
 
-(defn p15-s23-pc-parent-rows-work [route parent first-descriptor core facts ledger key budget]
+(defn p15-s23-pc-parent-rows-work [route parent first-descriptor core facts ledger parent-reference key budget]
+  ; The expected reference is already bounded by this invocation's successful
+  ; current parent match. Supplied carrier references remain separate inputs.
   (let [base (+ 32 (* 8 (if (vector? facts) (count facts) 0)) (* 8 (if (vector? ledger) (count ledger) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
       (if (if (vector? facts) (vector? ledger) false)
@@ -7175,16 +7178,14 @@
                                  (if (= 0 (count remaining)) out
                                    (recur (rest remaining) (conj out (p15-s23-typed-project (first remaining) [:producer-rule :lhs])))))}
               measured (p15-s23-pc-evidence-work selectors (- budget base))
-              prefix (+ base (get measured :work-count))
-              get-data (if (= :accepted (get measured :status)) (p15-s23-pc-parent-data-work parent key (- budget prefix)) measured)
-              used (+ prefix (if (= :accepted (get measured :status)) (get get-data :work-count) 0))]
-          (if (= :accepted (get get-data :status))
+              prefix (+ base (get measured :work-count))]
+          (if (= :accepted (get measured :status))
             (let [checked (p15-s23-pc-parent-carriers-work
                             {:get-call-id (get route :get-node-id) :first-call-id (get route :first-node-id)}
-                            parent first-descriptor (get get-data :value) first-descriptor core
-                            {:call-type-facts facts :constraint-ledger ledger} key (- budget used))]
-              (assoc checked :work-count (+ used (get checked :work-count))))
-            (assoc get-data :work-count used)))
+                            parent first-descriptor {:parent-reference parent-reference} first-descriptor core
+                            {:call-type-facts facts :constraint-ledger ledger} key (- budget prefix))]
+              (assoc checked :work-count (+ prefix (get checked :work-count))))
+            (assoc measured :work-count prefix)))
         {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
 
 (defn p15-s23-pc-full-work [route core node call edge nodes bindings types forms facts ledger budget]
@@ -7209,7 +7210,8 @@
                   spent (+ matched-work (get projected :work-count))]
               (if (= :accepted (get projected :status))
                 (let [first-descriptor (get types (get (get route :first-call) :operator-node-id))
-                      rows (p15-s23-pc-parent-rows-work route (get parent :descriptor) first-descriptor core facts ledger (get (get projected :descriptor) :key) (- budget spent))
+                      rows (p15-s23-pc-parent-rows-work route (get parent :descriptor) first-descriptor core facts ledger (get matched :parent-reference)
+                               (get (get projected :descriptor) :key) (- budget spent))
                       total (+ spent (get rows :work-count))]
                   (if (= :accepted (get rows :status))
                     (let [matched (p15-s23-pc-descriptor-work (get types (get call :operator-node-id))
