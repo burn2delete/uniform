@@ -11448,7 +11448,7 @@
         specs [['known-mode false ""] ['unknown-mode true ""] ['nil-value true ""] ['false-value false ""]
                ['integer-value false ""] ['string-value false ""] ['keyword-value false ""] ['symbol-value false ""]
                ['vector-value false ""] ['map-value false ""] ['set-value false ""] ['list-value false ""]
-               ['observed true "operand\n"] ['transferred false ""] ['main false ""]]
+               ['observed true ""] ['transferred false ""] ['main false ""]]
         t5 (System/nanoTime)
         results (mapv (fn [[function expected output]]
                         (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
@@ -11463,7 +11463,7 @@
                           actual)) specs)
         t6 (System/nanoTime)]
     (is (= 16 (count (:function-records core)) (count functions) (count (:functions assembled))))
-    (is (= 25 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 24 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
     (is (= 14 (count descriptors) (count rows)))
     (is (empty? predicate-ir) "No raw nil? runtime API is introduced")
     (is (= 7 (count equality-rows)) "Only seven original W5 source equality facts")
@@ -11501,7 +11501,12 @@
     (doseq [name ['w5-se-canonical-form 'known-mode 'unknown-mode 'nil-value 'false-value 'integer-value
                  'string-value 'keyword-value 'symbol-value 'set-value 'list-value 'main]]
       (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
-    (is (= #{:io/write} (get-in graph [:functions (get-in functions ['observed :function-id]) :inferred])))
+    (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions ['observed :function-id]) :inferred])))
+    (let [id (get-in functions ['observed :function-id])
+          descriptor (first (filter #(= id (get-in % [:source-edge :caller-function-syntax-id])) descriptors))
+          ir (filter map? (tree-seq coll? seq (get-in assembled [:functions 'observed])))]
+      (is (contains? (get-in graph [:nodes (:call-core-node-id descriptor) :transitive]) :memory/allocate))
+      (is (= 1 (count (filter #(= :vector-literal (:op %)) ir))) "Known-Nil lowering retains the allocating operand once"))
     (doseq [name ['vector-value 'map-value]]
       (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
     (is (= [] (get-in graph [:functions (get-in functions ['transferred :function-id]) :throws])))
