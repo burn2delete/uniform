@@ -482,6 +482,37 @@ directed edge endpoints, not an exact edge-row cardinality. QST byte parity is
 not execution; neither cyclic artifact acceptance nor package revision selection
 is established.
 
+### Genuine referred-name ambiguity: development coverage
+
+The existing SH06 adapter test now constructs two genuine declared-pure `:meta`/`:jvm`
+library artifacts exporting the same non-core name, then resolves a caller
+that explicitly refers that name from both. Both libraries are accepted and
+freshly verified. The caller rejects with `C5-AMBIGUOUS`,
+`:multiple-legal-bindings` and exactly two candidates, rather than an earlier
+alias, privacy, profile or missing-module rejection.
+
+`sh06-b-source-referred-ambiguity-composition` passed one test / 30 assertions
+on the development candidate based on `96d41843`, with independent scoped
+acceptance. It joins each candidate to its distinct actual library artifact,
+binding, definition syntax and original definition artifact, and checks the
+caller source span. Selected execution took 98.788 seconds after 6.773 seconds
+of namespace loading at 2 GiB; these are non-authoritative test intervals, not
+stage-construction costs or a performance claim.
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh06-resolution-adapter-test \
+  --exact sh06-b-source-referred-ambiguity-composition
+```
+
+The three `.gravity` subjects were processed through the ordinary C5 source
+frontdoor; their function bodies were not guest-executed. Their `.qst` partners
+have byte parity only. No downstream artifact is attached to the C5 rejection; this is not an
+instrumented C6 execution claim. The check adds source/header/import ambiguity
+coverage, not ambiguity-specific macro-origin coverage or full selected-cohort
+coverage. SH-05.1, SH-05.6 and SH-06.6 remain partial, and the resolver remains
+development-unadmitted. No historical corpus or migration fingerprint changed.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible

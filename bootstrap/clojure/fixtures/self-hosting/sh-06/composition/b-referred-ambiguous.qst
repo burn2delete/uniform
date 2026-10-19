@@ -1,0 +1,7 @@
+(ns example.b-referred-ambiguous
+  (:profile :meta) (:target :jvm)
+  (:requires [example.b-referred-left :as left :refer [b-shared-value]]
+             [example.b-referred-right :as right :refer [b-shared-value]])
+  (:exports [probe])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn probe [value] (b-shared-value value))

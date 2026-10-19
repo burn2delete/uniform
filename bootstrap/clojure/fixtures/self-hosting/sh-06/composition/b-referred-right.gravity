@@ -1,0 +1,4 @@
+(ns example.b-referred-right
+  (:profile :meta) (:target :jvm) (:exports [b-shared-value])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn b-shared-value [value] value)

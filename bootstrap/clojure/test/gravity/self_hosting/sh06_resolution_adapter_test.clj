@@ -794,6 +794,66 @@
     (is (empty? (:origin-chain failure)))
     (is (nil? (:unexpected-success failure)))))
 
+(deftest sh06-b-source-referred-ambiguity-composition
+  ;; C5 must reject the actual two exported origins, not an invented premise
+  ;; or an earlier alias/privacy failure. This does not construct downstream IR.
+  (doseq [name ["b-referred-left" "b-referred-right" "b-referred-ambiguous"]]
+    (is (= (slurp (fixture-path "composition" name ".gravity"))
+           (slurp (fixture-path "composition" name ".qst")))))
+  (let [libraries
+        (mapv #(bootstrap/compiler-c5-resolution-file-artifact
+                (fixture-path "composition" % ".gravity"))
+              ["b-referred-left" "b-referred-right"])
+        definitions
+        (mapv (fn [artifact]
+                (first (filter #(and (= :namespace (:binding-class %))
+                                     (= 'b-shared-value (:name %)))
+                               (get-in artifact [:binding-table :bindings]))))
+              libraries)
+        source (fixture-path "composition" "b-referred-ambiguous" ".gravity")
+        failure (try
+                  (bootstrap/compiler-c5-resolution-file-artifact
+                   source {:artifact :gravity/sh06-module-inputs
+                           :schema-version 1 :module-artifacts libraries})
+                  {:unexpected-success true}
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        candidates (:candidate-bindings failure)]
+    (doseq [artifact libraries]
+      (is (= :accepted (:status artifact)))
+      (is (= :passed (:status (verification artifact)))))
+    (is (every? #(and (= :public (:visibility %))
+                     (= 'b-shared-value (:name %))) definitions))
+    (is (= "C5-AMBIGUOUS" (:id failure)))
+    (is (= :name-resolution (:stage failure)))
+    (is (= :multiple-legal-bindings (get-in failure [:facts :reason])))
+    (is (= 2 (get-in failure [:facts :rule-specific :candidate-count])
+           (count candidates)))
+    (is (= 'b-shared-value (:symbol failure)))
+    (is (= source (get-in failure [:source-span :source])))
+    (is (sha256-id? (:syntax-id failure)))
+    (is (= #{'example.b-referred-left 'example.b-referred-right}
+           (set (map :namespace candidates))))
+    (is (every? #(and (= :import (:binding-class %))
+                     (= :public (:visibility %))
+                     (not= 'gravity.core (:namespace %))) candidates))
+    (doseq [[artifact definition] (map vector libraries definitions)]
+      (let [matches (filter #(= (:artifact-id artifact)
+                                (:definition-artifact-id %)) candidates)
+            candidate (first matches)]
+        (is (= 1 (count matches)))
+        (is (= (:binding-id definition)
+               (get-in candidate [:semantic-span :origin-binding-id])))
+        (is (= (:definition-syntax-id definition)
+               (:definition-syntax-id candidate)
+               (get-in candidate [:semantic-span :origin-definition-syntax-id])))
+        (is (= (:definition-artifact-id definition)
+               (get-in candidate [:semantic-span :origin-definition-artifact-id])))
+        (is (= (:artifact-id artifact)
+               (get-in candidate [:semantic-span :ordinary-module-artifact-id])))))
+    (is (nil? (:unexpected-success failure)))
+    (is (not (contains? failure :core-ast-module)))
+    (is (not (contains? failure :c5-name-resolution-artifact)))))
+
 (deftest sh06-ordinary-seed-build-does-not-call-public-frontdoors
   (let [frontdoors (mapv required-var '[compiler-c4-macro-source-artifact compiler-c5-resolution-source-artifact compiler-c6-lowering-source-artifact])
         forbidden (fn [& _] (throw (ex-info "Seed compilation reached a public frontdoor" {:id "SH06-SEED-FRONTDOOR"})))
