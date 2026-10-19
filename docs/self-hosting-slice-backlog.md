@@ -5516,6 +5516,58 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Evaluated literal-Character Sets: development increment
+
+The existing typed emitter and runtime extend evaluated Set construction to
+homogeneous Character literal children. Existing C7 finite member types and
+C8 constructor allocation semantics remain unchanged. Source occurrence,
+ordered-child, parent, attribute and type joins precede original non-tail
+child compilation; the cached aggregate value is not authority. The runtime
+validates all values, reserves complete logical work, rejects semantic
+duplicates, then inserts. Supplementary carriers compare by Character class
+and codepoint, not whole host-Map identity. Source decoding remains C2-owned.
+
+The two new focused kernels passed two tests / 259 assertions on their first
+run, including supplementary values, equal codepoints with different carrier
+text, source/type mismatches, exact/short budgets, failed-child work and
+malformed values without comparisons or insertions. Six adjacent checks
+separately passed 816 assertions: Keyword construction, Character membership,
+Character typing and constructor allocation. One private runtime helper brings
+the selected loader to 54 functions with the same four public exports.
+
+The fixture preflight passed one test / 14 assertions, including complete AST
+parity with the original unannotated C17 hex-character helper, paired C2
+values and original C2 duplicate supplementary-Character rejection for G and
+Q. The changed source composition then passed one test / 146 assertions at
+2 GiB. It executed the unchanged helper form, including its unannotated
+parameter, with present and absent hex Characters. Nine Gravity entries and
+nine same-emitted-IR seed controls also cover reordered, supplementary and
+empty Sets. Four actual evaluated Set instructions contain 20 Character
+children and no quote substitution. C8 records constructor allocation,
+including empty construction and transitive caller effects.
+
+Original fresh C7 verification guards assembly and rejects a bare-Set type
+forgery; original C8 verification rejects a resealed deletion of the direct
+allocation effect. A mixed Character/String Set passes C5/C6/C7/C8 and their
+selected verifiers, then rejects at `P15S23Q002/:unsupported-typed-set-member`.
+This is a bounded lowering frontier, not a language-wide mixed-Set ban. Q
+receives no typed-product comparison. Seed controls interpret the same emitted
+IR, not independently compiled raw source; the whole C17 module is not built.
+
+Source execution took 193.681 seconds after 10.783 seconds of namespace
+loading, below the monitored ten-minute bound. These inclusive observations
+are not a phase-isolated benchmark or hard launcher deadline. The four passing
+selections total ten tests / 1,235 assertions, not one batch; no failed focused
+or source attempt was relabelled or repeated. Separate language-boundary
+checks passed six tests / 11 assertions. LOC validation passed 2,021 source
+files, zero exceptions, maximum 250 lines.
+
+Empty construction and Keyword paths remain unchanged. Mixed families,
+arbitrary expression-valued members, evaluated Set module initializers,
+Character-Set equality and generic conversion remain outside this bounded
+increment, not newly illegal Gravity. Focused and affected-composition results
+do not establish current-closure admission, full SH-07, self-hosting or release.
+
 ### Finite Character-Set membership: development increment
 
 The C7 engine, effects, typed emitter and runtime extend binary `contains?`
@@ -5562,8 +5614,8 @@ batch; the four earlier failed attempts are excluded. Separate language-boundary
 checks passed six tests / 11 assertions. LOC validation passed 2,021 source
 files, zero exceptions, maximum 250 lines. These are semantic and
 affected-composition development results, not migration evidence. A quoted
-C17 hex-character Set value is not execution of the unchanged C17 helper: evaluated
-Character-Set construction remains the next separate semantic slice.
+C17 hex-character Set value is not execution of the unchanged C17 helper:
+evaluated Character-Set construction was outside this membership increment.
 Character-Set equality, generic conversion and whole-C17 execution remain
 unsupported by this increment. SH-07 and authoritative admission remain open.
 

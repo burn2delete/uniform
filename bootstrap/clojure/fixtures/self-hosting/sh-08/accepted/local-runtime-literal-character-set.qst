@@ -1,0 +1,30 @@
+(ns self-hosting.sh08.literal-character-set
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [w5-c17-hex-character? present absent reordered supplementary-values supplementary-hit empty-values main]))
+
+(defn w5-c17-hex-character? [character]
+  (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+               \a \b \c \d \e \f}
+             character))
+
+(defn present [] :- Bool
+  (w5-c17-hex-character? \a))
+
+(defn absent [] :- Bool
+  (w5-c17-hex-character? \g))
+
+(defn reordered [] :- Bool
+  (contains? #{\f \0} \f))
+
+(defn supplementary-values []
+  #{\😀 \😁})
+
+(defn supplementary-hit [] :- Bool
+  (contains? (supplementary-values) \😁))
+
+(defn empty-values []
+  #{})
+
+(defn main [] :- Bool
+  (present))

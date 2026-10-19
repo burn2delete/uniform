@@ -4196,8 +4196,9 @@ composition when reader/extension/identity handling changes, not every edit.
 ### Finite Character-Set membership
 
 The same four owning passes support a finite Character-Set value and a
-Character needle. This includes quoted Set values, not evaluated Character-Set
-construction or Character-Set equality. Start with the owning kernels:
+Character needle, including quoted Set values. Evaluated literal construction
+has separate owning checks below; Character-Set equality is not selected.
+Start with the membership kernels:
 
 ```bash
 clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-character-set-contains-development-kernel --exact sh08-character-set-contains-dispatch-guard-development-kernel --exact sh08-character-set-contains-throw-consumer-development-kernel
@@ -4260,7 +4261,8 @@ The current component limits are width 1,024 and work allowance 65,536;
 fitting the width does not imply that comparison/content work fits.
 
 Quoted Sets remain inert, and evaluated Set module initializers remain outside
-this slice. Non-Keyword or arbitrary effectful Set children, Keyword List
+this slice. Character literals have the separate extension below; other member
+families or arbitrary effectful Set children, Keyword List
 conversion, `keys` ordering and whole-W5 execution are separate frontiers.
 Pure literal children cannot independently observe once-only evaluation order.
 When assembly/lowering/runtime composition changes, validate genuine accepted
@@ -4284,6 +4286,55 @@ lowering-rejected String-member program. Q gets byte/parser checks, plus the
 separate C2 duplicate diagnostic, not typed-product parity. Reference execution
 uses the seed interpreter on the same emitted IR, not independent raw-source
 compilation. Listing these commands does not claim that they passed.
+
+### Evaluated literal-Character Sets
+
+Use the same emitter and runtime owners. Existing C7 finite member types and
+C8 allocation accounting apply without a new production pass or interface.
+The bounded extension accepts homogeneous Character literal children,
+including existing supplementary Character carriers; empty construction keeps
+the legacy path. Start with:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-literal-character-set-lowering-development-kernel --exact current-gravity-literal-character-set-runtime-development-kernel --fail-fast
+```
+
+Preserve complete source occurrence, ordered child, parent and type joins;
+the cached aggregate value is not authority. Compile each original child once,
+non-tail, and retain failed-child work. The instruction remains the existing
+literal-only `:set-literal`/`:items` shape. Mixed families, arbitrary expression
+children and evaluated Set module initializers remain unsupported here.
+
+Validate all Character values and reserve full logical work before comparing
+or inserting any member. Runtime reservation is
+`1 + 2*n + n*(n-1)/2 + (n+1)*U`, with `U` the sum of existing Character
+representation units (one for boxed Characters, two for supplementary
+carriers). Width 1,024 and work 65,536 remain separate bounds. Compare
+semantic Character classes when rejecting duplicates: distinct carrier Maps
+can have the same codepoint. Do not silently deduplicate a Set literal,
+substitute host Map equality or add a new Unicode decoder. Source validity
+remains C2-owned under the existing atomic Character IR premise.
+
+Retain existing Keyword construction, Character membership and C7/C8
+literal/allocation checks as affected regressions. Construction requires
+`:memory/allocate`; membership's pure query does not erase that effect.
+Source composition, current-closure migration and release evidence remain
+separate from these direct focused checks.
+
+For changes to the composed constructor, select the existing preflight and
+source checks separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-literal-character-set-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-literal-character-set-authenticated-composition --fail-fast
+```
+
+Preflight checks the unchanged C17 helper form, paired bytes/C2 values and
+duplicate supplementary-source rejection. The affected Gravity composition
+requires actual evaluated Set instructions and allocation, including
+supplementary values; the mixed-member negative must pass upstream checks
+before typed lowering rejects it. QST is not a typed-product comparison.
+Seed controls use the same emitted IR, not an independent raw-source compiler.
 
 ### Finite Keyword-Set value equality
 
