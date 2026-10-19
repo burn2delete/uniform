@@ -1,0 +1,49 @@
+(ns self-hosting.sh08.symbol-predicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [qualified-value through-identity resolved-value keyword-value string-value nil-value vector-value map-value set-value list-value wrapper-data transferred main]))
+
+(defn identity-symbol [value] :- Symbol
+  value)
+
+(defn qualified-value [] :- Bool
+  (symbol? 'unresolved/data))
+
+(defn through-identity [] :- Bool
+  (symbol? (identity-symbol 'unresolved/data)))
+
+(defn resolved-value [] :- Bool
+  (let [value 'unresolved/data]
+    (symbol? value)))
+
+(defn keyword-value [] :- Bool
+  (symbol? :unresolved/data))
+
+(defn string-value [] :- Bool
+  (symbol? "unresolved/data"))
+
+(defn nil-value [] :- Bool
+  (symbol? nil))
+
+(defn vector-value [] :- Bool
+  (symbol? ['unresolved/data]))
+
+(defn map-value [] :- Bool
+  (symbol? {:datum 'unresolved/data}))
+
+(defn set-value [] :- Bool
+  (symbol? '#{unresolved/data :unresolved/data}))
+
+(defn list-value [] :- Bool
+  (symbol? '(unresolved/data (println "unreached"))))
+
+(defn wrapper-data [] :- Bool
+  (symbol? '{:artifact :gravity/syntax-object :form {:kind :symbol :value unresolved/data}}))
+
+(defn transferred [] :- Bool
+  (try
+    (symbol? (throw "stop"))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (through-identity))
