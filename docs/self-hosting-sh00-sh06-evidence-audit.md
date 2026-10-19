@@ -1089,6 +1089,38 @@ verification before selecting another concrete experiment. Any representation
 redesign remains outside ordinary SH-07 development and requires its own scoped
 decision; no cache, verifier skip or admission wrapper is introduced here.
 
+### Bounded invocation-local projection sharing
+
+Development commit `2f6a7fb521d8fd139bac0825b49e1d19858452c9` removes one
+concrete duplication in the ordinary C5 adapter. The constructor and bounded
+verifier each compute the binding-ID and span-neutral resolution-row chunks
+once locally, then use that pair for identity input and envelope summary.
+Public one-argument helpers still recompute freshly; both fresh C5 verification
+gates on the public C6 path, request replay, complete projections and envelope
+verification remain.
+No pair crosses invocations or the producer/verifier boundary, and no wire
+field, public override, accepted-result cache or new load fragment is added.
+
+The source-derived reduction at each paired site is from
+`2 * (ceil(binding-count/16) + ceil(row-count/16))` inner chunk hashes to one
+such pair. Chunk domains, ordering, duplicates and canonical identity/summary
+equations are unchanged. This is deterministic duplicate-work removal, not a
+measured elapsed-time, heap or speedup result or the cause of the interrupted
+Core attempt.
+
+The selected bounded check passed seven tests / 302 assertions, including old
+equations at 0/1/15/16/17/31/32/33 entries, genuine tiny C5 -> public hosted-C6
+acceptance, coherent alternate-binding rejection, fresh candidate-local work,
+stale envelope/projection mutations, preflight bounds and source-read auditing.
+A separate language-boundary check passed six tests / eleven assertions.
+Both original commands exited zero; no test remained unrun and no retry or
+bound increase occurred. Independent code and actual-result review accepted
+this scoped development change. The interrupted large-Core attempt above was
+not rerun or relabelled. Its outstanding source-composition question, the three
+partial groups and resolver development-unadmitted status remain unchanged.
+The changed adapter revision is a new toolchain input to assess at an explicit
+migration decision; equivalent equations do not renew historical provenance.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible

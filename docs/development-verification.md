@@ -4424,6 +4424,27 @@ requiring lightweight tests to maintain heavy-run admission state first.
 
 ### Product construction versus scheduling overhead
 
+The ordinary C5 adapter shares identity chunks only within one constructor or
+bounded-verifier invocation. Its existing public identity/summary helpers still
+recompute freshly and both fresh C5 gates on the public C6 path remain. When editing these equations,
+start with the bounded equation-only kernel, then select the affected real
+consumer separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-product-identity-chunks-preserve-old-equations --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-invocation-local-chunks-preserve-fresh-verification --exact sh06-authenticated-resolution-is-the-c6-consumer-boundary --fail-fast
+```
+
+The first compares the old chunk/identity/summary equations at bounded chunk
+edges. The second constructs a genuine tiny artifact and exercises fresh
+verification, mutations and the public hosted-C6 consumer. It is not the
+large checked-Core source subject. Preserve malformed/preflight, stale-envelope,
+binding/order/span and source-read regressions when changing their owners.
+The [evidence reconciliation](self-hosting-sh00-sh06-evidence-audit.md#bounded-invocation-local-projection-sharing)
+records the actual selected results and their limits. This local factoring is
+neither acceptance caching nor measured proof that chunk construction dominates
+Core composition; do not rerun the unchanged large subject to refresh a stamp.
+
 Some SH-07 tests build large authenticated products before reaching a semantic
 assertion. The backlog records a 9,172,831-node reader-source template and a
 later 17,681,671-node B47 template. Another lane or lock does not remove that
