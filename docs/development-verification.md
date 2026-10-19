@@ -4369,9 +4369,13 @@ checked frontdoors. For an ordinary caller with an explicit dependency, use:
   :dependency-plans [independent-callee-plan]})
 ```
 
-Build `caller-c5` with the ordinary module-input interface above. Build the
-callee plan independently with the raw three-argument constructor and the
-same emitter. Pass the resulting bundle to the existing
+Build `caller-c5` with the ordinary module-input interface above. Build a leaf
+plan independently with the raw three-argument constructor and the same
+emitter. For an acyclic chain, retain each dependency's genuine ordinary C5
+inputs and supply one plan for every nonroot module. A nonleaf plan can come
+from that module's own bundle `:plan` entry; the root independently recompiles
+and compares every supplied plan, so the projected entry is input DATA, not
+accepted authority. Pass the resulting flat bundle to the existing
 `p15-s23-stage2-runtime-execute-function` interface. Source reconstruction,
 actual C5 public exports/origins, separate plans and exact callsite routes are
 checked; a matching name or recomputed hash alone does not establish a link.
@@ -4381,6 +4385,18 @@ The two supported module pairs are development construction/execution subsets,
 not full profile conformance or host-capability grants. Ordinary C5 still owns
 target, capability and cross-profile import diagnostics; this interface does
 not turn a meta/hosted edge into an implicit facade.
+
+Transitive calls use this same four-argument interface, not nested bundles or
+a separate runner. The root's retained C5 inputs determine the complete
+closure; missing, extra or conflicting inputs, and inputs that fail fresh
+reconstruction, reject. Full-DATA
+deduplication is not accepted-result caching: every unique module still enters
+the original fresh source verifier, whose own dependency replay remains.
+Per-module routes preserve lexical identity when different modules use the
+same function name and callsite path. Existing limits remain 257 modules,
+256 nonroot plans, 65536 aggregate routes and the per-plan instruction bound.
+Cycles still reject in ordinary C5. This does not add imported DATA reads,
+general module initialization or checked user-call effects.
 
 For this explicit development interface, the entry is an unqualified function
 name in the freshly reconstructed root module. It may be private or public,
@@ -4432,6 +4448,31 @@ byte/parser parity only, not a second authenticated execution. Private imports,
 wrong arity and a coherently resealed route substitution reject. This temporary
 Clojure-seed composition does not establish checked user-call effects, runtime
 ownership, authoritative migration or self-hosting.
+
+For closure reconstruction or transitive-route changes, use the separate
+focused selection and one affected three-module composition:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-transitive-call-test \
+  --exact stage2-module-transitive-fixture-parity \
+  --exact stage2-module-transitive-closure-development-kernel \
+  --exact stage2-module-transitive-routing-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-transitive-call-test \
+  --exact stage2-module-transitive-authenticated-composition --fail-fast
+```
+
+The cheap kernels use normalized routing DATA and explicit substitutions;
+they do not demonstrate original C5 verification. The composition constructs
+genuine leaf, middle and root C5 artifacts, then exercises three-module execution,
+source-bound exports, private-import rejection and a coherently resealed
+transitive-route mutation before argument effects. Paired Q sources provide
+byte/parser parity only. Run this composition when those boundaries change,
+not for unrelated semantic edits or to refresh authoritative evidence.
+Effects extraction also needs the still-unsupported imported loop/collection
+contexts and a concrete source/token-bound fit; transitive routing alone does
+not close that dependency or the retained C9 source failure.
 
 Use the existing runtime test namespace, not an admission runner:
 
