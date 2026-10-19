@@ -3665,6 +3665,49 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Set family classification
+
+For unary `(set? value)`, edit the existing C7 engine, effects, typed emitter
+and Gravity runtime owners. Existing valid closed first-order operand types
+are accepted: bare or finite Set families classify true and other families
+false. Unknown/Dynamic, malformed carriers and unsupported callable types
+remain typing failures, not false classifications. Never propagates normally.
+The existing type grammar, unary builtin IR and seed primitive are unchanged.
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-set-predicate-development-kernel --exact sh08-set-predicate-id-guard-development-kernel --exact sh08-set-predicate-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-set-predicate-source-development-kernel --exact current-gravity-set-predicate-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-set-predicate-lowering-runtime-development-kernel --exact current-gravity-set-predicate-shallow-runtime-development-kernel
+```
+
+These exercise the owning passes, including the complete C8 analyzer's
+context debit, exact/one-less budget and missing/duplicate/orphan ledger rows.
+Malformed unary call shape must reject before any ID traversal. Runtime
+classification itself is shallow: it does not count, sequence, hash, compare,
+mutate or validate Set payloads. A throwing-provider control checks zero such
+callbacks. This is not a claim that arbitrary foreign values bypass ordinary
+input/evaluation boundaries. Operand effects, once-only evaluation, transfers
+and original failures remain; the query adds no collection allocation.
+Retain proportionate Map-predicate and Set-conversion regressions. Closed type
+carrier validation is distinct from runtime payload inspection. Focused
+component checks do not establish source integration or migration evidence.
+
+For affected compiler-to-runtime composition, run the paired preflight and
+then the separate source check:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-set-predicate-fixtures-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-set-predicate-authenticated-composition
+```
+
+The preflight checks paired bytes/parser shape and unchanged C9 aggregate-helper
+body reuse. That helper is exercised monomorphically on the existing bare Set
+result of String-Vector conversion; it is not a full C9 module build or generic
+polymorphism test. Other finite Set/non-Set cases use separate functions. The
+composition selects one Gravity positive and one Gravity C7 arity rejection,
+not QST typed products. Same-emitted-IR interpreter comparisons do not establish
+independent raw-source compiler parity. There is no new Set annotation grammar.
+
 ### Finite Keyword-Set membership
 
 Edit the existing C7 engine, effects, typed emitter and Gravity runtime for
