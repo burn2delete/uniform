@@ -5455,6 +5455,84 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Compiler-module Map-value calls: development increment
+
+The existing Map-order, module-source and module-bundle components extend the
+module-development path to qualified imported calls in supported Map values.
+Original C5 host enumeration, seed-host callsite coordinates and C2 source
+evaluation order remain separate. A complete occurrence projection matches
+all original references in the expanded function owner, including unqualified
+ones, by ordinal, identity, position and spans. Keyword keys bridge the actual
+C5 Map entries to seed-host slots; imported origin and arity checks then use
+source order and the original resolved references. Repeated callee names are
+not matched by frequency or a source-ordered zip.
+
+The supported literal Keyword-key Maps compose with existing let, loop,
+recur-argument and Vector paths. Quotes remain DATA; inherited Set and nested
+function fences reject both inside and outside Maps. A missing derived context
+does not authorize the new walker. Original public C5 verification, bindings,
+exports, scope, profiles and targets remain authoritative for this constructor.
+No new resolver, proof cache, public input, runtime or IR schema is added.
+The new full-reference projection and traversal share a local 65,536-unit
+allowance and depth-64 guard; unsupported expansion/header shapes reject.
+These remain bounded implementation frontiers, not new L2 language rules or
+a guarantee of unchanged capacity for every old module. Existing recur/throw
+validation phase precedence is retained, not unified with all arity errors.
+
+The first focused launch failed during bootstrap compilation before any test
+or assertion ran, with no timing receipt. Its component called an existing
+helper loaded later without a forward declaration. The one-line declaration
+repair changed no semantics or load manifest. The corrected focused batch
+passed all three tests / 81 assertions: six paired byte/parser checks, 59 complete
+reference/coordinate controls and 16 fresh-context fence controls. This uses
+supplied normalized DATA and the actual reference constructor, not a genuine
+C5 acceptance claim. The initial load failure remains separately preserved.
+
+The first genuine source composition completed all six Gravity C5 attempts,
+one raw leaf plan, four explicit public bundle-construction calls and two
+runtime calls with fresh reconstruction. It retained
+ten distinct original reference routes, exact result and left-to-right output,
+shadowing and quoted DATA. Private import rejection, source-first arity two
+rather than later arity three, inherited Set/function constructor fences and
+a coherently resealed reference substitution rejected before output all ran.
+Q remains byte/parser-only, effects remain unchecked and development authority
+remains unadmitted.
+
+Its actual aggregate is FAILED: one test / 47 assertions, 46 passes and one
+failure. The sole failure expected the filename directly on `:source-span`.
+Static producer lineage shows that C3 and C5 retain the original span wrapper
+with `:primary` and `:all`; the filename belongs under `:primary`. Existing
+production forwarded that wrapper unchanged. The future test oracle was
+corrected to the nested field, not the production diagnostic. The failed run
+is preserved; it is not relabeled as a passing 47-assertion source test.
+Completed semantic observations remain useful unchanged evidence, while the
+corrected field lookup is checked separately with a cheap normalized diagnostic
+consumer control rather than replaying six expensive C5 constructions. That
+supplied-DATA control is not a fresh C5 proof or an actual re-execution of the
+corrected source assertion.
+
+Selected source execution took 313.923 seconds after 7.046 seconds of loading
+at 2 GiB, below a monitored ten-minute ceiling. These are inclusive observations,
+not a benchmark, exclusive phase costs, a hard deadline or a speedup claim.
+No source or compiler production bytes changed for the oracle correction.
+
+The corrected namespace passed four cheap tests / 89 assertions, including
+eight original-reference/route diagnostic controls for exact wrapped-span
+forwarding, nested primary path and related spans. Their origin stub checks
+the supplied caller, import and callee before returning; it is conditional
+test DATA, not an origin proof. The corrected source assertion compiled but
+was not re-executed. Final source-free SH-01 module regressions passed four /
+97, old Map-order controls three / 45, transitive routing one / 17, and language
+boundary six / 11. These five completed selections total 18 tests / 259
+assertions, all passing; they do not turn the retained source aggregate green.
+LOC validation passed 2,021 files, zero exceptions, maximum 250 lines.
+
+Direct commands are in the development-verification guide. Set/function
+import contexts, general module initialization, checked user-call effects,
+Effects token-bound fit, C9 source integration and authoritative migration
+remain separate work. This bounded executable increment does not complete
+SH-07, the three partial evidence groups, self-hosting or release gates.
+
 ### Hosted compiler-module construction: development increment
 
 The existing module-development interface now accepts exactly `:meta/:jvm`
