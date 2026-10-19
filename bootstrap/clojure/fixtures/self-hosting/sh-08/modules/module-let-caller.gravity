@@ -1,0 +1,21 @@
+(ns example.module-let-caller
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-let-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn identity [value] :caller)
+
+(defn main []
+  (let [x (do (println "first") "outer")
+        y (leaf/identity x)
+        z (do (println "second") (leaf/identity y))]
+    (let [x "inner"
+          identity :shadow
+          w (leaf/identity x)
+          result (leaf/identity z)]
+      (println w)
+      [result (quoted-data)])))
+
+(defn quoted-data []
+  (let [payload '(leaf/hidden :data)]
+    (leaf/identity payload)))

@@ -1,0 +1,6 @@
+(ns example.module-let-leaf
+  (:profile :meta) (:target :jvm) (:exports [identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn identity [value] value)
+(defn hidden [value] [:private value])

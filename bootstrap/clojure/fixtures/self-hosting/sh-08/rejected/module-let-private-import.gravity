@@ -1,0 +1,8 @@
+(ns example.module-let-private-import
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-let-leaf :as leaf]) (:exports [main])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn main []
+  (let [value :private]
+    (leaf/hidden value)))
