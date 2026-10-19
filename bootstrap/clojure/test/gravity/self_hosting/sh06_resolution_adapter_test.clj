@@ -2523,6 +2523,83 @@
     (println (pr-str {:b-profile-incompatible-diagnostic failure
                      :supplied-library-artifact-id (:artifact-id library)}))))
 
+(deftest sh06-b-source-capability-boundary-composition
+  ;; L3/C5: effect declarations do not satisfy an imported capability need.
+  ;; This is metadata/binding coverage, never IO execution or provider grants.
+  (doseq [[directory name] [["modules" "io"]
+                            ["composition" "b-capability-missing"]
+                            ["composition" "b-capability-declared"]]]
+    (let [g (fixture-path directory name ".gravity") q (fixture-path directory name ".qst")
+          text (slurp g)]
+      (is (= text (slurp q)))
+      (is (= (bootstrap/read-forms g text) (bootstrap/read-forms q (slurp q))))))
+  (let [library (bootstrap/compiler-c5-resolution-file-artifact (fixture-path "modules" "io" ".gravity"))
+        module (get-in library [:gravity-resolution-boundary :authenticated-resolution-request :module])
+        definition (first (filter #(and (= :namespace (:binding-class %)) (= 'write (:name %)))
+                                  (get-in library [:binding-table :bindings])))
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+        positive (bootstrap/compiler-c5-resolution-file-artifact
+                  (fixture-path "composition" "b-capability-declared" ".gravity") inputs)
+        imported (first (filter #(and (= :import (:binding-class %)) (= 'write (:name %)))
+                                (get-in positive [:binding-table :bindings])))
+        reference (first (filter #(= 'io/write (:symbol %)) (:resolution-table positive)))
+        dependency (first (get-in positive [:import-export-table :imports]))
+        source (fixture-path "composition" "b-capability-missing" ".gravity") text (slurp source)
+        failure (try (bootstrap/compiler-c5-resolution-file-artifact source inputs)
+                     {:unexpected-success true}
+                     (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        edge (:dependency-edge failure)]
+    (is (= :accepted (:status library) (:status positive)))
+    (is (= :passed (:status (verification library)) (:status (verification positive))))
+    (is (= {:namespace 'gravity.io :profile :hosted :target :jvm :exports '[write]
+            :effects [:io/write] :capabilities [:io/stdout]}
+           (select-keys module [:namespace :profile :target :exports :effects :capabilities])))
+    (is (= :public (:visibility definition)))
+    (is (= [:io/write] (:effects definition) (:effects imported)))
+    (is (= [:io/stdout] (:capabilities definition) (:capabilities imported)))
+    (is (= (:artifact-id library) (:definition-artifact-id imported) (:dependency-artifact-id dependency)))
+    (is (= (:definition-syntax-id definition) (:definition-syntax-id imported)))
+    (is (= (:binding-id definition) (get-in imported [:semantic-span :origin-binding-id])))
+    (is (= (:binding-id imported) (:binding-id reference)))
+    (is (= {:to 'gravity.io :kind :namespace :profile-boundary :compatible
+            :effects [:io/write] :capabilities [:io/stdout] :targets [:jvm]}
+           (select-keys dependency [:to :kind :profile-boundary :effects :capabilities :targets])))
+    (is (= [:io/stdout]
+           (get-in positive [:gravity-resolution-boundary :authenticated-resolution-request :module :capabilities])))
+    (is (= "C5-CAPABILITY" (:id failure)) (pr-str failure))
+    (is (= :name-resolution (:stage failure)))
+    (is (= :missing-import-capability (get-in failure [:facts :reason])))
+    (is (= 'gravity.io (:symbol failure) (:namespace edge)))
+    (is (= :namespace (:kind edge)))
+    (is (= 'io (:alias edge)))
+    (is (= 'example.b-capability-missing (:namespace failure)))
+    (is (= :hosted (:active-profile failure)))
+    (is (= :jvm (:target failure)))
+    (is (= source (get-in failure [:source-span :source])))
+    (is (= {:source source :byte-start 0 :line-start 1
+            :byte-end (.indexOf text "\n(defn")}
+           (select-keys (get-in failure [:source-span :primary])
+                        [:source :byte-start :line-start :byte-end])))
+    (is (= (select-keys (:source-span failure) [:all :primary]) (:source-span edge)))
+    (is (and (seq (get-in failure [:source-span :all]))
+             (some #{(get-in failure [:source-span :primary])}
+                   (get-in failure [:source-span :all]))))
+    (is (sha256-id? (:syntax-id failure)))
+    (is (= (:syntax-id failure) (get-in edge [:semantic-span :namespace-syntax-id])))
+    (is (empty? (:origin-chain failure)))
+    (is (= [] (:candidate-bindings failure)))
+    (is (string? (:remediation failure)))
+    (is (seq (:remediation failure)))
+    (is (nil? (:unexpected-success failure)))
+    (is (not (contains? failure :c5-name-resolution-artifact)))
+    (is (not (contains? failure :core-ast-module)))
+    ;; The rejected edge is pre-enrichment, not the callee's capability record.
+    ;; The positive namespace declaration is not a package/provider grant.
+    (println (pr-str {:b-missing-capability-diagnostic failure
+                     :library-artifact-id (:artifact-id library)
+                     :positive-artifact-id (:artifact-id positive)
+                     :positive-dependency dependency}))))
+
 (deftest sh06-corpus-shards-cover-the-sorted-inventory-exactly-once
   (let [source-paths (authoritative-compiler-paths)
         relative-paths (authoritative-compiler-relative-paths source-paths)]
