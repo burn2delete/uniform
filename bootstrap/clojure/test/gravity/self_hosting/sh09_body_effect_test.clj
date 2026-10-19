@@ -3041,6 +3041,15 @@
         (is (true? (valid checked)))
         (is (true? (leaf 'body-call-joins-with-foreign-valid? core checked bindings {})))
         (is (true? (leaf 'body-setp-node? node checked core)))
+        (when (= :gravity.type/set type)
+          (let [callbacks (atom 0)
+                hostile (proxy [Object] []
+                          (equals [_] (swap! callbacks inc) (throw (AssertionError. "malformed predicate ID compared")))
+                          (hashCode [] (swap! callbacks inc) (throw (AssertionError. "malformed predicate ID hashed"))))]
+            (doseq [args [7 [] (vec (repeat 1025 hostile))]]
+              (is (false? (leaf 'body-setp-call-valid? core checked bindings node (assoc call :argument-node-ids args) edge nodes))))
+            (is (false? (leaf 'body-setp-call-valid? core checked bindings (assoc node :children 7) call edge nodes)))
+            (is (= 0 @callbacks))))
         (let [operand (if (= :gravity.type/never type) #{:error/throw} #{:io/write})
               record (leaf 'body-node-record node nil {:operator {:type descriptor :transitive #{}}
                                                        :arg0 {:type type :transitive operand}}
@@ -3092,7 +3101,8 @@
         result ((ns-resolve upstream 'set-predicate-derived) input 65536) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
-                     {:type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                     {:module (:module base)
+                      :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
                       :function-type-table [] :local-binding-facts []
                       :call-type-facts [(invoke 'sh08-setp-call-fact [descriptor (:module base)])]
                       :constraint-ledger [(invoke 'sh08-setp-constraint [descriptor])]})

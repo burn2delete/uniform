@@ -5654,7 +5654,8 @@
                       (assoc (body-failure :body-set-predicate-arity-mismatch) :work-count used)))))))))))))))
 
 (defn body-setp-call-valid? [core facts bindings node call edge nodes]
-  (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
+  (if (if (vector? (get call :argument-node-ids)) (if (= 1 (count (get call :argument-node-ids))) (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
+(if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
         check (get (get (get facts :set-predicate-context) :checks) (get node :node-id))
         args (get call :argument-node-ids)
         argument (if (vector? args) (if (= 1 (count args)) (get types (first args) :gravity.type/unknown) :gravity.type/unknown) :gravity.type/unknown)
@@ -5680,7 +5681,7 @@
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
          (= (body-setp-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-setp-constraint descriptor)] rows)]) false)) false))
+         (= [(body-setp-constraint descriptor)] rows)]) false)) false) false))
 
 (defn body-setp-node? [node facts core]
   (let [context (get facts :set-predicate-context) id (get node :node-id)]
