@@ -4684,6 +4684,28 @@ only its transient representation/lifetime first, preserving exact bytes,
 digests, ordering, diagnostics and hostile checks. No extra unchanged proof run,
 accepted-result cache, new lane or wrapper is required by this investigation.
 
+The new fixed-DATA case in the existing hosted C6 leaf namespace isolates one
+representation mechanism without itself constructing compiler products:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.c6-core-lowering-test --fail-fast
+```
+
+Its four fixed, guarded DATA chains use the production flattener. For one,
+two, four and eight nodes, nested node occurrences in the flat table are
+1, 3, 10 and 36. Observed root-vector / flat-table UTF-8 bytes are 94 / 94,
+192 / 285, 388 / 961 and 780 / 3,489. Full rows are checked before traversal
+or printing, with conservative pre-print and final 256 KiB bounds. The whole
+leaf namespace passed five tests / 114 assertions. This establishes small-case
+printed amplification, not unique heap size, timing, actual Checked-Core
+size, failure cause or a reason to replay the interrupted large subject.
+The returned hosted C6 keeps a selected C5 view, not the full SH05/C3 ancestry;
+do not attribute all upstream bytes to its whole-artifact hash. Any future
+representation correction must inventory consumers and preserve required
+identity, provenance, diagnostics and fresh verification, or explicitly version
+and invalidate changed evidence. No representation redesign is selected here.
+
 The typed-catch composition exposed a separate retention limitation. Rendering
 its first original request, typed result and verification report as one EDN
 string produced 43,392,705 characters. The retention attempt used the existing
