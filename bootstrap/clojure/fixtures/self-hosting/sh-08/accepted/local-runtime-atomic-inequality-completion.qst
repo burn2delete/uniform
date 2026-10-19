@@ -1,0 +1,15 @@
+(ns self-hosting.sh08.atomic-inequality-completion
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [pipeline-present observed transferred-left transferred-right main]))
+
+;; Exact comparison expression, with independent literal map DATA.
+(defn pipeline-present []
+  (let [recovery {:span-source :requested-span}]
+    (not= :explicit-fallback (get recovery :span-source))))
+(defn observed [] (not= (do [] :left) (do [] :right)))
+(defn transferred-left []
+  (try (not= (throw "left") (do [] :right)) (catch String problem false)))
+(defn transferred-right []
+  (try (not= (do [] :left) (throw "right")) (catch String problem false)))
+(defn main [] (observed))

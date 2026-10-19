@@ -11575,6 +11575,151 @@
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
 
+(deftest current-gravity-atomic-inequality-completion-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        stem "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-atomic-inequality-completion"
+        g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+        g (slurp g-path) q (slurp q-path) forms (bootstrap/read-forms g-path g)
+        owner (slurp (io/file root "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity"))
+        expression "(not= :explicit-fallback (get recovery :span-source))"]
+    (is (= g q))
+    (is (= forms (bootstrap/read-forms q-path q)))
+    (is (= 5 (count (filter #(and (seq? %) (= 'defn (first %))) forms))))
+    (is (str/includes? owner expression))
+    (is (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote expression)) g))))))
+
+(deftest current-gravity-atomic-inequality-completion-authenticated-composition
+  ;; New reduced source input completes V1-unrun entries and hostile checks.
+  ;; Original 16-function V1 remains partial; it is not replayed or claimed complete.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-atomic-inequality-completion.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bl-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Atomic inequality C7 source prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Atomic inequality C7 verification prerequisite rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        descriptors (mapv :applied-atomic-inequality (filter #(= :direct-atomic-inequality (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-atomic-inequality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        raw-inequality (filterv #(and (= :builtin-call (:op %)) (= 'not= (:function %))) instructions)
+        equality-ir (filterv #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Atomic inequality C8 prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Atomic inequality C8 verification rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        specs [['pipeline-present true] ['observed true] ['transferred-left false] ['transferred-right false] ['main true]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []} {} "" (:functions assembled) []])]
+                          (is (= [expected "" :normal] actual) (str function))
+                          ;; Existing raw seed lacks typed catch and keyword-map-lookup instructions.
+                          (when-not (contains? '#{pipeline-explicit pipeline-present transferred-left transferred-right} function)
+                            (let [reference (atom nil)
+                                  output (with-out-str (reset! reference (original runtime assembled function [])))]
+                              (is (= [@reference output :normal] actual) (str function " same emitted IR parity"))))
+                          actual)) specs)
+        t6 (System/nanoTime)]
+    (is (= 5 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 6 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 4 (count descriptors) (count rows) (count equality-ir)))
+    (is (empty? raw-inequality))
+    (is (empty? (filter #(= :sh08-atomic-equality-v1 (:producer-rule %)) (:constraint-ledger facts)))
+        "Owned equality IR creates no fabricated source equality facts")
+    (is (= {:normal 2 :not-invoked 2} (frequencies (map :application descriptors))))
+    (doseq [descriptor descriptors]
+      (let [id (:call-core-node-id descriptor)]
+        (is (= :gravity.type/applied-atomic-inequality (:kind descriptor)))
+        (is (= :sh08-atomic-inequality-v1 (:version descriptor)))
+        (is (= 'not= (:operation descriptor)))
+        (is (= 'gravity.core (:semantic-owner descriptor)))
+        (is (= 2 (count (:argument-types descriptor))))
+        (is (= :complement-of-binary-atomic-value-equality (get-in descriptor [:inequality-policy :operation])))
+        (is (= :actual-value-families (get-in descriptor [:inequality-policy :cross-family])))
+        (is (= :left-to-right-once (get-in descriptor [:inequality-policy :operand-evaluation])))
+        (is (= :owned-equality-branch-complement (get-in descriptor [:inequality-policy :lowering])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{} (get-in graph [:nodes id :direct])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+    (doseq [name ['pipeline-present 'observed 'main]]
+      (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (doseq [name ['transferred-left 'transferred-right]]
+      (is (contains? (get-in graph [:functions (get-in functions [name :function-id]) :inferred]) :error/throw))
+      (is (= [] (get-in graph [:functions (get-in functions [name :function-id]) :throws]))))
+    (let [observed (filter map? (tree-seq coll? seq (get-in assembled [:functions 'observed])))]
+      (is (= 2 (count (filter #(= :vector-literal (:op %)) observed))) "Both allocating operands remain once"))
+    (let [descriptor (first descriptors) forged (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
+          hostile (walk/prewalk #(if (= descriptor %) forged %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [id (:call-core-node-id (first descriptors)) forged (reseal effects (update-in graph [:nodes id :dependencies] pop))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding forged)))))
+    (is (= 2 (count @verified)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/atomic-inequality-numeric.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bl-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= ["C7-TYPE-MISMATCH" :atomic-inequality-operand-type-required]
+             ((juxt :rule :reason) (first diagnostics))) (pr-str diagnostics))
+      (println (pr-str {:bl-atomic-inequality-negative true :diagnostics diagnostics})))
+    (println (pr-str {:bl-atomic-inequality-completion-positive true :function-table-entry-invocations (count results)
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :same-emitted-ir-seed-control-entries 2 :gravity-runtime-transfer-entries 2
+                      :comparison-expression-control {:owner "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity"
+                                                      :function 'w5-pipeline-diagnostic-span-provenance-valid?
+                                                      :expression '(not= :explicit-fallback (get recovery :span-source))
+                                                      :recovery-input :independent-literal-map-data :whole-function-coverage false}
+                      :entry-contract :authenticated-typed-type-conforming :runtime-activation :arity-only
+                      :whole-consumer-module-coverage false :authority :non-authoritative
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
+
 (deftest current-gravity-atomic-inequality-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -11660,8 +11805,8 @@
                         (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
                                                [{:op :function-call :function function :args []} {} "" (:functions assembled) []])]
                           (is (= [expected "" :normal] actual) (str function))
-                          ;; Existing raw seed only interprets this same emitted IR, without typed catch.
-                          (when-not (contains? '#{transferred-left transferred-right} function)
+                          ;; Existing raw seed lacks typed catch and keyword-map-lookup instructions.
+                          (when-not (contains? '#{pipeline-explicit pipeline-present transferred-left transferred-right} function)
                             (let [reference (atom nil)
                                   output (with-out-str (reset! reference (original runtime assembled function [])))]
                               (is (= [@reference output :normal] actual) (str function " same emitted IR parity"))))
@@ -11722,7 +11867,7 @@
              ((juxt :rule :reason) (first diagnostics))) (pr-str diagnostics)))
     (println (pr-str {:bl-atomic-inequality-positive true :function-table-entry-invocations (count results)
                       :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
-                      :same-emitted-ir-seed-control-entries 12 :gravity-runtime-transfer-entries 2
+                      :same-emitted-ir-seed-control-entries 10 :gravity-runtime-transfer-entries 2
                       :comparison-expression-control {:owner "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity"
                                                       :function 'w5-pipeline-diagnostic-span-provenance-valid?
                                                       :expression '(not= :explicit-fallback (get recovery :span-source))
