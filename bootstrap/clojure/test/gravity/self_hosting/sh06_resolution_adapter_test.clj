@@ -2112,6 +2112,198 @@
         (is (nil? (:unexpected-success result)) (name label))
         (is (nil? (:raw-host-error result)) (name label))))))
 
+(defn- b-frontend-source-syntax-joins?
+  [source c2 input-syntax]
+  ;; This cohort contains top-level ns/def/defn LISTS, not arbitrary standalone
+  ;; literal forms (whose owning C3 descriptor can differ from its seed value).
+  ;; The retained C2 view already projects registered literals when marked;
+  ;; fresh C5 verification authenticates that view. Never equate the complete
+  ;; C3 {:kind :value :raw} descriptor with a raw C2 form.
+  (let [seeds (:syntax-seed-stream c2)
+        products (bootstrap/c2-top-level-products c2)
+        source-id (bootstrap/sh04-syntax-semantic-source-id source (:source-unit-record c2))
+        registry (if (:registered-literal-projection c2)
+                   {:lookup {}}
+                   (bootstrap/sh04-syntax-registered-literal-registry source c2))
+        values (bootstrap/sh04-syntax-project-registered-literal-values
+                source registry (mapv :form seeds))]
+    (and (= (count (:parsed-semantic-values c2)) (count seeds) (count products) (count input-syntax))
+         (= (:parsed-semantic-values c2) (mapv :form seeds))
+         (every?
+          (fn [[seed product syntax value]]
+            (let [record (:form-record product) form (:form seed)]
+              (and (seq? form) (contains? '#{ns def defn} (first form))
+                   (= (:form-id seed) (:form-id record))
+                   (= {:kind :list :value value
+                       :raw (or (get-in seed [:reader-origin :raw-excerpt]) "")}
+                      (:form syntax))
+                   (= {:source-id source-id :form-id (:form-id seed)
+                       :token-range [(:open-token record) (:close-token record)]}
+                      (:source syntax))
+                   (= (let [span (bootstrap/sh04-syntax-semantic-span (:span seed) source-id)]
+                        {:primary span :all [span]})
+                      (:span syntax)))))
+          (map vector seeds products input-syntax values)))))
+
+(deftest sh06-b-frontend-source-schema-development-kernel
+  ;; Normalized schema/codec checks only: these inputs confer no authentication.
+  (let [source "normalized/b-frontend-schema.gravity"
+        descriptor {:artifact :gravity/registered-literal-value :kind :tagged-literal :tag 'inst
+                    :canonical-value {:kind :instant :epoch-milliseconds "0"}
+                    :semantic-validation :accepted}
+        registry {:lookup {['inst "0"] descriptor}}
+        scalar {:artifact :gravity/unicode-scalar-character :schema-version 1
+                :codepoint 128578 :text (String. (Character/toChars 128578))}
+        form (list 'def 'sample [false nil [\a scalar] {:inert '(call payload)} (java.util.Date. 0)])
+        span {:source source :byte-start 0 :byte-end 12 :scalar-start 0 :scalar-end 12
+              :line-start 1 :line-end 1 :column-start 1 :column-end 13}
+        original {:source-unit-record {:path source :bytes-hash (sha256-text "normalized")}
+                  :parsed-semantic-values [form]
+                  :syntax-seed-stream [{:form form :form-id :root :span span
+                                        :reader-origin {:raw-excerpt "(def sample ...)"}}]
+                  :form-tree [{:form-id :root :kind :list :open-token :open :close-token :close}]
+                  :top-level-form-ids [:root] :token-stream []}
+        c2 (assoc (bootstrap/sh04-syntax-project-registered-literal-values source registry original)
+                  :registered-literal-projection {:bindings []})
+        source-id (bootstrap/sh04-syntax-semantic-source-id source (:source-unit-record c2))
+        syntax [{:form {:kind :list :value (first (:parsed-semantic-values c2)) :raw "(def sample ...)"}
+                 :source {:source-id source-id :form-id :root :token-range [:open :close]}
+                 :span (let [projected (bootstrap/sh04-syntax-semantic-span span source-id)]
+                         {:primary projected :all [projected]})}]
+        value (nth (get-in syntax [0 :form :value]) 2)]
+    (is (not= (:parsed-semantic-values c2) (mapv :form syntax)))
+    (is (not= (:parsed-semantic-values original) (:parsed-semantic-values c2)))
+    (is (= false (nth value 0)))
+    (is (nil? (nth value 1)))
+    (is (= [\a scalar] (nth value 2)))
+    (is (= {:inert '(call payload)} (nth value 3)))
+    (is (= descriptor (nth value 4)))
+    (is (true? (b-frontend-source-syntax-joins? source c2 syntax)))
+    (doseq [changed [(assoc-in syntax [0 :form] form)
+                     (assoc-in syntax [0 :form :value] form)
+                     (assoc-in syntax [0 :form :value] '(def sample false))
+                     (assoc-in syntax [0 :source :form-id] :wrong)
+                     (assoc-in syntax [0 :source :source-id] (sha256-text "wrong"))
+                     (assoc-in syntax [0 :source :token-range] [:open :wrong])
+                     (update-in syntax [0 :span :primary :byte-end] inc)]]
+      (is (false? (b-frontend-source-syntax-joins? source c2 changed))))))
+
+(defn- b-run-frontend-subject
+  [[relative expected-defns]]
+  ;; L4/C4/C5/TEST2: this explicit current frontend cohort is not the historical
+  ;; 36/37/41 corpus, an authoritative migration, or execution of every body.
+  ;; Reader is a whole-source subject (275 defns), although its SH03 execution
+  ;; plan selects only 231 sh03-* functions. P15 compiler rules are consumed as
+  ;; DATA by the existing constructors, not credited as an executed compiler.
+          (let [source (path (str "bootstrap/gravity/src/gravity/" relative))
+                text (slurp source :encoding "UTF-8")
+                check (fn [condition label]
+                        ;; Keep failure output bounded: never print a complete
+                        ;; nested compiler product as the assertion operand.
+                        (is (boolean condition) (str relative " " label)))
+                _ (println (pr-str {:b-frontend-subject relative :phase :c5-before}))
+                resolved (bootstrap/compiler-c5-resolution-file-artifact source)
+                expanded (:sh05-macro-artifact resolved)
+                c3 (get-in expanded [:gravity-macro-boundary :authenticated-sh04-artifact])
+                c2 (:c2-reader-artifact c3)
+                forms (:parsed-semantic-values c2)
+                seeds (:syntax-seed-stream c2)
+                input-syntax (bootstrap/sh05-source-syntax-stream c3)
+                output-syntax (:expanded-syntax-stream expanded)
+                defn-indexes (keep-indexed #(when (and (seq? %2) (= 'defn (first %2))) %1) forms)
+                trace (:macro-expansion-trace expanded)
+                boundary (:gravity-resolution-boundary resolved)
+                request (:authenticated-resolution-request boundary)
+                references (:references request)
+                rows (:resolution-table resolved)
+                bindings (get-in resolved [:binding-table :bindings])
+                binding-ids (set (map :binding-id bindings))
+                reference-fields [:syntax-id :symbol :position :semantic-span :source-span]]
+            (println (pr-str {:b-frontend-subject relative :phase :c5-after
+                              :definitions (count (:definitions request))
+                              :references (count references)}))
+            (when
+             (and
+              (check (= :accepted (:status resolved) (:status expanded)) :accepted-products)
+              (check (= :development-unadmitted (get-in boundary [:plan-binding :revision-status]))
+                     :ordinary-development-status)
+              (check (= source (get-in resolved [:provenance :source-path])
+                        (get-in c2 [:source-unit-record :path])) :source-path)
+              (check (= (sha256-text text) (get-in c2 [:source-unit-record :bytes-hash])) :source-bytes)
+              (check (= (count forms) (count seeds) (count input-syntax) (count output-syntax))
+                     :complete-source-streams)
+              (check (b-frontend-source-syntax-joins? source c2 input-syntax) :original-c3-source-projection)
+              (check (= expected-defns (count defn-indexes) (:expanded-defn-count expanded) (count trace))
+                     :source-derived-expansion-count)
+              (check
+               (every? (fn [[index step]]
+                         (let [input (nth input-syntax index) output (nth output-syntax index)]
+                           (and (= 'defn (:macro step))
+                                (= (:syntax/id input) (:input-syntax-id step))
+                                (= (:syntax/id output) (:output-syntax-id step))
+                                (= (:span input) (:call-site-span step) (:span output))
+                                (seq (:generated-origin step))
+                                (= (last (:origin output)) (first (:generated-origin step)))
+                                (seq (get-in step [:hygiene :introduced-identifiers])))))
+                       (map vector defn-indexes trace))
+               :introduced-and-reused-source-origins)
+              (check (= (:artifact-id expanded) (get-in request [:module :c4-artifact-id])
+                        (get-in request [:macro-expansion-binding :c4-artifact-id])) :c4-parent-binding)
+              (check (and (seq references)
+                          (= (mapv #(select-keys % reference-fields) references)
+                             (mapv #(select-keys % reference-fields) rows))) :source-reference-bijection)
+              (check (every? #(and (sha256-id? (:binding-id %)) (contains? binding-ids (:binding-id %))) rows)
+                     :selected-binding-identities)
+              (check (= :passed (:status (verification resolved))) :fresh-c5-verification))
+             ;; The reference macro algorithm receives the pre-expansion
+             ;; authenticated C2 view, never C3 descriptors or expanded forms. It does not
+             ;; reconstruct another complete reader/C5 product for comparison.
+             (let [records (mapv (fn [form seed] (assoc seed :form form)) forms seeds)
+                   reference (bootstrap/macro-source-artifact-from-records source text records)]
+               (when (check (= (:expanded-forms reference) (:expanded-forms expanded)) :stage0-defn-form-parity)
+                 (println (pr-str {:b-frontend-subject relative :phase :hosted-c6-before}))
+                 (let [original-reader bootstrap/read-source-form-records
+                       reads (atom 0)
+                       core (with-redefs [bootstrap/read-source-form-records
+                                          (fn [p value]
+                                            (when (= p source)
+                                              (swap! reads inc)
+                                              (throw (ex-info "Hosted C6 reread selected frontend source"
+                                                              {:id "SH06-B-SUBJECT-REREAD"})))
+                                            (original-reader p value))]
+                              (bootstrap/sh06-c6-lowering-from-resolution-artifact resolved))]
+                   (when
+                    (and
+                     (check (= :gravity/stage0-c6-core-lowering-artifact (:kind core)) :hosted-c6-boundary)
+                     (check (= (:artifact-id resolved) (get-in core [:c5-name-resolution-artifact :artifact-id]))
+                            :c6-c5-identity)
+                     (check (= :passed (get-in core [:core-verifier-report :status])) :core-verifier)
+                     (check (= (mapv :syntax/id (rest output-syntax))
+                               (mapv :surface-syntax (get-in core [:surface-to-core-map :entries])))
+                            :complete-core-source-map)
+                     (check (zero? @reads) :no-subject-reread)
+                     (check (= text (slurp source :encoding "UTF-8")) :source-stable-after-consumption))
+                    ;; Return scalars only. No subject product survives in the
+                    ;; subject invocation, and no proof/cache status is reused.
+                    {:subject relative :expanded-defns (count defn-indexes)
+                     :references (count references) :artifact-id (:artifact-id resolved)
+                     :core-node-count (get-in core [:core-ast-module :node-count])})))))))
+
+(deftest sh06-b-frontend-macro-development-coverage
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["macro.gravity" 46])})))
+
+(deftest sh06-b-frontend-envelope-development-coverage
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["compiler/authenticated_envelope.gravity" 72])})))
+
+(deftest sh06-b-frontend-syntax-development-coverage
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["bootstrap/syntax.gravity" 102])})))
+
+(deftest sh06-b-frontend-resolver-development-coverage
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["resolution.gravity" 111])})))
+
+(deftest sh06-b-frontend-reader-development-coverage
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["bootstrap/reader.gravity" 275])})))
+
 (deftest sh06-corpus-shards-cover-the-sorted-inventory-exactly-once
   (let [source-paths (authoritative-compiler-paths)
         relative-paths (authoritative-compiler-relative-paths source-paths)]

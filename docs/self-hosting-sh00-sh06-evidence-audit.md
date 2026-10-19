@@ -513,6 +513,46 @@ coverage, not ambiguity-specific macro-origin coverage or full selected-cohort
 coverage. SH-05.1, SH-05.6 and SH-06.6 remain partial, and the resolver remains
 development-unadmitted. No historical corpus or migration fingerprint changed.
 
+### Selected frontend subjects: first development result
+
+The selected macro module now has a passing whole-source frontend check through
+ordinary C5 and hosted Stage0 C6: one test / 19 assertions, 46 `defn`
+expansions, 1,552 references and 1,678 Core nodes. The check compares original
+authenticated C2 records with their C3 descriptor projection, expansion traces
+and origins, and independent Stage0 reference expansion. It checks source
+reference/binding joins, fresh C5 verification, then authenticated hosted C6
+consumption with complete top-level source mapping and no source-form reread.
+This analyzes the module's bodies; it does not execute all 46 functions or
+establish Gravity C6, typing, effect legality or compiler migration.
+
+The first five-subject attempt remains failed: five assertions passed before
+one test projection assertion failed on the first macro subject. It incorrectly
+compared C3 descriptors with raw C2 forms. Later assertions, hosted C6 and all
+four other subjects were unrun. The corrected harness uses the owning
+registered-literal projection and wrapped spans. Its separate non-authoritative
+schema probe passed 15 assertions, including malformed source joins.
+
+Use exact selectors in `gravity.self-hosting.sh06-resolution-adapter-test`:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-b-frontend-source-schema-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-b-frontend-macro-development-coverage
+```
+
+Separate envelope, syntax, resolver and reader selectors exist, but have not
+run. Select one subject at a time when its coverage decision is needed; do not
+repeat the unchanged macro product merely to run another subject. All three
+partial groups remain open and the resolver remains development-unadmitted.
+
+The failed attempt took 221.827 seconds after 7.066 seconds of loading. The
+corrected macro check took 330.949 seconds after 6.899 seconds of loading at
+2 GiB; the cheap schema body took 12.141 milliseconds after 6.936 seconds of
+loading at 512 MiB. These are distinct test intervals, not a speed comparison.
+The source interval includes product construction, verification and consumer
+checks, not just scheduling. Their internal cost breakdown remains unmeasured;
+the bounded representation follow-up above is unchanged. No limits or
+historical corpus/migration pins were increased or repinned.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
