@@ -2439,6 +2439,10 @@
 (deftest sh06-b-frontend-reader-development-coverage
   (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["bootstrap/reader.gravity" 275])})))
 
+(deftest sh06-b-frontend-checked-core-development-coverage
+  ;; Analyze this owner as source; do not credit execution of its Core builder.
+  (println (pr-str {:b-frontend-summary (b-run-frontend-subject ["checked_core.gravity" 401])})))
+
 (deftest sh06-b-source-duplicate-alias-composition
   ;; L3/C5: genuine imports, not caller-invented binding candidates. Only G
   ;; subjects are constructed; QST receives explicitly separate parser parity.

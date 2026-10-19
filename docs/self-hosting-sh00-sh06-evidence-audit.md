@@ -1002,6 +1002,31 @@ compiler/source/toolchain/provider/target cohort and required fresh provenance,
 equivalence, bootstrap and independent-review evidence. Ordinary semantic work
 does not wait for that admission decision.
 
+### Checked-Core source census before another composition
+
+A single reader-only Clojure query at clean commit
+`2efd518b4f4482ce3fce2752e2f30d26bfb20f17` inspected the unchanged
+537,749-byte `checked_core.gravity` source (SHA256
+`511e715e66f12cc3945e177ef667d073ec6294166e1140d548f3152d933e7337`).
+It used `*read-eval* false`, empty custom readers and inert tagged-literal
+preservation, without loading a Gravity namespace. The actual query exited 0
+at 512 MiB and observed 405 top-level forms: one namespace, three `def`s and
+401 `defn`s. There is no namespace `:requires` clause. All observed executable
+sequence heads were in function bodies; the three initializers contain DATA.
+The census separated 64 quote boundaries from executable positions and found
+no newly required unsupported macro head. This is host-reader inventory, not
+Gravity-reader agreement, accepted C2/C3 products or execution of 401 bodies.
+
+Source bytes fit the existing 1 MiB source gate, but do not establish recursive
+form, expansion, reference, carrier or owner-specific bound fit. The next
+concrete question is whether this one source composes through the existing
+C2/C3/macro/C5/hosted-C6 path with original-source joins and reference
+equivalence. That question is separate from executing the Gravity-owned Core
+builder on accepted and rejected requests. Select its existing direct helper
+and bounded cost before running it; neither this census nor a directory count
+authorizes a larger corpus, bound growth or an unchanged proof replay. All
+three partial groups remain open and the resolver remains development-unadmitted.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
