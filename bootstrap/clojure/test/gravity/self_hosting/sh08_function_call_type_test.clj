@@ -10408,10 +10408,6 @@
     (is (= (:identity-input gravity) (:identity-input qst)))
     (is (= :passed (:status gravity-verification)
            (:status qst-verification)))))
-input qst)))
-    (is (= :passed (:status gravity-verification)
-           (:status qst-verification)))))
-
 (defn- inequality-vector-type [members]
   {:kind :gravity.type/vector :shape :literal :element-types (vec members)})
 
