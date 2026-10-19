@@ -2992,6 +2992,58 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Symbol family classification: development implementation
+
+STD2 specifies unary Symbol-value classification under ordinary L2 evaluation.
+C7, effects and typed lowering carry a distinct Symbol-predicate descriptor,
+call fact, context and complete ledger rule. Existing valid closed first-order
+types are supported: actual Symbols classify true, other families false and
+Never transfers; Unknown/Dynamic, malformed carriers and unsupported callable
+types remain diagnosed. The source type grammar, unary IR, seed primitive and
+public APIs are unchanged. The runtime remains 51 functions with unchanged
+exports, adding only shallow unary classification. It does not coerce
+String/Keyword spelling, unwrap syntax objects, inspect payloads or grant
+binding, call, macro or capability authority. Qualified and metadata-bearing
+Symbols stay values, and ordinary reference resolution precedes evaluation.
+
+Focused V1 at `ee244e49` passed all 14 selected tests / 2,351 assertions:
+seven new kernels / 886 assertions and seven adjacent Keyword/Set regressions
+/ 1,465 assertions. These include the owning C7 measured throw consumer,
+dominant unary/ID guards, complete C8 analyzer budget and ledger controls,
+policy forgeries, failed-child work, once-only effects/transfers, original fatal
+failure identity and shallow hostile-provider controls. Execution was
+6.200353125 seconds with a 2 GiB heap; namespace loading was separate. The
+original command completed with exit zero, and the tested source pins remained
+unchanged. No failing Symbol-focused attempt is being hidden or merged into
+these counts. Component evidence is not a performance benchmark or fresh
+frontend-module, target, migration or release acceptance. The three partial
+current-closure groups and resolver development-unadmitted status remain open.
+
+Paired preflight passed 1 test / 6 assertions (bytes, parser and function
+counts). Source V1 at `2d240a06` passed 1 test / 214 assertions, including six
+runtime-loader assertions, in 220.948593334 seconds selected execution with a
+2 GiB heap. One Gravity positive and one Gravity C7 arity rejection ran; QST
+typed products did not. Fourteen functions, 14 calls and twelve Symbol-query
+descriptors (eleven normal, one not-invoked) are checked. Thirteen direct runtime
+table entries include twelve seed-interpreter comparisons on the same emitted
+IR and one caught transfer, not all dynamic helper calls or independent source
+compiler parity. The identity helper uses the existing Symbol return annotation
+and a monomorphically inferred quoted-Symbol input, not new parameter grammar.
+Qualified quoted Symbols and normally evaluated lexical references classify
+true; matching String/Keyword spelling and ordinary wrapper-Map DATA do not.
+That wrapper is not evidence of an accepted syntax-object schema, nor does this
+test build whole syntax, macro or envelope consumer modules. Pure source
+operands do not independently observe I/O ordering; normalized controls do.
+
+Accepted and freshly verified C7/C8 products precede execution. Two additional
+tracked C7 gates accept assembly and reject a coercion-policy forgery; a
+resealed C8 dependency deletion rejects. The negative reaches accepted C5 and
+passed C6, then rejects at C7. Its test asserts primary
+`C7-TYPE-MISMATCH/:symbol-predicate-arity-mismatch`; the raw vector additionally
+contains secondary `C7-ANNOTATION/:unsupported-or-unresolved-core-node-type`.
+This affected composition does not renew authoritative module migration or
+change the broader completion statuses above.
+
 ### Set family classification: development implementation
 
 STD3 defines unary Set-family classification under ordinary L2 evaluation.
