@@ -3811,6 +3811,61 @@ uses the same emitted IR and excludes typed catches it cannot interpret.
 Focused results and this bounded composition do not establish another target,
 authoritative migration, complete numeric support or self-hosting.
 
+### Binary same-type fixed-integral inequality
+
+The same three owners also support binary `not=` for I8, I16, I32, I64,
+U8, U16, U32 and U64. Both normally returning operands must have the same
+established type; either position may instead be Never. Cross-width,
+signed/unsigned and generic-Integer/fixed pairs reject, as do Float, Decimal,
+Ratio, nullable fixed types and collections. Existing Integer, nonnumeric and
+Never/Never descriptors remain unchanged.
+
+The fixed-family numeric record names the actual type and preserves the
+existing equality policy: original values, no coercion or arithmetic,
+`:proof-required` mode and `:proven-safe` safety. C7, effects and the emitter
+independently reconstruct the complete record and its joins. Runtime, seed,
+public APIs and IR schemas are unchanged. Start with these owning checks,
+including affected Integer, atomic-inequality and integral-equality regressions
+when their shared rules change:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-fixed-integral-inequality-development-kernel \
+  --exact sh08-fixed-integral-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-fixed-integral-inequality-source-development-kernel \
+  --exact current-gravity-fixed-integral-inequality-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-fixed-integral-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-fixed-integral-inequality-transfer-fence-development-kernel --fail-fast
+```
+
+Runtime fixtures independently require Integer representation and the declared
+signed/unsigned bounds before every normal or same-IR seed entry. This checks
+conditional type-conforming execution, not implicit source Integer conversion,
+host FFI admission or runtime width validation. Never transfers still preserve
+their original identity, non-tail restrictions and left-to-right effects.
+
+When those producer/consumer facts or lowering change, select the new paired
+fixtures and affected source composition separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-fixed-integral-inequality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-fixed-integral-inequality-authenticated-composition --fail-fast
+```
+
+This uses compiled helpers with explicit fixed-type signatures, not implicitly
+converted source Integer literals. Paired Q sources provide byte/parser parity
+only. Do not reconstruct earlier unchanged Integer or atomic source products
+merely to refresh a green label.
+
 ### Nil value classification
 
 For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter
