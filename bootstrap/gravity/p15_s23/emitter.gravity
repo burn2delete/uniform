@@ -10015,6 +10015,7 @@
                                 (get forms owner-id) nil)
                         ids (get owner :child-form-ids) attrs (get node :attributes)
                         type (get (get context :types) (get node :node-id)) elements (get type :element-types)
+                        characters? (if (vector? elements) (= :gravity.type/character (get elements 0)) false)
                         child-ids? (loop [i 0]
                                      (if (= i n) true
                                        (let [id (get children i)]
@@ -10048,10 +10049,39 @@
                                     child (if id? (get (get context :nodes) id) nil)
                                     form (if form-id? (get forms form-id) nil) attr (get child :attributes)
                                     value (get form :value)]
-                                (if (if (keyword? value) (if (keyword? (get attr :value))
-                                      (if (= :keyword (get form :kind)) (if (= :literal (get child :core-form))
-                                        (if (= :keyword (get attr :literal-kind))
-                                          (= :gravity.type/keyword (get elements i) (get (get context :types) id)) false) false) false) false) false)
+                                (if (if characters?
+                                      (let [source-valid? (if (char? value) true
+                                            (if (map? value)
+                                              (if (if (= 4 (count value))
+                                                    (loop [fields (keys value)]
+                                                      (if (= 0 (count fields)) true
+                                                        (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                                                (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                                  (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                                    (if (= 1 (get value :schema-version))
+                                                      (if (integer? (get value :codepoint))
+                                                        (if (<= 65536 (get value :codepoint) 1114111)
+                                                          (if (string? (get value :text)) (= 2 (count (get value :text))) false) false) false) false) false) false) false) false))
+                                            attribute-valid? (let [value (get attr :value)] (if (char? value) true
+                                            (if (map? value)
+                                              (if (if (= 4 (count value))
+                                                    (loop [fields (keys value)]
+                                                      (if (= 0 (count fields)) true
+                                                        (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                                                (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                                  (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                                    (if (= 1 (get value :schema-version))
+                                                      (if (integer? (get value :codepoint))
+                                                        (if (<= 65536 (get value :codepoint) 1114111)
+                                                          (if (string? (get value :text)) (= 2 (count (get value :text))) false) false) false) false) false) false) false) false)))]
+                                        (if source-valid? (if attribute-valid?
+                                          (if (= :character (get form :kind) (get attr :literal-kind))
+                                            (if (= :literal (get child :core-form))
+                                              (= :gravity.type/character (get elements i) (get (get context :types) id)) false) false) false) false))
+                                      (if (keyword? value) (if (keyword? (get attr :value))
+                                        (if (= :keyword (get form :kind)) (if (= :literal (get child :core-form))
+                                          (if (= :keyword (get attr :literal-kind))
+                                            (= :gravity.type/keyword (get elements i) (get (get context :types) id)) false) false) false) false) false))
                                   (if (p15-s23-typed-all
                                         [id? form-id? (map? child) (map? form) (= id (get child :node-id))
                                          (= form-id (get form :form-id)) (= owner-id (get form :parent-form-id))
@@ -10069,12 +10099,17 @@
                                       (if (= i n) true
                                         (if (loop [j (+ i 1)]
                                               (if (= j n) true
-                                                (if (= (get values i) (get values j)) false (recur (+ j 1)))))
+                                                (let [left (get values i) right (get values j)
+                                                      same? (if characters?
+                                                              (if (char? left) (if (char? right) (= left right) false)
+                                                                (if (map? right) (= (get left :codepoint) (get right :codepoint)) false))
+                                                              (= left right))]
+                                                  (if same? false (recur (+ j 1))))))
                                           (recur (+ i 1)) false)))) false)]
                     (if (= false (= :accepted (get checked :status)))
                       (assoc (p15-s23-typed-node-error (get checked :reason) node) :work-count charge)
                       (if (= false unique?)
-                        (assoc (p15-s23-typed-node-error :duplicate-typed-set-keyword node) :work-count charge)
+                        (assoc (p15-s23-typed-node-error (if characters? :duplicate-typed-set-character :duplicate-typed-set-keyword) node) :work-count charge)
                         (loop [i 0 items [] used charge]
                           (if (= i n)
                             (assoc (p15-s23-compiler-result {:op :set-literal :items items}) :work-count used)

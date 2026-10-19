@@ -3016,7 +3016,7 @@
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
                  'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
-                 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
+                 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-character-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2 'p15-s23-runtime-keyword-vector-set-work 2
                  'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
                  'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
@@ -3032,7 +3032,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 53 (count selected) (count (set (map second selected)))))
+    (is (= 54 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -22211,7 +22211,8 @@
                       (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
                       (assoc-in [:types :set-item-0] :gravity.type/character)
                       (assoc-in [:types :set :element-types] [:gravity.type/character]))]
-      (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node context :set 65536)))))
+      (is (= {:op :set-literal :items [{:op :literal :value (char 97)}]}
+             (:value (invoke 'p15-s23-typed-compile-node context :set 65536)))))
 ))
 
 
@@ -22553,3 +22554,188 @@
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(defn- typed-character-set-kernel-context [values]
+  (let [context (typed-keyword-set-kernel-context values) ids (get-in context [:nodes :set :children])
+        kinds (mapv #(if (or (char? %) (map? %)) :character (if (keyword? %) :keyword :string)) values)
+        types (mapv #(case % :character :gravity.type/character :keyword :gravity.type/keyword :gravity.type/string) kinds)]
+    (reduce (fn [out [i id]]
+              (let [kind (nth kinds i) form-id (get-in context [:forms :set-form :child-form-ids i])]
+                (-> out (assoc-in [:forms form-id :kind] kind)
+                    (assoc-in [:nodes id :attributes :literal-kind] kind) (assoc-in [:types id] (nth types i)))))
+            (assoc-in context [:types :set :element-types] types) (map-indexed vector ids))))
+
+(deftest current-gravity-literal-character-set-lowering-development-kernel
+  (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        compile #(invoke 'p15-s23-typed-compile-node %1 :set %2)
+        own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) %2)]
+    (doseq [values [[] [\a] [\a \b] [\0 \a \f] [(bootstrap/sh03-reader-host-character-value! "<character-set-lowering>" {:codepoint 0x1f600}) \a]]]
+      (let [context (typed-character-set-kernel-context values) result (compile context 65536)
+            n (count values) charge (+ 12 (* 14 n) (quot (* n (dec n)) 2)) total (+ charge n)
+            expected {:op :set-literal :items (literal-instructions values)}]
+        (is (= :complete (:status result)))
+        (is (= expected (:value result)))
+        (is (= total (:work-count result)))
+        (is (= result (compile context total)))
+        (is (= result (compile (assoc context :tail? false) 65536)))
+        (is (= charge (:work-count (own context (dec charge)))))
+        (doseq [prefix (range n)]
+          (let [child-id (nth (get-in context [:nodes :set :children]) prefix)
+                child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) child-id 0)
+                failed (own context (+ charge prefix))]
+            (is (= :rejected (:status child) (:status failed)))
+            (is (= (:facts child) (:facts failed)))
+            (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed)))))))
+    (let [context (typed-character-set-kernel-context [\a \b])]
+      (doseq [mutate [#(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
+                      #(assoc-in % [:nodes :set :evaluation :order 0 :core-node-id] :set-item-1)
+                      #(assoc-in % [:nodes :set :attributes :element-count] 1)
+                      #(assoc-in % [:nodes :set :resolved-binding-ids] [:invented])
+                      #(assoc-in % [:forms :set-form :kind] :vector)
+                      #(assoc-in % [:forms :set-form :child-form-ids] [:set-item-form-1 :set-item-form-0])
+                      #(assoc-in % [:forms :set-item-form-0 :parent-form-id] :unrelated)
+                      #(assoc-in % [:forms :set-item-form-0 :syntax-id] :unrelated)
+                      #(assoc-in % [:nodes :set-item-0 :attributes :value] :changed)
+                      #(assoc-in % [:nodes :set-item-0 :evaluation :kind] :no-evaluation)
+                      #(assoc-in % [:types :set :element-types] [:gravity.type/character])
+                      #(assoc-in % [:types :set-item-0] :gravity.type/unknown)
+                      #(assoc-in % [:types :set] :gravity.type/set)
+                      #(assoc-in % [:types :set] :gravity.type/never)
+                      #(assoc-in % [:types :set :extra] true)]]
+        (is (= :rejected (:status (compile (mutate context) 65536)))))
+      (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported"]) 65536) [:facts :reason])))
+      (is (= :duplicate-typed-set-character (get-in (compile (typed-character-set-kernel-context [\a \a]) 65536) [:facts :reason])))
+      (is (= :typed-set-width-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1025 \a))) 65536) [:facts :reason])))
+      (is (= :typed-lowering-work-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1024 \a))) 65536) [:facts :reason]))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "member compared"))))
+          context (typed-character-set-kernel-context [\a \b])
+          poisoned (assoc-in context [:nodes :set :attributes :source-value] opaque)]
+      (is (= (:value (compile context 65536)) (:value (compile poisoned 65536))))
+      (doseq [changed [(assoc-in context [:forms :set-item-form-1 :value] opaque)
+                       (assoc-in context [:nodes :set-item-1 :attributes :value] opaque)
+                       (assoc-in context [:nodes :set :children 0] opaque)
+                       (assoc-in context [:nodes :set :source :form-id] opaque)]]
+        (is (= :rejected (:status (own changed 65536))))
+        (is (= 12 (:work-count (own changed 0)))))
+      (is (= 0 @callbacks)))
+    (let [context (typed-character-set-kernel-context [\a])
+          closure (invoke 'p15-s23-typed-initializer-closure context :set 65536)]
+      (is (= :unsupported-typed-module-initializer (:reason closure))))
+    (let [scalar (bootstrap/sh03-reader-host-character-value! "<duplicate-character-set>" {:codepoint 0x1f600})
+          other-text (assoc scalar :text "xy") context (typed-character-set-kernel-context [scalar other-text])]
+      (is (not= scalar other-text))
+      (is (= :duplicate-typed-set-character (get-in (own context 65536) [:facts :reason]))))
+    (doseq [values [[\a :mixed] [:mixed \a] [\a "text"]]]
+      (is (= :rejected (:status (compile (typed-character-set-kernel-context values) 65536)))))
+))
+
+(deftest current-gravity-literal-character-set-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-character-set-construction-work %1 %2)
+        lit (fn [value] {:op :literal :value value})
+        set-ir (fn [items] {:op :set-literal :items items})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        reservation (fn [values]
+                      (let [n (count values) c (reduce + 0 (map #(if (char? %) 1 2) values))]
+                        (+ 1 (* 2 n) (* (inc n) c) (quot (* n (dec n)) 2))))]
+    (doseq [values [[] [\a] [\a \b] [\0 \a \f]
+                    [(bootstrap/sh03-reader-host-character-value! "<character-set-runtime>" {:codepoint 0x1f600}) \a]]]
+      (let [result (work values 65536) charge (reservation values) n (count values)]
+        (is (= :accepted (:status result)))
+        (is (= (set values) (:value result)))
+        (is (= n (count (:value result)) (:insertions result)))
+        (is (= (quot (* n (dec n)) 2) (:comparison-attempts result)))
+        (is (= charge (:work-count result)))
+        (is (= :exact-logical-content-reservation (:work-count-kind result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (is (= result (work values charge)))
+        (is (= result (work values 1000000)))
+        (let [limited (work values (dec charge))]
+          (is (= :set-literal-work-limit (:reason limited)))
+          (is (= 0 (:comparison-attempts limited) (:insertions limited))))
+        (is (= [(set values) "" :normal] (evaluate (set-ir (literal-instructions values)))))))
+    (doseq [values [[\a \a] [\a \b \a]]]
+      (let [result (work values 65536)]
+        (is (= :duplicate-set-literal-character (:reason result)))
+        (is (= (reservation values) (:work-count result)))
+        (is (= :exact-logical-content-reservation (:work-count-kind result)))
+        (is (pos? (:comparison-attempts result)))
+        (is (= 0 (:insertions result)))
+        (is (= :duplicate-set-literal-character (get-in (evaluate (set-ir (literal-instructions values))) [0 :reason])))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque printed"))))]
+      (doseq [values [[opaque] [\a opaque] [opaque \a]]]
+        (let [result (work values 65536)]
+          (is (= :set-literal-character-domain-required (:reason result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result))))
+        (is (= :rejected (last (evaluate (set-ir (literal-instructions values)))))))
+      (is (= 0 @callbacks)))
+    (doseq [values [[nil] ["text"] [1] ['symbol] [[]] [#{}]]]
+      (is (= :set-literal-character-domain-required (:reason (work values 65536)))))
+    (doseq [values [nil '(:one) #{:one}]]
+      (is (= :set-literal-character-domain-required (:reason (work values 65536)))))
+    (doseq [budget [-1 nil 1.5]]
+      (is (= :set-literal-work-limit (:reason (work [] budget)))))
+    (let [wide (mapv char (range 1024))
+          result (work wide 65536)]
+      (is (= :set-literal-work-limit (:reason result)))
+      (is (= 65537 (:work-count result)))
+      (is (= :exceeded-allowance-lower-bound (:work-count-kind result)))
+      (is (= 0 (:comparison-attempts result) (:insertions result)))
+      (is (= :set-literal-value-width (:reason (work (conj wide (char 1024)) 65536)))))
+    (let [label {:op :println :args [(lit "never")] :effect :io/write :capability :io/stdout}
+          marked {:op :do :body [label (lit \a)]}]
+      (doseq [bad [{:op :set-literal} (set-ir nil) (set-ir '()) (set-ir [42]) (set-ir [(lit "text")])
+                   (set-ir [{:op :quote :value :one}]) (set-ir [marked])
+                   (set-ir [{:op :throw :value (lit :stop)}])
+                   (set-ir [(assoc (lit \a) :extra true)]) (assoc (set-ir [(lit \a)]) :extra true)
+                   (set-ir (vec (repeat 1025 (lit \a))))]]
+        (let [result (evaluate bad)]
+          (is (= ["" :rejected] (subvec result 1)))
+          (is (= "P15S23X002" (get-in result [0 :diagnostic])))
+          (is (= :invalid-local-runtime-instruction (get-in result [0 :reason]))))))
+    (let [hidden {:op :namespace-read :binding-id :missing}
+          instruction (set-ir [hidden]) children (invoke 'p15-s23-runtime-instruction-children instruction 2)
+          functions {'main {:params [] :instructions [instruction]}}
+          read-check (invoke 'p15-s23-runtime-module-reads-work functions {} 65536)]
+      (is (= {:status :accepted :work-count 2 :children [hidden]} children))
+      (is (= :module-initialization-work-limit (:reason (invoke 'p15-s23-runtime-instruction-children instruction 1))))
+      (is (= :namespace-read-without-initialized-definition (:reason read-check)))
+      (is (= :unsupported-module-initializer (:reason (invoke 'p15-s23-runtime-initializer-work (set-ir [(lit \a)]) 65536))))
+      (is (false? (invoke 'p15-s23-runtime-initializer-type? {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}}
+                          (set-ir [(lit \a)])))))
+    (let [payload '#{:data (println "never")} quoted {:op :quote :value payload}
+          result (evaluate quoted)]
+      (is (= [payload "" :normal] result))
+      (is (identical? payload (first result)))
+      (is (= :accepted (:status (invoke 'p15-s23-runtime-initializer-work quoted 65536))))
+      (is (= :accepted (:status (invoke 'p15-s23-runtime-module-reads-work {'main {:instructions [quoted]}} {} 65536)))))
+    (let [scalar (bootstrap/sh03-reader-host-character-value! "<duplicate-character-construction>" {:codepoint 0x1f600})
+          same-codepoint (assoc scalar :text "xy") result (work [scalar same-codepoint] 65536)]
+      (is (not= scalar same-codepoint))
+      (is (= :duplicate-set-literal-character (:reason result)))
+      (is (= (reservation [scalar same-codepoint]) (:work-count result)))
+      (is (= 1 (:comparison-attempts result)))
+      (is (= 0 (:insertions result))))
+    (let [scalar (bootstrap/sh03-reader-host-character-value! "<character-construction-premise>" {:codepoint 0x1f600})]
+      (doseq [bad [(assoc scalar :codepoint 65535) (assoc scalar :text "x") (assoc scalar :extra true)
+                   (dissoc scalar :artifact) (assoc scalar :codepoint "wrong")]]
+        (let [result (work [\a bad] 65536)]
+          (is (= :set-literal-character-domain-required (:reason result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))))
+      ;; Preserve the established IR premise; source validity belongs to C2.
+      (doseq [value [(char 0xd800) (assoc scalar :text "xy")]]
+        (is (= :accepted (:status (work [value] 65536)))))
+      (is (= :existing-atomic-character-ir-values (:character-premise (work [scalar] 65536))))
+      (is (= :c2-owned (:source-decoding (work [scalar] 65536)))))
+    (doseq [values [[\a :mixed] [:mixed \a]]]
+      (is (= :set-literal-character-domain-required (:reason (work values 65536))))
+      (is (= :invalid-local-runtime-instruction (get-in (evaluate (set-ir (literal-instructions values))) [0 :reason]))))))
