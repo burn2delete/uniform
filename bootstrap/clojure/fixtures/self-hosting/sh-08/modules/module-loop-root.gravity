@@ -1,0 +1,19 @@
+(ns example.module-loop-root
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-loop-leaf :as leaf]) (:exports [main])
+  (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn main []
+  (let [value "outer"]
+    (loop [again (leaf/identity (do (println "flag") true))
+           value (leaf/identity (do (println "init") (if again value "wrong")))]
+      (leaf/identity (do (println "body") value))
+      (if again
+        (recur (leaf/identity false)
+               (leaf/identity (do (println "step") value)))
+        (let [outer value]
+          (loop [again (leaf/identity true) value (leaf/identity "inner")]
+            (if again
+              (recur (leaf/identity false)
+                     (leaf/identity (do (println "nested") value)))
+              (leaf/pair outer value))))))))
