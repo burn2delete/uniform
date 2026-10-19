@@ -5516,6 +5516,85 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Compiler-module literal String/Keyword keys: development increment
+
+The temporary module constructor now accepts distinct literal String or
+Keyword keys, including mixed evaluated Maps. This removes its incidental
+Keyword-only restriction, not the separate canonical typed-Gravity Map
+frontier. The concrete subject is the unchanged W5 trust diagnostic catalog
+and its literal diagnostic-ID dependency, retained in a clearly labelled
+fixture namespace. This is not construction of the whole W5 module.
+This supersedes the Keyword-only module boundary in the Map-order and
+Map-value entries; their historical validation results remain unchanged.
+
+The existing `00575` source-order component extends both its C2 scalar
+kind/value fence and actual-C5 reference projection to accept the two literal
+families. The complete child census, distinct key/host-slot bijection,
+original reference identities and source-ordered routing remain. String
+`":tag"` is not Keyword `:tag`; no spelling coercion or ordering authority is
+introduced. Missing or collapsed occurrences reject. The public diagnostic
+remains `BOOT2006`, with the more accurate local reason
+`:map-source-distinct-literal-key-bijection`.
+
+The first focused run passed three tests / 84 assertions: ten fixture parity
+and unchanged-subject checks, 54 reference/order checks and 20 rejection
+checks. Supplied-record tests cover hash/array/String-sorted representations,
+mixed keys, supplementary values, C2 kind/value mismatches, occurrence loss
+and unsupported key kinds. Decoded-equivalent duplicate rows are supplied
+DATA controls, not claims of a fresh reader execution. Raw UTF-8 supplementary
+Strings in paired Gravity fixtures exercise the existing scalar source path;
+Clojure tooling uses ASCII escape spellings.
+
+The first source attempt is retained as an error, not a passing composition:
+one test, zero passes and one error after 92.777 seconds of execution and
+6.772 seconds of loading. Leaf/root C5 construction completed, but the first
+leaf bundle stopped at `BOOT2006/:map-source-order-mismatch` before semantic
+assertions, root assembly, runtime or negative controls. Verified C2/SH05
+materialization and independent seed parsing had equal small Map values with
+different host entry layouts. Source-order context must match the actual seed
+layout without replacing original C5 reference authority or weakening the
+strict key/slot join. No unchanged source candidate was replayed.
+
+The correction changes one existing `00580` module-source line: select the
+independent macro forms for seed definitions after the unchanged complete
+equality check against verified forms. Original syntax, C5 request/reference
+identities, declaration bindings and strict context checks remain intact.
+The focused handoff regression uses a tiny genuine C5 input, fresh original
+module-source derivation and raw compiler; it is not public bundle or runtime
+evidence. It passed one test / eight assertions at 512 MiB, including equal
+Map contents with different physical entry order, actual seed slots,
+source-ordered compiled entries and strict wrong-layout rejection. It took
+31.346 seconds after 6.692 seconds of loading; these observations are inclusive
+development costs, not benchmark or speedup evidence.
+
+The changed implementation then passed the full affected source composition:
+one test / 49 assertions, with all five G C5 attempts, four public bundle
+construction calls and two runtime calls complete. Twelve distinct original
+reference routes cover imported String-key values through let, loop/recur and
+Vector contexts. Runtime lookup observes the catalog's schema remediation and
+non-authority entry without claiming Map enumeration order or whole-W5
+eligibility. Output confirms source-order evaluation once. A correctly
+resealed reference substitution rejects before output; private imports reject
+at C5; source-first arity two rejects before later arity three; a numeric key
+passes C5 then rejects at the owning module-constructor boundary. Q remains
+byte/parser-only. Source execution took 275.722 seconds after 6.797 seconds of
+loading at 2 GiB, below the monitored ten-minute ceiling. These inclusive
+caller observations are not a phase-isolated benchmark or hard deadline.
+
+The three passing new selections total five tests / 141 assertions, not one
+batch. Separate adjacent Map-call, Map-order, module and language-boundary
+checks passed 17 tests / 242 assertions at 512 MiB. LOC validation passed
+2,021 source files, zero exceptions, maximum 250 lines. The failed first source
+attempt is excluded from these passing totals; no unchanged source matrix was
+rerun for a label refresh.
+
+Computed, numeric, Symbol and collection keys remain unsupported by this
+module subset, not newly illegal Gravity. Quote inertness, nested-function
+and Set-call fences, local work/depth bounds, raw3/B51, runtime and public
+interfaces remain unchanged. Source composition is a separate affected check;
+neither focused records nor module routing establish checked effects,
+authoritative migration, full SH-07, self-hosting or release.
+
 ### Compiler-module Map-value calls: development increment
 
 The existing Map-order, module-source and module-bundle components extend the
