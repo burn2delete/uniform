@@ -635,6 +635,73 @@ their public-boundary obligations; the present timings do not establish which
 call dominates or justify an accepted-proof cache. Do not run an unchanged
 composition merely to collect that breakdown.
 
+The bounded read-only follow-up identifies two concrete repeated paths, not
+their time dominance. `00042-sh06-c6-lowering-from-resolution-artifact.clj`
+freshly verifies its supplied C5 artifact before delegating to
+`00041-compiler-c6-lowering-source-artifact.clj`, which verifies that same
+artifact again. The bounded C5 verifier in `00879` verifies SH05, reconstructs
+the module request, reruns resolution and checks the expected envelope.
+The SH02 binding path in `00750` compiles its envelope-owner plan when no
+plan-emission context exists. Existing scoped binding reuse means repeated
+calls do not necessarily imply repeated complete construction. In particular,
+30 observed reader delegations are not 30 measured distinct plans.
+
+During the next genuinely necessary changed composition, collect bounded call
+counts and inclusive/exclusive intervals at those existing boundaries. Then
+decide whether `00042` can delegate the mandatory fresh verification solely to
+`00041` while preserving its kind rejection and the standalone public
+consumer's verification behavior. That is a bounded proposed follow-up, not a
+current change, verification bypass or accepted-proof cache. Any such change
+needs malformed/stale input and affected composition checks. It must preserve
+source, parent/dependency, profile/target/grant, verifier catalog, reader,
+macro/resolver, rule DATA, emitter-freshness and seed/executor invalidation.
+No wrapper, lane or unchanged proof run is needed for this assessment.
+
+### Genuine source aliases: behavior and corrected span expectations
+
+The new direct selector `sh06-b-source-duplicate-alias-composition` uses two
+genuine library artifacts and a caller, not caller-supplied binding candidates.
+Distinct `left` and `right` qualifiers resolve to the corresponding exported
+definitions. Fresh C5 verification, authenticated hosted-C6 consumption,
+surface-to-Core mapping and zero forbidden subject-read attempts passed.
+The otherwise equivalent caller with two `duplicate` qualifiers rejects with
+`C5-ALIAS` / `duplicate-namespace-alias`, both actual library artifact IDs and
+namespace import records. Neither an accepted caller nor a Core result is
+returned for the negative. Paired QST fixtures receive byte/parser parity only;
+the three accepted artifact constructions and the rejected caller use Gravity.
+
+The actual development run at `c4bf0039` completed with exit 1: one test,
+42 passing assertions, three failures and no errors. All 45 assertions ran.
+The failures were test expectations, not missed alias rejection: the effective
+module constructor supplies authenticated header ranges under `:all` and
+`:primary`, not a `:form-index`; public diagnostic transport adds a convenience
+`:source` only to the outer span. Import candidate spans therefore equal the
+public span's `:all`/`:primary` projection, not its complete map.
+
+The future test now checks the actual header range against this fixture's
+source and header byte extent, requires the primary range in the nonempty
+range vector, and compares import ranges without the public convenience key.
+It retains the separate source-path assertion, both actual dependency IDs,
+nil body syntax ID and empty generated-origin chain. This header diagnostic
+locates the complete namespace form, not each individual alias clause; no
+body-reference or macro-origin locator is fabricated. The original aggregate
+remains failed and the added assertion is not retroactively executed evidence.
+The corrected future selector has 46 assertions. A separate read-only check of
+the complete retained diagnostic passed one test/four assertions for the
+outer source path, primary header extent, primary/all membership and both
+candidate ranges. It neither rebuilt source products nor changed the original
+42-pass/three-failure outcome.
+
+Independent review accepted the qualified positive composition and negative
+behavior, and identified the same oracle correction. Selected work took
+166.573 seconds after 7.040 seconds of namespace loading at 2 GiB. These
+intervals do not separate construction, verification and scheduling. No
+production compiler change or unchanged source replay is indicated. The
+remaining syntax/resolver/reader subjects and other explicit negative criteria
+still need bounded coverage decisions. SH-05.1, SH-05.6 and SH-06.6 remain open;
+the resolver remains development-unadmitted. No migration or release claim
+follows from this composition.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible

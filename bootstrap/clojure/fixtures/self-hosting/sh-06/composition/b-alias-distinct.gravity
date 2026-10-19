@@ -1,0 +1,8 @@
+(ns example.b-alias-distinct
+  (:profile :meta) (:target :jvm)
+  (:requires [example.b-referred-left :as left]
+             [example.b-referred-right :as right])
+  (:exports [probe])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn probe [value]
+  (left/b-shared-value (right/b-shared-value value)))
