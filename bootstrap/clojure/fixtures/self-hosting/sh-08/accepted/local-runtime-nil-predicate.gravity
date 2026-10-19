@@ -1,0 +1,68 @@
+(ns self-hosting.sh08.nil-predicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw :io/write}) (:capabilities #{:io/stdout}) (:safety :safe)
+  (:exports [known-mode unknown-mode nil-value false-value integer-value string-value keyword-value symbol-value vector-value map-value set-value list-value observed transferred main]))
+
+(defn w5-se-canonical-form [mode]
+  (if (= mode :artifact)
+    :canonical-content-hash
+    (if (= mode :manifest)
+      :canonical-manifest
+      (if (= mode :diagnostic)
+        :stable-code-and-source-span
+        (if (= mode :conformance)
+          :accepted-rejected-transcripts
+          (if (= mode :runtime-output)
+            :canonical-runtime-output
+            (if (= mode :ir-modulo-id)
+              :normalized-structure-modulo-id
+              (if (= mode :reviewed-delta)
+                :reviewed-provenance-delta
+                nil))))))))
+
+(defn known-mode [] :- Bool
+  (nil? (w5-se-canonical-form :artifact)))
+
+(defn unknown-mode [] :- Bool
+  (nil? (w5-se-canonical-form :unknown)))
+
+(defn nil-value [] :- Bool
+  (nil? nil))
+
+(defn false-value [] :- Bool
+  (nil? false))
+
+(defn integer-value [] :- Bool
+  (nil? 7))
+
+(defn string-value [] :- Bool
+  (nil? "nil"))
+
+(defn keyword-value [] :- Bool
+  (nil? :nil))
+
+(defn symbol-value [] :- Bool
+  (nil? 'nil/data))
+
+(defn vector-value [] :- Bool
+  (nil? []))
+
+(defn map-value [] :- Bool
+  (nil? {}))
+
+(defn set-value [] :- Bool
+  (nil? '#{}))
+
+(defn list-value [] :- Bool
+  (nil? '()))
+
+(defn observed [] :- Bool
+  (nil? (do (println "operand") nil)))
+
+(defn transferred [] :- Bool
+  (try
+    (nil? (throw "stop"))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (known-mode))
