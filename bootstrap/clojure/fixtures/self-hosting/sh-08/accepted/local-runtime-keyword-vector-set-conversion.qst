@@ -13,22 +13,22 @@
 (defn c16-type-check-fields [] :- Set
   (set (conj w5-c16-semantic-fields :source)))
 
-(defn field-count [] :- Integer
+(defn field-count []
   (count (c16-type-check-fields)))
 
 (defn field-set? [] :- Bool
   (set? (c16-type-check-fields)))
 
-(defn input-count [] :- Integer
+(defn input-count []
   (count w5-c16-semantic-fields))
 
-(defn duplicate-count [] :- Integer
+(defn duplicate-count []
   (count (set [:same :same])))
 
-(defn namespace-count [] :- Integer
+(defn namespace-count []
   (count (set [:a/name :b/name :name])))
 
-(defn empty-count [] :- Integer
+(defn empty-count []
   (count (set [])))
 
 (defn transferred [] :- Bool
