@@ -1,0 +1,6 @@
+(ns example.b-profile-incompatible
+  (:profile :hosted) (:target :jvm)
+  (:requires [example.b-referred-left :as left])
+  (:exports [forward])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn forward [value] (left/b-shared-value value))

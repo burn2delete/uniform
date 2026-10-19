@@ -764,6 +764,57 @@ SH-05.1, SH-05.6 and SH-06.6 remain open; the resolver remains
 development-unadmitted. No Gravity-C6 body execution, current-closure migration,
 self-hosting, seedless or release support follows from these checks.
 
+### Same-target profile-edge source rejection
+
+The distinct `sh06-b-source-profile-incompatible-composition` check ran at
+development revision `8179c8e3` plus its exact test/fixture changes and passed
+one test/27 assertions. It constructed a genuine accepted/verified meta/JVM
+library artifact, then supplied it through the ordinary module-input API to a
+hosted/JVM caller without an accepted boundary. C5 rejected the caller with
+`C5-CROSS-PROFILE` and reason `:unsupported-or-impure-module-boundary`.
+
+The checks cover the actual library's profile/target/capabilities, the caller's
+active profile/target, dependency namespace/alias, authenticated namespace-header
+syntax locator, wrapped header source span, structured remediation and empty
+candidate list. A header locator is not a generated function-body macro origin.
+The diagnostic's dependency record precedes enrichment with the actual callee's
+metadata/identity; the test does not mistake that header record for the verified
+library contract. G compiled through the source frontdoor; paired Q received
+byte/parser parity only. No accepted caller or downstream C6 result is claimed.
+
+Selected work took 53.028 seconds after 6.802 seconds of namespace loading with
+a 2 GiB heap. This is one new negative composition, not the cross-target attempt
+below rerun under a new label, and not complete profile/capability or closure
+coverage. SH-05.1, SH-05.6 and SH-06.6 remain open and the resolver remains
+development-unadmitted.
+
+### Target-edge source coverage limit
+
+A bounded attempt at development revision `8179c8e3` tried to exercise a real
+target-incompatible import: a fresh accepted/verified JVM library artifact
+supplied to a WASM caller through the ordinary source constructor. The selected
+Stage0 module parser rejected the caller first with `B1-TARGET-UNSUPPORTED`,
+target `:wasm`, supported set `#{:jvm}`, and the caller's source/form-0 locator.
+It did not produce a caller C5 compatibility diagnostic or dependency edge.
+
+The attempted test failed: one test, 15 passing and 13 failing assertions,
+zero errors. Selected work took 43.162 seconds after 6.826 seconds of namespace
+loading with a 2 GiB heap. Passing checks on absent C5 fields do not establish
+C5 behavior. Independent review confirmed the earlier reachability assumption
+was wrong: tracing the C5 policy alone had missed the earlier target fence.
+The exact attempted test/paired-fixture patch and full raw log/timing receipt
+were retained separately before removing these root-owned uncommitted additions.
+The failed attempt remains failed; no corrected source run was made.
+
+The existing `parse-module-profile-and-target-checks` regression already covers
+the Stage0 unsupported-target fence, so no duplicate test or target override
+was added. The normalized C5 module-policy test still covers its own target
+compatibility rule. Genuine cross-target source composition remains an explicit
+gap under the selected JVM-only source frontdoor, not a demonstrated resolver
+defect or permission to fabricate a module artifact, weaken the fence or expand
+backend support. Revisit it when an actual target-support or stable migration
+decision makes that composition reachable. All three partial groups stay open.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
@@ -776,6 +827,14 @@ changes invalidate binding graphs and their consumers. Seed compiler, rule DATA
 or generic executor changes can invalidate execution even with unchanged
 Gravity owners. Unrelated target implementation changes outside this selected
 closure do not automatically require frontend replay.
+
+The later SH-07 integer-predicate revision changed the P15 emitter, which is a
+selected toolchain-freshness input even though this frontend check does not
+execute its lowering body. Earlier results retain their actual tested
+source/toolchain cohort; their authority is not renewed for the new fingerprint.
+Ordinary development does not replay those products just to refresh a stamp.
+A concrete stable-revision admission decision must select the intended cohort
+and satisfy its applicable invalidation and fresh-evidence requirements.
 
 A stable migration decision still requires its fresh provenance, equivalence,
 bootstrap and independent-review evidence under BOOT3/D9. None is renewed here.
