@@ -6531,6 +6531,160 @@
         (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))))
 
+(deftest current-gravity-keyword-set-contains-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "keyword-set-membership" 11]
+                                         ["rejected" "keyword-set-contains-string-needle" 1]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))))
+
+(deftest current-gravity-keyword-set-contains-authenticated-composition
+  ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/keyword-set-membership.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bf-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Keyword-Set C7 source prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Keyword-Set C7 verification prerequisite rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        descriptors (mapv :applied-keyword-set-contains (filter #(= :direct-keyword-set-contains (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-keyword-set-contains-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        membership-ir (filterv #(and (= :builtin-call (:op %)) (= 'contains? (:function %))) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Keyword-Set C8 source prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Keyword-Set C8 verification prerequisite rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        specs [['hit-values true ""] ['literal-values true ""] ['missing-values false ""]
+               ['empty-values false ""] ['namespaced-values true ""] ['local-values true ""]
+               ['sequenced-values true ""] ['left-transfer false ""]
+               ['right-transfer false ""] ['main true ""]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected output]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []} {} "" (:functions assembled) []])
+                              reference? (not (contains? '#{left-transfer right-transfer} function))]
+                          (is (= [expected output :normal] actual) (str function))
+                          ;; The existing raw seed has no typed catch instruction.
+                          (when reference?
+                            (let [reference (atom nil)
+                                  reference-output (with-out-str (reset! reference (original runtime assembled function [])))]
+                              (is (= [@reference reference-output :normal] actual) (str function " seed interpreter on emitted IR parity"))))
+                          actual)) specs)
+        t6 (System/nanoTime)]
+    (is (= 11 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 8 (count descriptors) (count rows)))
+    (is (= 9 (count membership-ir)))
+    (let [old-map (filter #(= :direct-map-contains (:dispatch %)) (:call-type-facts facts))]
+      (is (= 1 (count old-map)))
+      (is (= :not-invoked (get-in (first old-map) [:applied-map-contains :application]))))
+    (is (= {:normal 7 :not-invoked 1} (frequencies (map :application descriptors))))
+    (is (= 10 (count results)))
+    (doseq [instruction membership-ir]
+      (is (= #{:op :function :args} (set (keys instruction))))
+      (is (= 2 (count (:args instruction)))))
+    (let [constructors (filter #(= :set-literal (:op %)) instructions)]
+      (is (= 1 (count constructors)))
+      (is (= 2 (count (:items (first constructors))))))
+    (doseq [descriptor descriptors]
+      (let [id (:call-core-node-id descriptor)]
+        (is (= :gravity.type/applied-keyword-set-contains (:kind descriptor)))
+        (is (= :sh08-keyword-set-contains-v1 (:version descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= 'contains? (:operation descriptor)))
+        (is (= {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
+                           :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
+                           :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
+                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
+                           :provider-cpu-bound :not-established} (:membership-policy descriptor)))
+        (is (= (if (= :normal (:application descriptor)) :gravity.type/bool :gravity.type/never)
+               (:return descriptor) (:result-type descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{} (get-in graph [:nodes id :direct])))
+        (is (nil? (get-in graph [:nodes id :allocation])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+    (doseq [name ['hit-values 'missing-values 'empty-values 'namespaced-values 'local-values 'sequenced-values 'main]]
+      (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions ['literal-values :function-id]) :inferred])))
+    (doseq [name ['left-transfer 'right-transfer]]
+      (is (= [] (get-in graph [:functions (get-in functions [name :function-id]) :throws]))))
+    (doseq [descriptor descriptors :when (= :not-invoked (:application descriptor))]
+      (is (contains? (get-in graph [:nodes (:call-core-node-id descriptor) :transitive]) :error/throw)))
+    (let [descriptor (first descriptors) forged (assoc-in descriptor [:membership-policy :comparison] :identity)
+          hostile (walk/prewalk #(if (= descriptor %) forged %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [id (:call-core-node-id (first descriptors))
+          forged (reseal effects (update-in graph [:nodes id :dependencies] pop))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding forged)))))
+    (is (= 2 (count @verified)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/keyword-set-contains-string-needle.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bf-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= [["C7-TYPE-MISMATCH" :keyword-set-contains-operand-type-required]
+              ["C7-ANNOTATION" :unsupported-or-unresolved-core-node-type]]
+             (mapv (juxt :rule :reason) diagnostics)) (pr-str diagnostics))
+      (println (pr-str {:bf-keyword-set-contains-negative true :diagnostics diagnostics})))
+    (println (pr-str {:bf-keyword-set-contains-positive true :function-table-entry-invocations (count results)
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :seed-interpreter-on-emitted-ir-entries 8 :gravity-runtime-transfer-entries 2
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))))
+
 (deftest current-gravity-keyword-set-equality-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
