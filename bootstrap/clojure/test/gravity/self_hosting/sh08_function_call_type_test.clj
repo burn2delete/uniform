@@ -11554,6 +11554,7 @@
     (when (= :accepted (:status result))
       (is (= :sh08-map-get-private-first-entry-v1 (:version descriptor)))
       (is (= :gravity.type/keyword (:type result)))
+      (is (every? (set (:invalidation descriptor)) [:mutations :immutable-binding-links :incoming-arguments :source-spine]))
       (is (= [:sha256 :sha512] (mapv #(get-in % [:selection :part :shape :domain :values 0])
                                      (get-in descriptor [:presence-proof :entries]))))
       (is (= :present-get (get-in descriptor [:presence-proof :get-call-core-node-id])))
@@ -11588,6 +11589,28 @@
                                         (toString [] (swap! callbacks inc) (throw (AssertionError. "BU opaque string"))))]
         (is (= :rejected (:status (check core (assoc-in established [:inner-operator :presence-proof :get-call-core-node-id] opaque) 65536))))
         (is (zero? @callbacks))))))
+
+(deftest sh08-private-first-entry-composed-owner-guards-development-kernel
+  (let [input (private-first-entry-input) {:keys [core node call nodes bindings types]} input
+        route (invoke-c7 'sh08-pc-route [core node call nodes bindings 65536])
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU owner hashed")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "BU owner compared")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "BU owner printed"))))]
+    (is (= :accepted (:status route)) (pr-str route))
+    (doseq [id [:inner-get :first-call :present-get]]
+      (let [changed-nodes (assoc-in nodes [id :evaluation :owner-function-syntax-id] opaque)
+            current-node (get changed-nodes :inner-get)
+            result (invoke-c7 'sh08-pc-route [core current-node call changed-nodes bindings 65536])]
+        (is (not= :accepted (:status result)))))
+    (let [changed (assoc-in nodes [:input :evaluation :owner-function-syntax-id] opaque)]
+      (is (= :rejected (:status (invoke-c7 'sh08-pc-parent-parameter [route core changed bindings 65536])))))
+    (is (zero? @callbacks))
+    (doseq [legacy [(private-entry-get-input) (map-present-get-input :file)]]
+      (is (= {:status :not-applicable :work-count 0}
+             (invoke-c7 'sh08-pc-candidate [(:core legacy) (:node legacy) (:call legacy) (:nodes legacy) (:types legacy) 0]))))
+    (is (= :accepted (:status (invoke-c7 'sh08-pc-candidate [core node call nodes types 65536]))))))
 
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []

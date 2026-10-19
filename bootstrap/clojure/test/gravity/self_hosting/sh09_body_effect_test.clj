@@ -5374,10 +5374,14 @@
     (is (= :accepted (:status result)) (pr-str result))
     (is (= :accepted (:status context)) (pr-str context))
     (when (= :accepted (:status result) (:status context))
+      (is (= :sh08-map-get-private-first-entry-v1 (get-in context [:context :private-selected-checks :inner-get :version])))
       (is (true? (valid core current)))
       (is (= context (build request facts (:work-count context))))
       (is (= :body-deferred-work-limit (:reason (build request facts (dec (:work-count context))))))
       (doseq [f [(assoc-in current [:type-table :operator :key] :changed)
+                 (assoc-in current [:type-table :input :member-types 1] :gravity.type/unknown)
+                 (assoc-in current [:type-table :input-1 :member-types 1] :gravity.type/unknown)
+                 (assoc-in current [:type-table :signatures-reference :element-types 0] :gravity.type/unknown)
                  (assoc-in current [:type-table :first-operator :bounds-proof :selected-index] 1)
                  (assoc-in current [:call-type-facts 0 :effects] [:io/write])
                  (assoc-in current [:constraint-ledger 1 :rhs] :gravity.type/string)
@@ -5385,6 +5389,17 @@
                  (update current :constraint-ledger conj (second (:constraint-ledger current)))]]
         (is (false? (valid core f))))
       (is (false? (valid (assoc-in core [:calls 0 :argument-node-ids 1] :inner-key) current)))
+      (let [first-edge-index (first (keep-indexed #(when (= :first-call (:call-core-node-id %2)) %1) (:call-edges core)))
+            payload-index (first (keep-indexed #(when (= :entry-value-0-0 (:node-id %2)) %1) (:nodes core)))]
+        (is (false? (valid (assoc-in core [:call-edges first-edge-index :ordinal] 99) current)))
+        (is (false? (valid (assoc-in core [:mutations] [{:target-binding-id :signature-binding}]) current)))
+        (is (= :rejected (:status (build (assoc request :canonical-core-artifact
+                       (assoc-in core [:nodes payload-index :attributes :quoted-value]
+                         [(array-map :algorithm :sha512 :status :verified)])) facts 65536))))
+        (is (false? (leaf 'body-mg-present-call-valid? core current
+                          (assoc-in bindings [:first-binding :definition-syntax-id] :changed) node call edge nodes)))
+        (is (= :body-deferred-work-limit (:reason (build
+                     (update-in request [:canonical-core-artifact :nodes] into (repeat 100000 {:node-id :oversized})) facts 65536)))))
       (let [parent-index (first (keep-indexed #(when (= :present-get (:node-id %2)) %1) (:nodes core)))]
         (is (false? (valid (assoc-in core [:nodes parent-index :source :syntax-id] :changed) current))))
       (doseq [f [(assoc-in facts [:type-table :inner-operator :presence-proof :entries] [])

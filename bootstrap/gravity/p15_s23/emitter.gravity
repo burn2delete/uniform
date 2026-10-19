@@ -6535,6 +6535,33 @@
             {:status :rejected :reason :map-get-source-mismatch :work-count used}))))
     {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
 
+(defn p15-s23-pc-candidate [core node call nodes types budget]
+  ; Source structure chooses this probe; descriptor tags never do.
+  (let [args (get call :argument-node-ids)
+        receiver (p15-s23-pc-current-node (if (vector? args) (get args 0) nil) nodes)
+        key-node (p15-s23-pc-current-node (if (vector? args) (get args 1) nil) nodes)
+        receiver-type (get types (get receiver :node-id))]
+    (if (if (vector? args) (if (= 2 (count args))
+          (if (= :literal (get key-node :core-form))
+            (if (= :keyword (get (get key-node :attributes) :literal-kind))
+              (if (= :gravity.type/map receiver-type) true
+                (if (map? receiver-type) (= :gravity.type/map (get receiver-type :kind)) false)) false) false) false) false)
+      (if (= :reference (get receiver :core-form))
+        (let [records (get core :lexical-bindings) width (if (vector? records) (count records) 0) work (* 2 width)
+              bid (get (get receiver :attributes) :binding-id)]
+          (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+            (if (if (p15-s23-pc-id? bid) (if (vector? records)
+                  (map? (p15-s23-pe-one records :binding-id bid)) false) false)
+              {:status :accepted :work-count work} {:status :not-applicable :work-count work})))
+        (if (= :call (get receiver :core-form))
+          (let [children (get receiver :children) operator (p15-s23-pc-current-node (if (vector? children) (get children 0) nil) nodes)
+                symbol (get (get operator :attributes) :symbol)]
+            (if (if (= :reference (get operator :core-form))
+                  (if (symbol? symbol) (if (= 'first symbol) true (= 'gravity.core/first symbol)) false) false)
+              {:status :accepted :work-count 0} {:status :not-applicable :work-count 0}))
+          {:status :not-applicable :work-count 0}))
+      {:status :not-applicable :work-count 0})))
+
 (defn p15-s23-pc-route [core node call nodes bindings budget]
   (let [calls (get core :calls) edges (get core :call-edges)
         base (+ 32 (* 4 (if (vector? calls) (count calls) 0)) (* 4 (if (vector? edges) (count edges) 0)))]
@@ -6563,7 +6590,12 @@
                             (if (if (p15-s23-pc-id? get-bid) (if (vector? get-args) (if (= 2 (count get-args))
                                   (if (p15-s23-pc-id? (get get-args 0)) (p15-s23-pc-id? (get get-args 1)) false) false) false) false)
                               (if (p15-s23-mg-binding? (get bindings get-bid) (get core :module))
-                                (if (p15-s23-typed-all
+                                (if (if (p15-s23-pc-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                    (if (p15-s23-pc-id? (get (get first-node :evaluation) :owner-function-syntax-id))
+                                     (if (p15-s23-pc-id? (get (get get-node :evaluation) :owner-function-syntax-id))
+                                      (if (p15-s23-pc-id? (get first-edge :caller-function-syntax-id))
+                                        (if (p15-s23-pc-id? (get get-edge :caller-function-syntax-id))
+                                  (p15-s23-typed-all
                                       [(= :call (get first-node :core-form) (get get-node :core-form))
                                        (= false (= first-id get-id)) (= false (= first-id (get node :node-id)))
                                        (= false (= get-id (get node :node-id)))
@@ -6572,7 +6604,9 @@
                                        (p15-s23-pc-id? (get first-call :operator-node-id)) (p15-s23-pc-id? (get get-call :operator-node-id))
                                        (map? first-edge) (map? get-edge)
                                        (= (get (get node :evaluation) :owner-function-syntax-id)
-                                          (get first-edge :caller-function-syntax-id) (get get-edge :caller-function-syntax-id))])
+                                          (get (get first-node :evaluation) :owner-function-syntax-id)
+                                          (get (get get-node :evaluation) :owner-function-syntax-id)
+                                          (get first-edge :caller-function-syntax-id) (get get-edge :caller-function-syntax-id))]) false) false) false) false) false)
                                   {:status :accepted :work-count total
                                    :first-node-id first-id :first-call first-call :first-edge first-edge
                                    :get-node-id get-id :get-call get-call :get-edge get-edge
@@ -6635,11 +6669,11 @@
 (defn p15-s23-pc-parent-parameter [route core nodes bindings budget]
   ; The outer lookup must be the existing private parameter owner.
   (let [call (get route :get-call) id (get (get call :argument-node-ids) 0)
-        receiver (p15-s23-pc-current-node id nodes) records (get core :function-records)
+        receiver (p15-s23-pc-current-node id nodes) owner-id (get (get receiver :evaluation) :owner-function-syntax-id) records (get core :function-records)
         base (+ 32 (* 4 (if (vector? records) (count records) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
-      (if (vector? records)
-        (let [record (p15-s23-pe-one records :function-syntax-id (get (get receiver :evaluation) :owner-function-syntax-id))
+      (if (if (vector? records) (p15-s23-pc-id? owner-id) false)
+        (let [record (p15-s23-pe-one records :function-syntax-id owner-id)
               ids (get record :parameter-binding-ids) bid (get (get receiver :attributes) :binding-id)
               used (+ base (if (vector? ids) (* 2 (count ids)) 0))]
           (if (> used budget) {:status :rejected :reason :map-get-work-limit :work-count used}
@@ -6676,7 +6710,7 @@
         vector-type (get parent :result-type) map-type (get first-descriptor :result-type)
         base (+ 32 (* 8 (if (vector? entries) (count entries) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
-      (if (if (= :p15-s23-map-get-private-entry-v1 (get parent :version))
+      (if (if (= :sh08-map-get-private-entry-v1 (get parent :version))
             (if (= :gravity.type/applied-vector-first (get first-descriptor :kind))
               (if (= :normal (get header :application))
                 (if (vector? entries) (if (< 0 (count entries)) (<= (count entries) 1024) false) false) false) false) false)
@@ -6708,7 +6742,7 @@
 
 (defn p15-s23-pc-finish [header route project]
   (let [type (get project :type)]
-    (assoc header :version :p15-s23-map-get-private-first-entry-v1
+    (assoc header :version :sh08-map-get-private-first-entry-v1
       :parameter-types (get header :argument-types) :return type :result-type type
       :lookup-policy (assoc (get header :lookup-policy) :input :private-first-entry)
       :presence-proof {:kind :private-first-entry-key-presence
@@ -6717,7 +6751,7 @@
                        :receiver-links (get route :receiver-links) :vector-links (get route :vector-links)
                        :entries (get project :rows) :selected-type type}
       :invalidation (conj (conj (conj (get header :invalidation) :parent-call-descriptors)
-                           :parent-call-facts) :parent-producer-rows))))
+                           :parent-call-facts) :parent-producer-rows :mutations :immutable-binding-links :incoming-arguments :source-spine))))
 
 (defn p15-s23-pc-descriptor-work [supplied expected budget]
   ; Resource payment dominates schema tests and equality. Exact reconstruction
@@ -6737,6 +6771,171 @@
         {:status :rejected :reason :map-get-source-mismatch :work-count used})
       walked)))
 
+(defn p15-s23-pc-without [value fields]
+  (if (map? value)
+    (loop [remaining (vec value) out {}]
+      (if (= 0 (count remaining)) out
+        (let [entry (first remaining) key (get entry 0)]
+          (if (keyword? key)
+            (recur (rest remaining) (if (contains? fields key) out (assoc out key (get entry 1)))) nil)))) nil))
+
+(defn p15-s23-pc-entry-metadata-work [entries budget]
+  (loop [remaining entries out [] used 0]
+    (if (= 0 (count remaining)) {:status :accepted :work-count used :value out}
+      (let [entry (first remaining) work (+ used 8 (* 4 (if (map? entry) (count entry) 0)))]
+        (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+          (if (map? entry)
+            (let [value (p15-s23-pc-without entry #{:argument-shape :selected-part})]
+              (if (map? value) (recur (rest remaining) (conj out value) work)
+                {:status :rejected :reason :map-get-source-mismatch :work-count work}))
+            {:status :rejected :reason :map-get-source-mismatch :work-count work}))))))
+
+(defn p15-s23-pc-shape-metadata [shape]
+  (p15-s23-typed-project shape [:status :shape-kind :type :constructor-origin :constructor-node-id :node-id
+                       :source :data-origin :binding-links :shape-size]))
+
+(defn p15-s23-pc-part-metadata [part]
+  (p15-s23-typed-project part [:coordinate :key :key-node-id :value-node-id :key-data-origin :value-data-origin]))
+
+(defn p15-s23-pc-ancestry-work [entries key budget]
+  (loop [remaining entries out [] used 0]
+    (if (= 0 (count remaining)) {:status :accepted :value out :work-count used}
+      (let [entry (first remaining)]
+        (if (= :not-invoked (get entry :entry))
+          (recur (rest remaining) (conj out nil) used)
+          (let [argument (get entry :argument-shape) outer (get entry :selected-part)
+                vector (get outer :shape) vector-parts (get vector :parts)
+                head (if (vector? vector-parts) (get vector-parts 0) nil)
+                map-shape (get head :shape) parts (get map-shape :parts)
+                width (if (vector? parts) (count parts) 0) prefix (+ used 32 (* 8 width))]
+            (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
+              (if (if (vector? vector-parts) (if (< 0 (count vector-parts)) (if (vector? parts) (<= width 512) false) false) false)
+                (let [selected (loop [i 0 seen #{} found nil]
+                                 (if (= i width) found
+                                   (let [part (get parts i) actual (get part :key)]
+                                     (if (keyword? actual)
+                                       (if (contains? seen actual) nil
+                                         (if (= (+ 1 (* 2 i)) (get part :coordinate))
+                                           (recur (+ i 1) (conj seen actual) (if (= key actual) part found)) nil)) nil))))
+                      data {:shapes [(p15-s23-pc-shape-metadata argument) (p15-s23-pc-shape-metadata vector)
+                                     (p15-s23-pc-shape-metadata map-shape)]
+                            :parts [(p15-s23-pc-part-metadata outer) (p15-s23-pc-part-metadata head)
+                                    (p15-s23-pc-part-metadata selected)]
+                            :vector-length (count vector-parts) :selected-shape (get selected :shape)}
+                      measured (p15-s23-pc-evidence-work data (- budget prefix)) total (+ prefix (get measured :work-count))]
+                  (if (= :accepted (get measured :status))
+                    (if (map? selected) (recur (rest remaining) (conj out data) total)
+                      {:status :rejected :reason :map-get-private-first-entry-presence-required :work-count total})
+                    (assoc measured :work-count total)))
+                {:status :rejected :reason :map-get-source-mismatch :work-count prefix}))))))))
+
+(defn p15-s23-pc-parent-data-work [descriptor inner-key budget]
+  (let [proof (get descriptor :presence-proof) entries (get proof :entries)
+        base (+ 32 (* 8 (if (vector? entries) (count entries) 0))
+                   (* 4 (if (map? descriptor) (count descriptor) 0)) (* 4 (if (map? proof) (count proof) 0)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (if (if (map? descriptor) (if (= :sh08-map-get-private-entry-v1 (get descriptor :version))
+            (if (map? proof) (if (vector? entries) (<= (count entries) 1024) false) false) false) false)
+        (let [rows (p15-s23-pc-entry-metadata-work entries (- budget base)) prefix (+ base (get rows :work-count))]
+          (if (= :accepted (get rows :status))
+            (let [data {:header (p15-s23-pc-without descriptor #{:presence-proof}) :proof (p15-s23-pc-without proof #{:entries})
+                        :entries (get rows :value)}
+                  measured (p15-s23-pc-evidence-work data (- budget prefix)) used (+ prefix (get measured :work-count))
+                  ancestry (if (= :accepted (get measured :status)) (p15-s23-pc-ancestry-work entries inner-key (- budget used)) measured)
+                  total (+ used (if (= :accepted (get measured :status)) (get ancestry :work-count) 0))]
+              (if (= :accepted (get ancestry :status))
+                {:status :accepted :work-count total :value (assoc data :ancestry (get ancestry :value))}
+                (assoc ancestry :work-count total)))
+            (assoc rows :work-count prefix)))
+        {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
+
+(defn p15-s23-pc-parent-match-work [supplied expected key budget]
+  (let [actual (p15-s23-pc-parent-data-work supplied key budget) used (get actual :work-count)
+        rebuilt (if (= :accepted (get actual :status))
+                  (p15-s23-pc-parent-data-work expected key (- budget used)) actual)
+        total (+ used (if (= :accepted (get actual :status)) (get rebuilt :work-count) 0))]
+    (if (= :accepted (get rebuilt :status))
+      (if (= (get actual :value) (get rebuilt :value))
+        {:status :accepted :work-count total}
+        {:status :rejected :reason :map-get-source-mismatch :work-count total})
+      (assoc rebuilt :work-count total))))
+
+(defn p15-s23-pc-carried-parent-work [descriptor applied-key inner-key budget]
+  (if (= :applied-map-get applied-key) (p15-s23-pc-parent-data-work descriptor inner-key budget)
+    (let [walked (p15-s23-pc-evidence-work descriptor budget)]
+      (if (= :accepted (get walked :status)) (assoc walked :value descriptor) walked))))
+
+(defn p15-s23-pc-fact-data [fact applied-key application applied]
+  {:fields (p15-s23-pc-without fact (conj #{:fact-id-request} applied-key))
+   :request (p15-s23-pc-without (get fact :fact-id-request) #{:application}) :application application :applied applied})
+
+(defn p15-s23-pc-fact-data-work [fact applied-key inner-key budget]
+  (let [request (get fact :fact-id-request)
+        base (+ 32 (* 4 (if (map? fact) (count fact) 0)) (* 4 (if (map? request) (count request) 0)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (let [application (p15-s23-pc-carried-parent-work (get request :application) applied-key inner-key (- budget base))
+            used (+ base (get application :work-count))
+            applied (if (= :accepted (get application :status))
+                      (p15-s23-pc-carried-parent-work (get fact applied-key) applied-key inner-key (- budget used)) application)
+            spent (+ used (if (= :accepted (get application :status)) (get applied :work-count) 0))]
+        (if (= :accepted (get applied :status))
+          (let [data (p15-s23-pc-fact-data fact applied-key (get application :value) (get applied :value))
+                measured (p15-s23-pc-evidence-work (p15-s23-typed-project data [:fields :request]) (- budget spent))
+                total (+ spent (get measured :work-count))]
+            (if (= :accepted (get measured :status)) {:status :accepted :work-count total :value data}
+              (assoc measured :work-count total)))
+          (assoc applied :work-count spent))))))
+
+(defn p15-s23-pc-row-data [row application dependencies]
+  {:fields (p15-s23-pc-without row #{:constraint-id-request :dependencies})
+   :request (p15-s23-pc-without (get row :constraint-id-request) #{:application}) :application application :dependencies dependencies})
+
+(defn p15-s23-pc-row-data-work [row applied-key inner-key budget]
+  (let [request (get row :constraint-id-request)
+        base (+ 32 (* 4 (if (map? row) (count row) 0)) (* 4 (if (map? request) (count request) 0)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (let [application (p15-s23-pc-carried-parent-work (get request :application) applied-key inner-key (- budget base))
+            used (+ base (get application :work-count))
+            applied (if (= :accepted (get application :status))
+                      (p15-s23-pc-carried-parent-work (get row :dependencies) applied-key inner-key (- budget used)) application)
+            spent (+ used (if (= :accepted (get application :status)) (get applied :work-count) 0))]
+        (if (= :accepted (get applied :status))
+          (let [data (p15-s23-pc-row-data row (get application :value) (get applied :value))
+                measured (p15-s23-pc-evidence-work (p15-s23-typed-project data [:fields :request]) (- budget spent))
+                total (+ spent (get measured :work-count))]
+            (if (= :accepted (get measured :status)) {:status :accepted :work-count total :value data}
+              (assoc measured :work-count total)))
+          (assoc applied :work-count spent))))))
+
+(defn p15-s23-pc-parent-carriers-work [parents current-parent current-first get-data first-data core facts inner-key budget]
+  (let [get-id (get parents :get-call-id) first-id (get parents :first-call-id)
+        get-facts (p15-s23-pe-select (get facts :call-type-facts) :call-core-node-id get-id)
+        first-facts (p15-s23-pe-select (get facts :call-type-facts) :call-core-node-id first-id)
+        get-rows (p15-s23-pe-select (p15-s23-pe-select (get facts :constraint-ledger) :producer-rule :sh08-map-get-v1)
+                   :lhs {:core-node-id get-id :projection :map-get})
+        first-rows (p15-s23-pe-select (p15-s23-pe-select (get facts :constraint-ledger) :producer-rule :sh08-vector-first-v1)
+                     :lhs {:core-node-id first-id :projection :vector-first})]
+    (if (= 1 (count get-facts) (count first-facts) (count get-rows) (count first-rows))
+      (loop [pending [[(first get-facts) :fact :applied-map-get
+                       (p15-s23-pc-fact-data (p15-s23-mg-call-fact current-parent (get core :module)) :applied-map-get get-data get-data)]
+                      [(first first-facts) :fact :applied-vector-first
+                       (p15-s23-pc-fact-data (p15-s23-lq-call-fact current-first (get core :module)) :applied-vector-first first-data first-data)]
+                      [(first get-rows) :row :applied-map-get
+                       (p15-s23-pc-row-data (p15-s23-mg-constraint current-parent) get-data get-data)]
+                      [(first first-rows) :row :applied-vector-first
+                       (p15-s23-pc-row-data (p15-s23-lq-constraint current-first) first-data first-data)]] used 0]
+        (if (= 0 (count pending)) {:status :accepted :work-count used}
+          (let [item (first pending)
+                checked (if (= :fact (get item 1))
+                          (p15-s23-pc-fact-data-work (get item 0) (get item 2) inner-key (- budget used))
+                          (p15-s23-pc-row-data-work (get item 0) (get item 2) inner-key (- budget used)))
+                total (+ used (get checked :work-count))]
+            (if (= :accepted (get checked :status))
+              (if (= (get checked :value) (get item 3)) (recur (rest pending) total)
+                {:status :rejected :reason :map-get-source-mismatch :work-count total})
+              (assoc checked :work-count total)))))
+      {:status :rejected :reason :map-get-source-mismatch :work-count 0})))
+
 (defn p15-s23-pc-first-work [route core nodes bindings types budget]
   (let [call (get route :first-call) node (get nodes (get route :first-node-id))
         base (+ 32 (count (get core :function-records)))]
@@ -6745,14 +6944,18 @@
             used (+ base (get checked :work-count))
             header (if (= :accepted (get checked :status))
                      (p15-s23-lq-source core node call (get route :first-edge) nodes bindings types (get core :module) checked) nil)
-            descriptor (if (map? header) (p15-s23-lq-finish header) nil)]
-        (if (if (= :accepted (get checked :status)) (if (map? descriptor)
+            descriptor (if (map? header) (p15-s23-lq-finish header) nil)
+            supplied (get types (get call :operator-node-id))
+            carrier (if (map? descriptor) (p15-s23-pc-evidence-work supplied (- budget used))
+                      {:status :rejected :reason :map-get-source-mismatch :work-count 0})
+            spent (+ used (get carrier :work-count))]
+        (if (if (= :accepted (get carrier :status)) (if (= :accepted (get checked :status)) (if (map? descriptor)
               (if (= :gravity.type/applied-vector-first (get descriptor :kind))
                 (if (= descriptor (get types (get call :operator-node-id)))
-                  (= (get descriptor :result-type) (get types (get node :node-id))) false) false) false) false)
-          {:status :accepted :work-count used :descriptor descriptor}
-          {:status :rejected :reason (if (= :work-limit (get checked :reason)) :map-get-work-limit :map-get-source-mismatch)
-           :work-count used})))))
+                  (= (get descriptor :result-type) (get types (get node :node-id))) false) false) false) false) false)
+          {:status :accepted :work-count spent :descriptor descriptor :type-validation checked}
+          {:status :rejected :reason (if (if (= :work-limit (get checked :reason)) true (= :map-get-work-limit (get carrier :reason))) :map-get-work-limit :map-get-source-mismatch)
+           :work-count spent})))))
 
 (defn p15-s23-pc-call-forms-work [node call nodes forms budget]
   (let [owner-id (get (get node :source) :form-id)
@@ -6881,7 +7084,7 @@
                       {:status :rejected :reason :map-get-source-mismatch :work-count 0})
             total (+ spent (get project :work-count))]
         (if (= :accepted (get project :status))
-          {:status :accepted :work-count total :project project :descriptor (p15-s23-pc-finish header route project)}
+          {:status :accepted :work-count total :project project :first-type-validation (get first-result :type-validation) :descriptor (p15-s23-pc-finish header route project)}
           (assoc project :work-count total)))
       (assoc linked :work-count spent))))
 
@@ -6906,20 +7109,27 @@
               (assoc checked :work-count total)))))
       projected)))
 
-(defn p15-s23-pc-parent-rows-work [route parent first-descriptor core facts ledger budget]
-  (let [base (+ 32 (* 16 (if (vector? facts) (count facts) 0)) (* 16 (if (vector? ledger) (count ledger) 0)))]
+(defn p15-s23-pc-parent-rows-work [route parent first-descriptor core facts ledger key budget]
+  (let [base (+ 32 (* 8 (if (vector? facts) (count facts) 0)) (* 8 (if (vector? ledger) (count ledger) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
       (if (if (vector? facts) (vector? ledger) false)
-        (let [get-id (get route :get-node-id) first-id (get route :first-node-id)
-              get-facts (p15-s23-pe-select facts :call-core-node-id get-id)
-              first-facts (p15-s23-pe-select facts :call-core-node-id first-id)
-              get-rows (p15-s23-pe-select (p15-s23-pe-select ledger :producer-rule :p15-s23-map-get-v1) :lhs {:core-node-id get-id :projection :map-get})
-              first-rows (p15-s23-pe-select (p15-s23-pe-select ledger :producer-rule :p15-s23-vector-first-v1) :lhs {:core-node-id first-id :projection :vector-first})]
-          (if (p15-s23-typed-all [(= [(p15-s23-mg-call-fact parent (get core :module))] get-facts)
-                (= [(p15-s23-lq-call-fact first-descriptor (get core :module))] first-facts)
-                (= [(p15-s23-mg-constraint parent)] get-rows) (= [(p15-s23-lq-constraint first-descriptor)] first-rows)])
-            {:status :accepted :work-count base}
-            {:status :rejected :reason :map-get-source-mismatch :work-count base}))
+        (let [selectors {:facts (loop [remaining facts out []]
+                                  (if (= 0 (count remaining)) out
+                                    (recur (rest remaining) (conj out (p15-s23-typed-project (first remaining) [:call-core-node-id])))))
+                         :rows (loop [remaining ledger out []]
+                                 (if (= 0 (count remaining)) out
+                                   (recur (rest remaining) (conj out (p15-s23-typed-project (first remaining) [:producer-rule :lhs])))))}
+              measured (p15-s23-pc-evidence-work selectors (- budget base))
+              prefix (+ base (get measured :work-count))
+              get-data (if (= :accepted (get measured :status)) (p15-s23-pc-parent-data-work parent key (- budget prefix)) measured)
+              used (+ prefix (if (= :accepted (get measured :status)) (get get-data :work-count) 0))]
+          (if (= :accepted (get get-data :status))
+            (let [checked (p15-s23-pc-parent-carriers-work
+                            {:get-call-id (get route :get-node-id) :first-call-id (get route :first-node-id)}
+                            parent first-descriptor (get get-data :value) first-descriptor core
+                            {:call-type-facts facts :constraint-ledger ledger} key (- budget used))]
+              (assoc checked :work-count (+ used (get checked :work-count))))
+            (assoc get-data :work-count used)))
         {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
 
 (defn p15-s23-pc-full-work [route core node call edge nodes bindings types forms facts ledger budget]
@@ -6936,12 +7146,15 @@
                      {:status :rejected :reason :map-get-source-mismatch :work-count 0})
             used (+ prefix (get parent :work-count))]
         (if (= :accepted (get parent :status))
-          (if (= supplied (get parent :descriptor))
-            (let [projected (p15-s23-pc-full-project route (get parent :descriptor) core node call edge nodes bindings types forms (- budget used))
-                  spent (+ used (get projected :work-count))]
+          (let [key-node (get nodes (get (get call :argument-node-ids) 1))
+                matched (p15-s23-pc-parent-match-work supplied (get parent :descriptor) (get (get key-node :attributes) :value) (- budget used))
+                matched-work (+ used (get matched :work-count))]
+          (if (= :accepted (get matched :status))
+            (let [projected (p15-s23-pc-full-project route (get parent :descriptor) core node call edge nodes bindings types forms (- budget matched-work))
+                  spent (+ matched-work (get projected :work-count))]
               (if (= :accepted (get projected :status))
                 (let [first-descriptor (get types (get (get route :first-call) :operator-node-id))
-                      rows (p15-s23-pc-parent-rows-work route (get parent :descriptor) first-descriptor core facts ledger (- budget spent))
+                      rows (p15-s23-pc-parent-rows-work route (get parent :descriptor) first-descriptor core facts ledger (get (get projected :descriptor) :key) (- budget spent))
                       total (+ spent (get rows :work-count))]
                   (if (= :accepted (get rows :status))
                     (let [matched (p15-s23-pc-descriptor-work (get types (get call :operator-node-id))
@@ -6953,12 +7166,12 @@
                                     :get-descriptor (get parent :descriptor)
                                     :first-call-id (get route :first-node-id)
                                     :first-operator-id (get (get route :first-call) :operator-node-id)
-                                    :first-descriptor first-descriptor
+                                    :first-descriptor first-descriptor :first-type-validation (get projected :first-type-validation)
                                     :fact-count (count facts) :ledger-count (count ledger)})
                         (assoc matched :work-count work)))
                     (assoc rows :work-count total)))
                 (assoc projected :work-count spent)))
-            {:status :rejected :reason :map-get-source-mismatch :work-count used})
+            (assoc matched :work-count matched-work)))
           (assoc parent :work-count used)))
       (assoc reserved :work-count prefix))))
 
@@ -7064,6 +7277,20 @@
                               (if (= :keyword (get form :kind)) (= (get header :key) (get form :value)) false)) true)])
                     (recur (+ i 1)) false))))]) false)))
 
+(defn p15-s23-pc-full-context-work [route context node budget]
+  (let [table (get context :call-facts) base (+ 32 (* 4 (if (map? table) (count table) 0)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (if (map? table)
+        (let [facts (loop [remaining (vec table) out []]
+                      (if (= 0 (count remaining)) out
+                        (recur (rest remaining) (conj out (get (first remaining) 1)))))
+              id (get node :node-id)
+              checked (p15-s23-pc-full-work route (get context :core) node (get (get context :calls) id)
+                        (get (get context :edges) id) (get context :nodes) (get context :bindings) (get context :types)
+                        (get context :forms) facts (get context :ledger) (- budget base))]
+          (assoc checked :work-count (+ base (get checked :work-count))))
+        {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
+
 (defn p15-s23-typed-compile-present-get [context node budget]
   (let [id (get node :node-id) core (get context :core) call (get (get context :calls) id) edge (get (get context :edges) id)
         nodes (get context :nodes) types (get context :types) args (get call :argument-node-ids)
@@ -7073,7 +7300,10 @@
       (let [supplied (get types (get call :operator-node-id)) proof (get supplied :presence-proof)
             private? (if (= :sh08-map-get-private-entry-v1 (get supplied :version)) true
                        (if (map? proof) (if (contains? proof :entry-census) true (contains? proof :entries)) false))
-            route (p15-s23-pc-route core node call nodes (get context :bindings) (- budget base))
+            candidate (p15-s23-pc-candidate core node call nodes types (- budget base))
+            route (if (= :accepted (get candidate :status))
+                    (let [r (p15-s23-pc-route core node call nodes (get context :bindings) (- budget base (get candidate :work-count)))]
+                      (assoc r :work-count (+ (get candidate :work-count) (get r :work-count)))) candidate)
             route-work (get route :work-count) composed? (= :accepted (get route :status))
             reserved (if composed? {:status :accepted :work-count 0 :matched-call-count 0}
                        (if private?
@@ -7088,8 +7318,7 @@
             descriptor (get types (get call :operator-node-id))
             checked (if (map? header)
                       (if composed?
-                        (p15-s23-pc-full-work route core node call edge nodes (get context :bindings) types
-                          (get context :forms) (vec (vals (get context :call-facts))) (get context :ledger) (- budget charge))
+                        (p15-s23-pc-full-context-work route context node (- budget charge))
                         (if private?
                         (p15-s23-pe-check-work header descriptor core nodes (get context :bindings) (get context :forms) types (- budget charge))
                         (let [walked (if (= :normal (get header :application))

@@ -9664,6 +9664,33 @@
             {:status :rejected :reason :map-get-source-mismatch :work-count used}))))
     {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
 
+(defn sh08-pc-candidate [core node call nodes types budget]
+  ; Source structure chooses this probe; descriptor tags never do.
+  (let [args (get call :argument-node-ids)
+        receiver (sh08-pc-current-node (if (vector? args) (get args 0) nil) nodes)
+        key-node (sh08-pc-current-node (if (vector? args) (get args 1) nil) nodes)
+        receiver-type (get types (get receiver :node-id))]
+    (if (if (vector? args) (if (= 2 (count args))
+          (if (= :literal (get key-node :core-form))
+            (if (= :keyword (get (get key-node :attributes) :literal-kind))
+              (if (= :gravity.type/map receiver-type) true
+                (if (map? receiver-type) (= :gravity.type/map (get receiver-type :kind)) false)) false) false) false) false)
+      (if (= :reference (get receiver :core-form))
+        (let [records (get core :lexical-bindings) width (if (vector? records) (count records) 0) work (* 2 width)
+              bid (get (get receiver :attributes) :binding-id)]
+          (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+            (if (if (sh08-pc-id? bid) (if (vector? records)
+                  (map? (sh08-pe-one records :binding-id bid)) false) false)
+              {:status :accepted :work-count work} {:status :not-applicable :work-count work})))
+        (if (= :call (get receiver :core-form))
+          (let [children (get receiver :children) operator (sh08-pc-current-node (if (vector? children) (get children 0) nil) nodes)
+                symbol (get (get operator :attributes) :symbol)]
+            (if (if (= :reference (get operator :core-form))
+                  (if (symbol? symbol) (if (= 'first symbol) true (= 'gravity.core/first symbol)) false) false)
+              {:status :accepted :work-count 0} {:status :not-applicable :work-count 0}))
+          {:status :not-applicable :work-count 0}))
+      {:status :not-applicable :work-count 0})))
+
 (defn sh08-pc-route [core node call nodes bindings budget]
   (let [calls (get core :calls) edges (get core :call-edges)
         base (+ 32 (* 4 (if (vector? calls) (count calls) 0)) (* 4 (if (vector? edges) (count edges) 0)))]
@@ -9692,7 +9719,12 @@
                             (if (if (sh08-pc-id? get-bid) (if (vector? get-args) (if (= 2 (count get-args))
                                   (if (sh08-pc-id? (get get-args 0)) (sh08-pc-id? (get get-args 1)) false) false) false) false)
                               (if (sh08-mg-binding? (get bindings get-bid) (get core :module))
-                                (if (sh08-ft-all-true?
+                                (if (if (sh08-pc-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                    (if (sh08-pc-id? (get (get first-node :evaluation) :owner-function-syntax-id))
+                                     (if (sh08-pc-id? (get (get get-node :evaluation) :owner-function-syntax-id))
+                                      (if (sh08-pc-id? (get first-edge :caller-function-syntax-id))
+                                        (if (sh08-pc-id? (get get-edge :caller-function-syntax-id))
+                                  (sh08-ft-all-true?
                                       [(= :call (get first-node :core-form) (get get-node :core-form))
                                        (= false (= first-id get-id)) (= false (= first-id (get node :node-id)))
                                        (= false (= get-id (get node :node-id)))
@@ -9701,7 +9733,9 @@
                                        (sh08-pc-id? (get first-call :operator-node-id)) (sh08-pc-id? (get get-call :operator-node-id))
                                        (map? first-edge) (map? get-edge)
                                        (= (get (get node :evaluation) :owner-function-syntax-id)
-                                          (get first-edge :caller-function-syntax-id) (get get-edge :caller-function-syntax-id))])
+                                          (get (get first-node :evaluation) :owner-function-syntax-id)
+                                          (get (get get-node :evaluation) :owner-function-syntax-id)
+                                          (get first-edge :caller-function-syntax-id) (get get-edge :caller-function-syntax-id))]) false) false) false) false) false)
                                   {:status :accepted :work-count total
                                    :first-node-id first-id :first-call first-call :first-edge first-edge
                                    :get-node-id get-id :get-call get-call :get-edge get-edge
@@ -9761,11 +9795,11 @@
 (defn sh08-pc-parent-parameter [route core nodes bindings budget]
   ; The outer lookup must be the existing private parameter owner.
   (let [call (get route :get-call) id (get (get call :argument-node-ids) 0)
-        receiver (sh08-pc-current-node id nodes) records (get core :function-records)
+        receiver (sh08-pc-current-node id nodes) owner-id (get (get receiver :evaluation) :owner-function-syntax-id) records (get core :function-records)
         base (+ 32 (* 4 (if (vector? records) (count records) 0)))]
     (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
-      (if (vector? records)
-        (let [record (sh08-pe-one records :function-syntax-id (get (get receiver :evaluation) :owner-function-syntax-id))
+      (if (if (vector? records) (sh08-pc-id? owner-id) false)
+        (let [record (sh08-pe-one records :function-syntax-id owner-id)
               ids (get record :parameter-binding-ids) bid (get (get receiver :attributes) :binding-id)
               used (+ base (if (vector? ids) (* 2 (count ids)) 0))]
           (if (> used budget) {:status :rejected :reason :map-get-work-limit :work-count used}
@@ -9843,7 +9877,7 @@
                        :receiver-links (get route :receiver-links) :vector-links (get route :vector-links)
                        :entries (get project :rows) :selected-type type}
       :invalidation (conj (conj (conj (get header :invalidation) :parent-call-descriptors)
-                           :parent-call-facts) :parent-producer-rows))))
+                           :parent-call-facts) :parent-producer-rows :mutations :immutable-binding-links :incoming-arguments :source-spine))))
 
 (defn sh08-pc-descriptor-work [supplied expected budget]
   ; Resource payment dominates schema tests and equality. Exact reconstruction
@@ -9863,6 +9897,95 @@
         {:status :rejected :reason :map-get-source-mismatch :work-count used})
       walked)))
 
+(defn sh08-pc-without [value fields]
+  (if (map? value)
+    (loop [remaining (vec value) out {}]
+      (if (= 0 (count remaining)) out
+        (let [entry (first remaining) key (get entry 0)]
+          (if (keyword? key)
+            (recur (rest remaining) (if (contains? fields key) out (assoc out key (get entry 1)))) nil)))) nil))
+
+(defn sh08-pc-entry-metadata-work [entries budget]
+  (loop [remaining entries out [] used 0]
+    (if (= 0 (count remaining)) {:status :accepted :work-count used :value out}
+      (let [entry (first remaining) work (+ used 8 (* 4 (if (map? entry) (count entry) 0)))]
+        (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+          (if (map? entry)
+            (let [value (sh08-pc-without entry #{:argument-shape :selected-part})]
+              (if (map? value) (recur (rest remaining) (conj out value) work)
+                {:status :rejected :reason :map-get-source-mismatch :work-count work}))
+            {:status :rejected :reason :map-get-source-mismatch :work-count work}))))))
+
+(defn sh08-pc-shape-metadata [shape]
+  (sh08-bm-project shape [:status :shape-kind :type :constructor-origin :constructor-node-id :node-id
+                       :source :data-origin :binding-links :shape-size]))
+
+(defn sh08-pc-part-metadata [part]
+  (sh08-bm-project part [:coordinate :key :key-node-id :value-node-id :key-data-origin :value-data-origin]))
+
+(defn sh08-pc-ancestry-work [entries key budget]
+  (loop [remaining entries out [] used 0]
+    (if (= 0 (count remaining)) {:status :accepted :value out :work-count used}
+      (let [entry (first remaining)]
+        (if (= :not-invoked (get entry :entry))
+          (recur (rest remaining) (conj out nil) used)
+          (let [argument (get entry :argument-shape) outer (get entry :selected-part)
+                vector (get outer :shape) vector-parts (get vector :parts)
+                head (if (vector? vector-parts) (get vector-parts 0) nil)
+                map-shape (get head :shape) parts (get map-shape :parts)
+                width (if (vector? parts) (count parts) 0) prefix (+ used 32 (* 8 width))]
+            (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
+              (if (if (vector? vector-parts) (if (< 0 (count vector-parts)) (if (vector? parts) (<= width 512) false) false) false)
+                (let [selected (loop [i 0 seen #{} found nil]
+                                 (if (= i width) found
+                                   (let [part (get parts i) actual (get part :key)]
+                                     (if (keyword? actual)
+                                       (if (contains? seen actual) nil
+                                         (if (= (+ 1 (* 2 i)) (get part :coordinate))
+                                           (recur (+ i 1) (conj seen actual) (if (= key actual) part found)) nil)) nil))))
+                      data {:shapes [(sh08-pc-shape-metadata argument) (sh08-pc-shape-metadata vector)
+                                     (sh08-pc-shape-metadata map-shape)]
+                            :parts [(sh08-pc-part-metadata outer) (sh08-pc-part-metadata head)
+                                    (sh08-pc-part-metadata selected)]
+                            :vector-length (count vector-parts) :selected-shape (get selected :shape)}
+                      measured (sh08-pc-evidence-work data (- budget prefix)) total (+ prefix (get measured :work-count))]
+                  (if (= :accepted (get measured :status))
+                    (if (map? selected) (recur (rest remaining) (conj out data) total)
+                      {:status :rejected :reason :map-get-private-first-entry-presence-required :work-count total})
+                    (assoc measured :work-count total)))
+                {:status :rejected :reason :map-get-source-mismatch :work-count prefix}))))))))
+
+(defn sh08-pc-parent-data-work [descriptor inner-key budget]
+  (let [proof (get descriptor :presence-proof) entries (get proof :entries)
+        base (+ 32 (* 8 (if (vector? entries) (count entries) 0))
+                   (* 4 (if (map? descriptor) (count descriptor) 0)) (* 4 (if (map? proof) (count proof) 0)))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (if (if (map? descriptor) (if (= :sh08-map-get-private-entry-v1 (get descriptor :version))
+            (if (map? proof) (if (vector? entries) (<= (count entries) 1024) false) false) false) false)
+        (let [rows (sh08-pc-entry-metadata-work entries (- budget base)) prefix (+ base (get rows :work-count))]
+          (if (= :accepted (get rows :status))
+            (let [data {:header (sh08-pc-without descriptor #{:presence-proof}) :proof (sh08-pc-without proof #{:entries})
+                        :entries (get rows :value)}
+                  measured (sh08-pc-evidence-work data (- budget prefix)) used (+ prefix (get measured :work-count))
+                  ancestry (if (= :accepted (get measured :status)) (sh08-pc-ancestry-work entries inner-key (- budget used)) measured)
+                  total (+ used (if (= :accepted (get measured :status)) (get ancestry :work-count) 0))]
+              (if (= :accepted (get ancestry :status))
+                {:status :accepted :work-count total :value (assoc data :ancestry (get ancestry :value))}
+                (assoc ancestry :work-count total)))
+            (assoc rows :work-count prefix)))
+        {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
+
+(defn sh08-pc-parent-match-work [supplied expected key budget]
+  (let [actual (sh08-pc-parent-data-work supplied key budget) used (get actual :work-count)
+        rebuilt (if (= :accepted (get actual :status))
+                  (sh08-pc-parent-data-work expected key (- budget used)) actual)
+        total (+ used (if (= :accepted (get actual :status)) (get rebuilt :work-count) 0))]
+    (if (= :accepted (get rebuilt :status))
+      (if (= (get actual :value) (get rebuilt :value))
+        {:status :accepted :work-count total}
+        {:status :rejected :reason :map-get-source-mismatch :work-count total})
+      (assoc rebuilt :work-count total))))
+
 (defn sh08-pc-first-work [route core nodes bindings types budget]
   (let [call (get route :first-call) node (get nodes (get route :first-node-id))
         base (+ 32 (count (get core :function-records)))]
@@ -9871,14 +9994,18 @@
             used (+ base (get checked :work-count))
             header (if (= :accepted (get checked :status))
                      (sh08-lq-source core node call (get route :first-edge) nodes bindings types (get core :module) checked) nil)
-            descriptor (if (map? header) (sh08-lq-finish header) nil)]
-        (if (if (= :accepted (get checked :status)) (if (map? descriptor)
+            descriptor (if (map? header) (sh08-lq-finish header) nil)
+            supplied (get types (get call :operator-node-id))
+            carrier (if (map? descriptor) (sh08-pc-evidence-work supplied (- budget used))
+                      {:status :rejected :reason :map-get-source-mismatch :work-count 0})
+            spent (+ used (get carrier :work-count))]
+        (if (if (= :accepted (get carrier :status)) (if (= :accepted (get checked :status)) (if (map? descriptor)
               (if (= :gravity.type/applied-vector-first (get descriptor :kind))
                 (if (= descriptor (get types (get call :operator-node-id)))
-                  (= (get descriptor :result-type) (get types (get node :node-id))) false) false) false) false)
-          {:status :accepted :work-count used :descriptor descriptor}
-          {:status :rejected :reason (if (= :work-limit (get checked :reason)) :map-get-work-limit :map-get-source-mismatch)
-           :work-count used})))))
+                  (= (get descriptor :result-type) (get types (get node :node-id))) false) false) false) false) false)
+          {:status :accepted :work-count spent :descriptor descriptor :type-validation checked}
+          {:status :rejected :reason (if (if (= :work-limit (get checked :reason)) true (= :map-get-work-limit (get carrier :reason))) :map-get-work-limit :map-get-source-mismatch)
+           :work-count spent})))))
 
 (defn sh08-pc-call-forms-work [node call nodes forms budget]
   (let [owner-id (get (get node :source) :form-id)
@@ -10007,7 +10134,7 @@
                       {:status :rejected :reason :map-get-source-mismatch :work-count 0})
             total (+ spent (get project :work-count))]
         (if (= :accepted (get project :status))
-          {:status :accepted :work-count total :project project :descriptor (sh08-pc-finish header route project)}
+          {:status :accepted :work-count total :project project :first-type-validation (get first-result :type-validation) :descriptor (sh08-pc-finish header route project)}
           (assoc project :work-count total)))
       (assoc linked :work-count spent))))
 
@@ -10040,17 +10167,23 @@
             parent (sh08-mg-present-derive parent-node nodes types binding-types functions lexical bindings forms binding-shapes context (- budget prefix))
             used (+ prefix (get parent :work-count))]
         (if (= :accepted (get parent :status))
-          (if (= (get parent :descriptor) (get types (get (get route :get-call) :operator-node-id)))
+          (let [key-id (get (get (get (get context :calls) (get node :node-id)) :argument-node-ids) 1)
+                key (get (get (get nodes key-id) :attributes) :value)
+                matched (sh08-pc-parent-match-work (get types (get (get route :get-call) :operator-node-id))
+                          (get parent :descriptor) key (- budget used))
+                matched-work (+ used (get matched :work-count))]
+          (if (= :accepted (get matched :status))
             (let [id (get node :node-id)
                   checked (sh08-pc-full-project route (get parent :descriptor) core node (get (get context :calls) id)
-                            (get (get context :edges) id) nodes bindings types forms (- budget used))
-                  total (+ used (get checked :work-count)) descriptor (get checked :descriptor)]
+                            (get (get context :edges) id) nodes bindings types forms (- budget matched-work))
+                  total (+ matched-work (get checked :work-count)) descriptor (get checked :descriptor)]
               (if (= :accepted (get checked :status))
                 {:status :accepted :work-count total :descriptor descriptor :type (get descriptor :result-type)
                  :constraint (sh08-mg-constraint descriptor)}
                 (assoc (sh08-sm-failure (if (= :map-get-work-limit (get checked :reason)) "C7-GENERIC" "C7-ANNOTATION")
                          (get checked :reason) nil :every-normal-private-first-entry-proves-literal-key (get descriptor :key)) :work-count total)))
-            (assoc (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :current-private-get-parent (get route :get-node-id)) :work-count used))
+            (assoc (sh08-sm-failure (if (= :map-get-work-limit (get matched :reason)) "C7-GENERIC" "C7-VERIFY")
+                     (get matched :reason) nil :current-private-get-parent (get route :get-node-id)) :work-count matched-work)))
           (assoc parent :work-count used)))
       (assoc (sh08-sm-failure (if (= :map-get-work-limit (get gated :reason)) "C7-GENERIC" "C7-ANNOTATION")
                (get gated :reason) nil :direct-private-parameter-get-parent (get route :get-node-id)) :work-count prefix))))
@@ -10273,7 +10406,10 @@
                            (if (= 0 (count ids)) false
                              (if (= (get (get receiver :attributes) :binding-id) (first ids)) true (recur (rest ids))))) false)]
         (if (= false parameter?)
-          (let [route (sh08-pc-route core node (get (get context :calls) id) nodes bindings (- budget gate))
+          (let [candidate (sh08-pc-candidate core node (get (get context :calls) id) nodes types (- budget gate))
+                route (if (= :accepted (get candidate :status))
+                        (let [r (sh08-pc-route core node (get (get context :calls) id) nodes bindings (- budget gate (get candidate :work-count)))]
+                          (assoc r :work-count (+ (get candidate :work-count) (get r :work-count)))) candidate)
                 used (+ gate (get route :work-count))
                 selected (if (= :accepted (get route :status))
                            (sh08-pc-derive route node nodes types binding-types functions lexical bindings forms binding-shapes context (- budget used))
@@ -10377,7 +10513,11 @@
         {:status :rejected :reason :map-get-source-mismatch :work-count (get checked :work-count)}))))
 
 (defn sh08-mg-inferred-work [core node call edge nodes bindings types current-calls budget]
-  (let [route (sh08-pc-route core node call nodes bindings budget) used (get route :work-count)]
+  (let [candidate (sh08-pc-candidate core node call nodes types budget)
+        route (if (= :accepted (get candidate :status))
+                (let [r (sh08-pc-route core node call nodes bindings (- budget (get candidate :work-count)))]
+                  (assoc r :work-count (+ (get candidate :work-count) (get r :work-count)))) candidate)
+        used (get route :work-count)]
     (if (= :accepted (get route :status))
       (let [checked (sh08-pc-inferred-work route core node call edge nodes bindings types current-calls (- budget used))]
         (assoc checked :work-count (+ used (get checked :work-count))))
