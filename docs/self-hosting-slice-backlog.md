@@ -5334,6 +5334,55 @@ Effects token-bound fit and C9 source integration remain separate work.
 Focused checks do not establish current-cohort admission, milestone completion,
 self-hosting or release support.
 
+### Compiler-module Map literal order: development correction
+
+The module-development constructor now derives evaluated Map order from
+retained authenticated C2 occurrences after fresh original C5 verification.
+An exact `defn` expansion/body join keeps source evaluation order separate
+from host-map coordinates. Recur/throw validation and Map emission consume
+that same derived order; public bundle reconstruction independently derives
+it for every module, including a dependency without imports. An incompatible
+legacy raw dependency plan rejects rather than bypassing reconstruction.
+Public bundle/IR/runtime interfaces and raw three-argument/B51 behavior are
+unchanged. One 118-line stage-owned component contains the join and the moved
+existing collection compiler; this is not a new verification lane.
+
+This first module subset requires distinct literal Keyword keys in every
+evaluated function-body Map, even pure Maps. Older pure non-Keyword Maps can
+therefore reject at this module constructor: this is an explicit development
+frontier, not an L2 restriction or preservation of all formerly compilable
+modules. Quoted Maps remain DATA. Depth 64 and 65,536 visits are local traversal
+guards, not new language rules. Imports inside Maps, Sets and nested functions
+remain blocked. No checked-effect, Effects token-fit or C9 repair claim follows.
+
+The first cheap run completed one test / 35 assertions with three failures:
+its expected result retained source expressions where execution returned the
+literal Keyword values. Production and fixtures were unchanged by the single
+oracle correction. The corrected run passed all three selected tests / 45
+assertions, including source-order diagnostics and paired parser parity.
+Normalized C2 test DATA is not fresh compiler evidence.
+
+The sole affected genuine Gravity source composition passed one test / 15
+assertions. Nine nonalphabetical Map entries exercise exact output order and
+lookup values in leaf let/loop and root local-call contexts. Current no-import
+leaf and root bundles reconstruct, legacy raw dependency plans reject, and a
+coherently resealed reordered leaf plan rejects before output. The paired Q
+fixtures establish parser parity only. Selected execution took 145.893 seconds
+after 6.652 seconds of loading at 2 GiB, below a monitored ten-minute ceiling;
+this is not a benchmark or hard deadline. The temporary seed boundary remains
+development-unadmitted. Final source-free checks passed the adjusted transitive
+routing test (one / 17), SH-01 module regressions (four / 97), existing let
+(two / 25), loop (three / 61), vector (three / 50), and language boundary
+(six / 11). With the new cheap and source selections this is 23 unique tests /
+321 assertions, all passing in the completed final selections. The earlier
+three failed oracle assertions remain historical failures, not passing coverage.
+The only old transitive-test change adapts its artificial raw-plan stub to the
+private context arity and normalizes its empty route index; its original
+identity/order assertions remain. LOC validation passed 2,021 files, zero
+exceptions, maximum 250 lines. No old source composition was replayed.
+Focused implementation and this affected composition do not establish
+authoritative migration, milestone or self-hosting completion.
+
 ### Hosted compiler-module construction: development increment
 
 The existing module-development interface now accepts exactly `:meta/:jvm`
