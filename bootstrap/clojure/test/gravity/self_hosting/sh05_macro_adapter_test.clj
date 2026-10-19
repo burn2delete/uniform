@@ -978,9 +978,8 @@
                       stream)))))
 
 (deftest sh05-expanded-syntax-and-coherent-outer-trace-substitutions-reject
-  (let [artifact
-        (sh05-file-artifact
-         (fixture-path "accepted" "defn-multiple" ".gravity"))
+  (let [source (fixture-path "accepted" "defn-multiple" ".gravity")
+        artifact (sh05-file-artifact source)
         cases
         {:expanded-metadata
          {:changed (assoc-in artifact [:expanded-syntax-stream 0 :metadata]
@@ -1011,7 +1010,38 @@
         (is (= :failed (:status report)) (name label))
         (is (false? (get-in report [:checks (keyword (str (name check) "?"))]))
             (name label))
-        (is (some #{check} (:failed-checks report)) (name label))))))
+        (is (some #{check} (:failed-checks report)) (name label))))
+    ;; L4/C4 origins must survive the real C5 ingress, not just a leaf check.
+    ;; Reuse the one genuine parent, without reconstructing it per mutation.
+    (is (= :passed (:status (verification artifact))))
+    (let [resolved (bootstrap/sh06-resolution-artifact-from-sh05-artifact source artifact)
+          core (bootstrap/sh06-c6-lowering-from-resolution-artifact resolved)
+          changed (get-in cases [:coherent-outer-trace-physical-source :changed])
+          failure (try
+                    {:unexpected-success
+                     (bootstrap/sh06-resolution-artifact-from-sh05-artifact source changed)}
+                    (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+      (is (= :accepted (:status resolved)))
+      (is (= :passed (:status (bootstrap/sh06-resolution-artifact-verification resolved))))
+      (is (= :gravity/stage0-c6-core-lowering-artifact (:kind core)))
+      (is (= :passed (get-in core [:core-verifier-report :status])))
+      (is (= (:artifact-id resolved) (get-in core [:c5-name-resolution-artifact :artifact-id])))
+      (is (= "C5-UNRESOLVED" (:id failure)) (pr-str failure))
+      (is (= :name-resolution (:stage failure)))
+      (is (= [:authenticated-sh05-macro-parent] (:missing-fields failure)))
+      (is (= :failed (get-in failure [:observed :verification-status])))
+      (is (true? (get-in failure [:observed :c3-verified?])))
+      (is (= source (get-in failure [:source-span :source])))
+      (is (string? (:remediation failure)))
+      (is (seq (:remediation failure)))
+      (is (nil? (:unexpected-success failure)))
+      (is (not (contains? failure :c5-name-resolution-artifact)))
+      (is (not (contains? failure :core-ast-module)))
+      ;; Outer views agree with one another, not the independent retained run.
+      ;; This is not an all-field rehashed artifact or a generated-body error.
+      (println (pr-str {:b-coherent-origin-ingress-diagnostic failure
+                       :accepted-parent-id (:artifact-id artifact)
+                       :accepted-c5-id (:artifact-id resolved)})))))
 
 (deftest sh05-legacy-external-and-local-macros-route-without-sh05-credit
   (doseq [extension [".gravity" ".qst"]]
