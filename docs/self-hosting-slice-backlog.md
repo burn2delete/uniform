@@ -2624,6 +2624,115 @@ seed retirement or release claim follows. Direct development commands remain
 in `development-verification.md`; ordinary edits require no admission-system
 maintenance or fresh authority proof.
 
+### Integer family classification and ordinary entry inference: development implementation
+
+Unary `integer?` now classifies supported independently established closed
+operand types under STD5, with normal Bool results, once-only non-tail operand
+evaluation and preserved effects/transfers. Never prevents invocation. Its
+`gravity.core` compatibility spelling has `gravity.math` semantic ownership,
+not conversion or numeric-proof authority. The existing nine Integer/fixed-
+integer type facts are normalized typing cases, not native-width execution
+evidence. Unknown remains an implementation frontier, not a language-wide ban.
+
+The initial focused batch passed 10 tests/1,608 assertions, including the new
+C7, C8 and lowering/runtime kernels and existing vector-predicate and integral
+ordering regressions. Independent review then found two missing reason sets
+in the containing throwing-call consumer: integer-predicate exhaustion could
+lose its resource classification, and semantic rejection could lose prepaid
+work. The narrow fix and a separate owning-consumer check passed 1/19 and were
+independently accepted. These are separate results, not a relabeled first run.
+Fixture preflight passed 1/17 for all five Gravity/QST pairs and the unchanged
+W5 `w5-se-nonnegative-integer?` body.
+
+The first affected source attempt at development base `e61b4fd9` FAILED with
+one test, eight passes, one failure and one error. Six runtime-source loader
+checks and genuine C5 acceptance/C6 verification passed. At the first pure
+Gravity program, C7 retained Unknown for the unannotated W5 helper parameter
+and the private Vector classifier. Its complete diagnostics include an
+integral-ordering mismatch `[Unknown, Integer]`, two
+`integer-predicate-operand-type-required` rejections and a secondary
+`unsupported-or-unresolved-core-node-type`. The eight passes do not make the
+aggregate green.
+
+The shared constructor internally invokes C7 verification even for a rejected
+typed product, but this attempt did not assert or serialize that result before
+the prerequisite exception. Its verification outcome is uncredited, not
+described as an unperformed call. Lowering, C8 and runtime entry invocations
+did not run; the other three positive chains and all three intended source
+negatives were unrun. Selected work took 106.992 seconds after 9.779 seconds of namespace
+loading at 2 GiB; this is not a construction/scheduling cost breakdown.
+The actual failure calls for tracing the ordinary acyclic private entry-type
+inference path. Do not annotate the unchanged helper, add an artificial
+recursive companion, infer operand types from the predicate result, widen
+polymorphism or replay unchanged source products merely to hide that gap.
+The source result remains failed until a concrete changed implementation and
+its affected checks establish otherwise. No full W5, migration, self-hosting,
+native/other-target or release claim follows.
+
+Independent static tracing narrowed the gap to the existing call-constraint
+scan, not a missing general acyclic inference subsystem. In
+`sh08-ft-call-constraints-with-context`, an unresolved integral-ordering call
+returns the entire scan before later normal local-entry calls can contribute
+their independently known literal argument types. Here the helper's `>=`
+precedes main's entry calls in source order. The bounded fixed-point machinery
+already consumes those local-entry joins. The proposed correction continues
+genuinely unresolved ordering through that existing path while retaining final
+unresolved/concrete-error rejection, monomorphic conflicts and cumulative work;
+it does not obtain an operand type from `integer?`'s Bool result.
+
+That narrow correction is implemented and passed a separate focused batch of
+3 tests/349 assertions: the new call-entry kernel 38, existing integral
+ordering 292, and the throwing-call consumer 19. The batches overlap; do not
+sum them into a coverage score. The new kernel exercises actual bounded
+fixed-point convergence to Integer/Bool, equivalent normalized call orders,
+retained first-round diagnostics, final unresolved/concrete/arity/conflict
+rejection and work-limit behavior. Atomic guards prevent composite type
+hashing during the two new probes. An exhausted raw pass returns its original
+work and diagnostics before return inference, merging or conflict scanning,
+so a later round cannot mask its ordering resource reason. At that focused
+checkpoint, changed-source integration was still pending; the later result
+below does not retroactively make the first source attempt pass.
+
+The changed-C7 source composition subsequently passed one test/269 assertions:
+263 composition checks plus six actual runtime-source loader checks. Seven
+fresh product requests cover four accepted chains (two programs in both
+spellings) and three Gravity negatives. The unchanged W5 helper now receives
+independent Integer entry facts for -1/0/7 without an annotation or artificial
+recursive companion. Separate Keyword and inferred Vector1 classifiers return
+false, and the pure program keeps existing `vector?` and `>=` facts alongside
+the new predicate. The separate typed-catch program covers normal and Never
+operands without widening cold-handler inference.
+
+All sixteen asserted top-level function-table entry invocations completed;
+this is not a census of nested activations or `execute-closed-plan`. The run
+also exercised five additionally tracked public C7 assembly/forgery gates,
+independent C8 construction/verification and resealed graph-dependency forgery
+rejection. Paired full typed identities, effect graphs, results and emitted
+functions modulo source path were compared, not serialized as retained full
+positive products. The C7 tamper changes one descriptor field, not a coherently
+resealed all-field forgery. Exact/one-less component budgets are not a
+whole-source budget claim.
+
+All three full retained negative vectors have the intended primary diagnostic:
+`integer-predicate-operand-type-required` for Unknown and
+`integer-predicate-arity-mismatch` for zero/two operands. Each retains a
+secondary `unsupported-or-unresolved-core-node-type`; do not erase it, infer
+its node kind, or claim single-diagnostic output. QST negatives retain only
+the separately checked byte/parser parity. No work-limit diagnostic caused
+these rejections. Three post-run exact-vector assertions make the future
+source selector 272 assertions, not an executed 272 result. A separate two-
+assertion retained-log check matched all three vectors without a source replay.
+
+Selected source work took 585.444 seconds after 9.579 seconds of namespace
+loading at 2 GiB. This includes product construction and verification, not
+just scheduling, and does not identify a dominant phase or speedup. The first
+source failure remains preserved. General polymorphic predicates, arbitrary
+W5 coverage, numeric conversion/range/width proofs, native/other targets,
+authoritative migration, self-hosting, seed retirement and release remain
+outside this increment. Direct focused commands remain in
+`development-verification.md`; ordinary edits require no authority-admission
+maintenance.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

@@ -1,0 +1,10 @@
+(ns example.rejected-integer-predicate-unknown
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [probe])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn probe [value]
+  (integer? value))

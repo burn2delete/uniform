@@ -1,0 +1,31 @@
+(ns example.runtime-integer-predicate
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-se-nonnegative-integer? [value]
+  (if (integer? value)
+    (>= value 0)
+    false))
+
+(defn classify-keyword [value :- Keyword]
+  (integer? value))
+
+(defn classify-vector [value]
+  (integer? value))
+
+(defn main []
+  (if (w5-se-nonnegative-integer? -1)
+    false
+    (if (w5-se-nonnegative-integer? 0)
+      (if (w5-se-nonnegative-integer? 7)
+        (if (classify-keyword :stored)
+          false
+          (if (classify-vector [:stored])
+            false
+            (vector? [:stored])))
+        false)
+      false)))

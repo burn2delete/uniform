@@ -816,7 +816,7 @@
                   (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (contains? '#{vector? count first rest empty?} function)
+                  (if (contains? '#{integer? vector? count first rest empty?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -909,9 +909,9 @@
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
-              (if (contains? '#{vector? first rest empty?} function)
-                (if (= function 'vector?)
-                  [(vector? left) (second arguments-result) :normal]
+              (if (contains? '#{integer? vector? first rest empty?} function)
+                (if (contains? '#{integer? vector?} function)
+                  [(if (= function 'integer?) (integer? left) (vector? left)) (second arguments-result) :normal]
                 (if (list? left)
                   [(if (= function 'empty?) (= 0 (count left))
                      (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]

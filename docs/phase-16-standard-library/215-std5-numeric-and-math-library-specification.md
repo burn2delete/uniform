@@ -40,6 +40,19 @@ Certified approximations, interval proofs, rewrite proofs, SIMD lowering, GPU lo
 - EFIR APIs: `efir`, `math-expr`, `compile-approx`, `certify`, `rewrite-proof`, and `lower-math`.
 - Mode APIs: `with-math-mode`, `rounding-mode`, `overflow-mode`, `approx-policy`, and `target-math-capabilities`.
 
+## Integer Family Predicate
+
+Unary `(integer? value)` returns Bool true exactly when the normally evaluated
+value belongs to an integer family defined by L5, and false for other normally
+evaluated values. It classifies the Gravity value family, not whether a
+conversion could produce an integer. The operand evaluates once under L2;
+its effects remain visible and a control transfer aborts invocation.
+Classification itself is pure and does not convert, allocate, mutate or
+evaluate stored payloads. It establishes no width, range, arithmetic-mode or
+overflow proof. Numeric-family semantics belong to `gravity.math`; an existing
+`gravity.core` compatibility spelling changes neither that ownership nor
+profile and target legality.
+
 ## Dependencies
 
 - `L2`, `L5`, `L6`, `L9`, and `L10` for numeric types, effects, capabilities, ownership of artifacts, and collection interaction.
@@ -100,6 +113,7 @@ It must reject a target lowering that cannot satisfy the error bound or certific
 
 ## Conformance Criteria
 
+- Integer family classification distinguishes integer and noninteger values, preserves ordinary unary evaluation and transfers, and supplies no conversion, width, range or overflow proof.
 - Numeric fixtures distinguish checked, wrapping, saturating, and trapping behavior.
 - Floating fixtures record rounding mode, exceptional values, target, and provider.
 - EFIR fixtures show analyzable math lowering without treating EML as the ordinary execution form.

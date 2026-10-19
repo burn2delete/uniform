@@ -1,0 +1,16 @@
+(ns example.runtime-integer-predicate-transfer
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn caught [value :- Keyword]
+  (try
+    (if (integer? 7)
+      (integer? (throw value))
+      false)
+    (catch Keyword problem (= problem value))))
+
+(defn main [] (caught :problem))

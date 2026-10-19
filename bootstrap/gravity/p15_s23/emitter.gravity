@@ -6009,6 +6009,147 @@
                 :work-count (+ charge (get compiled :work-count))) compiled))
           (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-contains node))))))
 
+(defn p15-s23-ip-binding? [binding module]
+  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (p15-s23-typed-all
+    [(= ['integer? :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
+        [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
+         (get binding :package) (get binding :type-ref) (get binding :safety)])
+     (= [] (get binding :effects) (get binding :capabilities))
+     (contains? (set (get binding :profile-set)) (get module :profile))
+     (contains? (set (get binding :target-set)) :all)]) false))
+
+(defn p15-s23-ip-source [core node call edge nodes bindings types module validation]
+  (if (if (vector? (get call :argument-node-ids))
+        (if (= 1 (count (get call :argument-node-ids)))
+          (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
+  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+        bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        arguments (p15-s23-io-child-types args types)
+        invoked? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) true
+                     (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        caller (loop [remaining (get core :function-records)]
+                 (if (= 0 (count remaining)) nil
+                   (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
+                     (first remaining) (recur (rest remaining)))))
+        expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                       :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                       :evaluation-order :operator-then-arguments :result-policy :call-result}
+        expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                       :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                       :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                       :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                       :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+    (if (p15-s23-typed-all
+          [(= :accepted (get validation :status)) (= :call (get node :core-form)) (= :reference (get operator :core-form))
+           (= 1 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-ip-binding? binding module)
+           (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+           (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+               :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+           (contains? '#{integer? gravity.core/integer?} (get (get operator :attributes) :symbol))
+           (= :operator-then-arguments (get (get node :evaluation) :kind))
+           (= (loop [i 0 out []] (if (= i (count children)) out
+                (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
+           (loop [remaining arguments]
+             (if (= 0 (count remaining)) true
+               (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
+      {:kind :gravity.type/applied-integer-predicate :version :sh08-integer-predicate-v1
+       :operation 'integer? :semantic-owner 'gravity.math :intrinsic :gravity.math/integer-family-classification
+       :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :query-semantics {:operation :integer-family-classification :operand-evaluation :once :operand-position :non-tail
+                         :construction :none :payload-evaluation :none :mutation :none :refinement :none}
+       :application (if invoked? :normal :not-invoked)
+       :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+       :profile (get module :profile) :target (get module :target)
+       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                      :callee-body :query-semantics :operand-type :profile :target :evaluation-order]} nil)) nil))
+
+(defn p15-s23-ip-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-integer-predicate-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-integer-predicate-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :integer-predicate}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn p15-s23-ip-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-integer-predicate-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-integer-predicate :applied-integer-predicate descriptor :effect-facts-source :audited-integer-predicate-intrinsic}))
+
+(defn p15-s23-ip-finish [header]
+  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
+    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn p15-s23-typed-compile-integer-predicate [context node budget]
+  (let [id (get node :node-id) core (get context :core)
+        charge (+ 65 (count (get core :function-records)) (* 4 (count (get context :ledger))))]
+    (if (> charge budget) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
+      (let [call (get (get context :calls) id) edge (get (get context :edges) id)
+            args (get call :argument-node-ids) children (get node :children)]
+        (if (= false (if (vector? args) (if (= 1 (count args))
+                      (if (vector? children) (= 2 (count children)) false) false) false))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-integer-predicate node) :work-count charge)
+          (let [nodes (get context :nodes) forms (get context :forms)
+                validation (p15-s23-lc-type-work [(get (get context :types) (first args) :gravity.type/unknown)] (- budget charge))
+                work (+ charge (get validation :work-count))
+                header (if (= :accepted (get validation :status))
+                         (p15-s23-ip-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) validation) nil)
+                descriptor (if (map? header) (p15-s23-ip-finish header) nil)
+                owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+                producer-rows (p15-s23-pe-select (get context :ledger) :producer-rule :sh08-integer-predicate-v1)
+                rows (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection :integer-predicate})]
+            (if (= :work-limit (get validation :reason))
+              (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count work)
+              (if (if (map? descriptor)
+                    (p15-s23-typed-all
+                      [(loop [remaining producer-rows]
+                         (if (= 0 (count remaining)) true
+                           (let [row (first remaining) row-id (get (get row :lhs) :core-node-id)
+                                 source-call (get (get context :calls) row-id)
+                                 source-node (get nodes row-id)
+                                 source-type (get (get context :types) (get source-call :operator-node-id))]
+                             (if (p15-s23-typed-all [(= row-id (get source-call :core-node-id) (get source-node :node-id))
+                                   (map? source-call) (map? source-node)
+                                   (= :gravity.type/applied-integer-predicate (get source-type :kind))
+                                   (= source-call (get source-type :source-call))
+                                   (= row (p15-s23-ip-constraint source-type))])
+                               (recur (rest remaining)) false))))
+                       (= descriptor (get (get context :types) (get call :operator-node-id)))
+                       (= (get descriptor :result-type) (get (get context :types) id))
+                       (= (get edge :ordinal) (get (get context :call-order) id))
+                       (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
+                       (= [(p15-s23-ip-constraint descriptor)] rows)
+                       (= (p15-s23-ip-call-fact descriptor (get core :module)) (get (get context :call-facts) id))
+                       (= :list (get owner :kind)) (vector? ids) (= 2 (if (vector? ids) (count ids) 0))
+                       (= (get node :source) (p15-s23-typed-source owner))
+                       (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                       (loop [i 0]
+                         (if (= i 2) true
+                           (let [form (get forms (get ids i)) child (get nodes (get children i))]
+                             (if (p15-s23-typed-all [(= (get owner :form-id) (get form :parent-form-id))
+                                   (= (get child :source) (p15-s23-typed-source form))
+                                   (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                               (recur (+ i 1)) false))))]) false)
+                (let [operand (p15-s23-typed-compile-node (assoc context :tail? false) (first args) (- budget work))
+                      total (+ work (get operand :work-count 0))]
+                  (if (p15-s23-compiler-complete? operand)
+                    (assoc (p15-s23-compiler-result {:op :builtin-call :function 'integer? :args [(get operand :value)]}) :work-count total)
+                    (assoc operand :work-count total)))
+                (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-integer-predicate node) :work-count work)))))))))
+
 (defn p15-s23-vp-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (p15-s23-typed-all
@@ -7711,9 +7852,11 @@
         (= :gravity.type/applied-map-contains (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-contains context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (contains? #{:gravity.type/applied-not :gravity.type/applied-vector-predicate} (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (if (= :gravity.type/applied-vector-predicate (get (get (get context :types) (first (get node :children))) :kind))
-      (p15-s23-typed-compile-vector-predicate context node budget)
+        (contains? #{:gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate} (get (get (get context :types) (first (get node :children))) :kind)) false)
+    (if (contains? #{:gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate} (get (get (get context :types) (first (get node :children))) :kind))
+      (if (= :gravity.type/applied-integer-predicate (get (get (get context :types) (first (get node :children))) :kind))
+        (p15-s23-typed-compile-integer-predicate context node budget)
+        (p15-s23-typed-compile-vector-predicate context node budget))
       (p15-s23-typed-compile-not context node budget))
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (contains? #{:gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality}
