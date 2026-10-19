@@ -11071,3 +11071,110 @@
       (is (= :callee0 (:callee-function-syntax-id higher)))
       (is (= [:gravity.type/character] (:argument-types higher)))
       (is (= :gravity.type/character (:result-type higher))))))
+
+(defn- private-vector-value-type [value]
+  (cond (nil? value) :gravity.type/nil (boolean? value) :gravity.type/bool
+        (char? value) :gravity.type/character (keyword? value) :gravity.type/keyword
+        (string? value) :gravity.type/string (integer? value) :gravity.type/integer
+        (vector? value) {:kind :gravity.type/vector :shape :literal :element-types (mapv private-vector-value-type value)}
+        (map? value) {:kind :gravity.type/map :shape :literal
+                      :member-types (vec (mapcat (fn [[k v]] [(private-vector-value-type k) (private-vector-value-type v)]) value))}
+        :else :gravity.type/unknown))
+
+(defn- private-entry-vector-get-input [values]
+  (let [base (private-entry-get-input)
+        changed (reduce (fn [input [i value]]
+                          (let [id (keyword (str "entry-value-0-" i)) map-id (keyword (str "input-" i))
+                                q (quoted-data-input value (+ 110000 (* i 1000)))
+                                node (assoc (:node q) :node-id id)
+                                owner (:owner q) old-form (get-in input [:nodes id :source :form-id])
+                                map-form (get-in input [:nodes map-id :source :form-id])
+                                map-type (assoc-in (get-in input [:types map-id]) [:member-types 1] (private-vector-value-type value))]
+                            (-> input (assoc-in [:nodes id] node)
+                                (update-in [:core :nodes] #(mapv (fn [old] (if (= id (:node-id old)) node old)) %))
+                                (update :forms merge (assoc-in (:forms q) [owner :parent-form-id] map-form))
+                                (update :forms dissoc old-form)
+                                (update-in [:forms map-form :child-form-ids] #(mapv (fn [old] (if (= old-form old) owner old)) %))
+                                (assoc-in [:forms map-form :value :file] (list 'quote value))
+                                (assoc-in [:types id] (private-vector-value-type value))
+                                (assoc-in [:types map-id] map-type)))) base (map-indexed vector values))
+        type (get-in changed [:types :input-0])]
+    (-> changed (assoc-in [:types :input] type) (assoc-in [:binding-types :span-binding] type))))
+
+(deftest sh08-private-entry-vector-get-development-kernel
+  (doseq [[values type-visits] [[[[\a] [\b]] 2]
+                                [[[] []] 1]
+                                [[[(array-map :algorithm :sha256 :status :verified)] [(array-map :algorithm :sha512 :status :rejected)]] 6]
+                                [[[[{:x false}]] [[{:x true}]]] 5]]]
+    (let [input (private-entry-vector-get-input values) result (map-present-get-derived input)
+          expected (private-vector-value-type (first values)) descriptor (:descriptor result)
+          proof (:presence-proof descriptor)
+          header (invoke-c7 'sh08-mg-source [(:core input) (:node input) (:call input) (:edge input)
+                                           (:nodes input) (:bindings input) (:types input) (:module input)])
+          census (invoke-c7 'sh08-pe-census [header (:core input) (:nodes input) (:bindings input) (:forms input)])
+          shapes (mapv :argument-shape (:entries proof))
+          measured #(invoke-c7 'sh08-pe-selected-work [header census shapes (:types input) %])
+          count-work (* 6 type-visits)]
+      (is (= :accepted (:status result)) (pr-str result))
+      (is (= expected (:type result) (:return descriptor) (:selected-type proof)))
+      (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
+      (is (= 2 (count (:entries proof))))
+      (is (not (contains? proof :operand-shape)))
+      (is (= [:input-0 :input-1] (mapv :argument-node-id (:entries proof))))
+      (is (= :accepted (:status (measured 65536))))
+      (is (= count-work (:work-count (measured 65536))))
+      (is (= (measured 65536) (measured count-work)))
+      (is (= :map-get-work-limit (:reason (measured (dec count-work)))))
+      (is (= (dec count-work) (:work-count (measured (dec count-work)))))
+      (is (= result (map-present-get-derived input (:work-count result))))
+      (is (= :map-get-work-limit (:reason (map-present-get-derived input (dec (:work-count result))))))
+      (doseq [mutate [#(assoc-in % [:core :module :exports] ['without-path])
+                      #(assoc-in % [:bindings :helper-binding :visibility] :public)
+                      #(update-in % [:core :calls] pop)
+                      #(update-in % [:core :reference-uses] pop)
+                      #(update-in % [:core :preserved-resolution :resolution-table] pop)
+                      #(assoc-in % [:core :reference-uses 0 :position] :expression)
+                      #(assoc-in % [:core :var-references] [{:binding-id :helper-binding}])
+                      #(-> % (assoc-in [:core :recur-targets] [{:target-id :again :target-kind :function :owner-core-node-id :helper-fn :binding-ids [:span-binding]}])
+                             (assoc-in [:core :recur-transfers] [{:target-id :again :target-kind :function}]))]]
+        (is (not= :accepted (:status (map-present-get-derived (mutate input))))))
+      (let [calls (into {} (map (juxt :core-node-id identity) (get-in input [:core :calls])))
+            types (assoc (:types input) :operator descriptor :present-get expected)
+            checked #(invoke-c7 'sh08-mg-inferred-work [(:core input) (:node input) (:call input) (:edge input)
+                                                      (:nodes input) (:bindings input) types calls %])
+            own (checked 65536)]
+        (is (= :accepted (:status own)))
+        (is (= own (checked (:work-count own))))
+        (is (= :map-get-work-limit (:reason (checked (dec (:work-count own)))))))))
+  (let [input (private-entry-vector-get-input [[\a] [\b \c]])]
+    (is (not= :accepted (:status (map-present-get-derived input))))))
+
+(deftest sh08-private-entry-vector-get-rejection-development-kernel
+  (let [input (private-entry-vector-get-input [[\a] [\b]]) result (map-present-get-derived input)
+        descriptor (:descriptor result) good (:type result)
+        header (invoke-c7 'sh08-mg-source [(:core input) (:node input) (:call input) (:edge input)
+                                         (:nodes input) (:bindings input) (:types input) (:module input)])
+        census (get-in descriptor [:presence-proof :entry-census])
+        shapes (mapv :argument-shape (get-in descriptor [:presence-proof :entries]))
+        bad-types [:gravity.type/vector
+                   {:kind :gravity.type/vector :shape :homogeneous :element-type :gravity.type/character}
+                   (assoc good :extra true)
+                   {:kind :gravity.type/vector :shape :literal :element-types '(:gravity.type/character)}
+                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character :gravity.type/unknown]}
+                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character :gravity.type/never]}
+                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character {:kind :gravity.type/function :parameters [] :return :gravity.type/bool}]}]]
+    (doseq [bad bad-types]
+      (let [types (walk/postwalk-replace {good bad} (:types input))
+            changed-shapes (walk/postwalk-replace {good bad} shapes)
+            checked (invoke-c7 'sh08-pe-selected-work [header census changed-shapes types 65536])]
+        (is (= :rejected (:status checked)))
+        (is (= :map-get-private-entry-selected-type-required (:reason checked)))))
+    (let [changed (-> input (assoc-in [:nodes :entry-key-0-1 :attributes :value] :absent)
+                           (assoc-in [:forms :entry-key-0-1 :value] :absent)
+                           (update-in [:forms :input-1 :value] #(assoc (dissoc % :file) :absent (:file %))))]
+      (is (not= :accepted (:status (map-present-get-derived changed))))))
+  (let [empty-result (map-present-get-derived (private-entry-vector-get-input [[] []]))
+        first-result (list-query-derived (list-query-input 'first [(:type empty-result)]))]
+    (is (= :accepted (:status empty-result)))
+    (is (= ["C7-ANNOTATION" :vector-first-nonempty-complete-positional-type-required]
+           ((juxt :rule :reason) first-result)))))

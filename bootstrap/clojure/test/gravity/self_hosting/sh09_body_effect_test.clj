@@ -5276,3 +5276,52 @@
               (is (= :accepted (:status (leaf 'body-analyze-module
                                           (assoc-in request [:canonical-core-artifact :module :effects] [])
                                           (assoc-in facts [:module :effects] []) {} 65536)))))))))))
+
+(deftest body-private-entry-vector-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input ((ns-resolve upstream 'private-entry-vector-get-input) [[(array-map :algorithm :sha256 :status :verified)]
+                                                                   [(array-map :algorithm :sha512 :status :rejected)]])
+        derive (ns-resolve upstream 'map-present-get-derived) c7 (ns-resolve upstream 'invoke-c7)
+        {:keys [core node nodes bindings forms types module call edge]} input
+        result (derive input) descriptor (:descriptor result)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        facts {:type-table (assoc types :operator descriptor :present-get (:type result))
+               :call-type-facts [(c7 'sh08-mg-call-fact [descriptor module])]
+               :constraint-ledger [(c7 'sh08-mg-constraint [descriptor])]}
+        context (leaf 'body-mg-context request facts bindings 65536)
+        facts (assoc facts :map-get-context (:context context))
+        valid (fn [d] (leaf 'body-mg-present-call-valid? core
+                            (assoc facts :type-table (assoc (:type-table facts) :operator d)
+                                         :call-type-facts [(c7 'sh08-mg-call-fact [d module])]
+                                         :constraint-ledger [(c7 'sh08-mg-constraint [d])])
+                            bindings node call edge nodes))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :accepted (:status context)))
+    (is (true? (valid descriptor)))
+    (let [flat (-> core (assoc :resolution-table (get-in core [:preserved-resolution :resolution-table]))
+                         (update :preserved-resolution dissoc :resolution-table))]
+      (is (= :rejected (:status (leaf 'body-mg-context (assoc request :canonical-core-artifact flat) facts bindings 65536))))
+      (is (false? (leaf 'body-mg-present-call-valid? flat facts bindings node call edge nodes))))
+    (is (true? (leaf 'body-mg-present-call-valid?
+                    (assoc core :recursion-components [{:function-syntax-ids [:caller-0]}])
+                    facts bindings node call edge nodes)))
+    (is (= context (leaf 'body-mg-context request facts bindings (:work-count context))))
+    (is (= :body-deferred-work-limit (:reason (leaf 'body-mg-context request facts bindings (dec (:work-count context))))))
+    (is (= :body-deferred-work-limit (:reason (leaf 'body-mg-context request facts bindings 0))))
+    (let [good (:type result)
+          bad {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
+          coherent (clojure.walk/postwalk-replace {good bad} facts)
+          changed-context (leaf 'body-mg-context request coherent bindings 65536)]
+      (is (= :rejected (:status changed-context)))
+      (is (false? (leaf 'body-mg-present-call-valid? core coherent bindings node call edge nodes))))
+    (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                     (assoc-in descriptor [:presence-proof :entries] :invalid)
+                     (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts 0 :key] :absent)
+                     (assoc-in descriptor [:presence-proof :entries 1 :selected-part :key] :absent)
+                     (assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 99)
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-source] {})
+                     (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])
+                     (assoc descriptor :version :sh08-map-get-present-v1)]]
+      (is (false? (valid changed))))))

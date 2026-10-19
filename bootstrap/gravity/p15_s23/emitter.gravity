@@ -4729,22 +4729,26 @@
         (let [frame (get pending (- (count pending) 1)) type (get frame :type) depth (get frame :depth)
               tail (subvec pending 0 (- (count pending) 1)) next-work (+ used 1)]
           (if (> depth 128) {:status :rejected :reason :type-depth :work-count next-work}
-            (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+            (if (if (keyword? type) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                             :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                             :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
                             :gravity.type/f32 :gravity.type/f64 :gravity.type/character :gravity.type/string
                             :gravity.type/symbol :gravity.type/keyword :gravity.type/list :gravity.type/vector
-                            :gravity.type/map :gravity.type/set} type)
+                            :gravity.type/map :gravity.type/set} type) false)
               (recur tail next-work)
               (if (= :gravity.type/never type)
                 (if (get frame :operand?) (recur tail next-work)
                   {:status :rejected :reason :nested-never :work-count next-work})
-                (if (map? type)
-                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (p15-s23-hl-type? type)
-                        nil-bearing? (p15-s23-ni-type? type)
+                (if (if (map? type)
+                      (if (<= (count type) 3)
+                        (loop [fields (keys type)]
+                          (if (= 0 (count fields)) true
+                            (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
+                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (keyword? (get type :element-type)) (p15-s23-hl-type? type) false)
+                        nil-bearing? (if (keyword? (get type :value-type)) (p15-s23-ni-type? type) false)
                         children (if nil-bearing? [(get type :value-type)]
                                    (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
-                        valid? (if nil-bearing? true (if homogeneous? true (if (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind)
+                        valid? (if nil-bearing? true (if homogeneous? true (if (if (keyword? kind) (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind) false)
                                  (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
                                    (if (= :literal (get type :shape))
                                      (if (vector? children)
@@ -5406,8 +5410,9 @@
   (if (if (map? type) (vector? (get type :member-types)) false) (count (get type :member-types)) 0))
 
 (defn p15-s23-mg-normal-known? [type]
-  (if (if (keyword? type) true (if (map? type) (keyword? (get type :kind)) false))
-    (if (contains? #{:gravity.type/unknown :gravity.type/never} type) false true) false))
+  (if (keyword? type)
+    (= false (contains? #{:gravity.type/unknown :gravity.type/never} type))
+    (if (map? type) (keyword? (get type :kind)) false)))
 
 (defn p15-s23-mg-map-valid? [type]
   (if (= :gravity.type/map type) true
@@ -5417,11 +5422,11 @@
           (loop [i 0]
             (if (= i (count members)) true
               (if (< (+ i 1) (count members))
-                (if (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                (if (if (if (keyword? (get members i)) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                     :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                     :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                                     :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64}
-                                  (get members i))
+                                  (get members i)) false)
                         (p15-s23-mg-normal-known? (get members (+ i 1))) false)
                   (recur (+ i 2)) false) false))) false)) false)))
 
@@ -5710,6 +5715,73 @@
     (if (= 0 (count remaining)) true
       (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
 
+(defn p15-s23-pe-vector-root? [type]
+  (if (map? type)
+    (if (= 3 (count type))
+      (if (loop [fields (keys type)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false)))
+        (if (= #{:kind :shape :element-types} (set (keys type)))
+          (if (= :gravity.type/vector (get type :kind))
+            (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false))
+
+(defn p15-s23-pe-selected-work [header census shapes types budget]
+  ; Existing entry reservations pay guarded key/coordinate and scalar scans.
+  ; Validate every selected Vector candidate before deep equality or finish.
+  (loop [remaining (get census :calls) inputs shapes used 0]
+    (if (= 0 (count remaining))
+      (if (= 0 (count inputs)) {:status :accepted :work-count used}
+        {:status :rejected :reason :map-get-private-entry-presence-required :work-count used})
+      (if (= 0 (count inputs)) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+        (let [call (first remaining) args (get call :argument-node-ids) shape (first inputs)
+              ids? (if (vector? args)
+                     (loop [ids args]
+                       (if (= 0 (count ids)) true
+                         (let [id (first ids)]
+                           (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                             (recur (rest ids)) false)))) false)]
+          (if (= false ids?) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+            (let [invoked? (p15-s23-pe-invoked? types args)
+                  candidate (if invoked?
+                    (let [parts (get shape :parts)
+                          actual (get types (get args (get census :parameter-index)))
+                          members (get actual :member-types) supplied-members (get (get shape :type) :member-types)]
+                      (if (if (vector? parts) (if (<= (count parts) 512) (if (vector? members) (vector? supplied-members) false) false) false)
+                        (loop [i 0 seen #{} selected nil]
+                          (if (= i (count parts)) {:status :accepted :types selected}
+                            (let [part (get parts i) key (get part :key) coordinate (+ 1 (* 2 i))]
+                              (if (keyword? key)
+                                (if (contains? seen key) {:status :rejected}
+                                  (if (= coordinate (get part :coordinate))
+                                    (recur (+ i 1) (conj seen key)
+                                      (if (= key (get header :key))
+                                        [(get (get part :shape) :type) (get members coordinate) (get supplied-members coordinate)] selected))
+                                    {:status :rejected})) {:status :rejected})))) {:status :rejected}))
+                    {:status :not-invoked})
+                  checked (if (= :accepted (get candidate :status))
+                            (let [selected (get candidate :types)]
+                              (if (vector? selected)
+                                (loop [pending selected work used]
+                                  (if (= 0 (count pending)) {:status :accepted :work-count work}
+                                    (let [type (first pending)]
+                                      (if (p15-s23-pe-vector-root? type)
+                                        (let [walked (p15-s23-lc-type-work [type] (- budget work)) total (+ work (get walked :work-count))]
+                                          (if (= :accepted (get walked :status)) (recur (rest pending) total)
+                                            {:status :rejected :reason (if (= :work-limit (get walked :reason))
+                                                                        :map-get-work-limit :map-get-private-entry-selected-type-required) :work-count total}))
+                                        (if (if (keyword? type)
+                                              (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                                                           :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
+                                                           :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false)
+                                          (recur (rest pending) work)
+                                          {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count work})))))
+                                {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))
+                            (if (= :not-invoked (get candidate :status)) {:status :accepted :work-count used}
+                              {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))]
+              (if (= :accepted (get checked :status))
+                (recur (rest remaining) (rest inputs) (get checked :work-count)) checked))))))))
+
 (defn p15-s23-pe-finish [header census shapes core nodes types]
   (if (map? census)
     (loop [remaining (get census :calls) inputs shapes entries [] selected nil normal-count 0]
@@ -5734,10 +5806,11 @@
                   (if (contains? #{nil :gravity.type/unknown} (get types (first ids))) false (recur (rest ids)))))
                 (if invoked?
                   (p15-s23-typed-all [(map? part)
-                    (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                    (if (p15-s23-pe-vector-root? value-type) true
+                    (if (keyword? value-type) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                  :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                  :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} value-type)
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} value-type) false))
                     (if (= normal-count 0) true (= selected value-type))])
                   (= shape nil))])
             (recur (rest remaining) (rest inputs)
@@ -5748,6 +5821,22 @@
                             :entry (if invoked? :invoked :not-invoked) :argument-shape shape
                             :selected-part part :selected-coordinate (get part :coordinate) :selected-type value-type})
               (if invoked? value-type selected) (if invoked? (+ normal-count 1) normal-count)) nil)))) nil))
+
+(defn p15-s23-pe-check-work [header descriptor core nodes bindings forms types budget]
+  ; The caller reserves the existing census; this result carries newly paid
+  ; selection/type validation, never an unchecked common constructor shape.
+  (let [census (p15-s23-pe-census header core nodes bindings forms)
+        entries (get (get descriptor :presence-proof) :entries)]
+    (if (if (map? census) (if (vector? entries) (= (count entries) (count (get census :calls))) false) false)
+      (let [shapes (loop [remaining entries out []]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
+            checked (p15-s23-pe-selected-work header census shapes types budget)
+            expected (if (= :accepted (get checked :status)) (p15-s23-pe-finish header census shapes core nodes types) nil)]
+        (if (map? expected) (assoc checked :descriptor expected)
+          (if (= :rejected (get checked :status)) checked
+            {:status :rejected :reason :map-get-private-entry-presence-required :work-count (get checked :work-count)})))
+      {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0})))
 
 (defn p15-s23-pe-recheck [header descriptor core nodes bindings forms types]
   (let [census (p15-s23-pe-census header core nodes bindings forms)
@@ -5866,7 +5955,10 @@
         members (p15-s23-mg-member-count (get types (first args)))
         base (+ 67 (count (get core :function-records)) members (* 2 members))]
     (if (< budget base) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
-      (let [reserved (if (= :sh08-map-get-private-entry-v1 (get (get types (get call :operator-node-id)) :version))
+      (let [supplied (get types (get call :operator-node-id)) proof (get supplied :presence-proof)
+            private? (if (= :sh08-map-get-private-entry-v1 (get supplied :version)) true
+                       (if (map? proof) (if (contains? proof :entry-census) true (contains? proof :entries)) false))
+            reserved (if private?
                        (p15-s23-pe-reserve core (get nodes (first args)) nodes (get context :bindings) (- budget base))
                        {:status :accepted :work-count 0 :matched-call-count 0})
             charge (+ base (get reserved :work-count) (* (get reserved :matched-call-count 0) (+ 1 (* 2 members))))]
@@ -5876,16 +5968,29 @@
                      :typed-lowering-work-limit :unsupported-or-mismatched-typed-map-get) node) :work-count charge)
       (let [header (p15-s23-mg-source core node call edge nodes (get context :bindings) types (get core :module))
             descriptor (get types (get call :operator-node-id))
-            expected (if (map? header)
-                       (if (= :sh08-map-get-private-entry-v1 (get descriptor :version))
-                         (p15-s23-pe-recheck header descriptor core nodes (get context :bindings) (get context :forms) types)
-                         (p15-s23-mg-present-finish header (get (get descriptor :presence-proof) :operand-shape))) nil)
+            checked (if (map? header)
+                      (if private?
+                        (p15-s23-pe-check-work header descriptor core nodes (get context :bindings) (get context :forms) types (- budget charge))
+                        (let [walked (if (= :normal (get header :application))
+                                       (p15-s23-pe-selected-work header {:calls [call] :parameter-index 0}
+                                         [(get proof :operand-shape)] types (- budget charge))
+                                       {:status :accepted :work-count 0})
+                              result (if (= :accepted (get walked :status))
+                                       (p15-s23-mg-present-finish header (get proof :operand-shape)) nil)]
+                          (if (map? result) (assoc walked :descriptor result)
+                            (if (= :rejected (get walked :status)) walked
+                              {:status :rejected :reason :map-get-private-entry-presence-required :work-count (get walked :work-count)}))))
+                      {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0})
+            charge (+ charge (get checked :work-count))
+            expected (get checked :descriptor)
             rows (loop [remaining (get context :ledger) out []]
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
                          (if (if (= :sh08-map-get-v1 (get row :producer-rule))
                                (= {:core-node-id id :projection :map-get} (get row :lhs)) false) (conj out row) out)))))]
+        (if (if (> charge budget) (= :map-get-work-limit (get checked :reason)) true)
+          (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
         (if (if (map? expected)
               (p15-s23-typed-all
                 [(= descriptor expected) (= (get expected :result-type) (get types id))
@@ -5910,7 +6015,7 @@
                 (if (p15-s23-compiler-complete? child)
                   (recur (rest remaining) (conj values (get child :value)) (+ used (get child :work-count)))
                   (assoc child :work-count (+ charge used (get child :work-count 0)))))))
-          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-get node) :work-count charge))))))))
+          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-map-get node) :work-count charge)))))))))
 
 (defn p15-s23-typed-compile-get [context node budget]
   (if (= 2 (count (get (get (get context :calls) (get node :node-id)) :argument-node-ids)))

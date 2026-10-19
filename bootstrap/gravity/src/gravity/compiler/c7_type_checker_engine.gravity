@@ -5886,7 +5886,13 @@
                                                (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
                                   vector-first? (if (contains? scope (get edge :caller-function-syntax-id))
                                                   (= :gravity.type/applied-vector-first (get (get types (first (get node :children))) :kind)) false)
-                                  checked (if vector-first?
+                                  get2? (if (contains? scope (get edge :caller-function-syntax-id))
+                                          (if (= 2 (count (get call :argument-node-ids)))
+                                            (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false) false)
+                                  checked (if get2?
+                                            (sh08-mg-inferred-work core node call edge nodes binding-index types calls
+                                              (- budget initial (get owners :work-count) work))
+                                          (if vector-first?
                                             (sh08-vf-inferred-call core node call edge nodes binding-index types
                                               (- budget initial (get owners :work-count) work))
                                           (if vector?
@@ -5915,7 +5921,7 @@
                                                   (- budget initial (get owners :work-count) work)))))))))))
                                                 (sh08-vp-inferred-call core node call edge nodes binding-index types
                                                   (- budget initial (get owners :work-count) work)))
-                                              {:status :accepted :work-count 0})))
+                                              {:status :accepted :work-count 0}))))
                                   total (+ work (get checked :work-count))]
                               (if (= :accepted (get checked :status))
                               (if (if (contains? scope (get edge :caller-function-syntax-id))
@@ -5932,9 +5938,10 @@
                                              (= (get edge :caller-function-syntax-id)
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
                                       (let [node (get nodes (get edge :call-core-node-id))
-                                            descriptor (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-vector-first} (get (get types (first (get node :children))) :kind))
+                                            descriptor (if get2? nil
+                                                       (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-vector-first} (get (get types (first (get node :children))) :kind))
                                                          nil
-                                                         (sh08-io-descriptor core node call edge nodes binding-index types (get core :module)))]
+                                                         (sh08-io-descriptor core node call edge nodes binding-index types (get core :module))))]
                                         (if (map? descriptor) (= descriptor (get types (first (get node :children))))
                                           (if (sh08-si-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                             (sh08-si-inferred-call-valid? core node call edge nodes binding-index types)
@@ -5952,7 +5959,8 @@
                                                     (sh08-lc-inferred-call-valid? core node call edge nodes binding-index types))
                                                   (sh08-sc-inferred-call-valid? core node call edge nodes binding-index types))
                                               (if (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
-                                                (sh08-mg-inferred-call-valid? core node call edge nodes binding-index types)
+                                                (if get2? (= :accepted (get checked :status))
+                                                  (sh08-mg-inferred-call-valid? core node call edge nodes binding-index types))
                                               (if (sh08-mc-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                                 (if vector? true (sh08-mc-inferred-call-valid? core node call edge nodes binding-index types))
                                               (if (if (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module))))))))))) true (sh08-vp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true
@@ -5982,7 +5990,7 @@
                         (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
                           :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:keyword-set-contains-work-limit :keyword-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :vector-first-work-limit} (get checked-edges :reason))
+                        (if (contains? #{:keyword-set-contains-work-limit :keyword-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :vector-first-work-limit :map-get-work-limit} (get checked-edges :reason))
                           (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
                             :work-count (+ initial validation-work (get owners :work-count 0)))
                         (if (if (= bad-edge nil) (= false recursive?) false)
@@ -6019,7 +6027,7 @@
                             :keyword-set-equality-arity-mismatch :keyword-set-equality-type-width
                             :vector-predicate-source-mismatch :vector-predicate-operand-type-required :vector-predicate-arity-mismatch
                             :integer-predicate-source-mismatch :integer-predicate-operand-type-required :integer-predicate-arity-mismatch
-                            :set-conversion-source-mismatch :set-conversion-operand-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :nil-predicate-operand-type-required :nil-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :character-set-contains-arity-mismatch :character-set-contains-operand-type-required :character-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required}
+                            :set-conversion-source-mismatch :set-conversion-operand-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :nil-predicate-operand-type-required :nil-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :character-set-contains-arity-mismatch :character-set-contains-operand-type-required :character-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required}
                   (get checked-edges :reason))
               (assoc derived :work-count (+ initial validation-work (get owners :work-count 0) (get derived :work-count 0))) derived)))) scoped))))
 
@@ -7866,22 +7874,26 @@
         (let [frame (get pending (- (count pending) 1)) type (get frame :type) depth (get frame :depth)
               tail (subvec pending 0 (- (count pending) 1)) next-work (+ used 1)]
           (if (> depth 128) {:status :rejected :reason :type-depth :work-count next-work}
-            (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+            (if (if (keyword? type) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                             :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                             :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
                             :gravity.type/f32 :gravity.type/f64 :gravity.type/character :gravity.type/string
                             :gravity.type/symbol :gravity.type/keyword :gravity.type/list :gravity.type/vector
-                            :gravity.type/map :gravity.type/set} type)
+                            :gravity.type/map :gravity.type/set} type) false)
               (recur tail next-work)
               (if (= :gravity.type/never type)
                 (if (get frame :operand?) (recur tail next-work)
                   {:status :rejected :reason :nested-never :work-count next-work})
-                (if (map? type)
-                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (sh08-hl-type? type)
-                        nil-bearing? (sh08-ni-type? type)
+                (if (if (map? type)
+                      (if (<= (count type) 3)
+                        (loop [fields (keys type)]
+                          (if (= 0 (count fields)) true
+                            (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
+                  (let [kind (get type :kind) members? (= :gravity.type/map kind) homogeneous? (if (keyword? (get type :element-type)) (sh08-hl-type? type) false)
+                        nil-bearing? (if (keyword? (get type :value-type)) (sh08-ni-type? type) false)
                         children (if nil-bearing? [(get type :value-type)]
                                    (if homogeneous? [(get type :element-type)] (get type (if members? :member-types :element-types))))
-                        valid? (if nil-bearing? true (if homogeneous? true (if (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind)
+                        valid? (if nil-bearing? true (if homogeneous? true (if (if (keyword? kind) (contains? #{:gravity.type/list :gravity.type/vector :gravity.type/map :gravity.type/set} kind) false)
                                  (if (= (if members? #{:kind :member-types :shape} #{:kind :element-types :shape}) (set (keys type)))
                                    (if (= :literal (get type :shape))
                                      (if (vector? children)
@@ -8522,8 +8534,9 @@
   (if (if (map? type) (vector? (get type :member-types)) false) (count (get type :member-types)) 0))
 
 (defn sh08-mg-normal-known? [type]
-  (if (if (keyword? type) true (if (map? type) (keyword? (get type :kind)) false))
-    (if (contains? #{:gravity.type/unknown :gravity.type/never} type) false true) false))
+  (if (keyword? type)
+    (= false (contains? #{:gravity.type/unknown :gravity.type/never} type))
+    (if (map? type) (keyword? (get type :kind)) false)))
 
 (defn sh08-mg-map-valid? [type]
   (if (= :gravity.type/map type) true
@@ -8533,11 +8546,11 @@
           (loop [i 0]
             (if (= i (count members)) true
               (if (< (+ i 1) (count members))
-                (if (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                (if (if (if (keyword? (get members i)) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                     :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                     :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                                     :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64}
-                                  (get members i))
+                                  (get members i)) false)
                         (sh08-mg-normal-known? (get members (+ i 1))) false)
                   (recur (+ i 2)) false) false))) false)) false)))
 
@@ -8826,6 +8839,73 @@
     (if (= 0 (count remaining)) true
       (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
 
+(defn sh08-pe-vector-root? [type]
+  (if (map? type)
+    (if (= 3 (count type))
+      (if (loop [fields (keys type)]
+            (if (= 0 (count fields)) true
+              (if (keyword? (first fields)) (recur (rest fields)) false)))
+        (if (= #{:kind :shape :element-types} (set (keys type)))
+          (if (= :gravity.type/vector (get type :kind))
+            (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false))
+
+(defn sh08-pe-selected-work [header census shapes types budget]
+  ; Existing entry reservations pay guarded key/coordinate and scalar scans.
+  ; Validate every selected Vector candidate before deep equality or finish.
+  (loop [remaining (get census :calls) inputs shapes used 0]
+    (if (= 0 (count remaining))
+      (if (= 0 (count inputs)) {:status :accepted :work-count used}
+        {:status :rejected :reason :map-get-private-entry-presence-required :work-count used})
+      (if (= 0 (count inputs)) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+        (let [call (first remaining) args (get call :argument-node-ids) shape (first inputs)
+              ids? (if (vector? args)
+                     (loop [ids args]
+                       (if (= 0 (count ids)) true
+                         (let [id (first ids)]
+                           (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                             (recur (rest ids)) false)))) false)]
+          (if (= false ids?) {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}
+            (let [invoked? (sh08-pe-invoked? types args)
+                  candidate (if invoked?
+                    (let [parts (get shape :parts)
+                          actual (get types (get args (get census :parameter-index)))
+                          members (get actual :member-types) supplied-members (get (get shape :type) :member-types)]
+                      (if (if (vector? parts) (if (<= (count parts) 512) (if (vector? members) (vector? supplied-members) false) false) false)
+                        (loop [i 0 seen #{} selected nil]
+                          (if (= i (count parts)) {:status :accepted :types selected}
+                            (let [part (get parts i) key (get part :key) coordinate (+ 1 (* 2 i))]
+                              (if (keyword? key)
+                                (if (contains? seen key) {:status :rejected}
+                                  (if (= coordinate (get part :coordinate))
+                                    (recur (+ i 1) (conj seen key)
+                                      (if (= key (get header :key))
+                                        [(get (get part :shape) :type) (get members coordinate) (get supplied-members coordinate)] selected))
+                                    {:status :rejected})) {:status :rejected})))) {:status :rejected}))
+                    {:status :not-invoked})
+                  checked (if (= :accepted (get candidate :status))
+                            (let [selected (get candidate :types)]
+                              (if (vector? selected)
+                                (loop [pending selected work used]
+                                  (if (= 0 (count pending)) {:status :accepted :work-count work}
+                                    (let [type (first pending)]
+                                      (if (sh08-pe-vector-root? type)
+                                        (let [walked (sh08-lc-type-work [type] (- budget work)) total (+ work (get walked :work-count))]
+                                          (if (= :accepted (get walked :status)) (recur (rest pending) total)
+                                            {:status :rejected :reason (if (= :work-limit (get walked :reason))
+                                                                        :map-get-work-limit :map-get-private-entry-selected-type-required) :work-count total}))
+                                        (if (if (keyword? type)
+                                              (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                                                           :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
+                                                           :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                                           :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} type) false)
+                                          (recur (rest pending) work)
+                                          {:status :rejected :reason :map-get-private-entry-selected-type-required :work-count work})))))
+                                {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))
+                            (if (= :not-invoked (get candidate :status)) {:status :accepted :work-count used}
+                              {:status :rejected :reason :map-get-private-entry-presence-required :work-count used}))]
+              (if (= :accepted (get checked :status))
+                (recur (rest remaining) (rest inputs) (get checked :work-count)) checked))))))))
+
 (defn sh08-pe-finish [header census shapes core nodes types]
   (if (map? census)
     (loop [remaining (get census :calls) inputs shapes entries [] selected nil normal-count 0]
@@ -8850,10 +8930,11 @@
                   (if (contains? #{nil :gravity.type/unknown} (get types (first ids))) false (recur (rest ids)))))
                 (if invoked?
                   (sh08-ft-all-true? [(map? part)
-                    (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
+                    (if (sh08-pe-vector-root? value-type) true
+                    (if (keyword? value-type) (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/decimal :gravity.type/ratio
                                  :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword
                                  :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
-                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} value-type)
+                                 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64} value-type) false))
                     (if (= normal-count 0) true (= selected value-type))])
                   (= shape nil))])
             (recur (rest remaining) (rest inputs)
@@ -8864,6 +8945,22 @@
                             :entry (if invoked? :invoked :not-invoked) :argument-shape shape
                             :selected-part part :selected-coordinate (get part :coordinate) :selected-type value-type})
               (if invoked? value-type selected) (if invoked? (+ normal-count 1) normal-count)) nil)))) nil))
+
+(defn sh08-pe-check-work [header descriptor core nodes bindings forms types budget]
+  ; The caller reserves the existing census; this result carries newly paid
+  ; selection/type validation, never an unchecked common constructor shape.
+  (let [census (sh08-pe-census header core nodes bindings forms)
+        entries (get (get descriptor :presence-proof) :entries)]
+    (if (if (map? census) (if (vector? entries) (= (count entries) (count (get census :calls))) false) false)
+      (let [shapes (loop [remaining entries out []]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))
+            checked (sh08-pe-selected-work header census shapes types budget)
+            expected (if (= :accepted (get checked :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
+        (if (map? expected) (assoc checked :descriptor expected)
+          (if (= :rejected (get checked :status)) checked
+            {:status :rejected :reason :map-get-private-entry-presence-required :work-count (get checked :work-count)})))
+      {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0})))
 
 (defn sh08-pe-recheck [header descriptor core nodes bindings forms types]
   (let [census (sh08-pe-census header core nodes bindings forms)
@@ -9020,14 +9117,19 @@
       (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count work)
       (loop [remaining (get census :calls) shapes [] used work]
         (if (= 0 (count remaining))
-          (let [descriptor (sh08-pe-finish header census shapes core nodes types)]
+          (let [selected-work (sh08-pe-selected-work header census shapes types (- budget used))
+                total (+ used (get selected-work :work-count))
+                descriptor (if (= :accepted (get selected-work :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
+            (if (= :rejected (get selected-work :status))
+              (assoc (sh08-sm-failure (if (= :map-get-work-limit (get selected-work :reason)) "C7-GENERIC" "C7-ANNOTATION")
+                       (get selected-work :reason) nil :complete-established-private-entry-selected-type (get header :key)) :work-count total)
             (if (map? descriptor)
               (if (= :accepted (get (sh08-carrier-preflight descriptor) :status))
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                 :constraint (sh08-mg-constraint descriptor) :work-count used}
-                (assoc (sh08-sm-failure "C7-GENERIC" :map-get-evidence-limit nil :bounded-lookup-evidence nil) :work-count used))
+                 :constraint (sh08-mg-constraint descriptor) :work-count total}
+                (assoc (sh08-sm-failure "C7-GENERIC" :map-get-evidence-limit nil :bounded-lookup-evidence nil) :work-count total))
               (assoc (sh08-sm-failure "C7-ANNOTATION" :map-get-private-entry-presence-required nil
-                       :every-normal-private-entry-proves-literal-key (get header :key)) :work-count used)))
+                       :every-normal-private-entry-proves-literal-key (get header :key)) :work-count total))))
           (let [call (first remaining) args (get call :argument-node-ids)
                 complete? (loop [ids args]
                             (if (= 0 (count ids)) true
@@ -9116,6 +9218,48 @@
   (if (= :call (get node :core-form))
     (sh08-mg-binding? (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
                      (get (get context :ordering-core) :module)) false))
+
+(defn sh08-mg-inferred-work [core node call edge nodes bindings types current-calls budget]
+  ; Keep the existing private-entry premise boundary. Bound supplied rows by
+  ; current calls, pay this consumer's new key scan, then reuse the result.
+  (let [header (sh08-mg-source core node call edge nodes bindings types (get core :module))
+        descriptor (get types (get call :operator-node-id)) proof (get descriptor :presence-proof)
+        private? (if (= :sh08-map-get-private-entry-v1 (get descriptor :version)) true
+                   (if (map? proof) (if (contains? proof :entry-census) true (contains? proof :entries)) false))
+        entries (get proof :entries) census (get proof :entry-census)
+        calls (if private? (get census :calls) [call])
+        width (if (vector? calls) (count calls) 0)
+        bounded? (if private?
+                   (if (vector? calls) (if (vector? entries) (= width (count entries)) false) false) true)
+        bounded? (if bounded? (<= width (count (get core :calls))) false)
+        prepared (if (if (map? header) (= :normal (get header :application)) false)
+                   (if (> width budget) {:status :rejected :reason :map-get-work-limit :work-count width}
+                     (if bounded?
+                       (loop [i 0 shapes [] used width]
+                         (if (= i width) {:status :accepted :shapes shapes :work-count used}
+                           (let [source-call (get calls i) id (get source-call :core-node-id)
+                                 id? (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                 shape (if private? (get (get entries i) :argument-shape) (get proof :operand-shape))
+                                 parts (get shape :parts) charge (+ used (* 4 (if (vector? parts) (count parts) 0)))]
+                             (if (> charge budget) {:status :rejected :reason :map-get-work-limit :work-count charge}
+                               (if (if id? (= source-call (get current-calls id)) false)
+                                 (recur (+ i 1) (conj shapes shape) charge)
+                                 {:status :rejected :reason :map-get-source-mismatch :work-count charge})))))
+                       {:status :rejected :reason :map-get-private-entry-presence-required :work-count 0}))
+                   {:status :accepted :shapes [] :work-count 0})
+        checked (if (if (= :accepted (get prepared :status))
+                        (if (map? header) (= :normal (get header :application)) false) false)
+                  (let [walked (sh08-pe-selected-work header (if private? census {:calls [call] :parameter-index 0})
+                                 (get prepared :shapes) types (- budget (get prepared :work-count)))]
+                    (assoc walked :work-count (+ (get prepared :work-count) (get walked :work-count)))) prepared)
+        expected (if (if (map? header) (= :accepted (get checked :status)) false)
+                   (if private? (sh08-pe-finish header census (get prepared :shapes) core nodes types)
+                     (sh08-mg-present-finish header (get proof :operand-shape))) nil)]
+    (if (if (map? expected) (if (= expected descriptor)
+                            (= (get expected :result-type) (get types (get node :node-id))) false) false)
+      {:status :accepted :work-count (get checked :work-count)}
+      (if (= :rejected (get checked :status)) checked
+        {:status :rejected :reason :map-get-source-mismatch :work-count (get checked :work-count)}))))
 
 (defn sh08-mg-inferred-call-valid? [core node call edge nodes bindings types]
   (if (= :sh08-vector-get-indexed-private-self-v1 (get (get types (get call :operator-node-id)) :version))

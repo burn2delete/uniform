@@ -23184,3 +23184,64 @@
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(deftest current-gravity-private-entry-vector-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node nodes forms bindings types module call edge binding-types] :as input}
+        ((ns-resolve upstream 'private-entry-vector-get-input) [[(array-map :algorithm :sha256 :status :verified)]
+                                                            [(array-map :algorithm :sha512 :status :rejected)]])
+        result ((ns-resolve upstream 'map-present-get-derived) input) descriptor (:descriptor result)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :present-get (:type result))
+                 :calls {:present-get call} :edges {:present-get edge} :call-order {:present-get 0}
+                 :current-function {:function-syntax-id :helper-form}
+                 :call-facts {:present-get (c7 'sh08-mg-call-fact [descriptor module])}
+                 :ledger [(c7 'sh08-mg-constraint [descriptor])]
+                 :locals {:span-binding 'span} :parameter-types binding-types :tail? true}
+        compile (fn [ctx budget] (invoke 'p15-s23-typed-compile-node ctx :present-get budget))
+        lowered (compile context 65536)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (let [flat (-> core (assoc :resolution-table (get-in core [:preserved-resolution :resolution-table]))
+                         (update :preserved-resolution dissoc :resolution-table))
+          rejected (compile (assoc context :core flat) 65536)]
+      (is (= :rejected (:status rejected)))
+      (is (= :unsupported-or-mismatched-typed-map-get (get-in rejected [:facts :reason]))))
+    (let [recursive-caller (compile (assoc-in context [:core :recursion-components] [{:function-syntax-ids [:caller-0]}]) 65536)]
+      (is (= :complete (:status recursive-caller)) (pr-str recursive-caller))
+      (is (= (:value lowered) (:value recursive-caller))))
+    (when (= :complete (:status lowered))
+      (is (= {:op :keyword-map-lookup :args [{:op :literal :value :file} {:op :local :name 'span}]} (:value lowered)))
+      (is (= lowered (compile context (:work-count lowered))))
+      (let [good (:type result) bad {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
+          coherent (walk/postwalk-replace {good bad} context)
+          failed (compile coherent 65536)]
+      (is (= :rejected (:status failed)))
+      (is (= :unsupported-or-mismatched-typed-map-get (get-in failed [:facts :reason]))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))]
+      (doseq [value [[(array-map :algorithm :sha256 :status :verified)] [(array-map :algorithm :sha512 :status :rejected)]]]
+        (let [stored {:file value :line 17 :kind :span :enabled false :payload nil}
+              actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                       [(:value lowered) {'span stored} "" {} []])]
+          (is (= [value "" :normal] actual))
+          (is (= value (:file stored))))))
+    (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+    (is (= :typed-lowering-work-limit (get-in (compile context 0) [:facts :reason])))
+    (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                     (assoc-in descriptor [:presence-proof :entries] :invalid)
+                     (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts 0 :key] :absent)
+                     (assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 99)
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-source] {})
+                     (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])
+                     (assoc descriptor :version :sh08-map-get-present-v1)]]
+      (let [changed-context (-> context (assoc-in [:types :operator] changed)
+                               (assoc :ledger [(c7 'sh08-mg-constraint [changed])])
+                               (assoc-in [:call-facts :present-get] (c7 'sh08-mg-call-fact [changed module])))]
+        (is (= :rejected (:status (compile changed-context 65536))))))))
