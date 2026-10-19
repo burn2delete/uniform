@@ -10734,7 +10734,11 @@
 (deftest sh08-character-set-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/character derive keyword-set-contains-derived]
-    (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
+    (doseq [[arguments expected-limit-reason]
+            [[[(finite []) k] :keyword-set-contains-work-limit]
+             [[(finite [k k]) k] :character-set-contains-work-limit]
+             [[(finite [k]) :gravity.type/never] :keyword-set-contains-work-limit]
+             [[:gravity.type/never k] :keyword-set-contains-work-limit]]]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
             result (derive input 65536) descriptor (:descriptor result)
             context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -10763,10 +10767,10 @@
         (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
         (is (= :direct-character-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
         (is (= result (derive input (:work-count result))))
-        (is (= (if (= 2 (:type-domain-work-count descriptor)) :keyword-set-contains-work-limit :character-set-contains-work-limit)
+        (is (= expected-limit-reason
                (:reason (derive input (dec (:work-count result))))))
         (is (= checked (check established (:work-count checked))))
-        (is (= (if (= 2 (:type-domain-work-count descriptor)) :keyword-set-contains-work-limit :character-set-contains-work-limit)
+        (is (= expected-limit-reason
                (:reason (check established (dec (:work-count checked))))))
         (doseq [changed [(assoc-in established [:operator :membership-policy :comparison] :identity)
                          (assoc-in established [:operator :membership-policy :refinement] :key-presence)
