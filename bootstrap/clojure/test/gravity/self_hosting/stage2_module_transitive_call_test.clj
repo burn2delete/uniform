@@ -58,9 +58,12 @@
                 {:route-id (:artifact-id caller) :caller-module-id (:artifact-id caller)
                  :caller-function 'relay :callsite-path [0 1 1] :callee-module-id (:artifact-id callee)})
         ra (route a b) rb (route b c)
-        raw (fn [_ path _ index]
-              {:plan-id (bootstrap/reader-canonical-hash [path index])
-               :module {:module (symbol path)} :functions {} :route-index index})
+        raw (fn raw
+              ([emitter path text index] (raw emitter path text index nil))
+              ([_ path _ index _map-order]
+               (let [index (not-empty index)]
+                 {:plan-id (bootstrap/reader-canonical-hash [path index])
+                  :module {:module (symbol path)} :functions {} :route-index index})))
         bp (raw emitter "example.middle" "example.middle" {['relay [0 1 1]] rb})
         cp (raw emitter "example.leaf" "example.leaf" nil)
         build (fn [plans] (bootstrap/p15-s23-stage2-module-bundle
