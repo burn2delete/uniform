@@ -10513,6 +10513,202 @@
                ((juxt :rule :reason) (first diagnostics))) (pr-str [suffix diagnostics]))
         (println (pr-str {:bb-keyword-predicate-negative suffix :diagnostics diagnostics}))))))
 
+(deftest current-gravity-string-predicate-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        original (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        positive (slurp (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-string-predicate.gravity"))]
+    ;; Only these exact W5 subexpressions are copied, not the surrounding helper.
+    (doseq [subexpression ["(string? (get value :stdout))" "(string? (get value :stderr))"]]
+      (is (str/includes? original subexpression))
+      (is (str/includes? positive subexpression)))
+    (doseq [[disposition name functions] [["accepted" "local-runtime-string-predicate" 3]
+                                         ["accepted" "local-runtime-string-predicate-transfer" 2]
+                                         ["rejected" "string-predicate-zero" 1]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)
+            q-path (.getPath (io/file root (str relative ".qst")))]
+        (is (= text (slurp q-path)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))
+        (is (= (bootstrap/read-forms path text) (bootstrap/read-forms q-path (slurp q-path))))))))
+
+(deftest current-gravity-string-predicate-authenticated-composition
+  ;; One changed source composition over existing private-entry and nil-join facts.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result))
+                                                   result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        cases
+        (mapv (fn [[name extension]]
+                (let [transfer? (= name "local-runtime-string-predicate-transfer")
+                      relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/" name extension)
+                      path (.getPath (io/file root relative)) products (fresh relative)
+                      _ (println (pr-str {:bc-product-elapsed relative :timing (:development-timing products)}))
+                      input (select-keys products [:request :typed :verification])
+                      _ (is (= :accepted (get-in products [:c5 :status])))
+                      _ (is (= :passed (get-in products [:report :status])))
+                      _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                      _ (when-not (= :accepted (get-in input [:typed :status]))
+                          (throw (ex-info "String predicate C7 source prerequisite rejected" {:name name :extension extension :diagnostics (get-in input [:typed :diagnostics])})))
+                      _ (is (= :passed (get-in input [:verification :status])))
+                      _ (when-not (= :passed (get-in input [:verification :status]))
+                          (throw (ex-info "String predicate C7 source verification prerequisite rejected" {:name name :extension extension})))
+                      artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                      parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                      raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                      definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                      t0 (System/nanoTime)
+                      assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                      t1 (System/nanoTime)
+                      core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                      predicates (mapv :applied-string-predicate (filter #(= :direct-string-predicate (:dispatch %)) (:call-type-facts facts)))
+                      functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+                      instructions (filter #(and (map? %) (= :builtin-call (:op %))) (tree-seq coll? seq (:functions assembled)))
+                      predicate-ir (filter #(= 'string? (:function %)) instructions)
+                      ordinary (filter #(and (map? %) (= :function-call (:op %))) (tree-seq coll? seq (:functions assembled)))
+                      binding (seal (:request input) (:typed input) (:verification input))
+                      t2 (System/nanoTime)
+                      effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                      t3 (System/nanoTime)
+                      _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                      _ (when-not (= :accepted (:status effects))
+                          (throw (ex-info "String predicate C8 source prerequisite rejected" {:name name :extension extension :diagnostics (:diagnostics effects)})))
+                      effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                      t4 (System/nanoTime)
+                      _ (is (= :passed (:status effect-verification)))
+                      _ (when-not (= :passed (:status effect-verification))
+                          (throw (ex-info "String predicate C8 source verification prerequisite rejected" {:name name :extension extension})))
+                      graph (:effect-graph effects)
+                      specs (if transfer? [['caught ["problem"] true] ['main [] true]]
+                                [['classify-runtime-fields [{:stdout "out" :stderr ""}] true]
+                                 ['classify-runtime-fields [{:stderr "err" :stdout ""}] true]
+                                 ['classify-choice [true] true] ['classify-choice [false] false] ['main [] true]])
+                      t5 (System/nanoTime)
+                      results (mapv (fn [[function args expected]]
+                                      (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                             [{:op :function-call :function function :args (literal-instructions args)}
+                                                              {} "" (:functions assembled) []])]
+                                        (is (= [expected "" :normal] result) (str name extension " " function " " args))
+                                        result)) specs)
+                      t6 (System/nanoTime)]
+                  (is (= (if transfer? 2 3) (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                  (is (= (if transfer? 4 9) (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+                  (is (= (if transfer? 2 3) (count predicates) (count predicate-ir)
+                           (count (filter #(= :sh08-string-predicate-v1 (:producer-rule %)) (:constraint-ledger facts)))))
+                  (is (= (if transfer? {:normal 1 :not-invoked 1} {:normal 3}) (frequencies (map :application predicates))))
+                  (doseq [descriptor predicates]
+                    (let [id (:call-core-node-id descriptor) application (:application descriptor)]
+                      (is (= :sh08-string-predicate-v1 (:version descriptor)))
+                      (is (= 'gravity.text (:semantic-owner descriptor)))
+                      (is (= 'string? (:operation descriptor)))
+                      (is (= (if (= :normal application) :gravity.type/bool :gravity.type/never) (:return descriptor) (:result-type descriptor)))
+                      (is (= {:operation :string-family-classification :operand-evaluation :once :operand-position :non-tail
+                              :construction :none :payload-evaluation :none :mutation :none :refinement :none} (:query-semantics descriptor)))
+                      (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+                      (is (= #{} (get-in graph [:nodes id :direct])))
+                      (is (nil? (get-in graph [:nodes id :allocation])))
+                      (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))
+                      (when (= :not-invoked application)
+                        (is (contains? (get-in graph [:nodes id :transitive]) :error/throw)))))
+                  (doseq [instruction predicate-ir]
+                    (is (= #{:op :function :args} (set (keys instruction))))
+                    (is (= 1 (count (:args instruction)))))
+                  (doseq [call ordinary] (is (= #{:op :function :args} (set (keys call)))))
+                  (doseq [[function record] functions]
+                    (is (= :gravity.type/bool (:return record)) (str function)))
+                  (doseq [[function compiled] (:functions assembled)]
+                    (is (= path (get-in compiled [:typed-lowering-provenance :source :path])) (str function)))
+                  (if transfer?
+                    (do
+                      (is (= #{1} (set (map :operand-type-work predicates))))
+                      (is (= {:literal 1 :throw 1} (frequencies (map #(get-in % [:args 0 :op]) predicate-ir))))
+                      (is (= [] (get-in graph [:functions (get-in functions ['caught :function-id]) :throws])))
+                      (is (= [] (get-in graph [:functions (get-in functions ['main :function-id]) :throws]))))
+                    (let [runtime-fields (first (filter #(= 'classify-runtime-fields (:definition-name %)) (:function-records core)))
+                          choice (first (filter #(= 'classify-choice (:definition-name %)) (:function-records core)))
+                          lookups (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) (:call-type-facts facts)))]
+                      (is (not (contains? runtime-fields :signature)))
+                      (is (not (contains? choice :signature)))
+                      (is (= [{:kind :gravity.type/map :shape :literal
+                               :member-types [:gravity.type/keyword :gravity.type/string :gravity.type/keyword :gravity.type/string]}]
+                             (mapv :type (get-in functions ['classify-runtime-fields :parameters]))))
+                      (is (= [:gravity.type/bool] (mapv :type (get-in functions ['classify-choice :parameters]))))
+                      (is (nil? (:recursive-proof facts)))
+                      (is (= #{1 2} (set (map :operand-type-work predicates))))
+                      (is (= #{[:gravity.type/string] [{:kind :gravity.type/nil-or :value-type :gravity.type/string}]}
+                             (set (map :argument-types predicates))))
+                      (is (= 2 (count lookups)))
+                      (is (= #{:stdout :stderr} (set (map :key lookups))))
+                      (doseq [lookup lookups]
+                        (let [proof (:presence-proof lookup) census (:entry-census proof) entries (:entries proof)]
+                          (is (= :sh08-map-get-private-entry-v1 (:version lookup)))
+                          (is (= :private-call-entry-key-presence (:kind proof)))
+                          (is (not (contains? proof :operand-shape)))
+                          (is (= :private (get-in census [:definition-binding :visibility])))
+                          (is (= ['main] (:exports census)))
+                          (is (= 2 (count (:calls census)) (count (:edges census)) (count (:reference-uses census)) (count entries)))
+                          (is (= [:invoked :invoked] (mapv :entry entries)))
+                          (is (= :gravity.type/string (:return lookup) (:selected-type proof)))
+                          (is (= 2 (count (set (map :argument-node-id entries))) (count (set (map :argument-source entries)))))
+                          (is (= 2 (count (set (map :selected-coordinate entries)))))
+                          (doseq [entry entries]
+                            (is (= (:key lookup) (get-in entry [:selected-part :key])))
+                            (is (= :gravity.type/string (:selected-type entry) (get-in entry [:selected-part :shape :type]))))))))
+                  (println (pr-str {:bc-string-predicate-positive name :extension extension :function-table-entry-invocations (count results)
+                                    :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                                 :c8-verification (- t4 t3) :entry-execution-including-expectations (- t6 t5)}
+                                    :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))
+                  {:name name :input input :module module :definitions definitions :assembled assembled :predicates predicates
+                   :binding binding :effects effects :graph graph :results results}))
+              (for [name ["local-runtime-string-predicate" "local-runtime-string-predicate-transfer"]
+                    extension [".gravity" ".qst"]] [name extension]))
+        {:keys [input module definitions predicates binding effects graph]} (first cases)
+        descriptor (first predicates)
+        forged (assoc-in descriptor [:query-semantics :unicode-boundary] :proven)
+        hostile (walk/prewalk #(if (= % descriptor) forged %) (:typed input))
+        failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                 emitter module (get definitions 'classify-runtime-fields) (assoc input :typed hostile)))))]
+    (doseq [[left right] (partition 2 cases)]
+      (is (= (get-in left [:input :typed :identity-input]) (get-in right [:input :typed :identity-input])))
+      (is (= (:graph left) (:graph right)))
+      (is (= (:results left) (:results right)))
+      (is (= (typed-functions-without-source-path (get-in left [:assembled :functions]))
+             (typed-functions-without-source-path (get-in right [:assembled :functions])))))
+    (is (= "P15S23Q002" (:id failure)))
+    (is (= :rejected (:status (last @verified))))
+    (is (= 5 (count @verified)))
+    (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
+                              (reseal effects (update-in graph [:nodes (:call-core-node-id descriptor) :dependencies] pop))))))
+    (doseq [suffix ["zero"]]
+      (let [products (fresh (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/string-predicate-" suffix ".gravity"))
+            diagnostics (get-in products [:typed :diagnostics])]
+        (println (pr-str {:bc-product-elapsed (str "string-predicate-" suffix) :timing (:development-timing products)}))
+        (is (= :accepted (get-in products [:c5 :status])) suffix)
+        (is (= :passed (get-in products [:report :status])) suffix)
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (vector? diagnostics) suffix)
+        (is (seq diagnostics) suffix)
+        (is (every? #(and (string? (:rule %)) (keyword? (:reason %))) diagnostics) (pr-str [suffix diagnostics]))
+        (is (= ["C7-TYPE-MISMATCH" :string-predicate-arity-mismatch]
+               ((juxt :rule :reason) (first diagnostics))) (pr-str [suffix diagnostics]))
+        (println (pr-str {:bc-string-predicate-negative suffix :diagnostics diagnostics}))))))
+
 (deftest current-gravity-integer-predicate-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
@@ -11464,6 +11660,144 @@
         (is (= [false "" :normal] (execute (predicate {:op :quote :value stored}))))
         (is (zero? @visits)))
       (let [function {:name 'produce :arity 0 :params [] :instructions [(say (literal :io/stdout))]}
+            instruction (predicate {:op :function-call :function 'produce :args []})]
+        (is (= [true "operand\n" :normal]
+               (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))
+
+(deftest current-gravity-string-predicate-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'string-predicate-input)
+        derive (ns-resolve upstream 'string-predicate-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
+    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+          ip-input (ns-resolve upstream 'integer-predicate-input)
+          vp-input (ns-resolve upstream 'vector-predicate-input)
+          mp-input (ns-resolve upstream 'map-predicate-input)
+          kp-input (ns-resolve upstream 'keyword-predicate-input)]
+      (doseq [target [:jvm :wasm]
+              [input name expected] [[(input-fn [:gravity.type/string]) 'strp (= target :jvm)]
+                                     [(ip-input [:gravity.type/integer]) 'ip true]
+                                     [(vp-input [:gravity.type/vector]) 'vp true]
+                                     [(mp-input [:gravity.type/map]) 'mapp (= target :jvm)]
+                                     [(kp-input [:gravity.type/keyword]) 'kp (= target :jvm)]]]
+        (let [binding (get-in input [:bindings :ordering-binding]) module (assoc (:module input) :target target)]
+          (is (= expected (c7 (symbol (str "sh08-" name "-binding?")) [binding module])))
+          (is (= expected (body (symbol (str "body-" name "-binding?")) binding module)))
+          (is (= expected (lower (symbol (str "p15-s23-" name "-binding?")) binding module))))))
+    (doseq [type [:gravity.type/string :gravity.type/keyword :gravity.type/map :gravity.type/never
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings
+                     :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-strp-call-fact [descriptor module])}
+                     :ledger [(c7 'sh08-strp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+            compile #(lower 'p15-s23-typed-compile-node % :call %2)
+            compiled (compile context 65536)]
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (when-not (= :complete (:status compiled))
+          (throw (ex-info "String predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+        (is (= {:op :builtin-call :function 'string? :args [{:op :local :name 'value}]} (:value compiled)))
+        (is (= compiled (compile context (:work-count compiled))))
+        (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
+        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
+              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 65536)
+              failed (compile changed 65536)]
+          (is (= :rejected (:status failed)))
+          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
+          (is (= own (:work-count (compile context own)))))
+        (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
+                         (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
+                         (assoc-in descriptor [:query-semantics :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:query-semantics :normalization] :nfc)
+                         (assoc-in descriptor [:query-semantics :unicode-boundary] :proven)
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :operand-type-work 0)]]
+          (let [forged (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-strp-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-strp-constraint [changed])]))]
+            (is (= :rejected (:status (compile forged 65536))))))
+        (let [visits (atom 0)
+              hostile (reify clojure.lang.IHashEq
+                        (hasheq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed")))
+                        clojure.lang.Seqable
+                        (seq [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID traversed")))
+                        Object
+                        (hashCode [_] (swap! visits inc) (throw (AssertionError. "unvalidated predicate row ID hashed"))))
+              row (assoc-in (first (:ledger context)) [:lhs :core-node-id] hostile)]
+          (is (= :rejected (:status (compile (update context :ledger conj row) 65536))))
+          (is (zero? @visits)))
+        (doseq [[case-index mutate] (map-indexed vector [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)])]
+          (is (= :rejected (:status (compile (mutate context) 65536))) (str "predicate context mutation " case-index)))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))
+          invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+          literal (fn [value] {:op :literal :value value})
+          predicate (fn [operand] {:op :builtin-call :function 'string? :args [operand]})
+          say (fn [value] {:op :do :body [{:op :println :args [(literal "operand")] :effect :io/write :capability :io/stdout} value]})
+          execute (fn [instruction] (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {} []))]
+      (doseq [[value expected] [["" true] ["text" true] [(str (char 0)) true]
+                                [(String. (Character/toChars 0x1f600)) true] [(str (char 0xe9)) true]
+                                [(str "e" (char 0x301)) true] ["keyword?" true] [":io/stdout" true]
+                                [:stored false] ['stored false] [nil false] [false false] [true false]
+                                [7 false] [7N false] [7M false] [7.0 false] [(float 7) false] [3/2 false]
+                                [(char 55) false] [[] false] ['() false] [#{} false] [{} false]
+                                [(StringBuilder. "convertible") false] [(java.nio.CharBuffer/wrap "view") false]
+                                [(byte-array [65 66]) false]]]
+        (is (= [expected "" :normal] (execute (predicate (literal value)))))
+        (is (= [expected "operand\n" :normal] (execute (predicate (say (literal value)))))))
+      (is (= [:problem "operand\n" :thrown]
+             (execute (predicate (say {:op :throw :value (literal :problem)})))))
+      (let [instruction {:op :try :protected (predicate {:op :throw :value (literal "caught")})
+                         :handlers [{:type :gravity.type/string :name 'error :body {:op :local :name 'error}}]}]
+        (is (= ["caught" "" :normal] (execute instruction))))
+      (doseq [instruction [{:op :builtin-call :function 'string? :args []}
+                           {:op :builtin-call :function 'string? :args [(say (literal [])) (literal [])]}
+                           (assoc (predicate (say (literal []))) :extra true)]]
+        (is (= ["" :rejected] (subvec (execute instruction) 1))))
+      (let [target "predicate-target"
+            instruction {:op :loop :target target :bindings []
+                         :body [(predicate {:op :recur :target target :args []})]}]
+        (is (= ["" :rejected] (subvec (execute instruction) 1))))
+      (let [visits (atom 0)
+            hostile (reify clojure.lang.Seqable
+                      (seq [_] (swap! visits inc) (throw (AssertionError. "predicate evaluated stored payload"))))
+            stored [hostile {:op :println :args [(literal "unreached")]}]]
+        (is (= [false "" :normal] (execute (predicate {:op :quote :value stored}))))
+        (is (= [false "" :normal] (execute (predicate (literal hostile)))))
+        (is (zero? @visits)))
+      (let [active (atom false) visits (atom 0)
+            key (reify clojure.lang.IHashEq
+                  (hasheq [_] (if @active (do (swap! visits inc) (throw (AssertionError. "Map predicate hashed stored key"))) 17))
+                  clojure.lang.Seqable
+                  (seq [_] (swap! visits inc) (throw (AssertionError. "Map predicate traversed stored key"))))
+            stored (hash-map key :stored :code (list 'println "unreached"))]
+        (reset! active true)
+        (is (= [false "" :normal] (execute (predicate {:op :quote :value stored}))))
+        (is (zero? @visits)))
+      (let [visits (atom 0)
+            carrier (reify CharSequence
+                      (length [_] (swap! visits inc) (throw (AssertionError. "String predicate measured host carrier")))
+                      (charAt [_ index] (swap! visits inc) (throw (AssertionError. "String predicate scanned host carrier")))
+                      (subSequence [_ start end] (swap! visits inc) (throw (AssertionError. "String predicate sliced host carrier")))
+                      Object
+                      (toString [_] (swap! visits inc) (throw (AssertionError. "String predicate coerced host carrier"))))]
+        (is (= [false "" :normal] (execute (predicate (literal carrier)))))
+        (is (zero? @visits)))
+      (let [function {:name 'produce :arity 0 :params [] :instructions [(say (literal "text"))]}
             instruction (predicate {:op :function-call :function 'produce :args []})]
         (is (= [true "operand\n" :normal]
                (invoke 'p15-s23-runtime-evaluate-in-context instruction {} "" {'produce function} ['main])))))))

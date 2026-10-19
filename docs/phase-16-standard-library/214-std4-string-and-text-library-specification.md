@@ -39,6 +39,21 @@ Text APIs must expose whether they allocate, borrow, slice, normalize, validate,
 - Pattern APIs: `pattern`, `match`, `find`, `replace-pattern`, and bounded parser combinators.
 - Artifact APIs: `unicode-version`, `normalization-table-id`, and `text-fixture-id`.
 
+## String Family Predicate
+
+Unary `(string? value)` returns Bool true exactly when the normally evaluated
+value belongs to the String family, including the empty String, and false for
+every other normally evaluated value. The operand evaluates exactly once under
+L2; its effects remain visible and a control transfer aborts invocation.
+Classification does not evaluate stored payloads, mutate or convert the value,
+or itself allocate a collection. It does not decode, normalize, count or index
+text, and supplies no encoding, Unicode-boundary or normalization fact.
+
+`gravity.text` owns these String semantics. The existing core compatibility
+spelling does not establish an implemented `gravity.text` export or grant
+profile, target or host-service permission. Convertibility to String does not
+make Bytes, an arbitrary Text/view value or a host text carrier a String.
+
 ## Binary String Concatenation
 
 The binary String overload of the existing compatibility spelling
@@ -115,6 +130,7 @@ If `n` is outside the valid range, the operation returns a checked text error or
 
 ## Conformance Criteria
 
+- String family classification distinguishes actual Strings, including empty Strings, from other values without conversion, normalization, payload execution or new authority, and preserves operand effects and transfers.
 - Binary String concatenation preserves exact scalar sequences and operand order, retains operand transfers and effects, and rejects invocation without the required allocation allowance.
 - UTF-8 fixtures distinguish valid, invalid, incomplete, overlong, and boundary-sensitive inputs.
 - Normalization fixtures record Unicode version and produce stable results across targets.

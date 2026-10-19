@@ -3743,6 +3743,51 @@ clojure -J-Xmx2g -M:dev-test \
 Compiling one predicate/projection subexpression is not execution of an unchanged W5
 validator, current-closure migration or self-hosting completion.
 
+### String family classification
+
+STD4's `gravity.text` owns unary `string?` semantics behind the existing core
+compatibility spelling. Edit C7, C8, typed lowering and runtime, then run:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-string-predicate-development-kernel \
+  --exact sh08-string-predicate-throw-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-string-predicate-source-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-predicate-lowering-runtime-development-kernel --fail-fast
+```
+
+Classification distinguishes actual Strings, including empty Strings, from
+other supported independently established closed values. Nil-or-String operands
+classify their actual value; Unknown and Dynamic remain implementation
+frontiers. It preserves once-only non-tail operand evaluation, effects and
+transfers without conversion, payload execution or type-flow refinement. It
+does not independently validate Unicode or establish normalization, length or
+indexing facts; existing String validity obligations remain at their owning
+boundaries. It grants no new collection allocation, capability, export or
+profile permission.
+Text/view/Bytes or host-carrier convertibility does not establish String type.
+
+Use changed source composition when the public typed/effected/lowered boundary
+changes, and record its actual result separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-string-predicate-fixtures-development-kernel \
+  --exact current-gravity-string-predicate-authenticated-composition --fail-fast
+```
+
+Compiling the W5 runtime
+record's String field checks is not executing its unchanged validator, admitting
+a compiler revision or completing self-hosting.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

@@ -2941,6 +2941,38 @@ boundaries; they do not establish exclusive cost, speedup or representation
 dominance. Native/other-target execution, current-closure admission and broader
 SH-07/self-hosting completion remain outstanding.
 
+### String family classification: development implementation
+
+Unary `string?` has a bounded JVM path through C7, C8, typed lowering and
+runtime. STD4's `gravity.text` owns the semantics behind the existing core
+compatibility spelling. Actual Strings classify true, including empty, NUL,
+supplementary and combining values; other supported established closed values
+classify false. Nil-or-String operands retain their independent type evidence
+and classify their actual value. Unknown, Dynamic and unsupported Text/Bytes
+families remain implementation frontiers, not language-wide bans.
+
+Operand evaluation remains once-only and non-tail, with effects and control
+transfers preserved; Never prevents invocation. The query performs no payload
+execution, conversion, normalization, text scan, own collection construction or
+type-flow refinement. It independently establishes no Unicode-boundary, length
+or indexing fact. Existing String-validity obligations remain at their owning
+boundaries. C7/C8/emitter reconstruct current source, binding, descriptor,
+ordered rows and cumulative work; runtime executes shallow unary IR without
+coercing host text carriers. The new JVM fence does not alter existing
+predicate eligibility, and runtime retains 47 functions and its public exports.
+
+The combined focused batch passed nine tests/1,613 assertions: four String
+kernels (816), four adjacent Keyword regressions (784), and fixture preflight
+(13). Kernel totals include existing runtime-loader checks. Fixture preflight
+checks four exact W5 runtime-field subexpression occurrences plus byte/parser
+parity and definition counts for three source pairs; it does not execute the
+unchanged W5 validator. The batch took 4.396 seconds after SH01/C7 loading of
+10.617/1.193 seconds at 2 GiB, while the separate reader composition ran.
+These inclusive timings are not isolated performance comparisons. Independent
+review accepted the actual focused results; authentic changed source
+composition, other-target execution and authoritative migration remain separate
+outstanding checks.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

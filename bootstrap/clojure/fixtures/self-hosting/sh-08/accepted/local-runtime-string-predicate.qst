@@ -1,0 +1,24 @@
+(ns example.runtime-string-predicate
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn classify-runtime-fields [value]
+  (if (string? (get value :stdout))
+    (string? (get value :stderr))
+    false))
+
+(defn classify-choice [flag]
+  (string? (if flag "picked" nil)))
+
+(defn main []
+  (if (classify-runtime-fields {:stdout "out" :stderr ""})
+    (if (classify-runtime-fields {:stderr "err" :stdout ""})
+      (if (classify-choice true)
+        (if (classify-choice false) false true)
+        false)
+      false)
+    false))
