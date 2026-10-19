@@ -3680,10 +3680,10 @@
 
 (deftest sh08-keyword-vector-set-conversion-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [reads (atom 0) hashes (atom 0) backing [:gravity.type/keyword]
+  (let [reads (atom 0) hashes (atom 0) frames (atom []) type-reads (atom 0) measurements (atom 0) unrelated-probes (atom 0) backing [:gravity.type/keyword]
         members (proxy [clojure.lang.APersistentVector] []
                   (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i))
+                  (nth [i] (swap! reads inc) (when (some #{'sh08-st-type-work} @frames) (swap! type-reads inc)) (nth backing i))
                   (hasheq [] (swap! hashes inc) (throw (AssertionError. "unrelated probe hashed Keyword Vector type")))
                   (hashCode [] (swap! hashes inc) (throw (AssertionError. "unrelated probe hashed Keyword Vector type"))))
         nested {:kind :gravity.type/vector :shape :literal :element-types members}
@@ -3713,11 +3713,23 @@
         ;; outer precharge 110 and owner traversal 4 precede measured predicate work.
         prefix 114
         _ (reset! reads 0)
-        accepted (check core types 65536)]
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var (fn [& arguments]
+                                (let [callee (nth arguments 2) prior @frames]
+                                  (when (= 'sh08-st-type-work callee) (swap! measurements inc))
+                                  (when (= 'sh08-io-descriptor callee) (swap! unrelated-probes inc))
+                                  (reset! frames (conj prior callee))
+                                  (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types 65536))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @reads) "Owning type measurement occurs once; unrelated integral probe is skipped")
+    (is (= 1 @type-reads @measurements) "One owning validation read and call; structural comparisons are separate")
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bk-type-visit-breakdown {:all-member-reads @reads :owning-validation-reads @type-reads
+                                              :owning-measurements @measurements :unrelated-probes @unrelated-probes :hashes @hashes}}))
     (is (zero? @hashes))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (let [limit (+ prefix (dec (:work-count measured)))
