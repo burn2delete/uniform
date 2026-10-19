@@ -871,6 +871,38 @@ subject remains unrun, all three partial groups remain open, and the resolver
 remains development-unadmitted. No current-closure migration, self-hosting,
 seedless or release claim follows.
 
+### Coherent binding-selection rejection at the hosted C6 ingress
+
+The existing `sh06-authenticated-resolution-is-the-c6-consumer-boundary` test
+was extended at development revision `c410fcb7`. It reuses one genuine tiny
+`compiler-subset` C5 artifact and its clean hosted C6 control. The new hostile
+candidate selects a different, genuine parameter binding in the same lexical
+scope for one reference, consistently across three outer resolution views.
+The binding population, reference identity/symbol/span and independently
+retained request, run, upstream parent and proof/envelope records are unchanged.
+
+The candidate's ordinary artifact ID is recomputed through the existing owner
+function. Fresh identity and source-derived request-replay checks pass, while
+the namespace-analysis, binding-table and resolution-table projections fail.
+The embedded capability proof and SH02 envelope also disagree after the ID
+change: this is not an all-field re-sealed artifact or a claim that only a
+semantic check failed. It specifically exercises more than a bogus-ID case.
+
+The original public hosted C6 consumer rejects the failed fresh owner report
+with `C6-VERIFY`, stage `:core-lowering`, and top-level missing field
+`:fresh-authenticated-sh06-resolution`. Its source/form-0 locator is an
+upstream boundary failure, not an invented core-node or generated-body origin.
+No Core output is credited to the hostile candidate. The existing delegated
+read observer still reports no target-source parser reread during C6 calls;
+this is not zero filesystem I/O across construction or verification.
+
+The selected test passed one test/46 assertions in 61.008 seconds after
+6.787 seconds of namespace loading with a 2 GiB heap. No fixture, compiler,
+wrapper or verifier override was added. This establishes bounded hosted-C6
+consumer rejection, not Gravity-C6 implementation execution, current-closure
+migration or milestone completion. The reader subject remains unrun, all three
+partial groups remain open, and the resolver remains development-unadmitted.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
