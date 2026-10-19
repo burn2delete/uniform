@@ -10631,7 +10631,7 @@
     (doseq [items [nil [] {} '(:a) "set" #{"text"} #{nil} #{1} '#{:hit (println "never")}]]
       (is (= :keyword-set-contains-value-domain-required (:reason (work items :hit 65536))))
       (let [result (evaluate (query (literal items) (literal :hit)))]
-        (is (= ["" :rejected] (subvec result 1)))))
+        (is (= (if (map? items) [false "" :normal] [(first result) "" :rejected]) result))))
     (doseq [needle [nil "key" false 1 [] {}] items [#{} #{:hit}]]
       (is (= :keyword-set-contains-value-domain-required (:reason (work items needle 65536)))))
     (let [wide (into #{} (map #(keyword (str "member" %)) (range 1024))) result (work wide :missing 65536)]
