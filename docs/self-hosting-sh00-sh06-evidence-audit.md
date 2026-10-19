@@ -1151,8 +1151,9 @@ construction cost or a dominant owner.
 Keep this candidate unmerged until its affected source composition is
 evidenced. Do not increase the reader limit or repeat the unchanged attempt.
 A bounded module-composition improvement can prepare later stage-owned
-extraction, but transitive imports and imported calls under loop/collection
-contexts are separate existing implementation restrictions. Byte-size
+extraction. At that tested revision, transitive imports and imported calls
+under loop/collection contexts were separate implementation restrictions. The
+later transitive-call increment removes the former, not the latter. Byte-size
 partition estimates do not prove token-bound fit. A future Effects extraction
 must name its exact owning functions, dependencies and preserved interfaces
 before changing that shared compiler source. None of this closes the three
