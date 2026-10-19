@@ -11264,3 +11264,81 @@
       (is (= limit (:work-count rejected))))
     (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
       (is (= :rejected (:status (check changed 65536))))))))
+
+(deftest sh08-private-first-entry-core-helpers-development-kernel
+  ;; Current-C6 metadata controls; this checkpoint does not add composed typing.
+  (let [source (fn [id] {:form-id id :syntax-id id})
+        literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :keyword :value value} :source (source id)})
+        collection (fn [id kind children] {:node-id id :core-form :collection-literal :children children
+                                           :resolved-binding-ids [] :source (source id)
+                                           :attributes {:literal-kind kind :element-count (count children)}})
+        node-list [(collection :package :map [:outer-key :signatures])
+                   (literal :outer-key :signatures) (collection :signatures :vector [:signature])
+                   (collection :signature :map [:algorithm-key :algorithm-value :status-key :status-value])
+                   (literal :algorithm-key :algorithm) (literal :algorithm-value :sha256)
+                   (literal :status-key :status) (literal :status-value :verified)]
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        child (fn [cursor family key graph budget] (invoke-c7 'sh08-pc-core-child [cursor family key graph budget]))
+        outer (child {:source-kind :core :node-id :package} :map :signatures nodes 65536)
+        first-map (child (:cursor outer) :vector nil nodes 65536)
+        selected (child (:cursor first-map) :map :algorithm nodes 65536)
+        quote-node {:node-id :quoted :core-form :quote :children [] :resolved-binding-ids []
+                    :attributes {:quoted-kind :map :quoted-form-id :payload :quoted-syntax-id :payload
+                                 :quoted-value (array-map :signatures [(array-map :algorithm :sha256 :status :verified)])}
+                    :evaluation {:kind :no-evaluation :order []}}
+        quoted-nodes {:quoted quote-node}
+        quoted-outer (child {:source-kind :core :node-id :quoted} :map :signatures quoted-nodes 65536)
+        quoted-map (child (:cursor quoted-outer) :vector nil quoted-nodes 65536)
+        quoted-value (child (:cursor quoted-map) :map :algorithm quoted-nodes 65536)]
+    (is (= :accepted (:status outer) (:status first-map) (:status selected)))
+    (is (= :algorithm-value (get-in selected [:cursor :node-id])))
+    (is (= 0 (get-in first-map [:location :coordinate])))
+    (is (= outer (child {:source-kind :core :node-id :package} :map :signatures nodes (:work-count outer))))
+    (is (= :map-get-work-limit (:reason (child {:source-kind :core :node-id :package} :map :signatures nodes (dec (:work-count outer))))))
+    (is (= :accepted (:status quoted-outer) (:status quoted-map) (:status quoted-value)))
+    (is (= :sha256 (get-in quoted-value [:cursor :value])))
+    (is (= :quoted (get-in quoted-value [:location :quote-core-node-id])))
+    (is (= :map-get-private-entry-presence-required
+           (:reason (child (:cursor first-map) :map :algorithm (assoc-in nodes [:algorithm-key :attributes :value] :other) 65536))))
+    (is (= :map-get-private-entry-presence-required
+           (:reason (child (assoc-in (:cursor quoted-map) [:value] {:other :sha256 :status :verified})
+                           :map :algorithm quoted-nodes 65536))))
+    (is (= :rejected (:status (child {:source-kind :unknown :node-id :package} :map :signatures nodes 65536))))
+    (is (= :rejected (:status (child {:source-kind :core :node-id :package} :map [:signatures] nodes 65536))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque ID hashed")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque metadata printed"))))
+          rejected (child {:source-kind :core :node-id opaque} :map :signatures nodes 65536)
+          proof-rejected (invoke-c7 'sh08-pc-evidence-work [{:unexpected opaque} 65536])]
+      (is (= :rejected (:status rejected) (:status proof-rejected)))
+      (is (zero? @callbacks)))
+    (let [proof {:kind :private-first-entry-key-presence :parent-call-core-node-id :get :entries [{:entry :invoked :coordinate 0}]}
+          measured (invoke-c7 'sh08-pc-evidence-work [proof 65536])]
+      (is (= :accepted (:status measured)))
+      (is (= measured (invoke-c7 'sh08-pc-evidence-work [proof (:work-count measured)])))
+      (is (= :map-get-work-limit (:reason (invoke-c7 'sh08-pc-evidence-work [proof (dec (:work-count measured))])))))
+    (let [record {:binding-id :signature-binding :let-core-node-id :let :initializer-node-id :first-call :ordinal 0
+                  :mutability :immutable :definition-syntax-id :signature-definition :name 'signature
+                  :binding-scope-id :scope :initializer-form-id :first-form :initializer-syntax-id :first-syntax}
+          reference {:node-id :reference :core-form :reference :children [] :resolved-binding-ids [:signature-binding]
+                     :attributes {:binding-id :signature-binding :binding-class :lexical :symbol 'signature}
+                     :source (source :reference) :evaluation {:owner-function-syntax-id :helper}}
+          initializer {:node-id :first-call :core-form :call :source {:form-id :first-form :syntax-id :first-syntax}
+                       :evaluation {:owner-function-syntax-id :helper}}
+          graph {:reference reference :first-call initializer
+                 :let {:node-id :let :core-form :let :children [:first-call :reference] :resolved-binding-ids [:signature-binding]}}
+          binding {:binding-id :signature-binding :binding-class :lexical :mutability :immutable
+                   :definition-syntax-id :signature-definition :name 'signature :scope-id :scope}
+          core {:lexical-bindings [record] :mutations []} bindings {:signature-binding binding}
+          unroll (fn [c b budget] (invoke-c7 'sh08-pc-unroll [:reference c graph b budget]))
+          result (unroll core bindings 65536)]
+      (is (= :accepted (:status result)))
+      (is (= :first-call (:node-id result)))
+      (is (= [record] (mapv :binding-record (:links result))))
+      (is (= result (unroll core bindings (:work-count result))))
+      (is (= :map-get-work-limit (:reason (unroll core bindings (dec (:work-count result))))))
+      (is (= :rejected (:status (unroll (assoc core :lexical-bindings [record record]) bindings 65536))))
+      (is (= :rejected (:status (unroll (assoc-in core [:lexical-bindings 0 :mutability] :mutable) bindings 65536))))
+      (is (= :rejected (:status (unroll (assoc core :mutations [{:target-binding-id :signature-binding}]) bindings 65536))))
+      (is (= :rejected (:status (unroll core (assoc-in bindings [:signature-binding :definition-syntax-id] :different) 65536)))))))

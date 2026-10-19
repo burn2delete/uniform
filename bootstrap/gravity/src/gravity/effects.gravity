@@ -4831,6 +4831,173 @@
                        (recur (rest remaining) (conj out (get (first remaining) :argument-shape)))))]
         (body-pe-finish header census shapes core nodes types)) nil)))
 
+(defn body-pc-id? [id]
+  (if (keyword? id) true (if (string? id) (= 71 (count id)) false)))
+
+(defn body-pc-even-count? [values]
+  (if (= (count values) 0)
+    true
+    (if (= (count values) 1)
+      false
+      (body-pc-even-count? (rest (rest values))))))
+
+(defn body-pc-link-core? [record node core nodes bindings]
+  (let [bid (get record :binding-id) owner-id (get record :let-core-node-id)
+        initializer-id (get record :initializer-node-id) index (get record :ordinal)]
+    (if (if (body-pc-id? bid) (if (body-pc-id? owner-id)
+          (if (body-pc-id? initializer-id) (if (integer? index) (<= 0 index) false) false) false) false)
+      (let [owner (get nodes owner-id) initializer (get nodes initializer-id) binding (get bindings bid)
+            children (get owner :children) ids (get owner :resolved-binding-ids)]
+        (if (if (vector? children) (if (vector? ids)
+              (if (< index (count children)) (< index (count ids)) false) false) false)
+          (body-all?
+            [(= :immutable (get record :mutability)) (= :let (get owner :core-form))
+             (= :reference (get node :core-form)) (= [] (get node :children))
+             (= [bid] (get node :resolved-binding-ids))
+             (= bid (get (get node :attributes) :binding-id))
+             (= :lexical (get (get node :attributes) :binding-class) (get binding :binding-class))
+             (if (= nil (get binding :mutability)) true (= :immutable (get binding :mutability)))
+             (= initializer-id (get children index)) (= bid (get ids index))
+             (= (get record :definition-syntax-id) (get binding :definition-syntax-id))
+             (= (get record :name) (get binding :name) (get (get node :attributes) :symbol))
+             (= (get record :binding-scope-id) (get binding :scope-id))
+             (= (get record :initializer-form-id) (get (get initializer :source) :form-id))
+             (= (get record :initializer-syntax-id) (get (get initializer :source) :syntax-id))
+             (= (get (get node :evaluation) :owner-function-syntax-id)
+                (get (get initializer :evaluation) :owner-function-syntax-id))
+             (loop [remaining (get core :mutations)]
+               (if (= 0 (count remaining)) true
+                 (if (= bid (get (first remaining) :target-binding-id)) false (recur (rest remaining)))))]) false)) false)))
+
+(defn body-pc-unroll [id core nodes bindings budget]
+  (loop [current id links [] seen #{} used 0]
+    (if (= false (body-pc-id? current))
+      {:status :rejected :reason :map-get-source-mismatch :work-count used}
+      (if (if (contains? seen current) true (>= (count links) 128))
+        {:status :rejected :reason :map-get-source-mismatch :work-count used}
+        (let [node (get nodes current) locals (get core :lexical-bindings)
+              work (+ used 32 (if (= :reference (get node :core-form))
+                                (+ (* 2 (count locals)) (count (get core :mutations))) 0))]
+          (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+            (if (= :reference (get node :core-form))
+              (if (vector? locals)
+                (let [bid (get (get node :attributes) :binding-id)
+                      record (if (body-pc-id? bid) (body-pe-one locals :binding-id bid) nil)]
+                  (if (if (map? record) (body-pc-link-core? record node core nodes bindings) false)
+                    (recur (get record :initializer-node-id)
+                      (conj links {:reference-core-node-id current :reference-source (get node :source)
+                                   :binding-record record}) (conj seen current) work)
+                    {:status :rejected :reason :map-get-source-mismatch :work-count work}))
+                {:status :rejected :reason :map-get-source-mismatch :work-count work})
+              {:status :accepted :node-id current :links links :work-count work})))))))
+
+(defn body-pc-evidence-work [proof budget]
+  ; Only the new closed projection is walked here. Parent facts have their
+  ; existing independent validation and remain in the current typed tables.
+  (loop [pending [[proof 0]] used 0]
+    (if (= 0 (count pending)) {:status :accepted :work-count used}
+      (if (>= used budget) {:status :rejected :reason :map-get-work-limit :work-count used}
+        (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
+              tail (subvec pending 0 (- (count pending) 1)) work (+ used 1)]
+          (if (> depth 128) {:status :rejected :reason :map-get-source-mismatch :work-count work}
+            (if (if (map? value) true (vector? value))
+              (let [width (if (map? value) (* 2 (count value)) (count value))]
+                (if (> (+ work (count tail) width) budget)
+                  {:status :rejected :reason :map-get-work-limit :work-count (+ work (count tail) width)}
+                  (let [next (if (map? value)
+                               (loop [entries (vec value) out tail]
+                                 (if (= 0 (count entries)) out
+                                   (let [entry (first entries)]
+                                     (recur (rest entries) (conj (conj out [(get entry 0) (+ depth 1)])
+                                                                    [(get entry 1) (+ depth 1)])))))
+                               (loop [remaining value out tail]
+                                 (if (= 0 (count remaining)) out
+                                   (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))))]
+                    (recur next work))))
+              (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
+                    (if (symbol? value) true (if (string? value) true (if (integer? value) true (char? value)))))))
+                (let [scalar-work (+ work (if (string? value) (count value)
+                                           (if (if (symbol? value) true (keyword? value)) (count (str value)) 0)))]
+                  (if (> scalar-work budget) {:status :rejected :reason :map-get-work-limit :work-count scalar-work}
+                    (recur tail scalar-work)))
+                {:status :rejected :reason :map-get-source-mismatch :work-count work}))))))))
+
+(defn body-pc-core-child [cursor family key nodes budget]
+  ; This is a current-C6-data check. Full source-form authentication is separate.
+  (if (if (= :map family) (keyword? key) (= :vector family))
+  (let [mode (get cursor :source-kind) id (get cursor :node-id)
+        node (if (= :core mode) (if (body-pc-id? id) (get nodes id) nil) nil)
+        quote? (if (= :core mode) (= :quote (get node :core-form)) false)
+        attrs (get node :attributes)
+        data? (if (= :quoted-data mode) true quote?)
+        value (if quote? (get attrs :quoted-value) (get cursor :value))
+        path (if quote? [] (get cursor :data-path))
+        quote-id (if quote? id (get cursor :quote-core-node-id))
+        children (get node :children)
+        width (if data? (if (= :map family) (if (map? value) (count value) 0)
+                                      (if (vector? value) (count value) 0))
+                       (if (vector? children) (count children) 0))
+        charge (+ 32 (* 4 width))]
+    (if (> charge budget) {:status :rejected :reason :map-get-work-limit :work-count charge}
+      (if (if quote?
+            (body-all? [(= family (get attrs :quoted-kind)) (= [] children (get node :resolved-binding-ids))
+              (= :no-evaluation (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
+              (body-pc-id? (get attrs :quoted-form-id)) (body-pc-id? (get attrs :quoted-syntax-id))]) true)
+        (if data?
+          (if (if (= :map family) (if (map? value) (<= width 512) false)
+                                 (if (= :vector family) (if (vector? value) (if (< 0 width) (<= width 1024) false) false) false))
+            (if (= :map family)
+              (loop [remaining (vec value) i 0 seen #{} selected nil]
+                (if (= 0 (count remaining))
+                  (if (map? selected) (assoc selected :status :accepted :work-count charge)
+                    {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
+                  (let [entry (first remaining) actual-key (get entry 0) coordinate (+ 1 (* 2 i))]
+                    (if (keyword? actual-key)
+                      (if (contains? seen actual-key)
+                        {:status :rejected :reason :map-get-source-mismatch :work-count charge}
+                        (recur (rest remaining) (+ i 1) (conj seen actual-key)
+                          (if (= key actual-key)
+                            {:cursor {:source-kind :quoted-data :value (get entry 1) :quote-core-node-id quote-id
+                                      :data-path (conj path coordinate)}
+                             :location {:source-kind :quoted-data :quote-core-node-id quote-id :data-path path
+                                        :coordinate coordinate :key actual-key}} selected)))
+                      {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
+              {:status :accepted :work-count charge
+               :cursor {:source-kind :quoted-data :value (get value 0) :quote-core-node-id quote-id :data-path (conj path 0)}
+               :location {:source-kind :quoted-data :quote-core-node-id quote-id :data-path path :coordinate 0}})
+            {:status :rejected :reason :map-get-source-mismatch :work-count charge})
+          (if (body-all? [(= :core mode) (body-pc-id? id) (= :collection-literal (get node :core-form))
+                (= family (get attrs :literal-kind)) (vector? children) (= width (get attrs :element-count))
+                (if (= :map family) (if (body-pc-even-count? children) (<= width 1024) false)
+                  (if (= :vector family) (if (< 0 width) (<= width 1024) false) false))])
+            (if (= :map family)
+              (loop [i 0 seen #{} selected nil]
+                (if (= i width)
+                  (if (map? selected) (assoc selected :status :accepted :work-count charge)
+                    {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
+                  (let [key-id (get children i) value-id (get children (+ i 1))]
+                    (if (if (body-pc-id? key-id) (body-pc-id? value-id) false)
+                      (let [key-node (get nodes key-id) actual-key (get (get key-node :attributes) :value)]
+                        (if (if (= :literal (get key-node :core-form))
+                              (if (= :keyword (get (get key-node :attributes) :literal-kind)) (keyword? actual-key) false) false)
+                          (if (contains? seen actual-key)
+                            {:status :rejected :reason :map-get-source-mismatch :work-count charge}
+                            (recur (+ i 2) (conj seen actual-key)
+                              (if (= key actual-key)
+                                {:cursor {:source-kind :core :node-id value-id}
+                                 :location {:source-kind :evaluated :parent-core-node-id id :coordinate (+ i 1)
+                                            :key actual-key :key-node-id key-id :value-node-id value-id}} selected)))
+                          {:status :rejected :reason :map-get-source-mismatch :work-count charge}))
+                      {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
+              (let [child (get children 0)]
+                (if (body-pc-id? child)
+                  {:status :accepted :work-count charge :cursor {:source-kind :core :node-id child}
+                   :location {:source-kind :evaluated :parent-core-node-id id :coordinate 0 :value-node-id child}}
+                  {:status :rejected :reason :map-get-source-mismatch :work-count charge})))
+            {:status :rejected :reason :map-get-source-mismatch :work-count charge}))
+        {:status :rejected :reason :map-get-source-mismatch :work-count charge})))
+    {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
+
 (defn body-mg-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
   (body-all?
