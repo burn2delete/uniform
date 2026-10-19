@@ -644,6 +644,130 @@
               (if (char? right) false (= (get left :codepoint) (get right :codepoint))))
             (= left right)))))))
 
+(defn p15-s23-runtime-keyword-set-domain [values budget]
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (if (vector? values) (= 2 (count values)) false)
+        (if (if (set? (get values 0)) (set? (get values 1)) false)
+          (let [counts [(count (get values 0)) (count (get values 1))]]
+            (if (if (<= 0 (get counts 0) 1024) (<= 0 (get counts 1) 1024) false)
+              (let [base (+ 2 (get counts 0) (get counts 1))]
+                (if (> base limit)
+                  {:status :rejected :reason :keyword-set-equality-work-limit :work-count base
+                   :work-count-kind :logical-domain-reservation-including-failed-attempt :comparison-attempts 0}
+                  (let [valid? (loop [side 0]
+                                 (if (= side 2) true
+                                   (let [width (get counts side)
+                                         valid? (loop [remaining (get values side) index 0]
+                                                  (if (= index width) (= 0 (count remaining))
+                                                    (if (keyword? (first remaining))
+                                                      (recur (rest remaining) (+ index 1)) false)))]
+                                     (if valid? (recur (+ side 1)) false))))]
+                    (if valid?
+                      (loop [side 0 used base units []]
+                        (if (= side 2)
+                          {:status :accepted :work-count used :operand-counts counts :representation-units units
+                           :work-count-kind :exact-logical-domain-reservation :comparison-attempts 0}
+                          (let [width (get counts side)
+                                measured (loop [remaining (get values side) index 0 work used content 0]
+                                           (if (= index width)
+                                             {:status :accepted :work-count work :representation-units content}
+                                             (let [size (count (str (first remaining)))]
+                                               (if (> size (- limit work))
+                                                 {:status :rejected :reason :keyword-set-equality-work-limit :work-count (+ limit 1)
+                                                  :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
+                                                 (recur (rest remaining) (+ index 1) (+ work size) (+ content size))))))]
+                            (if (= :accepted (get measured :status))
+                              (recur (+ side 1) (get measured :work-count) (conj units (get measured :representation-units)))
+                              measured))))
+                      {:status :rejected :reason :keyword-set-value-domain-required :work-count base :comparison-attempts 0}))))
+              {:status :rejected :reason :keyword-set-equality-value-width :work-count 2 :comparison-attempts 0}))
+          {:status :rejected :reason :keyword-set-value-domain-required :work-count 0 :comparison-attempts 0})
+        {:status :rejected :reason :keyword-set-value-domain-required :work-count 0 :comparison-attempts 0}))
+    {:status :rejected :reason :keyword-set-equality-work-limit :work-count 0 :comparison-attempts 0}))
+
+(defn p15-s23-runtime-keyword-set-equality-work [left right budget]
+  ; Prepay all cross-membership and within-operand distinctness comparisons.
+  ; Representation units measure cost only; the guarded Keyword leaf decides equality.
+  (let [domain (p15-s23-runtime-keyword-set-domain [left right] budget)]
+    (if (= :accepted (get domain :status))
+      (let [limit (if (< budget 65536) budget 65536)
+            n (get (get domain :operand-counts) 0) m (get (get domain :operand-counts) 1)
+            cl (get (get domain :representation-units) 0) cr (get (get domain :representation-units) 1)
+            initial (+ 1 (get domain :work-count))
+            nl (if (> n 0) (- n 1) 0) mr (if (> m 0) (- m 1) 0)
+            nh (quot n 2) mh (quot m 2)
+            left-pair (if (= n (+ nh nh)) [nh nl] [n (quot nl 2)])
+            right-pair (if (= m (+ mh mh)) [mh mr] [m (quot mr 2)])
+            factors [[n m] [m cl] [n cr] left-pair right-pair [nl cl] [mr cr]]
+            reservation
+            (if (> initial limit)
+              {:status :rejected :reason :keyword-set-equality-work-limit :work-count initial
+               :work-count-kind :logical-reservation-including-failed-attempt :comparison-attempts 0}
+              (loop [i 0 used initial]
+                (if (= i 7) {:status :accepted :work-count used}
+                  (let [pair (get factors i) a (get pair 0) b (get pair 1)]
+                    (if (if (= 0 b) true (<= a (quot (- limit used) b)))
+                      (recur (+ i 1) (+ used (* a b)))
+                      {:status :rejected :reason :keyword-set-equality-work-limit :work-count (+ limit 1)
+                       :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0})))))]
+        (if (= :accepted (get reservation :status))
+          (let [values [left right] counts [n m]
+                distinct
+                (loop [side 0 attempts 0]
+                  (if (= side 2) {:status :accepted :comparison-attempts attempts}
+                    (let [width (get counts side)
+                          checked
+                          (loop [remaining (get values side) index 0 used attempts]
+                            (if (= index width) {:status :accepted :comparison-attempts used}
+                              (let [a (first remaining)
+                                    pairs
+                                    (loop [others (rest remaining) offset (+ index 1) attempted used]
+                                      (if (= offset width) {:status :accepted :comparison-attempts attempted}
+                                        (let [b (first others)]
+                                          (if (if (keyword? a) (keyword? b) false)
+                                            (let [equal (p15-s23-runtime-atomic-equality a b) next-attempt (+ attempted 1)]
+                                              (if (= false equal)
+                                                (recur (rest others) (+ offset 1) next-attempt)
+                                                {:status :rejected :reason :keyword-set-value-domain-required
+                                                 :domain-failure :duplicate-or-unsupported-keyword-class
+                                                 :comparison-attempts next-attempt}))
+                                            {:status :rejected :reason :keyword-set-value-domain-required :comparison-attempts attempted}))))]
+                                (if (= :accepted (get pairs :status))
+                                  (recur (rest remaining) (+ index 1) (get pairs :comparison-attempts)) pairs))))]
+                      (if (= :accepted (get checked :status))
+                        (recur (+ side 1) (get checked :comparison-attempts)) checked))))
+                compared
+                (if (= :accepted (get distinct :status))
+                  (if (= false (= n m))
+                    {:status :accepted :value false :comparison-attempts (get distinct :comparison-attempts)}
+                    (loop [remaining-left left index 0 attempts (get distinct :comparison-attempts)]
+                      (if (= index n) {:status :accepted :value true :comparison-attempts attempts}
+                        (let [a (first remaining-left)
+                              found
+                              (if (keyword? a)
+                                (loop [remaining-right right offset 0 used attempts]
+                                  (if (= offset m) {:status :accepted :value false :comparison-attempts used}
+                                    (let [b (first remaining-right)]
+                                      (if (keyword? b)
+                                        (let [equal (p15-s23-runtime-atomic-equality a b) next-attempt (+ used 1)]
+                                          (if (= true equal)
+                                            {:status :accepted :value true :comparison-attempts next-attempt}
+                                            (if (= false equal)
+                                              (recur (rest remaining-right) (+ offset 1) next-attempt)
+                                              {:status :rejected :reason :keyword-set-value-domain-required :comparison-attempts next-attempt})))
+                                        {:status :rejected :reason :keyword-set-value-domain-required :comparison-attempts used}))))
+                                {:status :rejected :reason :keyword-set-value-domain-required :comparison-attempts attempts})]
+                          (if (= :accepted (get found :status))
+                            (if (= true (get found :value))
+                              (recur (rest remaining-left) (+ index 1) (get found :comparison-attempts)) found) found)))))
+                  distinct)]
+            (assoc compared :work-count (get reservation :work-count) :work-count-kind :exact-logical-comparison-reservation
+              :operand-counts counts :representation-units (get domain :representation-units)
+              :provider-cpu-bound :not-established))
+          (assoc reservation :provider-cpu-bound :not-established)))
+      domain)))
+
 (defn p15-s23-runtime-vector-domain [values budget]
   (let [limit (if (< budget 65536) budget 65536)]
   (if (if (vector? values) (= 2 (count values)) false)
@@ -980,10 +1104,14 @@
                    (second arguments-result) :rejected])
               (if (= function '=)
                 (let [vectors? (if (vector? left) (vector? right) false)
-                      equal (if vectors? (p15-s23-runtime-vector-equality left right)
-                                (p15-s23-runtime-atomic-equality left right))]
+                      equal (if (if (set? left) true (set? right))
+                              (let [result (p15-s23-runtime-keyword-set-equality-work left right 65536)]
+                                (if (= :accepted (get result :status)) (get result :value) :unsupported))
+                              (if vectors? (p15-s23-runtime-vector-equality left right)
+                                (p15-s23-runtime-atomic-equality left right)))]
                   (if (boolean? equal) [equal (second arguments-result) :normal]
-                    [{:diagnostic "P15S23X002" :reason (if vectors? :vector-value-equality-domain-required :atomic-value-equality-domain-required) :operation operation}
+                    [{:diagnostic "P15S23X002" :reason (if (if (set? left) true (set? right)) :keyword-set-value-domain-required
+                                                     (if vectors? :vector-value-equality-domain-required :atomic-value-equality-domain-required)) :operation operation}
                      (second arguments-result) :rejected]))
               (if (= function '+)
                 (let [proof (get instruction :proof) extent (get proof :vector-extent)]

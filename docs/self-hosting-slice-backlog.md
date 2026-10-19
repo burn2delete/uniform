@@ -2992,6 +2992,87 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Finite Keyword-Set equality: development implementation
+
+Binary `=` has a bounded JVM component path for two independently established
+finite Keyword-Set domains, including empty Sets. C7, C8 and the typed emitter
+independently reconstruct the source, binding, call, ordered rows and equality
+policy. Operand type vectors need not agree, and constructor identity or Set
+enumeration order is not an equality premise. Bare Sets and unknown or other
+member domains remain implementation frontiers, not language-wide bans.
+
+Both actual Keyword domains validate before a result. Runtime prepays the full
+within-operand distinctness and cross-operand comparison/content allowance,
+rejects duplicate Keyword value classes in an admitted host representation,
+then compares through the existing guarded Keyword leaf. Host Set equality,
+lookup/hash and printed spelling do not decide membership. Representation
+lengths are logical accounting units only; actual comparison attempts remain
+separate from reserved work. Operands retain left-to-right once-only evaluation,
+effects and transfers; stored values are inert and the originals unchanged.
+The operation adds no semantic collection construction. Runtime now has 49
+functions, with two private helpers and unchanged exports and instruction shape.
+
+The corrected focused batch passed 11 tests/2,212 assertions: six new kernels
+(521) and five adjacent atomic, integral and Vector regressions (1,691).
+These totals include existing runtime-loader checks. Independent review
+accepted the inspected implementation and actual focused result, including
+the C7 pre-dispatch budget fence, owning rejection-work carry and runtime
+duplicate-member regressions. The selected work took 3.915 seconds after
+SH01/C7 loads of 10.379/1.182 seconds at 2 GiB, alongside the separate Core
+source composition. These are inclusive, non-isolated observations, not a
+speedup or provider CPU/heap bound.
+
+The first focused attempt stopped after two tests with 68 passes and one
+unsupported-`seq` error; seven selected tests were unrun. The corrected
+nine-test/2,155-assertion result preceded the two C7 accounting repairs; the
+eleven-test/2,187-assertion result preceded the duplicate-member repair.
+Those attempts remain their own evidence, not final-candidate results.
+Commit `25bf77d0` preserves the complete source exercised by the final focused
+batch before source-integration tests were added. Paired fixture preflight
+passed one test/six assertions (bytes, parser interpretation and function
+counts only). Its first attempt failed namespace loading before any selected
+test ran; that is not a compiler/source execution result. The corrected
+source harness compares eight normal entries through the seed interpreter on
+the same typed-emitted IR, not independent source compilation/lowering; all
+ten Gravity-runtime entries retain explicit expectations, including transfers.
+The first source-composition attempt failed: one test reported eight passes,
+one failure and one error. Positive C5/C6 status assertions passed, but C7
+rejected the fixture's `println` call in `observed-values` with
+`C7-ANNOTATION`/`:unsupported-nonlocal-call`, followed by
+`:unsupported-or-unresolved-core-node-type`; the prerequisite guard then threw.
+Assembly, C8, runtime entries, seed comparisons, tamper controls and the negative
+source product were unrun. Its selected test took 136.255 seconds after 10.042
+seconds of SH01 loading at 2 GiB. This is a fixture/composition obstruction,
+not a passing source result or evidence that Keyword-Set equality itself failed.
+The failed candidate is preserved in commit `506212de`. The source-only
+correction removed unsupported printing and its IO declarations, retaining
+ordinary quoted-Set operands and both genuine caught-throw positions. Its
+changed paired fixture preflight passed one test/six assertions; production
+and the accepted focused kernels were unchanged and were not replayed.
+
+The corrected source composition passed one test/175 assertions at 2 GiB,
+including six runtime-loader checks. It constructed one positive and one
+rejected `.gravity` product, executed ten Gravity function-table entries and
+compared eight normal entries through the seed interpreter on the same emitted
+IR. Two transfer entries retain explicit Gravity expectations. Source stdout
+is empty: its pure prefixes are not independent observations of operand order
+or once-only evaluation; those observations belong to the focused runtime
+kernel. Positive C7/C8 acceptance and verification guard execution; two
+additionally tracked public C7 gates, descriptor-field tampering and resealed
+C8 dependency deletion are checked. The negative diagnostic vector is the
+primary `C7-TYPE-MISMATCH`/`:keyword-set-equality-operand-type-required`, then
+`C7-ANNOTATION`/`:unsupported-or-unresolved-core-node-type`.
+The negative C7 verifier is invoked, but its status is not separately asserted.
+
+The source test took 230.085 seconds after 9.759 seconds of SH01 loading.
+Nested construction/verification times are inclusive development observations,
+not independent benchmark samples. The `.qst` products still have byte/parser
+checks only, not typed/lowering parity. No unrelated print feature, new public
+API, seed extension, bound increase or cached proof was introduced.
+Evaluated Set-literal lowering, Keyword List conversion,
+`keys` ordering, whole-W5 execution, other targets and authoritative migration
+remain separate work; this is not broader SH-07 or self-hosting completion.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

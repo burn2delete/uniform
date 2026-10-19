@@ -1,0 +1,45 @@
+(ns self-hosting.sh08.keyword-set-value-equality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [equal-values reordered-values unequal-values empty-values namespaced-values local-values sequenced-values left-transfer right-transfer main]))
+
+(defn base-values []
+  '#{:artifact :manifest})
+
+(defn equal-values [] :- Bool
+  (= '#{:artifact :manifest} '#{:artifact :manifest}))
+
+(defn reordered-values [] :- Bool
+  (= '#{:artifact :manifest :diagnostic} '#{:diagnostic :artifact :manifest}))
+
+(defn unequal-values [] :- Bool
+  (= '#{:artifact} '#{:manifest}))
+
+(defn empty-values [] :- Bool
+  (= '#{} '#{}))
+
+(defn namespaced-values [] :- Bool
+  (= '#{:build/mode :run/mode} '#{:run/mode :build/mode}))
+
+(defn local-values [] :- Bool
+  (let [left (base-values) right '#{:manifest :artifact}]
+    (= left right)))
+
+(defn sequenced-values [] :- Bool
+  (= (do '#{:before-left} '#{:artifact})
+     (do '#{:before-right} '#{:artifact})))
+
+(defn left-transfer [] :- Bool
+  (try
+    (= (do '#{:before-left} (throw "stop"))
+       (do '#{:unreached} '#{:artifact}))
+    (catch String problem false)))
+
+(defn right-transfer [] :- Bool
+  (try
+    (= (do '#{:before-left} '#{:artifact})
+       (do '#{:before-right} (throw "stop")))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (local-values))

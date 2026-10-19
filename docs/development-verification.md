@@ -3665,6 +3665,63 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Finite Keyword-Set value equality
+
+STD3 owns Set value equality. The bounded development slice uses binary `=`
+for two independently established finite Sets whose complete member domains
+are Keywords, including empty Sets. Each operand keeps its own type evidence;
+equal type vectors, constructor identity and enumeration order are not equality
+premises. Bare Set types and unknown or other member domains remain separate
+implementation frontiers, not language-wide prohibitions.
+
+Change the existing C7, C8, typed emitter and runtime owners. Start with the
+owning kernels and affected adjacent equality regressions, not fresh upstream
+proof construction:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-keyword-set-equality-development-kernel \
+  --exact sh08-keyword-set-equality-dispatch-guard-development-kernel \
+  --exact sh08-keyword-set-equality-throw-consumer-development-kernel \
+  --exact body-keyword-set-equality-development-kernel \
+  --exact current-gravity-keyword-set-equality-lowering-development-kernel \
+  --exact current-gravity-keyword-set-equality-runtime-development-kernel --fail-fast
+```
+
+The implementation must validate both complete typed and actual domains,
+including distinct Keyword value classes within each actual operand, before
+returning a cardinality or member mismatch. Runtime member matching uses the
+existing guarded Keyword value-equality leaf, not host Set equality, hashing
+or printed-spelling identity. Worst-case within-operand and cross-operand
+pairwise/content work is prepaid within the existing component allowance;
+actual comparisons and logical
+reservation are distinct. JVM representation units used for accounting do not
+define semantic equality or establish a provider CPU bound.
+
+Check paired fixture bytes/parser interpretation cheaply. When the
+typed/effected/lowered composition changes, run the affected source selector
+separately from the edit loop:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-set-equality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-set-equality-authenticated-composition --fail-fast
+```
+
+Use genuine quoted Sets and ordinary function returns rather than inventing an
+accepted verification result. Ordinary operands retain left-to-right once-only
+evaluation, effects and transfers; stored members remain inert and originals
+unchanged. These checks do not establish evaluated Set-literal lowering,
+Keyword List conversion, `keys` ordering, whole-W5 execution, other-target
+support or authoritative migration. Record actual outcomes in the backlog;
+listing a command is not evidence that it passed.
+
 ### Map family classification
 
 STD3 owns unary `map?`. The bounded JVM implementation classifies an

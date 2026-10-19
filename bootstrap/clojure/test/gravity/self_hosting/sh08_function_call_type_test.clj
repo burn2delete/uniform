@@ -4400,6 +4400,141 @@
       (is (nil? (invoke-c7 'sh08-ie-family [[:gravity.type/integer opaque]])))
       (is (= 0 @callbacks)))))
 
+(deftest sh08-keyword-set-equality-dispatch-guard-development-kernel
+  (let [calls (atom 0) hostile (proxy [Object] []
+                               (hashCode [] (swap! calls inc) (throw (AssertionError. "operand ID hashed before dispatch precharge"))))
+        finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        base (atomic-equality-input [finite finite])
+        context (fn [arguments]
+                  {:ordering-operators {:operator (assoc (:call base) :argument-node-ids arguments)}
+                   :ordering-edges {:call (:edge base)} :ordering-core (:core base)
+                   :lookup-nodes (:nodes base) :ordering-bindings (:bindings base) :association-forms (:forms base)})]
+    (doseq [arguments [[hostile hostile] {:bad hostile}] budget [0 1]]
+      (let [result (invoke-c7 'sh08-ae-step [(:node base) {} {} {} (context arguments) budget])]
+        (is (= :rejected (:status result)))
+        (is (= :atomic-equality-work-limit (:reason result)))))
+    (is (= 0 @calls))))
+
+(deftest sh08-keyword-set-equality-throw-consumer-development-kernel
+  ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
+  (let [nested {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+        input (atomic-equality-input [nested nested])
+        record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :predicate-form :syntax-id :predicate-function}
+                  :evaluation {:kind :function-creation :order []}}
+        nodes (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function) (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+        core (assoc (:core input) :nodes (conj nodes function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7 'sh08-kse-derive [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input) 65536])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                       :parameters [] :return :gravity.type/bool :latent-effects []
+                                       :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+        check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
+        measured (invoke-c7 'sh08-kse-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        ;; Five nodes: outer precharge 118 and owner traversal 5 precede measured equality work.
+        prefix 123
+        accepted (check core types 65536)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (let [limit (+ prefix (dec (:work-count measured)))
+          rejected (check core types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :keyword-set-equality-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count (invoke-c7 'sh08-kse-inferred-call
+                       [core node (:call input) edge nodes (:bindings input) types (dec (:work-count measured))])))
+             (:work-count rejected))))
+    (doseq [[changed-core changed-types]
+            [[core (assoc-in types [:operator :equality-policy :identity] :observed)]
+             [core (assoc-in types [:arg0 :element-types] (vec (repeat 1025 :gravity.type/keyword)))]
+             [core (assoc types :arg0 :gravity.type/unknown)]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7 'sh08-kse-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            rejected (check changed-core changed-types 65536)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
+(deftest sh08-keyword-set-equality-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/keyword
+        derive (fn [input budget]
+                 (let [{:keys [core node call edge nodes bindings types forms]} input]
+                   (invoke-c7 'sh08-kse-derive [core node call edge nodes bindings types forms budget])))]
+    (doseq [pair [[(finite []) (finite [])] [(finite [k k]) (finite [k])]
+                 [(finite [k]) :gravity.type/never] [:gravity.type/never (finite [k])]]]
+      (let [{:keys [core nodes bindings forms types products binding-types] :as input} (atomic-equality-input pair)
+            result (derive input 65536) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            established (assoc types :operator descriptor)
+            check #(invoke-c7 'sh08-kse-inferred-call [core (:node input) (:call input) (:edge input) nodes bindings %1 %2])
+            checked (check established 65536)]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :gravity.type/applied-keyword-set-equality (:kind descriptor)))
+        (is (= :sh08-keyword-set-equality-v1 (:version descriptor)))
+        (is (= pair (:argument-types descriptor) (:parameter-types descriptor)))
+        (is (= (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool) (:type result)))
+        (is (= [] (:direct-effects descriptor) (:capabilities descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= :guarded-atomic-keyword-leaf (get-in descriptor [:equality-policy :comparison])))
+        (is (= :both-complete-before-result (get-in descriptor [:equality-policy :domain-validation])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-kse-constraint [descriptor])] (:constraints inferred)))
+        (is (= :direct-keyword-set-equality (:dispatch (invoke-c7 'sh08-kse-call-fact [descriptor (:module input)]))))
+        (is (= true (invoke-c7 'sh08-ae-inferred-call-valid? [core (:node input) (:call input) (:edge input) nodes bindings established])))
+        (is (= result (derive input (:work-count result))))
+        (is (= :keyword-set-equality-work-limit (:reason (derive input (dec (:work-count result))))))
+        (is (= checked (check established (:work-count checked))))
+        (is (= :keyword-set-equality-work-limit (:reason (check established (dec (:work-count checked))))))
+        (doseq [changed [(assoc-in established [:operator :equality-policy :identity] :observed)
+                         (assoc-in established [:operator :operand-counts] [99 99])
+                         (assoc-in established [:operator :type-domain-work-count] 0)
+                         (assoc established :arg0 (finite [:gravity.type/string]))]]
+          (is (= :rejected (:status (check changed 65536)))))))
+    (doseq [bad [:gravity.type/unknown :gravity.type/set :gravity.type/string
+                 {:kind :gravity.type/set :shape :literal}
+                 (assoc (finite []) :extra true)
+                 {:kind :gravity.type/set :shape :homogeneous :element-type k}
+                 (finite [:gravity.type/string]) (finite [:gravity.type/unknown])
+                 (finite [:gravity.type/never]) (finite [{:kind :gravity.type/nil-or :value-type k}])]
+            other [(finite []) :gravity.type/never]
+            pair [[bad other] [other bad]]]
+      (is (= :keyword-set-equality-operand-type-required (:reason (derive (atomic-equality-input pair) 65536)))))
+    (let [input (atomic-equality-input [(finite [k]) (finite [k])])]
+      (doseq [mutate [#(assoc-in % [:core :module :target] :native)
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :ordered-evaluation-node-ids] [:operator :arg1 :arg0])
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg1 :parent-form-id] :unrelated)
+                      #(assoc-in % [:forms :operator :value] 'identical?)]]
+        (is (= :keyword-set-equality-source-mismatch (:reason (derive (mutate input) 65536))))))
+    (let [domain #(invoke-c7 'sh08-kse-domain [%1 %2])]
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) (finite [])] 65536))))
+      (is (= :keyword-set-equality-type-width (:reason (domain [(finite (repeat 1025 k)) (finite [])] 65536))))
+      (is (= :keyword-set-equality-work-limit (:reason (domain [(finite (repeat 1024 k)) (finite [])] 100))))
+      (doseq [args [[] [(finite [])] [(finite []) (finite []) (finite [])]]]
+        (is (= :keyword-set-equality-arity-mismatch (:reason (domain args 65536))))))))
+
 (deftest sh08-vector-equality-development-kernel
   (let [finite #(hash-map :kind :gravity.type/vector :shape :literal :element-types (vec %))
         nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
