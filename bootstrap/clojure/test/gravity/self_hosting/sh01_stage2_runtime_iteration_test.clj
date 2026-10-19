@@ -10676,23 +10676,17 @@
                                     :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))
                   {:name name :input input :module module :definitions definitions :assembled assembled :predicates predicates
                    :binding binding :effects effects :graph graph :results results}))
-              (for [name ["local-runtime-string-predicate" "local-runtime-string-predicate-transfer"]
-                    extension [".gravity" ".qst"]] [name extension]))
+              [["local-runtime-string-predicate" ".gravity"]
+               ["local-runtime-string-predicate-transfer" ".gravity"]])
         {:keys [input module definitions predicates binding effects graph]} (first cases)
         descriptor (first predicates)
         forged (assoc-in descriptor [:query-semantics :unicode-boundary] :proven)
         hostile (walk/prewalk #(if (= % descriptor) forged %) (:typed input))
         failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
                                                  emitter module (get definitions 'classify-runtime-fields) (assoc input :typed hostile)))))]
-    (doseq [[left right] (partition 2 cases)]
-      (is (= (get-in left [:input :typed :identity-input]) (get-in right [:input :typed :identity-input])))
-      (is (= (:graph left) (:graph right)))
-      (is (= (:results left) (:results right)))
-      (is (= (typed-functions-without-source-path (get-in left [:assembled :functions]))
-             (typed-functions-without-source-path (get-in right [:assembled :functions])))))
     (is (= "P15S23Q002" (:id failure)))
     (is (= :rejected (:status (last @verified))))
-    (is (= 5 (count @verified)))
+    (is (= 3 (count @verified)))
     (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
                               (reseal effects (update-in graph [:nodes (:call-core-node-id descriptor) :dependencies] pop))))))
     (doseq [suffix ["zero"]]

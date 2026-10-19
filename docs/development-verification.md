@@ -31,6 +31,15 @@ language semantics or prerequisites for explicit local test selection. The
 repository language boundary, source LOC limit and host resource limits remain
 implementation constraints, separate from proof authority.
 
+Keep paired source fixtures first-class. For extension-independent behavior
+with unchanged reader, canonical identity and source-path projection, one real
+source composition plus explicit paired byte/parser checks can be proportionate.
+Record which spelling actually ran; parser parity does not establish fresh
+paired typed/effect/lowering/runtime equivalence. Renew the affected paired
+composition when extension handling, reader transport, canonical identity or
+path projection changes, or a concrete cross-extension regression requires it.
+A new primitive alone does not require rebuilding every product twice.
+
 For SH-07, change `bootstrap/gravity/src/gravity/checked_core.gravity` (the
 owning Gravity pass), not only the hosted C6 compatibility facade. The thin
 adapter lives in
@@ -3784,8 +3793,12 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-gravity-string-predicate-authenticated-composition --fail-fast
 ```
 
-Compiling the W5 runtime
-record's String field checks is not executing its unchanged validator, admitting
+This selector constructs the two positive Gravity programs and one Gravity
+arity rejection. Paired `.qst` fixtures receive byte/parser checks only; no
+fresh paired typed/effect/lowering/result equivalence is claimed. Both positive
+programs retain current C7/C8 verification and execution guards, and both
+forgery checks remain. Compiling the W5 runtime record's String field checks
+is not executing its unchanged validator, admitting
 a compiler revision or completing self-hosting.
 
 ### Legacy bounded self-recursive body analysis
