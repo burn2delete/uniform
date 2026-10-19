@@ -1,6 +1,6 @@
 ;; L2 source expression order, not a Map enumeration policy.  This context is
 ;; derived after original C5 verification and is never a public proof input.
-(declare p15-s23-stage2-module-fail!)
+(declare p15-s23-stage2-module-fail! sh06-resolution-semantic-span)
 (defn p15-s23-stage2-module-map-order [source]
   (let [c2 (get-in source [:artifact :sh05-macro-artifact :gravity-macro-boundary
                            :authenticated-sh04-artifact :c2-reader-artifact])
