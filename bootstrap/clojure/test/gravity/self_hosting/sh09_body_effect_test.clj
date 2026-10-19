@@ -2103,6 +2103,64 @@
           (is (= [:nth-op :nth-vector :nth-index] (:dependencies record))))))))
 
 
+(deftest body-vector-loop-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        source (ns-resolve upstream 'vector-loop-get-input) complete (ns-resolve upstream 'vector-loop-nth-completed)
+        derive (ns-resolve upstream 'vector-loop-nth-derived) c7 (ns-resolve upstream 'invoke-c7)
+        alias (ns-resolve upstream 'bounded-successor-alias)]
+    (doseq [input [(complete (source 3)) (complete (source 1)) (complete (alias (source 3)))]]
+      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input 65536))
+            {:keys [facts request context count-result]} (body-vector-loop-nth-products input descriptor)
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            replace-access (fn [changed] (-> facts (assoc-in [:type-table :nth-op] changed)
+                                            (assoc-in [:call-type-facts 2] (c7 'sh08-vn-call-fact [changed (:module core)]))
+                                            (assoc-in [:constraint-ledger 2] (c7 'sh08-vn-constraint [changed]))))]
+        (is (= :accepted (:status context) (:status count-result)))
+        (is (true? (valid facts)))
+        (is (= context (leaf 'body-vn-context request facts bindings (:work-count context))))
+        (is (= :body-deferred-work-limit (:reason (leaf 'body-vn-context request facts bindings (dec (:work-count context))))))
+        (doseq [changed [(assoc descriptor :version :sh08-vector-nth-v1)
+                         (assoc descriptor :kind :gravity.type/applied-vector-nth :version :sh08-vector-nth-loop-v1
+                                           :operation 'nth :intrinsic :gravity.collections/proven-vector-nth)
+                         (assoc descriptor :selected-type :gravity.type/string :return :gravity.type/string :result-type :gravity.type/string)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc-in descriptor [:bounds-proof :index-node-id] :increment)
+                         (assoc-in descriptor [:bounds-proof :slot-binding-id] :shadowed)
+                         (assoc-in descriptor [:bounds-proof :guard-path] 7)
+                         (assoc-in descriptor [:bounds-proof :guard-path] [7])
+                         (assoc-in descriptor [:bounds-proof :guard-path] [nil])
+                         (assoc-in descriptor [:bounds-proof :guard-path] [{}])
+                         (assoc-in descriptor [:bounds-proof :guard-path] ["path"])
+                         (assoc-in descriptor [:bounds-proof :guard-path 1 :child-index] 2)
+                         (assoc-in descriptor [:bounds-proof :vector-origin :node] (nodes :loop))
+                         (assoc-in descriptor [:bounds-proof :check-elision] :authorized)]]
+          (is (false? (valid (replace-access changed)))))
+        (let [invariant (get types :inc-op) changed (assoc-in invariant [:range-proof :target :target-id] :wrong-target)
+              descriptor (assoc-in descriptor [:bounds-proof :loop-invariant] changed)
+              candidate (-> (replace-access descriptor) (assoc-in [:type-table :inc-op] changed)
+                            (assoc-in [:call-type-facts 3] (c7 'sh08-si-call-fact [changed (:module core)]))
+                            (assoc-in [:constraint-ledger 3] (c7 'sh08-si-constraint [changed])))]
+          (is (false? (valid candidate))))
+        (doseq [candidate [(update facts :constraint-ledger #(vec (concat (take 2 %) (drop 3 %))))
+                           (update facts :constraint-ledger conj (get-in facts [:constraint-ledger 2]))
+                           (assoc-in facts [:vector-nth-context :forms :nth-index :value] 'shadowed)
+                           (assoc-in facts [:call-type-facts 2 :dispatch] :direct-vector-nth)
+                           (update facts :constraint-ledger conj
+                             (assoc-in (get-in facts [:constraint-ledger 2]) [:lhs :core-node-id] :orphan))]]
+          (is (false? (valid candidate))))
+        (let [children {:nth-op {:transitive #{}}
+                        :nth-vector {:transitive #{:memory/allocate}}
+                        :nth-index {:transitive #{:error/throw} :escaping-thrown-errors #{:gravity.type/string}
+                                    :escaping-thrown-error-types [:gravity.type/string]}}
+              record (leaf 'body-node-record (nodes :read) nil children :gravity.type/keyword)]
+          (is (= #{} (:direct record)))
+          (is (= #{:memory/allocate :error/throw} (:transitive record)))
+          (is (= [:gravity.type/string] (:escaping-thrown-error-types record)))
+          (is (= [:nth-op :nth-vector :nth-index] (:dependencies record))))))))
+
+
+
 (deftest body-vector-loop-nth-throw-control-authenticated-composition
   ;; One affected source consumer after the retained failed full composition.
   ;; No lowering/runtime/negative/public-boundary replay belongs in this test.

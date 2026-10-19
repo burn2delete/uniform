@@ -5766,9 +5766,10 @@
                       :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
 
 (defn body-vn-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-vector-nth-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-vector-nth-v1
-   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-element}
+  {:constraint-id-request {:domain (if (= :gravity.type/applied-vector-get (get descriptor :kind))
+                                      :gravity/sh08-vector-get-constraint-v1 :gravity/sh08-vector-nth-constraint-v1) :application descriptor}
+   :kind :equality :producer-rule (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :sh08-vector-get-v1 :sh08-vector-nth-v1)
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :vector-get :vector-element)}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects) :bounds-proof (get descriptor :bounds-proof)
@@ -5779,13 +5780,15 @@
 (defn body-vn-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain :gravity/sh08-vector-nth-call-type-fact-v1 :application descriptor}
+     :fact-id-request {:domain (if (= :gravity.type/applied-vector-get (get descriptor :kind))
+                                 :gravity/sh08-vector-get-call-type-fact-v1 :gravity/sh08-vector-nth-call-type-fact-v1) :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-vector-nth :applied-vector-nth descriptor :effect-facts-source :audited-collection-intrinsic}))
+     :dispatch (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :direct-vector-get :direct-vector-nth)
+     (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :applied-vector-get :applied-vector-nth) descriptor :effect-facts-source :audited-collection-intrinsic}))
 
 
 (defn body-vn-finish [header]
@@ -5797,7 +5800,9 @@
         nth-calls (loop [remaining (get core :calls) out 0]
                     (if (= 0 (count remaining)) out
                       (recur (rest remaining)
-                        (+ out (if (body-vn-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module)) 1 0)))))]
+                        (+ out (if (if (body-vn-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module)) true
+                          (if (= :sh08-vector-get-loop-v1 (get (get (get facts :type-table) (get (first remaining) :operator-node-id)) :version))
+                            (body-mg-binding? (get bindings (get (first remaining) :operator-binding-id)) (get core :module)) false)) 1 0)))))]
     (if (= 0 nth-calls) {:status :accepted :context nil :work-count 0}
       (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
         (if (= false (vector? forms)) (body-failure :body-vector-nth-source-forms-required)
@@ -5807,7 +5812,7 @@
               (let [usage (loop [remaining (get core :calls) out [0 0]]
                             (if (= 0 (count remaining)) out
                               (let [call (first remaining) types (get facts :type-table)]
-                                (if (= :sh08-vector-nth-loop-v1 (get (get types (get call :operator-node-id)) :version))
+                                (if (contains? #{:sh08-vector-nth-loop-v1 :sh08-vector-get-loop-v1} (get (get types (get call :operator-node-id)) :version))
                                   (let [elements (get (get types (first (get call :argument-node-ids))) :element-types)]
                                     (recur (rest remaining) [(+ 1 (first out)) (+ (second out) (if (vector? elements) (count elements) 0))]))
                                   (recur (rest remaining) out)))))
@@ -5835,6 +5840,7 @@
   (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        get? (= 'get (get binding :name))
         arguments (body-io-child-types args types)
         vector-type (first arguments) index-type (second arguments)
         elements (get vector-type :element-types) index-node (get nodes (get args 1))
@@ -5854,11 +5860,11 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (body-all?
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (body-vn-binding? binding module)
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (if get? (body-mg-binding? binding module) (body-vn-binding? binding module))
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-           (contains? '#{nth gravity.core/nth} (get (get operator :attributes) :symbol))
+           (contains? (if get? '#{get gravity.core/get} '#{nth gravity.core/nth}) (get (get operator :attributes) :symbol))
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
@@ -5868,12 +5874,14 @@
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-vector-nth :version :sh08-vector-nth-loop-v1
-       :operation 'nth :semantic-owner 'gravity.collections :intrinsic :gravity.collections/proven-vector-nth
+      {:kind (if get? :gravity.type/applied-vector-get :gravity.type/applied-vector-nth)
+       :version (if get? :sh08-vector-get-loop-v1 :sh08-vector-nth-loop-v1)
+       :operation (if get? 'get 'nth) :semantic-owner 'gravity.collections
+       :intrinsic (if get? :gravity.collections/proven-vector-get :gravity.collections/proven-vector-nth)
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :query-semantics {:operation :vector-element-access :construction :none
+       :query-semantics {:operation (if get? :vector-stored-member-lookup :vector-element-access) :construction :none
                          :operand-evaluation :operator-then-vector-then-index :normal-input :homogeneous-vector-and-invariant-slot}
        :index-value nil :vector-length length :selected-type selected
        :bounds-proof nil :application :normal
@@ -5936,8 +5944,8 @@
   (let [types (get facts :type-table) descriptor (get types (get call :operator-node-id))
         forms (get (get facts :vector-nth-context) :forms)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
-        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-nth-v1)
-                          :lhs {:core-node-id (get node :node-id) :projection :vector-element})
+        rows (body-select (body-select (get facts :constraint-ledger) :producer-rule (get (body-vn-constraint descriptor) :producer-rule))
+                          :lhs (get (body-vn-constraint descriptor) :lhs))
         index-binding (get bindings (get (get descriptor :bounds-proof) :slot-binding-id))]
     (if (body-vl-proof-valid? descriptor core node nodes bindings types)
       (body-all? [(= (get descriptor :result-type) (get types (get node :node-id)))
@@ -5958,7 +5966,7 @@
 
 
 (defn body-vn-call-valid? [core facts bindings node call edge nodes]
-  (if (= :sh08-vector-nth-loop-v1 (get (get (get facts :type-table) (get call :operator-node-id)) :version))
+  (if (contains? #{:sh08-vector-nth-loop-v1 :sh08-vector-get-loop-v1} (get (get (get facts :type-table) (get call :operator-node-id)) :version))
     (body-vl-call-valid? core facts bindings node call edge nodes)
 
   ; Bounds and selected type follow the typed vector and source literal. This
@@ -6138,7 +6146,12 @@
                     (= association-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-association-v1))
                     (= removal-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-map-removal-v1))
                     (= count-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-collection-count-v1))
-                    (= nth-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-vector-nth-v1))
+                    (= nth-rows (loop [remaining (get facts :constraint-ledger) out []]
+                                  (if (= 0 (count remaining)) out
+                                    (let [row (first remaining)]
+                                      (recur (rest remaining)
+                                        (if (contains? #{:sh08-vector-nth-v1 :sh08-vector-get-v1} (get row :producer-rule))
+                                          (conj out row) out))))))
                     (= successor-rows (body-select (get facts :constraint-ledger) :producer-rule :sh08-bounded-successor-v1))
                     (= append-rows (loop [remaining (get facts :constraint-ledger) out []]
                                      (if (= 0 (count remaining)) out
@@ -6191,7 +6204,9 @@
                                 (body-lc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                               (body-sc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                           (if (body-mg-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
-                            (body-mg-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                            (if (= :sh08-vector-get-loop-v1 (get (get (get facts :type-table) (get (get calls id) :operator-node-id)) :version))
+                              (body-vn-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
+                              (body-mg-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes))
                           (if (body-mc-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
                             (body-mc-call-valid? core facts bindings (get nodes id) (get calls id) edge nodes)
                           (if (body-nt-binding? (get bindings (get edge :callee-binding-id)) (get core :module))
@@ -6210,7 +6225,7 @@
                 (conj removal-rows (body-mr-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) removal-rows)
               (if (= :direct-collection-count (get (get call-facts id) :dispatch))
                 (conj count-rows (body-cq-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) count-rows)
-              (if (= :direct-vector-nth (get (get call-facts id) :dispatch))
+              (if (contains? #{:direct-vector-nth :direct-vector-get} (get (get call-facts id) :dispatch))
                 (conj nth-rows (body-vn-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) nth-rows)
               (if (= :direct-bounded-successor (get (get call-facts id) :dispatch))
                 (conj successor-rows (body-si-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) successor-rows)
@@ -7556,7 +7571,7 @@
                  :invocation-guard :all-operand-types-normal :source-edge edge :source-call (get calls id)
                  :source-node node :operator-node (get nodes (first (get node :children)))
                  :caller-function caller :callee-function callee :callee-binding (get bindings (get edge :callee-binding-id))
-                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query}
+                 :callee-normal-type (if (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query}
                                                     (get (get types (first (get node :children))) :kind))
                    (get types (first (get node :children)))
                    (body-project (get functions (get edge :callee-function-syntax-id)) [:parameters :return :fixed-arity :signature :latent-effects]))

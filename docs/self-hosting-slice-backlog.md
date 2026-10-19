@@ -2292,6 +2292,66 @@ targets, authoritative migration, self-hosting and release remain separate
 gates. These results are executable development evidence, not a benchmark or
 completion of those broader contracts.
 
+### Guarded loop Vector get: development implementation
+
+The existing C7, C8 and typed emitter now support two-operand persistent
+Vector `get` in the existing bounded strict-loop domain: a nonempty homogeneous
+Vector, original zero-initialized Integer counter, complete unary `inc`
+backedges, and access beneath the true edge of `< counter (count same-vector)`.
+Immutable aliases retain the same source-linked Vector origin; equal-shaped new
+Vectors do not. Get-specific binding, source, descriptor, constraint, call-fact
+and ledger joins remain distinct from Map lookup and `nth`. After independent
+consumer reconstruction, lowering emits the existing checked `nth` instruction
+with once-only Vector-then-index operands. Runtime guards and runtime code are
+unchanged. C8 validates the complete ordered nth/get ledger census; local
+binary lowering retains its reservation and completed operand work on failure.
+
+Focused checks passed C7 2 tests / 140 assertions (83 new get checks and 57
+existing loop checks), consumer/lowering 4 / 339, and routing/paired-fixture
+checks 2 / 28. A later loader check repeated ten fixture assertions; these
+batches are overlapping development feedback, not disjoint coverage totals.
+Earlier failures remain recorded: two adapter expectations used an unsupported
+source shape; an emitter test failed lexical loading; and three budget
+expectations confused outer rejection with local helper accounting. Corrected
+focused successors passed without broadening the language subset.
+
+The affected source run completed FAILED: 1 test, 99 passes, two failures and
+zero errors, comprising 93 passing composition assertions, two first-diagnostic
+label failures and six existing runtime-loader passes. Both accepted source
+extensions passed fresh C7/C8 checks before eight function-table activations:
+normal traversal, a stored Keyword throw, typed catch and the ordinary entry.
+All six physical function paths and complete path-projected Gravity/QST tables
+matched. Alias/origin, complete backedge, checked lowering, effect/error,
+exact/one-less budget and resealed dependency-forgery rejection checks passed. Six fresh
+source products were constructed: the accepted pair and four Gravity
+negatives; negative QST files have byte-parity coverage, not extra compilation.
+
+All four negative rejected-status assertions passed. Wrong-origin and
+outside-loop first labels matched. Heterogeneous and nonstrict variants first
+reported `C7-ANNOTATION / :typed-throw-payload-type-required` with an Unknown
+payload, rather than the anticipated get/range labels. The two expectations
+were corrected to those observed first records without replaying unchanged
+products. Complete diagnostic vectors were not retained: this does not prove
+an isolated get-homogeneity or strictness rejection cause, nor a fresh green
+composition after the expectation edit. Focused proof-boundary controls and
+independent review support this qualified development increment. An earlier
+source invocation was interrupted without counts or a final receipt and has
+no validation credit; it is not a claim of zero construction work.
+
+Selected source construction, verification and execution took 606.875 seconds
+after 9.866 seconds of namespace loading at 2 GiB. The interval is not separated
+into individual phases, scheduler overhead or verification-product cost.
+Representation measurement/redesign remains a bounded separate follow-up;
+do not replay unchanged products merely for metrics or a green label.
+
+General dynamic/literal-only Vector access outside this proof, heterogeneous
+results, explicit defaults and absent/out-of-range result policy remain outside
+this increment. Mixed nth/get source-module coverage is not established by the
+separate regressions. This is not W5, SH-07/SH-08, target, authoritative migration,
+self-hosting or release completion. Use the direct component commands in
+`development-verification.md`; fresh authority evidence serves an explicit
+stable-revision admission decision, not ordinary edits.
+
 ### Private ordinary direct-self inference: development implementation
 
 The C7 engine now infers one monomorphic value signature for a private,

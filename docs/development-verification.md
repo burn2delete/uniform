@@ -2670,6 +2670,60 @@ Empty vectors without an element type, heterogeneous result joins, arbitrary
 dynamic indices, deep selected-shape propagation and dynamic-bounds failure
 APIs remain separate work. These implementation limits are not language bans.
 
+### Guarded loop Vector get
+
+The same existing C7, C8 and emitter owners have a distinct two-operand `get`
+variant for the bounded loop domain above. It needs a nonempty homogeneous
+Vector, the original Integer counter slot, the same immutable Vector origin as
+the count guard, complete backedge evidence and access below the strict true
+edge. It does not infer bounds from a member type or from an equal-shaped but
+different Vector. An alias may preserve an origin; a new constructor does not.
+
+Use the direct component checks while editing:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-vector-loop-get-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact body-vector-loop-get-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-loop-get-lowering-development-kernel --fail-fast
+```
+
+The source operation, compatibility binding, descriptor, call fact and ledger
+row remain `get`-specific. Only after reconstructing those facts and the bounds
+proof does lowering use the existing checked `nth` development instruction,
+with Vector-then-index evaluation. Runtime guards remain; there is no check
+elision or new runtime path. C8 checks the complete ordered `nth`/Vector-`get`
+ledger census, including missing, duplicate and orphan rows. The local binary
+lowering path retains its own logical reservation and completed operand prefix
+on failure; an outer zero-budget rejection does not enter that helper.
+
+Map lookup, explicit defaults and the prior Never/Unknown routing remain
+separate. This subset does not grant general Vector `get`, literal-only access
+outside this proof, arbitrary dynamic indices, heterogeneous results or an
+out-of-range/absent-result policy. The paired `local-runtime-vector-loop-get`
+fixtures and wrong-origin, heterogeneous, nonstrict and outside-loop negatives
+belong to the affected source composition, not the edit/test inner loop.
+Actual source outcomes are recorded in the backlog; normalized component
+checks alone do not establish source execution or authoritative migration.
+
+When this producer/consumer behavior changes, run the affected composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-vector-loop-get-authenticated-composition --fail-fast
+```
+
+This is not the default command for every edit. It checks the paired source,
+fresh verification, typed lowering, effects and function-table execution.
+Do not repeat an unchanged composition to repair a reporting label or refresh
+migration status.
+
 ### Direct integral ordering
 
 The C7 engine, `gravity/effects.gravity` and existing emitter own direct binary
