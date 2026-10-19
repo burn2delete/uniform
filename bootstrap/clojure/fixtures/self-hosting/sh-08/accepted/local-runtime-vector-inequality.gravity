@@ -1,0 +1,26 @@
+(ns self-hosting.sh08.vector-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [modes same reordered nested main]))
+
+(defn modes []
+  [:artifact :manifest :diagnostic :conformance :runtime-output
+   :ir-modulo-id :reviewed-delta])
+
+(defn same [] :- Bool
+  (not= (modes)
+        [:artifact :manifest :diagnostic :conformance :runtime-output
+         :ir-modulo-id :reviewed-delta]))
+
+(defn reordered [] :- Bool
+  (not= [:artifact :manifest :diagnostic :conformance :runtime-output
+         :ir-modulo-id :reviewed-delta]
+        [:manifest :artifact :diagnostic :conformance :runtime-output
+         :ir-modulo-id :reviewed-delta]))
+
+(defn nested [] :- Bool
+  (not= [[:artifact nil] [false "inert"]]
+        [:artifact [false "inert"]]))
+
+(defn main [] :- Bool
+  (not= [] [:artifact]))
