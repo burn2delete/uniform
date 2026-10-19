@@ -3252,6 +3252,77 @@ body or whole consumer module. Full numeric/profile/target support, current
 cohort migration, the three partial evidence groups, complete SH-07,
 self-hosting and release claims remain outstanding.
 
+### Binary finite Vector inequality: development implementation
+
+The existing C7 engine, effects checker and typed emitter extend binary
+`not=` to independently established finite positional Vector types. The
+versioned collections premise reuses existing Vector value equality and its
+complete domain checks, while preserving the original inequality source,
+constraint solution, call fact and ledger. Lowering uses owned equality IR
+inside an explicit Bool complement; no source equality fact is invented.
+Runtime, seed, public interfaces and the type grammar are unchanged.
+
+The supported nonnumeric recursive domain includes empty Vectors, unequal
+lengths, nested Vector/atomic differences, Nil, Bool, Character, String, Symbol,
+Keyword and the existing five nullable nonnumeric atomic views. Both complete
+domains are validated before mismatch; numeric members reject even when the
+other Vector is empty. Existing width/depth/work limits remain. Bare or
+unknown Vectors, whole nullable Vectors, nested Never and other collections
+are not added. Top-level Never retains original control transfer. Accepted
+scalar, represented-Integer and same-fixed-integral behavior remains intact.
+
+The final focused batch passed 33 tests / 20,053 assertions: six new kernels /
+1,437 and 27 adjacent inequality/equality regressions / 18,616. Actual owning
+validation runs once with prefix 123 and child budget 65,413, without unrelated
+probes; exact/short budgets retain failed-child work. Direct derivation keeps
+the Vector-specific work-limit reason; the containing C7 verifier keeps its
+existing atomic-inequality resource diagnostic and private subtype reason.
+Complete C8 ledgers, independently reconstructed policies, coherently changed
+records, owned IR, transfer identity and non-tail restrictions are checked.
+
+Earlier attempts remain distinct: the first command omitted namespaces and
+selected no tests; the second failed test namespace loading on a duplicated
+tail, also before tests. After removing that accidental test fragment, the
+third run completed 23 tests / 17,718 assertions with 17,717 passes and one
+diagnostic-oracle failure; ten C8 selectors were unrun. Only that new expected
+owning diagnostic keyword changed before the final passing batch. Production
+did not change for the oracle correction. The paired fixture check then
+passed one test / six assertions, and LOC validation passed 2,021 files, zero
+exceptions, maximum 250 lines. These checks are not source or migration proof.
+
+The sole affected genuine Gravity source composition then passed one test /
+108 assertions. Five source functions and five calls contain four source-owned
+Vector inequality descriptors, ledger rows and owned equality IR sites, with
+no fabricated source equality rows. Five Gravity function-table entries and
+five same-emitted-IR seed controls cover the seven-Keyword W5 value, equal and
+reordered values, nested Vector/atomic differences and empty/unequal widths.
+This is a fresh producer and new inequality expressions, not whole-W5 coverage
+or independent semantic equivalence established merely by same-IR execution.
+Q fixtures provide byte/parser parity only.
+
+Fresh positive C7 and C8 construction/verification passed. Two additional
+tracked public C7 assembly gates include a fully propagated numeric-policy
+forgery; a resealed C8 dependency deletion rejects. The real `[]` versus `[7]`
+source negative reaches C5/C6 successfully and rejects at C7 for unsupported
+numeric members, with the secondary Unknown annotation diagnostic retained.
+The oracle matches the required primary rule/reason without requiring it to
+be the sole or first diagnostic. Allocation remains an inferred wrapper effect,
+not a direct effect of value comparison.
+
+The three completed focused, fixture and source selections total 35 tests /
+20,167 assertions. A separate language-boundary selection passed six / 11.
+Source execution took 195.552 seconds after 10.558 seconds of loading at 2 GiB,
+below the monitored ten-minute ceiling. Positive C5 construction, C6
+construction and C6 verification took 32.931, 31.910 and 37.897 seconds;
+assembly including public C7 verification took 2.717 seconds. These nested
+caller observations separate product work from loading; they are not exclusive
+phase costs, a benchmark, a hard deadline or a speedup comparison. No unchanged
+source composition or migration proof was replayed.
+
+Direct commands are in the development-verification guide. Numeric Vector
+members, full current-closure migration, the three partial evidence groups,
+complete SH-07, self-hosting and release claims remain outstanding.
+
 ### Nil value classification: development implementation
 
 STD2 defines unary `nil?`: nil classifies true; false and empty collections do
