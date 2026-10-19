@@ -3462,6 +3462,99 @@
                      (update facts :constraint-ledger conj (assoc-in (first (:constraint-ledger facts)) [:lhs :core-node-id] (sha 1399)))]]
       (is (= :rejected (:status (analyze changed 65536)))))))
 
+(deftest current-gravity-atomic-inequality-source-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'atomic-inequality-input) derive (ns-resolve upstream 'atomic-inequality-derived)
+        c7 (ns-resolve upstream 'invoke-c7)
+        scalar [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]
+        nullable (mapv #(hash-map :kind :gravity.type/nil-or :value-type %) (rest scalar))
+        pairs (concat (map vector scalar scalar) (map #(vector % :gravity.type/nil) nullable)
+                      [[{:kind :gravity.type/nil-or :value-type :gravity.type/string} {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]
+                       [:gravity.type/never :gravity.type/keyword] [:gravity.type/keyword :gravity.type/never]])]
+    (doseq [[left right] pairs]
+      (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
+            result (derive input 65536) descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
+                   :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
+                   :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-ane-context request facts bindings 65536)
+            checked (assoc facts :atomic-inequality-context (:context context))
+            valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
+            normal? (not-any? #{:gravity.type/never} [left right])
+            graph {:operator {:type descriptor :transitive #{}}
+                   :arg0 {:type left :transitive #{:io/write}} :arg1 {:type right :transitive #{:memory/allocate}}}
+            record (leaf 'body-node-record node nil graph (:type result))]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= context (leaf 'body-ane-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-ane-context request facts bindings (dec (:work-count context))))))
+        (is (true? (valid checked)))
+        (is (true? (leaf 'body-ane-node? node checked core)))
+        (is (= #{} (:direct record)))
+        (is (nil? (:allocation record)))
+        (when normal? (is (= #{:io/write :memory/allocate} (:transitive record))))
+        (doseq [changed [(assoc checked :constraint-ledger [])
+                         (update checked :constraint-ledger into (:constraint-ledger checked))
+                         (update checked :constraint-ledger conj (assoc-in (first (:constraint-ledger checked)) [:lhs :core-node-id] :orphan))
+                         (assoc-in checked [:call-type-facts 0 :effects] [:memory/allocate])]]
+          (is (false? (valid changed))))
+        (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
+                         (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
+                         (assoc-in descriptor [:inequality-policy :coercion] :host)
+                         (assoc-in descriptor [:inequality-policy :operand-position] :tail)
+                         (assoc descriptor :direct-effects [:memory/allocate]) (assoc descriptor :operand-type-work 0)]]
+          (let [forged (-> checked (assoc-in [:type-table :operator] changed)
+                           (assoc :call-type-facts [(c7 'sh08-ane-call-fact [changed module])]
+                                  :constraint-ledger [(c7 'sh08-ane-constraint [changed])]))]
+            (is (false? (valid forged)))))
+        (doseq [id [:arg0 :arg1]]
+          (is (= :rejected (:status (leaf 'body-ane-context request (assoc-in facts [:type-table id] :gravity.type/integer) bindings 65536)))))))))
+
+(deftest current-gravity-atomic-inequality-consumer-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        base ((ns-resolve upstream 'atomic-inequality-input) [{:kind :gravity.type/nil-or :value-type :gravity.type/string} {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}])
+        ids (zipmap (keys (:nodes base)) (map sha (range 1300 1310)))
+        convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
+                                    (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+        node-list (mapv convert-node (get-in base [:core :nodes]))
+        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge base) (update :call-core-node-id ids) (update :argument-core-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        core (merge (:core base) {:nodes node-list :calls [call] :call-edges [edge]
+                                 :root-core-node-ids [(ids :call)] :definitions [] :lexical-bindings []
+                                 :match-branch-records [] :match-pattern-records [] :match-decision-skeletons []
+                                 :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
+        input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
+                          :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
+        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        invoke (ns-resolve upstream 'invoke-c7)
+        facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
+                     {:module (:module base)
+                      :type-table (assoc (:types input) (ids :operator) descriptor (ids :call) (:type result))
+                      :function-type-table [] :local-binding-facts []
+                      :call-type-facts [(invoke 'sh08-ane-call-fact [descriptor (:module base)])]
+                      :constraint-ledger [(invoke 'sh08-ane-constraint [descriptor])]})
+        preimage (assoc (select-keys core [:root-core-node-ids :definitions :function-records :call-edges :calls
+                                           :evaluation-order :lexical-bindings :match-branch-records :match-decision-skeletons :match-pattern-records])
+                        :nodes (leaf 'body-throw-semantic-nodes core))
+        core (assoc core :identity-preimage preimage)
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request
+                    {:forms (vec (vals (:forms base))) :binding-table (vec (vals (:bindings base)))}}}
+        analyze #(leaf 'body-analyze-module request %1 {} %2)
+        analyzed (analyze facts 65536) work (:work-count analyzed)]
+    (is (= :accepted (:status result) (:status analyzed)) (pr-str analyzed))
+    (is (= #{} (get-in analyzed [:graph :namespace :inferred])))
+    (when (= :accepted (:status analyzed))
+      (is (= analyzed (analyze facts work)))
+      (is (= :rejected (:status (analyze facts (dec work))))))
+    (doseq [changed [(assoc facts :constraint-ledger [])
+                     (update facts :constraint-ledger into (:constraint-ledger facts))
+                     (update facts :constraint-ledger conj (assoc-in (first (:constraint-ledger facts)) [:lhs :core-node-id] (sha 1399)))]]
+      (is (= :rejected (:status (analyze changed 65536)))))))
+
 (deftest current-gravity-symbol-predicate-consumer-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
