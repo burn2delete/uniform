@@ -1,0 +1,23 @@
+(ns self-hosting.sh08.private-entry-vector-get
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [signature-one signature-two empty-signatures main]))
+
+(defn signature-head [package]
+  (first (get package :signatures)))
+
+(defn package-signatures [package]
+  (get package :signatures))
+
+(defn signature-one []
+  (signature-head '{:signatures [{:algorithm :sha256 :status :verified}]
+                    :decoy [{:algorithm :decoy-one :status :ignored}]}))
+
+(defn signature-two []
+  (signature-head '{:decoy [{:algorithm :decoy-two :status :ignored}]
+                    :signatures [{:algorithm :sha512 :status :rejected}]}))
+
+(defn empty-signatures []
+  (package-signatures '{:signatures []}))
+
+(defn main [] (signature-one))

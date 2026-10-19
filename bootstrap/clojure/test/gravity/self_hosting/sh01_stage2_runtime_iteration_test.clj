@@ -23256,3 +23256,144 @@
                                (assoc :ledger [(c7 'sh08-mg-constraint [changed])])
                                (assoc-in [:call-facts :present-get] (c7 'sh08-mg-call-fact [changed module])))]
         (is (= :rejected (:status (compile changed-context 65536))))))))
+
+(deftest current-gravity-private-entry-vector-get-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "private-entry-vector-get"]
+                                ["rejected" "private-entry-vector-get-missing-key"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= 6 (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
+    (let [path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity"))
+          witness (first (filter #(and (seq? %) (= 'defn (first %)) (= 'w5-c17-valid-signature? (second %)))
+                                 (bootstrap/read-forms path (slurp path))))]
+      (is (= '(get package :signatures) (second (second (nth witness 3))))))))
+
+(deftest current-gravity-private-entry-vector-get-authenticated-composition
+  ;; One new G positive/negative. Q is covered only by fixture byte/parser checks.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-entry-vector-get.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bt-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Private Vector get C7 source prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Private Vector get C7 verification prerequisite rejected" {})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        gets (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) (:call-type-facts facts)))
+        firsts (mapv :applied-vector-first (filter #(= :direct-vector-first (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-map-get-v1 (:producer-rule %)) (:constraint-ledger facts))
+        head-get (first (filter #(seq (get-in % [:result-type :element-types])) gets))
+        empty-get (first (filter #(= [] (get-in % [:result-type :element-types])) gets))
+        entries (get-in head-get [:presence-proof :entries])
+        selected {:kind :gravity.type/map :shape :literal
+                  :member-types [:gravity.type/keyword :gravity.type/keyword :gravity.type/keyword :gravity.type/keyword]}
+        vector-type {:kind :gravity.type/vector :shape :literal :element-types [selected]}
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Private Vector get C8 source prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        graph (:effect-graph effects)
+        cases [['signature-one {:algorithm :sha256 :status :verified}]
+               ['signature-two {:algorithm :sha512 :status :rejected}]
+               ['empty-signatures []] ['main {:algorithm :sha256 :status :verified}]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []} {} "" (:functions assembled) []])
+                              reference (atom nil)
+                              output (with-out-str (reset! reference (original runtime assembled function [])))]
+                          (is (= [expected "" :normal] actual) (str function))
+                          (is (= [@reference output :normal] actual) (str function " same emitted IR parity"))
+                          actual)) cases)
+        t6 (System/nanoTime)]
+    (is (= :passed (:status effect-verification)))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 6 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 7 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 2 (count gets) (count rows)))
+    (is (= 1 (count firsts)))
+    (is (= 2 (count (filter #(= :keyword-map-lookup (:op %)) instructions))))
+    (is (= 1 (count (filter #(and (= :builtin-call (:op %)) (= 'first (:function %))) instructions))))
+    (is (= vector-type (:return head-get) (:result-type head-get)))
+    (is (= selected (get-in functions ['signature-head :return]) (:result-type (first firsts))))
+    (is (= {:kind :gravity.type/vector :shape :literal :element-types []} (:result-type empty-get)))
+    (is (= 2 (count entries) (count (get-in head-get [:presence-proof :entry-census :calls]))))
+    (is (= 1 (count (get-in empty-get [:presence-proof :entries]))))
+    (is (= [:invoked :invoked] (mapv :entry entries)))
+    (is (= #{1 3} (set (map :selected-coordinate entries))))
+    (is (= 2 (count (set (map :argument-node-id entries))) (count (set (map :argument-source entries)))))
+    (is (= (get-in entries [0 :argument-type]) (get-in entries [1 :argument-type])))
+    (is (not= (get-in entries [0 :argument-shape]) (get-in entries [1 :argument-shape])))
+    (doseq [descriptor gets]
+      (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
+      (is (= :private-call-entry-key-presence (get-in descriptor [:presence-proof :kind])))
+      (is (= :private (get-in descriptor [:presence-proof :entry-census :definition-binding :visibility])))
+      (is (= :signatures (:key descriptor)))
+      (is (= #{:kind :shape :element-types} (set (keys (:result-type descriptor)))))
+      (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+      (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids])
+             (get-in graph [:nodes (:call-core-node-id descriptor) :dependencies])))
+      (is (= (:presence-proof descriptor)
+             (get-in (first (filter #(= (:call-core-node-id descriptor) (get-in % [:lhs :core-node-id])) rows))
+                     [:solution :presence-proof]))))
+    (doseq [entry entries]
+      (is (= vector-type (:selected-type entry) (get-in entry [:selected-part :shape :type])))
+      (is (= :signatures (get-in entry [:selected-part :key])))
+      (is (= (:selected-coordinate entry) (get-in entry [:selected-part :coordinate]))))
+    (is (= #{:direct-map-get :direct-vector-first} (set (keep :dispatch (:call-type-facts facts)))))
+    (is (= 4 (count results)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-entry-vector-get-missing-key.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bt-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= ["C7-ANNOTATION" :map-get-private-entry-presence-required] ((juxt :rule :reason) %)) diagnostics)
+          (pr-str diagnostics)))
+    (println (pr-str {:bt-private-vector-get-composition :completed :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :function-table-entry-invocations (count results) :same-emitted-ir-seed-control-entries (count results)
+                      :c17-basis :new-private-signatures-vector-get-to-first-composition :whole-c17-caller-coverage false
+                      :selected-map-inner-key-presence :not-established :empty-vector-get :covered :runtime-function-count 54
+                      :authority :non-authoritative
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
