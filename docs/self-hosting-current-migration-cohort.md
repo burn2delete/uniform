@@ -9,8 +9,10 @@ This document does not include subsequent working-tree compiler changes.
 
 Concurrent work known during assessment is not part of this revision: C5
 internal projection sharing in `00877`, `00880-03` and `00879-bounded-02` plus
-its owning SH06 test; seed module-local `let` work in `00575`/`00576`/`00580`;
-and binary atomic `not=` work in C7/effects/P15 emitter/runtime and their tests.
+its owning SH06 test; seed module-local `let` work in `00575` and the `00580`
+module-source component, using the unchanged `00576` interface; and binary
+atomic `not=` work in C7/effects/P15 emitter and their tests, with runtime and
+seed unchanged by that increment.
 These are pending development changes, not accepted future evidence. If they
 merge, reconcile the actual merged diff and results: C5 changes affect the
 verification/projection equations; seed changes affect owner plan construction;
