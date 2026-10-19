@@ -15,7 +15,7 @@
      peek pop take drop take-while drop-while subvec vec vector list hash-map
      set sorted-map sorted-set keys vals contains? find
      nil? some? true? false? boolean? symbol? keyword? string? char? number?
-     integer? ratio? map? vector? set? seq? coll? sequential? empty? seq
+     integer? ratio? map? vector? set? list? seq? coll? sequential? empty? seq
      map mapv map-indexed filter filterv remove keep keep-indexed reduce
      reduce-kv some every? not-any? concat mapcat partition partition-all
      range repeat repeatedly iterate zipmap frequencies group-by sort sort-by
