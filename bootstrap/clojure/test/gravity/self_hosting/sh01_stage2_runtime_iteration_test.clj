@@ -9614,7 +9614,10 @@
                 head-failure (compile changed 65536)
                 head-work (:work-count (invoke 'p15-s23-lq-head-proof core (:call nodes) call nodes bindings (:types changed) 65536))]
             (is (= :rejected (:status source-failure) (:status child-failure) (:status head-failure)))
-            (is (= charge (:work-count source-failure) (:work-count child-failure)))
+            (is (= charge (:work-count source-failure)))
+            ;; Missing locals already fall through the existing 64-unit namespace-reference check.
+            (is (= :typed-reference-outside-parameters (get-in child-failure [:facts :reason])))
+            (is (= (+ charge 64) (:work-count child-failure)))
             (is (= (+ 64 1 (count (:function-records core)) 2 head-work) (:work-count head-failure)))))
         (doseq [changed [(dissoc descriptor :head-proof)
                          (assoc-in descriptor [:head-proof :knowledge] :forged)
@@ -22954,8 +22957,11 @@
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer ID hashed")))
                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer ID compared"))))
-              poisoned (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque))]
+              poisoned (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque))
+              cross-kind (assoc-in poisoned [:types :operator :kind] :gravity.type/applied-list-query)]
           (is (= :rejected (:status (compile poisoned 65536))))
+          (is (= :rejected (:status (compile cross-kind 65536))))
+          (is (= :typed-lowering-work-limit (get-in (compile cross-kind 66) [:facts :reason])))
           (is (= 0 @callbacks)))
         (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
                         #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))

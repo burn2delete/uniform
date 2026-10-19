@@ -5186,7 +5186,10 @@
 (defn p15-s23-typed-compile-list-query [context node budget]
   (let [id (get node :node-id) core (get context :core)
         args (get (get (get context :calls) id) :argument-node-ids)
-        vector-first? (= :gravity.type/applied-vector-first (get (get (get context :types) (first (get node :children))) :kind))
+        receiver (get (get context :types) (first args))
+        vector-first? (if (= :gravity.type/applied-vector-first (get (get (get context :types) (first (get node :children))) :kind)) true
+                        (if (= 'first (get (get (get context :bindings) (get (get (get context :calls) id) :operator-binding-id)) :name))
+                          (if (map? receiver) (= :gravity.type/vector (get receiver :kind)) false) false))
         base (+ 64 (count args) (count (get core :function-records))
                 (if vector-first? (* 4 (count (get context :ledger))) 0))
         validation (p15-s23-lc-type-work (p15-s23-io-child-types args (get context :types)) (if (> base budget) 0 (- budget base)))
