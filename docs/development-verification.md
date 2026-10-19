@@ -3707,6 +3707,51 @@ harness expectation; its correction and separate cheap checks do not relabel
 it as a green aggregate. Reuse unchanged completed observations where valid;
 do not reconstruct expensive products solely to change a historical label.
 
+### Binary nonnumeric atomic inequality
+
+For binary `not=`, edit the C7 engine, `gravity.effects` and the typed emitter.
+STD2 owns the complement-of-applicable-equality law. The current executable
+subset is Nil, Bool, Character, String, Symbol, Keyword, their five existing
+nil-or-atomic carriers, and Never. Both operand domains are checked even when
+one transfers. Numeric, collection, callable, Unknown and malformed domains
+remain outside this increment; no first-class or variadic operation is added.
+
+Start with the owning focused checks, retaining adjacent `=`/nil-equality
+regressions when changing their shared dispatch:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-atomic-inequality-development-kernel --exact sh08-atomic-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-atomic-inequality-source-development-kernel --exact current-gravity-atomic-inequality-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-atomic-inequality-id-guards-development-kernel --exact current-gravity-atomic-inequality-lowering-runtime-development-kernel --exact current-gravity-atomic-inequality-transfer-fence-development-kernel --fail-fast
+```
+
+C7/C8/emitter independently validate the source binding, two operands, versioned
+descriptor, call/edge, constraints and complete ledger. Lowering owns an existing
+equality test with false/true branches; it creates no source `=` facts. Evaluate
+both operands once, left-to-right and non-tail, preserving effects and original
+transfers. Compare actual nullable values: different nullable families can both
+hold nil. Use the existing canonical Character transport, not a manually tagged
+BMP record. Meter actual pre-child work separately from success-only suffix work.
+
+For the affected source boundary, select the cheap fixture check before the
+bounded completion composition:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-atomic-inequality-completion-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-atomic-inequality-completion-authenticated-composition --fail-fast
+```
+
+This executes five Gravity entries, two same-emitted-IR seed controls, genuine
+C7/C8 guards and coherent rejection controls on the smaller completion input.
+QST is byte/parser coverage only. The seed cannot interpret the existing typed
+map-lookup or typed-catch instructions; do not widen it to satisfy a reference
+outside its domain. The original sixteen-function source attempt remains a
+failed partial observation, not a green aggregate. Preserve its passed and unrun
+boundaries as recorded in the backlog; do not reconstruct that unchanged input
+merely to change its historical label. Runtime and seed production files are
+unchanged. This is development implementation, not migration, whole W5 execution,
+other-target support, self-hosting or release evidence.
+
 ### Nil value classification
 
 For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter

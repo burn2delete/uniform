@@ -3065,6 +3065,70 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Binary nonnumeric atomic inequality: development implementation
+
+Development checkpoint `7f9bff8f40763d4a286e3028a3bde096d041152e` implements
+binary `not=` as the Bool complement of applicable atomic value equality under
+STD2. C7, effects and the typed emitter authenticate a distinct versioned
+inequality descriptor and complete source ledger. Nil, Bool, Character, String,
+Symbol and Keyword values, the five existing nil-or-atomic carriers, and Never
+are supported. Both domains remain checked even when one cannot return.
+Numeric, collection, callable, Unknown and malformed domains are not added.
+
+Owned equality/branch IR evaluates the original operands once, left-to-right and
+non-tail, with no fabricated source equality facts. Nullable comparison uses
+actual values, not a different-family constant fold. C8 retains operand effects
+and dependencies; original throws and non-tail transfer fences survive. No
+runtime, seed, public arity, annotation grammar or IR schema changes are made.
+The unchanged runtime has 52 functions including its four exports, not 52 private
+functions. Entry execution assumes authenticated type-conforming values, not
+runtime validation of arbitrary host or FFI values.
+
+Independent review accepted thirteen focused selectors / 10,286 passing
+assertions across retained F1/F2/F3 observations, not one green batch. F1 remains
+failed (6,798 passes / 420 failures): its new matrix used an invalid tagged BMP
+Character. F2 remains failed (9,551 passes / five failures): its test prefix
+included 124 units of success-only suffix work. Canonical C2 Character transport
+and an observation of the actual pre-child budget corrected tests only; no
+production weakening or historical relabelling followed. F3 passed seven tests /
+7,153 assertions; unchanged completed selectors from F1/F2 supply the remaining
+distinct coverage. Failed selectors' partial assertions are not added to that
+passing union.
+
+The first sixteen-function source run passed C5/C6 status checks, C7 and C8
+construction/fresh verification, nine Gravity entry results and eight same-IR
+seed controls before the seed rejected an existing `:keyword-map-lookup`
+instruction. Its aggregate remains 30 passes / one error. The original nullable
+`main`, later source census, forgeries and numeric negative were unrun. The seed
+reference frontier was corrected without rebuilding this unchanged source.
+
+A new five-function completion input then passed one test / 91 assertions
+(85 composition plus six loader assertions), with five Gravity entries, two
+same-IR seed controls, four owned inequality descriptors/rows/equality IR sites,
+two public C7 assembly gates, a coherent inequality-policy forgery and a resealed
+C8 dependency deletion. The numeric/Never source negative ran for the first
+time; it retains the primary operand-type-required diagnostic and a secondary
+Unknown annotation diagnostic. The oracle asserts the primary, not a sole or
+exact-vector diagnostic claim. The new `main` calls `observed`; it does not
+retrospectively execute the original nullable wrapper. Both source pairs have
+separate byte/parser checks (one test / eight assertions and one / five), not Q
+typed products. The distinct passing selections total 16 tests / 10,390
+assertions across runs; the failed source aggregate is excluded.
+
+The completion source took 192.608 seconds of selected execution after 10.169
+seconds of loading at 2 GiB. Positive construction observations were 33.060
+seconds for C5, 37.249 for C6 construction and 36.231 for C6 verification; C7
+construction/verification were 2.018/1.031 seconds. These caller-side inclusive
+boundaries separate product work from loading, not exclusive CPU causes or a
+speedup comparison, and do not diagnose the retained large-Core interruption.
+No unchanged expensive source proof was replayed for a green label.
+
+This enables the exact one-level W5 diagnostic-span comparison on independent
+literal-map DATA, not its whole function or transitive module. Current-closure
+admission, the three partial evidence groups, full SH-07, self-hosting, target
+coverage, seed retirement and release status remain unchanged. Direct focused
+and affected-source commands are in the development-verification guide.
+
 ### Nil value classification: development implementation
 
 STD2 defines unary `nil?`: nil classifies true; false and empty collections do

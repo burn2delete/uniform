@@ -42,6 +42,17 @@ All behavior must be deterministic except where the caller passes an explicitly 
 - Type and var helpers: `type-of`, `var`, `var?`, `deref-var`, and `resolve-var` where the active profile allows vars.
 - Simple reducers: `reduce`, `fold`, and `into` as protocol dispatch points, with concrete collection behavior owned by STD3.
 
+## Binary Value Inequality
+
+For operands with applicable Gravity binary value equality, `(not= left right)`
+returns the Bool complement of `(= left right)`. Both operands follow ordinary
+L2 evaluation left to right, exactly once; their effects are preserved, and a
+control transfer aborts invocation. Inequality does not introduce an equality
+domain, coercion, identity comparison or variadic rule, nor does it evaluate
+stored payloads beyond the applicable equality contract. `gravity.core` owns
+this operation; numeric, collection, profile, target, effect, capability and
+safety requirements remain with their governing contracts.
+
 ## Nil Value Predicate
 
 Unary `(nil? value)` returns Bool true exactly when the normally evaluated
@@ -153,6 +164,7 @@ If the function read a file, the effect checker would reject the `:core` compila
 ## Conformance Criteria
 
 - Core examples compile without capabilities in `:core`.
+- Binary value inequality complements applicable binary equality while preserving operand order, effects and transfers, without introducing equality domains, coercions or variadic behavior.
 - Nil classification preserves ordinary unary evaluation, effects and transfers, distinguishes nil from false and empty collections, and neither evaluates stored payloads nor unwraps Option or Result values.
 - Boolean family classification returns true for both Bool values and false for other normally evaluated values, preserves ordinary unary evaluation, effects and transfers, and does not substitute truthiness, coerce values or evaluate stored payloads.
 - Symbol family classification preserves ordinary unary evaluation and transfers, distinguishes evaluated Symbols from other values without spelling coercion or syntax-object unwrapping, and neither evaluates stored payloads nor grants binding, call, macro or capability authority.
