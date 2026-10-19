@@ -3015,7 +3015,7 @@
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
-                 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2
+                 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-keyword-set-construction-work 2 'p15-s23-runtime-set-conversion-work 2
                  'p15-s23-runtime-module-census 2 'p15-s23-runtime-instruction-children 2
                  'p15-s23-runtime-module-reads-work 3 'p15-s23-runtime-initialize-module 2
                  'p15-s23-runtime-keyword-set-domain 2 'p15-s23-runtime-keyword-set-equality-work 3
@@ -3031,7 +3031,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 50 (count selected) (count (set (map second selected)))))
+    (is (= 51 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -10453,7 +10453,7 @@
     (is (identical? opaque (get original "opaque")))
     (is (= 12 (count wide)))
     (is (= 0 @observed))
-    (doseq [input [nil [] #{} "map" 7]]
+    (doseq [input [nil [] '() "map" 7]]
       (is (= :map-contains-map-and-key-domain-required
              (get-in (evaluate (contains-ir (literal input) (literal :key))) [0 :reason]))))
     (doseq [key [nil false 1 'key (char 65) [] {} (bootstrap/sh03-reader-host-character-value! "<membership-kernel>" {:codepoint 0x1f600})]]
@@ -10479,6 +10479,184 @@
       (is (identical? first-error (first map-throw)))
       (is (identical? second-error (first key-throw))))
     (is (= 0 @observed))))
+
+(deftest current-gravity-keyword-set-contains-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
+        c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
+        finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
+        k :gravity.type/keyword s :gravity.type/string
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never]]]
+      (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-ksm-call-fact [descriptor module])} :ledger [(c7 'sh08-ksm-constraint [descriptor])]
+                     :locals {:arg0 'left :arg1 'right} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node %1 :call %2) lowered (compile context 65536)
+            coherent (fn [changed]
+                       (-> context (assoc-in [:types :operator] changed)
+                           (assoc :call-facts {:call (c7 'sh08-ksm-call-fact [changed module])}
+                                  :ledger [(c7 'sh08-ksm-constraint [changed])])))]
+        (is (= :accepted (:status result)))
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (let [limited (compile context (dec (:work-count lowered)))
+                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
+                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node %2)
+                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
+                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) (second arguments)] 65536)
+                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) 65536)
+                domain-failure (own bad-domain 65536)]
+            (is (= :typed-lowering-work-limit (get-in limited [:facts :reason])))
+            (is (= (:work-count lowered) (:work-count limited)))
+            (is (= base (:work-count (own context (dec base)))))
+            (is (= (+ base 2) (:work-count (own context base))))
+            (is (= charge (:work-count source-failure)))
+            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
+            (is (= (inc charge) (:work-count (own context charge))))
+            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+              (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
+                                  (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
+                                  (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
+                    child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id 65536)
+                    failure (compile candidate 65536)]
+                (is (= :rejected (:status child) (:status failure)))
+                (is (= (:facts child) (:facts failure)))
+                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+        (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
+                         (assoc descriptor :kind :gravity.type/applied-atomic-equality)
+                         (assoc descriptor :semantic-owner 'gravity.core)
+                         (assoc-in descriptor [:membership-policy :comparison] :identity)
+                         (assoc-in descriptor [:membership-policy :member-uniqueness] :not-validated)
+                         (assoc-in descriptor [:membership-policy :budget] :traversal-dependent)
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string)]]
+          (is (= :rejected (:status (compile (coherent changed) 65536)))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer ID compared"))))]
+          (doseq [row [(assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque)
+                       (assoc (first (:ledger context)) :lhs opaque)
+                       (assoc-in (first (:ledger context)) [:lhs :core-node-id] [opaque])]]
+            (is (= :rejected (:status (compile (update context :ledger conj row) 65536)))))
+          (is (= 0 @callbacks)))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] {:opaque true}))
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                        #(assoc-in % [:types :arg0] (finite [:gravity.type/integer]))
+                        #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-keyword-set-contains-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
+        literal (fn [value] {:op :literal :value value})
+        query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
+        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
+        charge (fn [items needle]
+                 (let [n (count items) units (+ (count (str needle)) (reduce + 0 (map #(count (str %)) items)))]
+                   (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
+    (doseq [[items needle expected] [[#{} :absent false] [#{:one} :one true] [#{:one} :other false]
+                                    [#{:left :right} :right true] [#{:left :right} :missing false]
+                                    [#{:space/name} :space/name true] [#{:space/name} :other/name false]]]
+      (let [result (work items needle 65536) n (count items) reserved (charge items needle)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= reserved (:work-count result)))
+        (is (= :exact-logical-membership-reservation (:work-count-kind result)))
+        (is (= :not-established (:provider-cpu-bound result)))
+        (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
+        (is (= result (work items needle reserved)))
+        (let [limited (work items needle (dec reserved))]
+          (is (= :keyword-set-contains-work-limit (:reason limited)))
+          (is (= 0 (:comparison-attempts limited))))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))))
+    (let [left (clojure.lang.Keyword/intern nil "a/b") right (clojure.lang.Keyword/intern "a" "b")]
+      (is (= (str left) (str right)))
+      (is (= false (:value (work #{left} right 65536)))))
+    (let [forward (into (sorted-set-by #(compare (str %1) (str %2))) [:a :b :c])
+          reverse-order (into (sorted-set-by #(compare (str %2) (str %1))) [:a :b :c])]
+      (doseq [items [forward reverse-order] needle [:a :c :missing]]
+        (let [reserved (charge items needle)]
+          (is (= (not= needle :missing) (:value (work items needle reserved))))
+          (is (= reserved (:work-count (work items needle reserved))))
+          (is (= :keyword-set-contains-work-limit (:reason (work items needle (dec reserved)))))
+          (is (= 0 (:comparison-attempts (work items needle (dec reserved))))))))
+    (let [callbacks (atom 0)
+          protected (fn [members]
+                      (reify clojure.lang.IPersistentSet
+                        (count [_] (count members)) (seq [_] (seq members))
+                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
+                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
+                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
+                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
+                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
+                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
+                        Object
+                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
+                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
+          opaque (proxy [Object] []
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))]
+      (is (= true (:value (work (protected [:a :b]) :a 65536))))
+      (is (= false (:value (work (protected [:a :b]) :missing 65536))))
+      (doseq [items [(protected [opaque]) (protected [:hit opaque]) (protected [opaque :hit])]
+              needle [:hit :missing]]
+        (let [result (work items needle 65536)]
+          (is (= :keyword-set-contains-value-domain-required (:reason result)))
+          (is (= 0 (:comparison-attempts result)))))
+      (doseq [needle [:same :missing]]
+        (let [items (protected [:same :same]) result (work items needle 65536)]
+          (is (= :keyword-set-contains-value-domain-required (:reason result)))
+          (is (= :duplicate-keyword-class (:domain-failure result)))
+          (is (= (charge items needle) (:work-count result)))
+          (is (= :exact-logical-membership-reservation (:work-count-kind result)))
+          (is (pos? (:comparison-attempts result)))))
+      (is (= :keyword-set-contains-value-domain-required (:reason (work (protected [:hit]) opaque 65536))))
+      (is (= 0 @callbacks)))
+    (doseq [items [nil [] {} '(:a) "set" #{"text"} #{nil} #{1} '#{:hit (println "never")}]]
+      (is (= :keyword-set-contains-value-domain-required (:reason (work items :hit 65536))))
+      (let [result (evaluate (query (literal items) (literal :hit)))]
+        (is (= ["" :rejected] (subvec result 1)))))
+    (doseq [needle [nil "key" false 1 [] {}] items [#{} #{:hit}]]
+      (is (= :keyword-set-contains-value-domain-required (:reason (work items needle 65536)))))
+    (let [wide (into #{} (map #(keyword (str "member" %)) (range 1024))) result (work wide :missing 65536)]
+      (is (= :keyword-set-contains-work-limit (:reason result)))
+      (is (= 65537 (:work-count result)))
+      (is (= :exceeded-allowance-lower-bound (:work-count-kind result)))
+      (is (= 0 (:comparison-attempts result)))
+      (is (= :keyword-set-contains-value-width (:reason (work (conj wide :extra) :missing 65536)))))
+    (doseq [budget [-1 nil 1.5]]
+      (is (= :keyword-set-contains-work-limit (:reason (work #{} :key budget)))))
+    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
+          payload (Object.) escape {:op :throw :value (literal payload)}
+          left (evaluate (query (say "set" escape) (say "unreached" (literal :key))))
+          right (evaluate (query (say "set" (literal #{:key})) (say "needle" escape)))]
+      (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{:key})) (say "needle" (literal :key))))))
+      (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal :key))))))
+      (is (= [payload "set\n" :thrown] left))
+      (is (= [payload "set\nneedle\n" :thrown] right))
+      (is (identical? payload (first left)))
+      (is (identical? payload (first right))))
+    (let [failure (AssertionError. "original Keyword needle representation failure") original-str str
+          observed (with-redefs [clojure.core/str (fn [& values]
+                                                  (if (= [:explode] values) (throw failure) (apply original-str values)))]
+                     (seed-throw-test-capture #(work #{} :explode 65536)))]
+      (is (identical? failure observed)))))
 
 (deftest current-gravity-set-conversion-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
