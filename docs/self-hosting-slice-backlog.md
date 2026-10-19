@@ -2515,8 +2515,8 @@ general recursive-domain whitelist or borrow a loop/recur premise.
 C7 derives an independent false return witness and the same-binding induction
 `0 <= index <= count(values)`. The false equality branch supplies the strict
 bound for `get`; the self call preserves the original Vector and needle and
-uses source binary `+ index 1`. C8 and the typed emitter reconstruct these
-premises and derive effects/errors independently. Runtime activation uses the
+uses source binary `+ index 1`. C8 and the typed emitter independently
+reconstruct these premises; C8 derives effects/errors. Runtime activation uses the
 current function table and freshly bound actual parameters, clears stale
 caller metadata, and restores the caller's private metadata after return or
 throw. Calls retain ordinary three-field call IR, depth 256 and no TCO.
@@ -2534,8 +2534,8 @@ The affected source composition passed 1 test/163 assertions: 157 composition
 checks plus six runtime-source loader checks. It constructed eight fresh
 products, exercised three additionally tracked C7 assembly/forgery gates and
 ten function-table activations, and compared accepted Gravity/QST identity,
-effect graphs, path-projected tables and results. Complete positive products
-and tables were asserted, not serialized as retained evidence. The six Gravity
+effect graphs, results and complete path-projected function tables. These
+products and tables were not serialized as retained evidence. The six Gravity
 negative vectors each contain exactly one C7 annotation diagnostic: zero entry,
 step, needle and Vector preservation, public visibility, and absent normal
 entry. The public case uses the legacy recursive-shape reason, not a dedicated
