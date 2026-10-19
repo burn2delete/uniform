@@ -116,7 +116,7 @@
                     :functions (stage0-function-table (assoc (:module macro) :forms expanded))
                     :syntax (:expanded-syntax-stream sh05) :request request}]
         (p15-s23-stage2-module-declarations! source expanded)
-        source))))
+        (assoc source :map-order (p15-s23-stage2-module-map-order source))))))
 
 (defn p15-s23-stage2-module-shadowing-check! [source emitter]
   (let [bindings (into {} (map (juxt :binding-id identity) (get-in source [:artifact :binding-table :bindings])))

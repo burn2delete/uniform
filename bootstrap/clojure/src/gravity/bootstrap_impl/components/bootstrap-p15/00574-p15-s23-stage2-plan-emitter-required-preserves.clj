@@ -112,7 +112,8 @@
         last-index (dec (count forms))]
     (doseq [[index form] (map-indexed vector forms)]
       (p15-s23-stage2-seed-validate-recur!
-       module form target-arity
+       (if (contains? module :p15-s23-stage2-map-order)
+         (assoc module :p15-s23-sh07-enclosing-function (:name module) :p15-s23-sh07-callsite-path [index]) module) form target-arity
        (and tail-position? (= index last-index)))))
   :passed)
 

@@ -172,7 +172,7 @@
         target-arity (count params)]
     (doseq [[index form] (map-indexed vector body)]
       (p15-s23-stage2-seed-validate-recur!
-       module form target-arity (= index last-index)))
+       (if (contains? module :p15-s23-stage2-map-order) (assoc module :p15-s23-sh07-enclosing-function name :p15-s23-sh07-callsite-path [index]) module) form target-arity (= index last-index)))
     (assoc definition
            :binding {:name name
                      :kind :function
