@@ -11,6 +11,12 @@ projection of `D2`, `BOOT1`, `BOOT3`, `BOOT5`, `BOOT7`, `BOOT8`, `TEST13`, and
 the Phase 15 and Phase 18 implementation roadmaps. It is not an additional
 normative source document in the 240-document inventory.
 
+Use the [finite milestone completion plan](self-hosting-milestone-completion-plan.md)
+for the numbered SH-00 through SH-29 requirements, implementation owners,
+validation starting points, composition boundaries and stopping rules. This
+backlog remains the live status/evidence record; writing or validating the plan
+does not promote any milestone or renew migration evidence.
+
 ## Master Coordinator Goal
 
 Iterate on Gravity through the 30 smallest independently provable vertical
