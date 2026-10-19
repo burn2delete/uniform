@@ -8809,11 +8809,25 @@
                     :work-count (+ limit 1) :work-count-kind :exceeded-allowance-lower-bound)
                   (let [charge (+ base (* a b)) forms (get context :forms)
                         owner-id (get (get node :source) :form-id)
-                        owner (if (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false))
+                        owner-id? (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false))
+                        owner (if owner-id?
                                 (get forms owner-id) nil)
                         ids (get owner :child-form-ids) attrs (get node :attributes)
                         type (get (get context :types) (get node :node-id)) elements (get type :element-types)
-                        header? (p15-s23-typed-all
+                        child-ids? (loop [i 0]
+                                     (if (= i n) true
+                                       (let [id (get children i)]
+                                         (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                           (recur (+ i 1)) false))))
+                        form-ids? (if (vector? ids)
+                                    (if (= n (count ids))
+                                      (loop [i 0]
+                                        (if (= i n) true
+                                          (let [id (get ids i)]
+                                            (if (if (keyword? id) true (if (string? id) (= 71 (count id)) false))
+                                              (recur (+ i 1)) false)))) false) false)
+                        header? (if (if owner-id? (if (map? owner) (if child-ids? form-ids? false) false) false)
+                                  (p15-s23-typed-all
                                   [(map? owner) (= :set (get owner :kind)) (= owner-id (get owner :form-id))
                                    (= (get node :source) (p15-s23-typed-source owner))
                                    (= :collection-literal (get node :core-form)) (= [] (get node :resolved-binding-ids))
@@ -8822,7 +8836,7 @@
                                    (= n (get attrs :element-count)) (vector? ids) (= n (if (vector? ids) (count ids) 0))
                                    (p15-s23-typed-ordered-node? node :left-to-right)
                                    (map? type) (= 3 (if (map? type) (count type) 0)) (= :gravity.type/set (get type :kind))
-                                   (= :literal (get type :shape)) (vector? elements) (= n (if (vector? elements) (count elements) 0))])
+                                   (= :literal (get type :shape)) (vector? elements) (= n (if (vector? elements) (count elements) 0))]) false)
                         checked
                         (if header?
                           (loop [i 0 values []]
