@@ -5071,6 +5071,50 @@ development-verification guide. This is executable temporary-seed composition,
 not checked user-call linking/effects, H6, current-closure admission, milestone
 completion, self-hosting or release evidence.
 
+### Transitive compiler-module calls: development increment
+
+The existing ordinary four-argument compiler-artifact interface supports an
+acyclic root -> middle -> leaf chain. The sole production change is the
+existing `00580-p15-s23-stage2-module-bundle.clj`: collect the bounded retained
+ordinary C5 closure, freshly validate each unique source and independently
+recompile every supplied nonroot plan, including routed nonleaf plans. Full
+artifact equality deduplicates shared inputs; it does not cache acceptance.
+Per-module route indexes keep identical local function names and callsite
+paths separate. Old two-module identity/order, raw three-argument plans,
+runtime, public schemas, B51 boundaries and existing limits are unchanged.
+
+The dedicated focused selection passed three tests / 33 assertions, including
+fixture parity, bounds and conflicts before source replay, reversed input
+order, exact old two-module identity, per-module path isolation and substituted
+nonleaf-plan rejection. These normalized tests do not establish C5 freshness.
+The separate genuine Gravity composition passed one test / 36 assertions:
+three actual C5 modules, independently compiled plans, public reconstruction
+and execution returned the leaf value with argument -> leaf -> middle -> root
+output order. It also rejected an actual private import, a missing transitive
+plan and a coherently resealed transitive-origin mutation before output.
+Paired Q sources provide byte/parser parity only.
+
+The existing module route/private-entry/B51/seed-shape regressions passed four
+tests / 97 assertions; the existing sequential-let cheap checks passed two /
+25. The language boundary passed six / eleven, and the Clojure LOC validator
+passed with no exceptions. Together with the new focused and source selections,
+these separate runs total sixteen tests / 202 assertions with no failures or
+errors. Independent code and actual-result review accepted the scoped change.
+
+The source selection took 236.961 seconds after 6.696 seconds of namespace
+loading at 2 GiB, below its ten-minute monitored ceiling. These are inclusive
+development timings, not exclusive phase costs, a hard-deadline claim or a
+speedup measurement. The complete source test was not repeated to refresh a
+stamp. Focused commands and the separate composition trigger are in the
+development-verification guide.
+
+Imported calls under loop, nested functions and collection expressions remain
+unsupported. Effects extraction still needs its exact function/dependency
+boundary and demonstrated token-bound fit; this change does not close the
+retained C9 source failure. Checked imported user-call effects, general module
+initialization, authoritative migration, milestone completion, self-hosting and
+release remain outstanding.
+
 ### Hosted compiler-module construction: development increment
 
 The existing module-development interface now accepts exactly `:meta/:jvm`

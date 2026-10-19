@@ -1121,6 +1121,44 @@ partial groups and resolver development-unadmitted status remain unchanged.
 The changed adapter revision is a new toolchain input to assess at an explicit
 migration decision; equivalent equations do not renew historical provenance.
 
+### C9 dependency construction: a distinct bounded failure
+
+The persistent atomic-read development candidate retained at `abd69a84`
+has five passing focused tests / 476 assertions, including conditional-upstream
+DATA kernels and byte/parser/policy checks. Those focused runs used test SHA256
+`d8b728d78bdd8ace25bbd9f7fb5ff295006f654419f6cb166ea8efe8e98ded9f`;
+the source-only clock-instrumented attempt used
+`db3422998153f37adbdcbcb64273b0700a1c01c6f9f604e0d51d49f34e04282b`.
+Its separate source composition did not pass: one test returned six
+passes and one error, with no assertion failures. Genuine C7 construction and
+fresh verification completed for eight function returns and four call facts.
+During subsequent C8 module construction, the original C2 reader rejected the
+tested `effects.gravity` dependency with `C2-HASH` / `STAGE1READER006`,
+`:token-count-limit`, at the existing 131072-token ceiling. No C8 public
+analysis or C9 source construction/verification ran.
+
+This attempt tested the Effects source from `a4328d26` (SHA256
+`b382958b6324ab77d255f5539b7a9feb5985c04b64d40235f68a726715b0f474`),
+not the later PR74 Effects revision. The selected source test took 178.804
+seconds after 7.031 seconds of namespace loading, with a 2 GiB heap. Its raw
+log is `/tmp/c9-persistent-atomic-source-v1-20261019.log` (SHA256
+`c1de10276753b85e8497fa7e0d77ee1edfeee007770c57c7f594c63f6e2439a4`).
+Independent review accepted failure fidelity, not source acceptance. This is
+neither the earlier hour-long Core interruption nor a timeout, OOM or C9
+semantic rejection. Caller-level phase timings do not establish exclusive
+construction cost or a dominant owner.
+
+Keep this candidate unmerged until its affected source composition is
+evidenced. Do not increase the reader limit or repeat the unchanged attempt.
+A bounded module-composition improvement can prepare later stage-owned
+extraction. At that tested revision, transitive imports and imported calls
+under loop/collection contexts were separate implementation restrictions. The
+later transitive-call increment removes the former, not the latter. Byte-size
+partition estimates do not prove token-bound fit. A future Effects extraction
+must name its exact owning functions, dependencies and preserved interfaces
+before changing that shared compiler source. None of this closes the three
+partial frontend groups or renews authoritative migration evidence.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
