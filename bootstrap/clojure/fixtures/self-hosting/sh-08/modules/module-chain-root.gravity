@@ -1,0 +1,11 @@
+(ns example.module-chain-root
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-chain-middle :as middle]) (:exports [main])
+  (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn identity [value] :wrong-root)
+(defn relay [value]
+  (let [x (middle/relay value)]
+    (println "root")
+    x))
+(defn main [] (relay (do (println "argument") "kept")))

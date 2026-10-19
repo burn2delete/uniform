@@ -1,0 +1,6 @@
+(ns example.module-chain-private-import
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-chain-leaf :as leaf]) (:exports [relay])
+  (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn relay [value] (let [x (leaf/hidden value)] x))
