@@ -1,0 +1,10 @@
+(ns example.vector-predicate-rejected
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main []
+  (vector?))

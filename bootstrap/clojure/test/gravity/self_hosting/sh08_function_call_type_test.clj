@@ -3304,6 +3304,91 @@
         (is (= :accepted (:status (derive work))))
         (is (= :map-contains-work-limit (:reason (derive (dec work)))))))))
 
+(defn- vector-predicate-input [argument-types]
+  (let [input (integral-ordering-input 'vector? argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- vector-predicate-derived [{:keys [core node call edge nodes bindings types forms]} budget]
+  (invoke-c7 'sh08-vp-derive [core node call edge nodes bindings types forms budget]))
+
+(deftest sh08-vector-predicate-development-kernel
+  ;; Closed normalized operand facts; this does not grant source admission.
+  (let [families [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
+                  :gravity.type/symbol :gravity.type/keyword :gravity.type/integer :gravity.type/decimal
+                  :gravity.type/list :gravity.type/map :gravity.type/vector :gravity.type/set
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}
+                  {:kind :gravity.type/list :shape :literal :element-types []}
+                  {:kind :gravity.type/map :shape :literal :member-types []}
+                  :gravity.type/never]]
+    (doseq [type families]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (vector-predicate-input [type])
+            result (vector-predicate-derived input 65536) descriptor (:descriptor result)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                                [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])
+            expected (if (= :gravity.type/never type) :gravity.type/never :gravity.type/bool)]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= expected (:type result) (:return descriptor) (:result-type descriptor)))
+        (is (= (if (= :gravity.type/never type) :not-invoked :normal) (:application descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= {:operation :vector-family-classification :operand-evaluation :once :operand-position :non-tail
+                :construction :none :payload-evaluation :none :mutation :none :refinement :none} (:query-semantics descriptor)))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= expected (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-vp-constraint [descriptor])] (:constraints inferred)))
+        (is (= result (vector-predicate-derived input (:work-count result))))
+        (is (= :vector-predicate-work-limit (:reason (vector-predicate-derived input (dec (:work-count result))))))))
+    (doseq [arguments [[] [:gravity.type/bool :gravity.type/bool]]]
+      (is (= :vector-predicate-arity-mismatch (:reason (vector-predicate-derived (vector-predicate-input arguments) 65536)))))
+    (doseq [type [nil :gravity.type/unknown :gravity.type/dynamic :gravity.type/function
+                  {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
+                  {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword]}
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 1025 :gravity.type/keyword))}]]
+      (is (= :vector-predicate-operand-type-required (:reason (vector-predicate-derived (vector-predicate-input [type]) 65536)))))
+    (let [input (vector-predicate-input [:gravity.type/keyword])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :operand-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'map?)]]
+        (is (= :rejected (:status (vector-predicate-derived (mutate input) 65536))))))
+    (let [nested {:kind :gravity.type/map :shape :literal
+                  :member-types [:gravity.type/keyword
+                                 {:kind :gravity.type/vector :shape :literal
+                                  :element-types [{:kind :gravity.type/list :shape :literal
+                                                   :element-types (vec (repeat 16 :gravity.type/keyword))}]}]}
+          {:keys [core node call edge nodes bindings types] :as input} (vector-predicate-input [nested])
+          established (vector-predicate-derived input 65536)
+          typed (assoc types :operator (:descriptor established) :call (:type established))
+          check #(invoke-c7 'sh08-vp-inferred-call [core node call edge nodes bindings %1 %2])
+          accepted (check typed 65536) work (:work-count accepted)]
+      (is (= :accepted (:status accepted)))
+      (is (> work 65))
+      (is (= accepted (check typed work)))
+      (is (= :vector-predicate-work-limit (:reason (check typed (dec work)))))
+      (let [bad (check (assoc-in typed [:operator :query-semantics :refinement] :vector) work)]
+        (is (= :vector-predicate-source-mismatch (:reason bad)))
+        (is (= work (:work-count bad)))))
+    (let [visits (atom 0)
+          hostile (reify clojure.lang.Counted (count [_] 2048)
+                         clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
+          input (vector-predicate-input [:gravity.type/keyword])
+          shape (assoc-in input [:core :function-records] hostile)
+          malformed (assoc-in input [:call :argument-node-ids] hostile)
+          type (vector-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
+      (is (= :vector-predicate-work-limit (:reason (vector-predicate-derived shape 0))))
+      (is (= :vector-predicate-arity-mismatch (:reason (vector-predicate-derived malformed 65536))))
+      (is (= :vector-predicate-operand-type-required (:reason (vector-predicate-derived type 65536))))
+      (is (zero? @visits)))))
+
 (defn- not-input [argument-types]
   (let [input (integral-ordering-input 'not argument-types)]
     (assoc input :binding-types (:types input)

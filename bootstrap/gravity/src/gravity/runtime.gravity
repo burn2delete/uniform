@@ -816,7 +816,7 @@
                   (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (contains? '#{count first rest empty?} function)
+                  (if (contains? '#{vector? count first rest empty?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -909,12 +909,14 @@
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
-              (if (contains? '#{first rest empty?} function)
+              (if (contains? '#{vector? first rest empty?} function)
+                (if (= function 'vector?)
+                  [(vector? left) (second arguments-result) :normal]
                 (if (list? left)
                   [(if (= function 'empty?) (= 0 (count left))
                      (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]
                   [{:diagnostic "P15S23X002" :reason :list-query-persistent-list-required :operation operation}
-                   (second arguments-result) :rejected])
+                   (second arguments-result) :rejected]))
               (if (= function 'get)
                 (if (if (map? left) (if (string? right) true (keyword? right)) false)
                   [(get left right (get values 2)) (second arguments-result) :normal]

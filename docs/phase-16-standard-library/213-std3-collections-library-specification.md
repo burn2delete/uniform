@@ -38,6 +38,18 @@ Implementations may vary by backend, but equality, iteration order where specifi
 - Protocols: `Seqable`, `Associative`, `Indexed`, `Counted`, `Reducible`, `Buildable`, `Hashable`, and `ComparableCollection`.
 - Bounded systems APIs: `fixed-vector`, `ring-buffer`, `static-map`, and `memory-view`.
 
+## Vector Family Predicate
+
+Unary `(vector? value)` returns Bool true exactly when the normally evaluated
+value belongs to the Vector family, and false for every other normally
+evaluated value. Its operand follows ordinary L2 evaluation exactly once;
+operand effects are preserved, and a control transfer aborts invocation.
+Classification does not evaluate stored payloads or mutate the value, and
+does not establish member types, length, index bounds or range facts.
+Collection semantics are owned by `gravity.collections`; a `gravity.core`
+compatibility binding does not change that ownership. Existing profile,
+target, effect, capability and safety legality requirements still apply.
+
 ## Persistent Vector Value Equality
 
 For two persistent Vectors whose stored values support Gravity equality,
@@ -193,6 +205,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 ## Conformance Criteria
 
 - Persistent operations preserve old collection values in all supported profiles.
+- Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.

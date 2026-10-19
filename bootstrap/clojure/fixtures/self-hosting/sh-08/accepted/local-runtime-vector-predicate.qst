@@ -1,0 +1,25 @@
+(ns example.runtime-vector-predicate
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-se-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-se-member-from? values value (+ index 1)))))
+
+(defn w5-se-member? [values value]
+  (if (vector? values)
+    (w5-se-member-from? values value 0)
+    false))
+
+(defn classify-keyword [value :- Keyword]
+  (vector? value))
+
+(defn main []
+  (w5-se-member? [:alpha :beta :gamma :delta :epsilon :zeta :eta] :delta))
