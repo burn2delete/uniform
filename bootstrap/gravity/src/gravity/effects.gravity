@@ -6220,21 +6220,27 @@
   (let [limit (if (< budget 65536) budget 65536)]
     (if (< limit 1) {:status :rejected :reason :work-limit :work-count 1}
       (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (loop [index 0 used 1 integer-seen? false atomic-seen? false]
+        (loop [index 0 used 1 integral-type nil atomic-seen? false]
           (if (= index 2)
-            (if (if integer-seen? atomic-seen? false)
+            (if (if (= false (= nil integral-type)) atomic-seen? false)
               {:status :rejected :reason :unsupported-inequality-type-pair :work-count used}
-              (if integer-seen? {:status :accepted :work-count used :comparison-domain :integer}
+              (if (= false (= nil integral-type))
+                (if (= :gravity.type/integer integral-type)
+                  {:status :accepted :work-count used :comparison-domain :integer}
+                  {:status :accepted :work-count used :comparison-domain :fixed-integral :integer-type integral-type})
                 {:status :accepted :work-count used}))
             (let [next (+ used 1)]
               (if (> next limit) {:status :rejected :reason :work-limit :work-count next}
                 (let [type (get arguments index)]
                   (if (keyword? type)
-                    (if (= :gravity.type/integer type)
-                      (recur (+ index 1) next true atomic-seen?)
+                    (if (contains? #{:gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
+                                     :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64} type)
+                      (if (if (= false (= nil integral-type)) (= integral-type type) true)
+                        (recur (+ index 1) next type atomic-seen?)
+                        {:status :rejected :reason :unsupported-inequality-type-pair :work-count next})
                       (if (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
                                        :gravity.type/symbol :gravity.type/keyword :gravity.type/never} type)
-                        (recur (+ index 1) next integer-seen? (if (= :gravity.type/never type) atomic-seen? true))
+                        (recur (+ index 1) next integral-type (if (= :gravity.type/never type) atomic-seen? true))
                         {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next}))
                     (if (map? type)
                       (let [work (+ used 3)]
@@ -6245,7 +6251,7 @@
                                     (if (keyword? value)
                                       (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string
                                                    :gravity.type/symbol :gravity.type/keyword} value) false)) false) false)
-                            (recur (+ index 1) work integer-seen? true)
+                            (recur (+ index 1) work integral-type true)
                             {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
                       {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next})))))))
         {:status :rejected :reason :binary-type-input-required :work-count 1}))))
@@ -6331,7 +6337,23 @@
                            :collections :unsupported :construction :none :lowering :owned-equality-branch-complement
                            :entry-contract :type-conforming-typed-calls}
                  :invalidation (conj (conj (conj (conj (get header :invalidation) :numeric-equality) :integral-type) :numeric-mode) :value-policy))
-          header)) nil)) nil) nil))
+          (if (= :fixed-integral (get validation :comparison-domain))
+            (assoc header :numeric-equality {:version :sh08-fixed-integral-inequality-v1
+                           :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
+                           :integer-type (get validation :integer-type) :numeric-mode :proof-required :safety :proven-safe
+                           :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
+                           :equality-policy {:domain :same-integral-type :comparison :original-integer-values
+                                             :conversion :none :arithmetic :none :overflow :impossible
+                                             :rounding :none :cross-type :unsupported}}
+                   :inequality-policy {:operation :complement-of-binary-atomic-value-equality
+                           :domain :same-integral-type :integer-type (get validation :integer-type)
+                           :operand-evaluation :left-to-right-once :operand-position :non-tail
+                           :nil-bearing :unsupported :cross-family :unsupported :identity :unobserved
+                           :coercion :none :normalization :none :locale :none :numeric :same-established-fixed-integral-type
+                           :collections :unsupported :construction :none :lowering :owned-equality-branch-complement
+                           :entry-contract :type-conforming-typed-calls}
+                   :invalidation (conj (conj (conj (conj (get header :invalidation) :numeric-equality) :integral-type) :numeric-mode) :value-policy))
+            header))) nil)) nil) nil))
 
 (defn body-ane-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
