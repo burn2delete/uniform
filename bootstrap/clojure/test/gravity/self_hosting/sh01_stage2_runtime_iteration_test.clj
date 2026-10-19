@@ -6232,8 +6232,8 @@
         graph (:effect-graph effects)
         specs [['equal-values true ""] ['reordered-values true ""] ['unequal-values false ""]
                ['empty-values true ""] ['namespaced-values true ""] ['local-values true ""]
-               ['observed-values true "left\nright\n"] ['left-transfer false "left\n"]
-               ['right-transfer false "left\nright\n"] ['main true ""]]
+               ['sequenced-values true ""] ['left-transfer false ""]
+               ['right-transfer false ""] ['main true ""]]
         t5 (System/nanoTime)
         results (mapv (fn [[function expected output]]
                         (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
@@ -6270,10 +6270,12 @@
         (is (= #{} (get-in graph [:nodes id :direct])))
         (is (nil? (get-in graph [:nodes id :allocation])))
         (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
-    (doseq [name ['equal-values 'reordered-values 'unequal-values 'empty-values 'namespaced-values 'local-values 'main]]
+    (doseq [name ['equal-values 'reordered-values 'unequal-values 'empty-values 'namespaced-values 'local-values 'sequenced-values 'main]]
       (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
-    (doseq [name ['observed-values 'left-transfer 'right-transfer]]
-      (is (contains? (get-in graph [:functions (get-in functions [name :function-id]) :inferred]) :io/write)))
+    (doseq [name ['left-transfer 'right-transfer]]
+      (is (= [] (get-in graph [:functions (get-in functions [name :function-id]) :throws]))))
+    (doseq [descriptor descriptors :when (= :not-invoked (:application descriptor))]
+      (is (contains? (get-in graph [:nodes (:call-core-node-id descriptor) :transitive]) :error/throw)))
     (let [descriptor (first descriptors) forged (assoc-in descriptor [:equality-policy :identity] :observed)
           hostile (walk/prewalk #(if (= descriptor %) forged %) (:typed input))
           failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products

@@ -85,6 +85,20 @@ a `gravity.core` compatibility binding does not change that ownership. These
 rules do not grant arbitrary sequence conversion, every member family or
 profile support, or Set equality and iteration implementation support.
 
+## Persistent Set Value Equality
+
+For two persistent Sets whose stored members support Gravity equality,
+`(= left right)` returns Bool true exactly when neither Set has an unmatched
+member under the applicable member equality rules. Empty Sets are equal.
+Enumeration order, object identity and physical sharing do not determine the
+result. Stored payloads are not evaluated, and both original Sets are unchanged.
+
+Both operands follow ordinary L2 evaluation left to right, once each; a control
+transfer aborts invocation. Equality itself does not construct a collection.
+This rule does not select numeric conversions, cross-collection equality,
+iteration order, a hashing algorithm, storage representation or profile support.
+Their governing contracts still apply.
+
 ## Persistent Vector Value Equality
 
 For two persistent Vectors whose stored values support Gravity equality,
@@ -243,6 +257,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Map family classification distinguishes Map and non-Map values, preserves ordinary unary evaluation and transfers, and neither evaluates stored keys/values nor invents key, member, presence or cardinality facts.
 - Persistent Set conversion covers empty, unique and duplicate Vector values under supported Gravity equality/hash rules, preserves ordinary evaluation and transfers and the old value, and declares allocation/storage policy; Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
+- Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
