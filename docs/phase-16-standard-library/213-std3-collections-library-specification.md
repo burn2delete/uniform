@@ -50,6 +50,19 @@ Ordinary L2 operand evaluation and control-transfer rules apply. This rule
 does not select numeric conversions, cross-collection equality, a storage
 representation or profile support; their governing contracts still apply.
 
+## Persistent Vector Lookup With Established Bounds
+
+For a persistent Vector and an independently established integer index in
+`0 <= index < (count items)`, `(get items index)` returns the stored value at
+that zero-based position. The stored payload is not evaluated, and the original
+Vector is unchanged.
+
+Both operands are ordinary L2 arguments evaluated left to right, once each;
+a control transfer aborts invocation. This in-range rule does not define an
+out-of-range or absent-result policy, invent a host-null fallback, or select a
+representation or profile. Bounds must still be proven or runtime-checked under
+the requirements above; unestablished bounds are not implicitly safe.
+
 ## Map Lookup With An Explicit Default
 
 For maps, `(get map key default)` returns the associated value when the key is
@@ -181,6 +194,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 
 - Persistent operations preserve old collection values in all supported profiles.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
+- Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
