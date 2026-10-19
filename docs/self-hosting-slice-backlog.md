@@ -5356,8 +5356,8 @@ guards, not new language rules. Imports inside Maps, Sets and nested functions
 remain blocked. No checked-effect, Effects token-fit or C9 repair claim follows.
 
 The first cheap run completed one test / 35 assertions with three failures:
-its expected result retained source expressions where execution returned the
-literal Keyword values. Production and fixtures were unchanged by the single
+its expected result retained source expressions where compiled IR contained
+the literal Keyword values. Production and fixtures were unchanged by the single
 oracle correction. The corrected run passed all three selected tests / 45
 assertions, including source-order diagnostics and paired parser parity.
 Normalized C2 test DATA is not fresh compiler evidence.
