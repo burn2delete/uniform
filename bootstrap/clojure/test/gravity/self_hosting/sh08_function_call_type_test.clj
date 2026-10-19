@@ -11040,3 +11040,34 @@
         (is (= :rejected (:status rejected)))
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
         (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
+(deftest sh08-vector-first-local-call-fact-oracle-development-kernel
+  ;; Normalized DATA checks the owning fact schema without fresh source products.
+  (let [ids [:local0 :local1 :local2] operators [:operator0 :operator1 :operator2]
+        operands [:value0 :value1 :value2] callees [:callee0 :callee1 :callee2]
+        values [:gravity.type/character :gravity.type/bool :gravity.type/nil]
+        calls (mapv (fn [id operator operand]
+                      {:core-node-id id :operator-node-id operator :argument-node-ids [operand]
+                       :evaluation-order :operator-then-arguments}) ids operators operands)
+        edges (mapv (fn [id callee]
+                      {:call-core-node-id id :caller-function-syntax-id :caller
+                       :callee-function-syntax-id callee :classification :local-function}) ids callees)
+        nodes (into {} (map (fn [id] [id {:node-id id :source {:syntax-id id :semantic-span {:byte-start 0 :byte-end 1}}}]) ids))
+        types (zipmap operands values) functions (zipmap callees (map #(hash-map :return %) values))
+        module {:profile :meta :target :jvm :effects [] :capabilities []}
+        invoke #(invoke-c7 'sh08-ft-call-facts-with-context [calls edges nodes types functions module %])
+        ordinary (invoke {})]
+    (is (= 3 (count ordinary)))
+    (doseq [[fact call edge value] (map vector ordinary calls edges values)]
+      (is (= (:core-node-id call) (:call-core-node-id edge) (:call-core-node-id fact)))
+      (is (= (:callee-function-syntax-id edge) (:callee-function-syntax-id fact)))
+      (is (= [value] (:argument-types fact)))
+      (is (= value (:result-type fact)))
+      (is (= :gravity/sh08-call-type-fact-v1 (get-in fact [:fact-id-request :domain])))
+      (is (false? (contains? fact :dispatch))))
+    ;; This existing separate schema adds the tag only with its outer-call context.
+    (let [higher (first (invoke {:status :accepted :outer-call-core-node-id :local0 :apply-function-syntax-id :apply}))]
+      (is (= :direct-local-function (:dispatch higher)))
+      (is (= :callee0 (:callee-function-syntax-id higher)))
+      (is (= [:gravity.type/character] (:argument-types higher)))
+      (is (= :gravity.type/character (:result-type higher))))))

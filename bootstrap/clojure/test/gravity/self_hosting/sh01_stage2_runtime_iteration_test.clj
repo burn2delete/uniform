@@ -23112,8 +23112,17 @@
     (is (= 5 (count first-ir)))
     (is (= 9 (count cases) (count results)))
     (is (= 8 (count (filter #(contains? seed-cases (first %)) cases))))
-    (is (= {:direct-vector-first 4 :direct-list-query 1 :direct-character-set-contains 1 :direct-local-function 3}
-           (frequencies (map :dispatch (:call-type-facts facts)))))
+    (is (= {:direct-vector-first 4 :direct-list-query 1 :direct-character-set-contains 1}
+           (frequencies (keep :dispatch (:call-type-facts facts)))))
+    (let [ordinary (filterv #(not (contains? % :dispatch)) (:call-type-facts facts))
+          local-edges (filterv #(= :local-function (:classification %)) (:call-edges core))
+          edge-index (into {} (map (juxt :call-core-node-id identity) local-edges))]
+      (is (= 3 (count ordinary) (count local-edges)))
+      (is (= (set (keys edge-index)) (set (map :call-core-node-id ordinary))))
+      (doseq [fact ordinary]
+        (let [edge (get edge-index (:call-core-node-id fact))]
+          (is (= :local-function (:classification edge)))
+          (is (= (:callee-function-syntax-id edge) (:callee-function-syntax-id fact))))))
     (doseq [descriptor descriptors]
       (let [id (:call-core-node-id descriptor) policy (:query-policy descriptor) proof (:bounds-proof descriptor)]
         (is (= 'first (:operation descriptor)))
