@@ -113,6 +113,45 @@ inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
 
+### First stored value of a proven-nonempty Vector
+
+STD3 defines `first` on a persistent nonempty Vector as its stored index-zero
+value, including false or Nil. The current typed subset requires a complete,
+finite positional Vector type with at least one element. It validates the
+entire type, not just its head. Empty, bare and unknown-length Vector types
+remain unsupported by this lowering; this is not a language-level decision
+about the result of `first` on an empty Vector. No flow/count solver is added.
+
+The owners are `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`,
+`bootstrap/gravity/src/gravity/effects.gravity`,
+`bootstrap/gravity/p15_s23/emitter.gravity` and
+`bootstrap/gravity/src/gravity/runtime.gravity`. C7 establishes the result and
+nonempty fact; C8 and lowering reconstruct its provenance independently.
+Runtime evaluates the operand once, retains its guard and returns the stored
+head without evaluating a stored payload. Existing List behavior is separate.
+Run these focused checks for changes to that behavior:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact sh08-vector-first-development-kernel \
+  --exact sh08-vector-first-throw-consumer-development-kernel \
+  --exact body-vector-first-development-kernel \
+  --exact current-gravity-vector-first-lowering-development-kernel \
+  --exact current-gravity-vector-first-runtime-development-kernel --fail-fast
+```
+
+When the typed/effect/lowering interface changes, use the affected source
+composition `current-gravity-vector-first-authenticated-composition` in the
+same SH01 namespace. Its companion
+`current-gravity-vector-first-fixtures-development-kernel` checks the G/Q
+fixtures cheaply; Q has parser coverage only. The source composition is a
+development integration check, not current-closure admission. Do not replay
+unaffected source compositions or require fresh migration proofs before an
+ordinary edit. Stable authoritative admission remains a separate decision.
+
 ### Recognition of an already declared seed primitive
 
 When ordinary C5 reports an unresolved primitive that the selected seed

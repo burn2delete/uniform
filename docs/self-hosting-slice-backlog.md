@@ -5516,6 +5516,71 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Proven-nonempty Vector first: development increment
+
+STD3 now explicitly defines the first stored value of a nonempty persistent
+Vector, including false or Nil. The implementation accepts a complete finite
+positional Vector type with at least one element, validating the tail as well
+as the head. It does not add a general nonempty-flow solver, unknown-length
+Vector support or an empty-Vector result policy. Empty/bare/unknown-length
+types reject as unsupported typing, not a new SAFE2 bounds prohibition.
+
+C7 typing, C8 effect reconstruction, typed lowering and the existing runtime
+are the four implementation owners. Source identities, complete type facts,
+selected index zero and independent producer/consumer joins precede lowering.
+An operand is evaluated once; transfer aborts selection. Runtime guards remain,
+and a stored payload is returned inertly without hashing or executing it.
+The query creates no collection of its own; operand construction effects remain.
+Existing List behavior and the separate unresolved empty-Vector policy are
+not inferred from host behavior.
+
+The nonduplicated passing focused union is 13 selectors / 1,432 assertions
+across three runs, not a single aggregate batch. An initial adjacent run had
+two failed assertions from a stale List work oracle: the existing 223-unit
+source-work prefix is retained, and the namespace-reference rejection adds
+64 child-work units. The corrected test records 287 total without changing List production
+behavior. Independent review also found and closed a cross-kind guard bypass:
+an actual Vector-first receiver cannot evade fact validation and ledger
+prepayment by supplying a List-kind operator header. The affected rerun passed
+two tests / 156 assertions; seven previously unrun adjacent tests separately
+passed 891. The superseded lowering count and failed assertions are not added
+to the final passing union.
+
+The first fixture preflight passed one test / seven assertions after the
+accepted C5 catalog merge, with all 12 slice-owned files unchanged. It checks
+G/Q bytes and parsing and the exact unchanged C17 hexadecimal Character helper
+form. Q coverage is parser-only.
+
+The first source composition completed naturally with one test / 142 passing
+assertions / one failed assertion / zero errors. It is a failed batch, not a
+passing source proof. The sole failure expected three ordinary local-call
+facts to carry a dispatch tag which their producer omits; the six intrinsic
+dispatches matched. The run completed both genuine G source attempts,
+C5/C6/C7 checks, fresh public C7 verification, C8 reconstruction and hostile
+consumer controls. Nine Gravity entry invocations completed, including stored
+false/Nil, an inert throwing payload and caught operand transfer. Eight normal
+entries also completed same-emitted-IR seed comparisons; the caught-transfer
+entry was excluded. The empty-Vector fixture rejected at C7
+with the supported-subset diagnostic. Execution took 205.184 seconds after
+11.113 seconds loading at 2 GiB, within the monitored ten-minute bound.
+These observations do not erase the failed histogram assertion or establish
+whole-C17 caller coverage. This is an ordinary development increment, not
+SH-07, current-closure migration or self-hosting completion.
+
+Independent review traced the failed oracle to the original fact producer:
+ordinary local-call facts omit `:dispatch`; `:direct-local-function` belongs
+to a different higher-order case. Their canonical call-edge classification is
+`:local-function`. A test-only correction checks the intrinsic histogram and
+joins ordinary facts to those original edges by ID. The corrected source
+assertion is not source-reexecuted; the failed aggregate remains failed.
+No production, fixture or source-product change requires rebuilding the same
+two source products just to repair this assertion. The focused normalized C7
+schema control passed one test / 23 assertions, checking call/callee IDs,
+argument/result types, fact domain and the separate higher-order tag case.
+It does not execute the corrected source assertion. Boundary checks separately
+passed six tests / 11 assertions; LOC passed 2,021 files, zero exceptions,
+maximum 250 lines.
+
 ### Ordinary C5 recognition of the declared List predicate: development repair
 
 A deliberately selected real runtime producer-consumer check exposed a
