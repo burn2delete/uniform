@@ -57,8 +57,8 @@
                 {:name 'data :body ['(let [payload '(leaf/hidden :data)] payload)]})))
     (doseq [body ['(fn [x] (loop [y x] (leaf/identity y)))
                   '(fn [x] (let [y x] (leaf/identity y)))
-                  '[(let [x :value] (leaf/identity x))]
-                  '(let [x [(leaf/identity :value)]] x)]]
+                  '{:blocked (let [x :value] (leaf/identity x))}
+                  '(let [x #{(leaf/identity :value)}] x)]]
       (is (= :unsupported-nested-module-call
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites {:name 'bad :body [body]})) [:facts :reason]))))
     (is (= :symbol-only-sequential-let-required

@@ -1,0 +1,6 @@
+(ns example.module-vector-private-import
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-vector-leaf :as leaf]) (:exports [main])
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))
+
+(defn main [] [(leaf/hidden :private)])
