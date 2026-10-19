@@ -724,12 +724,45 @@ review accepted the complete scoped result.
 Selected work took 585.898 seconds after 6.875 seconds of namespace loading
 with a 2 GiB heap. Construction and repeated verification remain inside that
 interval; no per-call cost dominance or speedup was measured. No macro,
-envelope or unchanged proof product was replayed for this subject. The resolver
-and reader subjects remain unrun, and the selected closure's other explicit
+envelope or unchanged proof product was replayed for this subject. At that
+checkpoint, the resolver and reader subjects were unrun; the resolver result
+below supersedes that status for its distinct positive composition only.
+The selected closure's other explicit
 negative criteria are not replaced by this positive composition. SH-05.1,
 SH-05.6 and SH-06.6 remain open; the resolver remains development-unadmitted.
 This does not execute the Gravity C6 implementation, admit the current compiler
 closure, or establish self-hosting, seedless or release support.
+
+### Resolver frontend composition
+
+The existing `sh06-b-frontend-resolver-development-coverage` selector ran once
+at clean development revision `4db0dc57` and passed one test/19 assertions.
+It constructed the distinct `resolution.gravity` subject: 111 source-derived
+`defn` expansions, 114 C5 definitions, 4,349 references and a 4,823-node hosted
+Core result. These are analyzed/expanded population counts, not execution of
+all 111 function bodies. The selected resolver source and test harness remained
+unchanged through the run; the subsequent documentation integration does not
+relabel the tested revision as a newer compiler snapshot.
+
+All selected source-byte/C2/C3 joins, expansion trace/hygiene/origin checks,
+Stage0 expansion parity, reference/binding joins, fresh C5 verification and
+authenticated hosted-C6 identity/source-map checks completed. The observer
+reported zero owner-compilation reads and zero forbidden subject-read attempts;
+this is not zero filesystem I/O across construction. Independent review
+accepted the full scoped result.
+
+Selected work took 763.572 seconds after 6.771 seconds of namespace loading
+with a 2 GiB heap. This separates the selected-test and loading intervals,
+but does not isolate individual product-construction or verification costs,
+identify a dominant operation, or establish a speedup. No completed macro,
+envelope or syntax subject was replayed for this distinct composition.
+
+This result supersedes earlier resolver-unrun statements only for the selected
+positive frontend composition. The reader subject remains unrun, and the
+selected closure's other explicit negative criteria remain outstanding.
+SH-05.1, SH-05.6 and SH-06.6 remain open; the resolver remains
+development-unadmitted. No Gravity-C6 body execution, current-closure migration,
+self-hosting, seedless or release support follows from these checks.
 
 ### Invalidation and reuse
 
