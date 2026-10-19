@@ -9711,7 +9711,8 @@
       (let [result (evaluate (query operation (literal bad)))]
         (is (= :rejected (get result 2)))
         (is (= "P15S23X002" (get-in result [0 :diagnostic])))
-        (is (= :list-query-persistent-list-required (get-in result [0 :reason])))))
+        (is (= (if (and (= operation 'first) (vector? bad)) :vector-first-nonempty-premise-required :list-query-persistent-list-required)
+               (get-in result [0 :reason])))))
     (doseq [operation ['first 'rest]
             instruction [{:op :builtin-call :function operation :args []}
                          {:op :builtin-call :function operation :args [(literal '()) (literal '())]}
@@ -22911,3 +22912,99 @@
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))))
+
+(deftest current-gravity-vector-first-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-query-input)
+        derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+    (doseq [[operation input-type] [['first {:kind :gravity.type/vector :element-types [:gravity.type/nil] :shape :literal}]
+                                   ['first {:kind :gravity.type/vector :element-types [:gravity.type/bool :gravity.type/nil] :shape :literal}]
+                                   ['first {:kind :gravity.type/vector :element-types [:gravity.type/character :gravity.type/character] :shape :literal}]
+                                   ['first {:kind :gravity.type/vector :element-types [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/symbol :gravity.type/string]} :gravity.type/bool] :shape :literal}]]]
+      (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn operation [input-type])
+            result (derive input) descriptor (:descriptor result)
+            context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
+                     :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                     :call-facts {:call (c7 'sh08-lq-call-fact [descriptor module])} :ledger [(c7 'sh08-lq-constraint [descriptor])]
+                     :locals {:arg0 'items} :parameter-types types}
+            compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
+        (is (= :complete (:status lowered)) (pr-str lowered))
+        (is (= {:op :builtin-call :function operation :args [{:op :local :name 'items}]} (:value lowered)))
+        (when (= :complete (:status lowered))
+          (is (= lowered (compile context (:work-count lowered))))
+          (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+        (doseq [changed [(assoc-in descriptor [:bounds-proof :vector-length] 0)
+                         (assoc-in descriptor [:bounds-proof :selected-index] 1)
+                         (assoc-in descriptor [:query-policy :empty-result-policy] :nil)
+                         (assoc descriptor :latent-effects [:memory/allocate])
+                         (assoc descriptor :direct-effects [:memory/allocate])
+                         (assoc-in descriptor [:query-policy :payload-evaluation] :execute)
+                         (assoc-in descriptor [:storage-policy :copy] :rebuild)
+                         (assoc-in descriptor [:value-origin :kind] :quoted-data)
+                         (assoc descriptor :operand-type-work 0)
+                         (assoc descriptor :result-type :gravity.type/unknown :return :gravity.type/unknown)
+                         (assoc-in descriptor [:source-binding :package :version] "forged")]]
+          (let [candidate (-> context (assoc-in [:types :operator] changed)
+                              (assoc :call-facts {:call (c7 'sh08-lq-call-fact [changed module])} :ledger [(c7 'sh08-lq-constraint [changed])]))]
+            (is (= :rejected (:status (compile candidate 65536))))))
+        (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer ID hashed")))
+                                        (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer ID compared"))))
+              poisoned (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] opaque))]
+          (is (= :rejected (:status (compile poisoned 65536))))
+          (is (= 0 @callbacks)))
+        (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] :orphan))
+                        #(update % :ledger conj (assoc-in (first (:ledger %)) [:lhs :core-node-id] {:opaque true}))
+                        #(assoc-in % [:types :arg0 :element-types] [:gravity.type/character :gravity.type/unknown])
+                        #(assoc-in % [:nodes :call :evaluation :order] [])
+                        #(assoc-in % [:forms :operator :parent-form-id] :sibling)
+                        #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)
+                        #(assoc-in % [:call-facts :call :effects] [:memory/allocate])]]
+          (is (= :rejected (:status (compile (mutate context) 65536)))))))))
+
+(deftest current-gravity-vector-first-runtime-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        evaluate #(bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-runtime-evaluate-closed-instruction [% {} ""])
+        literal (fn [value] {:op :literal :value value})
+        query #(hash-map :op :builtin-call :function 'first :args [%])
+        payload (String. "original Vector payload") inert '(throw "never")
+        scalar (bootstrap/sh03-reader-host-character-value! "<vector-first-runtime>" {:codepoint 0x1f600})]
+    (doseq [items [[payload] [false nil payload] [nil false] [\a \b] [scalar \a] [inert {:op :throw :value payload}]]]
+      (let [expected (get items 0) result (evaluate (query (literal items)))]
+        (is (= [expected "" :normal] result))
+        (is (identical? expected (first result)))
+        (is (= expected (get items 0)))))
+    (let [callbacks (atom 0) opaque (proxy [Object] []
+                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "payload hashed")))
+                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "payload compared")))
+                                    (toString [] (swap! callbacks inc) (throw (AssertionError. "payload printed"))))]
+      (doseq [items [[opaque] [opaque opaque] [false opaque]]]
+        (let [result (evaluate (query (literal items)))]
+          (is (= ["" :normal] (subvec result 1)))
+          (is (identical? (get items 0) (first result)))))
+      (is (= 0 @callbacks)))
+    (let [say (fn [operand] {:op :do :body [{:op :println :args [(literal "once")] :effect :io/write :capability :io/stdout} operand]})]
+      (is (= [false "once\n" :normal] (evaluate (query (say (literal [false nil]))))))
+      (let [result (evaluate (query (say {:op :throw :value (literal payload)})))]
+        (is (= [payload "once\n" :thrown] result))
+        (is (identical? payload (first result)))))
+    ;; A local runtime premise guard does not define the language's empty result.
+    (let [result (evaluate (query (literal [])))]
+      (is (= ["" :rejected] (subvec result 1)))
+      (is (= "P15S23X002" (get-in result [0 :diagnostic])))
+      (is (= :vector-first-nonempty-premise-required (get-in result [0 :reason]))))
+    (doseq [bad [nil false {} #{} "text" :keyword 'symbol (seq [1 2]) (cons 1 '(2))]]
+      (let [result (evaluate (query (literal bad)))]
+        (is (= :rejected (get result 2)))
+        (is (= :list-query-persistent-list-required (get-in result [0 :reason])))))
+    (is (= [nil "" :normal] (evaluate (query (literal '())))))
+    (is (= [false "" :normal] (evaluate (query (literal '(false nil))))))
+    (doseq [instruction [{:op :builtin-call :function 'first :args []}
+                         {:op :builtin-call :function 'first :args [(literal [false]) (literal [true])]}
+                         {:op :builtin-call :function 'first :args [(literal [false])] :extra true}]]
+      (is (= :rejected (get (evaluate instruction) 2))))))

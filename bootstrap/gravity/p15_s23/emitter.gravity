@@ -4910,6 +4910,8 @@
         invoked? (loop [remaining arguments]
                    (if (= 0 (count remaining)) true
                      (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+        vector-first? (if (= 'first (get binding :name))
+                        (if (map? (first arguments)) (= :gravity.type/vector (get (first arguments) :kind)) false) false)
         caller (loop [remaining (get core :function-records)]
                  (if (= 0 (count remaining)) nil
                    (if (= (get (first remaining) :function-syntax-id) (get (get node :evaluation) :owner-function-syntax-id))
@@ -4938,10 +4940,12 @@
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
            (= :accepted (get validation :status))
            (let [input (first arguments)]
+             (if vector-first?
+               (if (vector? (get input :element-types)) (> (count (get input :element-types)) 0) false)
              (if (= input :gravity.type/never) true
                (if (= input :gravity.type/list) (= false (= 'first (get binding :name)))
                  (if (p15-s23-hl-type? input) (if (= 'first (get binding :name)) (map? (get validation :head-proof)) true)
-                   (if (map? input) (= :gravity.type/list (get input :kind)) false)))))] )
+                   (if (map? input) (= :gravity.type/list (get input :kind)) false))))))] )
       (let [header {:kind :gravity.type/applied-list-query :version :sh08-list-query-v1
        :operation (get binding :name) :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-query
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -4965,22 +4969,50 @@
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                       :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}]
+        (if vector-first?
+          (let [input (first arguments) elements (get input :element-types)]
+            (assoc header :kind :gravity.type/applied-vector-first :version :sh08-vector-first-v1
+              :intrinsic :gravity.collections/persistent-vector-first
+              :query-policy {:input :nonempty-persistent-vector :operand-evaluation :once :payload-evaluation :none
+                         :original :unchanged :order :stored-order :selection :stored-index-zero
+                         :type-validation :entire-finite-positional-type :empty-result-policy :unselected}
+              :storage-policy {:representation :development-persistent-vector :selection :stored-index-zero :copy :none}
+              :value-origin {:kind :vector-value-query :operation 'first :operand-node-id (first args)}
+              :bounds-proof {:kind :gravity.type/vector-first-nonempty :version :sh08-vector-first-nonempty-v1
+                             :basis :validated-finite-positional-type :operand-node-id (first args) :operand-type input
+                             :vector-length (count elements) :selected-index 0 :selected-type (get elements 0)
+                             :outcome :proven-safe :check-elision :not-authorized :runtime-guards :retained}
+              :invalidation (conj (get header :invalidation) :nonempty-evidence)))
         (if (contains? validation :head-proof)
           (assoc header :version :sh08-list-query-v2 :head-proof (get validation :head-proof)
-            :invalidation (conj (get header :invalidation) :control-flow :mutations :branch-facts)) header)) nil)) nil))
+            :invalidation (conj (get header :invalidation) :control-flow :mutations :branch-facts)) header))) nil)) nil))
 
 (defn p15-s23-lq-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-list-query-constraint-v1 :application descriptor}
+  (let [record {:constraint-id-request {:domain :gravity/sh08-list-query-constraint-v1 :application descriptor}
    :kind :equality :producer-rule :sh08-list-query-v1
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-query}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
+   :status :solved :diagnostics []}]
+    (if (= :gravity.type/applied-vector-first (get descriptor :kind))
+      (assoc record :constraint-id-request {:domain :gravity/sh08-vector-first-constraint-v1 :application descriptor}
+        :producer-rule :sh08-vector-first-v1
+        :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-first}
+        :solution (assoc (get record :solution) :bounds-proof (get descriptor :bounds-proof))) record)))
 
 (defn p15-s23-lq-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    (if (= :gravity.type/applied-vector-first (get descriptor :kind))
+      {:artifact :gravity/c7-call-type-fact
+       :fact-id-request {:domain :gravity/sh08-vector-first-call-type-fact-v1 :application descriptor}
+       :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+       :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+       :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+       :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+       :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
+       :dispatch :direct-vector-first :applied-vector-first descriptor :effect-facts-source :audited-vector-value-query}
     {:artifact :gravity/c7-call-type-fact
      :fact-id-request {:domain :gravity/sh08-list-query-call-type-fact-v1 :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
@@ -4988,7 +5020,7 @@
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query}))
+     :dispatch :direct-list-query :applied-list-query descriptor :effect-facts-source :audited-list-value-query})))
 
 
 (defn p15-s23-lq-finish [header]
@@ -5154,7 +5186,9 @@
 (defn p15-s23-typed-compile-list-query [context node budget]
   (let [id (get node :node-id) core (get context :core)
         args (get (get (get context :calls) id) :argument-node-ids)
-        base (+ 64 (count args) (count (get core :function-records)))
+        vector-first? (= :gravity.type/applied-vector-first (get (get (get context :types) (first (get node :children))) :kind))
+        base (+ 64 (count args) (count (get core :function-records))
+                (if vector-first? (* 4 (count (get context :ledger))) 0))
         validation (p15-s23-lc-type-work (p15-s23-io-child-types args (get context :types)) (if (> base budget) 0 (- budget base)))
         charge (+ base (get validation :work-count))
         head (if (if (<= charge budget) (= :accepted (get validation :status)) false)
@@ -5171,15 +5205,50 @@
             owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
             header (p15-s23-lq-source core node call edge nodes (get context :bindings) (get context :types) (get core :module) validation)
             descriptor (if (map? header) (p15-s23-lq-finish header) nil)
-            rows (loop [remaining (get context :ledger) out []]
+            producer-ids? (if vector-first?
+                            (loop [remaining (get context :ledger)]
+                              (if (= 0 (count remaining)) true
+                                (let [row (first remaining) lhs (get row :lhs)]
+                                  (if (= :sh08-vector-first-v1 (get row :producer-rule))
+                                    (if (map? lhs)
+                                      (if (= 2 (count lhs))
+                                        (if (= :vector-first (get lhs :projection))
+                                          (let [row-id (get lhs :core-node-id)]
+                                            (if (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
+                                              (recur (rest remaining)) false)) false) false) false)
+                                    (recur (rest remaining)))))) true)
+            rows (if producer-ids? (loop [remaining (get context :ledger) out []]
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
-                         (if (if (= :sh08-list-query-v1 (get row :producer-rule))
-                               (= {:core-node-id id :projection :list-query} (get row :lhs)) false) (conj out row) out)))))]
+                         (if (if (= (if (= :gravity.type/applied-vector-first (get descriptor :kind)) :sh08-vector-first-v1 :sh08-list-query-v1) (get row :producer-rule))
+                               (= {:core-node-id id :projection (if (= :gravity.type/applied-vector-first (get descriptor :kind)) :vector-first :list-query)} (get row :lhs)) false) (conj out row) out))))) [])]
         (if (if (map? descriptor)
               (p15-s23-typed-all
-                [(= descriptor (get (get context :types) (get call :operator-node-id)))
+                [producer-ids?
+                 (if vector-first?
+                   (loop [remaining (get context :ledger) seen #{}]
+                     (if (= 0 (count remaining)) true
+                       (let [row (first remaining)]
+                         (if (= :sh08-vector-first-v1 (get row :producer-rule))
+                           (let [lhs (get row :lhs) row-id (get lhs :core-node-id)
+                                 valid-id? (if (keyword? row-id) true (if (string? row-id) (= 71 (count row-id)) false))
+                                 source-call (if valid-id? (get (get context :calls) row-id) nil)
+                                 operator-id (get source-call :operator-node-id)
+                                 source-type (if (if (map? source-call)
+                                                  (if (keyword? operator-id) true (if (string? operator-id) (= 71 (count operator-id)) false)) false)
+                                               (get (get context :types) operator-id) nil)]
+                             (if (if valid-id?
+                                   (if (map? lhs) (if (= 2 (count lhs)) (= :vector-first (get lhs :projection)) false) false) false)
+                               (if (contains? seen row-id) false
+                                 (if (p15-s23-typed-all
+                                       [(map? source-call) (= row-id (get source-call :core-node-id))
+                                        (= :gravity.type/applied-vector-first (get source-type :kind))
+                                        (= source-call (get source-type :source-call))
+                                        (= row (p15-s23-lq-constraint source-type))])
+                                   (recur (rest remaining) (conj seen row-id)) false)) false))
+                           (recur (rest remaining) seen))))) true)
+                 (= descriptor (get (get context :types) (get call :operator-node-id)))
                  (= (get descriptor :result-type) (get (get context :types) id))
                  (= (get edge :ordinal) (get (get context :call-order) id))
                  (= (get (get context :current-function) :function-syntax-id) (get edge :caller-function-syntax-id))
@@ -5201,7 +5270,7 @@
               (assoc (p15-s23-compiler-result {:op :builtin-call :function (get descriptor :operation) :args (get compiled :value)})
                 :work-count (+ charge (get compiled :work-count)))
               (assoc compiled :work-count (+ charge (get compiled :work-count 0)))))
-          (assoc (p15-s23-typed-node-error :unsupported-or-mismatched-typed-list-query node) :work-count charge)))))))
+          (assoc (p15-s23-typed-node-error (if (= :gravity.type/applied-vector-first (get (get (get context :types) (get call :operator-node-id)) :kind)) :unsupported-or-mismatched-typed-vector-first :unsupported-or-mismatched-typed-list-query) node) :work-count charge)))))))
 
 (defn p15-s23-sc-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -9833,9 +9902,9 @@
 
 (defn p15-s23-typed-compile-call [context node budget]
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (contains? #{:gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query}
+        (contains? #{:gravity.type/applied-string-concat :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-vector-first}
           (get (get (get context :types) (first (get node :children))) :kind)) false)
-    (if (= :gravity.type/applied-list-query (get (get (get context :types) (first (get node :children))) :kind))
+    (if (contains? #{:gravity.type/applied-list-query :gravity.type/applied-vector-first} (get (get (get context :types) (first (get node :children))) :kind))
       (p15-s23-typed-compile-list-query context node budget)
     (if (= :gravity.type/applied-list-construction (get (get (get context :types) (first (get node :children))) :kind))
       (p15-s23-typed-compile-list-construction context node budget)

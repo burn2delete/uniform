@@ -150,6 +150,24 @@ out-of-range or absent-result policy, invent a host-null fallback, or select a
 representation or profile. Bounds must still be proven or runtime-checked under
 the requirements above; unestablished bounds are not implicitly safe.
 
+## Persistent Vector First With Established Nonempty Input
+
+For a persistent Vector containing at least one stored value, unary
+`(first items)` returns the stored value at zero-based index 0, including a
+stored false or nil. Its operand follows ordinary L2 evaluation exactly once;
+a control transfer aborts invocation. Stored payloads are not evaluated, and
+the original Vector is unchanged. The query does not itself construct a
+collection.
+
+The nonempty premise must be established by facts or checks permitted by the
+governing type, safety and profile contracts. This rule does not define the
+result for an empty Vector, select a host sequence or coercion rule, or promise
+object identity, a storage representation or allocation-free internal
+execution. It does not restrict the language to literal Vectors; a compiler's
+supported subset must state which nonempty and stored-value facts it accepts.
+Collection semantics remain owned by `gravity.collections`; compatibility
+bindings do not grant profile or target support.
+
 ## Map Lookup With An Explicit Default
 
 For maps, `(get map key default)` returns the associated value when the key is
@@ -288,6 +306,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
 - Persistent Vector equality covers equal, reordered, changed and different-length values, corresponding nested values, ordinary operand evaluation and transfers, inert payloads and original-value preservation under the applicable member equality rules.
 - Proven-in-range Vector lookup returns the indexed stored value, preserves the original Vector and inert payloads, and retains ordinary operand evaluation and transfers without assuming an out-of-range result policy.
+- Proven-nonempty Vector first covers singleton and ordered multi-element values, stored false/nil, ordinary operand evaluation and transfers, inert payloads and original-value preservation without selecting an empty-Vector result policy.
 - Explicit-default Map lookup distinguishes missing keys from stored false/nil and preserves eager operand evaluation and transfers.
 - Proven-present two-operand Map lookup preserves stored false/nil, the original value and operand evaluation/transfer behavior, and does not infer key presence from member-type families alone.
 - Binary persistent Map removal covers present, absent and empty Maps, stored false/nil, original-value preservation, eager operand evaluation and transfers, inert payloads, and explicit allocation/storage policy.
