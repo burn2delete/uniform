@@ -1002,6 +1002,67 @@ compiler/source/toolchain/provider/target cohort and required fresh provenance,
 equivalence, bootstrap and independent-review evidence. Ordinary semantic work
 does not wait for that admission decision.
 
+### Checked-Core source census before another composition
+
+A single reader-only Clojure query at clean commit
+`2efd518b4f4482ce3fce2752e2f30d26bfb20f17` inspected the unchanged
+537,749-byte `checked_core.gravity` source (SHA256
+`511e715e66f12cc3945e177ef667d073ec6294166e1140d548f3152d933e7337`).
+It used `*read-eval* false`, empty custom readers and inert tagged-literal
+preservation, without loading a Gravity namespace. The actual query exited 0
+at 512 MiB and observed 405 top-level forms: one namespace, three `def`s and
+401 `defn`s. There is no namespace `:requires` clause. All observed executable
+sequence heads were in function bodies; the three initializers contain DATA.
+The census separated 64 quote boundaries from executable positions and found
+no newly required unsupported macro head. This is host-reader inventory, not
+Gravity-reader agreement, accepted C2/C3 products or execution of 401 bodies.
+
+Source bytes fit the existing 1 MiB source gate, but do not establish recursive
+form, expansion, reference, carrier or owner-specific bound fit. The next
+concrete question is whether this one source composes through the existing
+C2/C3/macro/C5/hosted-C6 path with original-source joins and reference
+equivalence. That question is separate from executing the Gravity-owned Core
+builder on accepted and rejected requests. Select its existing direct helper
+and bounded cost before running it; neither this census nor a directory count
+authorizes a larger corpus, bound growth or an unchanged proof replay. All
+three partial groups remain open and the resolver remains development-unadmitted.
+
+### Checked-Core composition: incomplete bounded attempt
+
+Commit `b99989e30a64690c69f614839e3fac3af4d16ae6` selected this one
+source through the unchanged frontend helper. One actual direct invocation used
+2 GiB on 2026-10-19, from 08:50:41 UTC until the coordinator stopped the owned
+JVM after the preselected 09:50:14 UTC monitored ceiling. Identity was checked
+at 09:50:19 UTC before TERM; the original tool returned exit 143 and the PID
+was absent afterward. This was a coordinator interruption, not an observed
+semantic rejection, OOM, verifier failure or completed test pass. The ceiling
+was monitored, not an independently enforced hard invocation deadline.
+
+The retained log reached `:c5-after` with 404 definitions and 20,209 references,
+then `:hosted-c6-before`. It contains no returned hosted-C6 summary or final test
+counters, and the requested timing receipt was absent. Reaching those printed
+boundaries does not establish that all assertions passed. The original source
+and test hashes were unchanged after termination. Raw output remains at
+`/tmp/b-checked-core-b99989e3-source-v1-20261019.log` (SHA256
+`d83290fad2ed7e6864574cb25c44f6c4b6982e398d40c8310e19efc2f56c1c28`);
+the selector and exact tested inputs remain recoverable in the original commit.
+
+The new four-line selector was removed in a subsequent normal commit rather
+than adding a newly unvalidated, potentially hour-long default regression.
+The existing helper, tests and compiler are unchanged. Checked-Core remains a
+required, open source-composition question for the selected Core endpoint;
+removing this selector neither excludes it from that closure nor closes any of
+the three partial groups. There is no unchanged retry or bound increase here.
+
+One one-second OS sample during construction exited 0, but its mostly unknown
+JIT frames were inconclusive. Neither that snapshot nor these overlapping-run
+timings establish a dominant owner, allocation/GC cause or speedup. The next
+action is the bounded existing-helper cost follow-up described above: separate
+artifact construction from redundant test-only verification and public consumer
+verification before selecting another concrete experiment. Any representation
+redesign remains outside ordinary SH-07 development and requires its own scoped
+decision; no cache, verifier skip or admission wrapper is introduced here.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
