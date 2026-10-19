@@ -5922,7 +5922,9 @@
                                              (= (get edge :caller-function-syntax-id)
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
                                       (let [node (get nodes (get edge :call-core-node-id))
-                                            descriptor (sh08-io-descriptor core node call edge nodes binding-index types (get core :module))]
+                                            descriptor (if (= :gravity.type/applied-keyword-set-contains (get (get types (first (get node :children))) :kind))
+                                                         nil
+                                                         (sh08-io-descriptor core node call edge nodes binding-index types (get core :module)))]
                                         (if (map? descriptor) (= descriptor (get types (first (get node :children))))
                                           (if (sh08-si-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                             (sh08-si-inferred-call-valid? core node call edge nodes binding-index types)
