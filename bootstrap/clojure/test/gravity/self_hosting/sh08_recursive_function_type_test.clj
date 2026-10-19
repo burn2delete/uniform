@@ -199,6 +199,602 @@
                      :recursive-external-operator-node :recursive-external-literal-node
                      :recursive-external-call-node]))))
 
+(defn- private-self-census-data []
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [base ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'private-entry-get-input))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        form (fn [id kind value parent children]
+               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
+                :kind kind :value value :parent-form-id parent :child-form-ids children})
+        record (assoc (first (get-in base [:core :function-records])) :body-core-node-id :recursive-body)
+        bid (:definition-binding-id record) owner (:function-syntax-id record)
+        operator {:node-id :self-op :core-form :reference :children [] :source (source :self-op)
+                  :attributes {:symbol 'without-path :position :operator :binding-id bid
+                               :binding-class :namespace :definition-syntax-id :helper-name}
+                  :resolved-binding-ids [bid] :evaluation {:owner-function-syntax-id owner}}
+        argument {:node-id :self-arg :core-form :reference :children [] :source (source :self-arg)
+                  :attributes {:binding-id :span-binding} :resolved-binding-ids [:span-binding]
+                  :evaluation {:owner-function-syntax-id owner}}
+        call-node {:node-id :self-call :core-form :call :children [:self-op :self-arg] :source (source :self-call)
+                   :resolved-binding-ids [bid]
+                   :evaluation {:kind :operator-then-arguments :owner-function-syntax-id owner
+                                :order [{:index 0 :core-node-id :self-op} {:index 1 :core-node-id :self-arg}]}}
+        body {:node-id :recursive-body :core-form :do :children [:present-get :self-call]
+              :source (source :recursive-body) :evaluation {:owner-function-syntax-id owner}}
+        call {:core-node-id :self-call :operator-node-id :self-op :operator-binding-id bid
+              :argument-node-ids [:self-arg] :ordered-evaluation-node-ids [:self-op :self-arg]
+              :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 3 :call-core-node-id :self-call :caller-function-syntax-id owner :caller-function-core-node-id :helper-fn
+              :callee-binding-id bid :callee-definition-syntax-id :helper-name :callee-function-syntax-id owner
+              :callee-function-core-node-id :helper-fn :argument-core-node-ids [:self-arg]
+              :ordered-evaluation-node-ids [:self-op :self-arg] :evaluation-order :operator-then-arguments :classification :local-function}
+        use {:core-node-id :self-op :form-id :self-op :syntax-id :self-op :symbol 'without-path :position :operator
+             :binding-id bid :binding-class :namespace :definition-syntax-id :helper-name}
+        resolution {:reference-syntax-id :self-op :symbol 'without-path :position :operator :binding-id bid
+                    :upstream-binding-id :helper-upstream :resolution-order 3 :source-span nil}
+        component {:ordinal 0 :kind :self-recursive :function-syntax-ids [owner] :function-core-node-ids [:helper-fn]
+                   :internal-call-edge-ordinals [3]}
+        core (-> (:core base)
+                 (update :nodes #(into (mapv (fn [node] (if (= :helper-fn (:node-id node))
+                                                         (assoc node :children [:recursive-body]) node)) %)
+                                       [operator argument call-node body]))
+                 (assoc-in [:function-records 0] record)
+                 (update :calls conj call) (update :call-edges conj edge)
+                 (update :reference-uses conj use) (update-in [:preserved-resolution :resolution-table] conj resolution)
+                 (assoc :recursion-components [component]))
+        forms (merge (:forms base) {:self-op (form :self-op :symbol 'without-path :self-call [])
+                                   :self-arg (form :self-arg :symbol 'span :self-call [])
+                                   :self-call (form :self-call :list nil :recursive-body [:self-op :self-arg])})]
+    {:core core :record record :nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+     :bindings (:bindings base) :forms forms}))
+
+(deftest current-gravity-private-self-census-development-kernel
+  (let [{:keys [core record bindings forms]} (private-self-census-data)
+        census (fn [core bindings forms]
+                 (invoke-c7 'sh08-is-private-census
+                            [record core (into {} (map (juxt :node-id identity) (:nodes core))) bindings forms]))
+        result (census core bindings forms)]
+    (is (= :closed-private-self-use-census-v1 (:kind result)))
+    (is (= record (:function-record result)))
+    (is (= :private (get-in result [:definition-binding :visibility])))
+    (is (= 3 (count (:calls result)) (count (:edges result))
+           (count (:reference-uses result)) (count (:resolutions result)) (count (:reference-node-ids result))))
+    (is (= [:span-binding] (mapv :binding-id (:parameter-bindings result))))
+    (is (= [3] (get-in result [:component :internal-call-edge-ordinals])))
+    (doseq [changed [(assoc-in core [:module :exports] ['without-path])
+                     (assoc-in core [:module :exports] [(symbol (str (get-in core [:module :namespace]) "/without-path"))])
+                     (update core :reference-uses pop)
+                     (update-in core [:preserved-resolution :resolution-table] pop)
+                     (update core :calls pop)
+                     (update core :reference-uses conj (last (:reference-uses core)))
+                     (assoc-in core [:recursion-components 0 :kind] :mutually-recursive)
+                     (assoc-in core [:recursion-components 0 :internal-call-edge-ordinals] [1])
+                     (update core :recursion-components conj (first (:recursion-components core)))
+                     (assoc core :var-references [{:binding-id :helper-binding}])
+                     (assoc core :mutations [{:target-binding-id :helper-binding}])
+                     (assoc core :mutations [{:target-binding-id :span-binding}])
+                     (assoc core :recur-transfers [{:target-id :missing}])
+                     (assoc-in core [:call-edges 3 :caller-function-syntax-id] :caller-0)
+                     (update core :nodes conj {:node-id :escaped :core-form :reference
+                                               :attributes {:binding-id :helper-binding} :resolved-binding-ids [:helper-binding]})]]
+      (is (nil? (census changed bindings forms))))
+    (is (nil? (census core (assoc-in bindings [:helper-binding :visibility] :public) forms)))
+    (is (nil? (census core (assoc-in bindings [:span-binding :mutability] :mutable) forms)))
+    (is (nil? (census core bindings (assoc-in forms [:self-op :value] 'other))))
+    (let [caller-control (assoc core :recur-targets [{:target-id :caller-target :owner-core-node-id :caller-0 :binding-ids []}]
+                                    :recur-transfers [{:target-id :caller-target}])]
+      (is (= result (census caller-control bindings forms))))))
+
+(deftest current-gravity-private-self-cold-cut-development-kernel
+  (let [{:keys [core record]} (private-self-census-data)
+        owner (:function-syntax-id record)
+        additions [(node :alias-read :reference [] {:binding-id :alias} nil)
+                   (node :definition-read :reference [] {:binding-id :result-definition} nil)
+                   (node :dependent-do :do [:alias-read] {} nil)
+                   (node :genuine-throw :throw [:self-call] {} nil)
+                   (node :genuine-recur :recur [:self-call] {} nil)
+                   (node :wrapper-fn :fn [:entry-0] {} nil)
+                   (node :wrapper-op :reference [] {:binding-id :wrapper-binding} nil)
+                   (node :wrapper-argument :literal [] {:literal-kind :string} nil)
+                   (node :wrapper-call :call [:wrapper-op :wrapper-argument] {} nil)
+                   (node :independent-value :literal [] {:literal-kind :string} owner)
+                   (node :independent-parameter :reference [] {:binding-id :span-binding} owner)]
+        core (-> core
+                 (update :nodes into additions)
+                 (assoc :lexical-bindings [{:binding-id :alias :initializer-node-id :self-call}])
+                 (update :definitions into [{:binding-id :result-definition :value-node-id :entry-1}
+                                            {:binding-id :wrapper-binding :value-node-id :wrapper-fn}])
+                 (update :function-records conj {:function-syntax-id :wrapper :function-core-node-id :wrapper-fn
+                                                 :body-core-node-id :entry-0})
+                 (update :calls conj {:core-node-id :wrapper-call :operator-node-id :wrapper-op
+                                      :argument-node-ids [:wrapper-argument]})
+                 (update :call-edges conj {:call-core-node-id :wrapper-call :callee-function-syntax-id :wrapper}))
+        derive (fn [c mode budget]
+                 (invoke-c7 'sh08-is-cold-cut
+                            [c record (into {} (map (juxt :node-id identity) (:nodes c))) mode budget]))
+        entries (derive core :entries 65536)
+        body (derive core :body 65536)
+        excluded #(set (:excluded-node-ids %))]
+    (is (= :accepted (:status entries) (:status body)))
+    (doseq [result [entries body]]
+      (is (every? (excluded result) [:helper-fn :helper-def :self-op :self-call
+                                     :entry-0 :entry-1 :entry-operator-0 :entry-operator-1
+                                     :alias-read :definition-read :dependent-do :wrapper-call])))
+    (doseq [result [entries body]]
+      (is (not-any? (excluded result) [:input-0 :input-1 :wrapper-fn :wrapper-op
+                                       :wrapper-argument :genuine-throw :genuine-recur])))
+    (is (every? (excluded entries) [:self-arg :input :present-get :recursive-body
+                                    :independent-value :independent-parameter]))
+    (is (not-any? (excluded body) [:self-arg :input :present-get :independent-value :independent-parameter]))
+    (is (contains? (excluded body) :recursive-body))
+    (doseq [mode [:entries :body]
+            :let [result (derive core mode 65536)]]
+      (is (= result (derive core mode (:work-count result))))
+      (is (= :private-self-work-limit (:reason (derive core mode (dec (:work-count result))))))
+      (is (= :private-self-work-limit (:reason (derive core mode 0))))
+      (is (= (excluded result) (excluded (derive (update core :nodes #(vec (reverse %))) mode 65536)))))
+    (is (= {:status :rejected :reason :private-self-cold-mode-required :work-count 0}
+           (derive core :unknown 65536)))))
+
+(deftest current-gravity-private-self-cold-inference-development-kernel
+  (let [base (recursive-carrier)
+        sequence (->> (recursive-inference-nodes base)
+                      (mapv (fn [n]
+                              (cond
+                                (= :recursive-external-literal-node (:node-id n))
+                                (assoc n :core-form :reference :attributes {:binding-id :caller-parameter}
+                                         :evaluation {:owner-function-syntax-id :caller})
+                                (= :recursive-base-node (:node-id n))
+                                (assoc n :attributes {:literal-kind :string})
+                                :else n))))
+        caller {:function-syntax-id :caller :function-core-node-id :caller-fn
+                :body-core-node-id :recursive-external-call-node :parameter-binding-ids [:caller-parameter]
+                :fixed-arity 1 :definition-binding-id :caller-binding}
+        main-call {:core-node-id :main-call :operator-node-id :main-op :operator-binding-id :caller-binding
+                   :argument-node-ids [:main-argument] :ordered-evaluation-node-ids [:main-op :main-argument]
+                   :evaluation-order :operator-then-arguments :result-policy :call-result}
+        core (-> base
+                 (assoc :nodes (into sequence [(node :caller-fn :fn [:recursive-external-call-node] {} nil)
+                                               (node :main-op :reference [] {:binding-id :caller-binding} nil)
+                                               (node :main-argument :literal [] {:literal-kind :string} nil)
+                                               (node :main-call :call [:main-op :main-argument] {} nil)]))
+                 (update :function-records conj caller)
+                 (update :definitions conj {:binding-id :caller-binding :value-node-id :caller-fn})
+                 (update :bindings into [{:binding-id :caller-parameter} {:binding-id :caller-binding}])
+                 (update :calls #(conj (mapv (fn [c] (assoc c :operator-node-id (first (:ordered-evaluation-node-ids c)))) %) main-call))
+                 (assoc-in [:call-edges 1 :caller-function-syntax-id] :caller)
+                 (assoc-in [:call-edges 1 :caller-function-core-node-id] :caller-fn)
+                 (update :call-edges conj {:ordinal 2 :call-core-node-id :main-call :caller-function-syntax-id nil
+                                          :callee-function-syntax-id :caller :callee-function-core-node-id :caller-fn
+                                          :classification :local-function :argument-core-node-ids [:main-argument]}))
+        record (first (:function-records core))
+        derive (fn [c mode params budget]
+                 (invoke-c7 'sh08-is-cold-infer
+                            [c c record (into {} (map (juxt :node-id identity) (:nodes c))) (:bindings c) [] {} mode params budget]))
+        entries (derive core :entries [] 65536)
+        body (derive core :body [:gravity.type/string] 65536)
+        types #(get-in % [:inference :type-table])]
+    (is (= :accepted (:status entries) (:status body)))
+    (is (= :gravity.type/string (get (types entries) :recursive-external-literal-node)))
+    (is (= :gravity.type/string (get-in entries [:inference :binding-types :caller-parameter])))
+    (is (= :gravity.type/string (get-in entries [:inference :function-types :caller :parameters 0 :type])))
+    (is (= :gravity.type/unknown (get-in entries [:inference :function-types :caller :return])))
+    (is (= [:main-call] (:source-argument-call-node-ids entries)))
+    (is (not-any? #(contains? (types entries) %) [:main-call :recursive-call-node :recursive-body-node
+                                                 :recursive-external-call-node :recursive-base-node :recursive-parameter-node]))
+    (is (= :gravity.type/string (get (types body) :recursive-parameter-node)))
+    (is (= :gravity.type/string (get (types body) :recursive-base-node)))
+    (is (not (contains? (types body) :recursive-call-node)))
+    (is (not (contains? (get-in body [:inference :function-types]) :recursive-function-syntax)))
+    (let [changed (-> core
+                      (assoc-in [:calls 2 :argument-node-ids] [:recursive-external-call-node])
+                      (assoc-in [:calls 2 :ordered-evaluation-node-ids] [:main-op :recursive-external-call-node])
+                      (update :nodes #(mapv (fn [n] (if (= :main-call (:node-id n))
+                                                     (assoc n :children [:main-op :recursive-external-call-node]) n)) %)))
+          result (derive changed :entries [:gravity.type/bool] 65536)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/unknown (get-in result [:inference :binding-types :caller-parameter])))
+      (is (= :gravity.type/unknown (get (types result) :recursive-external-literal-node))))
+    (doseq [[mode params result] [[:entries [] entries] [:body [:gravity.type/string] body]]]
+      (let [exact (derive core mode params (:work-count result))]
+        (is (= (select-keys result [:status :mode :cut :work-count :source-argument-call-node-ids])
+               (select-keys exact [:status :mode :cut :work-count :source-argument-call-node-ids])))
+        (is (= (select-keys (:inference result) [:type-table :binding-types :function-types :constraints :diagnostics
+                                                :convergence-status :round-count :round-bound])
+               (select-keys (:inference exact) [:type-table :binding-types :function-types :constraints :diagnostics
+                                               :convergence-status :round-count :round-bound])))
+        (is (= 0 (get-in exact [:inference :type-join-work-left]))))
+      (is (= :private-self-work-limit (:reason (derive core mode params (dec (:work-count result))))))
+      (is (= :private-self-work-limit (:reason (derive core mode params 0)))))))
+
+(deftest current-gravity-private-self-return-witness-development-kernel
+  (let [nodes {:body (node :body :if [:guard :self-call :base] {} :self)
+               :guard (node :guard :literal [] {:literal-kind :boolean} :self)
+               :self-call (node :self-call :call [] {} :self)
+               :base (node :base :reference [] {:binding-id :parameter} :self)
+               :throw (node :throw :throw [:self-call] {} :self)
+               :recur (node :recur :recur [:self-call] {} :self)}
+        record {:body-core-node-id :body}
+        types {:guard :gravity.type/bool :base :gravity.type/string
+               :throw :gravity.type/never :recur :gravity.type/never}
+        derive (fn [ns ts budget] (invoke-c7 'sh08-is-return-witness [record ns ts budget]))
+        reason (fn [ns ts] (:reason (derive ns ts 65536)))
+        result (derive nodes types 65536)]
+    (is (= :accepted (:status result)))
+    (is (= :gravity.type/string (:return-type result)))
+    (is (= [:self-call] (:pending-return-node-ids result)))
+    (is (= [:base] (mapv :node-id (:witnesses result))))
+    (is (= [:body :base] (get-in result [:witnesses 0 :path])))
+    (is (= :independent-normal-condition (get-in result [:witnesses 0 :control-records 0 :rule])))
+    (is (= :private-self-independent-return-required (reason nodes (dissoc types :guard))))
+    (is (= :private-self-independent-return-required (reason nodes (assoc types :guard :gravity.type/never))))
+    (is (= :private-self-independent-return-required
+           (reason (assoc-in nodes [:guard :attributes :value] true) types)))
+    (let [selected (derive (assoc-in nodes [:guard :attributes :value] false) types 65536)]
+      (is (= :accepted (:status selected)))
+      (is (= [] (:pending-return-node-ids selected)))
+      (is (= [2] (get-in selected [:witnesses 0 :control-records 0 :selected-branch-indexes]))))
+    (is (= :private-self-return-type-conflict (reason nodes (assoc types :self-call :gravity.type/bool))))
+    (is (= :private-self-independent-return-required (reason nodes (dissoc types :base))))
+    (is (= :private-self-independent-return-required
+           (reason (assoc-in nodes [:body :children] [:guard :throw :recur]) types)))
+    (doseq [kind [:do :let]]
+      (let [sequence (-> nodes (assoc-in [:body :core-form] kind)
+                              (assoc-in [:body :children] [:self-call :base]))]
+        (is (= :private-self-independent-return-required (reason sequence types)))
+        (is (= :private-self-independent-return-required (reason sequence (assoc types :self-call :gravity.type/never))))
+        (is (= :accepted (:status (derive sequence (assoc types :self-call :gravity.type/string) 65536))))))
+    (doseq [type [:gravity.type/integer :gravity.type/list
+                 {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}]]
+      (is (= :private-self-return-value-type-required (reason nodes (assoc types :base type)))))
+    (is (= :private-self-return-source-required (reason (dissoc nodes :base) types)))
+    (is (= result (derive nodes types (:work-count result))))
+    (is (= :private-self-work-limit (:reason (derive nodes types (dec (:work-count result))))))
+    (is (= :private-self-work-limit (:reason (derive nodes types 0))))
+    (let [chain (into {:tail (node :tail :literal [] {:literal-kind :string} :self)}
+                      (for [i (range 130)]
+                        [(if (zero? i) :body i)
+                         (node (if (zero? i) :body i) :do [(if (= i 129) :tail (inc i))] {} :self)]))]
+      (is (= :private-self-return-path-bound (reason chain {:tail :gravity.type/string}))))))
+
+(deftest current-gravity-private-self-cold-quote-budget-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [quote-input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'quoted-data-input)
+                     (vec (repeat 24 "payload")))
+        base (recursive-carrier)
+        core (assoc base :nodes (conj (recursive-inference-nodes base) (:node quote-input)))
+        record (first (:function-records core))
+        derive (fn [forms budget]
+                 (invoke-c7 'sh08-is-cold-infer
+                            [core core record (into {} (map (juxt :node-id identity) (:nodes core)))
+                             (:bindings core) forms {} :entries [] budget]))
+        full (derive (:source-forms quote-input) 65536)
+        payload-work (get-in full [:quoted-products :work-count])
+        preparation (:source-preparation-work-count full)
+        exhausted (derive (:source-forms quote-input) (+ preparation (dec payload-work)))
+        no-inference-budget (derive (:source-forms quote-input) (+ preparation payload-work))]
+    (is (= :accepted (:status full)))
+    (is (= 25 payload-work))
+    (is (= :gravity.type/vector (get-in full [:inference :type-table (get-in quote-input [:node :node-id]) :kind])))
+    (is (= :rejected (:status exhausted)))
+    (is (= :private-self-work-limit (:reason exhausted)))
+    (is (= [:quoted-data-work-limit] (mapv :reason (get-in exhausted [:quoted-products :diagnostics]))))
+    (is (= (dec payload-work) (get-in exhausted [:quoted-products :work-count])))
+    (is (not (contains? exhausted :inference)))
+    (is (= :private-self-work-limit (:reason no-inference-budget)))
+    (is (= [] (get-in no-inference-budget [:quoted-products :diagnostics])))
+    (is (= payload-work (get-in no-inference-budget [:quoted-products :work-count])))
+    (is (= 0 (get-in no-inference-budget [:inference :round-count])))
+    (let [malformed (mapv #(if (= (:owner quote-input) (:form-id %)) (assoc % :kind :vector) %) (:source-forms quote-input))
+          rejected (derive malformed 65536)]
+      (is (= :private-self-quoted-data-required (:reason rejected)))
+      (is (= [:malformed-quote-owner-payload-join] (mapv :reason (get-in rejected [:quoted-products :diagnostics]))))
+      (is (not (contains? rejected :inference))))))
+
+(deftest current-gravity-private-self-cold-declared-result-development-kernel
+  (let [base (recursive-carrier)
+        string :gravity.type/string
+        wrapper {:function-syntax-id :wrapper :function-core-node-id :wrapper-fn
+                 :body-core-node-id :wrapper-value :parameter-binding-ids [:wrapper-param]
+                 :fixed-arity 1 :definition-binding-id :wrapper-binding
+                 :signature {:parameters [{:type-id string}] :return {:type-id string}}}
+        call (fn [id op argument]
+               {:core-node-id id :operator-node-id op :operator-binding-id :wrapper-binding
+                :argument-node-ids [argument] :ordered-evaluation-node-ids [op argument]
+                :evaluation-order :operator-then-arguments})
+        inner (call :inner :inner-op :missing)
+        outer (call :outer :outer-op :inner)
+        edge (fn [id argument ordinal]
+               {:call-core-node-id id :callee-function-syntax-id :wrapper :callee-function-core-node-id :wrapper-fn
+                :classification :local-function :argument-core-node-ids [argument] :ordinal ordinal})
+        core (-> base
+                 (assoc :nodes (into (recursive-inference-nodes base)
+                                    [(node :wrapper-value :literal [] {:literal-kind :string} :wrapper)
+                                     (node :wrapper-fn :fn [:wrapper-value] {} nil)
+                                     (node :inner-op :reference [] {:binding-id :wrapper-binding} nil)
+                                     (node :missing :reference [] {:binding-id :missing-binding} nil)
+                                     (node :inner :call [:inner-op :missing] {} nil)
+                                     (node :outer-op :reference [] {:binding-id :wrapper-binding} nil)
+                                     (node :outer :call [:outer-op :inner] {} nil)
+                                     (node :alias-read :reference [] {:binding-id :alias-binding} nil)]))
+                 (update :function-records conj wrapper)
+                 (update :definitions conj {:binding-id :wrapper-binding :value-node-id :wrapper-fn})
+                 (assoc :lexical-bindings [{:binding-id :alias-binding :initializer-node-id :outer}])
+                 (update :calls into [inner outer])
+                 (update :call-edges into [(edge :inner :missing 2) (edge :outer :inner 3)]))
+        record (first (:function-records core))
+        derive (fn [c]
+                 (invoke-c7 'sh08-is-cold-infer
+                            [c c record (into {} (map (juxt :node-id identity) (:nodes c))) (:bindings c) [] {} :entries [] 65536]))
+        result (derive core)
+        dependent (derive (assoc-in core [:function-records 1 :body-core-node-id] :recursive-external-call-node))]
+    (is (= :accepted (:status result)))
+    (is (= string (get-in result [:inference :function-types :wrapper :return])))
+    (doseq [id [:missing :inner :outer :alias-read]]
+      (is (= :gravity.type/unknown (get-in result [:inference :type-table id]))))
+    (is (= :accepted (:status dependent)))
+    (is (= string (get-in dependent [:inference :function-types :wrapper :return])))
+    (is (every? (set (get-in dependent [:cut :excluded-node-ids])) [:inner :outer :alias-read]))
+    (is (not-any? #(contains? (get-in dependent [:inference :type-table]) %) [:inner :outer :alias-read]))))
+
+(defn- private-self-string-proof-data []
+  (let [{:keys [core record bindings forms]} (private-self-census-data)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        owner (:function-syntax-id record)
+        condition (assoc (node :independent-condition :literal [] {:literal-kind :boolean :value false} owner)
+                         :source (source :independent-condition))
+        base (assoc (node :independent-base :reference [] {:binding-id :span-binding} owner)
+                    :source (source :independent-base) :resolved-binding-ids [:span-binding])
+        core (-> core
+                 (update :calls #(vec (rest %)))
+                 (update :call-edges #(mapv (fn [i edge] (assoc edge :ordinal i)) (range) (rest %)))
+                 (assoc-in [:recursion-components 0 :internal-call-edge-ordinals] [2])
+                 (update :nodes (fn [nodes]
+                                  (conj (mapv (fn [n]
+                                                (cond
+                                                  (contains? #{:input-0 :input-1} (:node-id n))
+                                                  (assoc n :core-form :literal :children []
+                                                           :attributes {:literal-kind :string :value "entry"})
+                                                  (= :recursive-body (:node-id n))
+                                                  (assoc n :core-form :if :children [:independent-condition :self-call :independent-base])
+                                                  (= :self-call (:node-id n))
+                                                  (assoc n :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                                                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
+                                                  (= :self-arg (:node-id n))
+                                                  (assoc n :attributes {:symbol 'span :position :expression :binding-id :span-binding
+                                                                        :binding-class :lexical :definition-syntax-id nil})
+                                                  :else n))
+                                              (remove #(contains? #{:operator :input :key :present-get} (:node-id %)) nodes))
+                                        condition base))))
+        forms (reduce (fn [out id] (assoc-in (assoc-in (assoc-in out [id :kind] :string) [id :value] "entry")
+                                                       [id :child-form-ids] [])) forms [:input-0 :input-1])]
+    {:core core :record record :bindings (vec (vals bindings)) :forms (vec (vals forms))}))
+
+(deftest current-gravity-private-self-proof-development-kernel
+  (let [{:keys [core record bindings forms]} (private-self-string-proof-data)
+        derive (fn [c prior]
+                 (let [nodes (into {} (map (juxt :node-id identity) (:nodes c)))]
+                   (invoke-c7 'sh08-is-proof
+                              [{:nodes (:nodes c) :analysis-core c :analysis-source-forms forms :analysis-imports {}}
+                               (assoc c :node-table nodes) bindings (:module c) prior])))
+        result (derive core 0)]
+    (is (= :accepted (:status result)))
+    (is (= :sh08-private-self-value-v1 (:rule-version result)))
+    (is (= [:gravity.type/string] (:parameter-types result)))
+    (is (= :gravity.type/string (:inferred-return-type result)))
+    (is (= 2 (get-in result [:parameter-value-premise :entry-values :normal-entry-count])))
+    (is (= [:entry-0 :entry-1 :self-call] (:incoming-call-node-ids result)))
+    (is (= [:independent-base] (mapv :node-id (get-in result [:return-witness :witnesses]))))
+    (is (not (contains? record :signature)))
+    (is (not (contains? (:function-record result) :signature)))
+    (is (not (contains? result :base-type)))
+    (is (not (contains? result :recursive-base-type)))
+    (is (= :private-self-source-census-or-capture (:reason (derive (assoc-in core [:module :exports] ['without-path]) 0))))
+    (let [conflict (update core :nodes #(mapv (fn [n] (if (= :input-1 (:node-id n))
+                                                       (assoc n :attributes {:literal-kind :boolean :value false}) n)) %))]
+      (is (= :private-self-entry-type-conflict (:reason (derive conflict 0)))))
+    (let [circular (update core :nodes #(mapv (fn [n] (if (= :recursive-body (:node-id n))
+                                                       (assoc n :core-form :do :children [:self-call]) n)) %))]
+      (is (= :private-self-independent-return-required (:reason (derive circular 0)))))
+    (let [aborting (update core :nodes #(mapv (fn [n] (if (contains? #{:input-0 :input-1} (:node-id n))
+                                                       (assoc n :core-form :throw :children []) n)) %))]
+      (is (= :private-self-normal-entry-required (:reason (derive aborting 0)))))
+    (let [paid (derive core 37)]
+      (is (= :accepted (:status paid)))
+      (is (= 37 (:prior-attempt-work paid)))
+      (is (= (+ 37 (:work-count result)) (:work-count paid))))
+    (let [prior (- 65536 (:work-count result))
+          exact (derive core prior)]
+      (is (= :accepted (:status exact)))
+      (is (= 65536 (:work-count exact)))
+      (is (= :private-self-work-limit (:reason (derive core (inc prior))))))))
+
+(deftest current-gravity-private-self-escaped-population-development-kernel
+  (let [{:keys [core record bindings forms]} (private-self-census-data)
+        extra (mapv #(keyword (str "escaped-self-" %)) (range 64))
+        changed (-> core
+                    (update :nodes into (mapv (fn [id] (node id :reference [] {:binding-id :helper-binding} nil)) extra))
+                    (update :reference-uses into (mapv #(hash-map :core-node-id % :binding-id :helper-binding :position :expression) extra))
+                    (update-in [:preserved-resolution :resolution-table] into
+                               (mapv #(hash-map :reference-syntax-id % :binding-id :helper-binding :position :expression) extra)))]
+    (is (= 4 (count (:calls changed))))
+    (is (= 67 (count (:reference-uses changed))))
+    (is (nil? (invoke-c7 'sh08-is-private-census
+                         [record changed (into {} (map (juxt :node-id identity) (:nodes changed))) bindings forms])))))
+
+(defn- private-self-homogeneous-head-data []
+  (require 'clojure.walk 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [{:keys [core bindings forms]} (private-self-string-proof-data)
+        type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+        head (clojure.walk/postwalk-replace
+              {:callee :helper-form :parameter :span-binding :function :helper-fn :branch :recursive-body}
+              ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'homogeneous-list-head-input) 2))
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        binding (first (filter #(= :span-binding (:binding-id %)) bindings))
+        reference-attrs {:symbol (:name binding) :position :expression :binding-id :span-binding
+                         :binding-class :lexical :definition-syntax-id (:definition-syntax-id binding)}
+        nodes (-> (:nodes head)
+                  (dissoc :helper-fn :base)
+                  (assoc-in [:recursive-body :children] [:condition :independent-base :head-else])
+                  (assoc-in [:arg0 :attributes] reference-attrs)
+                  (assoc-in [:predicate-receiver :attributes] reference-attrs)
+                  (assoc :head-else (assoc (node :head-else :do [:call :self-call] {} :helper-form)
+                                          :source (source :head-else))))
+        core (-> core
+                 (update :nodes (fn [sequence]
+                                  (let [retained (remove #(contains? (conj (set (keys nodes)) :independent-condition) (:node-id %)) sequence)
+                                        all (merge (into {} (map (juxt :node-id identity) retained)) nodes)
+                                        ;; C6 order: operands before each intrinsic consumer.
+                                        order (concat (map :node-id retained)
+                                                      [:predicate-operator :predicate-receiver :condition :operator :arg0 :call
+                                                       :head-else :recursive-body])]
+                                    (mapv all order))))
+                 (update :function-records
+                         #(mapv (fn [record]
+                                  (case (:function-syntax-id record)
+                                    :caller-0 (assoc record :parameter-binding-ids [:caller-parameter-0] :fixed-arity 1
+                                                            :signature {:parameters [{:type-id type}]})
+                                    :caller-1 (assoc record :parameter-binding-ids [:caller-parameter-1] :fixed-arity 1
+                                                            :signature {:parameters [{:type-id type}]})
+                                    record)) %))
+                 (update :nodes #(mapv (fn [n] (case (:node-id n)
+                                                :input-0 (assoc n :core-form :reference :attributes {:binding-id :caller-parameter-0})
+                                                :input-1 (assoc n :core-form :reference :attributes {:binding-id :caller-parameter-1})
+                                                n)) %))
+                 (update :calls into (get-in head [:core :calls]))
+                 (update :call-edges into
+                         (mapv (fn [i edge] (assoc edge :ordinal (+ 3 i))) (range) (get-in head [:core :call-edges])))
+                 (assoc :control-flow (-> (get-in head [:core :control-flow])
+                                          (assoc-in [0 :branches 0 :core-node-id] :independent-base)
+                                          (assoc-in [0 :branches 1 :core-node-id] :head-else))))
+        forms (merge (into {} (map (juxt :form-id identity) forms)) (:forms head))
+        bindings (merge (into {} (map (juxt :binding-id identity) bindings)) (:bindings head) {:span-binding binding})]
+    {:core core :bindings (vec (vals bindings)) :forms (vec (vals forms)) :head head :type type}))
+
+(deftest current-gravity-private-self-homogeneous-head-development-kernel
+  (let [{:keys [core bindings forms head type]} (private-self-homogeneous-head-data)
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        proof (invoke-c7 'sh08-is-proof
+                         [{:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
+                          (assoc core :node-table nodes) bindings (:module core) 0])
+        premise (:parameter-value-premise proof)
+        working (assoc core :sh08-private-self-parameter-premise premise)
+        record (first (:function-records core))
+        cold (invoke-c7 'sh08-is-cold-infer [working core record nodes bindings forms {} :body [type] 65536])
+        table (get-in cold [:inference :type-table])
+        call (:call head) n (nodes :call)
+        edge (first (filter #(= :call (:call-core-node-id %)) (:call-edges core)))
+        derive (fn [c ts]
+                 (invoke-c7 'sh08-lq-head-proof [c n call nodes (into {} (map (juxt :binding-id identity) bindings)) ts 65536]))
+        result (derive working table)]
+    (is (= :accepted (:status proof))
+        (pr-str (assoc (select-keys proof [:status :reason :work-count])
+                       :inference (select-keys (:inference proof) [:convergence-status :diagnostics]))))
+    (is (= :accepted (:status cold)))
+    (is (= [type] (:parameter-types proof)))
+    (is (= type (:inferred-return-type proof)))
+    (is (= :accepted (:status result)))
+    (is (= :nonempty (get-in result [:proof :knowledge])))
+    (is (= :gravity.type/string (get-in result [:proof :result-type])))
+    (is (= :gravity.type/private-self-entry-parameter (get-in result [:proof :immutable-binding-record :kind])))
+    (is (= premise (get-in result [:proof :immutable-binding-record :parameter-value-premise])))
+    (is (= :list-head-branch-proof-required (:reason (derive core table))))
+    (is (= :list-head-branch-proof-required (:reason (derive (assoc working :sh08-private-self-parameter-premise true) table))))
+    (doseq [changed [(assoc-in working [:sh08-private-self-parameter-premise :entry-values :normal-entry-count] 0)
+                     (assoc-in working [:sh08-private-self-parameter-premise :source-census :function-record :body-core-node-id] :other)
+                     (assoc-in working [:sh08-private-self-parameter-premise :entry-values :parameter-types 0] :gravity.type/list)
+                     (assoc working :mutations [{:target-binding-id :span-binding}])]]
+      (is (= :list-head-branch-proof-required (:reason (derive changed table)))))
+    (is (not= :accepted (:status (derive working (assoc table :predicate-receiver :gravity.type/list)))))
+    (is (true? (invoke-c7 'sh08-lq-inferred-call-valid? [working n call edge nodes (into {} (map (juxt :binding-id identity) bindings)) table])))
+    (is (false? (invoke-c7 'sh08-lq-inferred-call-valid? [core n call edge nodes (into {} (map (juxt :binding-id identity) bindings)) table])))))
+
+(deftest current-gravity-private-self-entry-values-development-kernel
+  (let [list-type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
+        calls [{:core-node-id :self-call :argument-node-ids [:self-pending :self-text]}
+               {:core-node-id :entry-a :argument-node-ids [:pending-a :text-a]}
+               {:core-node-id :entry-b :argument-node-ids [:pending-b :text-b]}
+               {:core-node-id :aborting :argument-node-ids [:transfer :text-c]}]
+        edges (mapv (fn [ordinal call]
+                      {:ordinal ordinal :call-core-node-id (:core-node-id call)
+                       :caller-function-syntax-id (if (zero? ordinal) :self (keyword (str "caller-" ordinal)))
+                       :callee-function-syntax-id :self :classification :local-function})
+                    (range) calls)
+        census {:function-record {:function-syntax-id :self :fixed-arity 2} :calls calls :edges edges}
+        nodes (into {} (map (fn [call] [(:core-node-id call) {:source {:syntax-id (:core-node-id call)}}]) calls))
+        types {:pending-a list-type :text-a :gravity.type/string :pending-b list-type :text-b :gravity.type/string
+               :transfer :gravity.type/never :text-c :gravity.type/string
+               :self-pending :gravity.type/unknown :self-text :gravity.type/unknown}
+        derive #(invoke-c7 'sh08-is-entry-values [%1 nodes %2 %3])
+        reason (fn [c t b] (:reason (derive c t b)))
+        result (derive census types 65536)]
+    (is (= :accepted (:status result)))
+    (is (= [list-type :gravity.type/string] (:parameter-types result)))
+    (is (= 2 (:normal-entry-count result)))
+    (is (= [:entry-a :entry-b :aborting] (mapv :call-core-node-id (:entries result))))
+    (is (= [true true false] (mapv :normal-invocation? (:entries result))))
+    (is (every? :callee-result-is-not-invocation-guard (:entries result)))
+    (is (= [:pending-a :text-a] (get-in result [:entries 0 :argument-node-ids])))
+    (is (= (:source (nodes :entry-a)) (get-in result [:entries 0 :source])))
+    (is (= result (derive census (assoc types :entry-a :gravity.type/never :entry-b :gravity.type/never) 65536)))
+    (is (= result (derive census (assoc types :self-pending :gravity.type/bool :self-text :gravity.type/bool) 65536)))
+    (is (= :private-self-entry-type-conflict
+           (reason census (assoc types :pending-b (assoc list-type :element-type :gravity.type/keyword)) 65536)))
+    (doseq [changed [(assoc types :pending-a :gravity.type/unknown)
+                     (assoc types :pending-a :gravity.type/list)
+                     (assoc types :pending-a {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]})
+                     (assoc types :text-b :gravity.type/integer)]]
+      (is (= :private-self-independent-entry-types-required (reason census changed 65536))))
+    (doseq [indexes [[0] [0 3] []]]
+      (is (= :private-self-normal-entry-required
+             (reason (assoc census :calls (mapv calls indexes) :edges (mapv edges indexes)) types 65536))))
+    (doseq [changed [(assoc-in census [:calls 1 :argument-node-ids] [])
+                     (assoc-in census [:edges 1 :callee-function-syntax-id] :other)
+                     (assoc census :edges [])
+                     (assoc census :calls 7)]]
+      (is (= :rejected (:status (derive changed types 65536)))))
+    (is (= result (derive census types (:work-count result))))
+    (is (= :private-self-work-limit (reason census types (dec (:work-count result)))))
+    (is (= :private-self-work-limit (reason census types 0)))))
+
+(deftest current-gravity-private-self-value-projections-development-kernel
+  (let [{:keys [core bindings forms]} (private-self-string-proof-data)
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        proof (:recursive-proof (invoke-c7 'sh08-ft-proof-results
+                                            [{:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
+                                             (assoc core :node-table nodes) bindings (:module core)]))
+        record (first (:function-records core))
+        skeleton (invoke-c7 'sh08-ft-function-type-skeleton [record (:module core)])
+        completed (invoke-c7 'sh08-ft-recursive-complete-function [skeleton proof])
+        seeds (invoke-c7 'sh08-ft-inference-context [true false proof {} {(:function-syntax-id record) completed}])
+        projected (invoke-c7 'sh08-ft-recursive-proof-input [proof])
+        rows (invoke-c7 'sh08-ft-recursive-constraint-ledger [proof])
+        roles (invoke-c7 'sh08-ft-recursive-call-proof-facts
+                         [proof (mapv #(hash-map :call-core-node-id %) (:incoming-call-node-ids proof))])
+        diagnostic (invoke-c7 'sh08-ft-recursive-diagnostic
+                              [{:status :rejected :reason :private-self-work-limit :work-count 65537} (:module core)])]
+    (is (= :accepted (:status proof)))
+    (is (= :gravity/sh08-private-self-value-proof-v1 (:domain projected)))
+    (is (= :closed-private-monomorphic-normal-entries-and-return-witness (:value-inference projected)))
+    (is (= [:gravity.type/string] (mapv :type (:parameters completed))))
+    (is (= :gravity.type/string (:return completed)))
+    (is (= [:pending-sh09] (:thrown-error-effects completed)))
+    (is (not (contains? completed :signature)))
+    (is (not (contains? completed :declaration-rule-version)))
+    (is (= :gravity.type/string (:span-binding seeds)))
+    (is (= completed (:helper-binding seeds)))
+    (is (= :gravity/sh08-private-self-value-constraint-v1 (get-in rows [0 :constraint-id-request :domain])))
+    (is (= :sh08-private-self-value-v1 (get-in rows [0 :producer-rule])))
+    (is (= :gravity.type/string (get-in rows [0 :rhs])))
+    (is (= [:incoming-private-entry-call :incoming-private-entry-call :self-recursive-call] (mapv :role roles)))
+    (is (= (:parameter-value-premise proof) (:parameter-value-premise projected)))
+    (is (= (:return-witness proof) (:return-witness projected)))
+    (is (not-any? #(contains? projected %) [:base-type :base-node-id :recursive-call-core-node-id :declared-return-type]))
+    (is (= ["C7-GENERIC" :bounded-private-self-work 65537 :private-self-work-limit]
+           ((juxt :rule :expected-type :actual-type :reason) diagnostic)))
+    (is (some #{:independent-complete-normal-entry-value-inference}
+              (invoke-c7 'sh08-ft-local-verification-checks [{:scope :private-inferred-monomorphic-named-self-value}])))))
+
 (deftest current-gravity-declared-self-value-development-kernel
   (let [base (-> (recursive-carrier)
                 (assoc-in [:function-records 0 :signature]

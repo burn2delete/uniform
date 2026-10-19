@@ -3329,12 +3329,59 @@ actual validation result is recorded in the backlog, not implied by listing
 the command here. Do not replay an unchanged expensive composition to edit
 this guidance.
 
-This increment excludes inferred recursive signatures, mutual or indirect
-recursion, arbitrary captures and non-core named helpers inside the self body,
+The private inferred extension below is separate from this declared path.
+This increment excludes mutual or indirect recursion, arbitrary captures and
+non-core named helpers inside the self body,
 and try/loop/recur inside that body. These are current implementation frontiers,
 not language-wide prohibitions. It proves neither termination nor TCO, fatal
 host-error normalization, full profile/provider legality, target completeness,
 authoritative migration or self-hosting.
+
+### Private ordinary direct-self inference
+
+Work on private recursive value inference in the existing C7 engine, effects
+and emitter owners; the ordinary-call runtime does not need another recursion
+mechanism. The narrow development case is one private, fixed-positive-arity
+function with one direct self-call. Its complete normal incoming-call census
+must independently establish one monomorphic parameter vector, and its actual
+return positions must provide an independent, consistent return witness.
+Supported value domains are the current atomic and homogeneous-List domains,
+not generic Integer, positional Vector or an unconstrained recursive type.
+
+Use the existing direct runner and select the changed component:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-recursive-function-type-test \
+  --exact current-gravity-private-self-value-projections-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-private-self-effects-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-private-self-lowering-development-kernel --fail-fast
+# Affected source composition, not a prerequisite for every ordinary edit:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-private-self-authenticated-composition --fail-fast
+```
+
+The source selector uses the existing paired `private-self-values` fixtures
+and rejected entry-conflict, return-conflict and missing-effect fixtures.
+Listing it is not a claim that its current run passed; actual outcomes belong
+in the backlog. Focused normalized kernels provide development feedback, not
+source compilation or migration evidence.
+
+Cold inference excludes recursive-result-dependent facts rather than treating
+them as independent seeds. A Never callee result is not an invocation guard;
+a definitely nonnormal operand prevents invocation. The derived parameter
+premise supplies type and immutability, never nonemptiness: `first` still needs
+the existing same-binding `empty?` branch proof. Effects and escaping errors
+are derived separately from bottom. Calls remain ordinary activations, not
+`recur` or TCO. Exported or escaping recursive functions, conflicting entries,
+mutual recursion, general captures, imported recursive producers and expanded
+recursive value domains remain outside this increment. No authoritative module
+migration, full W5, target, self-hosting or release status follows from it.
 
 ### Legacy bounded self-recursive body analysis
 
