@@ -1,0 +1,30 @@
+(ns self-hosting.sh08.fixed-integral-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe)
+  (:exports [compare-i8 compare-i16 compare-i32 compare-i64 compare-u8 compare-u16 compare-u32 compare-u64 main]))
+
+(defn compare-i8 [left :- I8 right :- I8] :- Bool
+  (not= left right))
+
+(defn compare-i16 [left :- I16 right :- I16] :- Bool
+  (not= left right))
+
+(defn compare-i32 [left :- I32 right :- I32] :- Bool
+  (not= left right))
+
+(defn compare-i64 [left :- I64 right :- I64] :- Bool
+  (not= left right))
+
+(defn compare-u8 [left :- U8 right :- U8] :- Bool
+  (not= left right))
+
+(defn compare-u16 [left :- U16 right :- U16] :- Bool
+  (not= left right))
+
+(defn compare-u32 [left :- U32 right :- U32] :- Bool
+  (not= left right))
+
+(defn compare-u64 [left :- U64 right :- U64] :- Bool
+  (not= left right))
+
+(defn main [] :- Bool (not= 7 8))
