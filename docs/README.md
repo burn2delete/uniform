@@ -43,6 +43,10 @@ evidence tracked below.
   validation starting points and explicit finish line. The
   [self-hosting backlog](self-hosting-slice-backlog.md) tracks live status and
   accepted evidence separately from implementation progress.
+- [Proposed current compiler migration cohort](self-hosting-current-migration-cohort.md)
+  maps a first module endpoint, required seed/build dependencies, retained
+  evidence and invalidation, and the open broader compiler closure. It is not
+  admission, execution authority or a prerequisite for ordinary edits.
 - [Full language implementation gap map](full-language-implementation-gap-map.md)
   tracks the open work from the current public release surface to complete
   designed-language implementation and self-hosting.
