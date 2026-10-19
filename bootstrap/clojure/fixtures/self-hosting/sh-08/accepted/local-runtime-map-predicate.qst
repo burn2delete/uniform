@@ -1,0 +1,20 @@
+(ns example.runtime-map-predicate
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn classify-map [value :- Map]
+  (map? value))
+
+(defn classify-keyword [value :- Keyword]
+  (map? value))
+
+(defn main []
+  (if (classify-map '{})
+    (if (classify-map '{:nil nil :false false :code (println "stored")})
+      (if (classify-keyword :stored) false true)
+      false)
+    false))

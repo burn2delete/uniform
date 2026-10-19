@@ -3656,6 +3656,49 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Map family classification
+
+STD3 owns unary `map?`. The bounded JVM implementation classifies an
+independently established Map as true and other supported closed value families
+as false. Unknown remains unsupported, and Never prevents invocation. Normal
+operand evaluation happens once in a non-tail position with effects preserved;
+classification does not evaluate stored keys/values, allocate a collection or
+grant key/member, cardinality, presence or ordering facts.
+
+Edit the same C7, C8, typed emitter and runtime owners used for the adjacent
+collection queries. Start with the existing direct focused checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-map-predicate-development-kernel \
+  --exact sh08-map-predicate-throw-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-map-predicate-source-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-predicate-lowering-runtime-development-kernel --fail-fast
+```
+
+These exercise owning Gravity implementations using normalized development
+inputs, including source-bound reconstruction; they do not construct a fresh
+source composition or admit a module revision. Changes to the public
+typed/effected/lowered composition require its affected accepted and rejected
+source checks separately:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-map-predicate-fixtures-development-kernel \
+  --exact current-gravity-map-predicate-authenticated-composition --fail-fast
+```
+
+`keys`, collection conversion/equality and unchanged
+W5 exact-key validation remain separate slices, not predicate-result facts.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

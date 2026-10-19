@@ -2813,6 +2813,86 @@ migration remain outstanding. This increment does not complete SH-07,
 self-hosting, seed retirement or release. Direct focused tests are development
 feedback, not renewed authority for earlier compiler snapshots.
 
+### Map family classification: development implementation
+
+Unary `map?` classifies an independently established Map as true and other
+supported closed value families as false. Normal results are Bool, Unknown
+remains an unsupported implementation frontier, and Never prevents invocation.
+Operand evaluation is once-only and non-tail, with effects and transfers
+preserved. Classification neither evaluates stored keys/values nor allocates
+a collection, and establishes no key/member types, cardinality, presence or
+order facts. `gravity.collections` owns the semantics behind the existing
+`gravity.core` compatibility binding.
+
+The C7, C8 and typed-emitter owners independently reconstruct the
+source/operator/binding, operand, descriptor, facts and ordered producer rows.
+The runtime validates and executes unary IR against actual values. Existing
+cumulative work, rejection work and throw-consumer
+classification remain in force. The JVM eligibility fence belongs only to the
+new predicate; affected existing integer-predicate eligibility is preserved.
+The runtime's public exports and 47-function inventory are unchanged.
+
+The focused batch passed eight tests/1,491 assertions: four new Map kernels
+(682 assertions) and four affected Integer-predicate regressions (809).
+Selected work took 3.928 seconds after 9.351 seconds loading SH01 and 1.072
+seconds loading C7 at 2 GiB. Normalized source/descriptor tamper, ordered-ledger
+census, key-presence-fact forgery, work/throw accounting, inert stored values,
+once/transfer behavior and twelve cross-owner JVM/old-Integer eligibility
+checks are covered. The batch is independently accepted, not authentic source
+composition, other-target execution or authoritative module migration.
+
+Fixture preflight passed one test/15 assertions for the five Gravity/QST
+pairs. The changed-source run completed FAILED: one test, 228 passing and two
+failing assertions, zero errors. Of the passes, six are runtime-source loader
+checks and 222 are composition checks. Seven fresh products cover four
+accepted chains and three Gravity negatives. All twelve asserted top-level
+function-table entry invocations returned the expected values, including
+empty/heterogeneous quoted Maps, inert stored call-shaped data, Keyword false
+classification and actual Never/throw/catch behavior. This is not a census of
+nested activations or execution of an unchanged W5 helper.
+
+Both failures are the same harness expectation in the transfer program's G/Q
+chains: it expected one `:literal` operand and one `:throw`, while the fixture
+uses a quoted empty Map and correctly emits one `:quote` and one `:throw`.
+Independent tracing confirmed the existing quoted-data lowerer's behavior;
+no compiler change is required for this mismatch. The failed aggregate remains
+failed. Correcting that one expected keyword is not a fresh green source run
+or permission to rebuild unchanged source products merely to change its label.
+The expectation is now corrected. A read-only retained-log check matched both
+actual `{:quote 1 :throw 1}` observations; reversing only that expected-keyword
+edit reproduces the executed test-file hash. Production and fixture bytes are
+unchanged. This validates the oracle correction, not a passing replacement
+source aggregate.
+
+C5/C6 status assertions, C7/C8 acceptance and verification guards before each
+entry batch, paired typed/effect/lowering comparisons and five additionally
+tracked public C7 assembly/forgery gates passed. The key-presence descriptor
+tamper changes a field through its copied views, not a coherently re-sealed
+all-field C7 proof. The re-sealed C8 dependency deletion is a graph-forgery
+check, not a source-program policy rejection. All three complete negative
+vectors retain the intended `map-predicate-operand-type-required` for Unknown
+or `map-predicate-arity-mismatch` for zero/two operands, each followed by
+`unsupported-or-unresolved-core-node-type`. Negative QST fixtures received
+byte/parser parity only; unasserted rejected-product verification statuses
+are not credited.
+
+Selected source work took 608.661 seconds after 9.810 seconds of namespace
+loading at 2 GiB. Existing-call timings include nested work: C5 construction
+took 24.408-33.459 seconds per product, C6 construction 22.846-29.889, and C6
+verification 27.601-32.686. These are inclusive observations, not exclusive
+CPU costs, a representation proof or a speedup. No metric-only source replay
+was performed. Full W5, other targets/native execution, authoritative migration,
+self-hosting, seed retirement and release remain unestablished.
+
+The next `keys` dependency has a specific unresolved contract boundary: an
+ordered List result exposes Map enumeration, while current bare Map facts do
+not promise an ordered traversal policy. Host `keys` order or an unused
+`first` result does not prove stage equivalence. Settle a deterministic policy
+for an independently established supported key domain and check insertion
+permutations, representation transitions and actual serialization before
+claiming that operation. This is bounded follow-up, not a comparator-framework
+refactor or a prerequisite for the independent `keyword?` slice.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

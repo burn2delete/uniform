@@ -860,7 +860,7 @@
                   (if (contains? '#{nth conj contains? dissoc} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
-                  (if (contains? '#{set integer? vector? count first rest empty?} function)
+                  (if (contains? '#{set map? integer? vector? count first rest empty?} function)
                     (if (= fields #{:op :function :args}) (if (= 1 (count arguments)) (map? (first arguments)) false) false)
                   (if (= function 'get)
                     (if (= fields #{:op :function :args})
@@ -953,7 +953,7 @@
                    arguments environment output [] functions path [] pool)]
               (if (= :normal (get arguments-result 2))
               (let [values (first arguments-result) left (first values) right (second values)]
-              (if (contains? '#{set integer? vector? first rest empty?} function)
+              (if (contains? '#{set map? integer? vector? first rest empty?} function)
                 (if (= function 'set)
                   (let [conversion (p15-s23-runtime-set-conversion-work left 65536)]
                     (if (= :accepted (get conversion :status))
@@ -961,8 +961,8 @@
                       [{:diagnostic "P15S23X002" :reason (get conversion :reason) :operation operation
                         :work-count (get conversion :work-count) :work-count-kind (get conversion :work-count-kind)}
                        (second arguments-result) :rejected]))
-                (if (contains? '#{integer? vector?} function)
-                  [(if (= function 'integer?) (integer? left) (vector? left)) (second arguments-result) :normal]
+                (if (contains? '#{map? integer? vector?} function)
+                  [(if (= function 'map?) (map? left) (if (= function 'integer?) (integer? left) (vector? left))) (second arguments-result) :normal]
                 (if (list? left)
                   [(if (= function 'empty?) (= 0 (count left))
                      (if (= function 'first) (first left) (rest left))) (second arguments-result) :normal]
