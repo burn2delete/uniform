@@ -3,5 +3,5 @@
   (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
   (:exports [main]))
 
-(defn main [] :- Set
+(defn main []
   (set [:source "mixed"]))

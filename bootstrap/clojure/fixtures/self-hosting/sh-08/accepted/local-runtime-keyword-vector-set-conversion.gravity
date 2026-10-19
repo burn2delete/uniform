@@ -10,13 +10,13 @@
    :build-effects :compiler :pass-contract :language-facets :target-scope
    :package-lock :provider-policy])
 
-(defn c16-type-check-fields [] :- Set
+(defn c16-type-check-fields []
   (set (conj w5-c16-semantic-fields :source)))
 
 (defn field-count []
   (count (c16-type-check-fields)))
 
-(defn field-set? [] :- Bool
+(defn field-set? []
   (set? (c16-type-check-fields)))
 
 (defn input-count []
@@ -31,10 +31,10 @@
 (defn empty-count []
   (count (set [])))
 
-(defn transferred [] :- Bool
+(defn transferred []
   (try
     (set (throw "stop"))
     (catch String problem true)))
 
-(defn main [] :- Bool
+(defn main []
   (field-set?))
