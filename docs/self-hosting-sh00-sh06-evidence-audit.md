@@ -539,10 +539,13 @@ clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh06-resolution-
 clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-b-frontend-macro-development-coverage
 ```
 
-Separate envelope, syntax, resolver and reader selectors exist, but have not
-run. Select one subject at a time when its coverage decision is needed; do not
-repeat the unchanged macro product merely to run another subject. All three
-partial groups remain open and the resolver remains development-unadmitted.
+At that checkpoint, separate envelope, syntax, resolver and reader selectors
+existed but had not run. The later envelope and syntax sections record their
+actual results and supersede that unrun status for those subjects. Resolver and
+reader remain unrun. Select one subject at a time when its coverage decision is
+needed; do not repeat the unchanged macro product merely to run another
+subject. All three partial groups remain open and the resolver remains
+development-unadmitted.
 
 The failed attempt took 221.827 seconds after 7.066 seconds of loading. The
 corrected macro check took 330.949 seconds after 6.899 seconds of loading at
@@ -701,6 +704,32 @@ remaining syntax/resolver/reader subjects and other explicit negative criteria
 still need bounded coverage decisions. SH-05.1, SH-05.6 and SH-06.6 remain open;
 the resolver remains development-unadmitted. No migration or release claim
 follows from this composition.
+
+### Syntax frontend composition
+
+The existing `sh06-b-frontend-syntax-development-coverage` selector ran once
+at clean development revision `e61b4fd9` and passed one test/19 assertions.
+It constructed the distinct `bootstrap/syntax.gravity` subject: 102
+source-derived `defn` expansions, 105 C5 definitions, 2,846 references and a
+2,943-node hosted Core result. These are analyzed/expanded population counts,
+not a count of executed function bodies.
+
+All selected source-byte/C2/C3 joins, expansion trace/hygiene/origin checks,
+Stage0 expansion parity, reference/binding joins, fresh C5 verification and
+authenticated hosted-C6 identity/source-map checks completed. The observer
+reported zero owner-compilation reads and zero forbidden subject-read attempts;
+that is not a claim of zero filesystem I/O across construction. Independent
+review accepted the complete scoped result.
+
+Selected work took 585.898 seconds after 6.875 seconds of namespace loading
+with a 2 GiB heap. Construction and repeated verification remain inside that
+interval; no per-call cost dominance or speedup was measured. No macro,
+envelope or unchanged proof product was replayed for this subject. The resolver
+and reader subjects remain unrun, and the selected closure's other explicit
+negative criteria are not replaced by this positive composition. SH-05.1,
+SH-05.6 and SH-06.6 remain open; the resolver remains development-unadmitted.
+This does not execute the Gravity C6 implementation, admit the current compiler
+closure, or establish self-hosting, seedless or release support.
 
 ### Invalidation and reuse
 
