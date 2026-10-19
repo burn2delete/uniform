@@ -6245,14 +6245,23 @@
                     (if (map? type)
                       (let [work (+ used 3)]
                         (if (> work limit) {:status :rejected :reason :work-limit :work-count work}
-                          (if (if (= 2 (count type))
+                          (let [size (count type)]
+                            (if (= 3 size)
+                              (if (= :gravity.type/vector (get type :kind))
+                                (let [domain (body-ve-domain arguments (- limit work))
+                                      total (+ work (get domain :work-count))]
+                                  (if (= :accepted (get domain :status))
+                                    {:status :accepted :comparison-domain :vector :vector-domain-work (get domain :work-count) :work-count total}
+                                    {:status :rejected :reason (if (= :vector-equality-work-limit (get domain :reason))
+                                                                :vector-inequality-work-limit (get domain :reason))
+                                     :work-count total}))
+                                {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})
+                              (if (if (= 2 size)
                                 (if (= :gravity.type/nil-or (get type :kind))
                                   (let [value (get type :value-type)]
                                     (if (keyword? value)
                                       (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string
-                                                   :gravity.type/symbol :gravity.type/keyword} value) false)) false) false)
-                            (recur (+ index 1) work integral-type true)
-                            {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))
+                                                   :gravity.type/symbol :gravity.type/keyword} value) false)) false) false) (recur (+ index 1) work integral-type true) {:status :rejected :reason :nonnumeric-atomic-type-required :work-count work})))))
                       {:status :rejected :reason :nonnumeric-atomic-type-required :work-count next})))))))
         {:status :rejected :reason :binary-type-input-required :work-count 1}))))
 
@@ -6353,7 +6362,31 @@
                            :collections :unsupported :construction :none :lowering :owned-equality-branch-complement
                            :entry-contract :type-conforming-typed-calls}
                    :invalidation (conj (conj (conj (conj (get header :invalidation) :numeric-equality) :integral-type) :numeric-mode) :value-policy))
-            header))) nil)) nil) nil))
+            (if (= :vector (get validation :comparison-domain))
+              (assoc header :intrinsic :gravity.core/vector-value-inequality
+                     :vector-equality {:version :sh08-vector-inequality-v1 :semantic-owner 'gravity.collections
+                            :equality-version :sh08-vector-equality-v1
+                            :equality-policy {:domain :finite-persistent-vectors :members :recursive-vector-and-supported-atomic
+                         :count :equal :order :corresponding-values :leaves :original-values
+                         :nil-bearing :compare-original-values :cross-family :actual-value-families
+                         :nested-vector-versus-atomic :false
+                         :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
+                            :type-domain {:shape :literal-positional :maximum-width 1024 :maximum-depth 128
+                                          :maximum-work 65536 :scalar-leaves [:nil :boolean :character :string :symbol :keyword]
+                                          :nil-or-leaves :five-closed-nonnumeric-atomic-views
+                                          :whole-nil-or-vector :unsupported :nested-never :unsupported
+                                          :validation :both-complete-domains-before-value-comparison}
+                            :domain-type-work (get validation :vector-domain-work)}
+                     :inequality-policy {:operation :complement-of-binary-vector-value-equality
+                            :domain :finite-persistent-vectors :members :recursive-vector-and-supported-atomic
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail
+                            :nil-bearing :compare-original-values :cross-family :actual-value-families
+                            :cross-collection :unsupported :identity :unobserved :coercion :none :normalization :none :locale :none
+                            :numeric :unsupported :collections :finite-persistent-vectors :construction :none
+                            :payload-evaluation :none :mutation :none :lowering :owned-equality-branch-complement
+                            :entry-contract :type-conforming-typed-calls}
+                     :invalidation (conj (conj (conj (get header :invalidation) :vector-equality) :equality-domain) :value-policy))
+              header)))) nil)) nil) nil))
 
 (defn body-ane-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-atomic-inequality-constraint-v1 :application descriptor}
@@ -6364,7 +6397,9 @@
               :direct-effects (get descriptor :direct-effects)
               }]
                 (if (contains? descriptor :numeric-equality)
-                  (assoc solution :numeric-equality (get descriptor :numeric-equality)) solution))
+                  (assoc solution :numeric-equality (get descriptor :numeric-equality))
+                  (if (contains? descriptor :vector-equality)
+                    (assoc solution :vector-equality (get descriptor :vector-equality)) solution)))
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
@@ -6378,7 +6413,7 @@
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
 
-     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source :audited-atomic-inequality-intrinsic}))
+     :dispatch :direct-atomic-inequality :applied-atomic-inequality descriptor :effect-facts-source (if (contains? descriptor :vector-equality) :audited-vector-inequality-intrinsic :audited-atomic-inequality-intrinsic)}))
 
 (defn body-ane-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
@@ -6418,7 +6453,7 @@
                         (if (= :accepted (get validation :status))
                           (recur (rest remaining) work
                             (assoc checks (get call :core-node-id) {:argument-types arguments :validation validation}))
-                          (assoc (body-failure (if (= :work-limit (get validation :reason)) :body-deferred-work-limit
+                          (assoc (body-failure (if (contains? #{:work-limit :vector-inequality-work-limit} (get validation :reason)) :body-deferred-work-limit
                                                  :body-atomic-inequality-operand-type-required)) :work-count work)))
                       (assoc (body-failure :body-atomic-inequality-arity-mismatch) :work-count used)))))) (assoc (body-failure :body-atomic-inequality-source-forms-required) :work-count base))))))) (assoc (body-failure :body-atomic-inequality-families-required) :work-count prefix))))))
 
