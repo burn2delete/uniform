@@ -11575,6 +11575,190 @@
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
 
+(deftest current-gravity-fixed-integral-inequality-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "local-runtime-fixed-integral-inequality" 9]
+                                         ["rejected" "fixed-integral-inequality-mixed" 2]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))))
+
+(deftest current-gravity-fixed-integral-inequality-authenticated-composition
+  ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-fixed-integral-inequality.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bn-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Fixed-integral inequality C7 source prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Fixed-integral inequality C7 verification prerequisite rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        descriptors (mapv :applied-atomic-inequality (filter #(= :direct-atomic-inequality (:dispatch %)) (:call-type-facts facts)))
+        fixed-descriptors (filterv #(= :sh08-fixed-integral-inequality-v1 (get-in % [:numeric-equality :version])) descriptors)
+        rows (filterv #(= :sh08-atomic-inequality-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        equality-ir (filterv #(and (= :builtin-call (:op %)) (= '= (:function %))) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Fixed-integral C8 prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification)) (throw (ex-info "Fixed-integral C8 verification rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        fixed-specs [['compare-i8 :gravity.type/i8 -128 127] ['compare-i16 :gravity.type/i16 -32768 32767]
+                     ['compare-i32 :gravity.type/i32 -2147483648 2147483647]
+                     ['compare-i64 :gravity.type/i64 -9223372036854775808N 9223372036854775807N]
+                     ['compare-u8 :gravity.type/u8 0 255] ['compare-u16 :gravity.type/u16 0 65535]
+                     ['compare-u32 :gravity.type/u32 0N 4294967295N]
+                     ['compare-u64 :gravity.type/u64 0N 18446744073709551615N]]
+        ranges (into {} (map (fn [[_ family low high]] [family [low high]]) fixed-specs))
+        cases (vec (mapcat (fn [[function family low high]]
+                            (concat [[function family low low] [function family low high] [function family high high]]
+                                    (when (contains? #{:gravity.type/i64 :gravity.type/u64} family)
+                                      [[function family 9007199254740992N 9007199254740993N]
+                                       [function family 9007199254740995N 9007199254740996N]]))) fixed-specs))
+        check-arguments (fn [family arguments]
+                          (let [[low high] (ranges family)]
+                            (doseq [value arguments]
+                              (is (integer? value))
+                              (when (integer? value) (is (<= low value high))))
+                            (when-not (every? #(and (integer? %) (<= low % high)) arguments)
+                              (throw (ex-info "Nonconforming source-helper test input" {:type family :arguments arguments})))))
+        t5 (System/nanoTime)
+        results (mapv (fn [[function family left right]]
+                        (let [parameters (mapv :type (get-in functions [function :parameters]))
+                              _ (is (= [family family] parameters))
+                              _ (when-not (= [family family] parameters)
+                                  (throw (ex-info "Compiled helper signature premise failed" {:function function :parameters parameters})))
+                              arguments [left right] expected (not= left right)
+                              _ (check-arguments family arguments)
+                              actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args (mapv #(hash-map :op :literal :value %) arguments)}
+                                                {} "" (:functions assembled) []])]
+                          (is (= [expected "" :normal] actual) (pr-str [function arguments]))
+                          ;; These checks are test-input preconditions, not a width activation API.
+                          (check-arguments family arguments)
+                          (let [reference (atom nil)
+                                output (with-out-str (reset! reference (original runtime assembled function arguments)))]
+                            (is (= [@reference output :normal] actual) (str function " same emitted IR parity")))
+                          actual)) cases)
+        main-result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                              [{:op :function-call :function 'main :args []} {} "" (:functions assembled) []])
+        main-reference (atom nil)
+        main-output (with-out-str (reset! main-reference (original runtime assembled 'main [])))
+        t6 (System/nanoTime)]
+    (is (= 9 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 9 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 9 (count descriptors) (count rows) (count equality-ir)))
+    (is (= 8 (count fixed-descriptors)))
+    (is (= {:sh08-fixed-integral-inequality-v1 8 :sh08-integer-inequality-v1 1}
+           (frequencies (map #(get-in % [:numeric-equality :version]) descriptors))))
+    (is (= {:normal 9} (frequencies (map :application descriptors))))
+    (is (empty? (filter #(and (= :builtin-call (:op %)) (= 'not= (:function %))) instructions)))
+    (is (empty? (filter #(= :sh08-atomic-equality-v1 (:producer-rule %)) (:constraint-ledger facts)))
+        "Owned equality IR creates no fabricated source equality facts")
+    (is (= 28 (count cases) (count results)))
+    (is (= [true "" :normal] main-result [@main-reference main-output :normal]))
+    (doseq [descriptor descriptors]
+      (let [id (:call-core-node-id descriptor) numeric (:numeric-equality descriptor)
+            family (:integer-type numeric) fixed? (not= :gravity.type/integer family)]
+        (is (= 'not= (:operation descriptor)))
+        (is (= 'gravity.core (:semantic-owner descriptor)))
+        (is (= [family family] (:argument-types descriptor)))
+        (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))
+        (is (= 'gravity.math (:semantic-owner numeric)))
+        (is (= 'gravity.math.core (:layer0-owner numeric)))
+        (is (= :proof-required (:numeric-mode numeric)))
+        (is (= :proven-safe (:safety numeric)))
+        (is (= {:domain :same-integral-type :comparison :original-integer-values :conversion :none
+                :arithmetic :none :overflow :impossible :rounding :none :cross-type :unsupported} (:equality-policy numeric)))
+        (is (= numeric (get-in (first (filter #(= id (get-in % [:lhs :core-node-id])) rows)) [:solution :numeric-equality])))
+        (is (= (if fixed? :same-integral-type [:integer]) (get-in descriptor [:inequality-policy :domain])))
+        (when fixed? (is (= family (get-in descriptor [:inequality-policy :integer-type]))))
+        (is (= (if fixed? :same-established-fixed-integral-type :same-established-integer) (get-in descriptor [:inequality-policy :numeric])))
+        (is (= :unsupported (get-in descriptor [:inequality-policy :cross-family]) (get-in descriptor [:inequality-policy :nil-bearing])))
+        (is (= :left-to-right-once (get-in descriptor [:inequality-policy :operand-evaluation])))
+        (is (= :non-tail (get-in descriptor [:inequality-policy :operand-position])))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{} (get-in graph [:nodes id :direct])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+    (doseq [[function family] fixed-specs]
+      (is (= [family family] (mapv :type (get-in functions [function :parameters]))))
+      (is (= :gravity.type/bool (get-in functions [function :return])))
+      (is (= #{} (get-in graph [:functions (get-in functions [function :function-id]) :inferred]))))
+    (is (= #{} (get-in graph [:functions (get-in functions ['main :function-id]) :inferred])))
+    (let [descriptor (first fixed-descriptors) numeric (:numeric-equality descriptor)
+          forged-numeric (assoc numeric :numeric-mode :wrapping)
+          forged (assoc descriptor :numeric-equality forged-numeric)
+          hostile (walk/prewalk #(cond (= descriptor %) forged (= numeric %) forged-numeric :else %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [id (:call-core-node-id (first fixed-descriptors)) forged (reseal effects (update-in graph [:nodes id :dependencies] pop))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding forged)))))
+    (is (= 2 (count @verified)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/fixed-integral-inequality-mixed.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bn-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(and (= ["C7-TYPE-MISMATCH" :atomic-inequality-operand-type-required] ((juxt :rule :reason) %))
+                      (= [:gravity.type/i8 :gravity.type/u8] (:actual-type %))) diagnostics) (pr-str diagnostics))
+      (println (pr-str {:bn-fixed-integral-inequality-negative true :diagnostics diagnostics})))
+    (println (pr-str {:bn-fixed-integral-inequality-positive true :fixed-helper-entry-invocations (count results)
+                      :function-table-entry-invocations (inc (count results)) :same-emitted-ir-seed-control-entries (inc (count results))
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :entry-contract :conditional-type-conforming-entry-compatibility
+                      :argument-preconditions [:integer-representation :declared-signed-or-unsigned-range]
+                      :argument-transformations :none :runtime-activation :arity-only
+                      :fixed-width-activation-validation :not-established :source-integer-to-fixed-conversion :not-exercised
+                      :host-ffi-admission :not-established :whole-consumer-module-coverage false :authority :non-authoritative
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
+
 (deftest current-gravity-integer-inequality-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
