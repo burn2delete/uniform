@@ -3472,6 +3472,42 @@ mutual recursion, general captures, imported recursive producers and expanded
 recursive value domains remain outside this increment. No authoritative module
 migration, full W5, target, self-hosting or release status follows from it.
 
+### Private indexed ordinary recursion
+
+Change the owning C7 pass for type/proof behavior, `effects.gravity` for C8,
+the typed emitter for lowering and `runtime.gravity` for activation semantics.
+Use paired `local-runtime-indexed-private-self` accepted fixtures and the six
+`indexed-private-self-*` rejected pairs. They delimit the private zero-entry,
+same-Vector/same-needle unit-step family; they do not make broader recursion
+language-illegal. Existing public compiler interfaces remain unchanged.
+
+Start with the affected direct kernel, adding adjacent kernels when its
+interface or behavior changes:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh08-recursive-function-type-test \
+  --exact current-gravity-indexed-private-rejection-development-kernel --fail-fast
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-indexed-private-source-context-development-kernel --fail-fast
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-indexed-private-lowering-runtime-development-kernel --fail-fast
+# Costly affected source composition, not the ordinary edit-to-test loop:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-indexed-private-authenticated-composition --fail-fast
+```
+
+The source selector constructs fresh products and exercises function-table
+activations, not `execute-closed-plan`. Its recorded run took about 737 seconds;
+do not replay it merely to change labels, collect metrics or restate unchanged
+evidence. Runtime, producer or downstream composition changes determine when a
+new affected integration run is useful. Focused checks are development feedback;
+fresh provenance/equivalence/bootstrap evidence belongs to an explicit stable
+revision admission decision. The backlog records actual outcomes and exclusions.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

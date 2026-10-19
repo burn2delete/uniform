@@ -1,0 +1,17 @@
+(ns example.runtime-indexed-private-self
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-se-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-se-member-from? values value (+ index 1)))))
+
+(defn main []
+  false)
