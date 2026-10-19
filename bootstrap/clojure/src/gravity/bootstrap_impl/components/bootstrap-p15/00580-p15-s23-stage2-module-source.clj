@@ -183,6 +183,10 @@
                                 (range 1 (count form)) (rest form)))))
               (vector? form)
               (vec (mapcat (fn [index item] (walk item (conj path index) blocked?)) (range (count form)) form))
+              (and (not blocked?) (map? form) (contains? definition :p15-s23-stage2-map-order))
+              (vec (mapcat (fn [[slot _ value]] (walk value (conj path (inc (* 2 slot))) blocked?))
+                           (p15-s23-stage2-module-map-entries
+                            (assoc definition :p15-s23-sh07-enclosing-function (:name definition)) form path)))
               (coll? form)
               (mapcat #(walk % path true) (if (map? form) (mapcat identity form) form))
               :else []))]

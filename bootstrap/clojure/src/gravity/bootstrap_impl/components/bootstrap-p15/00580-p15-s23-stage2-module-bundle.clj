@@ -19,17 +19,24 @@
               owned (filterv #(= (:source-span %) (:span syntax)) refs)
               imported (filterv #(= :import (:binding-class (get bindings (:binding-id (get resolutions (:syntax-id %)))))) owned)
               sites (p15-s23-stage2-module-call-sites (assoc definition :source-path (:source-path caller) :p15-s23-stage2-map-order (:map-order caller)))
+              map-index (when (and (seq sites) (some (fn [[[owner _] _]] (= name owner)) (:map-order caller)))
+                          (p15-s23-stage2-module-map-reference-index caller syntax definition))
               candidates (group-by :symbol imported)
               counters (atom {})]
           (when-not (every? #(and (= :operator (:position %)) (namespace (:symbol %))) imported)
             (p15-s23-stage2-module-fail! :qualified-direct-import-calls-only {:function name}))
-          (when-not (= (frequencies (map :symbol sites)) (frequencies (map :symbol imported)))
+          (when-not (if map-index
+                      (and (= (count sites) (count imported))
+                           (= (set (map :syntax-id (vals map-index))) (set (map :syntax-id imported))))
+                      (= (frequencies (map :symbol sites)) (frequencies (map :symbol imported))))
             (p15-s23-stage2-module-fail! :source-callsite-resolution-coverage {:function name}))
           (mapv
            (fn [{:keys [path symbol form]}]
-             (let [ordinal (get @counters symbol 0)
-                   _ (swap! counters update symbol (fnil inc 0))
-                   reference (nth (get candidates symbol) ordinal)
+             (let [ordinal (when-not map-index (get @counters symbol 0))
+                   _ (when-not map-index (swap! counters update symbol (fnil inc 0)))
+                   reference (if map-index (get map-index path) (nth (get candidates symbol) ordinal))
+                   _ (when-not (= symbol (:symbol reference))
+                       (p15-s23-stage2-module-fail! :map-reference-callsite-mismatch {:callsite path :symbol symbol}))
                    binding (get bindings (:binding-id (get resolutions (:syntax-id reference))))
                    callee (get callees (get-in binding [:semantic-span :ordinary-module-artifact-id]))
                    _ (when-not callee (p15-s23-stage2-module-fail! :missing-dependency-plan {:symbol symbol}))
