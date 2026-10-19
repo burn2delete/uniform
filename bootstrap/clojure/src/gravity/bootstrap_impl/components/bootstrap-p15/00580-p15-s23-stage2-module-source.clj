@@ -163,12 +163,21 @@
               (seq? form)
               (let [op (first form)
                     qualified? (and (symbol? op) (namespace op))
-                    blocked? (or blocked? (contains? '#{let loop fn} op))]
+                    blocked? (or blocked? (contains? '#{loop fn} op))]
                 (when (and qualified? blocked?)
                   (p15-s23-stage2-module-fail! :unsupported-nested-module-call {:callsite path :symbol op}))
-                (into (if qualified? [{:function (:name definition) :path path :symbol op :form form}] [])
-                      (mapcat (fn [index arg] (walk arg (conj path index) blocked?))
-                              (range 1 (count form)) (rest form))))
+                (if (= 'let op)
+                  (let [bindings (second form)]
+                    (when-not (and (vector? bindings) (even? (count bindings))
+                                   (every? symbol? (take-nth 2 bindings)))
+                      (p15-s23-stage2-module-fail! :symbol-only-sequential-let-required {:callsite path}))
+                    (into (vec (mapcat (fn [index] (walk (nth bindings index) (conj path 1 index) blocked?))
+                                       (range 1 (count bindings) 2)))
+                          (mapcat (fn [index body] (walk body (conj path index) blocked?))
+                                  (range 2 (count form)) (drop 2 form))))
+                  (into (if qualified? [{:function (:name definition) :path path :symbol op :form form}] [])
+                        (mapcat (fn [index arg] (walk arg (conj path index) blocked?))
+                                (range 1 (count form)) (rest form)))))
               (coll? form)
               (mapcat #(walk % path true) (if (map? form) (mapcat identity form) form))
               :else []))]

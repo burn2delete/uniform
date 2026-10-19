@@ -4301,11 +4301,33 @@ but exported DATA is not callable and imported DATA reads remain unsupported.
 This is an immutable seed subset, not a language-wide restriction on `def`.
 Arbitrary initializer calls, bare-symbol aliases, forward/dependency initializer
 references, duplicate definitions, variadics and source/seed operator-shadowing
-mismatches reject. Imported calls
-under `let`, `loop`, nested functions or collection expressions are not yet
-supported; forwarding nested DATA through a parameter is distinct from those
+mismatches reject. Imported calls in symbol-only sequential `let` initializers
+and bodies are supported, including nested scopes, shadowing and multiple body
+forms. Initializers see earlier bindings, not later ones; argument evaluation
+remains once, left-to-right. Imported calls under `loop`, nested functions or
+collection expressions are not yet supported; forwarding nested DATA through a parameter is distinct from those
 executable forms. Quoted DATA remains inert. General module initialization and
 checked runtime linking are separate work, not language-level prohibitions.
+
+For module-call path or sequential-let changes, start with the dedicated cheap
+checks and then the affected real composition:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-lexical-call-test \
+  --exact stage2-module-let-fixture-parity \
+  --exact stage2-module-let-call-path-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-lexical-call-test \
+  --exact stage2-module-let-authenticated-composition --fail-fast
+```
+
+The second command constructs genuine Gravity caller/callee C5 products and
+executes the development module bundle. The paired `.qst` fixtures establish
+byte/parser parity only, not a second authenticated execution. Private imports,
+wrong arity and a coherently resealed route substitution reject. This temporary
+Clojure-seed composition does not establish checked user-call effects, runtime
+ownership, authoritative migration or self-hosting.
 
 Use the existing runtime test namespace, not an admission runner:
 
