@@ -5218,10 +5218,56 @@ existing let checks, scoped coverage is 17 unique tests / 254 assertions,
 zero failures or errors across the recorded selections. LOC validation passed
 for 2,020 files, maximum 250 lines and zero exceptions.
 
-Commands are in the development-verification guide. Imported collection and
-nested-function contexts, general module initialization, checked user-call
+Commands are in the development-verification guide. At that revision, imported
+collection and nested-function contexts were unsupported. General module initialization, checked user-call
 effects, Effects token-bound fit and the retained C9 source integration remain
 open. This does not establish current-cohort admission, milestone completion,
+self-hosting or release support.
+
+### Vector-context compiler-module calls: development increment
+
+The existing `00575` vector compiler and `00580` callsite walker support
+qualified imports in function-body vector expressions. Elements retain ordered
+zero-based paths through nested vectors, let initializers and loop bodies.
+Only the existing module-route context changes; raw/B51 compilation retains
+the original module object. Runtime, bundle schema, public interfaces and IR
+are unchanged. Quotes remain inert, and inherited function/map/set fences
+still reject imported calls. Top-level `def` initializers remain literal-only.
+
+The new cheap selection passed three tests / 50 assertions, including exact
+paths, paired parser parity and original diagnostic-order controls. Affected
+let and loop selections passed two / 25 and three / 61 respectively: eight
+tests / 136 assertions across three separate runs, zero failures or errors.
+Exactly four obsolete vector negatives in those owning tests were replaced
+with still-unsupported map/set cases; the shared SH-01 fn control is unchanged.
+No old source composition was repeated for those oracle updates.
+
+The first genuine Gravity source composition passed one test / 26 assertions.
+Six authenticated import routes execute nested vector/let forms and a real
+loop backedge, preserve `first`, `loop`, `left`, `right` output order and
+return ordered nested values while quoted private-call DATA remains inert.
+Private C5 import rejection, a C5-accepted caller rejected for wrong arity by
+the bundle constructor, and a coherently resealed route mutation rejected
+before the first runtime effect all passed. Paired Q sources provide byte/
+parser parity only. The source selection took 197.695 seconds after 6.567
+seconds of loading at 2 GiB, below a monitored ten-minute ceiling; this is
+not a benchmark, hard deadline or exclusive phase-cost claim. Allocation/IO
+declarations do not establish C8 legality or provider permissions: the
+temporary seed boundary still reports effects not checked.
+
+Final SH-01 module regressions passed four tests / 97 assertions and the
+transitive-routing check passed one / 17. LOC validation passed for 2,020
+source files, zero exceptions and maximum 250 lines. A boundary command first
+failed before loading tests because it ran from the wrong directory; that
+failed output and absent receipt remain recorded. Only that command was
+corrected, with new outputs: the repository-root boundary selection passed
+six tests / 11 assertions. Scoped unique coverage totals 20 tests / 287
+assertions across completed selections, not a claim that every launch passed.
+
+Direct commands are in the development-verification guide. Map/set and nested
+function contexts, general module initialization, checked user-call effects,
+Effects token-bound fit and C9 source integration remain separate work.
+Focused checks do not establish current-cohort admission, milestone completion,
 self-hosting or release support.
 
 ### Hosted compiler-module construction: development increment
