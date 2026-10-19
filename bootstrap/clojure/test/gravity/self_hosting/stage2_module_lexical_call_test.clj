@@ -55,7 +55,7 @@
                         {:name 'empty-bindings :body ['(let [] (leaf/identity :first) (leaf/identity :second))]}))))
     (is (= [] (bootstrap/p15-s23-stage2-module-call-sites
                 {:name 'data :body ['(let [payload '(leaf/hidden :data)] payload)]})))
-    (doseq [body ['(loop [x :value] (let [y x] (leaf/identity y)))
+    (doseq [body ['(fn [x] (loop [y x] (leaf/identity y)))
                   '(fn [x] (let [y x] (leaf/identity y)))
                   '[(let [x :value] (leaf/identity x))]
                   '(let [x [(leaf/identity :value)]] x)]]
