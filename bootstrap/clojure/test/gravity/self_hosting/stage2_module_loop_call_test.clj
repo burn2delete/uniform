@@ -101,7 +101,19 @@
     (let [first-bad '(loop [x] x) second-bad '(loop [:x :x] :x)
           failure (diagnostic #(bootstrap/p15-s23-stage2-seed-validate-recur!
                                 module (list 'do first-bad second-bad) 0 true))]
-      (is (= first-bad (:form failure))))))
+      (is (= first-bad (:form failure))))
+    ;; A later malformed loop must not mask an earlier original body error.
+    (doseq [[params body]
+            [[[] '[(do (recur) (loop [x] x))]]
+             ['[x y] '[(recur x y) (loop [z] z)]]
+             [[] '[(throw) (loop [:x :x] :x)]]
+             [[] '[(do (throw :x :y) (loop [z] z))]]]]
+      (let [definition (assoc module :name 'bad :params params :body body)
+            original (diagnostic #(bootstrap/p15-s23-stage2-seed-validate-tail-body!
+                                   definition body (count params) true))
+            walker (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites definition))]
+        (is (some? original))
+        (is (= original walker))))))
 
 (deftest stage2-module-loop-authenticated-composition
   ;; G runs original C5/bundle/runtime. Q parity above grants no Q typed credit.

@@ -171,10 +171,8 @@
                     (when-not (and (vector? bindings) (even? (count bindings))
                                    (every? symbol? (take-nth 2 bindings)))
                       (if (= 'loop op)
-                        (p15-s23-stage2-seed-recur-fail!
-                         definition form nil nil
-                         (if (and (vector? bindings) (even? (count bindings)))
-                           :invalid-loop-binding-name :invalid-loop-bindings))
+                        (p15-s23-stage2-seed-validate-tail-body!
+                         definition (:body definition) (count (:params definition)) true)
                         (p15-s23-stage2-module-fail! :symbol-only-sequential-let-required {:callsite path})))
                     (into (vec (mapcat (fn [index] (walk (nth bindings index) (conj path 1 index) blocked?))
                                        (range 1 (count bindings) 2)))
