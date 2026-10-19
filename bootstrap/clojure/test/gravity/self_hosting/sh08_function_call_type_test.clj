@@ -11406,6 +11406,13 @@
             graph (assoc-in (:nodes input) [id :attributes :quoted-value]
                             [(array-map :algorithm :sha256 :status :verified) (array-map :algorithm :sha256 :status :verified)])]
         (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries) changed (assoc-in entry [:argument-source :syntax-id] :wrong-source)]
+        (is (= :rejected (:status (project changed (:nodes input) 65536)))))
+      (let [callbacks (atom 0) opaque (proxy [Object] []
+                                        (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU source hash")))
+                                        (toString [] (swap! callbacks inc) (throw (AssertionError. "BU source string"))))]
+        (is (= :rejected (:status (project (assoc (first entries) :argument-source opaque) (:nodes input) 65536))))
+        (is (zero? @callbacks)))
       (let [entry (first entries) other (second entries)
             swapped (assoc entry :argument-node-id (:argument-node-id other) :argument-source (:argument-source other))]
         (is (= :rejected (:status (project swapped (:nodes input) 65536)))))
@@ -11567,6 +11574,7 @@
         (is (= :accepted (:status checked)) (pr-str checked))
         (is (= checked (check core established (:work-count checked))))
         (is (= :map-get-work-limit (:reason (check core established (dec (:work-count checked)))))))
+      (is (= :rejected (:status (private-first-entry-derived (assoc-in input [:forms :inner-key :value] :scheme)))))
       (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
                        (assoc-in descriptor [:presence-proof :entries 0 :selection :key] :scheme)
                        (assoc-in descriptor [:presence-proof :entries 0 :selection :source-spine 0 :source-kind] :forged)
@@ -11623,6 +11631,26 @@
       (is (= {:status :not-applicable :work-count 0}
              (invoke-c7 'sh08-pc-candidate [(:core legacy) (:node legacy) (:call legacy) (:nodes legacy) (:types legacy) 0]))))
     (is (= :accepted (:status (invoke-c7 'sh08-pc-candidate [core node call nodes types 65536]))))))
+
+(deftest sh08-private-first-entry-scalar-leaves-development-kernel
+  (doseq [[pair expected] [[[false true] :gravity.type/bool]
+                          [[nil nil] :gravity.type/nil]
+                          [[1 2] :gravity.type/integer]
+                          [["one" "two"] :gravity.type/string]
+                          [['one 'two] :gravity.type/symbol]]]
+    (let [values (mapv #(vector (array-map :algorithm % :status :verified)) pair)
+          input (private-first-entry-input values) result (private-first-entry-derived input)]
+      (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))))
+      (is (= :accepted (:status result)) (pr-str result))
+      (when (= :accepted (:status result))
+        (is (= expected (:type result)))
+        (is (= pair (mapv #(get-in % [:selection :part :shape :domain :values 0])
+                            (get-in result [:descriptor :presence-proof :entries])))))))
+  (let [input (private-first-entry-input [[(array-map :algorithm true :status 1)]
+                                          [(array-map :status false :algorithm 2)]])
+        result (private-first-entry-derived input)]
+    (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))))
+    (is (= :map-get-private-first-entry-selected-type-required (:reason result)))))
 
 (deftest sh08-private-first-entry-reviewed-guards-development-kernel
   (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []

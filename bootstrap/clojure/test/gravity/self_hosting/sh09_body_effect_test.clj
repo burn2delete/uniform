@@ -5407,5 +5407,7 @@
                  (update facts :call-type-facts #(vec (rest %)))
                  (update facts :constraint-ledger #(vec (remove (fn [r] (= :sh08-vector-first-v1 (:producer-rule r))) %)))]]
         (is (= :rejected (:status (build request f 65536)))))
+      (is (= :rejected (:status (build (assoc-in request [:b47-context :authenticated-core-request :forms]
+                                               (mapv #(if (= :inner-key (:form-id %)) (assoc % :value :scheme) %) (vals forms))) facts 65536))))
       (let [changed-request (assoc-in request [:canonical-core-artifact :module :exports] ['without-path])]
         (is (= :rejected (:status (build changed-request facts 65536))))))))
