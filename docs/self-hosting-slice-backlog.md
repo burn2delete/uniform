@@ -5516,6 +5516,72 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Private call-entry get with a finite Vector result: development increment
+
+Private-entry proven-present `get` now admits an independently established
+finite positional Vector result, including a Vector containing finite Map
+types. An empty Vector is a valid lookup result, not a nonempty `first` fact.
+This removes the scalar-only implementation restriction in C7, C8 and typed
+lowering; L5 already permits the independently established selected stored
+type. Runtime lookup, public interfaces, descriptor schema and type grammar
+are unchanged. Full entry/use/visibility/re-entry evidence remains required.
+Map member types alone do not establish inner keys or a common deep shape.
+
+Complete candidate type validation is paid with the remaining budget before
+deep comparison. Existing scalar recursive-work charges remain zero. The
+owning scoped C7 consumer pays its new selection scan and reuses that result
+only within the invocation. C8 always rebuilds its internal lookup context
+from current public facts, checks current headers and entry types, then checks
+the descriptor, fact and ledger. That local DATA is not a persisted proof cache.
+Existing Vector-index and non-invoked lookup paths retain their own owners.
+
+Three early focused attempts remain failed: V1 completed one test / 13 passing
+assertions / two failures, with three selectors unrun, exposing an inverted
+lowering budget guard. V2 completed five tests / 198 passing assertions / one
+failure; that hostile test rewrote the private leaf's internally derived paid
+context as well as public facts. The public C8 path always overwrites that
+context, so the corrected test retains the original internal premise and
+mutates public facts. V3 completed one test / five passing assertions / six
+failures / two errors, with three selectors unrun. Its appended caller nodes
+lacked required binding lists and consistent IDs, so the consumer was not
+reached; dependent nil-budget assertions caused the secondary errors. The
+test graph was repaired without weakening compiler checks.
+
+The affected V4 batch passed all five tests / 320 assertions: the actual
+scoped C7 consumer, existing Vector-loop lookup, C8 present-Map normal and
+non-invoked behavior, private Vector results and Vector-context compatibility.
+The consumer control observes one measured helper, one finish, six paid type
+walks, no unrelated IO probe and no old Boolean consumer call. Exact and
+one-short budget cases complete. The cheap G/Q fixture check separately
+passed one test / seven assertions; Q remains parser-only. LOC passed 2,021
+files, zero exceptions, maximum 250 lines.
+
+The first source run completed one test / 62 passing assertions / one failure /
+zero errors in 232.745 seconds after 11.187 seconds loading at 2 GiB. It remains
+a failed aggregate. Both G source attempts, fresh public C7 assembly checks,
+C8 construction/verification and four Gravity runtime return observations
+completed. These include distinct stored Map values and an empty Vector
+lookup. The missing-key fixture's owning rejection assertion passed; the raw
+log does not print its complete diagnostic vector. There are zero same-IR seed
+comparisons: the seed cannot execute emitted `:keyword-map-lookup`. Returned
+Map observations are not a Gravity Map-equality claim.
+
+The sole source failure pinned coordinates to literal pair order. Quoted
+Maps are materialized DATA and promise no such enumeration order; both entries
+authenticated the demanded key at coordinate 3. The test-only correction joins
+each selection to its own authenticated keyed Map part rather than pinning
+host order or claiming source-coordinate diversity. The corrected source
+assertion is not source-reexecuted, and the failed aggregate is not relabeled.
+Normalized entry controls cover differing coordinates independently. No
+production or fixture change justifies replaying unchanged source construction
+for this oracle repair. The new normalized selection oracle and the three
+affected existing scalar-owner kernels passed four tests / 76 assertions;
+the oracle's eight controls cover equal/different coordinates, mismatched
+coordinates or selected parts, missing keys and duplicate keys. These checks
+do not execute the corrected source assertion. Boundary checks separately
+passed six tests / 11 assertions. Inner-key ancestry, unchanged full C17 execution,
+current-closure admission, SH-07 and self-hosting completion remain open.
+
 ### Proven-nonempty Vector first: development increment
 
 STD3 now explicitly defines the first stored value of a nonempty persistent

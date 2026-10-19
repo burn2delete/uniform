@@ -23184,3 +23184,239 @@
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
                       :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(deftest current-gravity-private-entry-vector-get-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        {:keys [core node nodes forms bindings types module call edge binding-types] :as input}
+        ((ns-resolve upstream 'private-entry-vector-get-input) [[(array-map :algorithm :sha256 :status :verified)]
+                                                            [(array-map :algorithm :sha512 :status :rejected)]])
+        result ((ns-resolve upstream 'map-present-get-derived) input) descriptor (:descriptor result)
+        c7 (ns-resolve upstream 'invoke-c7)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings
+                 :types (assoc types :operator descriptor :present-get (:type result))
+                 :calls {:present-get call} :edges {:present-get edge} :call-order {:present-get 0}
+                 :current-function {:function-syntax-id :helper-form}
+                 :call-facts {:present-get (c7 'sh08-mg-call-fact [descriptor module])}
+                 :ledger [(c7 'sh08-mg-constraint [descriptor])]
+                 :locals {:span-binding 'span} :parameter-types binding-types :tail? true}
+        compile (fn [ctx budget] (invoke 'p15-s23-typed-compile-node ctx :present-get budget))
+        lowered (compile context 65536)]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :complete (:status lowered)) (pr-str lowered))
+    (let [flat (-> core (assoc :resolution-table (get-in core [:preserved-resolution :resolution-table]))
+                         (update :preserved-resolution dissoc :resolution-table))
+          rejected (compile (assoc context :core flat) 65536)]
+      (is (= :rejected (:status rejected)))
+      (is (= :unsupported-or-mismatched-typed-map-get (get-in rejected [:facts :reason]))))
+    (let [recursive-caller (compile (assoc-in context [:core :recursion-components] [{:function-syntax-ids [:caller-0]}]) 65536)]
+      (is (= :complete (:status recursive-caller)) (pr-str recursive-caller))
+      (is (= (:value lowered) (:value recursive-caller))))
+    (when (= :complete (:status lowered))
+      (is (= {:op :keyword-map-lookup :args [{:op :literal :value :file} {:op :local :name 'span}]} (:value lowered)))
+      (is (= lowered (compile context (:work-count lowered))))
+      (let [good (:type result) bad {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/unknown]}
+          coherent (walk/postwalk-replace {good bad} context)
+          failed (compile coherent 65536)]
+      (is (= :rejected (:status failed)))
+      (is (= :unsupported-or-mismatched-typed-map-get (get-in failed [:facts :reason]))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))]
+      (doseq [value [[(array-map :algorithm :sha256 :status :verified)] [(array-map :algorithm :sha512 :status :rejected)]]]
+        (let [stored {:file value :line 17 :kind :span :enabled false :payload nil}
+              actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                       [(:value lowered) {'span stored} "" {} []])]
+          (is (= [value "" :normal] actual))
+          (is (= value (:file stored))))))
+    (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
+    (is (= :typed-lowering-work-limit (get-in (compile context 0) [:facts :reason])))
+    (doseq [type [{:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/string]}
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                  {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
+                  {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
+      (let [data ((ns-resolve upstream 'finite-present-return-type-control) type)
+            checked (invoke 'p15-s23-pe-selected-work (:header data) {:calls [(:call data)] :parameter-index 0}
+                            [(:shape data)] (:types data) false 65536)
+            expected (invoke 'p15-s23-mg-present-finish (:header data) (:shape data))]
+        (is (= :accepted (:status checked)))
+        (is (= 0 (:work-count checked)))
+        (is (= (:descriptor data) expected))))
+    (doseq [changed [(update-in descriptor [:presence-proof :entries] pop)
+                     (assoc-in descriptor [:presence-proof :entries] :invalid)
+                     (assoc-in descriptor [:presence-proof :entries] (vec (repeat 10 (first (get-in descriptor [:presence-proof :entries])))))
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-shape :parts 0 :key] :absent)
+                     (assoc-in descriptor [:presence-proof :entries 1 :selected-coordinate] 99)
+                     (assoc-in descriptor [:presence-proof :entries 1 :argument-source] {})
+                     (assoc-in descriptor [:presence-proof :entry-census :exports] ['without-path])
+                     (assoc descriptor :version :sh08-map-get-present-v1)]]
+      (let [changed-context (-> context (assoc-in [:types :operator] changed)
+                               (assoc :ledger [(c7 'sh08-mg-constraint [changed])])
+                               (assoc-in [:call-facts :present-get] (c7 'sh08-mg-call-fact [changed module])))]
+        (is (= :rejected (:status (compile changed-context 65536))))))))
+
+(deftest current-gravity-private-entry-vector-get-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name] [["accepted" "private-entry-vector-get"]
+                                ["rejected" "private-entry-vector-get-missing-key"]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= 6 (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
+    (let [path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity"))
+          witness (first (filter #(and (seq? %) (= 'defn (first %)) (= 'w5-c17-valid-signature? (second %)))
+                                 (bootstrap/read-forms path (slurp path))))]
+      (is (= '(get package :signatures) (second (second (nth witness 3))))))))
+
+(defn- private-entry-vector-get-selection-matches? [entry]
+  (let [parts (filterv #(= :signatures (:key %)) (get-in entry [:argument-shape :parts]))]
+    (and (= 1 (count parts))
+         (= (first parts) (:selected-part entry))
+         (= (:coordinate (first parts)) (:selected-coordinate entry)))))
+
+(deftest current-gravity-private-entry-vector-get-authenticated-composition
+  ;; One new G positive/negative. Q is covered only by fixture byte/parser checks.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-entry-vector-get.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bt-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Private Vector get C7 source prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Private Vector get C7 verification prerequisite rejected" {})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                (fn [runtime plan function args]
+                                  (let [result (original runtime plan function args)]
+                                    (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                    (bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        gets (mapv :applied-map-get (filter #(= :direct-map-get (:dispatch %)) (:call-type-facts facts)))
+        firsts (mapv :applied-vector-first (filter #(= :direct-vector-first (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-map-get-v1 (:producer-rule %)) (:constraint-ledger facts))
+        head-get (first (filter #(seq (get-in % [:result-type :element-types])) gets))
+        empty-get (first (filter #(= [] (get-in % [:result-type :element-types])) gets))
+        entries (get-in head-get [:presence-proof :entries])
+        selected {:kind :gravity.type/map :shape :literal
+                  :member-types [:gravity.type/keyword :gravity.type/keyword :gravity.type/keyword :gravity.type/keyword]}
+        vector-type {:kind :gravity.type/vector :shape :literal :element-types [selected]}
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects))
+            (throw (ex-info "Private Vector get C8 source prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        graph (:effect-graph effects)
+        cases [['signature-one {:algorithm :sha256 :status :verified}]
+               ['signature-two {:algorithm :sha512 :status :rejected}]
+               ['empty-signatures []] ['main {:algorithm :sha256 :status :verified}]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []} {} "" (:functions assembled) []])]
+                          ;; Host structural observations of returned data.
+                          (is (= [expected "" :normal] actual) (str function))
+                          actual)) cases)
+        t6 (System/nanoTime)]
+    (is (= :passed (:status effect-verification)))
+    (is (= 54 (count (:functions runtime-plan))))
+    (is (= 1 (count @verified)))
+    (is (= :passed (:status (first @verified))))
+    (is (= 6 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 7 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 2 (count gets) (count rows)))
+    (is (= 1 (count firsts)))
+    (is (= 2 (count (filter #(= :keyword-map-lookup (:op %)) instructions))))
+    (is (= 1 (count (filter #(and (= :builtin-call (:op %)) (= 'first (:function %))) instructions))))
+    (is (= vector-type (:return head-get) (:result-type head-get)))
+    (is (= selected (get-in functions ['signature-head :return]) (:result-type (first firsts))))
+    (is (= {:kind :gravity.type/vector :shape :literal :element-types []} (:result-type empty-get)))
+    (is (= 2 (count entries) (count (get-in head-get [:presence-proof :entry-census :calls]))))
+    (is (= 1 (count (get-in empty-get [:presence-proof :entries]))))
+    (is (= [:invoked :invoked] (mapv :entry entries)))
+    (is (every? private-entry-vector-get-selection-matches? entries))
+    (is (= 2 (count (set (map :argument-node-id entries))) (count (set (map :argument-source entries)))))
+    (is (= (get-in entries [0 :argument-type]) (get-in entries [1 :argument-type])))
+    (is (not= (get-in entries [0 :argument-shape]) (get-in entries [1 :argument-shape])))
+    (doseq [descriptor gets]
+      (is (= :sh08-map-get-private-entry-v1 (:version descriptor)))
+      (is (= :private-call-entry-key-presence (get-in descriptor [:presence-proof :kind])))
+      (is (= :private (get-in descriptor [:presence-proof :entry-census :definition-binding :visibility])))
+      (is (= :signatures (:key descriptor)))
+      (is (= #{:kind :shape :element-types} (set (keys (:result-type descriptor)))))
+      (is (= #{} (get-in graph [:nodes (:call-core-node-id descriptor) :direct])))
+      (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids])
+             (get-in graph [:nodes (:call-core-node-id descriptor) :dependencies])))
+      (is (= (:presence-proof descriptor)
+             (get-in (first (filter #(= (:call-core-node-id descriptor) (get-in % [:lhs :core-node-id])) rows))
+                     [:dependencies :presence-proof]))))
+    (doseq [entry entries]
+      (is (= vector-type (:selected-type entry) (get-in entry [:selected-part :shape :type])))
+      (is (= :signatures (get-in entry [:selected-part :key])))
+      (is (= (:selected-coordinate entry) (get-in entry [:selected-part :coordinate]))))
+    (is (= #{:direct-map-get :direct-vector-first} (set (keep :dispatch (:call-type-facts facts)))))
+    (is (= 4 (count results)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-entry-vector-get-missing-key.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bt-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (some #(= ["C7-ANNOTATION" :map-get-private-entry-presence-required] ((juxt :rule :reason) %)) diagnostics)
+          (pr-str diagnostics)))
+    (println (pr-str {:bt-private-vector-get-composition :completed :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :function-table-entry-invocations (count results) :same-emitted-ir-seed-control-entries 0
+                      :seed-control-exclusion :compiler-owned-keyword-map-lookup-unsupported-by-seed
+                      :c17-basis :new-private-signatures-vector-get-to-first-composition :whole-c17-caller-coverage false
+                      :selected-map-inner-key-presence :not-established :empty-vector-get :covered :runtime-function-count 54
+                      :authority :non-authoritative
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations (- t6 t5)}
+                      :clock :monotonic-nanoseconds :nested-work :included}))))
+
+(deftest current-gravity-private-entry-vector-get-selection-oracle-development-kernel
+  ;; Normalized metadata exercises the source oracle without rebuilding source products.
+  (let [type {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}
+        part (fn [key coordinate] {:key key :coordinate coordinate :shape {:type type}})
+        entry (fn [parts]
+                (let [selected (first (filter #(= :signatures (:key %)) parts))]
+                  {:argument-shape {:parts parts} :selected-part selected :selected-coordinate (:coordinate selected)}))
+        one (entry [(part :signatures 1) (part :decoy 3)])
+        two (entry [(part :decoy 1) (part :signatures 3)])]
+    (is (true? (private-entry-vector-get-selection-matches? one)))
+    (is (true? (private-entry-vector-get-selection-matches? two)))
+    (is (true? (every? private-entry-vector-get-selection-matches? [two two])))
+    (is (true? (every? private-entry-vector-get-selection-matches? [one two])))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc one :selected-coordinate 3))))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc one :selected-part (:selected-part two)))))
+    (is (false? (private-entry-vector-get-selection-matches? (assoc-in one [:argument-shape :parts 0 :key] :unrelated))))
+    (is (false? (private-entry-vector-get-selection-matches? (update-in one [:argument-shape :parts] conj (part :signatures 5)))))))
