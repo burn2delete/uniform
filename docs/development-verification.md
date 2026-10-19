@@ -3665,6 +3665,48 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Symbol family classification
+
+Unary `(symbol? value)` classifies the normally evaluated value, not source
+identifier spelling. Edit the existing C7 engine, effects, typed emitter and
+Gravity runtime owners. Valid closed first-order types are accepted; Symbol
+values classify true, other families false and Never propagates. Unknown,
+Dynamic, malformed carriers and unsupported callable types remain typing
+failures. The existing type grammar, unary IR and seed primitive are unchanged.
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-symbol-predicate-development-kernel --exact sh08-symbol-predicate-id-guard-development-kernel --exact sh08-symbol-predicate-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-symbol-predicate-source-development-kernel --exact current-gravity-symbol-predicate-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-symbol-predicate-lowering-runtime-development-kernel --exact current-gravity-symbol-predicate-shallow-runtime-development-kernel
+```
+
+The query preserves unary evaluation, operand effects, transfers and original
+failures. Runtime classification is shallow, with no payload traversal,
+hashing, equality, mutation or collection construction. Qualified and
+metadata-bearing Symbols remain values. A String or Keyword with similar
+spelling stays non-Symbol; a syntax-wrapper Map is not unwrapped. Classification
+grants no binding, call, macro or capability authority. Keep complete C8
+context/ledger and exact/one-less budget checks, dominating unary shape/ID
+guards, and proportionate Keyword/Set-predicate regressions. Focused tests are
+component feedback, not source integration, frontend-module or migration proof.
+
+For affected compiler-to-runtime composition, run the paired preflight and
+the separate source check:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-symbol-predicate-fixtures-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-symbol-predicate-authenticated-composition
+```
+
+The existing Symbol return annotation is exercised through an ordinary
+identity helper with a monomorphically inferred quoted-Symbol input. Other
+families use separate functions, not fabricated polymorphic inference or new
+parameter annotation syntax. A tagged wrapper is ordinary Map DATA, not proof
+of accepted syntax-object schema. One Gravity positive and one C7 arity
+rejection run; QST has byte/parser coverage only. Seed interpretation of the
+same emitted IR is not independent source compilation or whole frontend
+module coverage. Pure source operands do not independently observe I/O order.
+
 ### Set family classification
 
 For unary `(set? value)`, edit the existing C7 engine, effects, typed emitter

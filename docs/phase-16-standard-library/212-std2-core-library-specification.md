@@ -42,6 +42,21 @@ All behavior must be deterministic except where the caller passes an explicitly 
 - Type and var helpers: `type-of`, `var`, `var?`, `deref-var`, and `resolve-var` where the active profile allows vars.
 - Simple reducers: `reduce`, `fold`, and `into` as protocol dispatch points, with concrete collection behavior owned by STD3.
 
+## Symbol Family Predicate
+
+Unary `(symbol? value)` returns Bool true exactly when the normally evaluated
+value belongs to the Symbol family, and false for every other normally
+evaluated value. Its operand follows ordinary L2 evaluation exactly once;
+operand effects are preserved, and a control transfer aborts invocation.
+The query classifies values, not source identifier spelling. Normal reference
+resolution and evaluation precede classification; a quoted qualified Symbol
+remains inert DATA and grants no binding, call, macro or capability authority.
+The query does not coerce String or Keyword spelling, unwrap syntax objects,
+evaluate stored payloads, mutate the value or itself construct a collection.
+`gravity.core` owns this predicate. Flow-typing and representation policies
+are not selected here; existing profile, target, effect, capability and safety
+legality requirements still apply.
+
 ## Keyword Family Predicate
 
 Unary `(keyword? value)` returns Bool true exactly when the normally evaluated
@@ -114,6 +129,7 @@ If the function read a file, the effect checker would reject the `:core` compila
 ## Conformance Criteria
 
 - Core examples compile without capabilities in `:core`.
+- Symbol family classification preserves ordinary unary evaluation and transfers, distinguishes evaluated Symbols from other values without spelling coercion or syntax-object unwrapping, and neither evaluates stored payloads nor grants binding, call, macro or capability authority.
 - Keyword family classification preserves ordinary unary evaluation and transfers, distinguishes actual Keywords from other values regardless of keyword-like spelling, and neither evaluates payloads nor grants namespace or capability authority.
 - All exported functions have type, effect, allocation, error, profile, and stability metadata.
 - Equality and hash fixtures produce the same Gravity-level result across targets.
