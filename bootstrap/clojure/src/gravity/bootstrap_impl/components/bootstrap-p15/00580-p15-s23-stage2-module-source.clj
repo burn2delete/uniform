@@ -113,7 +113,7 @@
       (let [source {:artifact artifact :module-id (:artifact-id artifact) :module module
                     :source-path path :source-text text :macro macro
                     :literals (p15-s23-stage2-module-literals expanded)
-                    :functions (stage0-function-table (assoc (:module macro) :forms expanded))
+                    :functions (stage0-function-table (assoc (:module macro) :forms (:expanded-forms macro)))
                     :syntax (:expanded-syntax-stream sh05) :request request}]
         (p15-s23-stage2-module-declarations! source expanded)
         (assoc source :map-order (p15-s23-stage2-module-map-order source))))))

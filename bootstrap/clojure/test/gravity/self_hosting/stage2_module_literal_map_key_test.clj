@@ -94,6 +94,36 @@
       (is (= expected (:id original)))
       (is (= original (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites d)))))))
 
+(deftest stage2-module-literal-map-key-seed-handoff-development-kernel
+  ;; Genuine tiny C5 -> original fresh module-source -> original raw compiler.
+  ;; This is the context handoff control, not public bundle/runtime evidence.
+  (let [p (fixture "modules" "leaf" ".gravity")
+        text (str "(ns example.literal-map-handoff (:profile :meta) (:target :jvm)"
+                  " (:exports [main]) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))\n"
+                  "(defn main [] {:artifact :fixture :schema-version 1 :diagnostics [] :remediation {\"key\" :value}})\n")
+        artifact (bootstrap/compiler-c5-resolution-source-artifact p text)
+        selected (bootstrap/p15-s23-stage2-module-source artifact)
+        syntax (first (filter #(and (seq? (:form %)) (= 'main (second (:form %)))) (:syntax selected)))
+        actual (nth (nth (:form syntax) 2) 2)
+        seed (first (get-in selected [:functions 'main :body]))
+        row (get (:map-order selected) ['main [0]])
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! p :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw emitter p text {} (:map-order selected))
+        compiled (get-in plan [:functions 'main :instructions 0])]
+    (is (= :accepted (:status artifact)))
+    (is (= (:artifact-id artifact) (:module-id selected)))
+    (is (= actual seed))
+    (is (not= (mapv first actual) (mapv first seed)))
+    (is (= (mapv first seed) (:host-keys row)))
+    (is (= [:artifact :schema-version :diagnostics :remediation]
+           (mapv #(get-in % [:key :value]) (:entries compiled))))
+    (is (= :map-literal (:op compiled)))
+    (is (= :map-source-order-mismatch
+           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
+                                {:p15-s23-stage2-map-order (:map-order selected)
+                                 :p15-s23-sh07-enclosing-function 'main}
+                                actual [0])) [:facts :reason])))))
+
 (deftest stage2-module-literal-map-key-authenticated-composition
   ;; Five G C5 attempts, genuine no-import leaf bundle and original public gates.
   (let [leaf-path (fixture "modules" "leaf" ".gravity") root-path (fixture "modules" "root" ".gravity")
