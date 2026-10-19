@@ -3304,6 +3304,148 @@
         (is (= :accepted (:status (derive work))))
         (is (= :map-contains-work-limit (:reason (derive (dec work)))))))))
 
+(defn- set-conversion-input [argument-types]
+  (let [input (integral-ordering-input 'set argument-types)]
+    (assoc input :binding-types (:types input)
+                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+
+(defn- set-conversion-derived [{:keys [core node call edge nodes bindings types forms]} budget]
+  (invoke-c7 'sh08-st-derive [core node call edge nodes bindings types forms budget]))
+
+(deftest sh08-set-conversion-development-kernel
+  (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/string))})]
+    (doseq [type (conj (mapv vector-type [0 1 3 1024]) :gravity.type/never)]
+      (let [{:keys [core nodes forms bindings products binding-types] :as input} (set-conversion-input [type])
+            result (set-conversion-derived input 65536) descriptor (:descriptor result)
+            invoked? (not= :gravity.type/never type)
+            context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :shape-call-products products}
+            inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
+        (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
+        (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
+        (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= [:memory/allocate] (:latent-effects descriptor)))
+        (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
+        (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
+        (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= (:type result) (get-in inferred [:type-table :call])))
+        (is (= [(invoke-c7 'sh08-st-constraint [descriptor])] (:constraints inferred)))
+        (is (= result (set-conversion-derived input (:work-count result))))
+        (is (= :set-conversion-work-limit (:reason (set-conversion-derived input (dec (:work-count result))))))))
+    (doseq [arguments [[] [:gravity.type/never :gravity.type/never]]]
+      (is (= :set-conversion-arity-mismatch (:reason (set-conversion-derived (set-conversion-input arguments) 65536)))))
+    (doseq [type [nil :gravity.type/unknown :gravity.type/vector :gravity.type/set
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
+                  {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}
+                  {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/unknown]}
+                  (assoc (vector-type 1) :extra true) (vector-type 1025)]]
+      (is (= :set-conversion-operand-type-required (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
+    (let [input (set-conversion-input [(vector-type 3)])]
+      (doseq [mutate [#(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:bindings :ordering-binding :package :version] "forged")
+                      #(assoc-in % [:call :extra] true) #(assoc-in % [:edge :evaluation-order] :operand-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'vec)
+                      #(assoc-in % [:core :module :target] :wasm)]]
+        (is (= :rejected (:status (set-conversion-derived (mutate input) 65536))))))
+    (let [{:keys [core node call edge nodes bindings types] :as input} (set-conversion-input [(vector-type 16)])
+          result (set-conversion-derived input 65536)
+          typed (assoc types :operator (:descriptor result) :call (:type result))
+          check #(invoke-c7 'sh08-st-inferred-call [core node call edge nodes bindings %1 %2])
+          accepted (check typed 65536) work (:work-count accepted)]
+      (is (= :accepted (:status accepted)))
+      (is (= accepted (check typed work)))
+      (is (= :set-conversion-work-limit (:reason (check typed (dec work)))))
+      (let [bad (check (assoc-in typed [:operator :construction-policy :order] :input-order) work)]
+        (is (= :set-conversion-source-mismatch (:reason bad)))
+        (is (= work (:work-count bad))))
+      (is (= 66 (:work-count (check (assoc typed :arg0 :gravity.type/unknown) work)))))
+    (let [visits (atom 0)
+          hostile (reify clojure.lang.Counted (count [_] 2048)
+                         clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved Set type walk"))))
+          input (set-conversion-input [(vector-type 1)])]
+      (is (= :set-conversion-work-limit (:reason (set-conversion-derived (assoc-in input [:core :function-records] hostile) 0))))
+      (is (= :set-conversion-arity-mismatch (:reason (set-conversion-derived (assoc-in input [:call :argument-node-ids] hostile) 65536))))
+      (is (= :set-conversion-operand-type-required
+             (:reason (set-conversion-derived (set-conversion-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}]) 65536))))
+      (is (zero? @visits)))))
+
+(deftest sh08-set-count-development-kernel
+  (doseq [type [:gravity.type/set
+                {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
+                {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
+    (let [{:keys [core node call edge nodes bindings types forms]} (integral-ordering-input 'count [type])
+          derive #(invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms %])
+          result (derive 65536) descriptor (:descriptor result)]
+      (is (= :accepted (:status result)))
+      (is (= :gravity.type/integer (:type result)))
+      (is (= :established-persistent-set (get-in descriptor [:query-semantics :normal-input])))
+      (is (= :none (get-in descriptor [:query-semantics :payload-evaluation])))
+      (is (= [] (:direct-effects descriptor)))
+      (is (= result (derive (:work-count result))))
+      (is (= :collection-count-work-limit (:reason (derive (dec (:work-count result)))))))))
+
+(deftest sh08-set-conversion-throw-consumer-development-kernel
+  ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
+  (let [nested {:kind :gravity.type/vector :shape :literal
+                :element-types (vec (repeat 16 :gravity.type/string))}
+        input (set-conversion-input [nested])
+        record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
+                :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
+        function {:node-id :predicate-fn :core-form :fn :children [:call] :attributes {}
+                  :source {:form-id :predicate-form :syntax-id :predicate-function}
+                  :evaluation {:kind :function-creation :order []}}
+        nodes (mapv #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function) (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc (:edge input) :caller-function-syntax-id :predicate-function :caller-function-core-node-id :predicate-fn)
+        core (assoc (:core input) :nodes (conj nodes function) :function-records [record]
+                    :call-edges [edge] :root-core-node-ids [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (set-conversion-derived input 65536)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function {:function-id :predicate-function :body-core-node-id :call
+                                       :parameters [] :return :gravity.type/set :latent-effects []
+                                       :capabilities [] :thrown-error-effects []}}
+        direct {:status :accepted :throws {:predicate-function []} :constraints [] :diagnostics [] :work-count 0}
+        check (fn [c t budget] (invoke-c7 'sh08-tc-products [c t functions bindings direct budget]))
+        measured (invoke-c7 'sh08-st-inferred-call [core node (:call input) edge nodes (:bindings input) types 65536])
+        ;; Four nodes, one edge/call, one binding/record, no handlers/definitions:
+        ;; outer precharge 110 and owner traversal 4 precede measured predicate work.
+        prefix 114
+        accepted (check core types 65536)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (let [limit (+ prefix (dec (:work-count measured)))
+          rejected (check core types limit)]
+      (is (= :rejected (:status rejected)))
+      (is (= ["C7-GENERIC" :set-conversion-work-limit]
+             ((juxt :rule :reason) (first (:diagnostics rejected)))))
+      (is (= (+ prefix (:work-count measured)) (:work-count rejected))))
+    (doseq [[changed-core changed-types]
+            [[core (assoc-in types [:operator :construction-policy :order] :input-order)]
+             [core (assoc types :arg0 :gravity.type/unknown)]
+             [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7 'sh08-st-inferred-call [changed-core node c edge nodes (:bindings input) changed-types 65536])
+            rejected (check changed-core changed-types 65536)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= (+ prefix (:work-count own)) (:work-count rejected)))))))
+
 (defn- integer-predicate-input [argument-types]
   (let [input (integral-ordering-input 'integer? argument-types)]
     (assoc input :binding-types (:types input)
