@@ -1,3 +1,75 @@
+(defn- sh06-resolution-diagnostic-origin
+  "Recover only the existing origin of an exact failed reference.
+  The caller has already authenticated the SH05 parent and request."
+  [source-path sh05-artifact request diagnostic]
+  (let [references (:references request)
+        syntax-stream (:expanded-syntax-stream sh05-artifact)
+        facts (:facts diagnostic)
+        details (:rule-specific facts)
+        ordinal (get-in facts [:semantic-span :ordinal])
+        width (:maximum-container-width sh06-resolution-transport-bounds)
+        reference-fields [:name :qualifier :position :scope-chain]]
+    (when (and (= :c5-name-resolution (:diagnostic-family diagnostic))
+               (= :name-resolution (:stage diagnostic))
+               (not (contains? diagnostic :origin-chain))
+               (map? facts) (map? details)
+               (vector? references) (<= (count references) width)
+               (vector? syntax-stream) (<= (count syntax-stream) width)
+               (integer? ordinal) (pos? ordinal) (<= ordinal (count references)))
+      (let [reference (get references (dec ordinal))
+            candidates (:candidate-bindings diagnostic)
+            candidate-count (:candidate-count details)
+            source-span (:source-span reference)
+            module (:module request)
+            parent-binding (:macro-expansion-binding request)]
+        (when (and (map? reference) (map? source-span)
+                   ;; Module/import checks may borrow the FIRST reference as a
+                   ;; display location. Only reference-check facts establish cause.
+                   (every? #(contains? details %) reference-fields)
+                   (= (select-keys reference reference-fields)
+                      (select-keys details reference-fields))
+                   (integer? candidate-count) (not (neg? candidate-count))
+                   (vector? candidates) (<= (count candidates) candidate-count)
+                   (case (:id diagnostic)
+                     "C5-UNRESOLVED"
+                     (case (:reason details)
+                       :no-legal-binding (= 0 candidate-count (count candidates))
+                       :malformed-core-binding-availability (= 1 candidate-count (count candidates))
+                       false)
+                     "C5-ALIAS" (= 0 candidate-count (count candidates))
+                     "C5-AMBIGUOUS" (<= 2 (count candidates) candidate-count)
+                     ("C5-PRIVATE" "C5-CROSS-PROFILE" "C5-CAPABILITY" "C5-TARGET")
+                     (= 1 candidate-count (count candidates))
+                     false)
+                   (= (:reason facts) (:reason details))
+                   (= (:syntax-id diagnostic) (:syntax-id reference))
+                   (= (:symbol diagnostic) (:symbol reference))
+                   (= (:semantic-span facts) (:semantic-span reference))
+                   (= (:source-span diagnostic) (assoc source-span :source source-path))
+                   (= source-path (get-in request [:provenance :actual-source-path]))
+                   (= (:namespace diagnostic) (:namespace module))
+                   (= (:active-profile diagnostic) (:profile module))
+                   (= (:target diagnostic) (:target module))
+                   (= (:artifact-id sh05-artifact) (:c4-artifact-id module)
+                      (:c4-artifact-id parent-binding) (:c4-artifact-id facts))
+                   (= (:source-revision-id module) (:source-revision-id parent-binding)
+                      (:source-revision-id facts) (sh06-resolution-source-revision-id sh05-artifact))
+                   (= (:expanded-syntax-stream-id sh05-artifact) (:macro-result-id parent-binding)))
+          (let [owners (filterv
+                        (fn [syntax]
+                          (and (= source-span (:span syntax))
+                               (= (:syntax-id reference)
+                                  (reader-canonical-hash
+                                   {:domain :gravity/sh06-reference-syntax-v1
+                                    :owner-syntax-id (:syntax/id syntax)
+                                    :ordinal ordinal :symbol (:symbol reference)
+                                    :position (:position reference)}))))
+                        syntax-stream)]
+            (when (= 1 (count owners))
+              (let [origin (:origin (first owners))]
+                (when (and (vector? origin)
+                           (some #(= :generated (:kind %)) origin))
+                  origin)))))))))
 
 (defn- sh06-resolution-source-artifact-candidate
   "Construct the authentic internal aggregate before its mandatory proof gate.
@@ -35,7 +107,14 @@
         binding (if contextual?
                   (sh06-resolution-context-plan-binding! source-path context)
                   (sh06-resolution-current-binding! source-path))
-        run (sh06-resolution-run-request! source-path binding request)
+        run (try
+              (sh06-resolution-run-request! source-path binding request)
+              (catch clojure.lang.ExceptionInfo error
+                (if-let [origin (sh06-resolution-diagnostic-origin
+                                 source-path sh05-artifact request (ex-data error))]
+                  (throw (ex-info (.getMessage error)
+                                  (assoc (ex-data error) :origin-chain origin) error))
+                  (throw error))))
         analysis (:resolved-analysis run)
         projections (sh06-resolution-product-projections analysis)
         plan-binding (dissoc binding :plan :source-text :input-key)

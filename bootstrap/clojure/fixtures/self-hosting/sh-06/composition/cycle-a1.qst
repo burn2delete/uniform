@@ -1,0 +1,6 @@
+; New candidate A1. B still retains its genuine immutable dependency A0.
+(ns example.cycle.a
+  (:profile :meta) (:target :jvm)
+  (:requires [example.cycle.b :as b]) (:exports [identity])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn identity [x] (b/forward x))
