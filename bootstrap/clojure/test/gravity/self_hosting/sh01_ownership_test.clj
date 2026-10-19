@@ -165,7 +165,7 @@
       (is (= :master-coordinator (:integration-owner record)))
       (is (= expected-slice-ids slice-ids))
       (is (= actual-gravity-modules declared-gravity-modules))
-      (is (= 60 (count actual-gravity-modules)))
+      (is (= 69 (count actual-gravity-modules)))
       (is (= (set/difference (stage0-test-paths) support-paths)
              actual-stage0-tests))
       (is (= all-direct-stage0-tests
@@ -173,10 +173,12 @@
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
       (is (= 108 (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= 193 (count module-owners)))
+      (is (= 202 (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
-      (is (= 14 (count support-paths)))
+      (is (= 15 (count support-paths)))
+      (is (contains? support-paths
+                     "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"))
       (is (every? #(or (not (contains? module-owners %))
                        (= :master-coordinator (get module-owners %)))
                   support-paths))

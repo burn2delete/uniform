@@ -7,6 +7,7 @@
  :coordinator-owned
  {:central-routing
   ["deps.edn"
+   "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
    "bin/gravity"
    "bin/gravity-bootstrap"
    "bootstrap/clojure/java/gravity/cli/Main.java"
@@ -108,6 +109,15 @@
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
   "bootstrap/gravity/src/gravity/checked_core.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/effects.gravity" :sh-effects
+  "bootstrap/gravity/src/gravity/runtime.gravity" :sh-runtime
+  "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/producer_d.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity" :sh-core
+  "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity" :sh-safety
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir

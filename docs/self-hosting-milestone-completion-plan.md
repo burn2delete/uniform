@@ -1,6 +1,10 @@
 # Finite Self-Hosting Milestone Completion Plan: SH-00 through SH-29
 
 Status: implementation and acceptance plan, not an evidence bundle.
+
+The [SH-00 through SH-06 evidence reconciliation](self-hosting-sh00-sh06-evidence-audit.md)
+maps the first 42 requirements to retained evidence and records current scope
+gaps separately from historical completion credit.
 Baseline: completed development revision
 `e63a7feec4be13fa6176f9bbafce38bbb3509a54`, reconciled with main
 `a682cd50c98847be4b80dbdc1a5b73c38ac25960` for integration.
