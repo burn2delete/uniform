@@ -113,6 +113,31 @@ inputs are normalized DATA. They are integration checks, not fast
 `*-development-kernel` tests. Their bodies and coverage remain available;
 renaming them does not require replaying an unchanged expensive proof.
 
+### Recognition of an already declared seed primitive
+
+When ordinary C5 reports an unresolved primitive that the selected seed
+already declares and implements, check the source request's declaration
+catalog in
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00870-sh06-resolution-special-symbols.clj`.
+Repair a demonstrated declaration omission there; binding selection remains
+owned by the Gravity resolver described below. Do not use ambient host lookup,
+bulk-whitelist names or interpret recognition as typed/runtime/target support.
+
+For the `list?` catalog repair, use the direct focused source check:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh06-list-predicate-binding-test --exact sh06-list-predicate-binding-authenticated-source --fail-fast
+```
+
+It constructs three tiny source attempts and invokes the original fresh C5
+verifier: core and qualified binding/provenance, lexical shadowing and inert
+quoted data, with unknown-lookalike and unimported host-namespace rejection.
+It does not construct the whole runtime module or prove a typed List predicate.
+Catalog records have sorted ordinals, so an insertion can also change later
+core binding identities and affected C5 requests. Reassess affected evidence;
+unchanged target bytes alone do not establish validity. Do not renew a corpus
+or migration stamp merely to validate this development correction.
+
 ### Qualified core resolution and availability
 
 Edit `bootstrap/gravity/src/gravity/resolution.gravity` for binding selection
