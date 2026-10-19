@@ -962,6 +962,71 @@
         {:status :rejected :reason :set-literal-keyword-domain-required :work-count 0 :comparison-attempts 0 :insertions 0}))
     {:status :rejected :reason :set-literal-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
 
+(defn p15-s23-runtime-keyword-vector-set-work [input budget]
+  ; Logical selected-JVM content reservation, not a provider CPU bound.
+  ; Freeze Keyword values before comparing them or inserting into a host Set.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (vector? input)
+        (let [n (count input)]
+          (if (if (< n 0) true (> n 1024)) {:status :rejected :reason :set-conversion-value-width :work-count 1 :comparison-attempts 0 :insertions 0}
+            (let [base (+ 1 (* 2 n))]
+              (if (> base limit)
+                {:status :rejected :reason :set-conversion-work-limit :work-count base :work-count-kind :validation-reservation
+                 :comparison-attempts 0 :insertions 0}
+                (let [checked (loop [i 0 values []]
+                                (if (= i n) {:status :accepted :values values}
+                                  (let [value (get input i)]
+                                    (if (keyword? value) (recur (+ i 1) (conj values value))
+                                      {:status :rejected :reason :set-conversion-keyword-vector-required}))))]
+                  (if (= false (= :accepted (get checked :status)))
+                    (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0 :insertions 0)
+                    (let [values (get checked :values)
+                          measured (loop [i 0 units 0]
+                                     (if (= i n) {:status :accepted :units units}
+                                       (let [size (count (str (get values i)))]
+                                         (if (> size (- limit units))
+                                           {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                                            :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                                           (recur (+ i 1) (+ units size))))))]
+                      (if (= false (= :accepted (get measured :status))) measured
+                        (let [units (get measured :units) half (quot n 2) previous (if (> n 0) (- n 1) 0)
+                              a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
+                          (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
+                            {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                             :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                            (let [pairs (* a b) remaining (- limit base pairs)]
+                              (if (> units (quot remaining (+ n 1)))
+                                {:status :rejected :reason :set-conversion-work-limit :work-count (+ limit 1)
+                                 :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0 :insertions 0}
+                                (let [work (+ base pairs (* (+ n 1) units))
+                                      distinct (loop [i 0 representatives [] attempts 0]
+                                                 (if (= i n) {:status :accepted :values representatives :comparison-attempts attempts}
+                                                   (let [value (get values i)
+                                                         checked (loop [j 0 used attempts]
+                                                                   (if (= j (count representatives))
+                                                                     {:status :accepted :duplicate? false :comparison-attempts used}
+                                                                     (let [equal (p15-s23-runtime-atomic-equality value (get representatives j)) next-attempt (+ used 1)]
+                                                                       (if (= true equal)
+                                                                         {:status :accepted :duplicate? true :comparison-attempts next-attempt}
+                                                                         (if (= false equal) (recur (+ j 1) next-attempt)
+                                                                           {:status :rejected :reason :set-conversion-keyword-vector-required :comparison-attempts next-attempt})))))]
+                                                     (if (= :accepted (get checked :status))
+                                                       (recur (+ i 1) (if (get checked :duplicate?) representatives (conj representatives value))
+                                                         (get checked :comparison-attempts)) checked))))
+                                      result (if (= :accepted (get distinct :status))
+                                               (let [representatives (get distinct :values) size (count representatives)]
+                                                 {:status :accepted :value (loop [i 0 out #{}]
+                                                                           (if (= i size) out (recur (+ i 1) (conj out (get representatives i)))))
+                                                  :comparison-attempts (get distinct :comparison-attempts) :insertions size})
+                                               (assoc distinct :insertions 0))]
+                                  (assoc result :work-count work :work-count-kind :exact-logical-content-reservation
+                                    :input-element-count n :representation-units units :representation :jvm-utf16-code-units
+                                    :value-work-model :gravity/keyword-vector-set-logical-content-work-v1
+                                    :provider-cpu-bound :not-established))))))))))))))
+        {:status :rejected :reason :set-conversion-keyword-vector-required :work-count 0 :comparison-attempts 0 :insertions 0}))
+    {:status :rejected :reason :set-conversion-work-limit :work-count 0 :comparison-attempts 0 :insertions 0}))
+
 (defn p15-s23-runtime-set-conversion-work [values budget]
   ; This quota is a logical content-work reservation in the selected JVM
   ; representation, not a host hash-trie CPU, native, or realtime bound.
@@ -973,7 +1038,9 @@
             (let [base (+ 1 (* 2 n))]
             (if (> base limit)
               {:status :rejected :reason :set-conversion-work-limit :work-count base :work-count-kind :validation-reservation}
-              (loop [index 0 units 0]
+              (if (if (> n 0) (keyword? (get values 0)) false)
+                (p15-s23-runtime-keyword-vector-set-work values limit)
+                (loop [index 0 units 0]
                 (if (= index n)
                   (let [remaining (- limit base)
                         pairs-fit? (if (<= n 1) true (<= n (quot (* 2 remaining) (- n 1))))]
@@ -1002,7 +1069,7 @@
                            :work-count-kind :exceeded-allowance-lower-bound}
                           (recur (+ index 1) (+ units length))))
                       {:status :rejected :reason :set-conversion-string-vector-required
-                       :work-count base :work-count-kind :validation-reservation}))))))))
+                       :work-count base :work-count-kind :validation-reservation})))))))))
         {:status :rejected :reason :set-conversion-string-vector-required :work-count 0}))
     {:status :rejected :reason :set-conversion-work-limit :work-count 0}))
 

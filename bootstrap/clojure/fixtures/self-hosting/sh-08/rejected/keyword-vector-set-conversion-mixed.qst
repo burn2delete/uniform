@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.keyword-vector-set-conversion-mixed
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+(defn main []
+  (set [:source "mixed"]))

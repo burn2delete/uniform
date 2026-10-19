@@ -1,0 +1,40 @@
+(ns self-hosting.sh08.keyword-vector-set-conversion
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [field-count field-set? input-count duplicate-count namespace-count empty-count transferred main]))
+
+(def w5-c16-semantic-fields
+  [:source :reader :syntax :macro-expansion :namespace :typed-core
+   :effect-graph :profile :capabilities :safety :proof-policy
+   :dependencies :target :backend :plugin :diagnostic-schema
+   :build-effects :compiler :pass-contract :language-facets :target-scope
+   :package-lock :provider-policy])
+
+(defn c16-type-check-fields []
+  (set (conj w5-c16-semantic-fields :source)))
+
+(defn field-count []
+  (count (c16-type-check-fields)))
+
+(defn field-set? []
+  (set? (c16-type-check-fields)))
+
+(defn input-count []
+  (count w5-c16-semantic-fields))
+
+(defn duplicate-count []
+  (count (set [:same :same])))
+
+(defn namespace-count []
+  (count (set [:a/name :b/name :name])))
+
+(defn empty-count []
+  (count (set [])))
+
+(defn transferred []
+  (try
+    (set (throw "stop"))
+    (catch String problem true)))
+
+(defn main []
+  (field-set?))
