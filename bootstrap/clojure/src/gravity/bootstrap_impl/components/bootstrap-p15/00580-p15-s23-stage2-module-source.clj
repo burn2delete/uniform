@@ -163,14 +163,19 @@
               (seq? form)
               (let [op (first form)
                     qualified? (and (symbol? op) (namespace op))
-                    blocked? (or blocked? (contains? '#{loop fn} op))]
+                    blocked? (or blocked? (= 'fn op))]
                 (when (and qualified? blocked?)
                   (p15-s23-stage2-module-fail! :unsupported-nested-module-call {:callsite path :symbol op}))
-                (if (= 'let op)
+                (if (contains? '#{let loop} op)
                   (let [bindings (second form)]
                     (when-not (and (vector? bindings) (even? (count bindings))
                                    (every? symbol? (take-nth 2 bindings)))
-                      (p15-s23-stage2-module-fail! :symbol-only-sequential-let-required {:callsite path}))
+                      (if (= 'loop op)
+                        (p15-s23-stage2-seed-recur-fail!
+                         definition form nil nil
+                         (if (and (vector? bindings) (even? (count bindings)))
+                           :invalid-loop-binding-name :invalid-loop-bindings))
+                        (p15-s23-stage2-module-fail! :symbol-only-sequential-let-required {:callsite path})))
                     (into (vec (mapcat (fn [index] (walk (nth bindings index) (conj path 1 index) blocked?))
                                        (range 1 (count bindings) 2)))
                           (mapcat (fn [index body] (walk body (conj path index) blocked?))

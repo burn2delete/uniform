@@ -18,7 +18,7 @@
                       (filterv #(= (:syntax/id %) (:definition-syntax-id owner)) (:syntax caller)) :caller-function-syntax)
               owned (filterv #(= (:source-span %) (:span syntax)) refs)
               imported (filterv #(= :import (:binding-class (get bindings (:binding-id (get resolutions (:syntax-id %)))))) owned)
-              sites (p15-s23-stage2-module-call-sites definition)
+              sites (p15-s23-stage2-module-call-sites (assoc definition :source-path (:source-path caller)))
               candidates (group-by :symbol imported)
               counters (atom {})]
           (when-not (every? #(and (= :operator (:position %)) (namespace (:symbol %))) imported)

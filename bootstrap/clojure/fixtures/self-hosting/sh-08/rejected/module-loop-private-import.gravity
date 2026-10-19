@@ -1,0 +1,6 @@
+(ns example.module-loop-private-import
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-loop-leaf :as leaf]) (:exports [main])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+
+(defn main [] (loop [value (leaf/hidden :private)] value))
