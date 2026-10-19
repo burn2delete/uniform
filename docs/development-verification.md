@@ -4717,11 +4717,12 @@ there is no new caller-supplied proof input. No-import dependencies are also
 reconstructed with the current source-order context: incompatible legacy raw
 plans reject.
 
-The first supported module subset requires distinct literal Keyword keys in
-every evaluated function-body Map, including pure Maps. This is a real local
-restriction relative to older pure non-Keyword Map compilation, not an L2
-language ban or a claim of arbitrary old-module compatibility. Quoted Maps
-remain inert. The traversal's depth-64 and 65,536-visit guards are local
+The module subset supports distinct literal String or Keyword keys, including
+mixed Maps, in evaluated function-body Maps. Computed, numeric, Symbol and
+collection keys remain unsupported here, not forbidden by L2. This supersedes
+the initial Keyword-only module restriction; it does not widen the separate
+canonical typed-Gravity Map subset. Quoted Maps remain inert. The traversal's
+depth-64 and 65,536-visit guards are local
 constructor bounds, not language limits. Raw three-argument/B51 behavior and
 public bundle interfaces remain unchanged. This Map-order-only correction did
 not enable imports inside Maps; the subsequent Map-value increment is below.
@@ -4749,7 +4750,7 @@ callsite paths, and C2 source evaluation order. Repeated callee names cannot be
 joined by symbol counts or a source-ordered zip. For Map-bearing functions,
 project the complete actual expanded owner syntax and match every original
 reference, including unqualified references, by request ordinal, identity,
-position and spans. Bridge Keyword keys to seed-host slots, then check imported
+position and spans. Bridge literal keys to seed-host slots, then check imported
 call origins and arity in source order using those original C5 references.
 Original binding, scope, export, profile and target facts remain C5-owned.
 
@@ -4760,9 +4761,41 @@ new walker. Public construction derives it after fresh verification, never
 from a caller's acceptance flag. Existing recur/throw pass precedence is not
 replaced with a global cross-pass source-error ordering rule.
 
-The existing distinct literal Keyword-key restriction remains. Full reference
-projection and traversal share a local 65,536-unit allowance and depth-64
-guard; unsupported expansion/header shapes reject rather than invent C5
+For literal String/Keyword key-domain changes, the owner remains `00575`;
+the source/seed layout handoff belongs to existing `00580` module-source.
+Use its dedicated paired-fixture, reference and rejection checks first:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-literal-map-key-test \
+  --exact stage2-module-literal-map-key-fixture-parity \
+  --exact stage2-module-literal-map-key-reference-development-kernel \
+  --exact stage2-module-literal-map-key-rejections-development-kernel --fail-fast
+# After the authenticated-source/seed layout handoff changes:
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-literal-map-key-test \
+  --exact stage2-module-literal-map-key-seed-handoff-development-kernel --fail-fast
+# Only for the affected source/composition boundary:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-literal-map-key-test \
+  --exact stage2-module-literal-map-key-authenticated-composition --fail-fast
+```
+
+Keep C2 scalar kinds and decoded values joined without coercion: String
+`":tag"` and Keyword `:tag`
+are different keys. Lost duplicate occurrences, including differently escaped
+spellings decoding to the same String, reject the occurrence bijection rather
+than silently borrowing host materialization. These supplied-record checks do
+not replace genuine reader/source composition.
+
+Equal Map values can have different C5 and seed host layouts. Select seed
+definitions from the independent macro forms only after the complete equality
+check against verified forms; retain original syntax/reference authority.
+Derive C2-to-seed slots from that actual seed definition, rather than relaxing
+the strict host-key join or assuming value equality fixes entry coordinates.
+
+Full reference projection and traversal share a local 65,536-unit allowance
+and depth-64 guard; unsupported expansion/header shapes reject rather than invent C5
 references. These are bounded development frontiers, not new language limits
 or preservation of every previously accepted module capacity. Raw3/B51,
 runtime and public interfaces are unchanged. No new C5 resolver, admission
