@@ -18,7 +18,7 @@
                       (filterv #(= (:syntax/id %) (:definition-syntax-id owner)) (:syntax caller)) :caller-function-syntax)
               owned (filterv #(= (:source-span %) (:span syntax)) refs)
               imported (filterv #(= :import (:binding-class (get bindings (:binding-id (get resolutions (:syntax-id %)))))) owned)
-              sites (p15-s23-stage2-module-call-sites (assoc definition :source-path (:source-path caller)))
+              sites (p15-s23-stage2-module-call-sites (assoc definition :source-path (:source-path caller) :p15-s23-stage2-map-order (:map-order caller)))
               candidates (group-by :symbol imported)
               counters (atom {})]
           (when-not (every? #(and (= :operator (:position %)) (namespace (:symbol %))) imported)
@@ -163,14 +163,12 @@
                   (let [actual (p15-s23-stage2-module-one!
                                 (filterv #(= (get-in % [:module :module]) (get-in source [:module :namespace])) plans)
                                 :unique-independent-module-plan)
-                        expected (if (seq (get-in source [:request :imports]))
-                                   (p15-s23-stage2-compiler-artifact-plan-raw
-                                    emitter (:source-path source) (:source-text source) (get indexes (:module-id source)))
-                                   (p15-s23-stage2-compiler-artifact-plan emitter (:source-path source) (:source-text source)))]
+                        expected (p15-s23-stage2-compiler-artifact-plan-raw
+                                  emitter (:source-path source) (:source-text source) (get indexes (:module-id source)) (:map-order source))]
                     (when-not (= actual expected)
                       (p15-s23-stage2-module-fail! :independent-raw-plan-mismatch {:module-id (:module-id source)}))
                     (p15-s23-stage2-module-entry source actual))) callees)
-          plan (p15-s23-stage2-compiler-artifact-plan-raw emitter source-path source-text (get indexes (:module-id caller)))
+          plan (p15-s23-stage2-compiler-artifact-plan-raw emitter source-path source-text (get indexes (:module-id caller)) (:map-order caller))
           entries (vec (sort-by :module-id (conj dependencies (p15-s23-stage2-module-entry caller plan))))
           identity (p15-s23-stage2-module-identity emitter (:module-id caller) entries routes)]
       {:kind :gravity/stage2-compiler-artifact-module-bundle :schema-version 1 :root-module-id (:module-id caller)

@@ -4574,6 +4574,40 @@ Effects extraction still needs its exact remaining call-context coverage and a
 concrete source/token-bound fit; transitive, loop and vector routing do not
 close that dependency or the retained C9 source failure.
 
+For evaluated Map literal order in the module-development constructor, edit
+`00575-p15-s23-stage2-module-map-order.clj` and its existing recur, expression
+compiler and `00580` reconstruction consumers. Start with:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-map-order-test \
+  --exact stage2-module-map-order-fixture-parity \
+  --exact stage2-module-map-order-development-kernel \
+  --exact stage2-module-map-order-diagnostic-kernel --fail-fast
+# Only when this source-order/reconstruction boundary changes:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-map-order-test \
+  --exact stage2-module-map-order-authenticated-composition --fail-fast
+```
+
+L2 expression order is not a Map enumeration guarantee. After fresh original
+C5 verification, the constructor joins retained C2 child occurrences to the
+actual `defn` expansion and derives Map evaluation/diagnostic order separately
+from host-map callsite coordinates. Public reconstruction repeats the join;
+there is no new caller-supplied proof input. No-import dependencies are also
+reconstructed with the current source-order context: incompatible legacy raw
+plans reject.
+
+The first supported module subset requires distinct literal Keyword keys in
+every evaluated function-body Map, including pure Maps. This is a real local
+restriction relative to older pure non-Keyword Map compilation, not an L2
+language ban or a claim of arbitrary old-module compatibility. Quoted Maps
+remain inert. The traversal's depth-64 and 65,536-visit guards are local
+constructor bounds, not language limits. Raw three-argument/B51 behavior and
+public bundle interfaces remain unchanged. Qualified imports inside Maps,
+Sets and nested functions remain unsupported; this correction does not enable
+them, establish checked effects or demonstrate Effects token-bound fit.
+
 Use the existing runtime test namespace, not an admission runner:
 
 ```bash

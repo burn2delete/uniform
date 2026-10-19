@@ -1,0 +1,17 @@
+(ns example.module-map-order-leaf
+  (:profile :meta) (:target :jvm) (:exports [packet])
+  (:effects #{:io/write :memory/allocate}) (:capabilities #{:io/stdout}) (:safety :safe))
+(defn packet []
+  (let [prefix "leaf-"]
+    (loop [again true]
+      (if again
+        (recur false)
+        {:z (do (println (str prefix "z")) :z)
+         :b (do (println (str prefix "b")) :b)
+         :y (do (println (str prefix "y")) :y)
+         :a (do (println (str prefix "a")) :a)
+         :x (do (println (str prefix "x")) :x)
+         :c (do (println (str prefix "c")) :c)
+         :w (do (println (str prefix "w")) :w)
+         :d (do (println (str prefix "d")) :d)
+         :v (do (println (str prefix "v")) :v)}))))

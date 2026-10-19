@@ -100,7 +100,9 @@
         (assoc-in [:effect-summary :legality] :not-checked))
     plan))
 (defn p15-s23-stage2-compiler-artifact-plan-raw
-  [emitter artifact-source artifact-text module-routes]
+  ([emitter artifact-source artifact-text module-routes]
+   (p15-s23-stage2-compiler-artifact-plan-raw emitter artifact-source artifact-text module-routes nil))
+  ([emitter artifact-source artifact-text module-routes map-order]
   (let [records (read-source-form-records artifact-source artifact-text)
         macro-artifact (macro-source-artifact-from-records artifact-source artifact-text records)
         module (assoc (:module macro-artifact)
@@ -114,6 +116,7 @@
            artifact-source artifact-text module function-table))
         module (cond-> (assoc module :function-table function-table :p15-s23-stage2-module-literals literals)
                  module-routes (assoc :p15-s23-stage2-module-routes module-routes)
+                 map-order (assoc :p15-s23-stage2-map-order map-order)
                  source-authority
                  (assoc :p15-s23-sh07-source-authority source-authority))
         artifact-emitter
@@ -157,7 +160,7 @@
     (assoc plan-base
            :plan-id (str "sha256:"
                          (sha256-hex
-                          (pr-str (c-backend-canonical-value plan-base)))))))
+                          (pr-str (c-backend-canonical-value plan-base))))))))
 
 (defn p15-s23-stage2-compiler-artifact-plan
   ([emitter artifact-source artifact-text]
