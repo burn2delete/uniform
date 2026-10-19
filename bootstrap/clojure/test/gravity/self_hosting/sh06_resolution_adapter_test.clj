@@ -2470,6 +2470,59 @@
     (println (pr-str {:b-duplicate-alias-diagnostic failure
                      :positive-read-audit @read-counts}))))
 
+(deftest sh06-b-source-profile-incompatible-composition
+  ;; L3/C5: same-target modules still need a legal cross-profile boundary.
+  ;; Compile G only; Q gets byte/parser parity, not a second source run.
+  (let [source (fixture-path "composition" "b-profile-incompatible" ".gravity")
+        qst (fixture-path "composition" "b-profile-incompatible" ".qst")
+        text (slurp source)
+        library (bootstrap/compiler-c5-resolution-file-artifact
+                 (fixture-path "composition" "b-referred-left" ".gravity"))
+        module (get-in library [:gravity-resolution-boundary :authenticated-resolution-request :module])
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library]}
+        failure (try
+                  (bootstrap/compiler-c5-resolution-file-artifact source inputs)
+                  {:unexpected-success true}
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        edge (:dependency-edge failure)]
+    (is (= text (slurp qst)))
+    (is (= (bootstrap/read-forms source text) (bootstrap/read-forms qst (slurp qst))))
+    (is (= :accepted (:status library)))
+    (is (= :passed (:status (verification library))))
+    (is (= {:profile :meta :target :jvm :capabilities []}
+           (select-keys module [:profile :target :capabilities])))
+    (is (= "C5-CROSS-PROFILE" (:id failure)) (pr-str failure))
+    (is (= :name-resolution (:stage failure)))
+    (is (= :unsupported-or-impure-module-boundary (get-in failure [:facts :reason])))
+    (is (= 'example.b-referred-left (:symbol failure) (:namespace edge)))
+    (is (= :namespace (:kind edge)))
+    (is (= 'left (:alias edge)))
+    (is (= 'example.b-profile-incompatible (:namespace failure)))
+    (is (= :hosted (:active-profile failure)))
+    (is (= :jvm (:target failure)))
+    (is (= source (get-in failure [:source-span :source])))
+    (is (= {:source source :byte-start 0 :line-start 1
+            :byte-end (.indexOf text "\n(defn")}
+           (select-keys (get-in failure [:source-span :primary])
+                        [:source :byte-start :line-start :byte-end])))
+    (is (= (select-keys (:source-span failure) [:all :primary]) (:source-span edge)))
+    (is (and (seq (get-in failure [:source-span :all]))
+             (some #{(get-in failure [:source-span :primary])}
+                   (get-in failure [:source-span :all]))))
+    (is (string? (:remediation failure)))
+    (is (seq (:remediation failure)))
+    (is (= [] (:candidate-bindings failure)))
+    ;; Compatibility reports the original import before enrichment. The real
+    ;; callee contract above comes from the verified artifact, not this edge.
+    (is (sha256-id? (:syntax-id failure)))
+    (is (= (:syntax-id failure) (get-in edge [:semantic-span :namespace-syntax-id])))
+    (is (empty? (:origin-chain failure)))
+    (is (nil? (:unexpected-success failure)))
+    (is (not (contains? failure :c5-name-resolution-artifact)))
+    (is (not (contains? failure :core-ast-module)))
+    (println (pr-str {:b-profile-incompatible-diagnostic failure
+                     :supplied-library-artifact-id (:artifact-id library)}))))
+
 (deftest sh06-corpus-shards-cover-the-sorted-inventory-exactly-once
   (let [source-paths (authoritative-compiler-paths)
         relative-paths (authoritative-compiler-relative-paths source-paths)]
