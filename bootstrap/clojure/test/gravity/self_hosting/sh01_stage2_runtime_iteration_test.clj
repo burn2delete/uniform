@@ -11538,8 +11538,10 @@
       (is (map? (get-in graph [:nodes (:call-core-node-id append) :allocation]))))
     (doseq [name ['c16-type-check-fields 'field-count 'field-set? 'duplicate-count 'namespace-count 'empty-count 'main]]
       (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
-    (doseq [name ['input-count 'transferred]]
-      (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    ;; L6 preserves the performed label; current C8 keeps discharge pending
+    ;; profile/handler/capability authority even when escaping throws are empty.
+    (doseq [[name expected] [['input-count #{}] ['transferred #{:error/throw}]]]
+      (is (= expected (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
     (is (= #{:memory/allocate} (get-in graph [:namespace :inferred])))
     (is (= [] (get-in graph [:functions (get-in functions ['transferred :function-id]) :throws])))
     (doseq [descriptor conversions :when (= :not-invoked (:application descriptor))]
