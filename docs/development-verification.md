@@ -3926,6 +3926,64 @@ byte/parser parity only. Do not repeat unchanged Vector equality, numeric
 inequality or whole-W5 source compositions to refresh a label. Focused results
 are development feedback, not authoritative migration or self-hosting proof.
 
+### Binary finite Keyword-Set inequality
+
+For binary `not=` over established finite literal-Keyword Set types, edit the
+existing C7 engine, effects checker and typed emitter. Reuse their complete
+Keyword-Set equality domain checks and owned `if (= left right) false true`
+IR. Each pass reconstructs its own versioned inequality policy, original
+source call, constraint solution, call fact and ledger. Do not manufacture a
+source `=` fact. Runtime, seed, public interfaces and type grammar do not change.
+
+Both complete domains are checked before cardinality or value comparison.
+Empty, differently sized and reordered Sets compare normally; matching static
+types are not required. The existing limits are 1,024 members per side and
+65,536 work units. Bare/homogeneous/Unknown or malformed Sets, whole nullable
+Sets, non-Keyword members, nested collections and nested Never remain outside
+this slice. A top-level Never preserves transfer when the other operand
+establishes the supported Set domain; Never/Never keeps the atomic rule.
+
+Start with focused semantic checks and affected equality/inequality regressions:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-keyword-set-inequality-development-kernel \
+  --exact sh08-keyword-set-inequality-throw-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-keyword-set-inequality-source-development-kernel \
+  --exact current-gravity-keyword-set-inequality-consumer-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-set-inequality-lowering-runtime-development-kernel \
+  --exact current-gravity-keyword-set-inequality-transfer-fence-development-kernel --fail-fast
+```
+
+Preserve failed-child work and the containing atomic-inequality diagnostic;
+the private inferred-call check retains the Set-specific underlying reason.
+Existing runtime equality validates both actual domains, member uniqueness
+and the complete worst-case comparison reservation before an early result.
+This is not authority to rely on host Set storage or claim a provider CPU bound.
+
+For changed producer/consumer facts or lowering, select the paired fixture
+check and one affected source composition separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-set-inequality-fixtures-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-set-inequality-authenticated-composition --fail-fast
+```
+
+The source fixture uses C17's capability-Set value with a fresh producer and
+new inequality expressions. It does not activate or compile the whole C17
+helper. Q fixtures provide byte/parser parity only. Do not replay unchanged
+Keyword-Set equality or Vector inequality source compositions to refresh a
+label. Development results do not establish migration or self-hosting.
+
 ### Nil value classification
 
 For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter
