@@ -22318,7 +22318,12 @@
           observed (with-redefs [clojure.core/str (fn [& args] (if (= ["explode"] args) (throw failure) (apply original-str args)))]
                      (seed-throw-test-capture #(evaluate ir)))]
       (is (identical? failure observed)))
-    (is (= "C2-STRING" (:id (diagnostic #(bootstrap/read-forms "<malformed-character-source>" "\\uD800\n")))))))
+    (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+                 (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+          path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-03/rejected/character-surrogate-unicode.gravity"))
+          failure (diagnostic #(bootstrap/compiler-c2-reader-file-artifact path))]
+      (is (= "C2-STRING" (:id failure)))
+      (is (nil? (:unexpected-host-error failure))))))
 
 
 (deftest current-gravity-character-set-contains-transfer-fence-development-kernel
