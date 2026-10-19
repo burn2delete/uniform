@@ -2992,6 +2992,58 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Boolean family classification: development implementation
+
+STD2 specifies unary Bool-family classification, distinct from truthiness:
+both `true` and `false` classify true, other normal values false. Existing C7,
+effects and typed-lowering owners carry a distinct Boolean descriptor, source
+joins, context, call fact and complete ledger rule. Valid closed first-order
+types are supported and Never transfers; Unknown/Dynamic, malformed carriers
+and unsupported callables remain diagnosed. Runtime classification is shallow,
+with no String/Keyword coercion, wrapper unwrapping, payload traversal,
+hashing/equality, mutation or collection construction. Type grammar, public
+APIs, unary IR and seed primitives are unchanged; runtime projection remains
+51 functions with unchanged exports.
+
+Focused V1 at `5bbbcea1` passed all 14 tests / 2,431 assertions: seven new
+kernels / 939 assertions and seven adjacent Keyword/Symbol regressions / 1,492
+assertions. Both Bool literals and a function-returned false value classify
+true; the latter retains one observable operand output. Matching String or
+Keyword spellings, Symbols, nil, represented numbers and collections classify
+false. Policy forgeries, original transfers/fatal failure, hostile-provider
+zero-callback checks, measured C7 work, full C8 analyzer budgets/ledger census,
+dominant unary/ID guards and failed-child work are included. Execution was
+5.934057667 seconds with a 2 GiB heap; namespace loading was separate. The
+original command's zero exit was independently observed and tested source pins
+remained unchanged. This is component feedback, not a performance benchmark,
+full C6 module build, polymorphic scalar-validator or authoritative migration.
+The three partial current-closure groups and resolver development-unadmitted
+status remain unchanged.
+
+Paired preflight passed 1 test / 7 assertions: six byte/parser/function-count
+checks and an AST comparison with the actual C6 scalar-helper defn. Source V1
+at `facd04aa` passed 1 test / 231 assertions, including six runtime-loader
+assertions, in 248.859418417 seconds selected execution with a 2 GiB heap.
+One Gravity positive and one C7 arity rejection ran; QST typed products did not.
+Sixteen functions, 21 calls and thirteen Boolean-query descriptors (twelve
+normal, one not-invoked) are checked. Fifteen direct runtime table entries
+include fourteen seed-interpreter comparisons on the same emitted IR and one
+caught transfer, not all dynamic helper calls or independent source compiler
+parity. Both false and true supply the copied helper's single inferred Bool
+parameter domain. Its initial `(= value nil)` uses unchanged atomic-equality
+semantics; it adds neither `nil?` nor parameter-annotation grammar. Other
+families use separate direct queries. This is not a full C6 module build or
+polymorphic scalar-validator acceptance. Pure source operands do not
+independently establish observable I/O ordering; normalized controls do.
+
+Accepted and freshly verified C7/C8 products precede execution. Two additional
+tracked C7 gates accept assembly and reject a truthiness-policy forgery; a
+resealed C8 dependency deletion rejects. The negative reaches accepted C5 and
+passed C6, then rejects at C7. Its test asserts primary
+`C7-TYPE-MISMATCH/:boolean-predicate-arity-mismatch`; the raw vector also contains
+secondary `C7-ANNOTATION/:unsupported-or-unresolved-core-node-type`. This affected
+composition does not renew authoritative migration or broaden the statuses above.
+
 ### Symbol family classification: development implementation
 
 STD2 specifies unary Symbol-value classification under ordinary L2 evaluation.

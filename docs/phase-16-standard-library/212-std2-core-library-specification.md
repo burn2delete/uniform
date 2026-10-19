@@ -42,6 +42,18 @@ All behavior must be deterministic except where the caller passes an explicitly 
 - Type and var helpers: `type-of`, `var`, `var?`, `deref-var`, and `resolve-var` where the active profile allows vars.
 - Simple reducers: `reduce`, `fold`, and `into` as protocol dispatch points, with concrete collection behavior owned by STD3.
 
+## Boolean Family Predicate
+
+Unary `(boolean? value)` returns Bool true exactly when the normally evaluated
+value is either `true` or `false`, and returns false for other normally
+evaluated values. This is Bool-family classification, not a truthiness test or
+coercion. Its operand follows ordinary L2 evaluation exactly once; operand
+effects are preserved, and a control transfer aborts invocation. The query
+does not evaluate stored payloads, mutate the value or itself construct a
+collection. `gravity.core` owns this predicate. Flow-typing and representation
+policies are not selected here; existing profile, target, effect, capability
+and safety legality requirements still apply.
+
 ## Symbol Family Predicate
 
 Unary `(symbol? value)` returns Bool true exactly when the normally evaluated
@@ -129,6 +141,7 @@ If the function read a file, the effect checker would reject the `:core` compila
 ## Conformance Criteria
 
 - Core examples compile without capabilities in `:core`.
+- Boolean family classification returns true for both Bool values and false for other normally evaluated values, preserves ordinary unary evaluation, effects and transfers, and does not substitute truthiness, coerce values or evaluate stored payloads.
 - Symbol family classification preserves ordinary unary evaluation and transfers, distinguishes evaluated Symbols from other values without spelling coercion or syntax-object unwrapping, and neither evaluates stored payloads nor grants binding, call, macro or capability authority.
 - Keyword family classification preserves ordinary unary evaluation and transfers, distinguishes actual Keywords from other values regardless of keyword-like spelling, and neither evaluates payloads nor grants namespace or capability authority.
 - All exported functions have type, effect, allocation, error, profile, and stability metadata.

@@ -3665,6 +3665,47 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Boolean family classification
+
+Unary `(boolean? value)` returns true for both `true` and `false`, not for
+truthy values generally. Edit the existing C7 engine, effects, typed emitter
+and Gravity runtime owners. Existing valid closed first-order operand types
+are accepted; Never preserves control transfer. Unknown/Dynamic, malformed
+carriers and unsupported callable types remain diagnosed. The type grammar,
+unary IR and seed primitive are unchanged.
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-boolean-predicate-development-kernel --exact sh08-boolean-predicate-id-guard-development-kernel --exact sh08-boolean-predicate-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-boolean-predicate-source-development-kernel --exact current-gravity-boolean-predicate-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-boolean-predicate-lowering-runtime-development-kernel --exact current-gravity-boolean-predicate-shallow-runtime-development-kernel
+```
+
+Keep the once-only function-returned-false control: classification must return
+true without dropping or repeating operand effects. String/Keyword spelling,
+nil, represented numbers and collections do not become Bool values. A wrapper
+Map is not unwrapped. Runtime classification is shallow, with no payload
+traversal, hashing, equality, mutation or collection construction. Retain
+dominant unary/ID guards, independent complete C8 analyzer/ledger and exact
+budget checks, failed-child work, transfers/original failures and proportionate
+Keyword/Symbol-predicate regressions. These are component development checks,
+not source integration or authoritative migration evidence.
+
+For affected compiler-to-runtime composition, run the paired preflight and
+the separate source check:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-boolean-predicate-fixtures-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-boolean-predicate-authenticated-composition
+```
+
+The preflight compares the copied C6 scalar-helper defn AST with its actual
+owner. Only false/true callers supply that helper, giving one inferred Bool
+parameter domain. Its existing nil comparison is `(= value nil)`, not a new
+`nil?` primitive. Other families have separate direct-query functions. This is
+not full C6 execution, polymorphic scalar validation or new parameter grammar.
+One Gravity positive and one C7 arity rejection run; QST has byte/parser coverage
+only. Same-emitted-IR seed comparisons are not independent source compilation.
+
 ### Symbol family classification
 
 Unary `(symbol? value)` classifies the normally evaluated value, not source
