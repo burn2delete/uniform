@@ -3324,6 +3324,67 @@ Direct commands are in the development-verification guide. Numeric Vector
 members, full current-closure migration, the three partial evidence groups,
 complete SH-07, self-hosting and release claims remain outstanding.
 
+### Binary finite Keyword-Set inequality: development implementation
+
+Binary `not=` now accepts independently established finite literal-Keyword
+Set types in C7, effects checking and typed lowering. Each owner reconstructs
+the complete collections premise while retaining the original inequality
+source, constraint, call fact and ledger. Existing equality IR inside an
+explicit Bool complement implements the operation; no source equality fact
+is invented. Runtime, seed, public interfaces and type grammar are unchanged.
+
+Empty, unequal-width and reordered Sets are supported without requiring
+identical static types. Both complete domains are checked before a value
+mismatch. Existing per-side width 1,024 and work 65,536 limits remain; failed
+child work is retained once after prepaid work. Bare, homogeneous, Unknown,
+malformed or whole nullable Sets, non-Keyword members, nested collections and
+nested Never remain unsupported. Top-level Never preserves original transfer
+when paired with a supported Set domain. Never/Never keeps the atomic rule.
+
+The first focused batch passed all 46 tests / 21,535 assertions: six new
+kernels / 953 assertions, the paired fixture check / eight assertions, and
+39 adjacent equality/inequality regressions / 20,574 assertions. The fixture
+check includes six paired-fixture byte/parser/function-count assertions and
+two C17 source/value-basis assertions. Owning validation runs once with prepaid
+prefix 123 and child budget 65,413, with no unrelated probe. Independent policies, complete C8
+ledgers, coherent tamper rejection, owned IR, exact/short work, transfer and
+non-tail restrictions are covered. Focused checks are development feedback,
+not current-source construction or authoritative migration evidence.
+
+The sole affected genuine Gravity source composition passed one test / 107
+assertions on the unchanged joined candidate. Five source functions and five
+calls contain four original inequality descriptors, ledger rows and owned
+equality IR sites. Five Gravity function-table entries and five same-emitted-IR
+seed controls cover a fresh capability-Set producer, equal membership,
+different same-cardinality membership, reordered members and empty versus
+singleton Sets. The C17 basis is its capability-Set value, not activation or
+compilation of the whole existing helper. Same-IR execution is not independent
+semantic equivalence. Q fixtures supply no typed source product.
+
+Fresh positive C7 and C8 construction/verification passed. Two tracked public
+C7 assembly gates include a coherently propagated forgery of the existing
+member-uniqueness policy; a resealed C8 dependency deletion rejects. The real
+empty-Set versus numeric-member Set source negative reaches C5/C6 and rejects
+at C7 with `C7-TYPE-MISMATCH/:atomic-inequality-operand-type-required`, retaining
+the secondary Unknown annotation diagnostic. Quoted Sets and pure function
+graphs do not establish an allocation effect merely from value comparison.
+
+The completed focused batch including fixtures and the separate source
+composition total 47 tests / 21,642 assertions. Source execution took 194.433
+seconds after 11.063 seconds of loading at 2 GiB, below the monitored ten-minute
+ceiling. Positive C5 construction, C6 construction and C6 verification took
+34.209, 31.762 and 35.527 seconds; assembly including public C7 verification
+took 2.626 seconds. These nested caller observations include their own work;
+they are not exclusive phase costs, a benchmark, a hard deadline or a speedup
+comparison. No unchanged source proof was replayed. Separate language-boundary
+checks passed six tests / 11 assertions; LOC validation passed 2,021 files,
+zero exceptions, maximum 250 lines.
+
+Direct commands are in the development-verification guide. Unchanged equality
+and Vector inequality proofs are not prerequisites for ordinary edits. The
+three partial evidence groups, current-closure admission, full SH-07,
+self-hosting and release remain open.
+
 ### Nil value classification: development implementation
 
 STD2 defines unary `nil?`: nil classifies true; false and empty collections do
