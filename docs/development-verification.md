@@ -3550,6 +3550,54 @@ negative source-compilation evidence. Actual results and exclusions belong in
 the backlog. No fresh authority proof is a prerequisite for ordinary edits;
 authoritative migration remains an explicit separate decision.
 
+### Integer family classification
+
+STD5 owns unary `integer?` semantics. The development frontier accepts
+independently established closed operand types, including the existing Integer
+and I8/I16/I32/I64/U8/U16/U32/U64 type facts. These normalized typing cases do
+not establish native-width arithmetic. Unknown remains unsupported; Never
+aborts invocation. Operand evaluation happens once in non-tail position and
+preserves effects and transfers. A Bool result supplies no conversion, width,
+range, arithmetic-mode, overflow or type-refinement proof.
+
+Use the same C7, C8, emitter and runtime owners listed for `vector?`, and the
+existing direct checks:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-integer-predicate-development-kernel \
+  --exact sh08-integer-predicate-throw-consumer-development-kernel \
+  --exact sh08-ordering-pending-call-entry-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-integer-predicate-source-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integer-predicate-lowering-runtime-development-kernel --fail-fast
+# Affected source composition, separate from the normal inner loop:
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-integer-predicate-authenticated-composition --fail-fast
+```
+
+The throwing-call consumer check exercises the containing pass, not only the
+predicate helper: resource reasons and measured work must survive semantic
+rejection. Binding, source, descriptor, fact and ordered ledger checks remain
+independent at their owning boundaries. Run an affected source composition when
+those boundaries change; direct focused feedback does not first require fresh
+authority proofs or a migration fingerprint update.
+The pending-call entry check covers source-order independence in the existing
+bounded inference pass. An unresolved ordering diagnostic remains present in
+that round while later real calls contribute independent parameter facts;
+final unresolved, incompatible or conflicting facts still reject. No predicate
+result is used as an operand-type refinement.
+The paired source programs separate the unchanged W5 nonnegative-integer helper
+from existing typed-catch transfer behavior. They do not imply general W5,
+native-width or authoritative migration support. Rejected QST fixture parity
+is not negative source-compilation evidence. Record actual results and limits
+in the backlog.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

@@ -1,0 +1,10 @@
+(ns example.rejected-integer-predicate-two
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main []
+  (integer? [] []))
