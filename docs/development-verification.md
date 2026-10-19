@@ -4193,6 +4193,48 @@ typed products. Seed interpretation of the same typed-emitted IR is a runtime
 comparison, not independent raw-source compiler parity. Renew affected paired
 composition when reader/extension/identity handling changes, not every edit.
 
+### Finite Character-Set membership
+
+The same four owning passes support a finite Character-Set value and a
+Character needle. This includes quoted Set values, not evaluated Character-Set
+construction or Character-Set equality. Start with the owning kernels:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-character-set-contains-development-kernel --exact sh08-character-set-contains-dispatch-guard-development-kernel --exact sh08-character-set-contains-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact body-character-set-contains-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-character-set-contains-lowering-development-kernel --exact current-gravity-character-set-contains-runtime-development-kernel --exact current-gravity-character-set-contains-transfer-fence-development-kernel
+```
+
+Check independently reconstructed source/type/descriptor joins, complete
+producer rows, Never transfers, malformed carriers, semantic duplicates and
+exact/short budgets. The runtime validates every member and the needle,
+reserves the complete comparison budget, then checks semantic uniqueness
+before returning either hit or miss. Host Set lookup, hashing and printing
+are not membership authority. Existing Keyword membership remains unchanged.
+The Character representation premise is the existing atomic Character IR;
+C2 owns Unicode decoding and source validity. These checks do not establish
+stronger validity for arbitrary host-created values or a provider CPU bound.
+
+A quoted copy of C17's 16 hex Characters exercises the membership value, not
+the unchanged C17 helper, whose evaluated Set construction is a separate
+development slice. Keep that distinction when recording source results.
+As with Keyword membership, affected source composition is a separate check,
+not a prerequisite authority-admission workflow for ordinary focused edits.
+
+For changes to membership's composed behavior, use the existing paired
+fixture preflight and affected Gravity source selection:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-character-set-contains-fixtures-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-character-set-contains-authenticated-composition
+```
+
+The source subject has seven functions and six membership queries, including
+both caught transfer positions. QST receives byte/parser checks only; normal
+seed controls interpret the same emitted IR, not an independent raw-source
+compiler. Supplementary and hostile Character carriers remain focused IR
+controls rather than claims about this ASCII hex source subject.
+
 ### Evaluated literal-Keyword Sets
 
 For the bounded JVM slice, edit the existing typed emitter and runtime owners.

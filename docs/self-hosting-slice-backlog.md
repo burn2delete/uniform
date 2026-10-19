@@ -5516,6 +5516,57 @@ exceptions, maximum 250 lines. No old source composition was replayed.
 Focused implementation and this affected composition do not establish
 authoritative migration, milestone or self-hosting completion.
 
+### Finite Character-Set membership: development increment
+
+The C7 engine, effects, typed emitter and runtime extend binary `contains?`
+to a finite Character-Set value and Character needle. Independently derived
+type/descriptor facts retain existing Never transfers, closed domains and
+producer-row validation. Runtime work validates all members and the needle,
+prepays comparisons, rejects semantic duplicates, then answers hit or miss.
+Existing Keyword membership, public interfaces and limits remain unchanged.
+C2 owns source Unicode validity; this does not strengthen arbitrary host-value
+validation or establish a provider CPU bound.
+
+The independently reviewed focused candidate passed seven tests / 773
+assertions, all selected kernels complete. Four earlier failed attempts remain
+separate: an unsupported seed operator stopped the first kernel; the next
+three exposed test-oracle errors in C2 diagnostic ownership, failed-child work
+and the prescan failure phase. The corrected production uses supported seed
+operations and rejects opaque producer IDs before indexed lookup. No failed
+attempt is counted as passing coverage. Adjacent Keyword/Map membership and
+atomic Character equality checks separately passed 11 tests / 920 assertions.
+
+The paired fixture preflight separately passed one test / eight assertions,
+including actual C17 sixteen-character value parity and the new producer's
+quoted AST. This is parser feedback, not a typed QST source composition.
+
+The affected source composition then passed one test / 158 assertions at
+2 GiB: seven Gravity function entries, five normal same-emitted-IR seed
+controls, both genuine caught transfer positions and six membership
+descriptors. Original fresh C7 verification guards assembly and rejects a
+coherently propagated membership-policy forgery; C8 construction/verification
+preserves pure queries and rejects a resealed dependency deletion. A numeric
+Set passes C5/C6 and rejects at C7 with the operand-type diagnostic; the full
+negative output also contains the secondary unresolved-annotation diagnostic.
+QST remains parser-only. Supplementary and hostile carriers were checked in
+focused IR tests, not this ASCII hex source subject.
+
+Source execution took 208.285 seconds after 10.645 seconds of namespace
+loading, below the monitored ten-minute bound. These inclusive observations
+are not phase-isolated benchmarks or a hard launcher deadline. Product
+construction and verification dominate the elapsed work; no unchanged
+expensive proof was replayed for a label refresh.
+
+The four final passing selections total 20 tests / 1,859 assertions, not one
+batch; the four earlier failed attempts are excluded. Separate language-boundary
+checks passed six tests / 11 assertions. LOC validation passed 2,021 source
+files, zero exceptions, maximum 250 lines. These are semantic and
+affected-composition development results, not migration evidence. A quoted
+C17 hex-character Set value is not execution of the unchanged C17 helper: evaluated
+Character-Set construction remains the next separate semantic slice.
+Character-Set equality, generic conversion and whole-C17 execution remain
+unsupported by this increment. SH-07 and authoritative admission remain open.
+
 ### Compiler-module literal String/Keyword keys: development increment
 
 The temporary module constructor now accepts distinct literal String or

@@ -760,6 +760,84 @@
           {:status :rejected :reason :keyword-set-contains-value-domain-required :work-count 2 :comparison-attempts 0})))
     {:status :rejected :reason :keyword-set-contains-work-limit :work-count 0 :comparison-attempts 0}))
 
+(defn p15-s23-runtime-character-set-contains-work [items needle budget]
+  ; Existing atomic Character IR values, not Unicode source decoding.
+  ; Reserve complete validation, distinctness and membership before comparing.
+  (if (if (integer? budget) (>= budget 0) false)
+    (let [limit (if (< budget 65536) budget 65536)]
+      (if (< limit 2)
+        {:status :rejected :reason :character-set-contains-work-limit :work-count 2 :comparison-attempts 0}
+        (if (set? items)
+          (let [n (count items)]
+            (if (if (< n 0) true (> n 1024))
+              {:status :rejected :reason :character-set-contains-value-width :work-count 2 :comparison-attempts 0}
+              (let [base (+ 2 (* 2 n))]
+                (if (> base limit)
+                  {:status :rejected :reason :character-set-contains-work-limit :work-count base
+                   :work-count-kind :validation-reservation :comparison-attempts 0}
+                  (let [checked
+                        (loop [remaining items i 0 values [] units 0]
+                          (if (> i n) {:status :accepted :values values :units units}
+                            (let [value (if (= i n) needle (first remaining))
+                                  valid? (if (char? value) true
+                                           (if (map? value)
+                                             (if (if (= 4 (count value))
+                                                   (loop [fields (keys value)]
+                                                     (if (= 0 (count fields)) true
+                                                       (if (keyword? (first fields)) (recur (rest fields)) false))) false)
+                                               (if (= #{:artifact :schema-version :codepoint :text} (set (keys value)))
+                                                 (if (= :gravity/unicode-scalar-character (get value :artifact))
+                                                   (if (= 1 (get value :schema-version))
+                                                     (if (integer? (get value :codepoint))
+                                                       (if (<= 65536 (get value :codepoint) 1114111)
+                                                         (if (string? (get value :text)) (= 2 (count (get value :text))) false)
+                                                         false) false) false) false) false) false) false))]
+                              (if (if (= i n) (if (= 0 (count remaining)) valid? false) valid?)
+                                (recur (if (= i n) remaining (rest remaining)) (+ i 1)
+                                  (if (= i n) values (conj values value)) (+ units (if (char? value) 1 2)))
+                                {:status :rejected :reason :character-set-contains-value-domain-required}))))]
+                    (if (= false (= :accepted (get checked :status)))
+                      (assoc checked :work-count base :work-count-kind :validation-reservation :comparison-attempts 0)
+                      (let [values (get checked :values) units (get checked :units)
+                            half (quot n 2) previous (if (> n 0) (- n 1) 0)
+                            a (if (= n (+ half half)) half n) b (if (= n (+ half half)) previous (quot previous 2))]
+                        (if (= false (if (= b 0) true (<= a (quot (- limit base) b))))
+                          {:status :rejected :reason :character-set-contains-work-limit :work-count (+ limit 1)
+                           :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
+                          (let [pairs (* a b) remaining (- limit base pairs)]
+                            (if (> units (quot remaining (+ n 1)))
+                              {:status :rejected :reason :character-set-contains-work-limit :work-count (+ limit 1)
+                               :work-count-kind :exceeded-allowance-lower-bound :comparison-attempts 0}
+                              (let [work (+ base pairs (* (+ n 1) units))
+                                    distinct (loop [i 0 attempts 0]
+                                               (if (= i n) {:status :accepted :comparison-attempts attempts}
+                                                 (let [checked (loop [j (+ i 1) used attempts]
+                                                                 (if (= j n) {:status :accepted :comparison-attempts used}
+                                                                   (let [equal (p15-s23-runtime-atomic-equality (get values i) (get values j))
+                                                                         next-attempt (+ used 1)]
+                                                                     (if (= false equal) (recur (+ j 1) next-attempt)
+                                                                       {:status :rejected :reason :character-set-contains-value-domain-required
+                                                                        :domain-failure :duplicate-or-unsupported-character-class
+                                                                        :comparison-attempts next-attempt}))))]
+                                                   (if (= :accepted (get checked :status))
+                                                     (recur (+ i 1) (get checked :comparison-attempts)) checked))))
+                                    result (if (= :accepted (get distinct :status))
+                                             (loop [i 0 attempts (get distinct :comparison-attempts)]
+                                               (if (= i n) {:status :accepted :value false :comparison-attempts attempts}
+                                                 (let [equal (p15-s23-runtime-atomic-equality (get values i) needle)
+                                                       next-attempt (+ attempts 1)]
+                                                   (if (= true equal) {:status :accepted :value true :comparison-attempts next-attempt}
+                                                     (if (= false equal) (recur (+ i 1) next-attempt)
+                                                       {:status :rejected :reason :character-set-contains-value-domain-required
+                                                        :comparison-attempts next-attempt}))))) distinct)]
+                                (assoc result :work-count work :work-count-kind :exact-logical-membership-reservation
+                                  :input-element-count n :representation-units units :representation :jvm-utf16-code-units
+                                  :value-work-model :gravity/character-set-membership-logical-content-work-v1
+                                  :character-premise :existing-atomic-character-ir-values :source-decoding :c2-owned
+                                  :provider-cpu-bound :not-established))))))))))))
+          {:status :rejected :reason :character-set-contains-value-domain-required :work-count 2 :comparison-attempts 0})))
+    {:status :rejected :reason :character-set-contains-work-limit :work-count 0 :comparison-attempts 0}))
+
 (defn p15-s23-runtime-keyword-set-equality-work [left right budget]
   ; Prepay all cross-membership and within-operand distinctness comparisons.
   ; Representation units measure cost only; the guarded Keyword leaf decides equality.
@@ -1323,7 +1401,9 @@
                    (second arguments-result) :rejected])
               (if (= function 'contains?)
                 (if (set? left)
-                  (let [result (p15-s23-runtime-keyword-set-contains-work left right 65536)]
+                  (let [result (if (if (char? right) true (map? right))
+                                  (p15-s23-runtime-character-set-contains-work left right 65536)
+                                  (p15-s23-runtime-keyword-set-contains-work left right 65536))]
                     (if (= :accepted (get result :status))
                       [(get result :value) (second arguments-result) :normal]
                       [{:diagnostic "P15S23X002" :reason (get result :reason) :operation operation

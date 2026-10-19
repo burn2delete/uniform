@@ -1,0 +1,27 @@
+(ns self-hosting.sh08.character-set-membership
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [hex-values present absent reordered left-transfer right-transfer main]))
+
+(defn hex-values []
+  '#{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f})
+
+(defn present [] :- Bool
+  (contains? (hex-values) \a))
+
+(defn absent [] :- Bool
+  (contains? '#{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f} \g))
+
+(defn reordered [] :- Bool
+  (contains? '#{\f \e \d \c \b \a \9 \8 \7 \6 \5 \4 \3 \2 \1 \0} \0))
+
+(defn left-transfer [] :- Bool
+  (try (contains? (throw "stop") \a)
+       (catch String problem false)))
+
+(defn right-transfer [] :- Bool
+  (try (contains? '#{\a} (throw "stop"))
+       (catch String problem false)))
+
+(defn main [] :- Bool
+  (contains? '#{} \a))
