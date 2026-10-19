@@ -2188,6 +2188,88 @@
                      (update-in syntax [0 :span :primary :byte-end] inc)]]
       (is (false? (b-frontend-source-syntax-joins? source c2 changed))))))
 
+(defn- b-with-subject-read-audit
+  [subject counts operation]
+  ;; A subject can also be a compiler owner. Observe the real plan-construction
+  ;; boundary, not a filename exemption or a substituted verification result.
+  (let [original-reader bootstrap/read-source-form-records
+        original-plan bootstrap/p15-s23-stage2-compiler-artifact-plan
+        original-verifier bootstrap/sh06-resolution-artifact-verification
+        owner-source (ThreadLocal.)]
+    (with-redefs
+      [bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (fn [emitter source text & inputs]
+         (let [prior (.get owner-source)]
+           (.set owner-source [source text])
+           (try
+             (apply original-plan emitter source text inputs)
+             (finally
+               (if prior (.set owner-source prior) (.remove owner-source))))))
+       bootstrap/read-source-form-records
+       (fn [source text]
+         (when (= source subject)
+           (if (= [source text] (.get owner-source))
+             (swap! counts update :owner-reads inc)
+             (do
+               (swap! counts update :subject-read-attempts inc)
+               (throw (ex-info "Hosted C6 reread selected frontend subject"
+                               {:id "SH06-B-SUBJECT-REREAD"})))))
+         (original-reader source text))
+       bootstrap/sh06-resolution-artifact-verification
+       (fn [artifact]
+         (let [report (original-verifier artifact)]
+           (when-not (= :passed (:status report))
+             (println (pr-str {:b-frontend-fresh-verification (:status report)
+                              :contained-diagnostic-id (get-in report [:contained-diagnostic :id])
+                              :failed-checks (vec (take 16 (:failed-checks report)))})))
+           report))]
+      (operation))))
+
+(deftest sh06-b-subject-read-audit-distinguishes-owner-construction
+  (let [subject "<selected-owner>" text "(ns selected.owner)"
+        counts (atom {:owner-reads 0 :subject-read-attempts 0})
+        delegated (atom [])
+        report {:status :failed :failed-checks [:specific] :opaque {:unmodified true}}
+        rejection (fn [operation]
+                    (try (operation) nil
+                         (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))]
+    (with-redefs
+      [bootstrap/read-source-form-records
+       (fn [source value] (swap! delegated conj [source value]) value)
+       bootstrap/p15-s23-stage2-compiler-artifact-plan
+       (fn [mode source value & inputs]
+         (case mode
+           :arguments inputs
+           :nested (do (bootstrap/p15-s23-stage2-compiler-artifact-plan :normal "<other-owner>" "nested")
+                       (bootstrap/read-source-form-records source value))
+           :mismatched (bootstrap/read-source-form-records source (str value " "))
+           :throws (do (bootstrap/read-source-form-records source value)
+                       (throw (ex-info "owner construction failure" {:id "OWNER-FAIL"})))
+           (bootstrap/read-source-form-records source value)))
+       bootstrap/sh06-resolution-artifact-verification (fn [_] report)]
+      (b-with-subject-read-audit
+       subject counts
+       (fn []
+         (is (= text (bootstrap/p15-s23-stage2-compiler-artifact-plan :normal subject text)))
+         (is (= '(:inputs) (bootstrap/p15-s23-stage2-compiler-artifact-plan :arguments subject text :inputs)))
+         (is (= text (bootstrap/p15-s23-stage2-compiler-artifact-plan :nested subject text)))
+         (is (= "SH06-B-SUBJECT-REREAD"
+                (rejection #(bootstrap/read-source-form-records subject text))))
+         (is (= "SH06-B-SUBJECT-REREAD"
+                (rejection #(bootstrap/p15-s23-stage2-compiler-artifact-plan :mismatched subject text))))
+         (is (= "OWNER-FAIL"
+                (rejection #(bootstrap/p15-s23-stage2-compiler-artifact-plan :throws subject text))))
+         (is (= "SH06-B-SUBJECT-REREAD"
+                (rejection #(bootstrap/read-source-form-records subject text))))
+         (is (= "other" (bootstrap/read-source-form-records "<other>" "other")))
+         (let [printed (with-out-str
+                         (is (identical? report (bootstrap/sh06-resolution-artifact-verification :candidate))))]
+           (is (str/includes? printed ":specific"))
+           (is (not (str/includes? printed "unmodified")))))))
+    (is (= {:owner-reads 3 :subject-read-attempts 3} @counts))
+    (is (= [[subject text] ["<other-owner>" "nested"] [subject text]
+            [subject text] ["<other>" "other"]] @delegated))))
+
 (defn- b-run-frontend-subject
   [[relative expected-defns]]
   ;; L4/C4/C5/TEST2: this explicit current frontend cohort is not the historical
@@ -2262,16 +2344,11 @@
                    reference (bootstrap/macro-source-artifact-from-records source text records)]
                (when (check (= (:expanded-forms reference) (:expanded-forms expanded)) :stage0-defn-form-parity)
                  (println (pr-str {:b-frontend-subject relative :phase :hosted-c6-before}))
-                 (let [original-reader bootstrap/read-source-form-records
-                       reads (atom 0)
-                       core (with-redefs [bootstrap/read-source-form-records
-                                          (fn [p value]
-                                            (when (= p source)
-                                              (swap! reads inc)
-                                              (throw (ex-info "Hosted C6 reread selected frontend source"
-                                                              {:id "SH06-B-SUBJECT-REREAD"})))
-                                            (original-reader p value))]
-                              (bootstrap/sh06-c6-lowering-from-resolution-artifact resolved))]
+                 (let [reads (atom {:owner-reads 0 :subject-read-attempts 0})
+                       core (b-with-subject-read-audit
+                             source reads
+                             #(bootstrap/sh06-c6-lowering-from-resolution-artifact resolved))]
+                   (println (pr-str {:b-frontend-subject relative :read-audit @reads}))
                    (when
                     (and
                      (check (= :gravity/stage0-c6-core-lowering-artifact (:kind core)) :hosted-c6-boundary)
@@ -2281,7 +2358,7 @@
                      (check (= (mapv :syntax/id (rest output-syntax))
                                (mapv :surface-syntax (get-in core [:surface-to-core-map :entries])))
                             :complete-core-source-map)
-                     (check (zero? @reads) :no-subject-reread)
+                     (check (zero? (:subject-read-attempts @reads)) :no-subject-reread)
                      (check (= text (slurp source :encoding "UTF-8")) :source-stable-after-consumption))
                     ;; Return scalars only. No subject product survives in the
                     ;; subject invocation, and no proof/cache status is reused.

@@ -583,10 +583,57 @@ and scheduling costs. No bound was increased, no subject was retried and no
 next subject or unchanged macro proof was run. SH-05.1, SH-05.6 and SH-06.6
 remain partial; the resolver remains development-unadmitted.
 
-Next action: trace the repeated C5 verifier and reread-spy interaction at the
-existing hosted-C6 boundary. Add a focused regression for the concrete finding
-before any corrected affected composition; preserve fresh verification and
-authenticated consumption rather than skipping their checks.
+That failed checkpoint required tracing the repeated C5 verifier and reread-spy
+interaction before a corrected composition. The test correction and actual
+result below supersede that pending action; both fresh verification gates and
+authenticated consumption remain intact.
+
+### Envelope read-spy correction and completed composition
+
+Static tracing identified a concrete collision: the selected subject is also
+the authenticated-envelope compiler owner. Fresh upstream verification can
+legitimately compile that owner from the same file. The old path-only spy
+could block that construction before C6 consumed its supplied artifact.
+The original failed log does not recover its contained inner report.
+
+The test-only correction in `sh06_resolution_adapter_test.clj` observes the
+existing plan constructor and scopes its actual path/text pair to the current
+thread during delegation. Matching owner reads still invoke the original
+reader and are counted separately; direct subject parsing outside that scope
+or with different text is rejected. Original constructors and verifiers are
+unchanged. Nested and exceptional exits restore the observation scope. Failed
+verification reports are returned unchanged with bounded scalar diagnostics.
+This is specific test instrumentation, not a new production wrapper, cache,
+filename exemption, authority flag or verification lane.
+
+The direct normalized regression
+`sh06-b-subject-read-audit-distinguishes-owner-construction` passed one test and
+13 assertions at 512 MiB. It checks delegation and both constructor arities,
+nested/exception restoration, direct and mismatched-read rejection, unrelated
+reads, and preservation of a failed verifier report.
+
+The corrected envelope selector at development commit `96aa2973` then passed
+one test and 19 assertions. It covers 72 source-derived expansions, 74 C5
+definitions, 2,146 references and a 2,530-node hosted Core result. All nineteen
+preservation checks completed, including fresh verification and authenticated
+hosted-C6 consumption. The observer recorded 30 owner-compilation reads and
+zero forbidden subject-read attempts: this is not zero I/O from that file.
+The selected work took 384.109 seconds after 6.701 seconds of loading at 2 GiB.
+The normalized and source checks are different workloads, not a speed comparison.
+
+No production compiler semantics changed in this correction. It does not
+execute every envelope function body, establish Gravity C6 execution, close
+the remaining syntax/resolver/reader subjects or negative criteria, or renew
+authoritative migration. SH-05.1, SH-05.6 and SH-06.6 remain partial and the
+resolver remains development-unadmitted. Failed V1 remains failed; no other
+subject or unchanged macro check was replayed.
+
+Construction cost remains separate from scheduling overhead. Before a future
+necessary changed composition, inspect repeated owner-plan construction and
+the fresh verifier calls in existing adapters `00042` and `00041`. Preserve
+their public-boundary obligations; the present timings do not establish which
+call dominates or justify an accepted-proof cache. Do not run an unchanged
+composition merely to collect that breakdown.
 
 ### Invalidation and reuse
 
