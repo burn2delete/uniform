@@ -11345,6 +11345,165 @@
         (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))))
 
+(deftest current-gravity-boolean-predicate-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
+    (doseq [[disposition name functions] [["accepted" "local-runtime-boolean-predicate" 16]
+                                         ["rejected" "boolean-predicate-arity-two" 1]]]
+      (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            g-path (.getPath (io/file root (str stem ".gravity"))) q-path (.getPath (io/file root (str stem ".qst")))
+            g (slurp g-path) q (slurp q-path)]
+        (is (= g q))
+        (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
+    (let [owner-path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"))
+          owner (first (filter #(and (seq? %) (= 'defn (first %)) (= 'c6-sh07-independent-exception-post-reader-scalar? (second %)))
+                               (bootstrap/read-forms owner-path (slurp owner-path))))
+          fixture-path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-boolean-predicate.gravity"))
+          reused (first (filter #(and (seq? %) (= 'defn (first %)) (= 'c6-sh07-independent-exception-post-reader-scalar? (second %)))
+                                (bootstrap/read-forms fixture-path (slurp fixture-path))))]
+      (is (= owner reused) "exact C6 helper body reuse; Bool-only control, no whole-module proof"))
+))
+
+(deftest current-gravity-boolean-predicate-authenticated-composition
+  ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result)) result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-boolean-predicate.gravity"
+        path (.getPath (io/file root relative)) products (fresh relative)
+        _ (println (pr-str {:bi-product-elapsed relative :timing (:development-timing products)}))
+        input (select-keys products [:request :typed :verification])
+        _ (is (= :accepted (get-in products [:c5 :status])))
+        _ (is (= :passed (get-in products [:report :status])))
+        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+        _ (when-not (= :accepted (get-in input [:typed :status]))
+            (throw (ex-info "Boolean predicate C7 source prerequisite rejected" {:relative relative :diagnostics (get-in input [:typed :diagnostics])})))
+        _ (is (= :passed (get-in input [:verification :status])))
+        _ (when-not (= :passed (get-in input [:verification :status]))
+            (throw (ex-info "Boolean predicate C7 verification prerequisite rejected" {:relative relative})))
+        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+        raw (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+        definitions (bootstrap/stage0-function-table raw) module (assoc raw :function-table definitions)
+        t0 (System/nanoTime)
+        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+        t1 (System/nanoTime)
+        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+        functions (into {} (map (juxt :definition-name identity) (:function-type-table facts)))
+        descriptors (mapv :applied-boolean-predicate (filter #(= :direct-boolean-predicate (:dispatch %)) (:call-type-facts facts)))
+        rows (filterv #(= :sh08-boolean-predicate-v1 (:producer-rule %)) (:constraint-ledger facts))
+        instructions (filter map? (tree-seq coll? seq (:functions assembled)))
+        predicate-ir (filterv #(and (= :builtin-call (:op %)) (= 'boolean? (:function %))) instructions)
+        binding (seal (:request input) (:typed input) (:verification input))
+        t2 (System/nanoTime)
+        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+        t3 (System/nanoTime)
+        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+        _ (when-not (= :accepted (:status effects)) (throw (ex-info "Boolean predicate C8 source prerequisite rejected" {:effects effects})))
+        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+        t4 (System/nanoTime)
+        _ (is (= :passed (:status effect-verification)))
+        _ (when-not (= :passed (:status effect-verification))
+            (throw (ex-info "Boolean predicate C8 verification prerequisite rejected" {:verification effect-verification})))
+        graph (:effect-graph effects)
+        specs [['false-control true ""] ['true-control true ""] ['false-value true ""] ['true-value true ""]
+               ['nil-value false ""] ['integer-value false ""] ['string-value false ""] ['keyword-value false ""]
+               ['symbol-value false ""] ['vector-value false ""] ['map-value false ""] ['set-value false ""]
+               ['list-value false ""] ['transferred false ""] ['main true ""]]
+        t5 (System/nanoTime)
+        results (mapv (fn [[function expected output]]
+                        (let [actual (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                               [{:op :function-call :function function :args []} {} "" (:functions assembled) []])
+                              reference? (not (= 'transferred function))]
+                          (is (= [expected output :normal] actual) (str function))
+                          ;; The existing raw seed has no typed catch instruction.
+                          (when reference?
+                            (let [reference (atom nil)
+                                  reference-output (with-out-str (reset! reference (original runtime assembled function [])))]
+                              (is (= [@reference reference-output :normal] actual) (str function " seed interpreter on emitted IR parity"))))
+                          actual)) specs)
+        t6 (System/nanoTime)]
+    (is (= 16 (count (:function-records core)) (count functions) (count (:functions assembled))))
+    (is (= 21 (count (:calls core)) (count (:call-edges core)) (count (:call-type-facts facts))))
+    (is (= 13 (count descriptors) (count rows) (count predicate-ir)))
+    (is (= {:normal 12 :not-invoked 1} (frequencies (map :application descriptors))))
+    (is (= 15 (count results)))
+    (doseq [instruction predicate-ir]
+      (is (= #{:op :function :args} (set (keys instruction))))
+      (is (= 1 (count (:args instruction)))))
+    (doseq [descriptor descriptors]
+      (let [id (:call-core-node-id descriptor)]
+        (is (= :gravity.type/applied-boolean-predicate (:kind descriptor)))
+        (is (= :sh08-boolean-predicate-v1 (:version descriptor)))
+        (is (= 'gravity.core (:semantic-owner descriptor)))
+        (is (= 'boolean? (:operation descriptor)))
+        (is (= {:operation :boolean-family-classification :operand-evaluation :once :operand-position :non-tail
+                :construction :none :payload-evaluation :none :mutation :none :refinement :none
+                :coercion :none :truthiness :unobserved} (:query-semantics descriptor)))
+        (is (= (if (= :normal (:application descriptor)) :gravity.type/bool :gravity.type/never)
+               (:return descriptor) (:result-type descriptor)))
+        (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor) (:thrown-error-effects descriptor)))
+        (is (= #{} (get-in graph [:nodes id :direct])))
+        (is (nil? (get-in graph [:nodes id :allocation])))
+        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+    (let [helper-id (get-in functions ['c6-sh07-independent-exception-post-reader-scalar? :function-id])
+          helper-query (first (filter #(= helper-id (get-in % [:source-edge :caller-function-syntax-id])) descriptors))]
+      (is (map? helper-query))
+      (is (= [:gravity.type/bool] (:argument-types helper-query))))
+    (doseq [name ['c6-sh07-independent-exception-post-reader-scalar? 'false-control 'true-control 'false-value 'true-value
+                 'nil-value 'integer-value 'string-value 'keyword-value 'symbol-value 'set-value 'list-value 'main]]
+      (is (= #{} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (doseq [name ['vector-value 'map-value]]
+      (is (= #{:memory/allocate} (get-in graph [:functions (get-in functions [name :function-id]) :inferred]))))
+    (is (= [] (get-in graph [:functions (get-in functions ['transferred :function-id]) :throws])))
+    (doseq [descriptor descriptors :when (= :not-invoked (:application descriptor))]
+      (is (contains? (get-in graph [:nodes (:call-core-node-id descriptor) :transitive]) :error/throw)))
+    (let [descriptor (first descriptors) forged (assoc-in descriptor [:query-semantics :truthiness] :observed)
+          hostile (walk/prewalk #(if (= descriptor %) forged %) (:typed input))
+          failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
+                                                  emitter module (vec (sort-by key definitions)) (assoc input :typed hostile)))))]
+      (is (= "P15S23Q002" (:id failure)))
+      (is (= :rejected (:status (last @verified)))))
+    (let [id (:call-core-node-id (first descriptors))
+          forged (reseal effects (update-in graph [:nodes id :dependencies] pop))]
+      (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding forged)))))
+    (is (= 2 (count @verified)))
+    (let [relative "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/boolean-predicate-arity-two.gravity"
+          negative (fresh relative) diagnostics (get-in negative [:typed :diagnostics])]
+      (println (pr-str {:bi-product-elapsed relative :timing (:development-timing negative)}))
+      (is (= :accepted (get-in negative [:c5 :status])))
+      (is (= :passed (get-in negative [:report :status])))
+      (is (= :rejected (get-in negative [:typed :status])))
+      (is (= ["C7-TYPE-MISMATCH" :boolean-predicate-arity-mismatch]
+             ((juxt :rule :reason) (first diagnostics))) (pr-str diagnostics))
+      (println (pr-str {:bi-boolean-predicate-negative true :diagnostics diagnostics})))
+    (println (pr-str {:bi-boolean-predicate-positive true :function-table-entry-invocations (count results)
+                      :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
+                      :seed-interpreter-on-emitted-ir-entries 14 :gravity-runtime-transfer-entries 1
+                      :copied-helper-body-control {:owner "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :function 'c6-sh07-independent-exception-post-reader-scalar?
+                                                 :incoming-domain :gravity.type/bool :false-and-true-cases 2 :whole-module-coverage false}
+                      :whole-consumer-module-coverage false
+                      :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
+                                   :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
+                      :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))))
+
 (deftest current-gravity-symbol-predicate-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
   (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)

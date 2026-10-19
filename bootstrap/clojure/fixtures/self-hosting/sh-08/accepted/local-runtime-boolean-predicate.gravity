@@ -1,0 +1,62 @@
+(ns self-hosting.sh08.boolean-predicate
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [false-control true-control false-value true-value nil-value integer-value string-value keyword-value symbol-value vector-value map-value set-value list-value transferred main]))
+
+(defn c6-sh07-independent-exception-post-reader-scalar? [value]
+  (if (= value nil)
+    true
+    (if (boolean? value)
+      true
+      (if (integer? value)
+        true
+        (if (string? value)
+          true
+          (if (keyword? value) true (symbol? value)))))))
+
+(defn false-control [] :- Bool
+  (c6-sh07-independent-exception-post-reader-scalar? false))
+
+(defn true-control [] :- Bool
+  (c6-sh07-independent-exception-post-reader-scalar? true))
+
+(defn false-value [] :- Bool
+  (boolean? false))
+
+(defn true-value [] :- Bool
+  (boolean? true))
+
+(defn nil-value [] :- Bool
+  (boolean? nil))
+
+(defn integer-value [] :- Bool
+  (boolean? 7))
+
+(defn string-value [] :- Bool
+  (boolean? "false"))
+
+(defn keyword-value [] :- Bool
+  (boolean? :false))
+
+(defn symbol-value [] :- Bool
+  (boolean? 'not-a-boolean))
+
+(defn vector-value [] :- Bool
+  (boolean? [true false]))
+
+(defn map-value [] :- Bool
+  (boolean? {:value false}))
+
+(defn set-value [] :- Bool
+  (boolean? '#{true false}))
+
+(defn list-value [] :- Bool
+  (boolean? '(false (println "unreached"))))
+
+(defn transferred [] :- Bool
+  (try
+    (boolean? (throw "stop"))
+    (catch String problem false)))
+
+(defn main [] :- Bool
+  (false-control))
