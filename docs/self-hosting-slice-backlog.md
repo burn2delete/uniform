@@ -3171,8 +3171,10 @@ retains primary `C7-TYPE-MISMATCH` /
 rejection oracle. Q fixtures provide byte/parser parity, not typed execution.
 
 These three completed selections total nineteen tests / 13,162 assertions,
-with no failures, errors or unrun selectors. No earlier source input or focused
-selection was replayed. The source run took 214.207 seconds after 11.086
+with no failures, errors or unrun selectors. No earlier source input was
+replayed; the focused batch renewed affected equality/inequality regressions
+without reconstructing old source products for a green label. The source run
+took 214.207 seconds after 11.086
 seconds of loading at 2 GiB, below its monitored ten-minute ceiling. Positive
 C5 construction, C6 construction and C6 verification took 38.199, 36.784 and
 41.022 seconds respectively; C7 construction/verification took 2.400/1.104.
