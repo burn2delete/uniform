@@ -553,6 +553,41 @@ checks, not just scheduling. Their internal cost breakdown remains unmeasured;
 the bounded representation follow-up above is unchanged. No limits or
 historical corpus/migration pins were increased or repinned.
 
+### Envelope frontend composition: failed development check
+
+The next selected subject, `compiler/authenticated_envelope.gravity`, ran once
+at accepted development revision `512ecc51`. The existing direct selector
+`sh06-b-frontend-envelope-development-coverage` completed with exit 1:
+one test, 13 passing assertions, zero failures and one error. The independent
+auditor confirmed the complete raw log and timing receipt. This is a failed
+composition check, not a passing frontend subject or renewed admission.
+
+The twelve pre-C6 guards and Stage0 expanded-form comparison passed. They cover
+72 source-derived `defn` expansions, authenticated C2/C3 source joins,
+trace/hygiene/origin links, C4 parent and reference/binding joins, and the first
+fresh C5 verification. The observed C5 summary contains 74 definitions and
+2,146 references; those counts are not function-execution coverage.
+
+Hosted C6 then rejected at its fresh C5 verification gate, before lowering,
+with `C6-VERIFY` and `[:fresh-authenticated-sh06-resolution]`. The six later
+Core identity, verifier, source-map, no-reread and stability assertions did not
+run. No Core summary was returned. The generic diagnostic does not identify
+the failed verifier predicate or establish physically missing artifact data.
+The first verification passed outside the test's source-reread spy; the failing
+repeat occurred inside it. Its underlying verifier report was not retained,
+so that interaction is a static diagnosis target, not an established cause.
+
+Selected work took 328.198 seconds after 6.870 seconds of namespace loading
+with a 2 GiB heap. The interval does not separate construction, verification
+and scheduling costs. No bound was increased, no subject was retried and no
+next subject or unchanged macro proof was run. SH-05.1, SH-05.6 and SH-06.6
+remain partial; the resolver remains development-unadmitted.
+
+Next action: trace the repeated C5 verifier and reread-spy interaction at the
+existing hosted-C6 boundary. Add a focused regression for the concrete finding
+before any corrected affected composition; preserve fresh verification and
+authenticated consumption rather than skipping their checks.
+
 ### Invalidation and reuse
 
 Unchanged source bytes are only one reuse condition. Preserve compatible
