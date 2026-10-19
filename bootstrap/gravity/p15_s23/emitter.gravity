@@ -6517,9 +6517,10 @@
                       :callee-body :constructor-or-quote-shape :profile :target :evaluation-order]} nil)) nil))
 
 (defn p15-s23-vn-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-vector-nth-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-vector-nth-v1
-   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-element}
+  {:constraint-id-request {:domain (if (= :gravity.type/applied-vector-get (get descriptor :kind))
+                                      :gravity/sh08-vector-get-constraint-v1 :gravity/sh08-vector-nth-constraint-v1) :application descriptor}
+   :kind :equality :producer-rule (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :sh08-vector-get-v1 :sh08-vector-nth-v1)
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :vector-get :vector-element)}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
               :direct-effects (get descriptor :direct-effects) :bounds-proof (get descriptor :bounds-proof)
@@ -6530,13 +6531,15 @@
 (defn p15-s23-vn-call-fact [descriptor module]
   (let [source (get descriptor :source) edge (get descriptor :source-edge)]
     {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain :gravity/sh08-vector-nth-call-type-fact-v1 :application descriptor}
+     :fact-id-request {:domain (if (= :gravity.type/applied-vector-get (get descriptor :kind))
+                                 :gravity/sh08-vector-get-call-type-fact-v1 :gravity/sh08-vector-nth-call-type-fact-v1) :application descriptor}
      :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
      :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
      :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
      :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-vector-nth :applied-vector-nth descriptor :effect-facts-source :audited-collection-intrinsic}))
+     :dispatch (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :direct-vector-get :direct-vector-nth)
+     (if (= :gravity.type/applied-vector-get (get descriptor :kind)) :applied-vector-get :applied-vector-nth) descriptor :effect-facts-source :audited-collection-intrinsic}))
 
 
 (defn p15-s23-vn-finish [header]
@@ -6556,6 +6559,7 @@
   (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
   (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
+        get? (= 'get (get binding :name))
         arguments (p15-s23-io-child-types args types)
         vector-type (first arguments) index-type (second arguments)
         elements (get vector-type :element-types) index-node (get nodes (get args 1))
@@ -6575,11 +6579,11 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (p15-s23-typed-all
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (p15-s23-vn-binding? binding module)
+           (= 2 (count args)) (= expected-call call) (= expected-edge edge) (if get? (p15-s23-mg-binding? binding module) (p15-s23-vn-binding? binding module))
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-           (contains? '#{nth gravity.core/nth} (get (get operator :attributes) :symbol))
+           (contains? (if get? '#{get gravity.core/get} '#{nth gravity.core/nth}) (get (get operator :attributes) :symbol))
            (= :operator-then-arguments (get (get node :evaluation) :kind))
            (= (loop [i 0 out []] (if (= i (count children)) out
                 (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
@@ -6589,12 +6593,14 @@
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
-      {:kind :gravity.type/applied-vector-nth :version :sh08-vector-nth-loop-v1
-       :operation 'nth :semantic-owner 'gravity.collections :intrinsic :gravity.collections/proven-vector-nth
+      {:kind (if get? :gravity.type/applied-vector-get :gravity.type/applied-vector-nth)
+       :version (if get? :sh08-vector-get-loop-v1 :sh08-vector-nth-loop-v1)
+       :operation (if get? 'get 'nth) :semantic-owner 'gravity.collections
+       :intrinsic (if get? :gravity.collections/proven-vector-get :gravity.collections/proven-vector-nth)
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :query-semantics {:operation :vector-element-access :construction :none
+       :query-semantics {:operation (if get? :vector-stored-member-lookup :vector-element-access) :construction :none
                          :operand-evaluation :operator-then-vector-then-index :normal-input :homogeneous-vector-and-invariant-slot}
        :index-value nil :vector-length length :selected-type selected
        :bounds-proof nil :application :normal
@@ -6664,7 +6670,7 @@
                   (count (get context :ledger)) (count (get core :recur-targets)) (count (get core :loop-bindings))
                   (* 132 (count (get core :recur-transfers))) (* 258 (count (get core :lexical-bindings)))
                   (* (+ 6 (count (get core :recur-transfers))) (count (get core :function-records))))]
-    (if (< budget charge) (p15-s23-typed-node-error :typed-lowering-work-limit node)
+    (if (< budget charge) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
       (let [edge (get (get context :edges) id) forms (get context :forms) nodes (get context :nodes)
             owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
             index-binding (get (get context :bindings) (get (get descriptor :bounds-proof) :slot-binding-id))
@@ -6672,8 +6678,8 @@
                    (if (= 0 (count remaining)) out
                      (let [row (first remaining)]
                        (recur (rest remaining)
-                         (if (if (= :sh08-vector-nth-v1 (get row :producer-rule))
-                               (= {:core-node-id id :projection :vector-element} (get row :lhs)) false) (conj out row) out)))))]
+                         (if (if (= (get (p15-s23-vn-constraint descriptor) :producer-rule) (get row :producer-rule))
+                               (= (get (p15-s23-vn-constraint descriptor) :lhs) (get row :lhs)) false) (conj out row) out)))))]
         (if (if (p15-s23-vl-proof-valid? descriptor core node nodes (get context :bindings) types)
               (p15-s23-typed-all
                 [(= call (get descriptor :source-call)) (= edge (get descriptor :source-edge))
@@ -6695,14 +6701,21 @@
                              (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)
                              (if (= i 2) (if (= :symbol (get form :kind)) (= (get form :value) (get index-binding :name)) false) true)])
                          (recur (+ i 1)) false))))]) false)
-          (let [compiled (p15-s23-typed-compile-children context (get call :argument-node-ids) (- budget charge) [])]
-            (if (p15-s23-compiler-complete? compiled)
-              (assoc (p15-s23-compiler-result {:op :builtin-call :function 'nth :args (get compiled :value)})
-                :work-count (+ charge (get compiled :work-count))) compiled))
-          (p15-s23-typed-node-error :unsupported-or-mismatched-typed-vector-nth node))))))
+          (loop [remaining (get call :argument-node-ids) values [] used charge]
+            (if (= 0 (count remaining))
+              (assoc (p15-s23-compiler-result {:op :builtin-call :function 'nth :args values}) :work-count used)
+              (let [operand (p15-s23-typed-compile-node (assoc context :tail? false) (first remaining) (- budget used))
+                    total (+ used (get operand :work-count 0))]
+                (if (p15-s23-compiler-complete? operand)
+                  (recur (rest remaining) (conj values (get operand :value)) total)
+                  (assoc operand :work-count total)))))
+          (assoc (p15-s23-typed-node-error
+                   (if (= :gravity.type/applied-vector-get (get descriptor :kind))
+                     :unsupported-or-mismatched-typed-vector-get :unsupported-or-mismatched-typed-vector-nth) node)
+                 :work-count charge))))))
 
 (defn p15-s23-typed-compile-nth [context node budget]
-  (if (= :sh08-vector-nth-loop-v1 (get (get (get context :types) (first (get node :children))) :version))
+  (if (contains? #{:sh08-vector-nth-loop-v1 :sh08-vector-get-loop-v1} (get (get (get context :types) (first (get node :children))) :version))
     (p15-s23-typed-compile-loop-nth context node budget)
   (let [id (get node :node-id) core (get context :core)
         charge (+ 64 (count (get core :function-records)))]
@@ -6924,7 +6937,7 @@
         (= :gravity.type/applied-bounded-successor (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-successor context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
-        (= :gravity.type/applied-vector-nth (get (get (get context :types) (first (get node :children))) :kind)) false)
+        (contains? #{:gravity.type/applied-vector-nth :gravity.type/applied-vector-get} (get (get (get context :types) (first (get node :children))) :kind)) false)
     (p15-s23-typed-compile-nth context node budget)
   (if (if (= :nonlocal-or-nonfunction (get (get (get context :edges) (get node :node-id)) :classification))
         (= :gravity.type/applied-collection-count (get (get (get context :types) (first (get node :children))) :kind)) false)

@@ -1,0 +1,24 @@
+(ns example.runtime-vector-get
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn scan [middle :- Keyword]
+  (let [payloads [true middle :keep]
+        access payloads]
+    (loop [cursor 0]
+      (if (< cursor (count payloads))
+        (let [stored (get access cursor)]
+          (if (= stored :stop)
+            (throw stored)
+            (recur (inc cursor))))
+        cursor))))
+
+(defn caught []
+  (try
+    (do (scan :stop) false)
+    (catch Keyword problem (= problem :stop))))
+
+(defn main [] (scan :keep))

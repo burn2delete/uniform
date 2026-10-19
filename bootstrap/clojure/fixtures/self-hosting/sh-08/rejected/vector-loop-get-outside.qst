@@ -1,0 +1,14 @@
+(ns example.runtime-vector-get
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate :error/throw})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn main []
+  (let [payloads [:keep :stop :keep]
+        end (loop [cursor 0]
+              (if (< cursor (count payloads))
+                (recur (inc cursor))
+                cursor))]
+    (get payloads end)))

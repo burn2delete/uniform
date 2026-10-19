@@ -5556,6 +5556,28 @@
   (let [input (vector-loop-nth-completed (vector-loop-nth-input 0 false))]
     (is (= :vector-nth-loop-homogeneous-element-type-required (:reason (vector-loop-nth-derived input 65536))))))
 
+(defn- vector-loop-get-input [extent]
+  ;; Actual get source and stored Keyword members; one counter slot and inc backedge.
+  (let [base (vector-loop-nth-input extent false)
+        members (get-in base [:nodes :values :children])
+        value #(if (= % :member-1) :stop :keep)
+        nodes (-> (:nodes base)
+                  (assoc-in [:nth-op :attributes :symbol] 'get)
+                  (assoc-in [:check :core-form] :do)
+                  (assoc-in [:check :children] [:read :again])
+                  (assoc-in [:check :evaluation] {:kind :left-to-right :order [{:index 0 :core-node-id :read} {:index 1 :core-node-id :again}]})
+                  (dissoc :problem :stop))
+        nodes (reduce (fn [out id] (assoc-in out [id :attributes] {:literal-kind :keyword :value (value id)})) nodes members)
+        types (reduce (fn [out id] (assoc out id :gravity.type/keyword)) (:types base) members)
+        types (reduce (fn [out id] (assoc-in out [id :element-types] (vec (repeat extent :gravity.type/keyword))))
+                      types [:values :values-ref :nth-vector])
+        forms (-> (:forms base) (assoc-in [:nth-op :value] 'get)
+                  (assoc-in [:check :child-form-ids] [:do-op :read :again]) (dissoc :problem :stop))
+        forms (reduce (fn [out id] (assoc out id (assoc (out id) :kind :keyword :value (value id)))) forms members)]
+    (-> base (assoc :nodes nodes :forms forms :types (assoc types :read :gravity.type/keyword))
+        (assoc-in [:bindings :association-binding :name] 'get)
+        (update-in [:core :nodes] #(mapv (comp nodes :node-id) (remove (fn [n] (contains? #{:problem :stop} (:node-id n))) %))))))
+
 (defn- keyword-loop-match-input
   ([] (keyword-loop-match-input false))
   ([normal?]
@@ -5746,6 +5768,109 @@
                      (assoc descriptor :return :gravity.type/string :result-type :gravity.type/string :selected-type :gravity.type/string)]]
       (is (false? (verify changed))))))
 
+
+(deftest sh08-vector-loop-get-development-kernel
+  (doseq [extent [1 3] alias? [false true]]
+    (let [base (vector-loop-get-input extent)
+          input (vector-loop-nth-completed (if alias? (bounded-successor-alias base) base))
+          {:keys [core nodes bindings types forms]} input
+          result (vector-loop-nth-derived input 65536) descriptor (:descriptor result)
+          call (get (:calls core) 2) edge (get (:call-edges core) 2)
+          valid #(invoke-c7 'sh08-mg-inferred-call-valid?
+                           [core (nodes :read) call edge nodes bindings (assoc types :nth-op %)])
+          context {:ordering-core core :lookup-nodes nodes :ordering-bindings bindings
+                   :ordering-operators {:nth-op call} :ordering-edges {:read edge}
+                   :association-forms forms :prior-type-table {}}
+          step #(invoke-c7 'sh08-mg-step [(nodes :read) % {} {} context 65536])]
+      (is (= :accepted (get-in input [:invariant-result :status]) (:status result)) (pr-str result))
+      (is (= [:gravity.type/applied-vector-get :sh08-vector-get-loop-v1 'get :gravity.collections/proven-vector-get]
+             ((juxt :kind :version :operation :intrinsic) descriptor)))
+      (is (= :gravity.type/keyword (:type result) (:selected-type descriptor)))
+      (is (= :gravity.type/integer (second (:argument-types descriptor))))
+      (is (nil? (:index-value descriptor)))
+      (is (= [:proven-safe :retained :not-authorized]
+             ((juxt :outcome :runtime-guards :check-elision) (:bounds-proof descriptor))))
+      (is (= [:sh08-vector-get-v1 :vector-get :gravity/sh08-vector-get-constraint-v1]
+             [(get-in result [:constraint :producer-rule]) (get-in result [:constraint :lhs :projection])
+              (get-in result [:constraint :constraint-id-request :domain])]))
+      (let [fact (invoke-c7 'sh08-vn-call-fact [descriptor (:module core)])]
+        (is (= :direct-vector-get (:dispatch fact)))
+        (is (= descriptor (:applied-vector-get fact)))
+        (is (not (contains? fact :applied-vector-nth))))
+      (is (true? (valid descriptor)))
+      (is (= result (vector-loop-nth-derived input (:work-count result))))
+      (is (= :vector-get-loop-work-limit (:reason (vector-loop-nth-derived input (dec (:work-count result))))))
+      (is (= :vector-get-loop-work-limit (:reason (vector-loop-nth-derived input 0))))
+      (is (= descriptor (:descriptor (step types))))))
+  (let [input (vector-loop-nth-completed (vector-loop-get-input 3))
+        {:keys [core nodes bindings types]} input descriptor (:descriptor (vector-loop-nth-derived input 65536))
+        valid #(invoke-c7 'sh08-mg-inferred-call-valid?
+                          [core (nodes :read) (get (:calls core) 2) (get (:call-edges core) 2) nodes bindings (assoc types :nth-op %)])]
+    (doseq [changed [(assoc descriptor :kind :gravity.type/applied-vector-nth :version :sh08-vector-nth-loop-v1 :operation 'nth
+                                      :intrinsic :gravity.collections/proven-vector-nth)
+                     (assoc descriptor :operation 'nth) (assoc descriptor :version :sh08-vector-nth-loop-v1)
+                     (assoc-in descriptor [:bounds-proof :check-elision] :authorized)
+                     (assoc-in descriptor [:bounds-proof :guard-path] [])
+                     (assoc-in descriptor [:bounds-proof :guard-path] [7])
+                     (assoc-in descriptor [:bounds-proof :slot-binding-id] :shadowed)
+                     (assoc-in descriptor [:bounds-proof :vector-origin :node] (nodes :loop))
+                     (assoc descriptor :selected-type :gravity.type/string :return :gravity.type/string :result-type :gravity.type/string)]]
+      (is (false? (valid changed))))
+    (doseq [changed [(assoc-in input [:types :nth-index] :gravity.type/i64)
+                     (assoc-in input [:types :nth-index] :gravity.type/unknown)
+                     (assoc-in input [:types :nth-index] :gravity.type/never)
+                     (assoc-in input [:nodes :nth-index :core-form] :literal)
+                     (assoc-in input [:forms :nth-op :value] 'nth)
+                     (assoc-in input [:bindings :association-binding :name] 'nth)
+                     (assoc-in input [:core :call-edges 2 :callee-function-syntax-id] :fake)
+                     (assoc-in input [:types :nth-vector :element-types] [:gravity.type/keyword :gravity.type/string :gravity.type/keyword])
+                     (assoc-in input [:types :inc-op] :gravity.type/core-var)]]
+      (is (= :rejected (:status (vector-loop-nth-derived changed 65536)))))
+    (doseq [change [vector-loop-nth-other-vector vector-loop-nth-nested-target]]
+      (let [base (-> (vector-loop-nth-input 3 false)
+                     (assoc-in [:nodes :nth-op :attributes :symbol] 'get)
+                     (assoc-in [:bindings :association-binding :name] 'get)
+                     (assoc-in [:forms :nth-op :value] 'get))
+            base (assoc-in base [:core :nodes] (mapv #(get (:nodes base) (:node-id %)) (get-in base [:core :nodes])))
+            changed (vector-loop-nth-completed (change base))]
+        (is (= :accepted (get-in changed [:invariant-result :status])))
+        (is (= :vector-get-loop-proof-or-origin-required (:reason (vector-loop-nth-derived changed 65536)))))))
+  (let [input (vector-loop-nth-completed (vector-loop-get-input 0))]
+    (is (= :vector-get-loop-homogeneous-element-type-required (:reason (vector-loop-nth-derived input 65536))))))
+
+(deftest sh08-vector-loop-get-routing-boundary-development-kernel
+  (let [{:keys [core nodes bindings types forms]} (vector-loop-nth-completed (vector-loop-get-input 3))
+        call (get (:calls core) 2) edge (get (:call-edges core) 2)
+        shape {:calls {:read call} :edges {:read edge} :function-records {} :module (:module core)}
+        context {:ordering-core core :lookup-nodes nodes :ordering-bindings bindings
+                 :ordering-operators {:nth-op call} :ordering-edges {:read edge}
+                 :association-forms forms :prior-type-table {} :shape-call-context shape}
+        step #(invoke-c7 'sh08-mg-step [(nodes :read) % {} {} context 65536])]
+    (doseq [id [:nth-vector :nth-index]]
+      (is (= {:status :deferred :type :gravity.type/unknown :work-count 2}
+             (step (assoc types id :gravity.type/unknown)))))
+    (doseq [changed [(assoc types :nth-vector :gravity.type/never)
+                     (assoc types :nth-index :gravity.type/never)
+                     (assoc types :nth-index :gravity.type/i64)
+                     (assoc types :nth-index :gravity.type/keyword)]]
+      (let [prior (invoke-c7 'sh08-mg-present-derive
+                    [(nodes :read) nodes changed {} {} (:lexical-bindings core) bindings forms {}
+                     (assoc shape :source-core core :budget-left 65536) 65536])]
+        (is (= prior (step changed)))
+        (is (= :rejected (:status prior)))
+        (is (nil? (:descriptor prior))))))
+  (doseq [arguments [[{:kind :gravity.type/vector :element-types [:gravity.type/keyword] :shape :literal}
+                     :gravity.type/integer :gravity.type/keyword]
+                    [{:kind :gravity.type/vector :element-types [:gravity.type/keyword] :shape :literal}
+                     :gravity.type/never :gravity.type/keyword]]]
+    (let [{:keys [core node nodes bindings types forms call edge] :as input} (map-get-input arguments)
+          context {:ordering-core core :lookup-nodes nodes :ordering-bindings bindings
+                   :ordering-operators {(:operator-node-id call) call} :ordering-edges {(:node-id node) edge}
+                   :association-forms forms}
+          prior (map-get-derived input)
+          routed (invoke-c7 'sh08-mg-step [node types {} {} context 65536])]
+      (is (= prior routed))
+      (is (= :rejected (:status routed))))))
 
 (deftest sh08-integral-ordering-development-kernel
   (doseq [operation '[< <= > >=]
