@@ -1,0 +1,10 @@
+(ns example.rejected-map-predicate-two
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [probe])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn probe []
+  (map? :one :two))

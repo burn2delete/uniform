@@ -2820,6 +2820,59 @@
           (is (= #{} (:direct record) (:transitive record)))
           (is (nil? (:allocation record))))))))
 
+(deftest current-gravity-map-predicate-source-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'map-predicate-input)
+        derive (ns-resolve upstream 'map-predicate-derived)
+        invoke (ns-resolve upstream 'invoke-c7)]
+    (doseq [type [:gravity.type/map :gravity.type/keyword :gravity.type/never {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
+                  {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}]]
+      (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [type])
+            result (derive input 65536) descriptor (:descriptor result)
+            facts {:type-table (assoc types :operator descriptor :call (:type result))
+                   :function-type-table [] :call-type-facts [(invoke 'sh08-mapp-call-fact [descriptor module])]
+                   :constraint-ledger [(invoke 'sh08-mapp-constraint [descriptor])]}
+            request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+            context (leaf 'body-mapp-context request facts bindings 65536)
+            checked (assoc facts :map-predicate-context (:context context))
+            valid #(leaf 'body-mapp-call-valid? core % bindings node call edge nodes)]
+        (is (= :accepted (:status context)) (pr-str context))
+        (is (= context (leaf 'body-mapp-context request facts bindings (:work-count context))))
+        (is (= :rejected (:status (leaf 'body-mapp-context request facts bindings (dec (:work-count context))))))
+        (is (true? (valid checked)))
+        (is (true? (leaf 'body-call-joins-with-foreign-valid? core checked bindings {})))
+        (is (true? (leaf 'body-mapp-node? node checked core)))
+        (let [operand (if (= :gravity.type/never type) #{:error/throw} #{:io/write})
+              record (leaf 'body-node-record node nil {:operator {:type descriptor :transitive #{}}
+                                                       :arg0 {:type type :transitive operand}}
+                           (if (= :gravity.type/never type) :gravity.type/never :gravity.type/bool))]
+          (is (= #{} (:direct record)))
+          (is (= operand (:transitive record)))
+          (is (nil? (:allocation record))))
+
+        (doseq [changed [(assoc checked :constraint-ledger [])
+                         (update checked :constraint-ledger into (:constraint-ledger checked))
+                         (update checked :constraint-ledger conj (assoc-in (first (:constraint-ledger checked)) [:lhs :core-node-id] :orphan))
+                         (assoc-in checked [:type-table :operator :query-semantics :refinement] :key-presence)
+                         (assoc-in checked [:type-table :operator :query-semantics :operand-evaluation] :twice)
+                         (assoc-in checked [:type-table :operator :operand-type-work] 0)
+                         (assoc-in checked [:call-type-facts 0 :effects] [:memory/allocate])]]
+          (is (false? (leaf 'body-call-joins-with-foreign-valid? core changed bindings {}))))
+        (let [changed (assoc-in request [:b47-context :authenticated-core-request :forms] 7)]
+          (is (= :rejected (:status (leaf 'body-mapp-context changed facts bindings 65536)))))
+        (let [changed (assoc-in facts [:type-table :arg0] :gravity.type/unknown)]
+          (is (= :rejected (:status (leaf 'body-mapp-context request changed bindings 65536)))))))
+    (let [visits (atom 0)
+          hostile (reify clojure.lang.Counted (count [_] 2048)
+                         clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved C8 predicate traversal"))))
+          {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
+          request {:canonical-core-artifact (assoc core :calls hostile)
+                   :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+          result (leaf 'body-mapp-context request {} bindings 0)]
+      (is (= :body-deferred-work-limit (:reason result)))
+      (is (= 0 @visits)))))
+
 (deftest current-gravity-integer-predicate-source-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
