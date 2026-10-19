@@ -12914,6 +12914,68 @@
           (is (= :rejected (:status (compile (mutate context) 65536))) (str "predicate context mutation " case-index)))))
   ))
 
+(deftest current-gravity-keyword-vector-set-conversion-id-guards-development-kernel
+  ;; Malformed normalized DATA tests local guard order, not authenticated C6 admission.
+  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
+        input-fn (ns-resolve upstream 'set-conversion-input) derive (ns-resolve upstream 'set-conversion-derived)
+        c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        input (input-fn [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}])
+        {:keys [core node call edge nodes forms bindings types module]} input
+        result (derive input 65536) descriptor (:descriptor result)
+        typed (assoc types :operator descriptor :call (:type result))
+        facts {:type-table typed :function-type-table [] :call-type-facts [(c7 'sh08-st-call-fact [descriptor module])]
+               :constraint-ledger [(c7 'sh08-st-constraint [descriptor])]}
+        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
+        checked (body 'body-st-context request facts bindings 65536)
+        checked-facts (assoc facts :set-conversion-context (:context checked))
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        context {:core core :nodes nodes :forms forms :bindings bindings :types typed
+                 :calls {:call call} :edges {:call edge} :call-order {:call 0}
+                 :call-facts {:call (c7 'sh08-st-call-fact [descriptor module])}
+                 :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "unvalidated conversion ID hashed")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "unvalidated conversion ID compared")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "unvalidated conversion ID printed"))))
+        mutations [#(assoc-in % [:call :argument-node-ids] [opaque])
+                   #(assoc-in % [:call :operator-node-id] opaque)
+                   #(assoc-in % [:call :operator-binding-id] opaque)
+                   #(assoc-in % [:node :children] [opaque :arg0])
+                   #(assoc-in % [:node :source :form-id] opaque)
+                   #(assoc-in % [:node :source :syntax-id] opaque)]]
+    (is (= :accepted (:status checked)))
+    (doseq [mutate mutations]
+      (let [{:keys [core node call edge nodes bindings types module] :as changed} (mutate input)]
+        (is (= :rejected (:status (derive changed 65536))))
+        (is (= :rejected (:status (c7 'sh08-st-inferred-call [core node call edge nodes bindings (merge typed types) 65536]))))
+        (let [validation (c7 'sh08-st-type-work [[(:arg0 types)] 65536])]
+          (is (nil? (c7 'sh08-st-source [core node call edge nodes bindings types module validation])))
+          (is (nil? (body 'body-st-source core node call edge nodes bindings types module validation)))
+          (is (nil? (lower 'p15-s23-st-source core node call edge nodes bindings types module validation))))
+        (is (false? (body 'body-st-call-valid? core checked-facts bindings node call edge nodes)))))
+    (doseq [bad-request [(assoc-in request [:canonical-core-artifact :calls 0 :argument-node-ids] [opaque])
+                         (assoc-in request [:canonical-core-artifact :calls 0 :core-node-id] opaque)
+                         (assoc-in request [:canonical-core-artifact :nodes 0 :node-id] opaque)
+                         (assoc-in request [:canonical-core-artifact :call-edges 0 :call-core-node-id] opaque)
+                         (assoc-in request [:b47-context :authenticated-core-request :forms 0 :form-id] opaque)]]
+      (is (= :rejected (:status (body 'body-st-context bad-request facts bindings 65536)))))
+    (doseq [lhs [{:core-node-id opaque :projection :set-conversion}
+                 {:core-node-id :call :projection :set-conversion :extra true}
+                 {:core-node-id :call :projection :wrong} 7]]
+      (let [row (assoc (first (:constraint-ledger facts)) :lhs lhs)]
+        (is (false? (body 'body-st-call-valid? core (assoc checked-facts :constraint-ledger [row]) bindings node call edge nodes)))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :ledger [row]) :call 65536))))))
+    (let [changed-forms (assoc-in forms [:call :child-form-ids] [opaque :arg0])]
+      (is (= :rejected (:status (derive (assoc input :forms changed-forms) 65536))))
+      (is (false? (body 'body-st-call-valid? core (assoc-in checked-facts [:set-conversion-context :forms] changed-forms) bindings node call edge nodes)))
+      (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :forms changed-forms) :call 65536)))))
+    (is (zero? @callbacks))))
+
 (deftest current-gravity-keyword-vector-set-conversion-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))

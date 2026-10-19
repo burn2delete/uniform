@@ -2996,7 +2996,9 @@
 (deftest current-gravity-keyword-vector-set-conversion-consumer-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        base ((ns-resolve upstream 'set-conversion-input) [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}])
+        base (-> ((ns-resolve upstream 'set-conversion-input) [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]}])
+                 (assoc-in [:module :effects] [:memory/allocate])
+                 (assoc-in [:core :module :effects] [:memory/allocate]))
         ids (zipmap (keys (:nodes base)) (map sha (range 1300 1310)))
         convert-node (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
                                     (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))

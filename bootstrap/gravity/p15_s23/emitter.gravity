@@ -6246,7 +6246,7 @@
   (if (if (vector? (get call :argument-node-ids))
         (if (= 1 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
-  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+  (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
         arguments (p15-s23-io-child-types args types)
         invoked? (loop [remaining arguments]
@@ -6304,7 +6304,7 @@
                            :element-type :gravity.type/keyword :maximum-input-elements 1024
                            :output-type :gravity.type/set :output-refinements :none}
             :construction-policy (p15-s23-st-keyword-policy)
-            :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor)) nil)) nil))
+            :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor)) nil)) nil) nil))
 
 (defn p15-s23-st-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-set-conversion-constraint-v1 :application descriptor}
@@ -6358,7 +6358,7 @@
                 rows (if producer-ids? (p15-s23-pe-select producer-rows :lhs {:core-node-id id :projection :set-conversion}) [])]
             (if (= :work-limit (get validation :reason))
               (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count work)
-              (if (if (if producer-ids? (map? descriptor) false)
+              (if (if (if producer-ids? (if (map? descriptor) (if (vector? ids) (if (= 2 (count ids)) (loop [remaining ids] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) false) false) false) false)
                     (p15-s23-typed-all
                       [(loop [remaining producer-rows]
                          (if (= 0 (count remaining)) true

@@ -5926,7 +5926,7 @@
                                              (= (get edge :caller-function-syntax-id)
                                                 (get (get owners :owners) (get edge :call-core-node-id)))])) false)
                                       (let [node (get nodes (get edge :call-core-node-id))
-                                            descriptor (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate} (get (get types (first (get node :children))) :kind))
+                                            descriptor (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-set-conversion :gravity.type/applied-set-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate} (get (get types (first (get node :children))) :kind))
                                                          nil
                                                          (sh08-io-descriptor core node call edge nodes binding-index types (get core :module)))]
                                         (if (map? descriptor) (= descriptor (get types (first (get node :children))))
@@ -9457,7 +9457,7 @@
   (if (if (vector? (get call :argument-node-ids))
         (if (= 1 (count (get call :argument-node-ids)))
           (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
-  (let [children (get node :children) operator (get nodes (get call :operator-node-id))
+  (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
         arguments (sh08-ft-ordered-child-types args types)
         invoked? (loop [remaining arguments]
@@ -9515,7 +9515,7 @@
                            :element-type :gravity.type/keyword :maximum-input-elements 1024
                            :output-type :gravity.type/set :output-refinements :none}
             :construction-policy (sh08-st-keyword-policy)
-            :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor)) nil)) nil))
+            :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor)) nil)) nil) nil))
 
 (defn sh08-st-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-set-conversion-constraint-v1 :application descriptor}
@@ -9550,7 +9550,7 @@
       (if (= false (if (vector? args) (if (= 1 (count args))
                     (if (vector? children) (= 2 (count children)) false) false) false))
         (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :set-conversion-arity-mismatch nil :one-ordinary-operand nil) :work-count base)
-        (let [arguments [(get types (first args) :gravity.type/unknown)]
+        (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [arguments [(get types (first args) :gravity.type/unknown)]
               validation (sh08-st-type-work arguments (- budget base))
               work (+ base (get validation :work-count))
               owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
@@ -9561,7 +9561,7 @@
               :work-count work :type-check-reason (get validation :reason))
             (let [header (sh08-st-source core node call edge nodes bindings types (get core :module) validation)]
               (if (if (map? header)
-                    (sh08-ft-all-true?
+                    (if (if (vector? ids) (if (= 2 (count ids)) (loop [remaining ids] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) false) false) (sh08-ft-all-true?
                       [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
                        (vector? ids) (= 2 (if (vector? ids) (count ids) 0))
                        (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
@@ -9572,12 +9572,13 @@
                              (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
                                    (= (get child :source) (sh08-ma-form-source form))
                                    (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
-                               (recur (+ i 1)) false))))]) false)
+                               (recur (+ i 1)) false))))]) false) false)
                 (let [descriptor (sh08-st-finish header)]
                   {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                    :constraint (sh08-st-constraint descriptor) :work-count work})
                 (assoc (sh08-sm-failure "C7-VERIFY" :set-conversion-source-mismatch nil :exact-operator-operand-source (get node :node-id))
-                  :work-count work)))))))))
+                  :work-count work)))))
+          (assoc (sh08-sm-failure "C7-VERIFY" :set-conversion-source-mismatch nil :exact-operator-operand-source (get node :node-id)) :work-count base))))))
 
 (defn sh08-st-node? [node context]
   (if (= :call (get node :core-form))
@@ -9591,7 +9592,7 @@
     (if (> base limit) {:status :rejected :reason :set-conversion-work-limit :work-count base}
       (if (if (vector? args) (if (= 1 (count args))
             (if (vector? children) (= 2 (count children)) false) false) false)
-        (let [validation (sh08-st-type-work [(get types (first args) :gravity.type/unknown)] (- limit base))
+        (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [validation (sh08-st-type-work [(get types (first args) :gravity.type/unknown)] (- limit base))
               work (+ base (get validation :work-count))]
           (if (= :accepted (get validation :status))
             (let [header (sh08-st-source core node call edge nodes bindings types (get core :module) validation)
@@ -9603,7 +9604,7 @@
                 {:status :rejected :reason :set-conversion-source-mismatch :work-count work}))
             {:status :rejected :reason (if (= :work-limit (get validation :reason)) :set-conversion-work-limit
                                           :set-conversion-operand-type-required)
-             :type-check-reason (get validation :reason) :work-count work}))
+             :type-check-reason (get validation :reason) :work-count work})) {:status :rejected :reason :set-conversion-source-mismatch :work-count base})
         {:status :rejected :reason :set-conversion-arity-mismatch :work-count base}))))
 
 (defn sh08-st-step [node types binding-types functions context budget]

@@ -3680,8 +3680,13 @@
 
 (deftest sh08-keyword-vector-set-conversion-throw-consumer-development-kernel
   ;; Normalized scoped-call DATA exercises the owning consumer, not only its helper.
-  (let [nested {:kind :gravity.type/vector :shape :literal
-                :element-types (vec (repeat 16 :gravity.type/keyword))}
+  (let [reads (atom 0) hashes (atom 0) backing [:gravity.type/keyword]
+        members (proxy [clojure.lang.APersistentVector] []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i))
+                  (hasheq [] (swap! hashes inc) (throw (AssertionError. "unrelated probe hashed Keyword Vector type")))
+                  (hashCode [] (swap! hashes inc) (throw (AssertionError. "unrelated probe hashed Keyword Vector type"))))
+        nested {:kind :gravity.type/vector :shape :literal :element-types members}
         input (set-conversion-input [nested])
         record {:function-syntax-id :predicate-function :function-core-node-id :predicate-fn
                 :body-core-node-id :call :fixed-arity 0 :parameter-binding-ids []}
@@ -3707,10 +3712,13 @@
         ;; Four nodes, one edge/call, one binding/record, no handlers/definitions:
         ;; outer precharge 110 and owner traversal 4 precede measured predicate work.
         prefix 114
+        _ (reset! reads 0)
         accepted (check core types 65536)]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @reads) "Owning type measurement occurs once; unrelated integral probe is skipped")
+    (is (zero? @hashes))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (let [limit (+ prefix (dec (:work-count measured)))
           rejected (check core types limit)]
