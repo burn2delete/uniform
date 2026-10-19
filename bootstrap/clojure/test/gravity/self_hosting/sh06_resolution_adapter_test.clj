@@ -2393,8 +2393,7 @@
                           (= (mapv #(select-keys % reference-fields) references)
                              (mapv #(select-keys % reference-fields) rows))) :source-reference-bijection)
               (check (every? #(and (sha256-id? (:binding-id %)) (contains? binding-ids (:binding-id %))) rows)
-                     :selected-binding-identities)
-              (check (= :passed (:status (verification resolved))) :fresh-c5-verification))
+                     :selected-binding-identities))
              ;; The reference macro algorithm receives the pre-expansion
              ;; authenticated C2 view, never C3 descriptors or expanded forms. It does not
              ;; reconstruct another complete reader/C5 product for comparison.
@@ -2402,6 +2401,8 @@
                    reference (bootstrap/macro-source-artifact-from-records source text records)]
                (when (check (= (:expanded-forms reference) (:expanded-forms expanded)) :stage0-defn-form-parity)
                  (println (pr-str {:b-frontend-subject relative :phase :hosted-c6-before}))
+                 ;; Public C6 freshly verifies this exact C5 input. Do not add
+                 ;; another test-only verification of the unchanged artifact.
                  (let [reads (atom {:owner-reads 0 :subject-read-attempts 0})
                        core (b-with-subject-read-audit
                              source reads
