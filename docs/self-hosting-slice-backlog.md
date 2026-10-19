@@ -2292,6 +2292,90 @@ targets, authoritative migration, self-hosting and release remain separate
 gates. These results are executable development evidence, not a benchmark or
 completion of those broader contracts.
 
+### Private ordinary direct-self inference: development implementation
+
+The C7 engine now infers one monomorphic value signature for a private,
+fixed-positive-arity function with one ordinary direct self-call. The complete
+direct-use census must exclude exports, value escapes and unsupported captures.
+At least one independently normal, nonrecursive entry must exist, and all such
+entries must agree on the entire parameter vector. A separate cold return
+witness comes from actual return positions, not from a recursive result or a
+caller's expected type. Current supported domains are the bounded atomic and
+homogeneous-List types used by the declared path, excluding generic Integer
+and positional Vector inference. This is a language implementation increment,
+not a promotion of SH-07, SH-08 or W5 completion.
+
+Cold inference starts without recursive-result-dependent facts and does not
+turn an unknown recursive result into a seed. A callee's Never result is not
+an invocation guard; definitely nonnormal operands prevent invocation.
+Source census, cold passes, quote reconstruction and return traversal share
+the existing cumulative budget. The derived parameter premise supplies type
+and immutability only: homogeneous-List `first` still requires the original
+same-binding, mutation-free `empty?` branch proof. C8 and lowering reconstruct
+the finite source/type joins independently; public verification recomputes the
+current result. Effects and escaping errors are solved separately from bottom.
+No runtime change, new call IR, authority channel or recursive call-to-recur
+conversion was needed.
+
+Focused development checks passed the entry census/extraction, dependency cut,
+cold inference, return-witness, quote-budget and guarded-head cases. The final
+C7 projection/regression batch passed 5 tests / 157 assertions: 19 new projection
+checks, 81 legacy primitive-family, 35 declared-self, five diagnostic and 17
+source-owner checks. C8 context/head checks passed 29 new assertions alongside
+32 existing declared-self effect checks. The new inferred variant's effect/error
+fixed point separately passed 1 / 20. Lowering passed 2 / 61: 42 new finite
+context/call/head checks and 19 existing declared-self checks. These batches
+overlap prior component runs and are not a count of newly supported behaviors.
+
+Earlier attempts remain failures: cold-result comparison included budget
+telemetry; a census expectation omitted an intrinsic call; the head case exposed
+a cold operator-fact gap and stale fixture control roots; an effect-role fixture
+omitted call facts; and a projection test failed loading because of a delimiter.
+The cold operator correction accepts only the current independently checked
+intrinsic descriptor, with all evaluated operands still independently known.
+The corrected fixtures use the owning call-fact producer. A precharge review
+also moved the census cardinality rejection before eager per-call joins, and
+scalar entry payloads are rejected before `count`. Changed focused successors
+passed; failures were not relabeled and unchanged expensive proofs were not
+replayed.
+
+The sole affected source composition passed 1 test / 263 assertions at 2 GiB:
+257 composition checks and six existing runtime-projection loader checks.
+It constructed five fresh products: the accepted Gravity/QST pair and Gravity
+entry-conflict, return-conflict and missing-effect negatives. The negative QST
+files have exact byte-parity coverage, not additional compilation. The accepted
+eleven-function module contains genuinely unannotated private `join-parts`,
+three declared homogeneous-List producers, four normal entries, two non-invoking
+entries and one self-call. Its independent return witness is the current String
+parameter. Fresh C7/C8 checks passed before twelve closed executions: empty,
+one- and two-element traversal, a deeper String throw and two operand-transfer
+cases across both files. The acyclic caller's real Bool function `recur` remains
+distinct from the private ordinary self-call.
+
+The source checks establish allocation from `str`, operand effects without
+borrowed callee errors on non-invoking calls, exact/one-less C8 work behavior,
+three additionally tracked public C7 assembly/forgery gates, and fresh public C8
+rejection of a coherently inflated equation-valid error graph. That hostile
+case is not a claim of isolated rejection causality. All 22 physical function
+paths and the complete path-projected Gravity/QST function tables passed
+comparison for this AT run. This does not recover missing tables or change the
+failed AS source result recorded below.
+
+Selected construction, verification and execution took 702.626 seconds after
+9.805 seconds of namespace loading. Existing timing did not separate the
+selected interval further; this is neither scheduler attribution nor a speedup
+claim. The bounded product-representation follow-up remains separate from
+semantic edits and must not replay this unchanged composition just for metrics.
+
+Exported/escaping functions, mutual or indirect recursion, arbitrary captures,
+non-core named helpers and try/loop/recur inside the recursive body, imported
+recursive producer inference and expanded recursive value domains remain
+unsupported here. No termination, TCO, native or other-target support,
+authoritative module migration, self-hosting, seed retirement or release claim
+follows. Use the direct commands in `development-verification.md`; fresh
+authoritative evidence is required only when explicitly admitting a stable
+module revision.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

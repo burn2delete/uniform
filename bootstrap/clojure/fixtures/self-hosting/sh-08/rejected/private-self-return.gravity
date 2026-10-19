@@ -1,0 +1,46 @@
+(ns self-hosting.sh08.private-self-values
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [run empty-join one-join deep-join argument-throw first-argument-throw main]))
+
+(defn join-parts [pending text]
+  (if (empty? pending)
+    text
+    (let [head (first pending)]
+      (if (= head "wrong-return")
+        false
+        (if (= head "throw")
+          (throw "deep")
+          (join-parts (rest pending) (str text head)))))))
+
+(defn empty-parts [] :- (List String)
+  (list))
+
+(defn one-parts [text :- String] :- (List String)
+  (list text))
+
+(defn two-parts [final-text :- String] :- (List String)
+  (list "a" final-text))
+
+(defn run [again :- Bool] :- String
+  (if again
+    (recur false)
+    (join-parts (two-parts "b") "")))
+
+(defn empty-join [] :- String
+  (join-parts (empty-parts) ""))
+
+(defn one-join [] :- String
+  (join-parts (one-parts "a") ""))
+
+(defn deep-join [] :- String
+  (join-parts (two-parts "throw") ""))
+
+(defn argument-throw [] :- String
+  (join-parts (one-parts "a") (throw "argument")))
+
+(defn first-argument-throw [] :- String
+  (join-parts (throw "first") (throw "second")))
+
+(defn main [] :- String
+  (run true))
