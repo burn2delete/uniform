@@ -2738,8 +2738,21 @@
   (require 'gravity.self-hosting.sh08-recursive-function-type-test)
   (let [ns 'gravity.self-hosting.sh08-recursive-function-type-test
         invoke (ns-resolve ns 'invoke-c7)
-        data ((ns-resolve ns (if (= kind :head) 'private-self-homogeneous-head-data 'private-self-string-proof-data)))
+        indexed? (contains? #{:indexed :indexed-sha} kind)
+        data ((ns-resolve ns (if indexed? 'indexed-private-self-data
+                                (if (= kind :prior-three) 'private-self-three-parameter-false-base-data
+                                  (if (= kind :head) 'private-self-homogeneous-head-data 'private-self-string-proof-data)))))
         data (if (= kind :throw) (private-self-throw-data data) data)
+        ;; Rename canonical fixture inputs before deriving proofs and facts.
+        ;; Derived schema keys and map-order-dependent source vectors are not IDs.
+        data (if (= kind :indexed-sha)
+               (let [ids (set (concat (map :node-id (get-in data [:core :nodes]))
+                                      (map :form-id (:forms data))
+                                      (map :binding-id (:bindings data))
+                                      (map :function-syntax-id (get-in data [:core :function-records]))))
+                     renamed (into {} (map-indexed (fn [i id] [id (sha (+ 51000 i))])
+                                                  (sort-by str (filter keyword? ids))))]
+                 (assoc (clojure.walk/postwalk-replace renamed data) :node-id-map renamed)) data)
         {:keys [core bindings forms]} data
         nodes (into {} (map (juxt :node-id identity) (:nodes core)))
         shape {:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
@@ -2756,16 +2769,88 @@
                      {:self-op function :entry-operator-0 function :entry-operator-1 function
                       :self-call return :entry-0 return :entry-1 return :recursive-body return
                       :helper-fn function :helper-def function}
-                     (when (= kind :head) {:head-else return})))
+                     (when (= kind :head) {:head-else return})
+                     (when indexed? {:ix-inner return})))
         types (merge (get-in cold [:inference :type-table]) completed-types)
         ledger (invoke 'sh08-ft-recursive-constraint-ledger [proof])
         call-facts (invoke 'sh08-ft-call-facts [(:calls core) (:call-edges core) nodes types functions (:module core)])
-        facts {:domain :gravity/sh08-private-self-value-typed-core-v1
+        facts {:domain (if indexed? :gravity/sh08-indexed-private-self-value-typed-core-v1
+                           :gravity/sh08-private-self-value-typed-core-v1)
                :recursive-proof (invoke 'sh08-ft-recursive-proof-input [proof])
-               :function-type-table (vec (vals functions)) :type-table types
+               :function-type-table (if indexed?
+                                      (invoke 'sh08-ft-function-facts [functions nodes (:module core)])
+                                      (vec (vals functions)))
+               :type-table types
                :call-type-facts call-facts :constraint-ledger (into ledger (get-in cold [:inference :constraints]))}]
     {:core core :facts facts :bindings (into {} (map (juxt :binding-id identity) bindings))
      :forms forms :nodes nodes :proof proof :cold cold :invoke invoke :data data}))
+
+(deftest current-gravity-private-three-parameter-source-context-development-kernel
+  (let [{:keys [core facts bindings forms proof]} (private-self-value-kernel-data :prior-three)
+        context (leaf 'body-is-context core facts bindings forms 65536)]
+    (is (= :sh08-private-self-value-v1 (:rule-version proof)))
+    (is (= :accepted (:status context)) (pr-str (select-keys context [:status :reason :work-count])))
+    (is (= context (leaf 'body-is-context core facts bindings forms (:work-count context))))
+    (is (= :rejected (:status (leaf 'body-is-context core facts bindings forms (dec (:work-count context))))))))
+
+(deftest current-gravity-indexed-private-source-context-development-kernel
+  (let [{:keys [core facts bindings forms nodes proof]} (private-self-value-kernel-data :indexed)
+        context (leaf 'body-is-context core facts bindings forms 65536)
+        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise context))
+        request {:canonical-core-artifact working :b47-context {:authenticated-core-request {:forms forms}}}
+        successor (leaf 'body-si-context request facts bindings 65536)
+        getter (leaf 'body-mg-context request facts bindings 65536)
+        equality (leaf 'body-ae-context request facts bindings 65536)
+        counted (leaf 'body-cq-context request facts bindings 65536)
+        checked (assoc facts :successor-context (:context successor) :map-get-context (:context getter)
+                             :equality-context (:context equality) :count-context (:context counted))
+        call #(first (filter (fn [c] (= % (:core-node-id c))) (:calls core)))
+        edge #(first (filter (fn [e] (= % (:call-core-node-id e))) (:call-edges core)))]
+    (is (= :accepted (:status proof)))
+    (is (= :accepted (:status context)) (pr-str context))
+    (is (= :gravity/sh08-indexed-private-self-entry-premise-v1 (get-in context [:parameter-value-premise :domain])))
+    (is (= context (leaf 'body-is-context core facts bindings forms (:work-count context))))
+    (is (= :rejected (:status (leaf 'body-is-context core facts bindings forms (dec (:work-count context))))))
+    (is (= [:accepted :accepted :accepted :accepted]
+           (mapv :status [successor getter equality counted])))
+    (is (true? (leaf 'body-si-call-valid? working checked bindings (nodes :ix-step) (call :ix-step) (edge :ix-step) nodes)))
+    (is (true? (leaf 'body-mg-call-valid? working checked bindings (nodes :ix-get) (call :ix-get) (edge :ix-get) nodes)))
+    (is (true? (leaf 'body-call-joins-with-foreign-valid? working checked bindings {}))
+        (pr-str
+         (let [functions (into {} (map (juxt :function-id identity) (:function-type-table checked)))
+               records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+               facts-by-id (into {} (map (juxt :call-core-node-id identity) (:call-type-facts checked)))]
+           {:calls (mapv (fn [e]
+                           (let [id (:call-core-node-id e) c (call id) f (facts-by-id id)
+                                 local? (= :local-function (:classification e))
+                                 validator (case (:dispatch f)
+                                             :direct-collection-count 'body-cq-call-valid?
+                                             :direct-integral-equality 'body-ie-call-valid?
+                                             :direct-atomic-equality 'body-ae-call-valid?
+                                             :direct-vector-get 'body-mg-call-valid?
+                                             :direct-bounded-unit-addition 'body-si-call-valid?
+                                             nil)]
+                             {:id id :dispatch (:dispatch f)
+                              :valid (if local?
+                                       [(leaf 'body-call-valid? e c f nodes functions records bindings (:type-table checked))
+                                        (leaf 'body-local-arguments-valid? working checked bindings e c f
+                                              (functions (:callee-function-syntax-id e)))]
+                                       (when validator (leaf validator working checked bindings (nodes id) c e nodes)))}))
+                         (:call-edges core))
+            :ledger (mapv #(select-keys % [:kind :producer-rule :lhs]) (:constraint-ledger checked))})))
+    (doseq [id [:ix-step :ix-get]]
+      (let [producer (if (= id :ix-step) :sh08-indexed-private-self-unit-addition-v1 :sh08-vector-get-indexed-private-self-v1)
+            row (first (filter #(= producer (:producer-rule %)) (:constraint-ledger checked)))
+            missing (update checked :constraint-ledger #(vec (remove (fn [r] (= row r)) %)))
+            duplicate (update checked :constraint-ledger conj row)
+            orphan (update checked :constraint-ledger conj (assoc-in row [:lhs :core-node-id] :orphan))]
+        (is (map? row))
+        (doseq [changed [missing duplicate orphan]]
+          (is (false? (leaf 'body-call-joins-with-foreign-valid? working changed bindings {}))))))
+    (doseq [changed [(assoc-in facts [:recursive-proof :parameter-value-premise :entry-values :normal-entry-count] 0)
+                     (assoc-in facts [:recursive-proof :parameter-value-premise :source-induction :vector-extent] 8)
+                     (assoc-in facts [:recursive-proof :return-witness :witnesses 0 :node-id] :ix-true)]]
+      (is (= :rejected (:status (leaf 'body-is-context core changed bindings forms 65536)))))))
 
 (deftest current-gravity-private-self-effects-development-kernel
   (let [{:keys [core facts bindings forms proof data]} (private-self-value-kernel-data :throw)

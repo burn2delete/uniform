@@ -259,6 +259,176 @@
     (if (if (map? target) (if (contains? target :params) (contains? target :arity) false) false)
       (if (vector? args) (p15-s23-runtime-function-valid? target (count args)) false) false)) false) false) false) false) false))
 
+(defn p15-s23-runtime-indexed-proof [function range addition?]
+  (let [record (get range :function-record)]
+    {:kind (if addition? :gravity.runtime/indexed-private-self-unit-addition :gravity.runtime/indexed-private-self-vector-get)
+     :version :sh08-indexed-private-self-runtime-v1
+     :function-id (get record :function-syntax-id) :function-core-node-id (get record :function-core-node-id)
+     :parameter-binding-ids (get range :parameter-binding-ids) :parameter-names (get function :params)
+     :operation-core-node-id (get (get range (if addition? :step-header :access-header)) :call-core-node-id)
+     :guard-core-node-id (get (get range :body-node) :node-id)
+     :condition-core-node-id (get (get range :guard-call) :core-node-id)
+     :count-core-node-id (get (get range :count-descriptor) :call-core-node-id)
+     :access-core-node-id (get (get range :access-header) :call-core-node-id)
+     :step-core-node-id (get (get range :step-header) :call-core-node-id)
+     :unit-core-node-id (get (get range :unit-node) :node-id) :unit-source (get range :unit-source)
+     :self-call-core-node-id (get (get range :self-call) :core-node-id)
+     :vector-extent 7 :initial-index 0 :lower 0 :step 1
+     :strict-access-edge :equality-false :numeric-mode :proof-required :integer-type :gravity.type/integer}))
+
+(defn p15-s23-runtime-indexed-frame [function values functions path previous]
+  (let [input (get function :type-input) metadata (get input :indexed-private-self)
+        range (get metadata :source-induction) record (get range :function-record)
+        params (get range :parameter-binding-ids) names (get function :params)
+        unit (get range :unit-node)
+        unit-form (get range :unit-source)
+        step (p15-s23-runtime-indexed-proof function range true)
+        access (p15-s23-runtime-indexed-proof function range false)
+        ids [:function-id :function-core-node-id :operation-core-node-id :guard-core-node-id :condition-core-node-id
+             :count-core-node-id :access-core-node-id :step-core-node-id :unit-core-node-id :self-call-core-node-id]
+        expected-types [{:kind :gravity.type/vector :shape :literal
+                         :element-types [:gravity.type/keyword :gravity.type/keyword :gravity.type/keyword :gravity.type/keyword
+                                         :gravity.type/keyword :gravity.type/keyword :gravity.type/keyword]}
+                        :gravity.type/keyword :gravity.type/integer]
+        selected? (if (if (map? functions) (vector? path) false)
+                    (if (> (count path) 0)
+                      (if (= function (get functions (get path (- (count path) 1))))
+                        (= (get function :name) (get path (- (count path) 1))) false) false) false)
+        previous? (if (map? previous) (= function (get previous :function)) false)]
+    (if (loop [checks
+               [(map? input) (map? metadata) (if (map? metadata) (= 3 (count metadata)) false)
+                (map? range) (if (map? range) (<= (count range) 64) false) (map? record)
+                (if (vector? names) (= 3 (count names)) false)
+                (if (vector? params) (= 3 (count params)) false)
+                (if (vector? values) (= 3 (count values)) false)
+                (if (vector? (get input :parameters)) (= 3 (count (get input :parameters))) false)
+                (if (vector? (get record :parameter-binding-ids)) (= 3 (count (get record :parameter-binding-ids))) false)
+                (if (map? (get metadata :operations)) (= 2 (count (get metadata :operations))) false)
+                (map? unit) (if (vector? (get unit :children)) (= 0 (count (get unit :children))) false)
+                (map? unit-form) (if (vector? (get unit-form :child-form-ids)) (= 0 (count (get unit-form :child-form-ids))) false)
+                (loop [items [(get range :self-call) (get range :self-edge)]]
+                  (if (= 0 (count items)) true
+                    (let [item (first items) call? (= 2 (count items))
+                          args (get item (if call? :argument-node-ids :argument-core-node-ids))
+                          order (get item :ordered-evaluation-node-ids)]
+                      (if (if (map? item)
+                            (if (vector? args) (if (= 3 (count args))
+                              (if (vector? order) (= 4 (count order)) false) false) false) false)
+                        (recur (rest items)) false))))
+                (loop [headers [(get range :step-header) (get range :access-header)]]
+                  (if (= 0 (count headers)) true
+                    (let [header (first headers) call (get header :source-call) edge (get header :source-edge)]
+                      (if (if (map? header) (if (map? call) (map? edge) false) false)
+                        (if (loop [items [call edge]]
+                              (if (= 0 (count items)) true
+                                (let [item (first items) call? (= 2 (count items))
+                                      args (get item (if call? :argument-node-ids :argument-core-node-ids))
+                                      order (get item :ordered-evaluation-node-ids)]
+                                  (if (if (vector? args) (if (= 2 (count args))
+                                        (if (vector? order) (= 3 (count order)) false) false) false)
+                                    (recur (rest items)) false))))
+                          (recur (rest headers)) false) false))))]]
+          (if (= 0 (count checks)) true (if (= true (first checks)) (recur (rest checks)) false)))
+    (if (loop [checks
+               [selected? (map? metadata) (= #{:version :source-induction :operations} (if (map? metadata) (set (keys metadata)) #{}))
+                (= :sh08-indexed-private-self-activation-v1 (get metadata :version))
+                (= [:gravity.safety/indexed-private-self-range :sh08-indexed-private-self-range-v1
+                    :ordinary-function-entry-induction :proven-safe :proof-required :gravity.type/integer 0 0 7 7
+                    :equality-false :original-immutable-parameter-references :binary-source-integer-literal-one :not-authorized :retained]
+                   [(get range :kind) (get range :version) (get range :scope) (get range :outcome)
+                    (get range :numeric-mode) (get range :integer-type) (get range :initial-index) (get range :minimum-index)
+                    (get range :maximum-index) (get range :vector-extent) (get range :strict-access-edge)
+                    (get range :vector-and-needle) (get range :step) (get range :check-elision) (get range :runtime-guards)])
+                (= 3 (get record :fixed-arity)) (= names (get access :parameter-names))
+                (= params (get record :parameter-binding-ids)
+                   (loop [remaining (get input :parameters) out []]
+                     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (first remaining) :binding-id))))))
+                (= expected-types (get range :parameter-types)
+                   (loop [remaining (get input :parameters) out []]
+                     (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (get (first remaining) :type))))))
+                (= [(get record :function-syntax-id) (get record :function-core-node-id) (get record :body-core-node-id) (get record :definition-binding-id)]
+                   [(get input :function-id) (get input :function-core-node-id) (get input :body-core-node-id) (get input :definition-binding-id)])
+                (= :gravity.type/bool (get input :return))
+                (= 'get (get (get range :access-header) :operation)) (= '+ (get (get range :step-header) :operation))
+                (= :operator-then-arguments (get (get (get range :step-header) :source-call) :evaluation-order)
+                   (get (get (get range :access-header) :source-call) :evaluation-order) (get (get range :self-call) :evaluation-order))
+                (= (get record :function-syntax-id) (get (get range :self-edge) :caller-function-syntax-id)
+                   (get (get range :self-edge) :callee-function-syntax-id))
+                (= (get record :definition-binding-id) (get (get range :self-edge) :callee-binding-id))
+                (= :local-function (get (get range :self-edge) :classification))
+                (= 3 (count (get (get range :self-call) :argument-node-ids)))
+                (= (get step :operation-core-node-id) (get (get (get range :self-call) :argument-node-ids) 2))
+                (loop [headers [(get range :step-header) (get range :access-header)]]
+                  (if (= 0 (count headers)) true
+                    (let [header (first headers) call (get header :source-call) edge (get header :source-edge)]
+                      (if (loop [checks [(= 2 (count (get call :argument-node-ids)))
+                                         (= (get header :call-core-node-id) (get call :core-node-id) (get edge :call-core-node-id))
+                                         (= (get record :function-syntax-id) (get edge :caller-function-syntax-id))
+                                         (= (get record :function-core-node-id) (get edge :caller-function-core-node-id))
+                                         (= (get call :argument-node-ids) (get edge :argument-core-node-ids))
+                                         (= (get call :ordered-evaluation-node-ids) (get edge :ordered-evaluation-node-ids)
+                                            [(get call :operator-node-id) (first (get call :argument-node-ids))
+                                             (get (get call :argument-node-ids) 1)])
+                                         (= :operator-then-arguments (get call :evaluation-order) (get edge :evaluation-order))]]
+                            (if (= 0 (count checks)) true (if (= true (first checks)) (recur (rest checks)) false)))
+                        (recur (rest headers)) false))))
+                (= (get (get range :self-call) :argument-node-ids) (get (get range :self-edge) :argument-core-node-ids))
+                (= (get (get range :self-call) :ordered-evaluation-node-ids) (get (get range :self-edge) :ordered-evaluation-node-ids))
+                (= :literal (get unit :core-form)) (= {:literal-kind :integer :value 1} (get unit :attributes)) (= [] (get unit :children))
+                (= :integer (get unit-form :kind)) (= 1 (get unit-form :value)) (= [] (get unit-form :child-form-ids))
+                (= [(get (get unit :source) :form-id) (get (get unit :source) :syntax-id)]
+                   [(get unit-form :form-id) (get unit-form :syntax-id)])
+                (= (get unit :node-id) (get (get (get (get range :step-header) :source-call) :argument-node-ids) 1))
+                (= #{(get step :operation-core-node-id) (get access :operation-core-node-id)} (set (keys (get metadata :operations))))
+                (= step (get (get metadata :operations) (get step :operation-core-node-id)))
+                (= access (get (get metadata :operations) (get access :operation-core-node-id)))
+                (= false (= (get step :operation-core-node-id) (get access :operation-core-node-id)))
+                (loop [remaining ids]
+                  (if (= 0 (count remaining)) true
+                    (if (p15-s23-runtime-module-id? (get step (first remaining))) (recur (rest remaining)) false)))
+                (if (vector? params) (if (= 3 (count params))
+                  (loop [remaining params] (if (= 0 (count remaining)) true
+                    (if (p15-s23-runtime-module-id? (first remaining)) (recur (rest remaining)) false))) false) false)
+                (if (vector? values) (if (= 3 (count values))
+                  (if (vector? (get values 0)) (if (= 7 (count (get values 0)))
+                    (if (keyword? (get values 1)) (if (integer? (get values 2))
+                      (if (<= 0 (get values 2) 7)
+                        (loop [remaining (get values 0)] (if (= 0 (count remaining)) true
+                          (if (keyword? (first remaining)) (recur (rest remaining)) false))) false) false) false) false) false) false) false)
+                (if previous?
+                  (let [old (get previous :parameters)]
+                    (if (= [(get old 0) (get old 1)] [(get values 0) (get values 1)])
+                      (if (< (get old 2) 7) (= (+ (get old 2) 1) (get values 2)) false) false))
+                  (= 0 (get values 2)))]]
+          (if (= 0 (count checks)) true
+            (if (= true (first checks)) (recur (rest checks)) false)))
+      {:function function :parameters values :metadata metadata} nil) nil)))
+
+(defn p15-s23-runtime-evaluate-indexed-operation [instruction environment output functions path pool]
+  (let [frame (get pool :gravity.runtime/private-indexed-activation)
+        function (get frame :function) metadata (get frame :metadata) values (get frame :parameters)
+        proof (get instruction :proof) arguments (get instruction :args)
+        addition? (= :gravity.runtime/indexed-private-self-unit-addition (get proof :kind))]
+    (if (loop [checks
+               [(map? frame) (if (if (map? functions) (vector? path) false)
+                  (if (> (count path) 0) (= function (get functions (get path (- (count path) 1)))) false) false)
+                (= #{:op :function :args :proof} (if (map? instruction) (set (keys instruction)) #{}))
+                (= :builtin-call (get instruction :op)) (= (if addition? '+ 'get) (get instruction :function))
+                (= proof (get (get metadata :operations) (get proof :operation-core-node-id)))
+                (= proof (p15-s23-runtime-indexed-proof function (get metadata :source-induction) addition?))
+                (if (vector? arguments) (if (= 2 (count arguments))
+                  (if (map? (first arguments)) (map? (second arguments)) false) false) false)]]
+          (if (= 0 (count checks)) true (if (= true (first checks)) (recur (rest checks)) false)))
+      (let [evaluated (p15-s23-runtime-evaluate-arguments-in-context arguments environment output [] functions path [] pool)]
+        (if (= :normal (get evaluated 2))
+          (let [operands (first evaluated) index (get values 2) vector (get values 0)]
+            (if (if (integer? index) (if (<= 0 index) (< index 7) false) false)
+              (if (= operands (if addition? [index 1] [vector index]))
+                [(if addition? (+ index 1) (get vector index)) (second evaluated) :normal]
+                [{:diagnostic "P15S23X002" :reason :indexed-private-original-parameters-required} (second evaluated) :rejected])
+              [{:diagnostic "P15S23X002" :reason :indexed-private-strict-range-required} (second evaluated) :rejected])) evaluated))
+      [{:diagnostic "P15S23X002" :reason :indexed-private-actual-activation-required} output :rejected])))
+
 (defn p15-s23-runtime-activate-function-in-instance [function values output functions path pool]
   ; A backedge restarts this activation, not an ordinary guest call. Rebuilding
   ; the environment from all collected values drops prior body locals and
@@ -270,7 +440,15 @@
         (let [locals (loop [index 0 out {}]
                        (if (= index (count params)) out
                          (recur (+ index 1) (assoc out (get params index) (get arguments index)))))
-              result (p15-s23-runtime-evaluate-sequence-in-context (get function :instructions) locals stdout functions path targets pool)]
+              indexed? (if (map? (get function :type-input))
+                         (contains? (get function :type-input) :indexed-private-self) false)
+              clean-pool (if (map? pool) (p15-s23-runtime-remove-map-key pool :gravity.runtime/private-indexed-activation) {})
+              frame (if indexed? (p15-s23-runtime-indexed-frame function arguments functions path
+                                  (get pool :gravity.runtime/private-indexed-activation)) nil)
+              active-pool (if (map? frame) (assoc clean-pool :gravity.runtime/private-indexed-activation frame) clean-pool)
+              result (if (if indexed? (= frame nil) false)
+                       [{:diagnostic "P15S23X002" :reason :invalid-indexed-private-function-activation} stdout :rejected]
+                       (p15-s23-runtime-evaluate-sequence-in-context (get function :instructions) locals stdout functions path targets active-pool))]
           (if (= :recur (get result 2))
             (if (if (= target (get result 3))
                   (if (vector? (first result)) (= (count params) (count (first result))) false) false)
@@ -526,6 +704,9 @@
 
 (defn p15-s23-runtime-evaluate-in-instance
   [instruction environment output functions path targets pool]
+  (if (contains? #{:gravity.runtime/indexed-private-self-unit-addition :gravity.runtime/indexed-private-self-vector-get}
+        (get (get instruction :proof) :kind))
+    (p15-s23-runtime-evaluate-indexed-operation instruction environment output functions path pool)
   (let [operation (get instruction :op)
         fields (if (map? instruction) (set (keys instruction)) #{})
         arguments (get instruction :args)
@@ -854,7 +1035,7 @@
                      (first binding-result)
                      (second binding-result) functions path targets pool) binding-result))
                     [{:diagnostic "P15S23X002" :reason :unsupported-local-runtime-operation :operation operation}
-                     output :rejected])))))))))))))))))))))
+                     output :rejected]))))))))))))))))))))))
 
 (defn p15-s23-runtime-module-census [plan budget]
   (let [manifest (get plan :module-initialization) functions (get plan :functions)

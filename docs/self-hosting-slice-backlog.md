@@ -2503,6 +2503,62 @@ follows. Use the direct commands in `development-verification.md`; fresh
 authoritative evidence is required only when explicitly admitting a stable
 module revision.
 
+### Private indexed ordinary recursion: development implementation
+
+The unchanged W5 `w5-se-member-from?` body now works in a bounded development
+family: a private three-argument function, an independently established
+seven-element Keyword Vector and Keyword needle, and normal external entry at
+the source Integer literal zero. Complete call, export, escape and mutation
+censuses remain required. The separate indexed proof does not widen the old
+general recursive-domain whitelist or borrow a loop/recur premise.
+
+C7 derives an independent false return witness and the same-binding induction
+`0 <= index <= count(values)`. The false equality branch supplies the strict
+bound for `get`; the self call preserves the original Vector and needle and
+uses source binary `+ index 1`. C8 and the typed emitter independently
+reconstruct these premises; C8 derives effects/errors. Runtime activation uses the
+current function table and freshly bound actual parameters, clears stale
+caller metadata, and restores the caller's private metadata after return or
+throw. Calls retain ordinary three-field call IR, depth 256 and no TCO.
+`count` still executes. Allocation effects remain explicit.
+
+Owning changes are C7, `effects.gravity`, the typed emitter and `runtime.gravity`.
+Focused checks cover entry inference, proof/rejection boundaries, C8, lowering,
+actual runtime activation, retained work on failure, malformed metadata and
+legacy recursion. Recorded passing runs include 4 tests/66 assertions for C7,
+3/49 for C8, 1/76 for lowering/runtime, 5/288 for legacy runtime, 4/52 for
+rejection/budgets, 4/131 for affected consumers, and 2/35 for source preflight.
+These runs overlap and must not be summed into a coverage score.
+
+The affected source composition passed 1 test/163 assertions: 157 composition
+checks plus six runtime-source loader checks. It constructed eight fresh
+products, exercised three additionally tracked C7 assembly/forgery gates and
+ten function-table activations, and compared accepted Gravity/QST identity,
+effect graphs, results and complete path-projected function tables. These
+products and tables were not serialized as retained evidence. The six Gravity
+negative vectors each contain exactly one C7 annotation diagnostic: zero entry,
+step, needle and Vector preservation, public visibility, and absent normal
+entry. The public case uses the legacy recursive-shape reason, not a dedicated
+privacy diagnostic. These are inference-family boundaries, not declarations
+that every such program is language-illegal. QST negatives have separate
+byte/parser/census checks only, not source-compilation credit.
+
+Selected source work took 736.875 seconds after 9.620 seconds of namespace
+loading with a 2 GiB heap. Construction cost is not scheduling overhead or a
+speedup claim. Post-run test edits added six exact diagnostic-vector assertions;
+a separate read-only two-assertion oracle checked all six retained vectors and
+the complete case set. The original source run remains 163, not 169. An initial
+oracle command lacked the test classpath and failed before assertions. Earlier
+component fixture/proof-shape and loader failures remain failed attempts; the
+passing results do not relabel them. No unchanged expensive source replay was
+needed for the tighter oracle.
+
+The independent auditor accepted this scoped implementation and actual source
+result. Component exact/one-less budgets are not whole-source budget evidence.
+The `vector?` wrapper, arbitrary Vector/index domains, mutual recursion,
+termination, full W5, native/other-target support, authoritative migration,
+self-hosting, seed retirement and release remain outside this increment.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared

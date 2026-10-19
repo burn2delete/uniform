@@ -2810,6 +2810,8 @@
                  'p15-s23-runtime-select-handler-in-context 7 'p15-s23-runtime-evaluate-in-context 5 'p15-s23-runtime-call-target-valid? 3 'p15-s23-runtime-evaluate-call 7
                  'p15-s23-runtime-function-valid? 2 'p15-s23-runtime-activate-function 5 'p15-s23-runtime-atomic-equality 2
                  'p15-s23-runtime-activate-function-in-instance 6 'p15-s23-runtime-evaluate-in-instance 7
+                 'p15-s23-runtime-indexed-proof 3 'p15-s23-runtime-indexed-frame 5
+                 'p15-s23-runtime-evaluate-indexed-operation 6
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'p15-s23-runtime-initializer-work 2 'p15-s23-runtime-initializer-type? 2
@@ -2827,7 +2829,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
         builtins (set (get-in (bootstrap/p15-s23-stage2-compiler-artifact-augmented-emitter emitter) [:call-rules :builtin-functions]))
         calls (keep #(when (and (seq? %) (symbol? (first %))) (first %)) (tree-seq coll? seq selected))]
-    (is (= 43 (count selected) (count (set (map second selected)))))
+    (is (= 46 (count selected) (count (set (map second selected)))))
     (is (= arities (into {} (map #(vector (second %) (count (nth % 2))) selected))))
     (is (= selected (vec (rest forms))))
     (is (every? #(or (contains? arities %) (contains? builtins %) (contains? '#{defn if let loop recur quote} %)) calls))
@@ -11188,6 +11190,166 @@
 
 
 
+(deftest current-gravity-indexed-private-lowering-runtime-development-kernel
+  (require 'gravity.self-hosting.sh08-recursive-function-type-test)
+  (let [factory (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data)
+        raw (factory :indexed-sha)
+        renamed (get-in raw [:data :node-id-map])
+        {:keys [core facts bindings forms nodes proof]} raw
+        facts (assoc facts :scope :private-inferred-monomorphic-named-self-value)
+        path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
+        lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))
+        prior (factory :prior-three)
+        prior-facts (assoc (:facts prior) :scope :private-inferred-monomorphic-named-self-value)
+        prior-context (lower 'p15-s23-is-context (:core prior) prior-facts (:bindings prior) (:forms prior) 65536)
+        checked (lower 'p15-s23-is-context core facts bindings forms 65536)
+        range (get-in checked [:parameter-value-premise :source-induction])
+        record (:function-record range)
+        params (:parameter-binding-ids range) names '[values value index]
+        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise checked))
+        context {:core working :nodes nodes :forms (into {} (map (juxt :form-id identity) forms))
+                 :bindings bindings :types (:type-table facts)
+                 :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+                 :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core)))
+                 :call-order (into {} (map (juxt :call-core-node-id :ordinal) (:call-edges core)))
+                 :call-facts (into {} (map (juxt :call-core-node-id identity) (:call-type-facts facts)))
+                 :ledger (:constraint-ledger facts) :declared-self-context checked :current-function record
+                 :locals (zipmap params names) :parameter-types (zipmap params (:parameter-types proof))}
+        step-id (renamed :ix-step) access-id (renamed :ix-get)
+        compile (fn [ctx id budget] (lower (if (= id step-id) 'p15-s23-typed-compile-successor 'p15-s23-typed-compile-nth)
+                                          ctx (nodes id) budget))]
+    (is (= :accepted (:status checked)) (pr-str (select-keys checked [:status :reason :work-count])))
+    (when-not (= :accepted (:status checked))
+      (throw (ex-info "Indexed emitter context prerequisite rejected" (select-keys checked [:status :reason :work-count]))))
+    (is (= :accepted (:status prior-context)) (pr-str (select-keys prior-context [:status :reason :work-count])))
+    (is (= prior-context (lower 'p15-s23-is-context (:core prior) prior-facts (:bindings prior) (:forms prior) (:work-count prior-context))))
+    (is (= :rejected (:status (lower 'p15-s23-is-context (:core prior) prior-facts (:bindings prior) (:forms prior) (dec (:work-count prior-context))))))
+    (is (= (get-in proof [:parameter-value-premise :source-induction]) range))
+    (is (= checked (lower 'p15-s23-is-context core facts bindings forms (:work-count checked))))
+    (is (= :rejected (:status (lower 'p15-s23-is-context core facts bindings forms (dec (:work-count checked))))))
+    (let [step (compile context step-id 65536) access (compile context access-id 65536)]
+    (doseq [[id compiled expected kind] [[step-id step [{:op :local :name 'index} {:op :literal :value 1}]
+                                         :gravity.runtime/indexed-private-self-unit-addition]
+                                        [access-id access [{:op :local :name 'values} {:op :local :name 'index}]
+                                         :gravity.runtime/indexed-private-self-vector-get]]]
+      (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+      (when-not (= :complete (:status compiled))
+        (throw (ex-info "Indexed operation lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+      (is (= expected (get-in compiled [:value :args])))
+      (is (= kind (get-in compiled [:value :proof :kind])))
+      (is (= compiled (compile context id (:work-count compiled))))
+      (is (= :rejected (:status (compile context id (dec (:work-count compiled))))))
+      (let [own (- (:work-count compiled) 2)
+            first-id (first (get-in context [:calls id :argument-node-ids]))
+            first-binding (get-in nodes [first-id :attributes :binding-id])
+            changed (update context :locals dissoc first-binding)
+            failed-child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) first-id 65536)
+            failed (compile changed id 65536)]
+        (is (= own (:work-count (compile context id 0))))
+        (is (= own (:work-count (compile context id own))))
+        (is (= (inc own) (:work-count (compile context id (inc own)))))
+        (is (= :rejected (:status failed)))
+        (is (= (+ own (get failed-child :work-count 0)) (:work-count failed))))
+      (doseq [changed [(assoc context :ledger [])
+                       (update context :ledger conj (first (filter #(= id (get-in % [:lhs :core-node-id])) (:ledger context))))
+                       (assoc-in context [:current-function :function-syntax-id] :wrong)
+                       (assoc-in context [:core :sh08-private-self-parameter-premise :source-induction :vector-extent] 8)
+                       (assoc-in context [:forms (renamed :ix-unit) :value] 2)]]
+        (is (= :rejected (:status (compile changed id 65536))))))
+    (let [own (- (:work-count access) 2)
+          changed (update context :locals dissoc (nth params 2))
+          second-id (second (get-in context [:calls access-id :argument-node-ids]))
+          failed-child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) second-id 65536)
+          failed (compile changed access-id 65536)]
+      (is (= :rejected (:status failed)))
+      (is (= (+ own 1 (get failed-child :work-count 0)) (:work-count failed))))
+    (let [runtime-plan (:plan (typed-catch-runtime-projection))
+          invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
+          literal (fn [value] {:op :literal :value value})
+          local (fn [name] {:op :local :name name})
+          builtin (fn [name args] {:op :builtin-call :function name :args args})
+          call (fn [name args] {:op :function-call :function name :args args})
+          branch (fn [test yes no] {:op :if :test test :then yes :else no})
+          say (fn [label value] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} value]})
+          helper-name (:definition-name record)
+          step-op (:value step) access-op (:value access)
+          function-type (first (filter #(= (:function-syntax-id record) (:function-id %)) (:function-type-table facts)))
+          metadata {:version :sh08-indexed-private-self-activation-v1 :source-induction range
+                    :operations {step-id (:proof step-op) access-id (:proof access-op)}}
+          input (assoc (select-keys function-type [:function-id :function-core-node-id :body-core-node-id :parameters :return :thrown-error-effects])
+                       :definition-binding-id (:definition-binding-id record) :indexed-private-self metadata)
+          helper {:name helper-name :arity 3 :params names :type-input input
+                  :instructions [(branch (builtin '= [(local 'index) (builtin 'count [(local 'values)])])
+                                         (literal false)
+                                         (branch (builtin '= [(local 'value) access-op]) (literal true)
+                                                 (call helper-name [(local 'values) (local 'value) step-op])))]}
+          values [:alpha :beta :gamma :delta :epsilon :zeta :eta]
+          functions {helper-name helper}
+          evaluate (fn [instruction env path table] (invoke 'p15-s23-runtime-evaluate-in-context instruction env "" table path))
+          run (fn [needle table] (evaluate (call helper-name [(literal values) (literal needle) (literal 0)]) {} ['main] table))]
+      (is (= (:proof step-op) (invoke 'p15-s23-runtime-indexed-proof helper range true)))
+      (is (= (:proof access-op) (invoke 'p15-s23-runtime-indexed-proof helper range false)))
+      (doseq [[needle expected] [[:alpha true] [:delta true] [:eta true] [:missing false]]]
+        (is (= [expected "" :normal] (run needle functions))))
+      (doseq [op [step-op access-op]]
+        (is (= ["" :rejected] (subvec (evaluate op {'values values 'value :alpha 'index 0} [helper-name] functions) 1)))
+        (is (= ["" :rejected]
+               (subvec (invoke 'p15-s23-runtime-evaluate-with-targets op {'values values 'value :alpha 'index 0} ""
+                               functions [helper-name] [{:id (:function-syntax-id record) :names names}]) 1)))
+        (let [traced (assoc op :args [(say "unreached" (literal 0)) (literal 1)])]
+          (is (= ["" :rejected] (subvec (evaluate traced {} [helper-name] functions) 1)))))
+      (doseq [changed [(assoc-in helper [:type-input :indexed-private-self :source-induction :vector-extent] 8)
+                       (assoc-in helper [:type-input :indexed-private-self :operations step-id :unit-source :value] 2)]]
+        (is (= ["" :rejected] (subvec (run :alpha {helper-name changed}) 1))))
+      (doseq [[path malformed] [[[:type-input] 7]
+                                [[:type-input :indexed-private-self] 7]
+                                [[:type-input :parameters] 7]
+                                [[:type-input :parameters] (vec (repeat 2048 nil))]
+                                [[:type-input :indexed-private-self :operations] 7]
+                                [[:type-input :indexed-private-self :source-induction :parameter-binding-ids] 7]
+                                [[:type-input :indexed-private-self :source-induction :parameter-binding-ids] (vec (repeat 2048 nil))]
+                                [[:type-input :indexed-private-self :source-induction :self-call :argument-node-ids] 7]
+                                [[:type-input :indexed-private-self :source-induction :self-call :argument-node-ids] (vec (repeat 2048 nil))]
+                                [[:type-input :indexed-private-self :source-induction :step-header :source-call :argument-node-ids] 7]
+                                [[:type-input :indexed-private-self :source-induction :step-header :source-call :argument-node-ids] (vec (repeat 2048 nil))]
+                                [[:type-input :indexed-private-self :source-induction :access-header :source-edge :ordered-evaluation-node-ids] 7]]]
+        (let [changed (assoc-in helper path malformed)]
+          (is (= ["" :rejected] (subvec (run :alpha {helper-name changed}) 1)) (pr-str path))
+          (is (= ["" :rejected]
+                 (subvec (invoke 'p15-s23-runtime-activate-function changed [values :alpha 0] ""
+                                 {helper-name changed} [helper-name]) 1)) (pr-str path))))
+      (let [plain {:name 'plain :arity 0 :params [] :type-input 7 :instructions [(literal :okay)]}]
+        (is (= [:okay "" :normal] (invoke 'p15-s23-runtime-activate-function plain [] "" {'plain plain} ['plain]))))
+      (is (= ["" :rejected]
+             (subvec (evaluate (call helper-name [(literal values) (literal :alpha) (literal 1)]) {} ['main] functions) 1)))
+      (let [shadow (assoc helper :instructions [{:op :let :bindings [{:name 'index :expr (literal 6)}] :body [step-op]}])]
+        (is (= ["" :rejected] (subvec (run :alpha {helper-name shadow}) 1))))
+      (let [identity {:name 'identity :arity 1 :params '[x] :instructions [(local 'x)]}
+            caller (assoc helper :instructions [{:op :do :body [(call 'identity [step-op]) step-op]}])]
+        (is (= [1 "" :normal] (run :alpha {helper-name caller 'identity identity}))))
+      (let [callee {:name 'borrow :arity 1 :params '[index]
+                    :instructions [(assoc step-op :args [(say "unreached" (local 'index)) (literal 1)])]}
+            caller (assoc helper :instructions [(call 'borrow [(local 'index)])])]
+        (is (= ["" :rejected] (subvec (run :alpha {helper-name caller 'borrow callee}) 1))))
+      (let [callee {:name 'thrower :arity 0 :params [] :instructions [{:op :throw :value (literal "caught")}]}
+            caller (assoc helper :instructions [{:op :try :protected (call 'thrower [])
+                                                :handlers [{:type :gravity.type/string :name 'error :body step-op}]}])]
+        (is (= [1 "" :normal] (run :alpha {helper-name caller 'thrower callee}))))
+      (let [deep (vec (repeat 256 helper-name))
+            instruction (call helper-name [(say "unreached" (literal values)) (literal :alpha) (literal 0)])]
+        (is (= ["" :rejected] (subvec (evaluate instruction {} deep functions) 1))))
+      (let [{:keys [plan read]} (module-literal-runtime-input)
+            census (invoke 'p15-s23-runtime-module-census plan 65536)
+            initialized (invoke 'p15-s23-runtime-initialize-module census (:functions plan))
+            pool (:pool initialized)
+            caller (assoc helper :instructions [{:op :do :body [read step-op]}])]
+        (is (= [1 "" :normal]
+               (invoke 'p15-s23-runtime-evaluate-in-instance
+                       (call helper-name [(literal values) (literal :alpha) (literal 0)]) {} ""
+                       {helper-name caller} ['main] [] pool))))))))
+
 (deftest current-gravity-bounded-unit-addition-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test source (ns-resolve upstream 'bounded-successor-input)
@@ -11871,6 +12033,26 @@
         (is (= :rejected (get-in products [:typed :status])) suffix)
         (is (contains? expected ((juxt :rule :reason) diagnostic)) (pr-str [suffix diagnostic]))))))
 
+(deftest current-gravity-indexed-private-fixtures-development-kernel
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        source (slurp (io/file root "bootstrap/gravity/src/gravity/self_hosting/w5_stage_equivalence_verifier.gravity"))
+        helper (first (re-seq #"(?s)\(defn w5-se-member-from\? .*?\n\n" source))]
+    (is (string? helper))
+    (is (str/includes? (slurp (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-indexed-private-self.gravity"))
+                       (str/trim helper)))
+    (doseq [[disposition name functions] [["accepted" "local-runtime-indexed-private-self" 3]
+                                         ["rejected" "indexed-private-self-entry" 3]
+                                         ["rejected" "indexed-private-self-step" 3]
+                                         ["rejected" "indexed-private-self-needle" 3]
+                                         ["rejected" "indexed-private-self-vector" 3]
+                                         ["rejected" "indexed-private-self-public" 3]
+                                         ["rejected" "indexed-private-self-unseeded" 2]]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" disposition "/" name)
+            path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)]
+        (is (= text (slurp (io/file root (str relative ".qst")))))
+        (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
 (deftest current-gravity-bounded-unit-addition-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -11882,6 +12064,149 @@
             path (.getPath (io/file root (str relative ".gravity"))) text (slurp path)]
         (is (= text (slurp (io/file root (str relative ".qst")))))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms path text)))))))))
+
+(def ^:private indexed-private-source-negative-reasons
+  {"entry" [["C7-ANNOTATION" :indexed-self-zero-source-entry-required]]
+   "step" [["C7-ANNOTATION" :indexed-self-source-induction-required]]
+   "needle" [["C7-ANNOTATION" :indexed-self-source-induction-required]]
+   "vector" [["C7-ANNOTATION" :indexed-self-source-induction-required]]
+   "public" [["C7-ANNOTATION" :recursive-argument-shape]]
+   "unseeded" [["C7-ANNOTATION" :private-self-normal-entry-required]]})
+
+(deftest current-gravity-indexed-private-authenticated-composition
+  ;; One paired affected source composition; the runtime loader adds six checks.
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
+               (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
+        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
+        original bootstrap/p15-s23-stage2-runtime-execute-function verified (atom [])
+        operation (fn [thunk]
+                    (let [before (count @verified)
+                          result (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                                               (fn [runtime plan function args]
+                                                 (let [result (original runtime plan function args)]
+                                                   (when (= function 'sh08-verify-function-type-result) (swap! verified conj result))
+                                                   result))]
+                                   (thunk))]
+                      (is (= 1 (- (count @verified) before))) result))
+        cases (mapv
+                (fn [extension]
+                  (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-indexed-private-self" extension)
+                        path (.getPath (io/file root relative)) products (fresh relative)
+                        input (select-keys products [:request :typed :verification])
+                        _ (is (= :accepted (get-in products [:c5 :status])))
+                        _ (is (= :passed (get-in products [:report :status])))
+                        _ (is (= :accepted (get-in input [:typed :status])) (pr-str (get-in input [:typed :diagnostics])))
+                        _ (when-not (= :accepted (get-in input [:typed :status]))
+                            (throw (ex-info "Indexed C7 source prerequisite rejected" {:diagnostics (get-in input [:typed :diagnostics])})))
+                        _ (is (= :passed (get-in input [:verification :status])))
+                        _ (when-not (= :passed (get-in input [:verification :status]))
+                            (throw (ex-info "Indexed C7 source verification prerequisite rejected" {})))
+                        artifact (get-in input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact :sh05-macro-artifact])
+                        parsed (get-in artifact [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact :parsed-semantic-values])
+                        raw-module (assoc (bootstrap/parse-module path parsed) :forms (:expanded-forms artifact))
+                        definitions (bootstrap/stage0-function-table raw-module) module (assoc raw-module :function-table definitions)
+                        assembled (operation #(bootstrap/p15-s23-stage2-assemble-plan-products emitter module (vec (sort-by key definitions)) input))
+                        core (get-in input [:request :canonical-core-artifact]) facts (get-in input [:typed :identity-input])
+                        proof (:recursive-proof facts) range (get-in proof [:parameter-value-premise :source-induction])
+                        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+                        forms (into {} (map (juxt :form-id identity) (get-in input [:request :b47-context :authenticated-core-request :forms])))
+                        calls (:call-type-facts facts)
+                        addition (:applied-bounded-unit-addition (first (filter #(= :direct-bounded-unit-addition (:dispatch %)) calls)))
+                        access (:applied-vector-get (first (filter #(= :direct-vector-get (:dispatch %)) calls)))
+                        instructions (filter #(and (map? %) (= :builtin-call (:op %))) (tree-seq coll? seq (:functions assembled)))
+                        ordinary (filter #(and (map? %) (= :function-call (:op %))) (tree-seq coll? seq (:functions assembled)))
+                        helper (get-in assembled [:functions 'w5-se-member-from?])
+                        binding (seal (:request input) (:typed input) (:verification input))
+                        effects (c8 'build-body-effect-result (:typed input) (:verification input) binding)
+                        _ (is (= :accepted (:status effects)) (pr-str (:diagnostics effects)))
+                        _ (when-not (= :accepted (:status effects))
+                            (throw (ex-info "Indexed C8 source prerequisite rejected" {:diagnostics (:diagnostics effects)})))
+                        effect-verification (c8 'verify-body-effect-result (:typed input) (:verification input) binding effects)
+                        _ (is (= :passed (:status effect-verification)))
+                        _ (when-not (= :passed (:status effect-verification))
+                            (throw (ex-info "Indexed C8 source verification prerequisite rejected" {})))
+                        graph (:effect-graph effects)
+                        values [:alpha :beta :gamma :delta :epsilon :zeta :eta]
+                        specs [['find-word [:alpha] true] ['find-word [:delta] true] ['find-word [:eta] true]
+                               ['find-word [:missing] false] ['main [] true]]
+                        results (mapv (fn [[name args expected]]
+                                        (let [result (original runtime runtime-plan 'p15-s23-runtime-evaluate-in-context
+                                                               [{:op :function-call :function name :args (literal-instructions args)}
+                                                                {} "" (:functions assembled) []])]
+                                          (is (= [expected "" :normal] result) (str extension " " name " " args)) result)) specs)]
+                    (is (= 3 (count (:function-records core)) (count (:function-type-table facts)) (count (:functions assembled))))
+                    (is (= 8 (count (:calls core)) (count (:call-edges core)) (count calls)))
+                    (is (= [] (:loop-bindings core) (:recur-transfers core)))
+                    (is (= :gravity/sh08-indexed-private-self-value-proof-v1 (:domain proof)))
+                    (is (= :ordinary-function-entry-induction (:scope range)))
+                    (is (= 1 (get-in proof [:parameter-value-premise :entry-values :normal-entry-count])))
+                    (is (= 2 (count (:incoming-call-node-ids proof))))
+                    (is (= :gravity.type/bool (:inferred-return-type proof)))
+                    (is (= [:gravity.type/keyword :gravity.type/integer] [(second (:parameter-types proof)) (nth (:parameter-types proof) 2)]))
+                    (is (= (vec (repeat 7 :gravity.type/keyword)) (get-in proof [:parameter-types 0 :element-types])))
+                    (is (= [0 0 7 7] ((juxt :initial-index :minimum-index :maximum-index :vector-extent) range)))
+                    (is (= [:proven-safe :retained :not-authorized] ((juxt :outcome :runtime-guards :check-elision) range)))
+                    (is (= :sh08-indexed-private-self-unit-addition-v1 (:version addition)))
+                    (is (= :sh08-vector-get-indexed-private-self-v1 (:version access)))
+                    (is (= range (:range-proof addition) (get-in access [:bounds-proof :source-induction])))
+                    (is (= :literal (:core-form (:unit-node range))))
+                    (is (= {:literal-kind :integer :value 1} (get-in range [:unit-node :attributes])))
+                    (is (= (:unit-source range) (forms (get-in range [:unit-node :source :form-id]))))
+                    (is (= 1 (get-in range [:unit-source :value])))
+                    (is (= 5 (count instructions)))
+                    (is (= {'= 2 'count 1 'get 1 '+ 1} (frequencies (map :function instructions))))
+                    (is (= 3 (count ordinary)))
+                    (doseq [call ordinary] (is (= #{:op :function :args} (set (keys call)))))
+                    (is (= range (get-in helper [:type-input :indexed-private-self :source-induction])))
+                    (is (= #{(:call-core-node-id addition) (:call-core-node-id access)}
+                           (set (keys (get-in helper [:type-input :indexed-private-self :operations])))))
+                    (doseq [[name function] (:functions assembled)]
+                      (is (= path (get-in function [:typed-lowering-provenance :source :path])) (str extension " " name))
+                      (is (= (= name 'w5-se-member-from?) (contains? (:type-input function) :indexed-private-self))))
+                    (doseq [descriptor [addition access]]
+                      (let [id (:call-core-node-id descriptor) instruction (first (filter #(= id (get-in % [:proof :operation-core-node-id])) instructions))]
+                        (is (= (:operation descriptor) (:function instruction)))
+                        (is (= 2 (count (:args instruction))))
+                        (is (= [:local (if (= '+ (:operation descriptor)) :literal :local)] (mapv :op (:args instruction))))
+                        (is (= #{} (get-in graph [:nodes id :direct])))
+                        (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (get-in graph [:nodes id :dependencies])))))
+                    (is (= [] (get-in graph [:functions (:function-syntax-id proof) :throws])))
+                    {:input input :assembled assembled :module module :definitions definitions :proof proof :range range
+                     :addition addition :access access :binding binding :effects effects :graph graph :results results}))
+                [".gravity" ".qst"])
+        {:keys [input module definitions addition binding effects graph]} (first cases)
+        hostile (assoc-in (:typed input) [:identity-input :recursive-proof :parameter-value-premise :source-induction :unit-source :value] 2)
+        failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-compile-function
+                                                 emitter module (get definitions 'w5-se-member-from?) (assoc input :typed hostile)))))]
+    (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
+    (is (= (:graph (first cases)) (:graph (second cases))))
+    (is (= (:results (first cases)) (:results (second cases))))
+    (is (= (typed-functions-without-source-path (get-in cases [0 :assembled :functions]))
+           (typed-functions-without-source-path (get-in cases [1 :assembled :functions]))))
+    (is (= "P15S23Q002" (:id failure)))
+    (is (= :rejected (:status (last @verified))))
+    (is (= 3 (count @verified)))
+    (is (= :rejected (:status (c8 'verify-body-effect-result (:typed input) (:verification input) binding
+                              (reseal effects (update-in graph [:nodes (:call-core-node-id addition) :dependencies] pop))))))
+    (doseq [suffix ["entry" "step" "needle" "vector" "public" "unseeded"]]
+      (let [relative (str "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/indexed-private-self-" suffix ".gravity")
+            products (fresh relative) diagnostics (get-in products [:typed :diagnostics])]
+        (is (= :accepted (get-in products [:c5 :status])) suffix)
+        (is (= :passed (get-in products [:report :status])) suffix)
+        (is (= :rejected (get-in products [:typed :status])) suffix)
+        (is (vector? diagnostics) suffix)
+        (is (seq diagnostics) suffix)
+        (is (every? #(and (string? (:rule %)) (keyword? (:reason %))) diagnostics) (pr-str [suffix diagnostics]))
+        (is (= (get indexed-private-source-negative-reasons suffix)
+               (mapv (juxt :rule :reason) diagnostics)) (pr-str [suffix diagnostics]))
+        (println (pr-str {:aw-indexed-source-negative suffix :diagnostics diagnostics}))))))
 
 (deftest current-gravity-bounded-unit-addition-authenticated-composition
   ;; Sole affected source composition; six existing runtime-projection loader assertions.

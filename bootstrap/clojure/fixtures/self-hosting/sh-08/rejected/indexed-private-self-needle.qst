@@ -1,0 +1,20 @@
+(ns example.runtime-indexed-private-self
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn w5-se-member-from? [values value index]
+  (if (= index (count values))
+    false
+    (if (= value (get values index))
+      true
+      (w5-se-member-from? values :different (+ index 1)))))
+
+(defn find-word [needle :- Keyword]
+  (w5-se-member-from? [:alpha :beta :gamma :delta :epsilon :zeta :eta] needle 0))
+
+(defn main []
+  (find-word :delta))
