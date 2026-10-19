@@ -1,0 +1,30 @@
+(ns self-hosting.sh08.atomic-inequality
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [nil-equal bool-different character-different string-equal symbol-different keyword-different nullable-both-nil nullable-distinct pipeline-explicit pipeline-present observed transferred-left transferred-right main]))
+
+(defn maybe-string [present] (if present "present" nil))
+(defn maybe-keyword [present] (if present :present nil))
+(defn nil-equal [] (not= nil nil))
+(defn bool-different [] (not= false true))
+(defn character-different [] (not= \a \b))
+(defn string-equal [] (not= "same" "same"))
+(defn symbol-different [] (not= 'left/value 'right/value))
+(defn keyword-different [] (not= :left/value :right/value))
+(defn nullable-both-nil [] (not= (maybe-string false) (maybe-keyword false)))
+(defn nullable-distinct [] (not= (maybe-string true) (maybe-keyword true)))
+
+;; Exact one-level pipeline comparison; recovery is independent literal map DATA.
+(defn pipeline-explicit []
+  (let [recovery {:span-source :explicit-fallback}]
+    (not= :explicit-fallback (get recovery :span-source))))
+(defn pipeline-present []
+  (let [recovery {:span-source :requested-span}]
+    (not= :explicit-fallback (get recovery :span-source))))
+
+(defn observed [] (not= (do [] :left) (do [] :right)))
+(defn transferred-left []
+  (try (not= (throw "left") (do [] :right)) (catch String problem false)))
+(defn transferred-right []
+  (try (not= (do [] :left) (throw "right")) (catch String problem false)))
+(defn main [] (nullable-both-nil))

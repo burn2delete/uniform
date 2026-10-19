@@ -1,0 +1,7 @@
+(ns self-hosting.sh08.atomic-inequality-numeric
+  (:profile :meta) (:target :jvm)
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe)
+  (:exports [main]))
+
+;; Both domains remain checked when the first operand cannot return normally.
+(defn main [] (not= (throw "stop") 7))
