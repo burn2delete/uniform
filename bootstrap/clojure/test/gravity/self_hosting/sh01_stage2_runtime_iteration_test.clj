@@ -14878,7 +14878,7 @@
       (is (= :gravity.type/bool (get-in functions [function :return])))
       (is (= #{} (get-in graph [:functions (get-in functions [function :function-id]) :inferred]))))
     (let [descriptor (first set-descriptors) record (:keyword-set-equality descriptor)
-          forged-set (assoc-in record [:equality-policy :numeric] :host)
+          forged-set (assoc-in record [:equality-policy :member-uniqueness] :assumed)
           forged (assoc descriptor :keyword-set-equality forged-set)
           hostile (walk/prewalk #(cond (= descriptor %) forged (= record %) forged-set :else %) (:typed input))
           failure (operation #(diagnostic (fn [] (bootstrap/p15-s23-stage2-assemble-plan-products
