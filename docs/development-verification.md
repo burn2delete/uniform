@@ -3665,6 +3665,44 @@ actual target execution. Set equality, iteration, other conversion families,
 whole-W5 execution and authoritative migration remain separate work; none is
 established by these focused checks.
 
+### Nil value classification
+
+For unary `(nil? value)`, edit the existing C7 engine, effects and typed emitter
+owners. Runtime, seed, public APIs and IR schemas remain unchanged. Current
+validated closed types select existing IR: known Nil/non-Nil evaluates the
+operand then returns true/false; the existing nullable Bool, Character, String,
+Symbol and Keyword families compare the evaluated operand with Nil. Never
+retains the original transfer. Nullable Integer/collections, Unknown/Dynamic,
+malformed types and unsupported callables are not added by this increment.
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact sh08-nil-predicate-development-kernel --exact sh08-nil-predicate-id-guard-development-kernel --exact sh08-nil-predicate-throw-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-nil-predicate-source-development-kernel --exact current-gravity-nil-predicate-consumer-development-kernel
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-nil-predicate-lowering-runtime-development-kernel --exact current-gravity-nil-predicate-transfer-fence-development-kernel
+```
+
+Keep the classification/source/type joins, independent C8 reconstruction and
+complete ledger, exact/short budgets, failed-child work, original throw and
+non-tail recur fences. The synthetic nullable equality is typed lowering,
+not a fabricated source equality call. No generated local, source rewrite or
+raw runtime `nil?` builtin is introduced. This type-directed route is supported
+for authenticated typed calls and type-conforming entries, not arbitrary
+wrong-typed host/FFI arguments. It is not check-elision or migration evidence.
+
+For affected source composition, run:
+
+```bash
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --exact current-gravity-nil-predicate-fixtures-development-kernel --exact current-gravity-nil-predicate-authenticated-composition --fail-fast
+```
+
+The fixture compares the copied `w5-se-canonical-form` body with its read-only
+owner, then adds new known/unknown-mode queries on that nullable Keyword
+producer. It does not claim an existing W5 nil-query helper or whole-W5 build.
+One Gravity positive and one C7 arity rejection run; QST is byte/parser only.
+An allocation-bearing operand checks source effect preservation; observable
+I/O ordering is covered separately by normalized kernels, not this source
+fixture. Seed comparisons interpret the same emitted IR, not raw-source parity.
+
 ### Boolean family classification
 
 Unary `(boolean? value)` returns true for both `true` and `false`, not for

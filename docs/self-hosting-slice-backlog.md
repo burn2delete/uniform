@@ -2992,6 +2992,57 @@ include nested work and assertions, not exclusive cost or speedup evidence.
 This is not execution of the whole W5 helper, native/other-target support,
 current-closure admission or broader SH-07/self-hosting completion.
 
+### Nil value classification: development implementation
+
+STD2 defines unary `nil?`: nil classifies true; false and empty collections do
+not. C7, effects and typed lowering independently reconstruct a versioned
+classification from current validated operand types and retain it in the
+descriptor, constraint solution, call fact and complete ledger. Known Nil and
+non-Nil types lower to existing do/Bool IR after evaluating the operand;
+the five existing nullable atomic families lower to owned equality with Nil.
+Never preserves the original transfer in non-tail operand context. No source
+equality fact, generated local, runtime primitive or type grammar is added.
+Runtime remains byte-exact unchanged at 51 functions with four exports.
+Support is limited to authenticated typed calls and type-conforming entries;
+arbitrary wrong-typed embedding/FFI calls and check-elision claims are excluded.
+
+Focused V1 at `45247075` stopped after four tests: 796 passes, zero failures
+and one test-arithmetic error, with ten selected tests unrun. The test added
+an absent early-rejection work-count instead of using the existing zero
+fallback. The test-only correction at `d5e88374` passed all fourteen selected
+tests / 2,502 assertions: seven new kernels / 1,647 assertions and seven
+adjacent nil-if/equality checks / 855 assertions. Do not add the earlier passes
+to this result. All five nullable families, false versus nil, effects/transfers,
+original failures, coherent evidence forgeries, dominant ID guards, complete
+C8 budgets/ledger and failed-child work are covered. Production pins did not
+change. Execution was 8.880314334 seconds with a 2 GiB heap, not a benchmark.
+
+Source V1 at `62b8d2c9` stopped with eight passes, one failure and one error:
+C5 accepted and C6 passed, but C7 rejected unsupported source `println`.
+Assembly, C8, runtime entries and the negative source were unrun. A source-only
+fixture correction replaced that operand with `(nil? (do [] nil))`; production
+and focused results were unchanged. Source V2 at `c7739c80` passed two tests /
+260 assertions: composition 253 (including six runtime-loader assertions) and
+paired byte/parser/exact-producer-AST preflight seven. Its original command
+completed with exit zero; selected composition took 247.356899958 seconds
+with a 2 GiB heap, including nested product construction and assertions.
+
+Sixteen functions, 24 source calls and fourteen nil-query rows (thirteen
+normal, one Never) are checked. The exact copied W5 canonical-form producer
+returns nullable Keyword to two new queries. Its seven source equality rows
+remain seven; two owned nullable lowerings produce nine emitted equalities,
+not fabricated source calls. Fifteen type-conforming runtime table entries
+include fourteen seed comparisons on the same emitted IR and one caught
+transfer. The allocation operand is retained once with its actual transitive
+C8 effect; the nil query has no direct allocation. Positive C7/C8 verification
+guards execution. The negative asserts primary
+`C7-TYPE-MISMATCH/:nil-predicate-arity-mismatch`; the raw secondary unresolved
+annotation is observed, not a full diagnostic-vector oracle. QST typed products
+are not exercised. This is not whole-W5 execution, independent source compiler
+parity, current-closure admission or SH-07/self-hosting completion. The three
+partial current-closure groups and resolver development-unadmitted status stay
+unchanged.
+
 ### Boolean family classification: development implementation
 
 STD2 specifies unary Bool-family classification, distinct from truthiness:
