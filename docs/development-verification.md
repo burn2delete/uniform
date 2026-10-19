@@ -4421,11 +4421,13 @@ but exported DATA is not callable and imported DATA reads remain unsupported.
 This is an immutable seed subset, not a language-wide restriction on `def`.
 Arbitrary initializer calls, bare-symbol aliases, forward/dependency initializer
 references, duplicate definitions, variadics and source/seed operator-shadowing
-mismatches reject. Imported calls in symbol-only sequential `let` initializers
-and bodies are supported, including nested scopes, shadowing and multiple body
+mismatches reject. Imported calls in symbol-only sequential `let` and `loop`
+initializers and bodies are supported, including nested scopes, shadowing and multiple body
 forms. Initializers see earlier bindings, not later ones; argument evaluation
-remains once, left-to-right. Imported calls under `loop`, nested functions or
-collection expressions are not yet supported; forwarding nested DATA through a parameter is distinct from those
+remains once, left-to-right. Loop calls also retain their distinct paths through
+conditions and `recur` arguments; nearest targets, tail position and arity still
+come from the existing recur validator/runtime. Imported calls under nested
+functions or collection expressions are not yet supported; forwarding nested DATA through a parameter is distinct from those
 executable forms. Quoted DATA remains inert. General module initialization and
 checked runtime linking are separate work, not language-level prohibitions.
 
@@ -4449,6 +4451,28 @@ wrong arity and a coherently resealed route substitution reject. This temporary
 Clojure-seed composition does not establish checked user-call effects, runtime
 ownership, authoritative migration or self-hosting.
 
+For loop-call paths and recur diagnostic changes, use:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-loop-call-test \
+  --exact stage2-module-loop-fixture-parity \
+  --exact stage2-module-loop-call-path-development-kernel \
+  --exact stage2-module-loop-recur-diagnostics-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-loop-call-test \
+  --exact stage2-module-loop-authenticated-composition --fail-fast
+```
+
+The normalized kernels cover paths, sequential scope and complete diagnostic
+parity with the original body validator. On malformed loop bindings, the
+walker delegates to that validator over the whole definition so an earlier
+recur or throw error is not hidden by a later loop error. Source location comes
+from the verified module, not a new authority channel. Valid compilation does
+not add another validation pass. The separate composition exercises actual
+outer and nested loop backedges, ordered effects and qualified imports; it is
+not a termination proof or checked user-call effect analysis.
+
 For closure reconstruction or transitive-route changes, use the separate
 focused selection and one affected three-module composition:
 
@@ -4470,8 +4494,8 @@ source-bound exports, private-import rejection and a coherently resealed
 transitive-route mutation before argument effects. Paired Q sources provide
 byte/parser parity only. Run this composition when those boundaries change,
 not for unrelated semantic edits or to refresh authoritative evidence.
-Effects extraction also needs the still-unsupported imported loop/collection
-contexts and a concrete source/token-bound fit; transitive routing alone does
+Effects extraction also needs the still-unsupported imported collection
+contexts and a concrete source/token-bound fit; transitive and loop routing do
 not close that dependency or the retained C9 source failure.
 
 Use the existing runtime test namespace, not an admission runner:
