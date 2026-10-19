@@ -1,0 +1,10 @@
+(ns example.rejected-keyword-predicate-zero
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [probe])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn probe []
+  (keyword?))

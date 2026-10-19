@@ -3699,6 +3699,50 @@ clojure -J-Xmx2g -M:dev-test \
 `keys`, collection conversion/equality and unchanged
 W5 exact-key validation remain separate slices, not predicate-result facts.
 
+### Keyword family classification
+
+STD2's `gravity.core` owns unary `keyword?`. The bounded JVM implementation
+accepts independently established closed operand types: actual Keywords return
+true and other supported values return false, including the actual nil branch
+of a nil-or-Keyword operand. Unknown and Dynamic remain unsupported, not
+language-wide bans. Keyword-like String/Symbol spelling creates neither a
+Keyword nor a binding, and a qualified Keyword confers no capability.
+
+Edit the owning C7, C8, typed emitter and runtime files. Use the direct focused
+checks before affected source composition:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh08-function-call-type-test \
+  --exact sh08-keyword-predicate-development-kernel \
+  --exact sh08-keyword-predicate-throw-consumer-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh09-body-effect-test \
+  --exact current-gravity-keyword-predicate-source-development-kernel --fail-fast
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-predicate-lowering-runtime-development-kernel --fail-fast
+```
+
+The query preserves once-only non-tail operand evaluation, effects and control
+transfers; Never prevents invocation. It evaluates no stored payloads, adds no
+collection allocation or own capability requirement, and grants no type-flow
+refinement. Normalized reconstruction and JVM/WASM eligibility checks are not
+actual target execution or fresh source products. Use a changed source
+composition when the public typed/effected/lowered boundary changes:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test \
+  --exact current-gravity-keyword-predicate-fixtures-development-kernel \
+  --exact current-gravity-keyword-predicate-authenticated-composition --fail-fast
+```
+
+Compiling one predicate/projection subexpression is not execution of an unchanged W5
+validator, current-closure migration or self-hosting completion.
+
 ### Legacy bounded self-recursive body analysis
 
 The same body interface also recognizes C7's existing named, capture-free,

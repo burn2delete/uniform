@@ -354,23 +354,48 @@ macro positions or rule consumers invalidate this structural coverage decision.
 
 ### Remaining criteria by partial group
 
-- **SH-05.1:** Inventory actual executable macro positions, distinguishing
-  quoted data and rule records. `gravity.macro` implements `defn`; general user
-  `defmacro`, recursive macro evaluation and general syntax-quote are explicitly
-  outside its present subset. If selected executable subjects require them,
-  they are real semantic gaps. The existing one-pass top-level-defn adapter and
-  legacy external/local macro route do not supply that coverage.
-- **SH-05.6:** Compare selected real expansions and rejection behavior with
-  the prior-stage reference; exercise generated syntax through actual C5 and
-  hosted C6. Preserve hygiene, reused bindings, macro call/definition origins
-  and source mapping, with existing coherent trace/origin tamper checks.
-  Policy-request negatives do not demonstrate arbitrary effectful macro code.
-- **SH-06.6:** Execute the declared subject population and real module graph;
-  retain alias/import/export/privacy/source identities, lexical scope and
-  authenticated downstream consumption. Existing normalized cycle, ambiguity,
-  profile and target kernels remain useful but are not all authentic
-  multi-module source compilations. Coherent binding and changed-input
-  rejection remain required. The resolver stays `:development-unadmitted`.
+- **SH-05.1:** The structural census above already identifies the selected
+  executable macro positions, separate from quotation and rule DATA. The
+  required subset is `defn`; distinct macro, envelope, syntax and resolver
+  subject compositions exercise it. The reader's 275-definition subject is
+  still unrun. General user `defmacro`, recursive expansion and syntax-quote
+  remain unsupported, but none was required by the selected census. That is
+  not general L4 support or execution of every declared function body.
+- **SH-05.6:** The recorded compositions compare real expansions with the
+  prior-stage reference and preserve hygiene, reused bindings, origins and
+  source maps through actual C5 and hosted C6. The later tests below cover
+  coherent outer-origin rejection at public C5 and wrong binding-selection
+  rejection at hosted C6. The reader subject still needs the corresponding
+  coverage. Policy-request negatives are not arbitrary effectful macro-code
+  execution; current-closure admission still needs its selected stable cohort
+  and applicable provenance, equivalence, bootstrap and independent review.
+- **SH-06.6:** Real module graph fixtures cover imports/exports, privacy,
+  missing/stale origins, cycles, ambiguity, aliases, lexical scope and hosted
+  consumption. Later same-JVM profile and capability cases and both hostile
+  ingress checks extend that evidence, with the exact failure qualifications
+  recorded below. Reader source consumption remains unrun. Cross-target source
+  import remains unreachable under the JVM-only frontdoor, despite normalized
+  C5 policy coverage. Stable-cohort freshness and admission evidence remain
+  separate requirements; the resolver stays `:development-unadmitted`.
+
+No further small, demonstrated composition gap was identified in this bounded
+frontend after those additions. Do not add marginal tests or rerun unchanged
+subjects merely to increase a score. The conditional next subject is the
+existing `sh06-b-frontend-reader-development-coverage` selector, with its
+existing runner and 2 GiB heap, in one exclusive window after deliberately
+selecting the relevant stable-cohort or migration question. Its entire reader
+source is the subject; 275 definitions do not mean 275 function bodies execute.
+The prior resolver duration does not establish reader fit or cost.
+
+That decision must name the five frontend owners, analyzed population, P15
+rule DATA, loaded implementation/toolchain inputs (including emitter freshness
+bytes), options, grants, profile/target, dependency exports and preservation
+contracts. Ordinary SH-07 implementation must not wait for it. If the chosen
+construction fails within its existing bounds, preserve the result before any
+successor. Use the bounded construction/verification cost follow-up below to
+identify retained products or duplicate same-invocation work before choosing a
+representation correction; do not raise caps, cache proof, prune sources or
+invent another wrapper/lane. All three groups remain open.
 
 ### Generated-code composition and diagnostic repair
 
@@ -916,10 +941,10 @@ or generic executor changes can invalidate execution even with unchanged
 Gravity owners. Unrelated target implementation changes outside this selected
 closure do not automatically require frontend replay.
 
-The later SH-07 integer-predicate revision changed the P15 emitter, which is a
-selected toolchain-freshness input even though this frontend check does not
-execute its lowering body. Earlier results retain their actual tested
-source/toolchain cohort; their authority is not renewed for the new fingerprint.
+SH-07 development revisions can change the P15 emitter, which is a selected
+toolchain-freshness input even when a frontend check does not execute its
+lowering body. Each result retains its actual tested source/toolchain cohort;
+its authority is not renewed for a later fingerprint.
 Ordinary development does not replay those products just to refresh a stamp.
 A concrete stable-revision admission decision must select the intended cohort
 and satisfy its applicable invalidation and fresh-evidence requirements.

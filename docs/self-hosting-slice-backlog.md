@@ -2893,6 +2893,54 @@ permutations, representation transitions and actual serialization before
 claiming that operation. This is bounded follow-up, not a comparator-framework
 refactor or a prerequisite for the independent `keyword?` slice.
 
+### Keyword family classification: development implementation
+
+Unary `keyword?` now has a bounded JVM path through C7, C8, typed lowering and
+runtime, with STD2 `gravity.core` ownership. Actual Keywords classify true;
+other supported established closed families classify false. Nil-or-Keyword
+operands retain their independent type evidence and classify their actual
+value. Keyword-like String/Symbol spelling does not create a Keyword;
+qualified Keyword values confer neither namespace nor capability authority. Unknown and
+Dynamic remain unsupported implementation frontiers, not language-wide bans.
+
+The operation preserves once-only non-tail operand evaluation, effects and
+transfers; Never prevents invocation. It adds no collection allocation,
+capability requirement or type-flow refinement. C7/C8/emitter independently
+reconstruct source, binding, operand, descriptor, fact and ordered-row joins;
+the runtime validates and executes unary IR against actual values. Existing
+cumulative limits and resource/semantic rejection work remain enforced. The
+JVM fence is confined to the new path; prior Integer/Vector/Map predicate
+eligibility and the runtime's 47 functions/public exports are preserved.
+
+The focused batch passed eight tests/1,593 assertions: four new Keyword
+kernels (784 assertions) and four affected Integer-predicate regressions (809).
+Selected work took 3.977 seconds after 9.796 seconds loading SH01 and 1.065
+seconds loading C7 at 2 GiB. Closed/nullable families, keyword-like values,
+no-authority/no-refinement facts, coherent field tamper, ordered-row census,
+malformed-row containment, operand effects/transfers and twenty-four cross-owner
+target checks are included. The batch is independently accepted, not fresh
+source composition, actual WASM execution or authoritative module migration.
+
+The changed source composition then passed one test/248 assertions (242
+composition checks plus six runtime-source loader checks) in 462.861 seconds
+after 10.252 seconds loading SH01 at 2 GiB. Four accepted programs
+(ordinary callers and transfer handling in both source spellings) reached
+fourteen top-level function-table entry invocations, not a count of nested
+activations. The unannotated private projection preserves independently derived
+key presence and the selected Keyword type; the nullable helper retains its ordinary Bool
+callers. This exercises the exact W5 predicate/projection subexpression, not
+the unchanged validator helper. Five fresh source products include one actual
+zero-arity Gravity rejection; its full diagnostic vector retains the secondary
+unresolved-core-node diagnostic. The paired negative spelling has byte/parser
+parity checks only. Five additionally tracked public C7 verification gates,
+paired typed/effect/result/emitted-function equivalence and descriptor-authority
+field tamper rejection passed. The resealed C8 dependency deletion is a graph
+forgery, not a source-policy negative. Neither hostile case claims all-field
+resealing. Timings include nested work and assertions at their recorded call
+boundaries; they do not establish exclusive cost, speedup or representation
+dominance. Native/other-target execution, current-closure admission and broader
+SH-07/self-hosting completion remain outstanding.
+
 ### Declared ordinary direct-self calls: development implementation
 
 The existing C7, C8, typed emitter and runtime now have a separate declared
