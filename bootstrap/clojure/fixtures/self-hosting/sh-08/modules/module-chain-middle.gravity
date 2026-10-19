@@ -1,0 +1,10 @@
+(ns example.module-chain-middle
+  (:profile :meta) (:target :jvm)
+  (:requires [example.module-chain-leaf :as leaf]) (:exports [relay])
+  (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe))
+
+(defn identity [value] :wrong-middle)
+(defn relay [value]
+  (let [x (leaf/identity value)]
+    (println "middle")
+    x))

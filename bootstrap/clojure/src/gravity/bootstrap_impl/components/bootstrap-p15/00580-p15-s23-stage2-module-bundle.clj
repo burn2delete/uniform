@@ -94,35 +94,83 @@
                      :module (get-in entry [:resolution-artifact :gravity-resolution-boundary :resolved-analysis :module-contract])
                      :exports (mapv #(dissoc % :source-span) (:exports entry))}) entries)})
 
+(declare sh06-resolution-carrier-validation sh06-resolution-artifact-bounds p15-s23-sh02-sha256-id?)
+
+(defn p15-s23-stage2-module-closure [artifact]
+  ;; DATA preflight and deduplication only; module-source still freshly verifies
+  ;; every unique artifact, including its retained C5 dependency verification.
+  (when-not (= :passed (:status (sh06-resolution-carrier-validation artifact sh06-resolution-artifact-bounds)))
+    (p15-s23-stage2-module-fail! :bounded-module-artifact-carrier {}))
+  (let [enqueue
+        (fn [[pending seen] children]
+          (when-not (and (vector? children) (<= (count children) 256))
+            (p15-s23-stage2-module-fail! :bounded-module-dependencies {}))
+          (reduce
+           (fn [[pending seen] child]
+             (let [id (:artifact-id child)]
+               (when-not (p15-s23-sh02-sha256-id? id)
+                 (p15-s23-stage2-module-fail! :module-artifact-id-required {}))
+               (if-let [previous (get seen id)]
+                 (do (when-not (= previous child)
+                       (p15-s23-stage2-module-fail! :conflicting-module-artifact {:module-id id}))
+                     [pending seen])
+                 (do (when (>= (count seen) 257)
+                       (p15-s23-stage2-module-fail! :module-closure-limit {}))
+                     [(conj pending child) (assoc seen id child)]))))
+           [pending seen] children))]
+    (loop [[pending seen] (enqueue [[] {}] [artifact])]
+      (if (empty? pending)
+        (into [artifact] (map second) (sort-by key (dissoc seen (:artifact-id artifact))))
+        (let [current (peek pending)
+              children (get-in current [:gravity-resolution-boundary :module-inputs :module-artifacts])]
+          (recur (enqueue [(pop pending) seen] children)))))))
+
+(defn p15-s23-stage2-module-route-index [routes]
+  (let [index (into {} (map (fn [r] [[(:caller-function r) (:callsite-path r)] r]) routes))]
+    (when-not (= (count routes) (count index)) (p15-s23-stage2-module-fail! :duplicate-callsite-route {}))
+    index))
+
 (defn p15-s23-stage2-module-bundle [emitter source-path source-text inputs]
   (when-not (and (map? inputs) (= #{:caller-resolution-artifact :dependency-plans} (set (keys inputs)))
                  (vector? (:dependency-plans inputs)) (<= (count (:dependency-plans inputs)) 256))
     (p15-s23-stage2-module-fail! :closed-module-inputs-required {}))
-  (let [caller (p15-s23-stage2-module-source (:caller-resolution-artifact inputs))
-        retained (get-in caller [:artifact :gravity-resolution-boundary :module-inputs :module-artifacts])
-        callees (mapv p15-s23-stage2-module-source retained)
-        plans (:dependency-plans inputs)]
+  (let [artifacts (p15-s23-stage2-module-closure (:caller-resolution-artifact inputs))
+        plans (:dependency-plans inputs)
+        _ (when-not (and (= (dec (count artifacts)) (count plans))
+                         (= (count plans) (count (set (map :plan-id plans)))))
+            (p15-s23-stage2-module-fail! :source-emitter-or-dependency-set {}))
+        sources (mapv p15-s23-stage2-module-source artifacts)
+        caller (first sources) callees (subvec sources 1)]
     (when-not (and (= source-path (:source-path caller)) (= source-text (:source-text caller))
                    (= emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)))
-                   (= (count retained) (count plans) (count (set (map :module-id callees))))
-                   (= (count plans) (count (set (map :plan-id plans)))))
+                   (= (count callees) (count plans) (count (set (map :module-id callees))))
+                   (= (count sources) (count (set (map #(get-in % [:module :namespace]) sources)))
+                      (count (set (map :source-path sources)))))
       (p15-s23-stage2-module-fail! :source-emitter-or-dependency-set {}))
-    (doseq [source (cons caller callees)] (p15-s23-stage2-module-shadowing-check! source emitter))
-    (let [dependencies
+    (doseq [source sources] (p15-s23-stage2-module-shadowing-check! source emitter))
+    (let [by-id (into {} (map (juxt :module-id identity) sources))
+          routes (reduce (fn [result source]
+                           (let [next-routes (p15-s23-stage2-module-routes source by-id)]
+                             (when (> (+ (count result) (count next-routes)) 65536)
+                               (p15-s23-stage2-module-fail! :module-route-limit {}))
+                             (into result next-routes))) [] sources)
+          indexes (into {} (map (fn [source]
+                                  [(:module-id source)
+                                   (p15-s23-stage2-module-route-index
+                                    (filterv #(= (:module-id source) (:caller-module-id %)) routes))]) sources))
+          dependencies
           (mapv (fn [source]
-                  (when (seq (get-in source [:request :imports]))
-                    (p15-s23-stage2-module-fail! :leaf-dependency-plans-required {}))
                   (let [actual (p15-s23-stage2-module-one!
                                 (filterv #(= (get-in % [:module :module]) (get-in source [:module :namespace])) plans)
                                 :unique-independent-module-plan)
-                        expected (p15-s23-stage2-compiler-artifact-plan emitter (:source-path source) (:source-text source))]
+                        expected (if (seq (get-in source [:request :imports]))
+                                   (p15-s23-stage2-compiler-artifact-plan-raw
+                                    emitter (:source-path source) (:source-text source) (get indexes (:module-id source)))
+                                   (p15-s23-stage2-compiler-artifact-plan emitter (:source-path source) (:source-text source)))]
                     (when-not (= actual expected)
                       (p15-s23-stage2-module-fail! :independent-raw-plan-mismatch {:module-id (:module-id source)}))
                     (p15-s23-stage2-module-entry source actual))) callees)
-          routes (p15-s23-stage2-module-routes caller (into {} (map (juxt :module-id identity) callees)))
-          route-index (into {} (map (fn [r] [[(:caller-function r) (:callsite-path r)] r]) routes))
-          _ (when-not (= (count routes) (count route-index)) (p15-s23-stage2-module-fail! :duplicate-callsite-route {}))
-          plan (p15-s23-stage2-compiler-artifact-plan-raw emitter source-path source-text route-index)
+          plan (p15-s23-stage2-compiler-artifact-plan-raw emitter source-path source-text (get indexes (:module-id caller)))
           entries (vec (sort-by :module-id (conj dependencies (p15-s23-stage2-module-entry caller plan))))
           identity (p15-s23-stage2-module-identity emitter (:module-id caller) entries routes)]
       {:kind :gravity/stage2-compiler-artifact-module-bundle :schema-version 1 :root-module-id (:module-id caller)
