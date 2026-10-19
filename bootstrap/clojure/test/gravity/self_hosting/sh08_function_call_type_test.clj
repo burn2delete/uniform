@@ -11297,13 +11297,16 @@
     (is (= outer (child {:source-kind :core :node-id :package} :map :signatures nodes (:work-count outer))))
     (is (= :map-get-work-limit (:reason (child {:source-kind :core :node-id :package} :map :signatures nodes (dec (:work-count outer))))))
     (is (= :accepted (:status quoted-outer) (:status quoted-map) (:status quoted-value)))
-    (is (= :sha256 (get-in quoted-value [:cursor :value])))
+    (is (= :sha256 (:value (invoke-c7 'sh08-pc-reanchor
+                            [(get-in quoted-value [:cursor :quote-core-node-id]) (get-in quoted-value [:cursor :selectors]) quoted-nodes 65536]))))
     (is (= :quoted (get-in quoted-value [:location :quote-core-node-id])))
     (is (= :map-get-private-entry-presence-required
            (:reason (child (:cursor first-map) :map :algorithm (assoc-in nodes [:algorithm-key :attributes :value] :other) 65536))))
-    (is (= :map-get-private-entry-presence-required
-           (:reason (child (assoc-in (:cursor quoted-map) [:value] {:other :sha256 :status :verified})
-                           :map :algorithm quoted-nodes 65536))))
+    (let [changed (assoc-in quoted-nodes [:quoted :attributes :quoted-value]
+                            {:signatures [{:other :sha256 :status :verified}]})
+          outer (child {:source-kind :core :node-id :quoted} :map :signatures changed 65536)
+          head (child (:cursor outer) :vector nil changed 65536)]
+      (is (= :map-get-private-entry-presence-required (:reason (child (:cursor head) :map :algorithm changed 65536)))))
     (is (= :rejected (:status (child {:source-kind :unknown :node-id :package} :map :signatures nodes 65536))))
     (is (= :rejected (:status (child {:source-kind :core :node-id :package} :map [:signatures] nodes 65536))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
@@ -11374,9 +11377,12 @@
                                                   [(array-map :other :sha512 :status :rejected)]])
             derived (map-present-get-derived base) entry (first (get-in derived [:descriptor :presence-proof :entries]))
             forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :algorithm)
-            rejected (project forged (:nodes base) 65536)]
+            rejected (project forged (:nodes base) 65536)
+            missing (project entry (:nodes base) 65536)]
         (is (= vector-type (:type derived)))
-        (is (= :map-get-private-first-entry-presence-required (:reason rejected)))
+        (is (= :map-get-private-entry-presence-required (:reason rejected)))
+        (is (= :rejected (:status missing)))
+        (is (= :map-get-private-first-entry-presence-required (:reason missing)))
         (is (= :rejected (:status rejected))))
       (let [entry (first entries)
             forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :other)
@@ -11406,7 +11412,88 @@
       (let [entry (first entries) id (:argument-node-id entry)
             graph (assoc-in (:nodes input) [id :core-form] :reference)]
         (is (= :rejected (:status (project entry graph 65536)))))
+      (let [entry (first entries) projection (project entry (:nodes input) 65536)
+            form-id (get-in projection [:shapes 2 :source :form-id])
+            changed (assoc-in (:forms input) [form-id :form-id] :wrong-form)]
+        (is (= :accepted (:status projection)))
+        (is (= :rejected (:status (authenticate projection (:nodes input) changed (- 65536 (:work-count projection)))))))
+      (let [entry (first entries)
+            changed (assoc vector-type :element-types 7)]
+        (is (= :rejected (:status (invoke-c7 'sh08-pc-current-entry
+                                      [entry :file :algorithm changed map-type (:nodes input) 65536])))))
       (let [entry (first entries)
             forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :value-data-origin :data-path] [999])
             rejected (project forged (:nodes input) 65536)]
         (is (= :rejected (:status rejected)))))))
+
+(deftest sh08-private-first-entry-reviewed-guards-development-kernel
+  (let [literal (fn [id value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
+                               :attributes {:literal-kind :keyword :value value}})
+        nodes {:map {:node-id :map :core-form :collection-literal :children [:key :value]
+                     :attributes {:literal-kind :map :element-count 2}}
+               :key (literal :key :algorithm) :value (literal :value :sha256)}
+        child (fn [graph] (invoke-c7 'sh08-pc-core-child [{:source-kind :core :node-id :map} :map :algorithm graph 65536]))
+        visits (atom 0) trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @trace-var
+        results (with-redefs-fn
+                  {trace-var (fn [& args]
+                               (when (= 'sh08-pc-even-count? (nth args 2)) (swap! visits inc))
+                               (apply original args))}
+                  #(mapv child [(assoc-in nodes [:map :children] 7)
+                                (-> nodes (assoc-in [:map :children] (vec (repeat 2048 :key)))
+                                          (assoc-in [:map :attributes :element-count] 2048))]))]
+    (is (= [:rejected :rejected] (mapv :status results)))
+    (is (zero? @visits) "Reject non-Vector and oversized children before parity")
+    (is (false? (invoke-c7 'sh08-pc-even-count? [7])))
+    (is (= :rejected (:status (child (assoc-in nodes [:map :node-id] :other)))))
+    (is (= :rejected (:status (child (dissoc nodes :value)))))
+    (is (= :rejected (:status (child (assoc-in nodes [:key :children] [:value])))))
+    (is (= :rejected (:status (child (assoc-in nodes [:key :resolved-binding-ids] [:shadow])))))
+    (let [quote-node {:node-id :quoted :core-form :quote :children [] :resolved-binding-ids []
+                      :attributes {:quoted-kind :map :quoted-form-id :payload :quoted-syntax-id :payload
+                                   :quoted-value {:signatures [{:algorithm :sha256}]}}
+                      :evaluation {:kind :no-evaluation :order []}}
+          graph {:quoted quote-node}
+          step (fn [cursor family key] (invoke-c7 'sh08-pc-core-child [cursor family key graph 65536]))
+          outer (step {:source-kind :core :node-id :quoted} :map :signatures)
+          head (step (:cursor outer) :vector nil)
+          forged (assoc (:cursor head) :value {:algorithm :sha512} :data-path [999])
+          selected (step forged :map :algorithm)
+          anchored (invoke-c7 'sh08-pc-reanchor [(get-in selected [:cursor :quote-core-node-id])
+                                               (get-in selected [:cursor :selectors]) graph 65536])]
+      (is (= :accepted (:status selected) (:status anchored)))
+      (is (= :sha256 (:value anchored)) "Cached cursor values and physical paths have no authority")
+      (is (= [{:key :signatures} {:index 0} {:key :algorithm}] (get-in selected [:cursor :selectors])))
+      (is (not (contains? (:cursor selected) :value)))
+      (is (not (contains? (:location selected) :coordinate)))
+      (is (not (contains? (:location selected) :data-path)))
+      (is (= :rejected (:status (step {:source-kind :quoted-data :quote-core-node-id :quoted :selectors [{:key [:signatures]}]} :vector nil))))
+      (is (= :rejected (:status (step {:source-kind :quoted-data :quote-core-node-id :quoted :selectors [{:index 0} :bad]} :vector nil)))))
+    (let [record {:binding-id :binding :let-core-node-id :let :initializer-node-id :initializer :ordinal 0
+                  :mutability :immutable :definition-syntax-id :definition :name 'signature :binding-scope-id :scope
+                  :initializer-form-id :initializer-form :initializer-syntax-id :initializer-syntax}
+          reference {:node-id :reference :core-form :reference :children [] :resolved-binding-ids [:binding]
+                     :attributes {:binding-id :binding :binding-class :lexical :symbol 'signature}
+                     :source {:form-id :reference :syntax-id :reference} :evaluation {:owner-function-syntax-id :helper}}
+          initializer {:node-id :initializer :core-form :call :source {:form-id :initializer-form :syntax-id :initializer-syntax}
+                       :evaluation {:owner-function-syntax-id :helper}}
+          graph {:reference reference :initializer initializer
+                 :let {:node-id :let :core-form :let :children [:initializer :reference] :resolved-binding-ids [:binding]}}
+          core {:lexical-bindings [record] :mutations []}
+          bindings {:binding {:binding-id :binding :binding-class :lexical :mutability :immutable
+                              :definition-syntax-id :definition :name 'signature :scope-id :scope}}
+          unroll (fn [id c g] (invoke-c7 'sh08-pc-unroll [id c g bindings 65536]))]
+      (is (= :rejected (:status (unroll :absent core graph))))
+      (is (= :rejected (:status (unroll :initializer core (assoc-in graph [:initializer :node-id] :other)))))
+      (doseq [changed [(dissoc graph :let) (dissoc graph :initializer)
+                       (assoc-in graph [:let :node-id] :other) (assoc-in graph [:initializer :node-id] :other)
+                       (assoc graph :initializer 7)]]
+        (is (= :rejected (:status (unroll :reference core changed)))))
+      (let [cycle (assoc record :initializer-node-id :reference :initializer-form-id :reference :initializer-syntax-id :reference)
+            loop-core (assoc core :lexical-bindings [cycle])
+            loop-graph (assoc-in graph [:let :children 0] :reference)]
+        (is (= :rejected (:status (unroll :reference loop-core loop-graph))))))
+    (is (nil? (invoke-c7 'sh08-pc-literal-type [:character])))
+    (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [(char 97)])))
+    (is (= :unsupported (invoke-c7 'sh08-pc-value-kind [{:artifact :gravity/unicode-scalar-character
+                                                       :schema-version 1 :codepoint 0x1f600 :text (String. (Character/toChars 0x1f600))}])))))

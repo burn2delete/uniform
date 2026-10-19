@@ -5851,40 +5851,56 @@
 (defn p15-s23-pc-id? [id]
   (if (keyword? id) true (if (string? id) (= 71 (count id)) false)))
 
+(defn p15-s23-pc-current-node [id nodes]
+  (if (p15-s23-pc-id? id)
+    (let [node (get nodes id)] (if (map? node) (if (= id (get node :node-id)) node nil) nil)) nil))
+
 (defn p15-s23-pc-even-count? [values]
-  (if (= (count values) 0)
-    true
-    (if (= (count values) 1)
-      false
-      (p15-s23-pc-even-count? (rest (rest values))))))
+  (if (vector? values)
+    (if (<= (count values) 1024)
+      (loop [remaining values]
+        (if (= 0 (count remaining)) true
+          (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) false) false))
 
 (defn p15-s23-pc-link-core? [record node core nodes bindings]
   (let [bid (get record :binding-id) owner-id (get record :let-core-node-id)
         initializer-id (get record :initializer-node-id) index (get record :ordinal)]
     (if (if (p15-s23-pc-id? bid) (if (p15-s23-pc-id? owner-id)
           (if (p15-s23-pc-id? initializer-id) (if (integer? index) (<= 0 index) false) false) false) false)
-      (let [owner (get nodes owner-id) initializer (get nodes initializer-id) binding (get bindings bid)
-            children (get owner :children) ids (get owner :resolved-binding-ids)]
-        (if (if (vector? children) (if (vector? ids)
-              (if (< index (count children)) (< index (count ids)) false) false) false)
-          (p15-s23-typed-all
-            [(= :immutable (get record :mutability)) (= :let (get owner :core-form))
-             (= :reference (get node :core-form)) (= [] (get node :children))
-             (= [bid] (get node :resolved-binding-ids))
-             (= bid (get (get node :attributes) :binding-id))
-             (= :lexical (get (get node :attributes) :binding-class) (get binding :binding-class))
-             (if (= nil (get binding :mutability)) true (= :immutable (get binding :mutability)))
-             (= initializer-id (get children index)) (= bid (get ids index))
-             (= (get record :definition-syntax-id) (get binding :definition-syntax-id))
-             (= (get record :name) (get binding :name) (get (get node :attributes) :symbol))
-             (= (get record :binding-scope-id) (get binding :scope-id))
-             (= (get record :initializer-form-id) (get (get initializer :source) :form-id))
-             (= (get record :initializer-syntax-id) (get (get initializer :source) :syntax-id))
-             (= (get (get node :evaluation) :owner-function-syntax-id)
-                (get (get initializer :evaluation) :owner-function-syntax-id))
-             (loop [remaining (get core :mutations)]
-               (if (= 0 (count remaining)) true
-                 (if (= bid (get (first remaining) :target-binding-id)) false (recur (rest remaining)))))]) false)) false)))
+      (let [owner (p15-s23-pc-current-node owner-id nodes) initializer (p15-s23-pc-current-node initializer-id nodes)
+            binding (get bindings bid) children (get owner :children) ids (get owner :resolved-binding-ids)
+            attrs (get node :attributes) source (get initializer :source)]
+        (if (if (map? owner) (if (map? initializer) (if (map? binding)
+              (if (vector? children) (if (vector? ids)
+                (if (<= (count children) 1024) (if (<= (count ids) 1024)
+                  (if (< index (count children)) (< index (count ids)) false) false) false) false) false) false) false) false)
+          (if (if (symbol? (get record :name)) (if (symbol? (get binding :name)) (symbol? (get attrs :symbol)) false) false)
+            (if (loop [remaining [(get record :definition-syntax-id) (get binding :definition-syntax-id)
+                                 (get record :binding-scope-id) (get binding :scope-id)
+                                 (get record :initializer-form-id) (get source :form-id)
+                                 (get record :initializer-syntax-id) (get source :syntax-id)
+                                 (get (get node :evaluation) :owner-function-syntax-id)
+                                 (get (get initializer :evaluation) :owner-function-syntax-id)]]
+                  (if (= 0 (count remaining)) true
+                    (if (p15-s23-pc-id? (first remaining)) (recur (rest remaining)) false)))
+              (p15-s23-typed-all
+                [(= :immutable (get record :mutability)) (= :let (get owner :core-form))
+                 (= :reference (get node :core-form))
+                 (if (vector? (get node :children)) (= 0 (count (get node :children))) false)
+                 (if (vector? (get node :resolved-binding-ids)) (= [bid] (get node :resolved-binding-ids)) false)
+                 (= bid (get attrs :binding-id)) (= :lexical (get attrs :binding-class) (get binding :binding-class))
+                 (if (= nil (get binding :mutability)) true (= :immutable (get binding :mutability)))
+                 (= initializer-id (get children index)) (= bid (get ids index))
+                 (= (get record :definition-syntax-id) (get binding :definition-syntax-id))
+                 (= (get record :name) (get binding :name) (get attrs :symbol))
+                 (= (get record :binding-scope-id) (get binding :scope-id))
+                 (= (get record :initializer-form-id) (get source :form-id))
+                 (= (get record :initializer-syntax-id) (get source :syntax-id))
+                 (= (get (get node :evaluation) :owner-function-syntax-id)
+                    (get (get initializer :evaluation) :owner-function-syntax-id))
+                 (loop [remaining (get core :mutations)]
+                   (if (= 0 (count remaining)) true
+                     (if (= bid (get (first remaining) :target-binding-id)) false (recur (rest remaining)))))]) false) false) false)) false)))
 
 (defn p15-s23-pc-unroll [id core nodes bindings budget]
   (loop [current id links [] seen #{} used 0]
@@ -5892,25 +5908,42 @@
       {:status :rejected :reason :map-get-source-mismatch :work-count used}
       (if (if (contains? seen current) true (>= (count links) 128))
         {:status :rejected :reason :map-get-source-mismatch :work-count used}
-        (let [node (get nodes current) locals (get core :lexical-bindings)
-              work (+ used 32 (if (= :reference (get node :core-form))
-                                (+ (* 2 (count locals)) (count (get core :mutations))) 0))]
-          (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
-            (if (= :reference (get node :core-form))
-              (if (vector? locals)
-                (let [bid (get (get node :attributes) :binding-id)
-                      record (if (p15-s23-pc-id? bid) (p15-s23-pe-one locals :binding-id bid) nil)]
-                  (if (if (map? record) (p15-s23-pc-link-core? record node core nodes bindings) false)
-                    (recur (get record :initializer-node-id)
-                      (conj links {:reference-core-node-id current :reference-source (get node :source)
-                                   :binding-record record}) (conj seen current) work)
-                    {:status :rejected :reason :map-get-source-mismatch :work-count work}))
-                {:status :rejected :reason :map-get-source-mismatch :work-count work})
-              {:status :accepted :node-id current :links links :work-count work})))))))
+        (let [prefix (+ used 32)]
+          (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
+            (let [node (p15-s23-pc-current-node current nodes)]
+              (if (map? node)
+                (let [locals (get core :lexical-bindings) mutations (get core :mutations)
+                      work (+ prefix (if (= :reference (get node :core-form))
+                                       (+ (* 2 (if (vector? locals) (count locals) 0))
+                                          (if (vector? mutations) (count mutations) 0)) 0))]
+                  (if (> work budget) {:status :rejected :reason :map-get-work-limit :work-count work}
+                    (if (= :reference (get node :core-form))
+                      (if (if (vector? locals) (vector? mutations) false)
+                        (let [bid (get (get node :attributes) :binding-id)
+                              record (if (p15-s23-pc-id? bid) (p15-s23-pe-one locals :binding-id bid) nil)
+                              initializer (p15-s23-pc-current-node (get record :initializer-node-id) nodes)
+                              binding (if (p15-s23-pc-id? bid) (get bindings bid) nil)
+                              measured (p15-s23-pc-evidence-work
+                                         {:record-name (get record :name) :binding-name (get binding :name)
+                                          :reference-name (get (get node :attributes) :symbol)
+                                          :definition (get record :definition-syntax-id) :binding-definition (get binding :definition-syntax-id)
+                                          :record-scope (get record :binding-scope-id) :binding-scope (get binding :scope-id)
+                                          :initializer-source (get initializer :source)} (- budget work))
+                              total (+ work (get measured :work-count))]
+                          (if (= :accepted (get measured :status))
+                            (if (if (map? record) (p15-s23-pc-link-core? record node core nodes bindings) false)
+                              (recur (get record :initializer-node-id)
+                                (conj links {:reference-core-node-id current :reference-source (get node :source)
+                                             :binding-record record}) (conj seen current) total)
+                              {:status :rejected :reason :map-get-source-mismatch :work-count total})
+                            (assoc measured :work-count total)))
+                        {:status :rejected :reason :map-get-source-mismatch :work-count work})
+                      {:status :accepted :node-id current :links links :work-count work})))
+                {:status :rejected :reason :map-get-source-mismatch :work-count prefix}))))))))
 
 (defn p15-s23-pc-evidence-work [proof budget]
-  ; Only the new closed projection is walked here. Parent facts have their
-  ; existing independent validation and remain in the current typed tables.
+  ; Budget and first-order checks. Owning reconstruction checks closed field domains.
+  ; Parent facts have independent validation in their current typed tables.
   (loop [pending [[proof 0]] used 0]
     (if (= 0 (count pending)) {:status :accepted :work-count used}
       (if (>= used budget) {:status :rejected :reason :map-get-work-limit :work-count used}
@@ -5939,64 +5972,109 @@
                     (recur tail scalar-work)))
                 {:status :rejected :reason :map-get-source-mismatch :work-count work}))))))))
 
-(defn p15-s23-pc-core-child [cursor family key nodes budget]
-  ; This is a current-C6-data check. Full source-form authentication is separate.
-  (if (if (= :map family) (keyword? key) (= :vector family))
-  (let [mode (get cursor :source-kind) id (get cursor :node-id)
-        node (if (= :core mode) (if (p15-s23-pc-id? id) (get nodes id) nil) nil)
-        quote? (if (= :core mode) (= :quote (get node :core-form)) false)
-        attrs (get node :attributes)
-        data? (if (= :quoted-data mode) true quote?)
-        value (if quote? (get attrs :quoted-value) (get cursor :value))
-        path (if quote? [] (get cursor :data-path))
-        quote-id (if quote? id (get cursor :quote-core-node-id))
-        children (get node :children)
-        width (if data? (if (= :map family) (if (map? value) (count value) 0)
-                                      (if (vector? value) (count value) 0))
-                       (if (vector? children) (count children) 0))
+(defn p15-s23-pc-data-child [value family key budget]
+  (let [width (if (= :map family) (if (map? value) (count value) 0)
+                               (if (vector? value) (count value) 0))
         charge (+ 32 (* 4 width))]
     (if (> charge budget) {:status :rejected :reason :map-get-work-limit :work-count charge}
-      (if (if quote?
-            (p15-s23-typed-all [(= family (get attrs :quoted-kind)) (= [] children (get node :resolved-binding-ids))
-              (= :no-evaluation (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
-              (p15-s23-pc-id? (get attrs :quoted-form-id)) (p15-s23-pc-id? (get attrs :quoted-syntax-id))]) true)
-        (if data?
-          (if (if (= :map family) (if (map? value) (<= width 512) false)
-                                 (if (= :vector family) (if (vector? value) (if (< 0 width) (<= width 1024) false) false) false))
-            (if (= :map family)
-              (loop [remaining (vec value) i 0 seen #{} selected nil]
-                (if (= 0 (count remaining))
-                  (if (map? selected) (assoc selected :status :accepted :work-count charge)
-                    {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
-                  (let [entry (first remaining) actual-key (get entry 0) coordinate (+ 1 (* 2 i))]
-                    (if (keyword? actual-key)
-                      (if (contains? seen actual-key)
-                        {:status :rejected :reason :map-get-source-mismatch :work-count charge}
-                        (recur (rest remaining) (+ i 1) (conj seen actual-key)
-                          (if (= key actual-key)
-                            {:cursor {:source-kind :quoted-data :value (get entry 1) :quote-core-node-id quote-id
-                                      :data-path (conj path coordinate)}
-                             :location {:source-kind :quoted-data :quote-core-node-id quote-id :data-path path
-                                        :coordinate coordinate :key actual-key}} selected)))
-                      {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
-              {:status :accepted :work-count charge
-               :cursor {:source-kind :quoted-data :value (get value 0) :quote-core-node-id quote-id :data-path (conj path 0)}
-               :location {:source-kind :quoted-data :quote-core-node-id quote-id :data-path path :coordinate 0 :vector-length width}})
-            {:status :rejected :reason :map-get-source-mismatch :work-count charge})
-          (if (p15-s23-typed-all [(= :core mode) (p15-s23-pc-id? id) (= :collection-literal (get node :core-form))
-                (= family (get attrs :literal-kind)) (vector? children) (= width (get attrs :element-count))
-                (if (= :map family) (if (p15-s23-pc-even-count? children) (<= width 1024) false)
-                  (if (= :vector family) (if (< 0 width) (<= width 1024) false) false))])
-            (if (= :map family)
-              (loop [i 0 seen #{} selected nil]
-                (if (= i width)
-                  (if (map? selected) (assoc selected :status :accepted :work-count charge)
-                    {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
-                  (let [key-id (get children i) value-id (get children (+ i 1))]
-                    (if (if (p15-s23-pc-id? key-id) (p15-s23-pc-id? value-id) false)
-                      (let [key-node (get nodes key-id) actual-key (get (get key-node :attributes) :value)]
-                        (if (if (= :literal (get key-node :core-form))
-                              (if (= :keyword (get (get key-node :attributes) :literal-kind)) (keyword? actual-key) false) false)
+      (if (= :map family)
+        (if (if (keyword? key) (if (map? value) (<= width 512) false) false)
+          (loop [remaining (vec value) seen #{} found? false selected nil]
+            (if (= 0 (count remaining))
+              (if found? {:status :accepted :value selected :work-count charge}
+                {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
+              (let [entry (first remaining) actual-key (get entry 0)]
+                (if (keyword? actual-key)
+                  (if (contains? seen actual-key)
+                    {:status :rejected :reason :map-get-source-mismatch :work-count charge}
+                    (recur (rest remaining) (conj seen actual-key) (if (= key actual-key) true found?)
+                      (if (= key actual-key) (get entry 1) selected)))
+                  {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
+          {:status :rejected :reason :map-get-source-mismatch :work-count charge})
+        (if (if (= :vector family) (if (= 0 key) (if (vector? value) (if (< 0 width) (<= width 1024) false) false) false) false)
+          {:status :accepted :value (get value 0) :vector-length width :work-count charge}
+          {:status :rejected :reason :map-get-source-mismatch :work-count charge})))))
+
+(defn p15-s23-pc-reanchor [quote-id selectors nodes budget]
+  (let [base (+ 32 (if (vector? selectors) (* 4 (count selectors)) 0))]
+    (if (> base budget) {:status :rejected :reason :map-get-work-limit :work-count base}
+      (if (if (p15-s23-pc-id? quote-id) (if (vector? selectors) (<= (count selectors) 3) false) false)
+        (let [node (p15-s23-pc-current-node quote-id nodes) attrs (get node :attributes)
+              value (get attrs :quoted-value)]
+          (if (p15-s23-typed-all
+                [(map? node) (= :quote (get node :core-form))
+                 (if (vector? (get node :children)) (= 0 (count (get node :children))) false)
+                 (if (vector? (get node :resolved-binding-ids)) (= 0 (count (get node :resolved-binding-ids))) false)
+                 (= :no-evaluation (get (get node :evaluation) :kind))
+                 (if (vector? (get (get node :evaluation) :order)) (= 0 (count (get (get node :evaluation) :order))) false)
+                 (p15-s23-pc-id? (get attrs :quoted-form-id)) (p15-s23-pc-id? (get attrs :quoted-syntax-id))
+                 (if (= :map (get attrs :quoted-kind)) (map? value)
+                   (if (= :vector (get attrs :quoted-kind)) (vector? value) false))])
+            (loop [remaining selectors current value used base]
+              (if (= 0 (count remaining)) {:status :accepted :value current :work-count used}
+                (let [selector (first remaining)
+                      fields? (if (map? selector) (if (= 1 (count selector))
+                                (loop [keys (keys selector)] (if (= 0 (count keys)) true
+                                  (if (keyword? (first keys)) (recur (rest keys)) false))) false) false)]
+                  (if fields?
+                    (let [family (if (contains? selector :key) :map (if (contains? selector :index) :vector :unsupported))
+                          key (if (= :map family) (get selector :key) (get selector :index))
+                          child (p15-s23-pc-data-child current family key (- budget used))
+                          work (+ used (get child :work-count))]
+                      (if (= :accepted (get child :status)) (recur (rest remaining) (get child :value) work)
+                        (assoc child :work-count work)))
+                    {:status :rejected :reason :map-get-source-mismatch :work-count used}))))
+            {:status :rejected :reason :map-get-source-mismatch :work-count base}))
+        {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
+
+(defn p15-s23-pc-core-child [cursor family key nodes budget]
+  ; Quoted cursors carry logical selectors only. Re-read current C6 data.
+  (if (if (= :map family) (keyword? key) (if (= :vector family) (= nil key) false))
+    (let [mode (get cursor :source-kind) id (get cursor :node-id)
+          node (if (= :core mode) (p15-s23-pc-current-node id nodes) nil)
+          quote? (if (map? node) (= :quote (get node :core-form)) false)]
+      (if (if (= :quoted-data mode) true quote?)
+        (let [quote-id (if quote? id (get cursor :quote-core-node-id))
+              selectors (if quote? [] (get cursor :selectors))
+              anchored (p15-s23-pc-reanchor quote-id selectors nodes budget)
+              used (get anchored :work-count)]
+          (if (= :accepted (get anchored :status))
+            (let [child (p15-s23-pc-data-child (get anchored :value) family (if (= :vector family) 0 key) (- budget used))
+                  work (+ used (get child :work-count))]
+              (if (= :accepted (get child :status))
+                {:status :accepted :work-count work
+                 :cursor {:source-kind :quoted-data :quote-core-node-id quote-id
+                          :selectors (conj selectors (if (= :map family) {:key key} {:index 0}))}
+                 :location (if (= :map family)
+                             {:source-kind :quoted-data :quote-core-node-id quote-id :selectors selectors :key key}
+                             {:source-kind :quoted-data :quote-core-node-id quote-id :selectors selectors
+                              :coordinate 0 :vector-length (get child :vector-length)})}
+                (assoc child :work-count work))) anchored))
+        (let [children (get node :children) width (if (vector? children) (count children) 0)
+              charge (+ 32 (* 4 width))]
+          (if (> charge budget) {:status :rejected :reason :map-get-work-limit :work-count charge}
+            (if (if (= :core mode) (if (map? node) (if (= :collection-literal (get node :core-form))
+                  (if (= family (get (get node :attributes) :literal-kind))
+                    (if (vector? children) (if (<= width 1024) (= width (get (get node :attributes) :element-count)) false) false)
+                    false) false) false) false)
+              (if (if (= :map family) (p15-s23-pc-even-count? children) (< 0 width))
+                (if (= :map family)
+                  (loop [i 0 seen #{} selected nil]
+                    (if (= i width)
+                      (if (map? selected) (assoc selected :status :accepted :work-count charge)
+                        {:status :rejected :reason :map-get-private-entry-presence-required :work-count charge})
+                      (let [key-id (get children i) value-id (get children (+ i 1))
+                            key-node (p15-s23-pc-current-node key-id nodes) value-node (p15-s23-pc-current-node value-id nodes)
+                            actual-key (get (get key-node :attributes) :value)]
+                        (if (if (map? key-node) (if (map? value-node)
+                              (if (= :literal (get key-node :core-form))
+                                (if (= :keyword (get (get key-node :attributes) :literal-kind))
+                                  (if (keyword? actual-key)
+                                    (if (vector? (get key-node :children))
+                                      (if (= 0 (count (get key-node :children)))
+                                        (if (vector? (get key-node :resolved-binding-ids))
+                                          (= 0 (count (get key-node :resolved-binding-ids))) false) false) false)
+                                    false) false) false) false) false)
                           (if (contains? seen actual-key)
                             {:status :rejected :reason :map-get-source-mismatch :work-count charge}
                             (recur (+ i 2) (conj seen actual-key)
@@ -6004,15 +6082,14 @@
                                 {:cursor {:source-kind :core :node-id value-id}
                                  :location {:source-kind :evaluated :parent-core-node-id id :coordinate (+ i 1)
                                             :key actual-key :key-node-id key-id :value-node-id value-id}} selected)))
-                          {:status :rejected :reason :map-get-source-mismatch :work-count charge}))
-                      {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
-              (let [child (get children 0)]
-                (if (p15-s23-pc-id? child)
-                  {:status :accepted :work-count charge :cursor {:source-kind :core :node-id child}
-                   :location {:source-kind :evaluated :parent-core-node-id id :coordinate 0 :value-node-id child :vector-length width}}
-                  {:status :rejected :reason :map-get-source-mismatch :work-count charge})))
-            {:status :rejected :reason :map-get-source-mismatch :work-count charge}))
-        {:status :rejected :reason :map-get-source-mismatch :work-count charge})))
+                          {:status :rejected :reason :map-get-source-mismatch :work-count charge}))))
+                  (let [child-id (get children 0) child (p15-s23-pc-current-node child-id nodes)]
+                    (if (map? child)
+                      {:status :accepted :work-count charge :cursor {:source-kind :core :node-id child-id}
+                       :location {:source-kind :evaluated :parent-core-node-id id :coordinate 0 :value-node-id child-id :vector-length width}}
+                      {:status :rejected :reason :map-get-source-mismatch :work-count charge})))
+                {:status :rejected :reason :map-get-source-mismatch :work-count charge})
+              {:status :rejected :reason :map-get-source-mismatch :work-count charge})))))
     {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
 
 (defn p15-s23-pc-data-origin [quote-id form path]
@@ -6036,6 +6113,7 @@
                 (let [operator (get forms (get ids 0)) payload (get forms payload-id)]
                   (if (p15-s23-typed-all
                         [(= :quote (get node :core-form)) (= :list (get owner :kind))
+                         (= owner-id (get owner :form-id)) (= (get ids 0) (get operator :form-id))
                          (= source (p15-s23-typed-source owner))
                          (= 'quote (get operator :value)) (= :symbol (get operator :kind))
                          (= [] (get operator :child-form-ids))
@@ -6056,7 +6134,8 @@
                               (let [child-id (get children index)]
                                 (if (p15-s23-pc-id? child-id)
                                   (let [child (get forms child-id)]
-                                    (if (= (get current :form-id) (get child :parent-form-id))
+                                    (if (if (= child-id (get child :form-id))
+                                          (= (get current :form-id) (get child :parent-form-id)) false)
                                       (recur child (rest remaining) (conj traversed index) work)
                                       {:status :rejected :reason :map-get-source-mismatch :work-count work}))
                                   {:status :rejected :reason :map-get-source-mismatch :work-count work}))
@@ -6068,26 +6147,31 @@
     {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
 
 (defn p15-s23-pc-value-kind [value]
+  ; Selected BU leaves are nil, Bool, Integer, Keyword, String, or Symbol.
+  ; Character remains with its existing authenticated owner.
   (if (= nil value) :nil
     (if (boolean? value) :boolean
       (if (keyword? value) :keyword
         (if (string? value) :string
-          (if (integer? value) :integer
-            (if (symbol? value) :symbol
-              (if (char? value) :character :unsupported))))))))
+          (if (integer? value) :integer (if (symbol? value) :symbol :unsupported)))))))
 
 (defn p15-s23-pc-literal-type [kind]
   (if (keyword? kind)
     (get {:nil :gravity.type/nil :boolean :gravity.type/bool :integer :gravity.type/integer
-          :keyword :gravity.type/keyword :string :gravity.type/string :symbol :gravity.type/symbol
-          :character :gravity.type/character} kind) nil))
+          :keyword :gravity.type/keyword :string :gravity.type/string :symbol :gravity.type/symbol} kind) nil))
 
 (defn p15-s23-pc-leaf [cursor shape nodes budget]
   (let [mode (get cursor :source-kind) id (get cursor :node-id)
-        node (if (= :core mode) (if (p15-s23-pc-id? id) (get nodes id) nil) nil)
-        value (if (= :core mode) (get (get node :attributes) :value) (get cursor :value))
-        measured (p15-s23-pc-evidence-work {:value value :shape shape :current-source (get node :source)} budget)
-        used (get measured :work-count)]
+        node (if (= :core mode) (p15-s23-pc-current-node id nodes) nil)
+        anchored (if (= :quoted-data mode)
+                   (p15-s23-pc-reanchor (get cursor :quote-core-node-id) (get cursor :selectors) nodes budget)
+                   (if (= :core mode) {:status :accepted :value (get (get node :attributes) :value) :work-count 0}
+                     {:status :rejected :reason :map-get-source-mismatch :work-count 0}))
+        prefix (get anchored :work-count) value (get anchored :value)
+        measured (if (= :accepted (get anchored :status))
+                   (p15-s23-pc-evidence-work {:value value :shape shape :current-source (get node :source)
+                                           :source-path (get cursor :source-path)} (- budget prefix)) anchored)
+        used (+ prefix (if (= :accepted (get anchored :status)) (get measured :work-count) 0))]
     (if (= :accepted (get measured :status))
       (let [kind (p15-s23-pc-value-kind value) type (p15-s23-pc-literal-type kind)
             domain (get shape :domain) values (get domain :values)
@@ -6095,7 +6179,7 @@
                      #{:node-id :type :source :binding-links :shape-size :status :shape-kind :domain}
                      #{:status :type :data-origin :source :binding-links :shape-size :shape-kind :domain})]
         (if (if (= :core mode)
-              (if (= :literal (get node :core-form)) (= kind (get (get node :attributes) :literal-kind)) false)
+              (if (map? node) (if (= :literal (get node :core-form)) (= kind (get (get node :attributes) :literal-kind)) false) false)
               (= :quoted-data mode))
           (if (if (map? shape) (if (= 8 (count shape))
                 (loop [keys (keys shape)] (if (= 0 (count keys)) true
@@ -6106,16 +6190,17 @@
                    (if (vector? (get shape :binding-links)) (= 0 (count (get shape :binding-links))) false)
                    (if (= :core mode) (if (= id (get shape :node-id)) (= (get node :source) (get shape :source)) false)
                      (if (if (= (get (get shape :source) :form-id) (get (get shape :data-origin) :form-id))
-                           (= (get (get shape :source) :syntax-id) (get (get shape :data-origin) :syntax-id)) false)
-                     (if (= :quoted-data (get (get shape :data-origin) :kind))
-                       (if (= (get cursor :quote-core-node-id) (get (get shape :data-origin) :quote-core-node-id))
-                         (= (get cursor :data-path) (get (get shape :data-origin) :data-path)) false) false) false))
+                             (= (get (get shape :source) :syntax-id) (get (get shape :data-origin) :syntax-id)) false)
+                       (if (= :quoted-data (get (get shape :data-origin) :kind))
+                         (if (= (get cursor :quote-core-node-id) (get (get shape :data-origin) :quote-core-node-id))
+                           (= (get cursor :source-path) (get (get shape :data-origin) :data-path)) false) false) false))
                    (if (map? domain) (if (= 1 (count domain)) (contains? domain :values) false) false)
                    (if (vector? values) (if (= 1 (count values)) (= value (get values 0)) false) false)])
               {:status :accepted :type type :value value :work-count used}
               {:status :rejected :reason :map-get-source-mismatch :work-count used})
             {:status :rejected :reason :map-get-source-mismatch :work-count used})
-          {:status :rejected :reason :map-get-source-mismatch :work-count used})) measured)))
+          {:status :rejected :reason :map-get-source-mismatch :work-count used}))
+      (assoc measured :work-count used))))
 
 (defn p15-s23-pc-key-part [shape key expected budget]
   (let [parts (get shape :parts) width (if (vector? parts) (count parts) 0)
@@ -6124,7 +6209,8 @@
       (if (if (keyword? key) (if (vector? parts) (<= width 512) false) false)
         (let [checked (p15-s23-lc-type-work [(get shape :type)] (- budget base)) work (+ base (get checked :work-count))]
           (if (= :accepted (get checked :status))
-            (if (p15-s23-typed-all [(= :accepted (get shape :status)) (= :map (get shape :shape-kind))
+            (if (if (map? expected) (if (= :gravity.type/map (get expected :kind)) (vector? (get expected :member-types)) false) false)
+              (if (p15-s23-typed-all [(= :accepted (get shape :status)) (= :map (get shape :shape-kind))
                   (= expected (get shape :type)) (= :gravity.type/map (get expected :kind))
                   (vector? (get expected :member-types)) (= (* 2 width) (count (get expected :member-types)))])
               (loop [i 0 seen #{} selected nil]
@@ -6141,7 +6227,7 @@
                             (let [type (get (get part :shape) :type)]
                               (if (if (keyword? type)
                                     (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/keyword
-                                                 :gravity.type/string :gravity.type/symbol :gravity.type/character} type) false)
+                                                 :gravity.type/string :gravity.type/symbol} type) false)
                                 (if (= type (get (get expected :member-types) coordinate))
                                   (recur (+ i 1) (conj seen part-key) part)
                                   {:status :rejected :reason :map-get-source-mismatch :work-count work})
@@ -6150,15 +6236,18 @@
                           {:status :rejected :reason :map-get-source-mismatch :work-count work}))
                       {:status :rejected :reason :map-get-source-mismatch :work-count work}))))
               {:status :rejected :reason :map-get-source-mismatch :work-count work})
+              {:status :rejected :reason :map-get-source-mismatch :work-count work})
             {:status :rejected :reason (if (= :work-limit (get checked :reason)) :map-get-work-limit
                                          :map-get-private-first-entry-presence-required) :work-count work}))
         {:status :rejected :reason :map-get-source-mismatch :work-count base}))))
 
 (defn p15-s23-pc-position [cursor child shape part nodes budget]
+  ; source-path joins retained C7 origins; it never selects a payload value.
   (let [location (get child :location) kind (get location :source-kind)
         metadata {:source (get shape :source) :origin (get shape :data-origin)
                   :key-origin (get part :key-data-origin) :value-origin (get part :value-data-origin)
-                  :child-source (get (get part :shape) :source) :child-origin (get (get part :shape) :data-origin)}
+                  :child-source (get (get part :shape) :source) :child-origin (get (get part :shape) :data-origin)
+                  :source-path (get cursor :source-path)}
         measured (p15-s23-pc-evidence-work metadata budget) work (get measured :work-count)
         coordinate (get part :coordinate) family (get shape :shape-kind) key (get part :key)]
     (if (= :accepted (get measured :status))
@@ -6210,9 +6299,9 @@
                                (= (get origin :form-id) (get (get quote-node :attributes) :quoted-form-id))
                                (= (get origin :syntax-id) (get (get quote-node :attributes) :quoted-syntax-id))]) false) false)
                          (if (= :quoted-data (get cursor :source-kind))
-                           (if (= quote-id (get cursor :quote-core-node-id)) (= path (get cursor :data-path)) false) false))])
+                           (if (= quote-id (get cursor :quote-core-node-id)) (= path (get cursor :source-path)) false) false))])
                   {:status :accepted :work-count work
-                   :cursor (assoc (get child :cursor) :data-path (conj path coordinate))
+                   :cursor (assoc (get child :cursor) :source-path (conj path coordinate))
                    :location (assoc location :data-path path :coordinate coordinate)
                    :source {:source-kind kind :parent-form-id (get origin :form-id) :parent-syntax-id (get origin :syntax-id)
                             :quote-core-node-id quote-id :data-path path :coordinate coordinate :key key
@@ -6224,6 +6313,7 @@
         {:status :rejected :reason :map-get-source-mismatch :work-count work}) measured)))
 
 (defn p15-s23-pc-current-entry [entry outer-key key vector-type map-type nodes budget]
+  ; Expected types are results of paid current BT/BS reconstruction, not supplied proof types.
   (let [argument-id (get entry :argument-node-id) call-id (get entry :call-core-node-id)
         base 32 row {:call-core-node-id call-id :argument-node-id argument-id
                      :argument-source (get entry :argument-source) :entry (get entry :entry)}]
@@ -6236,7 +6326,10 @@
                   vector-parts (get vector :parts) length (if (vector? vector-parts) (count vector-parts) 0)
                   prefix (+ base 32 (* 2 length))]
               (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
-                (if (if (vector? vector-parts) (if (< 0 length) (<= length 1024) false) false)
+                (if (if (vector? vector-parts) (if (< 0 length) (if (<= length 1024)
+                      (if (map? vector-type) (if (= :gravity.type/vector (get vector-type :kind))
+                        (if (vector? (get vector-type :element-types))
+                        (if (map? map-type) (= :gravity.type/map (get map-type :kind)) false) false) false) false) false) false) false)
                   (let [head (get vector-parts 0) map-shape (get head :shape)
                         selected (p15-s23-pc-key-part map-shape key map-type (- budget prefix))
                         used (+ prefix (get selected :work-count)) part (get selected :part)]
@@ -6337,6 +6430,8 @@
                               {:status :rejected :reason :map-get-source-mismatch :work-count used}
                               (if (p15-s23-typed-all
                                     [(= coordinate (get part :coordinate)) (= actual-key (get part :key))
+                                     (= value-id (get value-form :form-id))
+                                     (if (= :map family) (= key-id (get key-form :form-id)) true)
                                      (= (get parent :form-id) (get value-form :parent-form-id))
                                      (if (= :map family) (= (get parent :form-id) (get key-form :parent-form-id)) true)
                                      (if (= :quoted-data kind)
@@ -6382,7 +6477,7 @@
               type (p15-s23-pc-literal-type kind) values (get (get shape :domain) :values)]
           (if (= :accepted (get measured :status))
             (if (p15-s23-typed-all
-                  [(keyword? type) (= type (get shape :type)) (= kind (p15-s23-pc-value-kind (get form :value)))
+                  [(= id (get form :form-id)) (keyword? type) (= type (get shape :type)) (= kind (p15-s23-pc-value-kind (get form :value)))
                    (= (get source :value-syntax-id) (get form :syntax-id))
                    (= (get source :parent-form-id) (get form :parent-form-id))
                    (if (vector? (get form :child-form-ids)) (= 0 (count (get form :child-form-ids))) false)
