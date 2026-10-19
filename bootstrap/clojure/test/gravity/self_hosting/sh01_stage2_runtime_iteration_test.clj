@@ -19756,7 +19756,7 @@
 (deftest compiler-module-seed-shape-development-kernel
   (is (= :unsupported-nested-module-call
          (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites
-                               {:name 'relay :body '[(loop [x 1] (library/identity x))]})) [:facts :reason])))
+                               {:name 'relay :body '[(fn [x] (library/identity x))]})) [:facts :reason])))
   (is (bootstrap/p15-s23-stage2-module-fixed-definition? '(defn identity [x] x)))
   (doseq [form ['(defn collect [& xs] xs) '(defn identity [x :- I64] x) '(defn identity [x x] x)
                 '(defn identity [x] :- I64 x) '(def initialized (identity 1))]]
