@@ -179,9 +179,16 @@
            {:source-span {:source (:source-path module)}
             :bindings bindings
             :remediation "Use pairs of local names and expressions in let."}))
+  (let [module-routes? (contains? module :p15-s23-stage2-module-routes)
+        parent-path (:p15-s23-sh07-callsite-path module [])
+        expression-module (fn [path]
+                            (if module-routes?
+                              (assoc module :p15-s23-sh07-callsite-path path)
+                              module))]
   (loop [scope locals
          compiled []
-         pairs (partition 2 bindings)]
+         pairs (partition 2 bindings)
+         binding-index 1]
     (if-let [[name expr] (first pairs)]
       (do
         (when-not (symbol? name)
@@ -194,13 +201,14 @@
                (conj compiled
                      {:name name
                       :expr (p15-s23-stage2-seed-compile-expr
-                             emitter module scope expr)})
-               (rest pairs)))
+                             emitter (expression-module (conj parent-path 1 binding-index)) scope expr)})
+               (rest pairs) (+ binding-index 2)))
       {:op (get-in emitter [:special-form-rules 'let :op] :let)
        :bindings compiled
-       :body (mapv #(p15-s23-stage2-seed-compile-expr
-                     emitter module scope %)
-                   body)})))
+       :body (mapv (fn [index form]
+                     (p15-s23-stage2-seed-compile-expr
+                      emitter (expression-module (conj parent-path index)) scope form))
+                   (range 2 (+ 2 (count body))) body)}))))
 
 (defn p15-s23-stage2-seed-compile-loop
   [emitter module locals bindings body]

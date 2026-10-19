@@ -5039,6 +5039,37 @@ forward body analysis into `gravity.effects`. A second facade pretending to be
 that namespace is not a substitute. Full effects/errors, checked runtime
 linking, migration, self-hosting and seedless release remain outstanding.
 
+### Sequential-let module calls: development increment
+
+Development commit `57c077ab836776b0e9b9edc7ca3c7bfac4049601` extends the
+existing ordinary four-argument compiler-artifact module interface to imported
+calls in symbol-only sequential `let` initializers and bodies. The owning seed
+components `00575` and `00580` preserve exact source-order callsite paths through
+nested scopes, shadowing and multiple body forms. C5 export/origin joins,
+separate module plans, fresh bundle reconstruction and route/arity checks before
+arguments are unchanged. No public API, compiler IR, type/effect rule or new
+authority channel is introduced. Imported calls under `loop`, nested functions
+and collection expressions remain unsupported; quoted DATA stays inert.
+
+The dedicated cheap checks passed two tests / 25 assertions. The actual Gravity
+source composition passed one test / 19 assertions: it executed all five
+qualified call sites, preserved initializer/body order and lexical scope,
+rejected a private import and wrong arity, and rejected one coherently resealed
+route before output. Paired `.qst` fixtures were checked for byte/parser parity
+only; no Q C5 construction or Q runtime execution is claimed. Four existing
+module regressions passed 97 assertions, language-boundary checks passed six
+tests / 11 assertions, and the Clojure LOC validator passed. These separate runs
+total 13 tests / 152 assertions, not a single batch. Independent implementation
+and actual-result review accepted the scoped change; the old unsupported-let
+oracle now uses still-unsupported `loop` instead.
+
+The real composition took 199.719 seconds of selected execution after 6.852
+seconds of namespace loading at a 2 GiB heap. Its source work was not replayed
+for documentation or disjoint adapter factoring. Direct commands are in the
+development-verification guide. This is executable temporary-seed composition,
+not checked user-call linking/effects, H6, current-closure admission, milestone
+completion, self-hosting or release evidence.
+
 ### Hosted compiler-module construction: development increment
 
 The existing module-development interface now accepts exactly `:meta/:jvm`

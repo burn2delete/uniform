@@ -4346,11 +4346,33 @@ but exported DATA is not callable and imported DATA reads remain unsupported.
 This is an immutable seed subset, not a language-wide restriction on `def`.
 Arbitrary initializer calls, bare-symbol aliases, forward/dependency initializer
 references, duplicate definitions, variadics and source/seed operator-shadowing
-mismatches reject. Imported calls
-under `let`, `loop`, nested functions or collection expressions are not yet
-supported; forwarding nested DATA through a parameter is distinct from those
+mismatches reject. Imported calls in symbol-only sequential `let` initializers
+and bodies are supported, including nested scopes, shadowing and multiple body
+forms. Initializers see earlier bindings, not later ones; argument evaluation
+remains once, left-to-right. Imported calls under `loop`, nested functions or
+collection expressions are not yet supported; forwarding nested DATA through a parameter is distinct from those
 executable forms. Quoted DATA remains inert. General module initialization and
 checked runtime linking are separate work, not language-level prohibitions.
+
+For module-call path or sequential-let changes, start with the dedicated cheap
+checks and then the affected real composition:
+
+```bash
+clojure -J-Xmx512m -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-lexical-call-test \
+  --exact stage2-module-let-fixture-parity \
+  --exact stage2-module-let-call-path-development-kernel --fail-fast
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.stage2-module-lexical-call-test \
+  --exact stage2-module-let-authenticated-composition --fail-fast
+```
+
+The second command constructs genuine Gravity caller/callee C5 products and
+executes the development module bundle. The paired `.qst` fixtures establish
+byte/parser parity only, not a second authenticated execution. Private imports,
+wrong arity and a coherently resealed route substitution reject. This temporary
+Clojure-seed composition does not establish checked user-call effects, runtime
+ownership, authoritative migration or self-hosting.
 
 Use the existing runtime test namespace, not an admission runner:
 
@@ -4468,6 +4490,27 @@ requiring lightweight tests to maintain heavy-run admission state first.
 ## Repository and explicit admission checks
 
 ### Product construction versus scheduling overhead
+
+The ordinary C5 adapter shares identity chunks only within one constructor or
+bounded-verifier invocation. Its existing public identity/summary helpers still
+recompute freshly and both fresh C5 gates on the public C6 path remain. When editing these equations,
+start with the bounded equation-only kernel, then select the affected real
+consumer separately:
+
+```bash
+clojure -J-Xmx512m -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-product-identity-chunks-preserve-old-equations --fail-fast
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh06-resolution-adapter-test --exact sh06-invocation-local-chunks-preserve-fresh-verification --exact sh06-authenticated-resolution-is-the-c6-consumer-boundary --fail-fast
+```
+
+The first compares the old chunk/identity/summary equations at bounded chunk
+edges. The second constructs a genuine tiny artifact and exercises fresh
+verification, mutations and the public hosted-C6 consumer. It is not the
+large checked-Core source subject. Preserve malformed/preflight, stale-envelope,
+binding/order/span and source-read regressions when changing their owners.
+The [evidence reconciliation](self-hosting-sh00-sh06-evidence-audit.md#bounded-invocation-local-projection-sharing)
+records the actual selected results and their limits. This local factoring is
+neither acceptance caching nor measured proof that chunk construction dominates
+Core composition; do not rerun the unchanged large subject to refresh a stamp.
 
 Some SH-07 tests build large authenticated products before reaching a semantic
 assertion. The backlog records a 9,172,831-node reader-source template and a

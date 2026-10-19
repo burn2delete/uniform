@@ -204,6 +204,150 @@
   [artifact]
   ((required-var 'sh06-resolution-artifact-identity-input) artifact))
 
+(deftest sh06-product-identity-chunks-preserve-old-equations
+  ;; These bounded values test the former equations, not proof authority.
+  (let [hash-value (required-var 'reader-canonical-hash)
+        old-chunks
+        (fn [values]
+          (mapv (fn [index entries]
+                  {:chunk-index index :entry-count (count entries)
+                   :chunk-id (hash-value
+                              {:domain :gravity/sh06-resolution-identity-chunk-v1
+                               :chunk-index index :entries (vec entries)})})
+                (range) (partition-all 16 values)))
+        old-pair
+        (fn [artifact]
+          {:binding-id-chunks
+           (old-chunks (mapv :binding-id (get-in artifact [:binding-table :bindings])))
+           :resolution-chunks
+           (old-chunks (mapv #(dissoc % :source-span) (:resolution-table artifact)))})
+        old-identity
+        (fn [a]
+          (merge
+           {:domain :gravity/sh06-resolution-artifact-v1
+            :kind (:kind a) :slice (:slice a) :task (:task a)
+            :adapter-contract (get-in a [:gravity-resolution-boundary :adapter-contract])
+            :analysis-artifact-id (get-in a [:gravity-resolution-boundary :resolved-analysis :artifact-id])
+            :source-revision-id (get-in a [:gravity-resolution-boundary :authenticated-resolution-request :module :source-revision-id])
+            :upstream-artifact-id (get-in a [:sh05-macro-artifact :artifact-id])
+            :upstream-syntax-stream-id (get-in a [:sh05-macro-artifact :expanded-syntax-stream-id])
+            :upstream-trace-id (get-in a [:sh05-macro-artifact :macro-expansion-trace-id])
+            :dependency-graph-id
+            (hash-value {:domain :gravity/sh06-dependency-graph-v1
+                         :nodes (get-in a [:dependency-graph :nodes])
+                         :edges (mapv #(dissoc % :source-span) (get-in a [:dependency-graph :edges]))})
+            :invalidation-id (get-in a [:incremental-invalidation-keys :invalidation-id])}
+           (old-pair a)))
+        old-summary
+        (fn [a]
+          (merge
+           {:slice :SH-06 :artifact-id (:artifact-id a)
+            :analysis-artifact-id (get-in a [:gravity-resolution-boundary :resolved-analysis :artifact-id])
+            :upstream-artifact-id (get-in a [:sh05-macro-artifact :artifact-id])
+            :source-revision-id (get-in a [:gravity-resolution-boundary :authenticated-resolution-request :module :source-revision-id])
+            :binding-count (count (get-in a [:binding-table :bindings]))
+            :reference-count (count (:resolution-table a))
+            :dependency-edge-count (count (get-in a [:dependency-graph :edges]))}
+           (old-pair a)))
+        pair-builder (private-bootstrap-var 'sh06-resolution-product-identity-chunks)
+        identity-builder (private-bootstrap-var 'sh06-resolution-artifact-identity-input-with-chunks)
+        summary-builder (private-bootstrap-var 'sh06-resolution-envelope-summary-with-chunks)
+        identity-input (required-var 'sh06-resolution-artifact-identity-input)
+        artifact-id (required-var 'sh06-resolution-artifact-id)
+        summary (required-var 'sh06-resolution-envelope-summary)]
+    (doseq [builder [pair-builder identity-builder summary-builder]]
+      (is (true? (:private (meta builder)))))
+    (doseq [public [identity-input artifact-id summary]]
+      (is (= '([artifact]) (:arglists (meta public))))
+      (is (thrown? clojure.lang.ArityException (public {} {}))))
+    (doseq [size [0 1 15 16 17 31 32 33]]
+      (let [bindings (mapv #(hash-map :binding-id (sha256-text (str (mod % 3)))) (range size))
+            rows (mapv #(hash-map :symbol (symbol (str "name" (mod % 3)))
+                                  :binding-id (:binding-id (get bindings %))
+                                  :source-span {:form-index %}
+                                  :origin {:source-span {:form-index (mod % 3)}})
+                       (range size))
+            a0 {:kind :gravity/sh06-resolution-artifact :slice :SH-06 :task "SH-06"
+                :artifact-id nil :binding-table {:bindings bindings} :resolution-table rows
+                :gravity-resolution-boundary
+                {:adapter-contract :equation-kernel
+                 :resolved-analysis {:artifact-id (sha256-text "analysis")}
+                 :authenticated-resolution-request {:module {:source-revision-id (sha256-text "source")}}}
+                :sh05-macro-artifact {:artifact-id (sha256-text "upstream")
+                                     :expanded-syntax-stream-id (sha256-text "syntax")
+                                     :macro-expansion-trace-id (sha256-text "trace")}
+                :dependency-graph {:nodes ['one 'two] :edges [{:from 'one :to 'two :source-span {:form-index 0}}]}
+                :incremental-invalidation-keys {:invalidation-id (sha256-text "invalidation")}}
+            pair (pair-builder a0)
+            a1 (assoc a0 :artifact-id (hash-value (old-identity a0)))
+            changed-span (update a1 :resolution-table
+                                 #(mapv (fn [row] (assoc row :source-span {:form-index -1})) %))]
+        (testing (str "chunk boundary " size)
+          (is (= (old-pair a0) pair (pair-builder a1)))
+          (is (= (old-identity a0) (identity-input a0) (identity-builder a0 pair)))
+          (is (= (:artifact-id a1) (artifact-id a0) (artifact-id a1)))
+          (is (= (old-summary a1) (summary a1) (summary-builder a1 pair)))
+          (is (= (artifact-id a1) (artifact-id changed-span)))
+          (is (= (summary a1) (summary changed-span)))
+          (is (= (mapv :entry-count (:binding-id-chunks pair))
+                 (mapv count (partition-all 16 bindings))))
+          (when (> size 1)
+            (is (not= (artifact-id a1) (artifact-id (update a1 :resolution-table #(vec (reverse %))))))))))))
+
+(deftest sh06-invocation-local-chunks-preserve-fresh-verification
+  (let [artifact (sh06-file-artifact (fixture-path "accepted" "compiler-subset" ".gravity"))
+        pair-var (private-bootstrap-var 'sh06-resolution-product-identity-chunks)
+        original-pair @pair-var
+        seen (atom [])
+        verify (fn [candidate]
+                 (reset! seen [])
+                 (let [report (with-redefs-fn
+                                {pair-var (fn [current]
+                                            (swap! seen conj current)
+                                            (original-pair current))}
+                                #(internal-verification candidate false))]
+                   (is (= 1 (count @seen)))
+                   (is (identical? candidate (first @seen)))
+                   report))
+        identity (required-var 'sh06-resolution-artifact-id)
+        mutations
+        [[:binding-id :binding-table-current?
+          #(assoc-in % [:binding-table :bindings 0 :binding-id] (sha256-text "changed-binding"))]
+         [:row-semantic :resolution-table-current?
+          #(assoc-in % [:resolution-table 0 :symbol] 'substituted)]
+         [:row-order :resolution-table-current?
+          #(update % :resolution-table (comp vec reverse))]
+         [:source-span :resolution-table-current?
+          #(assoc-in % [:resolution-table 0 :source-span :form-index] -1)]
+         [:stale-envelope :fresh-sh02-envelope-verified?
+          #(assoc-in % [:gravity-resolution-boundary :authenticated-envelope-descriptor
+                        :semantic-projections 0 :value :binding-count] -1)]]]
+    (is (= :passed (:status (verify artifact))))
+    (doseq [[label check mutate] mutations]
+      (let [candidate (mutate artifact)
+            report (verify candidate)]
+        (is (= :failed (:status report)) (name label))
+        (is (false? (get-in report [:checks check])) (name label))
+        (is (true? (get-in report [:checks :fresh-gravity-request-replay?])) (name label))
+        (is (= (contains? #{:source-span :stale-envelope} label)
+               (= (identity artifact) (identity candidate))) (name label))
+        (when (contains? #{:binding-id :row-semantic :row-order} label)
+          (is (false? (get-in report [:checks :artifact-identity-current?])) (name label))
+          (is (false? (get-in report [:checks :fresh-sh02-envelope-verified?])) (name label)))))
+    (testing "malformed and over-limit values reject before chunk construction"
+      (reset! seen [])
+      (with-redefs-fn
+        {pair-var (fn [candidate] (swap! seen conj candidate) (throw (ex-info "preflight bypass" {})))}
+        #(do
+           (is (= :failed (:status (internal-verification nil false))))
+           (with-redefs [bootstrap/sh06-resolution-artifact-bounds
+                         {:maximum-carrier-nodes 10 :maximum-carrier-depth 64
+                          :maximum-container-width 64 :maximum-serialized-bytes 1024}]
+             (is (= :maximum-carrier-nodes
+                    (get-in (internal-verification {:payload (vec (range 10))} false)
+                            [:carrier-validation :reason]))))))
+      (is (empty? @seen)))))
+
 (defn- rejection-data-for-source
   [source-path source-text]
   (try
